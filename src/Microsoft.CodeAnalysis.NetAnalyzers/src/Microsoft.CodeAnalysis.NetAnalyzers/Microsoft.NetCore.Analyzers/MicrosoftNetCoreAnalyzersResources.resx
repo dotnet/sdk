@@ -290,6 +290,9 @@
   <data name="ProvideCorrectArgumentsToFormattingMethodsMessage" xml:space="preserve">
     <value>Provide correct arguments to formatting methods</value>
   </data>
+  <data name="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage" xml:space="preserve">
+    <value>The format argument is not a valid format string</value>
+  </data>
   <data name="TestForNaNCorrectlyTitle" xml:space="preserve">
     <value>Test for NaN correctly</value>
   </data>
@@ -470,24 +473,6 @@
   <data name="AddSerializableAttributeCodeActionTitle" xml:space="preserve">
     <value>Add Serializable attribute</value>
   </data>
-  <data name="ImplementSerializationConstructorsCodeActionTitle" xml:space="preserve">
-    <value>Implement Serialization constructor</value>
-  </data>
-  <data name="ImplementSerializationConstructorsDescription" xml:space="preserve">
-    <value>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</value>
-  </data>
-  <data name="ImplementSerializationConstructorsMessageCreateMagicConstructor" xml:space="preserve">
-    <value>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</value>
-  </data>
-  <data name="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate" xml:space="preserve">
-    <value>Declare the serialization constructor of {0}, a sealed type, as private.</value>
-  </data>
-  <data name="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily" xml:space="preserve">
-    <value>Declare the serialization constructor of {0}, an unsealed type, as protected.</value>
-  </data>
-  <data name="ImplementSerializationConstructorsTitle" xml:space="preserve">
-    <value>Implement serialization constructors</value>
-  </data>
   <data name="MarkAllNonSerializableFieldsDescription" xml:space="preserve">
     <value>An instance field of a type that is not serializable is declared in a type that is serializable.</value>
   </data>
@@ -505,54 +490,6 @@
   </data>
   <data name="MarkISerializableTypesWithSerializableTitle" xml:space="preserve">
     <value>Mark ISerializable types with serializable</value>
-  </data>
-  <data name="ImplementISerializableCorrectlyDescription" xml:space="preserve">
-    <value>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</value>
-  </data>
-  <data name="ImplementISerializableCorrectlyMessageDefault" xml:space="preserve">
-    <value>Add an implementation of GetObjectData to type {0}</value>
-  </data>
-  <data name="ImplementISerializableCorrectlyMessageMakeOverridable" xml:space="preserve">
-    <value>Make {0}.GetObjectData virtual and overridable</value>
-  </data>
-  <data name="ImplementISerializableCorrectlyMessageMakeVisible" xml:space="preserve">
-    <value>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</value>
-  </data>
-  <data name="ImplementISerializableCorrectlyTitle" xml:space="preserve">
-    <value>Implement ISerializable correctly</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyDescription" xml:space="preserve">
-    <value>A method that handles a serialization event does not have the correct signature, return type, or visibility.</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyMessageGeneric" xml:space="preserve">
-    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyMessageParameters" xml:space="preserve">
-    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyMessageReturnType" xml:space="preserve">
-    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyMessageStatic" xml:space="preserve">
-    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyMessageVisibility" xml:space="preserve">
-    <value>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</value>
-  </data>
-  <data name="ImplementSerializationMethodsCorrectlyTitle" xml:space="preserve">
-    <value>Implement serialization methods correctly</value>
-  </data>
-  <data name="ProvideDeserializationMethodsForOptionalFieldsDescription" xml:space="preserve">
-    <value>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</value>
-  </data>
-  <data name="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized" xml:space="preserve">
-    <value>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</value>
-  </data>
-  <data name="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing" xml:space="preserve">
-    <value>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</value>
-  </data>
-  <data name="ProvideDeserializationMethodsForOptionalFieldsTitle" xml:space="preserve">
-    <value>Provide deserialization methods for optional fields</value>
   </data>
   <data name="ReviewCodeForSqlInjectionVulnerabilitiesMessage" xml:space="preserve">
     <value>Potential SQL injection vulnerability was found where '{0}' in method '{1}' may be tainted by user-controlled data from '{2}' in method '{3}'.</value>
@@ -1979,6 +1916,18 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="UseSpanClearInsteadOfFillTitle" xml:space="preserve">
     <value>Prefer 'Clear' over 'Fill'</value>
   </data>
+  <data name="UseSearchValuesTitle" xml:space="preserve">
+    <value>Use a cached 'SearchValues' instance</value>
+  </data>
+  <data name="UseSearchValuesMessage" xml:space="preserve">
+    <value>Use a cached 'SearchValues' instance for improved searching performance</value>
+  </data>
+  <data name="UseSearchValuesDescription" xml:space="preserve">
+    <value>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</value>
+  </data>
+  <data name="UseSearchValuesCodeFixTitle" xml:space="preserve">
+    <value>Use 'SearchValues'</value>
+  </data>
   <data name="PreventNumericIntPtrUIntPtrBehavioralChangesDescription" xml:space="preserve">
     <value>Some built-in operators added in .NET 7 behave differently when overflowing than did the corresponding user-defined operators in .NET 6 and earlier versions. Some operators that previously threw in an unchecked context now don't throw unless wrapped within a checked context. Also, some operators that did not previously throw in a checked context now throw unless wrapped in an unchecked context.</value>
   </data>
@@ -2075,29 +2024,29 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle" xml:space="preserve">
     <value>Use the 'string.{0}(string, StringComparison)' overload</value>
   </data>
+  <data name="RecommendCaseInsensitiveStringComparerDescription" xml:space="preserve">
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</value>
+  </data>
+  <data name="RecommendCaseInsensitiveStringComparerMessage" xml:space="preserve">
+    <value>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</value>
+  </data>
   <data name="RecommendCaseInsensitiveStringEqualsCodeFixTitle" xml:space="preserve">
     <value>Use 'string.Equals(string, StringComparison)'</value>
   </data>
-  <data name="RecommendCaseInsensitiveStringComparerDescription" xml:space="preserve">
-    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</value>
-  </data>
-  <data name="RecommendCaseInsensitiveStringComparerMessage" xml:space="preserve">
-    <value>Prefer using 'StringComparer' to perform a case-insensitive comparison</value>
-  </data>
     <data name="RecommendCaseInsensitiveStringEqualsDescription" xml:space="preserve">
-    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</value>
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</value>
   </data>
     <data name="RecommendCaseInsensitiveStringEqualsMessage" xml:space="preserve">
-    <value>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</value>
+    <value>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparisonTitle" xml:space="preserve">
-    <value>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</value>
+    <value>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparisonDescription" xml:space="preserve">
-    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</value>
+    <value>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</value>
   </data>
   <data name="RecommendCaseInsensitiveStringComparisonMessage" xml:space="preserve">
-    <value>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</value>
+    <value>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</value>
   </data>
   <data name="PreferDictionaryTryAddValueCodeFixTitle" xml:space="preserve">
     <value>Use 'TryAdd(TKey, TValue)'</value>
@@ -2128,5 +2077,14 @@ Widening and user defined conversions are not supported with generic types.</val
   </data>
   <data name="UseStringMethodCharOverloadWithSingleCharactersTitle" xml:space="preserve">
     <value>Use char overload</value>
+  </data>
+  <data name="AvoidSingleUseOfLocalJsonSerializerOptionsMessage" xml:space="preserve">
+    <value>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</value>
+  </data>
+  <data name="AvoidSingleUseOfLocalJsonSerializerOptionsDescription" xml:space="preserve">
+    <value>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</value>
+  </data>
+  <data name="AvoidSingleUseOfLocalJsonSerializerOptionsTitle" xml:space="preserve">
+    <value>Cache and reuse 'JsonSerializerOptions' instances</value>
   </data>
 </root>

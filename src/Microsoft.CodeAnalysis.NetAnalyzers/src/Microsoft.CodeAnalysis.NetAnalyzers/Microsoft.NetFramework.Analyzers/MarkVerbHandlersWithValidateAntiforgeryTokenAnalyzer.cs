@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Immutable;
 using Analyzer.Utilities;
@@ -96,9 +96,10 @@ namespace Microsoft.NetFramework.Analyzers
                     compilationStartContext.RegisterSymbolAction(
                         (SymbolAnalysisContext symbolContext) =>
                         {
+                            var methodSymbol = (IMethodSymbol)symbolContext.Symbol;
+
                             // TODO enhancements: Consider looking at IAsyncResult-based action methods.
-                            if (symbolContext.Symbol is not IMethodSymbol methodSymbol
-                                || methodSymbol.MethodKind != MethodKind.Ordinary
+                            if (methodSymbol.MethodKind != MethodKind.Ordinary
                                 || methodSymbol.IsStatic
                                 || !methodSymbol.IsPublic()
                                 || !(methodSymbol.ReturnType.Inherits(actionResultSymbol)  // FxCop implementation only looked at ActionResult-derived return types.

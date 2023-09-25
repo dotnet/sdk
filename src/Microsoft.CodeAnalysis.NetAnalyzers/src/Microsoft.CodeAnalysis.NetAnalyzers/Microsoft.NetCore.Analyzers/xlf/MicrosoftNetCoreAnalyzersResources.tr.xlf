@@ -67,6 +67,21 @@
         <target state="translated">Sabit dizileri bağımsız değişkenler olarak kullanmaktan sakının</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
+        <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
+        <target state="translated">Her serileştirme işlemi için yeni bir 'JsonSerializerOptions' örneği oluşturmaktan kaçının. Bunun yerine örnekleri önbelleğe alıp yeniden kullanın. Tek kullanımlık 'JsonSerializerOptions' örnekleri uygulamanızın performansını önemli ölçüde düşürebilir.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsMessage">
+        <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</source>
+        <target state="translated">Her serileştirme işlemi için yeni bir 'JsonSerializerOptions' örneği oluşturmaktan kaçının. Bunun yerine örnekleri önbelleğe alıp yeniden kullanın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsTitle">
+        <source>Cache and reuse 'JsonSerializerOptions' instances</source>
+        <target state="translated">'JsonSerializerOptions' örneklerini önbelleğe alıp yeniden kullanma</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">'StringBuilder' öğesinin hazırlanması her zaman, bir hazırlama işlemi için birden çok ayırmaya neden olan yerel arabellek kopyası oluşturur.</target>
@@ -765,17 +780,17 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsDescription">
         <source>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</source>
-        <target state="new">Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</target>
+        <target state="translated">Küme için 'Add(item)' veya 'Remove(item)' parametresini 'Contains(item)' ile korumayın. Önceki ikisi zaten öğenin var olup olmadığını denetler ve öğenin eklendiği veya kaldırıldığı bilgisini döndürür.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsMessage">
         <source>Do not guard '{0}' with '{1}'</source>
-        <target state="new">Do not guard '{0}' with '{1}'</target>
+        <target state="translated">'{0}' parametresini '{1}' ile korumayın</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsTitle">
         <source>Unnecessary call to 'Contains(item)'</source>
-        <target state="new">Unnecessary call to 'Contains(item)'</target>
+        <target state="translated">'Contains(item)' parametresine gereksiz çağrı</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
@@ -1318,99 +1333,9 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <target state="translated">Doğru tür parametresini kullanın</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyDescription">
-        <source>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</source>
-        <target state="translated">Bu kural ihlalini düzeltmek için GetObjectData metodunu görünür ve geçersiz kılınabilir hale getirin ve tüm örnek alanlarının serileştirme işlemine dahil edildiğinden veya NonSerializedAttribute özniteliği kullanılarak açıkça işaretlendiğinden emin olun.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}</source>
-        <target state="translated">{0} türüne GetObjectData'nın bir uygulamasını ekleyin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable</source>
-        <target state="translated">{0}.GetObjectData'yı sanal ve geçersiz kılınabilir yapın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
-        <target state="translated">{0}.GetObjectData erişilebilirliğini türetilmiş türlere görünür olacak şekilde artırın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyTitle">
-        <source>Implement ISerializable correctly</source>
-        <target state="translated">ISerializable'ı doğru uygulayın</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
         <source>Implement inherited interfaces</source>
         <target state="translated">Devralınan arabirimleri uygulayın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
-        <source>Implement Serialization constructor</source>
-        <target state="translated">Serileştirme oluşturucusunu uygulayın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsDescription">
-        <source>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</source>
-        <target state="translated">Bu kural ihlalini düzeltmek için serileştirme oluşturucusunu uygulayın. Mühürlü bir sınıf için oluşturucuyu özel yapın. Aksi halde korumalı hale getirin.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageCreateMagicConstructor">
-        <source>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</source>
-        <target state="translated">{0} için bu imzayla bir oluşturucu ekleyin: 'protected {0}(SerializationInfo info, StreamingContext context)'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate">
-        <source>Declare the serialization constructor of {0}, a sealed type, as private.</source>
-        <target state="translated">Mühürlenmiş bir tür olan {0} için seri hale getirme oluşturucusunu private olarak bildirin.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily">
-        <source>Declare the serialization constructor of {0}, an unsealed type, as protected.</source>
-        <target state="translated">Mühürlenmemiş bir tür olan {0} için seri hale getirme oluşturucusunu protected olarak bildirin.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsTitle">
-        <source>Implement serialization constructors</source>
-        <target state="translated">Serileştirme oluşturucularını uygulayın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyDescription">
-        <source>A method that handles a serialization event does not have the correct signature, return type, or visibility.</source>
-        <target state="translated">Serileştirme olayını işleyen bir metot, doğru imzaya, dönüş türüne veya görünürlüğe sahip değildir.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
-        <target state="translated">{0} metodu OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğundan, imzasını genel olmayacak şekilde değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
-        <target state="translated">{0} metodu OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğundan, imzasını 'System.Runtime.Serialization.StreamingContext' türünde tek bir parametre alacak şekilde değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
-        <target state="translated">{0} metodu OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğundan, dönüş türünü {1} yerine void (Visual Basic'te Sub) olarak değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
-        <target state="translated">{0} metodu OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğundan, statik (Visual Basic'te Shared) yerine bir örnek metoduna değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
-        <target state="translated">{0} metodu OnSerializing, OnSerialized, OnDeserializing ya da OnDeserialized ile işaretli olduğundan, erişilebilirliğini private olarak değiştirin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
-        <source>Implement serialization methods correctly</source>
-        <target state="translated">Serileştirme yöntemlerini doğru uygulayın</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
@@ -2273,6 +2198,11 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <target state="translated">System.String.Format’a geçirilen biçim bağımsız değişkeni, her nesne bağımsız değişkenine karşılık gelen bir biçim öğesi içermiyor ve tersi için de aynısı geçerli.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
+        <source>The format argument is not a valid format string</source>
+        <target state="new">The format argument is not a valid format string</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">Biçimlendirme yöntemlerine doğru bağımsız değişkenleri sağlayın</target>
@@ -2281,26 +2211,6 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsTitle">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">Biçimlendirme yöntemlerine doğru bağımsız değişkenleri sağlayın</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsDescription">
-        <source>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</source>
-        <target state="translated">Tür, System.Runtime.Serialization.OptionalFieldAttribute özniteliği kullanılarak işaretlenen bir alana sahip ve tür, seri durumdan çıkarma olayı işleme metotlarını sağlamıyor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
-        <target state="translated">{0} türüne 'private void OnDeserialized(StreamingContext)' metodunu ekleyin ve System.Runtime.Serialization.OnDeserializedAttribute ile özniteliğini belirleyin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
-        <target state="translated">{0} türüne 'private void OnDeserializing(StreamingContext)' metodunu ekleyin ve System.Runtime.Serialization.OnDeserializingAttribute ile özniteliğini belirleyin</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
-        <source>Provide deserialization methods for optional fields</source>
-        <target state="translated">İsteğe bağlı yöntemler için serileştirme kaldırma yöntemler sağlayın</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
@@ -2334,48 +2244,48 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</source>
-        <target state="translated">Bir tahsise yol açtıkları için 'CompareTo' kullanırken büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'ToLower', 'ToUpper', 'ToLowerInvariant' ve 'ToUpperInvariant' çağırmaktan kaçının. Bunun yerine, büyük/küçük harfe duyarsız karşılaştırmalar yapmak için 'StringComparer' kullanın.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">Bir tahsise yol açtıkları için 'CompareTo' kullanırken büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'ToLower', 'ToUpper', 'ToLowerInvariant' ve 'ToUpperInvariant' çağırmaktan kaçının. Bunun yerine, büyük/küçük harfe duyarsız karşılaştırmalar yapmak için 'StringComparer' kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
-        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison</source>
-        <target state="translated">Büyük/küçük harfe duyarlı olmayan bir karşılaştırma yapmak için 'StringComparer' kullanmayı tercih edin</target>
+        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">Büyük/küçük harfe duyarlı olmayan bir karşılaştırma yapmak için 'StringComparer' kullanmayı tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="translated">'string.{0}(string, StringComparison)' aşırı yüklemesini kullan</target>
+        <target state="needs-review-translation">'string.{0}(string, StringComparison)' aşırı yüklemesini kullan</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
-        <target state="translated">Bir ayırmaya yol açtıkları için büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'ToLower', 'ToUpper', 'ToLowerInvariant' ve 'ToUpperInvariant' aramaktan kaçının. Bunun yerine, büyük/küçük harfe duyarsız karşılaştırmalar gerçekleştirmek için bir 'StringComparison' enum değeri alan 'Contains', 'IndexOf' ve 'StartsWith' yöntem aşırı yüklemelerini aramayı tercih edin.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
-        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</source>
-        <target state="translated">Büyük/küçük harfe duyarlı olmayan bir karşılaştırma gerçekleştirmek için bir 'StringComparison' enum değeri alan '{0}' dize karşılaştırma yöntemi aşırı yüklemesini tercih edin</target>
+        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
-        <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="translated">Büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'StringComparison' metodu aşırı yüklemelerini tercih edin</target>
+        <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
+        <target state="needs-review-translation">Büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'StringComparison' metodu aşırı yüklemelerini tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="new">Use 'string.Equals(string, StringComparison)'</target>
+        <target state="needs-review-translation">'string.Equals(string, StringComparison)' parametresini kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
-        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">Bir ayrıma işlemine yol açtıkları için 'string.ToLower() == string.ToLower()' parametresinde olduğu gibi büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'ToLower', 'ToUpper', 'ToLowerInvariant' ve 'ToUpperInvariant' parametrelerini çağırmaktan kaçının. Bunun yerine, büyük/küçük harfe duyarsız karşılaştırmalar yapmak için 'string.Equals(string, StringComparison)' parametresini kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
-        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
-        <target state="new">Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</target>
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">Büyük/küçük harfe duyarsız karşılaştırma yapmak için 'string.Equals(string, StringComparison)' parametresini kullanmayı tercih edin</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3078,6 +2988,26 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <target state="translated">Asimetrik şifreleme algoritması {0} anahtar boyutu 2048'den az. Bunun yerine en az 2048 anahtar boyutuna, ECDH veya ECDSA algoritmasına sahip bir RSA'ya geçiş yapın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSearchValuesCodeFixTitle">
+        <source>Use 'SearchValues'</source>
+        <target state="new">Use 'SearchValues'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesDescription">
+        <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
+        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesMessage">
+        <source>Use a cached 'SearchValues' instance for improved searching performance</source>
+        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesTitle">
+        <source>Use a cached 'SearchValues' instance</source>
+        <target state="new">Use a cached 'SearchValues' instance</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">
         <source>Applications available over HTTPS must use secure cookies.</source>
         <target state="translated">HTTPS üzerinden kullanılabilen uygulamalar güvenli tanımlama bilgileri kullanmalıdır.</target>
@@ -3195,17 +3125,17 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersDescription">
         <source>The char overload is a better performing overload than a string with a single char.</source>
-        <target state="new">The char overload is a better performing overload than a string with a single char.</target>
+        <target state="translated">Karakter aşırı yüklemesi, tek karakterli bir dizeden daha iyi performans gösteren bir aşırı yüklemedir.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersMessage">
         <source>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</source>
-        <target state="new">Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</target>
+        <target state="translated">Tek karakterli bir dizeniz varsa 'string.{0}(char)' instead of 'string.{0}(string)' parametresini kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersTitle">
         <source>Use char overload</source>
-        <target state="new">Use char overload</target>
+        <target state="translated">Karakter aşırı yüklemesini kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperDescription">

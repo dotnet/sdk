@@ -62,8 +62,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeSymbol(SymbolAnalysisContext context, INamedTypeSymbol equatableType)
         {
-            if (context.Symbol is not INamedTypeSymbol namedType
-                || (namedType.TypeKind != TypeKind.Struct && namedType.TypeKind != TypeKind.Class)
+            var namedType = (INamedTypeSymbol)context.Symbol;
+            if ((namedType.TypeKind != TypeKind.Struct && namedType.TypeKind != TypeKind.Class)
                 || (namedType.TypeKind == TypeKind.Struct && namedType.IsRefLikeType))
             {
                 return;

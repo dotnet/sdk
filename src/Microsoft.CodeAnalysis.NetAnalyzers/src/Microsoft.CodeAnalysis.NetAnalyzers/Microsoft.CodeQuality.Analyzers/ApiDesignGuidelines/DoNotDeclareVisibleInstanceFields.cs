@@ -54,7 +54,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     // Do not report on types marked with StructLayoutAttribute
                     // See https://github.com/dotnet/roslyn-analyzers/issues/4149
-                    if (field.ContainingType.HasAttribute(structLayoutAttributeType))
+                    if (field.ContainingType.HasAnyAttribute(structLayoutAttributeType))
                     {
                         return;
                     }

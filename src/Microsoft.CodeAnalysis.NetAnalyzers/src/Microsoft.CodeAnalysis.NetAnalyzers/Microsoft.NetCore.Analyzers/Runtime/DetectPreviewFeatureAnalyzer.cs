@@ -234,7 +234,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                if (context.Compilation.Assembly.HasAttribute(previewFeaturesAttribute))
+                if (context.Compilation.Assembly.HasAnyAttribute(previewFeaturesAttribute))
                 {
                     // This assembly has enabled preview attributes.
                     return;

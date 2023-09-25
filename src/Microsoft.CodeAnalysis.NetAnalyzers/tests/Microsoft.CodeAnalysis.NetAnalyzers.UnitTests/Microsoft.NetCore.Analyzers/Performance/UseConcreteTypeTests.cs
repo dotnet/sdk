@@ -1367,6 +1367,24 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await TestCSAsync(Source);
         }
 
+        [Fact, WorkItem(6852, "https://github.com/dotnet/roslyn-analyzers/issues/6852")]
+        public static async Task ShouldNotCrashForInvocationsIntoMetadata()
+        {
+            const string Source = @"
+using System;
+
+class C
+{
+    private void M(ValueTuple<Action> vt)
+    {
+        vt.Item1();
+    }
+}
+                ";
+
+            await TestCSAsync(Source);
+        }
+
         private static async Task TestCSAsync(string source, params DiagnosticResult[] diagnosticResults)
         {
             var test = new VerifyCS.Test

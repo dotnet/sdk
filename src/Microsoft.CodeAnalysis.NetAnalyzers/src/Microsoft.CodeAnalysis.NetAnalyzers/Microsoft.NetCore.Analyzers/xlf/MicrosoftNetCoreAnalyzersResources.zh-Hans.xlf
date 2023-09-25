@@ -67,6 +67,21 @@
         <target state="translated">不要将常量数组作为参数</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
+        <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
+        <target state="translated">避免为每个序列化操作创建新的“JsonSerializerOptions”实例。请改为缓存和重用实例。仅使用“JsonSerializerOptions”实例可能会显著降低应用程序的性能。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsMessage">
+        <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</source>
+        <target state="translated">避免为每个序列化操作创建新的“JsonSerializerOptions”实例。请改为缓存和重用实例。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsTitle">
+        <source>Cache and reuse 'JsonSerializerOptions' instances</source>
+        <target state="translated">缓存并重用“JsonSerializerOptions”实例</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">"StringBuilder" 的封送处理总是会创建一个本机缓冲区副本，这导致一个封送处理操作出现多次分配。</target>
@@ -1318,99 +1333,9 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
         <target state="translated">使用正确的类型参数</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyDescription">
-        <source>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</source>
-        <target state="translated">若要修复此规则的违规行为，将 GetObjectData 方法设置为可见并可重写，并确保所有实例字段都包含在序列化进程中或使用 NonSerializedAttribute 特性显式标记所有实例字段。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}</source>
-        <target state="translated">向类型 {0} 中添加对 GetObjectData 的实现</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable</source>
-        <target state="translated">将 {0}.GetObjectData 设置为虚拟的和可重写的</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
-        <target state="translated">提高 {0}.GetObjectData 的可访问性以便它对于派生类型可见</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyTitle">
-        <source>Implement ISerializable correctly</source>
-        <target state="translated">正确实现 ISerializable</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
         <source>Implement inherited interfaces</source>
         <target state="translated">实现继承的接口</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
-        <source>Implement Serialization constructor</source>
-        <target state="translated">实现序列化构造函数</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsDescription">
-        <source>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</source>
-        <target state="translated">若要修复此规则的违规行为，请实现序列化构造函数。对于密封类，请将构造函数设为专用；否则，使它处于受保护状态。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageCreateMagicConstructor">
-        <source>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</source>
-        <target state="translated">使用以下签名向 {0} 添加构造函数: “protected {0} (SerializationInfo info, StreamingContext context)”。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate">
-        <source>Declare the serialization constructor of {0}, a sealed type, as private.</source>
-        <target state="translated">将密封类型 {0} 的序列化构造函数声明为 private。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily">
-        <source>Declare the serialization constructor of {0}, an unsealed type, as protected.</source>
-        <target state="translated">将非密封类型 {0} 的序列化构造函数声明为 protected。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsTitle">
-        <source>Implement serialization constructors</source>
-        <target state="translated">实现序列化构造函数</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyDescription">
-        <source>A method that handles a serialization event does not have the correct signature, return type, or visibility.</source>
-        <target state="translated">处理序列化事件的方法没有正确的签名、返回类型或可见性。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
-        <target state="translated">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请更改它的签名，使它不再是泛型的</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
-        <target state="translated">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请更改它的签名，使它采用类型为“System.Runtime.Serialization.StreamingContext”的单个参数</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
-        <target state="translated">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请将它的返回类型从 {1} 改为 void (Visual Basic 中为 Sub)</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
-        <target state="translated">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请将它从 static (Visual Basic 中为 Shared)改为实例方法</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
-        <target state="translated">由于 {0} 标记有 OnSerializing、OnSerialized、OnDeserializing 或 OnDeserialized，因此请将它的可访问性改为 private</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
-        <source>Implement serialization methods correctly</source>
-        <target state="translated">正确实现序列化方法</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
@@ -2273,6 +2198,11 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
         <target state="translated">传递到 System.String.Format 的 format 参数不包含与各对象参数相对应的格式项，反之亦然。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
+        <source>The format argument is not a valid format string</source>
+        <target state="new">The format argument is not a valid format string</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">为格式化方法提供正确的参数</target>
@@ -2281,26 +2211,6 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsTitle">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">为格式化方法提供正确的参数</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsDescription">
-        <source>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</source>
-        <target state="translated">类型具有使用 System.Runtime.Serialization.OptionalFieldAttribute 特性标记的字段，并且该类型不提供反序列化事件处理方法。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
-        <target state="translated">向类型 {0} 中添加“private void OnDeserialized(StreamingContext)”方法并使其具有 System.Runtime.Serialization.OnDeserializedAttribute 特性</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
-        <target state="translated">向类型 {0} 中添加“private void OnDeserializing(StreamingContext)”方法并使其具有 System.Runtime.Serialization.OnDeserializingAttribute 特性</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
-        <source>Provide deserialization methods for optional fields</source>
-        <target state="translated">为可选字段提供反序列化方法</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
@@ -2334,48 +2244,48 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</source>
-        <target state="translated">避免在使用 "CompareTo" 时调用"ToLower"、"ToUpper"、"ToLowerInvariant" 和 "ToUpperInvariant" 来执行不区分大小写的字符串比较，因为它们会导致分配。请使用 "StringComparer" 执行不区分大小写的比较。</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">避免在使用 "CompareTo" 时调用"ToLower"、"ToUpper"、"ToLowerInvariant" 和 "ToUpperInvariant" 来执行不区分大小写的字符串比较，因为它们会导致分配。请使用 "StringComparer" 执行不区分大小写的比较。</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
-        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison</source>
-        <target state="translated">首选使用“StringComparer”执行不区分大小写的比较</target>
+        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">首选使用“StringComparer”执行不区分大小写的比较</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="translated">使用 "string.{0}(string, StringComparison)" 重载</target>
+        <target state="needs-review-translation">使用 "string.{0}(string, StringComparison)" 重载</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
-        <target state="translated">避免调用 "ToLower"、"ToUpper"、"ToLowerInvariant" 和 "ToUpperInvariant" 来执行不区分大小写的字符串比较，因为它们会导致分配。相反，首选调用采用 "StringComparison" 枚举值的 "Contains"、"IndexOf" 和 "StartsWith" 的方法重载来执行不区分大小写的比较。</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
-        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</source>
-        <target state="translated">首选采用 "StringComparison" 枚举值来执行不区分大小写的比较的 "{0}" 的字符串比较方法重载</target>
+        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
-        <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="translated">首选 "StringComparison" 方法重载来执行不区分大小写的字符串比较</target>
+        <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
+        <target state="needs-review-translation">首选 "StringComparison" 方法重载来执行不区分大小写的字符串比较</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="translated">使用 "string.Equals(string, StringComparison)"</target>
+        <target state="needs-review-translation">使用 "string.Equals(string, StringComparison)"</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
-        <target state="translated">就像在 "string.ToLower() == string.ToLower()" 中那样，避免调用 "ToLower"、"ToUpper"、"ToLowerInvariant" 和 "ToUpperInvariant" 来执行不区分大小写的字符串比较，因为它们会导致分配。请使用 "string.Equals(string, StringComparison)" 执行不区分大小写的比较。</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">就像在 "string.ToLower() == string.ToLower()" 中那样，避免调用 "ToLower"、"ToUpper"、"ToLowerInvariant" 和 "ToUpperInvariant" 来执行不区分大小写的字符串比较，因为它们会导致分配。请使用 "string.Equals(string, StringComparison)" 执行不区分大小写的比较。</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
-        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
-        <target state="translated">首选使用 "string.Equals(string, StringComparison)" 来执行不区分大小写的比较</target>
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">首选使用 "string.Equals(string, StringComparison)" 来执行不区分大小写的比较</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3076,6 +2986,26 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
       <trans-unit id="UseRSAWithSufficientKeySizeMessage">
         <source>Asymmetric encryption algorithm {0}'s key size is less than 2048. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
         <target state="translated">非对称加密算法 {0} 的密钥大小小于 2048 位。请转而切换到至少具有 2048 位密钥大小的 RSA、ECDH 或者 ECDSA 算法。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesCodeFixTitle">
+        <source>Use 'SearchValues'</source>
+        <target state="new">Use 'SearchValues'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesDescription">
+        <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
+        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesMessage">
+        <source>Use a cached 'SearchValues' instance for improved searching performance</source>
+        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesTitle">
+        <source>Use a cached 'SearchValues' instance</source>
+        <target state="new">Use a cached 'SearchValues' instance</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">

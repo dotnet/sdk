@@ -186,11 +186,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 #region "IFormatProviderAlternateStringRule Only"
                 if (stringFormatMemberWithIFormatProviderStringAndParamsObjectParameter != null &&
-                    !oaContext.Options.IsConfiguredToSkipAnalysis(IFormatProviderAlternateStringRule, targetMethod, oaContext.ContainingSymbol, oaContext.Compilation) &&
                     (targetMethod.Equals(stringFormatMemberWithStringAndObjectParameter) ||
                      targetMethod.Equals(stringFormatMemberWithStringObjectAndObjectParameter) ||
                      targetMethod.Equals(stringFormatMemberWithStringObjectObjectAndObjectParameter) ||
-                     targetMethod.Equals(stringFormatMemberWithStringAndParamsObjectParameter)))
+                     targetMethod.Equals(stringFormatMemberWithStringAndParamsObjectParameter)) &&
+                    !oaContext.Options.IsConfiguredToSkipAnalysis(IFormatProviderAlternateStringRule, targetMethod, oaContext.ContainingSymbol, oaContext.Compilation))
                 {
                     // Sample message for IFormatProviderAlternateStringRule: Because the behavior of string.Format(string, object) could vary based on the current user's locale settings,
                     // replace this call in IFormatProviderStringTest.M() with a call to string.Format(IFormatProvider, string, params object[]).
@@ -266,19 +266,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 if (!oaContext.Options.IsConfiguredToSkipAnalysis(uiCultureRule, targetMethod, oaContext.ContainingSymbol, oaContext.Compilation))
                 {
-                    IEnumerable<int> IformatProviderParameterIndices = GetIndexesOfParameterType(targetMethod, iformatProviderType);
-                    foreach (var index in IformatProviderParameterIndices)
+                    foreach (var argument in invocationExpression.Arguments)
                     {
-                        var argument = invocationExpression.Arguments[index];
-
-                        if (argument != null && currentUICultureProperty != null &&
-                            installedUICultureProperty != null && currentThreadCurrentUICultureProperty != null)
+                        if (!iformatProviderType.Equals(argument.Parameter?.Type))
                         {
-                            var semanticModel = argument.SemanticModel!;
+                            continue;
+                        }
 
-                            var symbol = semanticModel.GetSymbolInfo(argument.Value.Syntax, oaContext.CancellationToken).Symbol;
-
-                            if (symbol != null &&
+                        if (currentUICultureProperty != null && installedUICultureProperty != null && currentThreadCurrentUICultureProperty != null)
+                        {
+                            if (argument.Value.WalkDownConversion() is IPropertyReferenceOperation { Property: { } symbol } &&
                                 (symbol.Equals(currentUICultureProperty) ||
                                     symbol.Equals(installedUICultureProperty) ||
                                     symbol.Equals(currentThreadCurrentUICultureProperty) ||
@@ -322,14 +319,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             static IEnumerable<IMethodSymbol> GetToStringMethods(INamedTypeSymbol namedTypeSymbol)
                 => namedTypeSymbol.GetMembers("ToString").OfType<IMethodSymbol>().WhereNotNull();
-        }
-
-        private static IEnumerable<int> GetIndexesOfParameterType(IMethodSymbol targetMethod, INamedTypeSymbol formatProviderType)
-        {
-            return targetMethod.Parameters
-                .Select((Parameter, Index) => (Parameter, Index))
-                .Where(x => x.Parameter.Type.Equals(formatProviderType))
-                .Select(x => x.Index);
         }
 
         private static ParameterInfo GetParameterInfo(INamedTypeSymbol type, bool isArray = false, int arrayRank = 0, bool isParams = false)

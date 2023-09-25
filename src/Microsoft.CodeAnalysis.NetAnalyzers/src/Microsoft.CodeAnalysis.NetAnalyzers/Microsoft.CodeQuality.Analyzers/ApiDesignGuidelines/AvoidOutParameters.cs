@@ -79,7 +79,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             private bool IsOutParameter(IParameterSymbol parameterSymbol) =>
                 parameterSymbol.RefKind == RefKind.Out ||
                 // Handle VB.NET special case for out parameters
-                (parameterSymbol.RefKind == RefKind.Ref && parameterSymbol.HasAttribute(outAttributeSymbol));
+                (parameterSymbol.RefKind == RefKind.Ref && parameterSymbol.HasAnyAttribute(outAttributeSymbol));
 
             private bool IsTryPatternMethod(IMethodSymbol methodSymbol, int numberOfOutParams) =>
                 methodSymbol.Name.StartsWith("Try", StringComparison.Ordinal) &&

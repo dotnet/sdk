@@ -124,9 +124,9 @@ namespace Microsoft.NetCore.Analyzers.Security
                         }
 
                         if (point.IsInSource() &&
-                            point.HasAttribute(serializableAttributeTypeSymbol))
+                            point.HasAnyAttribute(serializableAttributeTypeSymbol))
                         {
-                            var fieldPoints = point.GetMembers().OfType<IFieldSymbol>().Where(s => !s.HasAttribute(nonSerializedAttribute) &&
+                            var fieldPoints = point.GetMembers().OfType<IFieldSymbol>().Where(s => !s.HasAnyAttribute(nonSerializedAttribute) &&
                                                                                                         !s.IsStatic);
 
                             foreach (var fieldPoint in fieldPoints)

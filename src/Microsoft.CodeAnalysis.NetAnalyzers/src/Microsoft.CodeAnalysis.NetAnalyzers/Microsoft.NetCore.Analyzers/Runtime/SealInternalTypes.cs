@@ -43,7 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             var candidateTypes = PooledConcurrentSet<INamedTypeSymbol>.GetInstance(SymbolEqualityComparer.Default);
             var baseTypes = PooledConcurrentSet<INamedTypeSymbol>.GetInstance(SymbolEqualityComparer.Default);
-            var hasInternalsVisibleTo = context.Compilation.Assembly.HasAttribute(
+            var hasInternalsVisibleTo = context.Compilation.Assembly.HasAnyAttribute(
                 context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesInternalsVisibleToAttribute));
 
             context.RegisterSymbolAction(context =>
@@ -55,7 +55,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     !type.IsStatic &&
                     !type.IsSealed &&
                     !type.IsExternallyVisible() &&
-                    !type.HasAttribute(comImportAttributeType) &&
+                    !type.HasAnyAttribute(comImportAttributeType) &&
                     !type.IsTopLevelStatementsEntryPointType())
                 {
                     candidateTypes.Add(type);

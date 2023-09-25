@@ -5,7 +5,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.CSharp.NetAnalyzers",
-        "version": "8.0.0",
+        "version": "9.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -399,6 +399,25 @@
             ]
           }
         },
+        "CA1870": {
+          "id": "CA1870",
+          "shortDescription": "Use a cached 'SearchValues' instance",
+          "fullDescription": "Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpUseSearchValuesAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2007": {
           "id": "CA2007",
           "shortDescription": "Consider calling ConfigureAwait on the awaited task",
@@ -652,7 +671,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.NetAnalyzers",
-        "version": "8.0.0",
+        "version": "9.0.0",
         "language": "en-US"
       },
       "rules": {
@@ -2106,6 +2125,26 @@
             ]
           }
         },
+        "CA1514": {
+          "id": "CA1514",
+          "shortDescription": "Avoid redundant length argument",
+          "fullDescription": "An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1514",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidLengthCalculationWhenSlicingToEndAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1700": {
           "id": "CA1700",
           "shortDescription": "Do not name enum values 'Reserved'",
@@ -3120,7 +3159,7 @@
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
-            "typeName": "DoNotGuardDictionaryRemoveByContainsKey",
+            "typeName": "DoNotGuardCallAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -3233,8 +3272,8 @@
         },
         "CA1862": {
           "id": "CA1862",
-          "shortDescription": "Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons",
-          "fullDescription": "Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.",
+          "shortDescription": "Use the 'StringComparison' method overloads to perform case-insensitive string comparisons",
+          "fullDescription": "Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.",
           "defaultLevel": "note",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862",
           "properties": {
@@ -3300,7 +3339,27 @@
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
-            "typeName": "DoNotGuardSetAddOrRemoveByContains",
+            "typeName": "DoNotGuardCallAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1869": {
+          "id": "CA1869",
+          "shortDescription": "Cache and reuse 'JsonSerializerOptions' instances",
+          "fullDescription": "Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1869",
+          "properties": {
+            "category": "Performance",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidSingleUseOfLocalJsonSerializerOptions",
             "languages": [
               "C#",
               "Visual Basic"
@@ -3922,27 +3981,6 @@
             "category": "Usage",
             "isEnabledByDefault": false,
             "typeName": "CollectionPropertiesShouldBeReadOnlyAnalyzer",
-            "languages": [
-              "C#",
-              "Visual Basic"
-            ],
-            "tags": [
-              "PortedFromFxCop",
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2229": {
-          "id": "CA2229",
-          "shortDescription": "Implement serialization constructors",
-          "fullDescription": "To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.",
-          "defaultLevel": "hidden",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2229",
-          "properties": {
-            "category": "Usage",
-            "isEnabledByDefault": true,
-            "typeName": "SerializationRulesDiagnosticAnalyzer",
             "languages": [
               "C#",
               "Visual Basic"
@@ -6168,7 +6206,7 @@
     {
       "tool": {
         "name": "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers",
-        "version": "8.0.0",
+        "version": "9.0.0",
         "language": "en-US"
       },
       "rules": {

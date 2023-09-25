@@ -67,6 +67,21 @@
         <target state="translated">引数として定数配列を使用しない</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
+        <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
+        <target state="translated">シリアル化操作ごとに新しい 'JsonSerializerOptions' インスタンスを作成しないでください。代わりにインスタンスをキャッシュして再利用します。'JsonSerializerOptions' インスタンスの単独使用では、アプリケーションのパフォーマンスが大幅に低下する可能性があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsMessage">
+        <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</source>
+        <target state="translated">シリアル化操作ごとに新しい 'JsonSerializerOptions' インスタンスを作成しないでください。代わりにインスタンスをキャッシュして再利用します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsTitle">
+        <source>Cache and reuse 'JsonSerializerOptions' instances</source>
+        <target state="translated">'JsonSerializerOptions' インスタンスをキャッシュして再利用する</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">'StringBuilder' をマーシャリングすると、ネイティブ バッファーのコピーが常に作成され、1 回のマーシャリング操作に対して複数の割り当てが発生します。</target>
@@ -765,17 +780,17 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsDescription">
         <source>Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</source>
-        <target state="new">Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.</target>
+        <target state="translated">一連の 'Contains(item)' を含む 'Add(item)' または 'Remove(item)' を保護しないでください。前の 2 つは、アイテムが存在するかどうかを既に確認しており、アイテムが追加または削除された場合に返されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsMessage">
         <source>Do not guard '{0}' with '{1}'</source>
-        <target state="new">Do not guard '{0}' with '{1}'</target>
+        <target state="translated">'{1}' を含む '{0}' を保護しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotGuardSetAddOrRemoveByContainsTitle">
         <source>Unnecessary call to 'Contains(item)'</source>
-        <target state="new">Unnecessary call to 'Contains(item)'</target>
+        <target state="translated">'Contains(item)' に対する不要な呼び出し</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotHardCodeCertificate">
@@ -1318,99 +1333,9 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">正しい種類のパラメーターを使用する</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyDescription">
-        <source>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</source>
-        <target state="translated">このルールの違反を修正するには、GetObjectData メソッドを参照可能およびオーバーライド可能にして、すべてのインスタンス フィールドがシリアル化プロセスに含まれるか、NonSerializedAttribute 属性を使用して明示的にマークされるようにしてください。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}</source>
-        <target state="translated">GetObjectData の実装を型 {0} に追加してください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable</source>
-        <target state="translated">{0}.GetObjectData を仮想およびオーバーライド可能にしてください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
-        <target state="translated">派生型に公開するため、{0}.GetObjectData のアクセシビリティを上げてください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyTitle">
-        <source>Implement ISerializable correctly</source>
-        <target state="translated">ISerializable を正しく実装します</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
         <source>Implement inherited interfaces</source>
         <target state="translated">継承されたインターフェイスを実装する</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
-        <source>Implement Serialization constructor</source>
-        <target state="translated">シリアル化コンストラクターを実装する</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsDescription">
-        <source>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</source>
-        <target state="translated">このルールの違反を修正するには、シリアル化コンストラクターを実装します。シール クラスの場合はコンストラクターを private にします。そうでない場合、protected にします。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageCreateMagicConstructor">
-        <source>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</source>
-        <target state="translated">次のシグネチャと共にコンストラクターを {0} に追加します: 'protected {0}(SerializationInfo 情報、StreamingContext コンテキスト)'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate">
-        <source>Declare the serialization constructor of {0}, a sealed type, as private.</source>
-        <target state="translated">シールド型である {0} のシリアル化コンストラクターを private として宣言します。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily">
-        <source>Declare the serialization constructor of {0}, an unsealed type, as protected.</source>
-        <target state="translated">アンシールド型である {0} のシリアル化コンストラクターを protected として宣言します。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsTitle">
-        <source>Implement serialization constructors</source>
-        <target state="translated">シリアル化コンストラクターを実装します</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyDescription">
-        <source>A method that handles a serialization event does not have the correct signature, return type, or visibility.</source>
-        <target state="translated">シリアル化イベントを処理するメソッドには、正しいシグネチャ、戻り値の型、または可視性がありません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
-        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、ジェネリックにならないようにシグネチャを変更してください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
-        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、'System.Runtime.Serialization.StreamingContext' という型の単一のパラメーターを受け取るようにシグネチャを変更してください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
-        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、戻り値の型を {1} から void (Visual Basic では Sub) に変更してください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
-        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、静的 (Visual Basic では共有) からインスタンス メソッドに変更してください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
-        <target state="translated">{0} は OnSerializing、OnSerialized、OnDeserializing、または OnDeserialized に設定されているため、アクセシビリティをプライベートに変更してください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
-        <source>Implement serialization methods correctly</source>
-        <target state="translated">シリアル化メソッドを正しく実装します</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
@@ -2273,6 +2198,11 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">System.String.Format に渡される書式引数には、各オブジェクト引数に対応する書式項目が含まれていないか、各書式項目に対応するオブジェクト引数が含まれていません。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
+        <source>The format argument is not a valid format string</source>
+        <target state="new">The format argument is not a valid format string</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">書式設定メソッドに正しい引数を指定します</target>
@@ -2281,26 +2211,6 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsTitle">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">書式設定メソッドに正しい引数を指定します</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsDescription">
-        <source>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</source>
-        <target state="translated">型には System.Runtime.Serialization.OptionalFieldAttribute 属性を使用してマークされているフィールドがあり、型は逆シリアル化イベントの処理メソッドを提供しません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
-        <target state="translated">'private void OnDeserialized(StreamingContext)' メソッドを型 {0} に追加し、System.Runtime.Serialization.OnDeserializedAttribute に属性指定してください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
-        <target state="translated">'private void OnDeserializing(StreamingContext)' メソッドを型 {0} に追加し、System.Runtime.Serialization.OnDeserializingAttribute に属性指定してください</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
-        <source>Provide deserialization methods for optional fields</source>
-        <target state="translated">省略可能なフィールドに、逆シリアル化メソッドを指定します</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
@@ -2334,48 +2244,48 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</source>
-        <target state="translated">'CompareTo' を使用するときに大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。これは、割り当てにつながるためです。代わりに、'StringComparer' を使用して、大文字と小文字を区別しない比較を実行してください。</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">'CompareTo' を使用するときに大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。これは、割り当てにつながるためです。代わりに、'StringComparer' を使用して、大文字と小文字を区別しない比較を実行してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
-        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison</source>
-        <target state="translated">大文字と小文字を区別しない比較を実行するには、'StringComparer' を使用することをお勧めします</target>
+        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">大文字と小文字を区別しない比較を実行するには、'StringComparer' を使用することをお勧めします</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="translated">'string.{0}(string, StringComparison)' オーバーロードを使用してください</target>
+        <target state="needs-review-translation">'string.{0}(string, StringComparison)' オーバーロードを使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
-        <target state="translated">大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。これは、割り当てにつながるためです。代わりに、'StringComparison' 列挙型の値を取る 'Contains'、'IndexOf'、'StartsWith' のメソッド オーバーロードを呼び出して、大文字と小文字を区別しない比較を実行することをお勧めします。</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
-        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</source>
-        <target state="translated">大文字と小文字を区別しない比較を実行するために、'StringComparison' 列挙値を取る '{0}' の文字列比較メソッドオーバーロードをお勧めします</target>
+        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
-        <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="translated">大文字と小文字を区別しない文字列比較を実行するには、'StringComparison' メソッド オーバーロードをお勧めします</target>
+        <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
+        <target state="needs-review-translation">大文字と小文字を区別しない文字列比較を実行するには、'StringComparison' メソッド オーバーロードをお勧めします</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="new">Use 'string.Equals(string, StringComparison)'</target>
+        <target state="needs-review-translation">'string.Equals(string, StringComparison)' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
-        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">'string.ToLower() == string.ToLower()' で大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。これは、割り当てにつながるためです。代わりに、string.Equals(string, StringComparison)' を使用して、大文字と小文字を区別しない比較を実行してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
-        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
-        <target state="new">Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</target>
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">大文字と小文字を区別しない比較を実行するには、'string.Equals(string, StringComparison)' の使用を優先します。</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3078,6 +2988,26 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">非対称暗号化アルゴリズム {0} のキー サイズが 2048 未満です。キー サイズが少なくとも 2048 の RSA、ECDH、または ECDSA アルゴリズムに切り替えてください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UseSearchValuesCodeFixTitle">
+        <source>Use 'SearchValues'</source>
+        <target state="new">Use 'SearchValues'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesDescription">
+        <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
+        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesMessage">
+        <source>Use a cached 'SearchValues' instance for improved searching performance</source>
+        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesTitle">
+        <source>Use a cached 'SearchValues' instance</source>
+        <target state="new">Use a cached 'SearchValues' instance</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">
         <source>Applications available over HTTPS must use secure cookies.</source>
         <target state="translated">HTTPS 経由で使用できるアプリケーションは、セキュリティで保護された Cookie を使用する必要があります。</target>
@@ -3195,17 +3125,17 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersDescription">
         <source>The char overload is a better performing overload than a string with a single char.</source>
-        <target state="new">The char overload is a better performing overload than a string with a single char.</target>
+        <target state="translated">char オーバーロードは、1 文字の文字列よりもパフォーマンスの高いオーバーロードです。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersMessage">
         <source>Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</source>
-        <target state="new">Use 'string.{0}(char)' instead of 'string.{0}(string)' when you have a string with a single char</target>
+        <target state="translated">1 文字の文字列がある場合は、'string.{0}(string)' ではなく 'string.{0}(char)' を使用します</target>
         <note />
       </trans-unit>
       <trans-unit id="UseStringMethodCharOverloadWithSingleCharactersTitle">
         <source>Use char overload</source>
-        <target state="new">Use char overload</target>
+        <target state="translated">char オーバーロードを使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseThrowHelperDescription">

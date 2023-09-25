@@ -67,6 +67,21 @@
         <target state="translated">Избегайте использования константных массивов в качестве аргументов</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
+        <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
+        <target state="translated">Избегайте создания нового экземпляра "JsonSerializerOptions" для каждой операции сериализации. Выполняйте кэширование и повторно используйте экземпляры. Однократное использование экземпляров "JsonSerializerOptions" может значительно снизить производительность приложения.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsMessage">
+        <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</source>
+        <target state="translated">Избегайте создания нового экземпляра "JsonSerializerOptions" для каждой операции сериализации. Выполняйте кэширование и повторно используйте экземпляры.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsTitle">
+        <source>Cache and reuse 'JsonSerializerOptions' instances</source>
+        <target state="translated">Кэширование и повторное использование экземпляров "JsonSerializerOptions"</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">При маршалировании "StringBuilder" всегда создается собственная копия буфера, что приводит к множественным выделениям для одной операции маршалирования.</target>
@@ -1318,99 +1333,9 @@ Widening and user defined conversions are not supported with generic types.</sou
         <target state="translated">Используйте правильный параметр типа</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyDescription">
-        <source>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</source>
-        <target state="translated">Чтобы устранить нарушение этого правила, сделайте метод GetObjectData видимым и переопределяемым и убедитесь, что все поля экземпляра включены в процесс сериализации или явно помечены атрибутом NonSerializedAttribute.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}</source>
-        <target state="translated">Добавьте реализацию GetObjectData к типу {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable</source>
-        <target state="translated">Сделайте {0}.GetObjectData виртуальным и переопределяемым.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
-        <target state="translated">Увеличьте уровень доступности {0}.GetObjectData, чтобы он был видим для производных типов.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyTitle">
-        <source>Implement ISerializable correctly</source>
-        <target state="translated">Правильно реализуйте ISerializable</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
         <source>Implement inherited interfaces</source>
         <target state="translated">Реализация унаследованных интерфейсов</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
-        <source>Implement Serialization constructor</source>
-        <target state="translated">Реализовать конструктор сериализации</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsDescription">
-        <source>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</source>
-        <target state="translated">Чтобы устранить нарушение этого правила, реализуйте конструктор сериализации. Для запечатанного класса сделайте конструктор закрытым; в противном случае сделайте его защищенным.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageCreateMagicConstructor">
-        <source>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</source>
-        <target state="translated">Добавьте конструктор к {0} со следующей сигнатурой: "protected {0}(SerializationInfo info, StreamingContext context)".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate">
-        <source>Declare the serialization constructor of {0}, a sealed type, as private.</source>
-        <target state="translated">Объявите конструктор сериализации {0} запечатанного типа как частный.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily">
-        <source>Declare the serialization constructor of {0}, an unsealed type, as protected.</source>
-        <target state="translated">Объявите конструктор сериализации {0} незапечатанного типа как защищенный.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsTitle">
-        <source>Implement serialization constructors</source>
-        <target state="translated">Реализуйте конструкторы сериализации</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyDescription">
-        <source>A method that handles a serialization event does not have the correct signature, return type, or visibility.</source>
-        <target state="translated">У метода, обрабатывающего событие сериализации, нет правильной сигнатуры, типа возвращаемого значения или видимости.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
-        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, измените его сигнатуру так, чтобы он более не был универсальным.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
-        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, измените его сигнатуру так, чтобы он принимал единственный параметр типа "System.Runtime.Serialization.StreamingContext".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
-        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, замените тип его возвращаемого значения с {1} на void (Sub в Visual Basic).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
-        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, сделайте его не статическим методом (Shared в Visual Basic), а методом экземпляра.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
-        <target state="translated">Так как {0} помечен как OnSerializing, OnSerialized, OnDeserializing или OnDeserialized, замените его доступность частной.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
-        <source>Implement serialization methods correctly</source>
-        <target state="translated">Правильно реализуйте методы сериализации</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
@@ -2273,6 +2198,11 @@ Widening and user defined conversions are not supported with generic types.</sou
         <target state="translated">Передаваемый в System.String.Format аргумент формата не содержит элемент формата, соответствующий каждому из аргументов объекта, или наоборот.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
+        <source>The format argument is not a valid format string</source>
+        <target state="new">The format argument is not a valid format string</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">Задайте правильные аргументы для методов форматирования</target>
@@ -2281,26 +2211,6 @@ Widening and user defined conversions are not supported with generic types.</sou
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsTitle">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">Задайте правильные аргументы для методов форматирования</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsDescription">
-        <source>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</source>
-        <target state="translated">Тип имеет поле, помеченное атрибутом System.Runtime.Serialization.OptionalFieldAttribute, и не предоставляет методы для обработки событий десериализации.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
-        <target state="translated">Добавьте метод "private void OnDeserialized(StreamingContext)" к типу {0} и присвойте ему атрибут System.Runtime.Serialization.OnDeserializedAttribute.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
-        <target state="translated">Добавьте метод "private void OnDeserializing(StreamingContext)" к типу {0} и присвойте ему атрибут System.Runtime.Serialization.OnDeserializingAttribute.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
-        <source>Provide deserialization methods for optional fields</source>
-        <target state="translated">Обеспечьте наличие методов десериализации в необязательных полях</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
@@ -2334,48 +2244,48 @@ Widening and user defined conversions are not supported with generic types.</sou
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</source>
-        <target state="translated">Избегайте вызова ToLower, ToUpper, ToLowerInvariant и ToUpperInvariant для сравнения строк без учета регистра при использовании CompareTo, так как они приведут к выделению. Вместо этого используйте StringComparer для сравнения без учета регистра.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">Избегайте вызова ToLower, ToUpper, ToLowerInvariant и ToUpperInvariant для сравнения строк без учета регистра при использовании CompareTo, так как они приведут к выделению. Вместо этого используйте StringComparer для сравнения без учета регистра.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
-        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison</source>
-        <target state="translated">Используйте StringComparer для сравнения без учета регистра</target>
+        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">Используйте StringComparer для сравнения без учета регистра</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="translated">Используйте перегрузку "string.{0}(string, StringComparison)"</target>
+        <target state="needs-review-translation">Используйте перегрузку "string.{0}(string, StringComparison)"</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
-        <target state="translated">Избегайте вызова ToLower, ToUpper, ToLowerInvariant и ToUpperInvariant для сравнения строк без учета регистра, так как они приведут к выделению. Вместо этого вызывайте перегрузки методов Contains, IndexOf и StartsWith, которые принимают значение перечисления StringComparison для сравнения без учета регистра.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
-        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</source>
-        <target state="translated">Используйте перегрузку метода сравнения строк "{0}", которая принимает значение перечисления StringComparison для сравнения без учета регистра</target>
+        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
-        <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="translated">Используйте перегрузки метода StringComparison для сравнения строк без учета регистра</target>
+        <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
+        <target state="needs-review-translation">Используйте перегрузки метода StringComparison для сравнения строк без учета регистра</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="translated">Используйте "string.Equals(string, StringComparison)"</target>
+        <target state="needs-review-translation">Используйте "string.Equals(string, StringComparison)"</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
-        <target state="translated">Избегайте вызовов "ToLower", "ToUpper", "ToLowerInvariant" и "ToUpperInvariant" для выполнения сравнения строк без учета регистра, как в "string.ToLower() == string.ToLower()", так как они приводят к распределению. Вместо этого используйте "string.Equals(string, StringComparison)" для выполнения сравнений без учета регистра.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">Избегайте вызовов "ToLower", "ToUpper", "ToLowerInvariant" и "ToUpperInvariant" для выполнения сравнения строк без учета регистра, как в "string.ToLower() == string.ToLower()", так как они приводят к распределению. Вместо этого используйте "string.Equals(string, StringComparison)" для выполнения сравнений без учета регистра.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
-        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
-        <target state="translated">Предпочтительно использование "string.Equals(string, StringComparison)" для сравнения без чувствительностью к регистру</target>
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">Предпочтительно использование "string.Equals(string, StringComparison)" для сравнения без чувствительностью к регистру</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3076,6 +2986,26 @@ Widening and user defined conversions are not supported with generic types.</sou
       <trans-unit id="UseRSAWithSufficientKeySizeMessage">
         <source>Asymmetric encryption algorithm {0}'s key size is less than 2048. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
         <target state="translated">Размер ключа для алгоритма асимметричного шифрования {0} меньше 2048 бит. Перейдите на алгоритм RSA с размером ключа не менее 2048 бит или на алгоритмы ECDH или ECDSA.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesCodeFixTitle">
+        <source>Use 'SearchValues'</source>
+        <target state="new">Use 'SearchValues'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesDescription">
+        <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
+        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesMessage">
+        <source>Use a cached 'SearchValues' instance for improved searching performance</source>
+        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesTitle">
+        <source>Use a cached 'SearchValues' instance</source>
+        <target state="new">Use a cached 'SearchValues' instance</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">

@@ -6,11 +6,11 @@ using Test.Utilities;
 using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Performance.DoNotGuardSetAddOrRemoveByContains,
-    Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpDoNotGuardSetAddOrRemoveByContainsFixer>;
+    Microsoft.NetCore.Analyzers.Performance.DoNotGuardCallAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpDoNotGuardCallFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Performance.DoNotGuardSetAddOrRemoveByContains,
-    Microsoft.NetCore.VisualBasic.Analyzers.Performance.BasicDoNotGuardSetAddOrRemoveByContainsFixer>;
+    Microsoft.NetCore.Analyzers.Performance.DoNotGuardCallAnalyzer,
+    Microsoft.NetCore.VisualBasic.Analyzers.Performance.BasicDoNotGuardCallFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
@@ -45,7 +45,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if (![|MySet.Contains("Item")|])
+                        if (!{|CA1868:MySet.Contains("Item")|})
                             MySet.Add("Item");
                     }
                 }
@@ -80,7 +80,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ([|MySet.Contains("Item")|])
+                        if ({|CA1868:MySet.Contains("Item")|})
                             MySet.Remove("Item");
                     }
                 }
@@ -115,7 +115,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if (![|MySet.Contains("Item")|])
+                        if (!{|CA1868:MySet.Contains("Item")|})
                         {
                             MySet.Add("Item");
                         }
@@ -152,7 +152,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ([|MySet.Contains("Item")|])
+                        if ({|CA1868:MySet.Contains("Item")|})
                         {
                             MySet.Remove("Item");
                         }
@@ -189,7 +189,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if (![|MySet.Contains("Item")|])
+                        if (!{|CA1868:MySet.Contains("Item")|})
                             MySet.Add("Item");
                         else
                             throw new System.Exception("Item already exists");
@@ -227,7 +227,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ([|MySet.Contains("Item")|])
+                        if ({|CA1868:MySet.Contains("Item")|})
                             MySet.Remove("Item");
                         else
                             throw new System.Exception("Item doesn't exist");
@@ -265,7 +265,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ([|MySet.Contains("Item")|])
+                        if ({|CA1868:MySet.Contains("Item")|})
                             throw new System.Exception("Item already exists");
                         else
                             MySet.Add("Item");
@@ -303,7 +303,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if (![|MySet.Contains("Item")|])
+                        if (!{|CA1868:MySet.Contains("Item")|})
                             throw new System.Exception("Item doesn't exist");
                         else
                             MySet.Remove("Item");
@@ -341,7 +341,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if (![|MySet.Contains("Item")|])
+                        if (!{|CA1868:MySet.Contains("Item")|})
                         {
                             MySet.Add("Item");
                         }
@@ -385,7 +385,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ([|MySet.Contains("Item")|])
+                        if ({|CA1868:MySet.Contains("Item")|})
                         {
                             MySet.Remove("Item");
                         }
@@ -429,7 +429,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ([|MySet.Contains("Item")|])
+                        if ({|CA1868:MySet.Contains("Item")|})
                         {
                             throw new System.Exception("Item already exists");
                         }
@@ -473,7 +473,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if (![|MySet.Contains("Item")|])
+                        if (!{|CA1868:MySet.Contains("Item")|})
                         {
                             throw new System.Exception("Item doesn't exist");
                         }
@@ -517,7 +517,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if (![|MySet.Contains("Item")|])
+                        if (!{|CA1868:MySet.Contains("Item")|})
                         {
                             MySet.Add("Item");
                             System.Console.WriteLine();
@@ -541,7 +541,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ([|MySet.Contains("Item")|])
+                        if ({|CA1868:MySet.Contains("Item")|})
                         {
                             MySet.Remove("Item");
                             System.Console.WriteLine();
@@ -565,7 +565,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ([|MySet.Contains("Item")|])
+                        if ({|CA1868:MySet.Contains("Item")|})
                         {
                             throw new System.Exception("Item already exists");
                         }
@@ -593,7 +593,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if (![|MySet.Contains("Item")|])
+                        if (!{|CA1868:MySet.Contains("Item")|})
                         {
                             throw new System.Exception("Item doesn't exist");
                         }
@@ -621,7 +621,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if (![|MySet.Contains("Item")|])
+                        if (!{|CA1868:MySet.Contains("Item")|})
                         {
                             bool result = MySet.Add("Item");
                         }
@@ -644,7 +644,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                 void M()
                 {
-                    if ([|MySet.Contains("Item")|])
+                    if ({|CA1868:MySet.Contains("Item")|})
                     {
                         bool result = MySet.Remove("Item");
                     }
@@ -667,7 +667,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ([|MySet.Contains("Item")|])
+                        if ({|CA1868:MySet.Contains("Item")|})
                         {
                             throw new System.Exception("Item already exists");
                         }
@@ -694,7 +694,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                 void M()
                 {
-                    if (![|MySet.Contains("Item")|])
+                    if (!{|CA1868:MySet.Contains("Item")|})
                     {
                         throw new System.Exception("Item doesn't exist");
                     }
@@ -923,7 +923,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        bool added = ![|MySet.Contains("Item")|] ? MySet.Add("Item") : false;
+                        bool added = !{|CA1868:MySet.Contains("Item")|} ? MySet.Add("Item") : false;
                     }
                 }
                 """;
@@ -943,7 +943,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        bool added = [|MySet.Contains("Item")|] ? false : MySet.Add("Item");
+                        bool added = {|CA1868:MySet.Contains("Item")|} ? false : MySet.Add("Item");
                     }
                 }
                 """;
@@ -963,7 +963,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        bool removed = [|MySet.Contains("Item")|] ? MySet.Remove("Item") : false;
+                        bool removed = {|CA1868:MySet.Contains("Item")|} ? MySet.Remove("Item") : false;
                     }
                 }
                 """;
@@ -983,7 +983,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        bool removed = ![|MySet.Contains("Item")|] ? false : MySet.Remove("Item");
+                        bool removed = !{|CA1868:MySet.Contains("Item")|} ? false : MySet.Remove("Item");
                     }
                 }
                 """;
@@ -1003,7 +1003,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        bool nestedAdded = [|MySet.Contains("Item")|]
+                        bool nestedAdded = {|CA1868:MySet.Contains("Item")|}
                             ? false
                             : MySet.Add("Item") ? true : false;
                     }
@@ -1025,7 +1025,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        bool nestedRemoved = [|MySet.Contains("Item")|]
+                        bool nestedRemoved = {|CA1868:MySet.Contains("Item")|}
                             ? MySet.Remove("Item") ? true : false
                             : false;
                     }
@@ -1128,7 +1128,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     void M()
                     {
                         // reticulates the splines
-                        if ([|MySet.Contains("Item")|])
+                        if ({|CA1868:MySet.Contains("Item")|})
                         {
                             MySet.Remove("Item");
                         }
@@ -1164,7 +1164,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If Not [|MySet.Contains("Item")|] Then MySet.Add("Item")
+                        If Not {|CA1868:MySet.Contains("Item")|} Then MySet.Add("Item")
                     End Sub
                 End Class
                 """;
@@ -1194,7 +1194,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If ([|MySet.Contains("Item")|]) Then MySet.Remove("Item")
+                        If ({|CA1868:MySet.Contains("Item")|}) Then MySet.Remove("Item")
                     End Sub
                 End Class
                 """;
@@ -1224,7 +1224,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If Not [|MySet.Contains("Item")|] Then
+                        If Not {|CA1868:MySet.Contains("Item")|} Then
                             MySet.Add("Item")
                         End If
                     End Sub
@@ -1256,7 +1256,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If ([|MySet.Contains("Item")|]) Then
+                        If ({|CA1868:MySet.Contains("Item")|}) Then
                             MySet.Remove("Item")
                         End If
                     End Sub
@@ -1288,7 +1288,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If Not [|MySet.Contains("Item")|] Then MySet.Add("Item") Else Throw new System.Exception("Item already exists")
+                        If Not {|CA1868:MySet.Contains("Item")|} Then MySet.Add("Item") Else Throw new System.Exception("Item already exists")
                     End Sub
                 End Class
                 """;
@@ -1318,7 +1318,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If [|MySet.Contains("Item")|] Then MySet.Remove("Item") Else Throw new System.Exception("Item doesn't exist")
+                        If {|CA1868:MySet.Contains("Item")|} Then MySet.Remove("Item") Else Throw new System.Exception("Item doesn't exist")
                     End Sub
                 End Class
                 """;
@@ -1348,7 +1348,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If [|MySet.Contains("Item")|] Then Throw new System.Exception("Item already exists") Else MySet.Add("Item")
+                        If {|CA1868:MySet.Contains("Item")|} Then Throw new System.Exception("Item already exists") Else MySet.Add("Item")
                     End Sub
                 End Class
                 """;
@@ -1378,7 +1378,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If Not [|MySet.Contains("Item")|] Then Throw new System.Exception("Item doesn't exist") Else MySet.Remove("Item")
+                        If Not {|CA1868:MySet.Contains("Item")|} Then Throw new System.Exception("Item doesn't exist") Else MySet.Remove("Item")
                     End Sub
                 End Class
                 """;
@@ -1408,7 +1408,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If Not [|MySet.Contains("Item")|] Then
+                        If Not {|CA1868:MySet.Contains("Item")|} Then
                             MySet.Add("Item")
                         Else
                             Throw new System.Exception("Item already exists")
@@ -1444,7 +1444,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If [|MySet.Contains("Item")|] Then
+                        If {|CA1868:MySet.Contains("Item")|} Then
                             MySet.Remove("Item")
                         Else
                             Throw new System.Exception("Item doesn't exist")
@@ -1480,7 +1480,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If [|MySet.Contains("Item")|] Then
+                        If {|CA1868:MySet.Contains("Item")|} Then
                             Throw new System.Exception("Item already exists")
                         Else
                             MySet.Add("Item")
@@ -1516,7 +1516,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If Not [|MySet.Contains("Item")|] Then
+                        If Not {|CA1868:MySet.Contains("Item")|} Then
                             Throw new System.Exception("Item doesn't exist")
                         Else
                             MySet.Remove("Item")
@@ -1624,7 +1624,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If Not [|MySet.Contains("Item")|] Then
+                        If Not {|CA1868:MySet.Contains("Item")|} Then
                             Dim result = MySet.Add("Item")
                         End If
                     End Sub
@@ -1644,7 +1644,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If [|MySet.Contains("Item")|] Then
+                        If {|CA1868:MySet.Contains("Item")|} Then
                             Dim result = MySet.Remove("Item")
                         End If
                     End Sub
@@ -1664,7 +1664,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If [|MySet.Contains("Item")|] Then
+                        If {|CA1868:MySet.Contains("Item")|} Then
                             Throw new System.Exception("Item already exists")
                         Else
                             Dim result = MySet.Add("Item")
@@ -1686,7 +1686,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If Not [|MySet.Contains("Item")|] Then
+                        If Not {|CA1868:MySet.Contains("Item")|} Then
                             Throw new System.Exception("Item doesn't exist")
                         Else
                             Dim result = MySet.Remove("Item")
@@ -1708,7 +1708,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If Not [|MySet.Contains("Item")|] Then
+                        If Not {|CA1868:MySet.Contains("Item")|} Then
                             MySet.Add("Item")
                             System.Console.WriteLine()
                         End If
@@ -1729,7 +1729,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If [|MySet.Contains("Item")|] Then
+                        If {|CA1868:MySet.Contains("Item")|} Then
                             MySet.Remove("Item")
                             System.Console.WriteLine()
                         End If
@@ -1750,7 +1750,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If [|MySet.Contains("Item")|] Then
+                        If {|CA1868:MySet.Contains("Item")|} Then
                             Throw new System.Exception("Item already exists")
                         Else
                             MySet.Add("Item")
@@ -1773,7 +1773,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        If Not [|MySet.Contains("Item")|] Then
+                        If Not {|CA1868:MySet.Contains("Item")|} Then
                             Throw new System.Exception("Item doesn't exist")
                         Else
                             MySet.Remove("Item")
@@ -1796,7 +1796,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        Dim added = If(Not [|MySet.Contains("Item")|], MySet.Add("Item"), false)
+                        Dim added = If(Not {|CA1868:MySet.Contains("Item")|}, MySet.Add("Item"), false)
                     End Sub
                 End Class
                 """;
@@ -1814,7 +1814,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        Dim added = If([|MySet.Contains("Item")|], false, MySet.Add("Item"))
+                        Dim added = If({|CA1868:MySet.Contains("Item")|}, false, MySet.Add("Item"))
                     End Sub
                 End Class
                 """;
@@ -1832,7 +1832,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        Dim removed = If([|MySet.Contains("Item")|], MySet.Remove("Item"), false)
+                        Dim removed = If({|CA1868:MySet.Contains("Item")|}, MySet.Remove("Item"), false)
                     End Sub
                 End Class
                 """;
@@ -1850,7 +1850,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        Dim added = If(Not [|MySet.Contains("Item")|], false, MySet.Remove("Item"))
+                        Dim added = If(Not {|CA1868:MySet.Contains("Item")|}, false, MySet.Remove("Item"))
                     End Sub
                 End Class
                 """;
@@ -1868,7 +1868,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        Dim added = If([|MySet.Contains("Item")|], false, If(MySet.Add("Item"), true, false))
+                        Dim added = If({|CA1868:MySet.Contains("Item")|}, false, If(MySet.Add("Item"), true, false))
                     End Sub
                 End Class
                 """;
@@ -1886,7 +1886,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Private ReadOnly MySet As New HashSet(Of String)()
 
                     Public Sub M()
-                        Dim added = If([|MySet.Contains("Item")|], If(MySet.Remove("Item"), true, false), false)
+                        Dim added = If({|CA1868:MySet.Contains("Item")|}, If(MySet.Remove("Item"), true, false), false)
                     End Sub
                 End Class
                 """;
@@ -1977,7 +1977,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     Public Sub M()
                         ' reticulates the splines
-                        If ([|MySet.Contains("Item")|]) Then
+                        If ({|CA1868:MySet.Contains("Item")|}) Then
                             MySet.Remove("Item")
                         End If
                     End Sub
@@ -2108,7 +2108,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if (![|MySet.Contains(FieldItem)|])
+                        if (!{|CA1868:MySet.Contains(FieldItem)|})
                         {
                             MySet.Add(FieldItem);
                         }
@@ -2148,7 +2148,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     {
                         const string LocalItem = "Item";
 
-                        if (![|MySet.Contains(LocalItem)|])
+                        if (!{|CA1868:MySet.Contains(LocalItem)|})
                         {
                             MySet.Add(LocalItem);
                         }
@@ -2187,7 +2187,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M(string parameterItem)
                     {
-                        if (![|MySet.Contains(parameterItem)|])
+                        if (!{|CA1868:MySet.Contains(parameterItem)|})
                         {
                             MySet.Add(parameterItem);
                         }
@@ -2233,7 +2233,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ({{(method == "Add" ? "!" : string.Empty)}}[|MySet.Contains("Item")|])
+                        if ({{(method == "Add" ? "!" : string.Empty)}}{|CA1868:MySet.Contains("Item")|})
                             MySet.{{method}}("Item");
                     }
                 }
@@ -2278,7 +2278,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ({{(method == "Add" ? "!" : string.Empty)}}[|MySet.Contains("Item")|])
+                        if ({{(method == "Add" ? "!" : string.Empty)}}{|CA1868:MySet.Contains("Item")|})
                             MySet.{{method}}("Item");
                     }
                 }
@@ -2319,7 +2319,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ({{(method == "Add" ? "!" : string.Empty)}}[|MySet.Contains("Item")|])
+                        if ({{(method == "Add" ? "!" : string.Empty)}}{|CA1868:MySet.Contains("Item")|})
                            MySet = MySet.{{method}}("Item");
                     }
                 }
@@ -2345,7 +2345,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
-                        if ({{(method == "Add" ? "!" : string.Empty)}}[|MySet.Contains("Item")|])
+                        if ({{(method == "Add" ? "!" : string.Empty)}}{|CA1868:MySet.Contains("Item")|})
                            MySet = MySet.{{method}}("Item");
                     }
                 }

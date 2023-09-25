@@ -201,10 +201,10 @@ namespace Microsoft.NetCore.Analyzers.Security
                             {
                                 // Determine if the method is called automatically when an object is deserialized.
                                 // This includes methods with OnDeserializing attribute, method with OnDeserialized attribute, deserialization callbacks as well as cleanup/dispose calls.
-                                var flagSerializable = methodSymbol.ContainingType.HasAttribute(serializableAttributeTypeSymbol);
+                                var flagSerializable = methodSymbol.ContainingType.HasAnyAttribute(serializableAttributeTypeSymbol);
                                 var parameters = methodSymbol.GetParameters();
                                 var flagHasDeserializeAttributes = !attributeTypeSymbols.IsEmpty
-                                    && attributeTypeSymbols.Any(s => methodSymbol.HasAttribute(s))
+                                    && attributeTypeSymbols.Any(s => methodSymbol.HasAnyAttribute(s))
                                     && parameters.Length == 1
                                     && parameters[0].Type.Equals(streamingContextTypeSymbol);
                                 var flagImplementOnDeserializationMethod = methodSymbol.IsOnDeserializationImplementation(IDeserializationCallbackTypeSymbol);

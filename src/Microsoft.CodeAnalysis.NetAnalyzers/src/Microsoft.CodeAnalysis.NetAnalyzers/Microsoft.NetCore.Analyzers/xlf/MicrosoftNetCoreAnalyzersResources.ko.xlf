@@ -67,6 +67,21 @@
         <target state="translated">상수 배열을 인수로 사용하지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsDescription">
+        <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.</source>
+        <target state="translated">모든 직렬화 작업에 대해 새 'JsonSerializerOptions' 인스턴스를 만들지 마세요. 대신 인스턴스를 캐시하고 다시 사용합니다. 단일 사용 'JsonSerializerOptions' 인스턴스는 애플리케이션의 성능을 크게 저하시킬 수 있습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsMessage">
+        <source>Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead.</source>
+        <target state="translated">모든 직렬화 작업에 대해 새 'JsonSerializerOptions' 인스턴스를 만들지 마세요. 대신 인스턴스를 캐시하고 다시 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidSingleUseOfLocalJsonSerializerOptionsTitle">
+        <source>Cache and reuse 'JsonSerializerOptions' instances</source>
+        <target state="translated">'JsonSerializerOptions' 인스턴스 캐시 및 다시 사용</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidStringBuilderPInvokeParametersDescription">
         <source>Marshalling of 'StringBuilder' always creates a native buffer copy, resulting in multiple allocations for one marshalling operation.</source>
         <target state="translated">'StringBuilder'를 마샬링하는 경우 항상 네이티브 버퍼 복사본이 만들어지므로 하나의 마샬링 작업에 대해 할당이 여러 번 이루어집니다.</target>
@@ -1318,99 +1333,9 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">올바른 형식 매개 변수 사용</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyDescription">
-        <source>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</source>
-        <target state="translated">이 규칙 위반 문제를 해결하려면 GetObjectData 메서드를 visible 및 overridable로 설정하고 모든 인스턴스 필드가 serialization 프로세스에 포함되거나 NonSerializedAttribute 특성을 사용하여 명시적으로 표시되도록 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}</source>
-        <target state="translated">{0} 형식에 GetObjectData 구현을 추가하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable</source>
-        <target state="translated">{0}.GetObjectData를 재정의 가능한 가상 메서드로 설정하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
-        <target state="translated">파생 형식에 표시되도록 {0}.GetObjectData의 접근성을 높이세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyTitle">
-        <source>Implement ISerializable correctly</source>
-        <target state="translated">ISerializable을 올바르게 구현하십시오.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
         <source>Implement inherited interfaces</source>
         <target state="translated">상속된 인터페이스 구현</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
-        <source>Implement Serialization constructor</source>
-        <target state="translated">Serialization 생성자 구현</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsDescription">
-        <source>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</source>
-        <target state="translated">이 규칙 위반 문제를 해결하려면 serialization 생성자를 구현합니다. sealed 클래스의 경우 생성자를 private으로 설정하고, 그렇지 않으면 protected로 설정합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageCreateMagicConstructor">
-        <source>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</source>
-        <target state="translated">다음 시그니처를 사용하여 생성자를 {0}에 추가하십시오. 'protected {0}(SerializationInfo info, StreamingContext context)'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate">
-        <source>Declare the serialization constructor of {0}, a sealed type, as private.</source>
-        <target state="translated">sealed 형식의 {0} serialization 생성자를 private으로 선언하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily">
-        <source>Declare the serialization constructor of {0}, an unsealed type, as protected.</source>
-        <target state="translated">unsealed 형식의 {0} serialization 생성자를 protected로 선언하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsTitle">
-        <source>Implement serialization constructors</source>
-        <target state="translated">serialization 생성자를 구현하십시오.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyDescription">
-        <source>A method that handles a serialization event does not have the correct signature, return type, or visibility.</source>
-        <target state="translated">serialization 이벤트를 처리하는 메서드에 올바른 시그니처, 반환 형식 또는 표시 여부가 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
-        <target state="translated">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 제네릭이 되지 않도록 시그니처를 변경하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
-        <target state="translated">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 'System.Runtime.Serialization.StreamingContext' 형식의 단일 매개 변수를 사용하도록 시그니처를 변경하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
-        <target state="translated">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 반환 형식을 {1}에서 void(Visual Basic의 경우 Sub)로 변경하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
-        <target state="translated">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 static(Visual Basic의 경우 Shared)에서 인스턴스 메서드로 변경하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
-        <target state="translated">{0}이(가) OnSerializing, OnSerialized, OnDeserializing 또는 OnDeserialized로 표시되어 있으므로 접근성을 private으로 변경하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
-        <source>Implement serialization methods correctly</source>
-        <target state="translated">serialization 메서드를 올바르게 구현하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
@@ -2273,6 +2198,11 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">System.String.Format으로 전달된 format 인수에 각 개체 인수에 해당하는 format 항목이 포함되지 않으며 그 반대의 경우도 마찬가지입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
+        <source>The format argument is not a valid format string</source>
+        <target state="new">The format argument is not a valid format string</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">서식 지정 메서드에 올바른 인수를 제공하세요.</target>
@@ -2281,26 +2211,6 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsTitle">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">서식 지정 메서드에 올바른 인수를 제공하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsDescription">
-        <source>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</source>
-        <target state="translated">형식에 System.Runtime.Serialization.OptionalFieldAttribute 특성을 사용하여 표시된 필드가 있으면 해당 형식은 deserialization 이벤트 처리 메서드를 제공하지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
-        <target state="translated">'private void OnDeserialized(StreamingContext)' 메서드를 {0} 형식에 추가하고 System.Runtime.Serialization.OnDeserializedAttribute 특성을 사용하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
-        <target state="translated">'private void OnDeserializing(StreamingContext)' 메서드를 {0} 형식에 추가하고 System.Runtime.Serialization.OnDeserializingAttribute 특성을 사용하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
-        <source>Provide deserialization methods for optional fields</source>
-        <target state="translated">선택적 필드에 deserialization 메서드를 제공하십시오.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
@@ -2334,48 +2244,48 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</source>
-        <target state="translated">'CompareTo'를 사용할 때 대/소문자를 구분하지 않는 문자열 비교를 수행하기 위해 'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하지 마세요. 할당으로 이어지기 때문입니다. 대신 'StringComparer'를 사용하여 대소문자를 구분하지 않는 비교를 수행하세요.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">'CompareTo'를 사용할 때 대/소문자를 구분하지 않는 문자열 비교를 수행하기 위해 'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하지 마세요. 할당으로 이어지기 때문입니다. 대신 'StringComparer'를 사용하여 대소문자를 구분하지 않는 비교를 수행하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
-        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison</source>
-        <target state="translated">대소문자를 구분하지 않는 비교를 수행하려면 'StringComparer' 사용을 선호합니다.</target>
+        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">대소문자를 구분하지 않는 비교를 수행하려면 'StringComparer' 사용을 선호합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="translated">'string.{0}(string, StringComparison)' 오버로드 사용</target>
+        <target state="needs-review-translation">'string.{0}(string, StringComparison)' 오버로드 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
-        <target state="translated">대/소문자를 구분하지 않는 문자열 비교를 수행하기 위해 'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하지 마세요. 대신 대/소문자를 구분하지 않는 비교를 수행하기 위해 'StringComparison' 열거형 값을 사용하는 'Contains', 'IndexOf' 및 'StartsWith'의 메서드 오버로드를 호출하는 것이 좋습니다.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
-        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</source>
-        <target state="translated">대/소문자를 구분하지 않는 비교를 수행하기 위해 'StringComparison' 열거형 값을 사용하는 '{0}'의 문자열 비교 메서드 오버로드를 선호합니다.</target>
+        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
-        <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="translated">대소문자를 구분하지 않는 문자열 비교를 수행하려면 'StringComparison' 메서드 오버로드를 선호합니다.</target>
+        <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
+        <target state="needs-review-translation">대소문자를 구분하지 않는 문자열 비교를 수행하려면 'StringComparison' 메서드 오버로드를 선호합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="translated">'string.Equals(문자열, StringComparison)' 사용</target>
+        <target state="needs-review-translation">'string.Equals(문자열, StringComparison)' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
-        <target state="translated">'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하여 'string.ToLower() == string.ToLower()'에서와 같이 대/소문자를 구분하지 않는 문자열 비교를 수행하지 마세요. 할당으로 이어지기 때문입니다. 대신 대소문자를 구분하지 않는 비교를 수행하려면 'string.Equals(string, StringComparison)'을 사용하세요.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">'ToLower', 'ToUpper', 'ToLowerInvariant' 및 'ToUpperInvariant'를 호출하여 'string.ToLower() == string.ToLower()'에서와 같이 대/소문자를 구분하지 않는 문자열 비교를 수행하지 마세요. 할당으로 이어지기 때문입니다. 대신 대소문자를 구분하지 않는 비교를 수행하려면 'string.Equals(string, StringComparison)'을 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
-        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
-        <target state="translated">대소문자를 구분하지 않는 비교를 수행하려면 'string.Equals(string, StringComparison)' 사용을 선호하세요.</target>
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">대소문자를 구분하지 않는 비교를 수행하려면 'string.Equals(string, StringComparison)' 사용을 선호하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3076,6 +2986,26 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
       <trans-unit id="UseRSAWithSufficientKeySizeMessage">
         <source>Asymmetric encryption algorithm {0}'s key size is less than 2048. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
         <target state="translated">비대칭 암호화 알고리즘 {0}의 키 크기가 2048보다 작습니다. 최소 2048 키 크기, ECDH 또는 ECDSA 알고리즘이 포함된 RSA로 전환하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesCodeFixTitle">
+        <source>Use 'SearchValues'</source>
+        <target state="new">Use 'SearchValues'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesDescription">
+        <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
+        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesMessage">
+        <source>Use a cached 'SearchValues' instance for improved searching performance</source>
+        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesTitle">
+        <source>Use a cached 'SearchValues' instance</source>
+        <target state="new">Use a cached 'SearchValues' instance</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">

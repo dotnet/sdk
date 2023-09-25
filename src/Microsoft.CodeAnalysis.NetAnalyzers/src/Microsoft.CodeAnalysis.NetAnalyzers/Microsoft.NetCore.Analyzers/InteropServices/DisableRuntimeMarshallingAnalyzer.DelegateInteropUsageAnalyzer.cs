@@ -90,7 +90,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 void AnalyzeDelegateType(OperationAnalysisContext context, IOperation operation, INamedTypeSymbol delegateType)
                 {
-                    if (delegateType.ContainingAssembly.HasAttribute(_disableRuntimeMarshallingAttribute))
+                    if (delegateType.ContainingAssembly.HasAnyAttribute(_disableRuntimeMarshallingAttribute))
                     {
                         AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, delegateType.DelegateInvokeMethod!, ImmutableArray.Create(operation.Syntax.GetLocation()), FeatureUnsupportedWhenRuntimeMarshallingDisabledDelegateUsage);
                     }
@@ -137,7 +137,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 void AnalyzeDelegateMethodSignature(INamedTypeSymbol delegateType, ISymbol signatureSymbol)
                 {
-                    if (delegateType.ContainingAssembly.HasAttribute(_disableRuntimeMarshallingAttribute))
+                    if (delegateType.ContainingAssembly.HasAnyAttribute(_disableRuntimeMarshallingAttribute))
                     {
                         AnalyzeMethodSignature(_autoLayoutCache, reportDiagnostic, delegateType.DelegateInvokeMethod!, signatureSymbol.Locations, FeatureUnsupportedWhenRuntimeMarshallingDisabledDelegateUsage);
                     }

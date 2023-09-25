@@ -60,7 +60,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             {
                 if (parameter.Type.SpecialType == SpecialType.System_String
                     && parameter.RefKind == RefKind.None
-                    && parameter.HasAttribute(outAttributeType))
+                    && parameter.HasAnyAttribute(outAttributeType))
                 {
                     context.ReportDiagnostic(parameter.CreateDiagnostic(Rule, parameter.Name));
                 }

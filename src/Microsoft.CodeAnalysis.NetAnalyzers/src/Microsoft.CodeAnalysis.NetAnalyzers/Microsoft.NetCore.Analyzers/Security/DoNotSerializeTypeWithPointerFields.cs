@@ -96,12 +96,12 @@ namespace Microsoft.NetCore.Analyzers.Security
                             // If it is defined in source and not visited,
                             // mark it as visited and analyze all fields of it.
                             if (namedTypeSymbol.IsInSource() &&
-                                namedTypeSymbol.HasAttribute(serializableAttributeTypeSymbol) &&
+                                namedTypeSymbol.HasAnyAttribute(serializableAttributeTypeSymbol) &&
                                 visitedType.TryAdd(namedTypeSymbol, true))
                             {
                                 // Get all the fields can be serialized.
                                 var fields = namedTypeSymbol.GetMembers().OfType<IFieldSymbol>().Where(s => (nonSerializedAttribute == null ||
-                                                                                                            !s.HasAttribute(nonSerializedAttribute)) &&
+                                                                                                            !s.HasAnyAttribute(nonSerializedAttribute)) &&
                                                                                                             !s.IsStatic);
 
                                 foreach (var field in fields)

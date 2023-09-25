@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -250,6 +250,25 @@ public class Class
 ",
                 GetCA1823CSharpResultAt(7, 17, "Unused1"),
                 GetCA1823CSharpResultAt(8, 17, "Unused2"));
+        }
+
+        [Fact]
+        [WorkItem(6789, "https://github.com/dotnet/roslyn-analyzers/issues/6789")]
+        public async Task CA1823_CSharp_InlineArrayAttributeAsync()
+        {
+            await new VerifyCS.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.Net80,
+                TestCode = @"
+using System.Runtime.CompilerServices;
+
+[InlineArray(3)]
+public struct InlineArrayType
+{
+    private object _item0;
+}
+",
+            }.RunAsync();
         }
 
         [Fact]

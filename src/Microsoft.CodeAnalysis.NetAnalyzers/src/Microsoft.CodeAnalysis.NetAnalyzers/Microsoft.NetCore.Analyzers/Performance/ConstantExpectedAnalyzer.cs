@@ -433,7 +433,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             private bool HasConstantExpectedAttributeData(IParameterSymbol parameter)
             {
-                return parameter.HasAttribute(AttributeSymbol);
+                return parameter.HasAnyAttribute(AttributeSymbol);
             }
 
             public static bool TryCreate(Compilation compilation, [NotNullWhen(true)] out ConstantExpectedContext? constantExpectedContext)

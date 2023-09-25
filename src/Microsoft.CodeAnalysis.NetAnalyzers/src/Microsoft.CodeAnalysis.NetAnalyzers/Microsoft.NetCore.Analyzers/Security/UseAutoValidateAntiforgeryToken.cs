@@ -281,14 +281,14 @@ namespace Microsoft.NetCore.Analyzers.Security
                                 if (actionMethodSymbol.IsPublic() &&
                                     !actionMethodSymbol.IsStatic)
                                 {
-                                    var hasNonActionAttribute = actionMethodSymbol.HasAttribute(nonActionAttributeTypeSymbol);
+                                    var hasNonActionAttribute = actionMethodSymbol.HasAnyAttribute(nonActionAttributeTypeSymbol);
                                     var overridenMethodSymbol = actionMethodSymbol as ISymbol;
 
                                     while (!hasNonActionAttribute && overridenMethodSymbol.IsOverride)
                                     {
                                         overridenMethodSymbol = overridenMethodSymbol.GetOverriddenMember();
 
-                                        if (overridenMethodSymbol.HasAttribute(nonActionAttributeTypeSymbol))
+                                        if (overridenMethodSymbol.HasAnyAttribute(nonActionAttributeTypeSymbol))
                                         {
                                             hasNonActionAttribute = true;
                                         }

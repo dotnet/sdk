@@ -311,3 +311,38 @@ CA2259 | Usage | Warning | UseThreadStaticCorrectly, [Documentation](https://lea
 CA2260 | Usage | Warning | ImplementGenericMathInterfacesCorrectly, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2260)
 CA5404 | Security | Disabled | DoNotDisableTokenValidationChecks, [Documentation](https://learn.microsoft.com/visualstudio/code-quality/ca5404)
 CA5405 | Security | Disabled | DoNotAlwaysSkipTokenValidationInDelegates, [Documentation](https://learn.microsoft.com/visualstudio/code-quality/ca5405)
+
+## Release 8.0
+
+### New Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+CA1865 | Performance | Info | UseStringMethodCharOverloadWithSingleCharacters, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1865)
+CA1866 | Performance | Info | UseStringMethodCharOverloadWithSingleCharacters, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1866)
+CA1867 | Performance | Disabled | UseStringMethodCharOverloadWithSingleCharacters, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1867)
+CA1868 | Performance | Info | DoNotGuardSetAddOrRemoveByContains, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868)
+CA1869 | Performance | Info | AvoidSingleUseOfLocalJsonSerializerOptions, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1869)
+CA2261 | Usage | Warning | DoNotUseConfigureAwaitWithSuppressThrowing, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250)
+CA1510 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1510)
+CA1511 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1511)
+CA1512 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1512)
+CA1513 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1513)
+CA1856 | Performance | Error | ConstantExpectedAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856)
+CA1857 | Performance | Warning | ConstantExpectedAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857)
+CA1858 | Performance | Info | UseStartsWithInsteadOfIndexOfComparisonWithZero, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858)
+CA1859 | Performance | Info | UseConcreteTypeAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859)
+CA1860 | Performance | Info | PreferLengthCountIsEmptyOverAnyAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860)
+CA1861 | Performance | Info | AvoidConstArrays, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861)
+CA1862 | Performance | Info | RecommendCaseInsensitiveStringComparison, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862)
+CA1863 | Performance | Hidden | UseCompositeFormatAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1863)
+CA1864 | Performance | Info | PreferDictionaryTryAddValueOverGuardedAddAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864)
+CA1870 | Performance | Info | UseSearchValuesAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870)
+CA2021 | Reliability | Warning | DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021)
+
+### Removed Rules
+
+Rule ID | Category | Severity | Notes
+--------|----------|----------|-------
+CA2109 | Security | Disabled | ReviewVisibleEventHandlersAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2109)
+CA2229 | Usage | Disabled | SerializationRulesDiagnosticAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2229)

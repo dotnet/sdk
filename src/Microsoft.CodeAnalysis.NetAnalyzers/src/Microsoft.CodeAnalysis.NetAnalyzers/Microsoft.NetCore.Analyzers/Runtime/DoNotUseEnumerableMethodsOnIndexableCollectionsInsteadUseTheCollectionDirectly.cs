@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -46,29 +46,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static void OnCompilationStart(CompilationStartAnalysisContext context)
         {
-            var listType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIList1);
-            var readonlyListType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIReadOnlyList1);
             var enumerableType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
-            if (readonlyListType == null || enumerableType == null || listType == null)
+            if (enumerableType == null)
             {
                 return;
             }
 
-            context.RegisterOperationAction(operationContext =>
+            context.RegisterOperationAction(context =>
             {
-                var invocation = (IInvocationOperation)operationContext.Operation;
+                var invocation = (IInvocationOperation)context.Operation;
 
-                var excludeOrDefaultMethods = operationContext.Options.GetBoolOptionValue(
-                    EditorConfigOptionNames.ExcludeOrDefaultMethods, Rule, invocation.Syntax.SyntaxTree,
-                    operationContext.Compilation, defaultValue: false);
-
-                if (!IsPossibleLinqInvocation(invocation, excludeOrDefaultMethods))
+                if (!IsPossibleLinqInvocation(invocation, context))
                 {
                     return;
                 }
 
                 var methodSymbol = invocation.TargetMethod.ReducedFrom ?? invocation.TargetMethod;
-                var targetType = invocation.GetReceiverType(operationContext.Compilation, beforeConversion: true, cancellationToken: operationContext.CancellationToken);
+                var targetType = invocation.GetReceiverType(context.Compilation, beforeConversion: true, cancellationToken: context.CancellationToken);
                 if (methodSymbol == null || targetType == null)
                 {
                     return;
@@ -79,13 +73,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                if (!IsTypeWithInefficientLinqMethods(targetType, readonlyListType, listType))
+                if (!IsTypeWithInefficientLinqMethods(targetType))
                 {
                     return;
                 }
 
                 var properties = new Dictionary<string, string?> { [MethodPropertyKey] = invocation.TargetMethod.Name }.ToImmutableDictionary();
-                operationContext.ReportDiagnostic(invocation.CreateDiagnostic(Rule, properties));
+                context.ReportDiagnostic(invocation.CreateDiagnostic(Rule, properties));
             }, OperationKind.Invocation);
         }
 
@@ -97,10 +91,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         /// At this point it only identifies <see cref="IReadOnlyList{T}"/> directly but could easily be extended to support
         /// any type which has an index and count property.
         /// </summary>
-        private static bool IsTypeWithInefficientLinqMethods(ITypeSymbol targetType, ITypeSymbol readonlyListType, ITypeSymbol listType)
+        private static bool IsTypeWithInefficientLinqMethods(ITypeSymbol targetType)
         {
             // If this type is simply IReadOnlyList<T> then no further checking is needed.
-            if (targetType.TypeKind == TypeKind.Interface && targetType.OriginalDefinition.Equals(readonlyListType))
+            if (targetType.TypeKind == TypeKind.Interface && targetType.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IReadOnlyList_T)
             {
                 return true;
             }
@@ -109,12 +103,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             bool implementsList = false;
             foreach (var current in targetType.AllInterfaces)
             {
-                if (current.OriginalDefinition.Equals(readonlyListType))
+                if (current.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IReadOnlyList_T)
                 {
                     implementsReadOnlyList = true;
                 }
 
-                if (current.OriginalDefinition.Equals(listType))
+                if (current.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IList_T)
                 {
                     implementsList = true;
                 }
@@ -139,14 +133,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 methodSymbol.Parameters.Length == 1;
         }
 
-        private static bool IsPossibleLinqInvocation(IInvocationOperation invocation, bool excludeOrDefaultMethods)
+        private static bool IsPossibleLinqInvocation(IInvocationOperation invocation, OperationAnalysisContext context)
         {
             return invocation.TargetMethod.Name switch
             {
                 "Last" or "First" or "Count" => true,
-                "LastOrDefault" or "FirstOrDefault" => !excludeOrDefaultMethods,
+                "LastOrDefault" or "FirstOrDefault" => !ShouldExcludeOrDefaultMethods(context),
                 _ => false,
             };
         }
+
+        private static bool ShouldExcludeOrDefaultMethods(OperationAnalysisContext context)
+            => context.Options.GetBoolOptionValue(
+                EditorConfigOptionNames.ExcludeOrDefaultMethods, Rule, context.Operation.Syntax.SyntaxTree,
+                context.Compilation, defaultValue: false);
     }
 }

@@ -68,14 +68,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private void AnalyzeCompilationStart(CompilationStartAnalysisContext context)
         {
-            if (!context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingCancellationToken, out INamedTypeSymbol? cancellationTokenType))
+            var typeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+            if (!typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingCancellationToken, out INamedTypeSymbol? cancellationTokenType)
+                || !typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemObsoleteAttribute, out INamedTypeSymbol? obsoleteAttribute))
             {
                 return;
             }
 
             // We don't care if these symbols are not defined in our compilation. They are used to special case the Task<T> <-> ValueTask<T> logic
-            context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1, out INamedTypeSymbol? genericTask);
-            context.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask1, out INamedTypeSymbol? genericValueTask);
+            typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksTask1, out INamedTypeSymbol? genericTask);
+            typeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemThreadingTasksValueTask1, out INamedTypeSymbol? genericValueTask);
 
             context.RegisterOperationAction(context =>
             {
@@ -93,6 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     cancellationTokenType,
                     genericTask,
                     genericValueTask,
+                    obsoleteAttribute,
                     out int shouldFix,
                     out string? cancellationTokenArgumentName,
                     out string? invocationTokenParameterName))
@@ -125,6 +128,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             INamedTypeSymbol cancellationTokenType,
             INamedTypeSymbol? genericTask,
             INamedTypeSymbol? genericValueTask,
+            INamedTypeSymbol obsoleteAttribute,
             out int shouldFix, [NotNullWhen(returnValue: true)] out string? ancestorTokenParameterName, out string? invocationTokenParameterName)
         {
             shouldFix = 1;
@@ -152,7 +156,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
             // or an overload that takes a ct at the end
-            else if (MethodHasCancellationTokenOverload(compilation, method, cancellationTokenType, genericTask, genericValueTask, out overload))
+            else if (MethodHasCancellationTokenOverload(compilation, method, cancellationTokenType, genericTask, genericValueTask, obsoleteAttribute, out overload))
             {
                 if (ArgumentsImplicitOrNamed(cancellationTokenType, invocation.Arguments))
                 {
@@ -334,13 +338,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             ITypeSymbol cancellationTokenType,
             INamedTypeSymbol? genericTask,
             INamedTypeSymbol? genericValueTask,
+            INamedTypeSymbol obsoleteAttribute,
             [NotNullWhen(returnValue: true)] out IMethodSymbol? overload)
         {
             overload = method.ContainingType
-                                .GetMembers(method.Name)
-                                .OfType<IMethodSymbol>()
-                                .FirstOrDefault(methodToCompare =>
-                HasSameParametersPlusCancellationToken(compilation, cancellationTokenType, genericTask, genericValueTask, method, methodToCompare));
+                .GetMembers(method.Name)
+                .OfType<IMethodSymbol>()
+                .FirstOrDefault(methodToCompare => !methodToCompare.HasAnyAttribute(obsoleteAttribute)
+                                                   && HasSameParametersPlusCancellationToken(compilation, cancellationTokenType, genericTask, genericValueTask, method, methodToCompare));
 
             return overload != null;
 

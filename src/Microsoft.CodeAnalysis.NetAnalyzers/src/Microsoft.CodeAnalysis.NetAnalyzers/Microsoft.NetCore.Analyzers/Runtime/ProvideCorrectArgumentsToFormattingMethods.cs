@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
@@ -23,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         internal const string RuleId = "CA2241";
 
-        internal static readonly DiagnosticDescriptor Rule = DiagnosticDescriptorHelper.Create(
+        internal static readonly DiagnosticDescriptor ArgumentCountRule = DiagnosticDescriptorHelper.Create(
             RuleId,
             CreateLocalizableResourceString(nameof(ProvideCorrectArgumentsToFormattingMethodsTitle)),
             CreateLocalizableResourceString(nameof(ProvideCorrectArgumentsToFormattingMethodsMessage)),
@@ -33,7 +34,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             isPortedFxCopRule: true,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
+        internal static readonly DiagnosticDescriptor InvalidFormatRule = DiagnosticDescriptorHelper.Create(
+            RuleId,
+            CreateLocalizableResourceString(nameof(ProvideCorrectArgumentsToFormattingMethodsTitle)),
+            CreateLocalizableResourceString(nameof(ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage)),
+            DiagnosticCategory.Usage,
+            RuleLevel.BuildWarningCandidate,
+            description: CreateLocalizableResourceString(nameof(ProvideCorrectArgumentsToFormattingMethodsDescription)),
+            isPortedFxCopRule: true,
+            isDataflowRule: false);
+
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+            ImmutableArray.Create(ArgumentCountRule, InvalidFormatRule);
 
         public override void Initialize(AnalysisContext context)
         {
@@ -65,6 +77,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     int expectedStringFormatArgumentCount = GetFormattingArguments(stringFormat);
 
+                    if (expectedStringFormatArgumentCount < 0)
+                    {
+                        // Malformed format specification
+                        operationContext.ReportDiagnostic(operationContext.Operation.Syntax.CreateDiagnostic(InvalidFormatRule));
+                        return;
+                    }
+
                     // explicit parameter case
                     if (info.ExpectedStringFormatArgumentCount >= 0)
                     {
@@ -77,9 +96,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         if (info.ExpectedStringFormatArgumentCount != expectedStringFormatArgumentCount)
                         {
-                            operationContext.ReportDiagnostic(operationContext.Operation.Syntax.CreateDiagnostic(Rule));
+                            operationContext.ReportDiagnostic(operationContext.Operation.Syntax.CreateDiagnostic(ArgumentCountRule));
                         }
 
+                        return;
+                    }
+                    else if (info.ExpectedStringFormatArgumentCount == -2)
+                    {
+                        // Not a formatting method, we only checked the format specification.
                         return;
                     }
 
@@ -111,7 +135,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     int actualArgumentCount = initializer.ElementValues.Length;
                     if (actualArgumentCount != expectedStringFormatArgumentCount)
                     {
-                        operationContext.ReportDiagnostic(operationContext.Operation.Syntax.CreateDiagnostic(Rule));
+                        operationContext.ReportDiagnostic(operationContext.Operation.Syntax.CreateDiagnostic(ArgumentCountRule));
                     }
                 }, OperationKind.Invocation);
             });
@@ -308,7 +332,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             } // end of main loop
 
-            return uniqueNumbers.Count;
+            return uniqueNumbers.Count == 0 ? 0 : uniqueNumbers.Max() + 1;
         }
 
         private class StringFormatInfo
@@ -352,7 +376,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
 
                 // Check if this the underlying method is user configured string formatting method.
-                var additionalStringFormatMethodsOption = context.Options.GetAdditionalStringFormattingMethodsOption(Rule, context.Operation.Syntax.SyntaxTree, context.Compilation);
+                var additionalStringFormatMethodsOption = context.Options.GetAdditionalStringFormattingMethodsOption(ArgumentCountRule, context.Operation.Syntax.SyntaxTree, context.Compilation);
                 if (additionalStringFormatMethodsOption.Contains(method.OriginalDefinition) &&
                     TryGetFormatInfoByParameterName(method, out info))
                 {
@@ -362,7 +386,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // Check if the user configured automatic determination of formatting methods.
                 // If so, check if the method called has a 'string format' parameter followed by an params array.
                 var determineAdditionalStringFormattingMethodsAutomatically = context.Options.GetBoolOptionValue(EditorConfigOptionNames.TryDetermineAdditionalStringFormattingMethodsAutomatically,
-                        Rule, context.Operation.Syntax.SyntaxTree, context.Compilation, defaultValue: false);
+                        ArgumentCountRule, context.Operation.Syntax.SyntaxTree, context.Compilation, defaultValue: false);
                 if (determineAdditionalStringFormattingMethodsAutomatically &&
                     TryGetFormatInfoByParameterName(method, out info) &&
                     info.ExpectedStringFormatArgumentCount == -1)
@@ -424,6 +448,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             private static int GetExpectedNumberOfArguments(ImmutableArray<IParameterSymbol> parameters, int formatIndex)
             {
+                if (formatIndex == parameters.Length - 1)
+                {
+                    // format specification is the last parameter (e.g. CompositeFormat.Parse)
+                    // this is therefore not a formatting method.
+                    return -2;
+                }
+
                 // check params
                 IParameterSymbol nextParameter = parameters[formatIndex + 1];
                 if (nextParameter.IsParams)

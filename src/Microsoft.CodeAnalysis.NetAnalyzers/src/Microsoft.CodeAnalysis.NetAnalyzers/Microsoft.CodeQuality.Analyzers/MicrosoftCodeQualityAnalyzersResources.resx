@@ -929,6 +929,18 @@
   <data name="DoNotIgnoreMethodResultsMessageTryParse" xml:space="preserve">
     <value>{0} calls {1} but does not explicitly check whether the conversion succeeded. Either use the return value in a conditional statement or verify that the call site expects that the out argument will be set to the default value when the conversion fails.</value>
   </data>
+  <data name="AvoidLengthCalculationWhenSlicingToEndTitle" xml:space="preserve">
+    <value>Avoid redundant length argument</value>
+  </data>
+  <data name="AvoidLengthCalculationWhenSlicingToEndCodeFixTitle" xml:space="preserve">
+    <value>Remove redundant length argument</value>
+  </data>
+  <data name="AvoidLengthCalculationWhenSlicingToEndDescription" xml:space="preserve">
+    <value>An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</value>
+  </data>
+  <data name="AvoidLengthCalculationWhenSlicingToEndMessage" xml:space="preserve">
+    <value>'{0}' uses a redundant length calculation that can be removed</value>
+  </data>
   <data name="AvoidUninstantiatedInternalClassesTitle" xml:space="preserve">
     <value>Avoid uninstantiated internal classes</value>
   </data>

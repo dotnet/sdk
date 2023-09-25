@@ -76,7 +76,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     }
 
                     // Once we have the field, see if it's attributed with [ThreadStatic].
-                    if (fieldSymbol?.HasAttribute(threadStaticAttributeType) == true)
+                    if (fieldSymbol?.HasAnyAttribute(threadStaticAttributeType) == true)
                     {
                         context.ReportDiagnostic(symbol.CreateDiagnostic(ThreadStaticOnNonStaticFieldRule));
                     }
@@ -88,7 +88,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     var fieldInit = (IFieldInitializerOperation)context.Operation;
                     foreach (IFieldSymbol field in fieldInit.InitializedFields)
                     {
-                        if (field.IsStatic && field.HasAttribute(threadStaticAttributeType))
+                        if (field.IsStatic && field.HasAnyAttribute(threadStaticAttributeType))
                         {
                             context.ReportDiagnostic(fieldInit.CreateDiagnostic(ThreadStaticInitializedInlineRule));
                             break;

@@ -912,6 +912,18 @@ Throw helpers are simpler and more efficient than an if block constructing a new
 |CodeFix|True|
 ---
 
+## [CA1514](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1514): Avoid redundant length argument
+
+An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA1700](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700): Do not name enum values 'Reserved'
 
 This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.
@@ -1704,9 +1716,9 @@ Constant arrays passed as arguments are not reused when called repeatedly, which
 |CodeFix|True|
 ---
 
-## [CA1862](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862): Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons
+## [CA1862](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862): Use the 'StringComparison' method overloads to perform case-insensitive string comparisons
 
-Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.
+Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.
 
 |Item|Value|
 |-|-|
@@ -1779,6 +1791,30 @@ The char overload is a better performing overload than a string with a single ch
 ## [CA1868](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868): Unnecessary call to 'Contains(item)'
 
 Do not guard 'Add(item)' or 'Remove(item)' with 'Contains(item)' for the set. The former two already check whether the item exists and will return if it was added or removed.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
+## [CA1869](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1869): Cache and reuse 'JsonSerializerOptions' instances
+
+Avoid creating a new 'JsonSerializerOptions' instance for every serialization operation. Cache and reuse instances instead. Single use 'JsonSerializerOptions' instances can substantially degrade the performance of your application.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|False|
+---
+
+## [CA1870](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870): Use a cached 'SearchValues' instance
+
+Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.
 
 |Item|Value|
 |-|-|
@@ -2224,18 +2260,6 @@ A writable collection property allows a user to replace the collection with a di
 |Enabled|False|
 |Severity|Warning|
 |CodeFix|False|
----
-
-## [CA2229](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2229): Implement serialization constructors
-
-To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.
-
-|Item|Value|
-|-|-|
-|Category|Usage|
-|Enabled|True|
-|Severity|Hidden|
-|CodeFix|True|
 ---
 
 ## [CA2231](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2231): Overload operator equals on overriding value type Equals

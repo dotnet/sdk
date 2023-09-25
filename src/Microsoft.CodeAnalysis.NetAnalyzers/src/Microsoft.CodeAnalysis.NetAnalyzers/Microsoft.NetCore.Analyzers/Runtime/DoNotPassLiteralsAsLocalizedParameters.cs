@@ -247,7 +247,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             // FxCop compat checks.
             if (typesToIgnore.Contains(parameterSymbol.ContainingType) ||
-                parameterSymbol.ContainingSymbol.HasAttribute(conditionalAttributeSymbol))
+                parameterSymbol.ContainingSymbol.HasAnyAttribute(conditionalAttributeSymbol))
             {
                 return false;
             }

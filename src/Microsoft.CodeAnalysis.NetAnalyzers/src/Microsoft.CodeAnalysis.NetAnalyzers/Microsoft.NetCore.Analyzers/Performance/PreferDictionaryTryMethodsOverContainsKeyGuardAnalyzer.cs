@@ -343,7 +343,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         case IInvocationOperation invocation when searchContext == SearchContext.AddMethod:
                             if (DoesSignatureMatch(invocation.TargetMethod, usageContext.AddSymbol)
                                 && IsSameConstantOrReferenceOperation(invocation.Arguments[0].Value, usageContext.ContainsKeyArgumentReference)
-                                && invocation.Arguments[1].Value.Kind is OperationKind.Literal or OperationKind.LocalReference or OperationKind.FieldReference or OperationKind.ConstantPattern
+                                && invocation.Arguments[1].Value.Kind is OperationKind.Literal or OperationKind.LocalReference or OperationKind.FieldReference or OperationKind.ParameterReference or OperationKind.ConstantPattern
                                 && !AddArgumentIsDeclaredInBlock(invocation))
                             {
                                 usageContext.UsageLocations.Add(invocation.Syntax.GetLocation());
