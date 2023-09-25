@@ -1293,4 +1293,16 @@
   <data name="CollectionsShouldImplementGenericInterfaceMultipleMessage" xml:space="preserve">
     <value>Type '{0}' directly or indirectly inherits '{1}' without implementing any of '{2}'. Publicly-visible types should implement the generic version to broaden usability.</value>
   </data>
+  <data name="MakeTypesInternalCodeFixTitle" xml:space="preserve">
+    <value>Make the public type internal</value>
+  </data>
+  <data name="MakeTypesInternalDescription" xml:space="preserve">
+    <value>Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</value>
+  </data>
+  <data name="MakeTypesInternalMessage" xml:space="preserve">
+    <value>Because an application's API isn't typically referenced from outside the assembly, types can be made internal</value>
+  </data>
+  <data name="MakeTypesInternalTitle" xml:space="preserve">
+  <value>Consider making public types internal</value>
+  </data>
 </root>

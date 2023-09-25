@@ -126,6 +126,25 @@
             ]
           }
         },
+        "CA1515": {
+          "id": "CA1515",
+          "shortDescription": "Consider making public types internal",
+          "fullDescription": "Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1515",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpMakeTypesInternal",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1802": {
           "id": "CA1802",
           "shortDescription": "Use literals where appropriate",
@@ -6323,6 +6342,25 @@
             ],
             "tags": [
               "Dataflow",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA1515": {
+          "id": "CA1515",
+          "shortDescription": "Consider making public types internal",
+          "fullDescription": "Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1515",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": false,
+            "typeName": "BasicMakeTypesInternal",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]

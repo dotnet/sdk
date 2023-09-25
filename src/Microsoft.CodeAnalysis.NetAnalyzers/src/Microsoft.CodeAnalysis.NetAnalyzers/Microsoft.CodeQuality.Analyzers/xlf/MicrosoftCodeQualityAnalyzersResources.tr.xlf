@@ -357,6 +357,26 @@
         <target state="translated">Adlandırılmış yer tutucular için PascalCase kullanın</target>
         <note />
       </trans-unit>
+      <trans-unit id="MakeTypesInternalCodeFixTitle">
+        <source>Make the public type internal</source>
+        <target state="new">Make the public type internal</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeTypesInternalDescription">
+        <source>Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</source>
+        <target state="new">Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeTypesInternalMessage">
+        <source>Because an application's API isn't typically referenced from outside the assembly, types can be made internal</source>
+        <target state="new">Because an application's API isn't typically referenced from outside the assembly, types can be made internal</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MakeTypesInternalTitle">
+        <source>Consider making public types internal</source>
+        <target state="new">Consider making public types internal</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
         <source>Apply 'AttributeUsageAttribute'</source>
         <target state="translated">'AttributeUsageAttribute' uygula</target>

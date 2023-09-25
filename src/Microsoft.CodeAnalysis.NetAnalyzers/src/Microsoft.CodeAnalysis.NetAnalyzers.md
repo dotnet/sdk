@@ -924,6 +924,18 @@ An explicit length calculation can be error-prone and can be avoided when slicin
 |CodeFix|True|
 ---
 
+## [CA1515](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1515): Consider making public types internal
+
+Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|False|
+|Severity|Warning|
+|CodeFix|True|
+---
+
 ## [CA1700](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700): Do not name enum values 'Reserved'
 
 This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.

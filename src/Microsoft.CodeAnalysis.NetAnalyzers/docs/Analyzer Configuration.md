@@ -133,7 +133,9 @@ Users can also provide a comma separated list of above option values. For exampl
 
 Option Name: `output_kind`
 
-Configurable Rules: [CA2007](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007)
+Configurable Rules:
+[CA1515](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1515),
+[CA2007](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007)
 
 Option Values: One or more fields of enum [Microsoft.CodeAnalysis.CompilationOptions.OutputKind](https://learn.microsoft.com/dotnet/api/microsoft.codeanalysis.outputkind) as a comma separated list.
 
