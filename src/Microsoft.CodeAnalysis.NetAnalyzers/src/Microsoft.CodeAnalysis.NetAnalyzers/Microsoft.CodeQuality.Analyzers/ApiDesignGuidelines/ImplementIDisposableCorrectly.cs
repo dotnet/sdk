@@ -182,10 +182,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             private void AnalyzeNamedTypeSymbol(SymbolAnalysisContext context)
             {
+                var type = (INamedTypeSymbol)context.Symbol;
                 // Note all the descriptors/rules for this analyzer have the same ID and category and hence
                 // will always have identical configured visibility.
-                if (context.Symbol is INamedTypeSymbol type &&
-                    type.TypeKind == TypeKind.Class &&
+                if (type.TypeKind == TypeKind.Class &&
                     context.Options.MatchesConfiguredVisibility(IDisposableReimplementationRule, type, context.Compilation))
                 {
                     bool implementsDisposableInBaseType = ImplementsDisposableInBaseType(type);

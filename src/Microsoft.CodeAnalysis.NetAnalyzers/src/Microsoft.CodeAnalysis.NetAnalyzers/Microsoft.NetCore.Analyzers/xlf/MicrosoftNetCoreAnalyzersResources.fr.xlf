@@ -1333,99 +1333,9 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
         <target state="translated">Utiliser le paramètre de type correct</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyDescription">
-        <source>To fix a violation of this rule, make the GetObjectData method visible and overridable, and make sure that all instance fields are included in the serialization process or explicitly marked by using the NonSerializedAttribute attribute.</source>
-        <target state="translated">Pour corriger toute violation de cette règle, rendez la méthode GetObjectData visible et substituable. De plus, vérifiez que tous les champs d'instance sont inclus dans le processus de sérialisation ou qu'ils sont marqués explicitement avec l'attribut NonSerializedAttribute.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageDefault">
-        <source>Add an implementation of GetObjectData to type {0}</source>
-        <target state="translated">Ajoutez une implémentation de GetObjectData au type {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeOverridable">
-        <source>Make {0}.GetObjectData virtual and overridable</source>
-        <target state="translated">Définissez {0}.GetObjectData en tant que méthode virtuelle et substituable</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyMessageMakeVisible">
-        <source>Increase the accessibility of {0}.GetObjectData so that it is visible to derived types</source>
-        <target state="translated">Augmentez l'accessibilité de {0}.GetObjectData afin qu'il soit visible par les types dérivés</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementISerializableCorrectlyTitle">
-        <source>Implement ISerializable correctly</source>
-        <target state="translated">Implémentez ISerializable comme il se doit</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImplementInterfacesOnDynamicCastableImplementation">
         <source>Implement inherited interfaces</source>
         <target state="translated">Implémenter les interfaces héritées</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsCodeActionTitle">
-        <source>Implement Serialization constructor</source>
-        <target state="translated">Implémenter le constructeur de sérialisation</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsDescription">
-        <source>To fix a violation of this rule, implement the serialization constructor. For a sealed class, make the constructor private; otherwise, make it protected.</source>
-        <target state="translated">Pour corriger toute violation de cette règle, implémentez le constructeur de sérialisation. Dans le cas d'une classe sealed, rendez le constructeur privé ; sinon, affectez-lui l'état protégé.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageCreateMagicConstructor">
-        <source>Add a constructor to {0} with the following signature: 'protected {0}(SerializationInfo info, StreamingContext context)'.</source>
-        <target state="translated">Ajoutez un constructeur à {0} avec la signature suivante : 'protected {0}(SerializationInfo info, StreamingContext context)'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeSealedMagicConstructorPrivate">
-        <source>Declare the serialization constructor of {0}, a sealed type, as private.</source>
-        <target state="translated">Déclarez le constructeur de sérialisation du type sealed {0} comme privé.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsMessageMakeUnsealedMagicConstructorFamily">
-        <source>Declare the serialization constructor of {0}, an unsealed type, as protected.</source>
-        <target state="translated">Déclarez le constructeur de sérialisation du type unsealed {0} comme protégé.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationConstructorsTitle">
-        <source>Implement serialization constructors</source>
-        <target state="translated">Implémentez des constructeurs de sérialisation</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyDescription">
-        <source>A method that handles a serialization event does not have the correct signature, return type, or visibility.</source>
-        <target state="translated">Une méthode qui gère un événement de sérialisation n'a pas la signature, le type de retour ou la visibilité appropriée.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageGeneric">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it is no longer generic</source>
-        <target state="translated">Comme {0} est marqué avec OnSerializing, OnSerialized, OnDeserializing ou OnDeserialized, changez sa signature afin qu'il ne soit plus générique</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageParameters">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its signature so that it takes a single parameter of type 'System.Runtime.Serialization.StreamingContext'</source>
-        <target state="translated">Comme {0} est marqué avec OnSerializing, OnSerialized, OnDeserializing ou OnDeserialized, changez sa signature afin qu'il n'accepte qu'un seul paramètre de type 'System.Runtime.Serialization.StreamingContext'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageReturnType">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its return type from {1} to void (Sub in Visual Basic)</source>
-        <target state="translated">Comme {0} est marqué avec OnSerializing, OnSerialized, OnDeserializing ou OnDeserialized, changez son type de retour de {1} en void (Sub en Visual Basic)</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageStatic">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change it from static (Shared in Visual Basic) to an instance method</source>
-        <target state="translated">Comme {0} est marqué avec OnSerializing, OnSerialized, OnDeserializing ou OnDeserialized, changez-le de static (Shared en Visual Basic) en une méthode d'instance</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyMessageVisibility">
-        <source>Because {0} is marked with OnSerializing, OnSerialized, OnDeserializing, or OnDeserialized, change its accessibility to private</source>
-        <target state="translated">Dans la mesure où {0} est marqué avec OnSerializing, OnSerialized, OnDeserializing ou OnDeserialized, changez son accessibilité en private</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ImplementSerializationMethodsCorrectlyTitle">
-        <source>Implement serialization methods correctly</source>
-        <target state="translated">Implémentez les méthodes de sérialisation comme il se doit</target>
         <note />
       </trans-unit>
       <trans-unit id="ImplementsPreviewInterfaceMessage">
@@ -2288,6 +2198,11 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
         <target state="translated">L'argument de mise en forme passé à System.String.Format ne contient aucun élément de mise en forme pour chaque argument d'objet correspondant, ou vice versa.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
+        <source>The format argument is not a valid format string</source>
+        <target state="new">The format argument is not a valid format string</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">Indiquer le nombre correct d'arguments dans les méthodes de mise en forme</target>
@@ -2296,26 +2211,6 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsTitle">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">Indiquer le nombre correct d'arguments dans les méthodes de mise en forme</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsDescription">
-        <source>A type has a field that is marked by using the System.Runtime.Serialization.OptionalFieldAttribute attribute, and the type does not provide deserialization event handling methods.</source>
-        <target state="translated">Un type a un champ marqué avec l'attribut System.Runtime.Serialization.OptionalFieldAttribute et ne fournit aucune méthode de gestion des événements de désérialisation.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserialized">
-        <source>Add a 'private void OnDeserialized(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializedAttribute</source>
-        <target state="translated">Ajoutez une méthode 'private void OnDeserialized(StreamingContext)' au type {0} et affectez-lui l'attribut System.Runtime.Serialization.OnDeserializedAttribute</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsMessageOnDeserializing">
-        <source>Add a 'private void OnDeserializing(StreamingContext)' method to type {0} and attribute it with the System.Runtime.Serialization.OnDeserializingAttribute</source>
-        <target state="translated">Ajoutez une méthode 'private void OnDeserializing(StreamingContext)' au type {0} et affectez-lui l'attribut System.Runtime.Serialization.OnDeserializingAttribute</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProvideDeserializationMethodsForOptionalFieldsTitle">
-        <source>Provide deserialization methods for optional fields</source>
-        <target state="translated">Spécifiez des méthodes de désérialisation pour les champs facultatifs</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
@@ -2349,48 +2244,48 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons.</source>
-        <target state="translated">Évitez d’appeler 'ToLower', 'ToUpper', 'ToLowerInvariant' et 'ToUpperInvariant' pour effectuer des comparaisons de chaînes qui ne respectent pas la casse lors de l’utilisation de 'CompareTo', car elles entraînent une allocation. Utilisez plutôt 'StringComparer' pour effectuer des comparaisons qui ne respectent pas la casse.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">Évitez d’appeler 'ToLower', 'ToUpper', 'ToLowerInvariant' et 'ToUpperInvariant' pour effectuer des comparaisons de chaînes qui ne respectent pas la casse lors de l’utilisation de 'CompareTo', car elles entraînent une allocation. Utilisez plutôt 'StringComparer' pour effectuer des comparaisons qui ne respectent pas la casse.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
-        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison</source>
-        <target state="translated">Préférez utiliser 'StringComparer' pour effectuer une comparaison qui ne respecte pas la casse</target>
+        <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">Préférez utiliser 'StringComparer' pour effectuer une comparaison qui ne respecte pas la casse</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="translated">Utiliser la surcharge « string.{0}(string, StringComparison) »</target>
+        <target state="needs-review-translation">Utiliser la surcharge « string.{0}(string, StringComparison) »</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons.</source>
-        <target state="translated">Évitez d’appeler 'ToLower', 'ToUpper', 'ToLowerInvariant' et 'ToUpperInvariant' pour effectuer des comparaisons de chaînes qui ne respectent pas la casse, car elles entraînent une allocation. Préférez plutôt appeler les surcharges de méthode de 'Contains', 'IndexOf' et 'StartsWith' qui acceptent une valeur enum 'StringComparison' pour effectuer des comparaisons qui ne respectent pas la casse.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
-        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison</source>
-        <target state="translated">Préférer la surcharge de méthode de comparaison de chaînes de '{0}' qui accepte une valeur enum 'StringComparison' pour effectuer une comparaison qui ne respecte pas la casse</target>
+        <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
-        <source>Prefer the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="translated">Préférer les surcharges de méthode 'StringComparison' pour effectuer des comparaisons de chaînes qui ne respectent pas la casse</target>
+        <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
+        <target state="needs-review-translation">Préférer les surcharges de méthode 'StringComparison' pour effectuer des comparaisons de chaînes qui ne respectent pas la casse</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="translated">Utilisez 'string. Equals(string, StringComparison)'</target>
+        <target state="needs-review-translation">Utilisez 'string. Equals(string, StringComparison)'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
-        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons.</source>
-        <target state="translated">Évitez d’appeler « ToLower », « ToUpper », « ToLowerInvariant » et « ToUpperInvariant » pour effectuer des comparaisons de chaînes non sensibles à la casse, comme dans « string ». ToLower() == chaîne. ToLower()', car ils entraînent une allocation. Utilisez plutôt 'string'. Equals(string, StringComparison) » pour effectuer des comparaisons qui ne respectent pas la casse.</target>
+        <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
+        <target state="needs-review-translation">Évitez d’appeler « ToLower », « ToUpper », « ToLowerInvariant » et « ToUpperInvariant » pour effectuer des comparaisons de chaînes non sensibles à la casse, comme dans « string ». ToLower() == chaîne. ToLower()', car ils entraînent une allocation. Utilisez plutôt 'string'. Equals(string, StringComparison) » pour effectuer des comparaisons qui ne respectent pas la casse.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
-        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison</source>
-        <target state="translated">Préférer l’utilisation de 'string. Equals(string, StringComparison)' pour effectuer une comparaison qui ne respecte pas la casse</target>
+        <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
+        <target state="needs-review-translation">Préférer l’utilisation de 'string. Equals(string, StringComparison)' pour effectuer une comparaison qui ne respecte pas la casse</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3091,6 +2986,26 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       <trans-unit id="UseRSAWithSufficientKeySizeMessage">
         <source>Asymmetric encryption algorithm {0}'s key size is less than 2048. Switch to an RSA with at least 2048 key size, ECDH or ECDSA algorithm instead.</source>
         <target state="translated">La taille de clé de l'algorithme de chiffrement asymétrique {0} est inférieure à 2 048 bits. Passez plutôt à un algorithme RSA avec une taille de clé d'au moins 2 048 bits, à un algorithme ECDH ou à un algorithme ECDSA.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesCodeFixTitle">
+        <source>Use 'SearchValues'</source>
+        <target state="new">Use 'SearchValues'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesDescription">
+        <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
+        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesMessage">
+        <source>Use a cached 'SearchValues' instance for improved searching performance</source>
+        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UseSearchValuesTitle">
+        <source>Use a cached 'SearchValues' instance</source>
+        <target state="new">Use a cached 'SearchValues' instance</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">

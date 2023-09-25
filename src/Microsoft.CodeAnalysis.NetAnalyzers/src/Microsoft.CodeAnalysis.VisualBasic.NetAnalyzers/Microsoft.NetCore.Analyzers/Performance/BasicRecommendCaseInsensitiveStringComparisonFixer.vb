@@ -14,86 +14,117 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
     Public NotInheritable Class BasicRecommendCaseInsensitiveStringComparisonFixer
         Inherits RecommendCaseInsensitiveStringComparisonFixer
 
-        Protected Overrides Function GetNewArgumentsForInvocation(generator As SyntaxGenerator, caseChangingApproachValue As String,
-                mainInvocationOperation As IInvocationOperation, stringComparisonType As INamedTypeSymbol,
-                ByRef mainInvocationInstance As SyntaxNode) As IEnumerable(Of SyntaxNode)
+        Protected Overrides Function GetNewArgumentsForInvocation(generator As SyntaxGenerator,
+                caseChangingApproachValue As String, mainInvocationOperation As IInvocationOperation, stringComparisonType As INamedTypeSymbol,
+                leftOffendingMethod As String, rightOffendingMethod As String, ByRef mainInvocationInstance As SyntaxNode) As IEnumerable(Of SyntaxNode)
 
-            Dim paramName As String = RecommendCaseInsensitiveStringComparisonAnalyzer.StringParameterName
+            Dim invocationExpression As InvocationExpressionSyntax = TryCast(mainInvocationOperation.Syntax, InvocationExpressionSyntax)
 
-            Dim arguments As New List(Of SyntaxNode)
-            Dim isAnyArgumentNamed As Boolean = False
-
-            Dim invocationExpression As InvocationExpressionSyntax = DirectCast(mainInvocationOperation.Syntax, InvocationExpressionSyntax)
-
-            Dim isChangingCaseInArgument As Boolean = False
             mainInvocationInstance = Nothing
 
             Dim memberAccessExpression As MemberAccessExpressionSyntax = TryCast(invocationExpression.Expression, MemberAccessExpressionSyntax)
-
             If memberAccessExpression IsNot Nothing Then
+                Dim internalExpression As ExpressionSyntax = memberAccessExpression.Expression
 
-                Dim internalExpression As ExpressionSyntax
-
-                Dim parenthesizedExpression As ParenthesizedExpressionSyntax = TryCast(memberAccessExpression.Expression, ParenthesizedExpressionSyntax)
-
-                internalExpression = If(parenthesizedExpression IsNot Nothing,
-                    parenthesizedExpression.Expression,
-                    memberAccessExpression.Expression)
+                Dim parenthesizedExpression As ParenthesizedExpressionSyntax = TryCast(internalExpression, ParenthesizedExpressionSyntax)
+                While parenthesizedExpression IsNot Nothing
+                    internalExpression = parenthesizedExpression.Expression
+                    parenthesizedExpression = TryCast(internalExpression, ParenthesizedExpressionSyntax)
+                End While
 
                 Dim internalInvocationExpression As InvocationExpressionSyntax = TryCast(internalExpression, InvocationExpressionSyntax)
                 Dim internalMemberAccessExpression As MemberAccessExpressionSyntax = Nothing
-
                 If internalInvocationExpression IsNot Nothing Then
                     internalMemberAccessExpression = TryCast(internalInvocationExpression.Expression, MemberAccessExpressionSyntax)
                 End If
 
-                If internalMemberAccessExpression IsNot Nothing Then
+                If leftOffendingMethod IsNot Nothing AndAlso
+                   internalInvocationExpression IsNot Nothing AndAlso
+                   internalMemberAccessExpression IsNot Nothing AndAlso
+                   internalMemberAccessExpression.Name IsNot Nothing AndAlso
+                   internalMemberAccessExpression.Name.Identifier.Text IsNot Nothing AndAlso
+                   internalMemberAccessExpression.Name.Identifier.Text = leftOffendingMethod Then
+
                     mainInvocationInstance = internalMemberAccessExpression.Expression
                 Else
                     mainInvocationInstance = memberAccessExpression.Expression
-                    isChangingCaseInArgument = True
                 End If
 
             End If
 
-            For Each node As SimpleArgumentSyntax In invocationExpression.ArgumentList.Arguments
+            Dim arguments As New List(Of SyntaxNode)
+            Dim isAnyArgumentNamed As Boolean = False
 
-                Dim argumentName As String = node.NameColonEquals?.Name.Identifier.ValueText
-                isAnyArgumentNamed = isAnyArgumentNamed Or argumentName IsNot Nothing
-
-                Dim argumentParenthesizedExpression As ParenthesizedExpressionSyntax = TryCast(node.Expression, ParenthesizedExpressionSyntax)
-
-                Dim argumentExpression As ExpressionSyntax = If(argumentParenthesizedExpression IsNot Nothing,
-                    argumentParenthesizedExpression.Expression,
-                    node.Expression)
-
-                Dim argumentMemberAccessExpression As MemberAccessExpressionSyntax = Nothing
-                Dim argumentInvocationExpression As InvocationExpressionSyntax = TryCast(argumentExpression, InvocationExpressionSyntax)
-
-                If argumentInvocationExpression IsNot Nothing Then
-                    argumentMemberAccessExpression = TryCast(argumentInvocationExpression.Expression, MemberAccessExpressionSyntax)
-                End If
+            For Each arg As IArgumentOperation In mainInvocationOperation.Arguments
 
                 Dim newArgumentNode As SyntaxNode
-                If isChangingCaseInArgument Then
-                    If argumentMemberAccessExpression IsNot Nothing Then
 
-                        newArgumentNode = If(argumentName = paramName,
-                            generator.Argument(paramName, RefKind.None, argumentMemberAccessExpression.Expression),
-                            generator.Argument(argumentMemberAccessExpression.Expression))
+                Dim actualArgumentNode As SyntaxNode = arg.Syntax
 
-                    Else
+                Dim argumentSyntaxNode As SimpleArgumentSyntax = TryCast(actualArgumentNode, SimpleArgumentSyntax)
+                While argumentSyntaxNode Is Nothing
+                    actualArgumentNode = actualArgumentNode.Parent
+                    argumentSyntaxNode = TryCast(actualArgumentNode, SimpleArgumentSyntax)
+                End While
 
-                        newArgumentNode = node
-
-                    End If
-                Else
-
-                    newArgumentNode = node
-
+                If actualArgumentNode IsNot Nothing Then
+                    argumentSyntaxNode = TryCast(actualArgumentNode, SimpleArgumentSyntax)
                 End If
 
-                arguments.Add(newArgumentNode.WithTriviaFrom(node))
+                Dim argumentName As String = Nothing
+                If argumentSyntaxNode IsNot Nothing AndAlso
+                   argumentSyntaxNode.NameColonEquals IsNot Nothing AndAlso
+                   argumentSyntaxNode.NameColonEquals.Name IsNot Nothing AndAlso
+                   argumentSyntaxNode.NameColonEquals.Name.Identifier.ValueText IsNot Nothing Then
+                    argumentName = argumentSyntaxNode.NameColonEquals.Name.Identifier.ValueText
+                End If
+
+                isAnyArgumentNamed = isAnyArgumentNamed Or argumentName IsNot Nothing
+
+                If rightOffendingMethod IsNot Nothing And arg.Parameter.Type.Name = StringTypeName Then
+                    Dim desiredExpression As ExpressionSyntax = Nothing
+
+                    Dim argumentExpression As SimpleArgumentSyntax = TryCast(arg.Syntax, SimpleArgumentSyntax)
+                    Dim argumentInvocationExpression As InvocationExpressionSyntax = TryCast(arg.Syntax, InvocationExpressionSyntax)
+
+                    If argumentExpression IsNot Nothing Then
+
+                        desiredExpression = argumentExpression.Expression
+                        Dim parenthesizedExpression As ParenthesizedExpressionSyntax = TryCast(desiredExpression, ParenthesizedExpressionSyntax)
+                        While parenthesizedExpression IsNot Nothing
+                            desiredExpression = parenthesizedExpression.Expression
+                            parenthesizedExpression = TryCast(desiredExpression, ParenthesizedExpressionSyntax)
+                        End While
+
+                    ElseIf argumentInvocationExpression IsNot Nothing Then
+
+                        desiredExpression = argumentInvocationExpression
+
+                    End If
+
+                    Dim invocation As InvocationExpressionSyntax = TryCast(desiredExpression, InvocationExpressionSyntax)
+                    Dim argumentMemberAccessExpression As MemberAccessExpressionSyntax = Nothing
+
+                    If invocation IsNot Nothing Then
+                        argumentMemberAccessExpression = TryCast(invocation.Expression, MemberAccessExpressionSyntax)
+                    End If
+
+                    If invocation IsNot Nothing And argumentMemberAccessExpression IsNot Nothing Then
+
+                        If argumentName = RecommendCaseInsensitiveStringComparisonAnalyzer.StringParameterName Then
+                            newArgumentNode = generator.Argument(RecommendCaseInsensitiveStringComparisonAnalyzer.StringParameterName, RefKind.None, argumentMemberAccessExpression.Expression)
+                        Else
+                            newArgumentNode = generator.Argument(argumentMemberAccessExpression.Expression)
+                        End If
+
+                    Else
+                        newArgumentNode = arg.Syntax
+                    End If
+                Else
+                    newArgumentNode = arg.Syntax
+                End If
+
+                arguments.Add(newArgumentNode.WithTriviaFrom(arg.Syntax))
 
             Next
 

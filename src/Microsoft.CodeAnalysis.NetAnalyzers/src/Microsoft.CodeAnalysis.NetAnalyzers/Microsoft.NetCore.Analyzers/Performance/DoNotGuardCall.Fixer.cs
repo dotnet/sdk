@@ -9,10 +9,15 @@ using Microsoft.CodeAnalysis.CodeFixes;
 
 namespace Microsoft.NetCore.Analyzers.Performance
 {
-    public abstract class DoNotGuardSetAddOrRemoveByContainsFixer : CodeFixProvider
+    /// <summary>
+    /// CA1853: <inheritdoc cref="MicrosoftNetCoreAnalyzersResources.DoNotGuardDictionaryRemoveByContainsKeyTitle"/>
+    /// CA1868: <inheritdoc cref="MicrosoftNetCoreAnalyzersResources.DoNotGuardSetAddOrRemoveByContainsTitle"/>
+    /// </summary>
+    public abstract class DoNotGuardCallFixer : CodeFixProvider
     {
-        public override ImmutableArray<string> FixableDiagnosticIds { get; } =
-            ImmutableArray.Create(DoNotGuardSetAddOrRemoveByContains.RuleId);
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(
+            DoNotGuardCallAnalyzer.DoNotGuardDictionaryRemoveByContainsKeyRuleId,
+            DoNotGuardCallAnalyzer.DoNotGuardSetAddOrRemoveByContainsRuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
         {
@@ -44,9 +49,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return;
             }
 
-            var codeAction = CodeAction.Create(MicrosoftNetCoreAnalyzersResources.RemoveRedundantGuardCallCodeFixTitle,
+            var codeAction = CodeAction.Create(
+                MicrosoftNetCoreAnalyzersResources.RemoveRedundantGuardCallCodeFixTitle,
                 ct => Task.FromResult(ReplaceConditionWithChild(context.Document, root, conditionalSyntax, childStatementSyntax)),
-                nameof(MicrosoftNetCoreAnalyzersResources.DoNotGuardSetAddOrRemoveByContainsTitle));
+                diagnostic.Descriptor.Id);
 
             context.RegisterCodeFix(codeAction, diagnostic);
         }
