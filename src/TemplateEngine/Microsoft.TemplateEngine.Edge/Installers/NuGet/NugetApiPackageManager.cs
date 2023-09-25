@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             }
             else
             {
-                NuGetVersion packageVersion = new NuGetVersion(version);
+                NuGetVersion packageVersion = new NuGetVersion(version!);
                 (source, packageMetadata) = await GetPackageMetadataAsync(identifier, packageVersion, packagesSources, cancellationToken).ConfigureAwait(false);
             }
 
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 throw new VulnerablePackageException(
                     string.Format(LocalizableStrings.NuGetApiPackageManager_DownloadError_VulnerablePackage, source),
                     packageMetadata.Identity.Id,
-                    foundPackageVersion,
+                    foundPackageVersion!,
                     packageMetadata.Vulnerabilities);
             }
 
@@ -204,9 +204,9 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 
             //if preview version is installed, check for the latest preview version, otherwise for latest stable
             bool previewVersionInstalled = false;
-            if (NuGetVersion.TryParse(version, out NuGetVersion currentVersion))
+            if (NuGetVersion.TryParse(version, out NuGetVersion? currentVersion))
             {
-                previewVersionInstalled = currentVersion.IsPrerelease;
+                previewVersionInstalled = currentVersion!.IsPrerelease;
             }
 
             FloatRange floatRange = new FloatRange(previewVersionInstalled ? NuGetVersionFloatBehavior.AbsoluteLatest : NuGetVersionFloatBehavior.Major);

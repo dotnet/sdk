@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 
         public bool CheckIfVersionIsValid(string versionToCheck)
         {
-            if (NuGetVersion.TryParse(versionToCheck, out NuGetVersion nuGetVersion2))
+            if (NuGetVersion.TryParse(versionToCheck, out NuGetVersion? nuGetVersion2))
             {
                 return _version.Satisfies(nuGetVersion2);
             }
@@ -28,9 +28,9 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
 
         internal static bool TryParse(string value, out NuGetFloatRangeSpecification? version)
         {
-            if (FloatRange.TryParse(value, out FloatRange versionRange))
+            if (FloatRange.TryParse(value, out FloatRange? versionRange))
             {
-                version = new NuGetFloatRangeSpecification(versionRange);
+                version = new NuGetFloatRangeSpecification(versionRange!);
                 return true;
             }
             version = null;
