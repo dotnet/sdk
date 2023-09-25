@@ -65,13 +65,13 @@
       <Sha>6cdef424154c976f04802b101e6be6292f8a8897</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.0-beta.23472.4">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.0-beta.23475.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>803f0e7b7af405084429d981cfe1f799a5f6d40c</Sha>
+      <Sha>10f956e631a1efc0f7f5e49c626c494cd32b1f50</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.100-beta.23472.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.100-beta.23475.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>803f0e7b7af405084429d981cfe1f799a5f6d40c</Sha>
+      <Sha>10f956e631a1efc0f7f5e49c626c494cd32b1f50</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="dotnet-format" Version="8.0.447106">
@@ -213,25 +213,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e95228dbcf7a69f87b00da969b0cabf2e62ab207</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="8.0.0-rtm.23471.8">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="8.0.0-rtm.23472.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>7d1d325d01d081912a056124217e08e1a6046580</Sha>
+      <Sha>3288084023e895de089381281da54a8541976f13</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.8.0" Version="8.0.0-rtm.23471.8">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.8.0" Version="8.0.0-rtm.23472.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>7d1d325d01d081912a056124217e08e1a6046580</Sha>
+      <Sha>3288084023e895de089381281da54a8541976f13</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="8.0.0-rtm.23471.8">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="8.0.0-rtm.23472.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>7d1d325d01d081912a056124217e08e1a6046580</Sha>
+      <Sha>3288084023e895de089381281da54a8541976f13</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.8.0" Version="8.0.0-rtm.23471.8">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.8.0" Version="8.0.0-rtm.23472.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>7d1d325d01d081912a056124217e08e1a6046580</Sha>
+      <Sha>3288084023e895de089381281da54a8541976f13</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="8.0.0-rtm.23471.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="8.0.0-rtm.23472.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>8f8527d020b488bfb8da6ccb9c88b8ceaaf15cdc</Sha>
+      <Sha>b1726ad39dacd4ab7e723f5a49e610e5bbce1430</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="8.0.0-rtm.23474.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -334,9 +334,9 @@
       <Sha>02fe27cd6a9b001c8feb7938e6ef4b3799745759</Sha>
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23471.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23475.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>6dbf3aaa0fc9664df86462f5c70b99800934fccd</Sha>
+      <Sha>e04156dbe14f882a80d4499dbebd45ab156b6c3c</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23471.1">
