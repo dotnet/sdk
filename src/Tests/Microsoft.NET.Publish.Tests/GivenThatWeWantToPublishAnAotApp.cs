@@ -22,18 +22,19 @@ namespace Microsoft.NET.Publish.Tests
         public void Can_Publish_SingleFile_And_NativeAot()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
-            var project = CreateHelloWorldTestProject(targetFramework, "SingleFileAndNativeAot", true);
-            var testAsset = _testAssetsManager.CreateTestProject(project);
-            var buildProperties = project.GetPropertyValues(testAsset.TestRoot, targetFramework);
-            project.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            const string projectName = "SingleFileAndNativeAot";
+            var project = CreateHelloWorldTestProject(targetFramework, projectName, true);
             project.AdditionalProperties["PublishSingleFile"] = "true";
             project.AdditionalProperties["PublishAot"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(project);
 
-            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
-                .Execute()
+                .Execute("-p:UseCurrentRuntimeIdentifier=true")
                 .Should().Pass();
+
+            var buildProperties = project.GetPropertyValues(testAsset.TestRoot, targetFramework);
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid).FullName;
             var publishedExe = Path.Combine(publishDirectory, $"{project.Name}{Constants.ExeSuffix}");
