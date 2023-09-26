@@ -11,8 +11,11 @@ namespace Microsoft.DotNet.NugetSearch
         public string Summary { get; set; }
         public string[] Tags { get; set; }
         public NugetSearchApiAuthorsSerializable Authors { get; set; }
-        public int TotalDownloads { get; set; }
+        public long TotalDownloads { get; set; }
         public bool Verified { get; set; }
         public NugetSearchApiVersionSerializable[] Versions { get; set; }
+        public string Deprecation;
+        public List<string> Vulnerabilities;
+        public string LicenseUrl { get; set; }
     }
 }

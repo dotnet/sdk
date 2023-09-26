@@ -17,9 +17,12 @@ namespace Microsoft.DotNet.Tools.Tool.Search
             string summary,
             IReadOnlyCollection<string> tags,
             IReadOnlyCollection<string> authors,
-            int totalDownloads,
+            long totalDownloads,
             bool verified,
-            IReadOnlyCollection<SearchResultPackageVersion> versions)
+            IReadOnlyCollection<SearchResultPackageVersion> versions,
+            string deprecation,
+            List<string> vulnerabilities,
+            string licenseUrl)
         {
             Id = id;
             LatestVersion = latestVersion ?? throw new ArgumentNullException(nameof(latestVersion));
@@ -30,6 +33,9 @@ namespace Microsoft.DotNet.Tools.Tool.Search
             TotalDownloads = totalDownloads;
             Verified = verified;
             Versions = versions ?? throw new ArgumentNullException(nameof(versions));
+            Deprecation = deprecation;
+            Vulnerabilities = vulnerabilities;
+            LicenseUrl = licenseUrl;
         }
 
         public PackageId Id { get; }
@@ -38,8 +44,11 @@ namespace Microsoft.DotNet.Tools.Tool.Search
         public string Summary { get; }
         public IReadOnlyCollection<string> Tags { get; }
         public IReadOnlyCollection<string> Authors { get; }
-        public int TotalDownloads { get; }
+        public long TotalDownloads { get; }
         public bool Verified { get; }
+        public string Deprecation { get; }
+        public List<string> Vulnerabilities { get; }
+        public string LicenseUrl { get; }
         public IReadOnlyCollection<SearchResultPackageVersion> Versions { get; }
     }
 

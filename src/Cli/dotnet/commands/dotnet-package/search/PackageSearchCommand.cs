@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tools.Package.Search
         private bool _exactMatch;
         private string _verbosity;
         private bool _prerelease;
-        private readonly SearchResultPrinter _searchResultPrinter;
+        private readonly NugetSearchResultPrinter _searchResultPrinter;
         private readonly INugetSearchApiRequest _nugetToolSearchApiRequest;
 
         public PackageSearchCommand(ParseResult parseResult) : base(parseResult)
@@ -22,18 +22,17 @@ namespace Microsoft.DotNet.Tools.Package.Search
             _exactMatch = parseResult.GetValue(PackageSearchCommandParser.ExactMatch);
             _verbosity = parseResult.GetValue(PackageSearchCommandParser.Verbosity);
             _prerelease = parseResult.GetValue(PackageSearchCommandParser.Prerelease);
-            _searchResultPrinter = new SearchResultPrinter(Reporter.Output);
+            _searchResultPrinter = new NugetSearchResultPrinter(Reporter.Output);
             _nugetToolSearchApiRequest = new NugetSearchApiRequest();
         }
         public override int Execute()
         {
-            Console.WriteLine(_searchArgument);
-            NugetSearchApiParameter nugetSearchApiParameter = new NugetSearchApiParameter(_searchArgument);
+            NugetSearchApiParameter nugetSearchApiParameter = new NugetSearchApiParameter(_searchArgument, prerelease: _prerelease);
             IReadOnlyCollection<SearchResultPackage> searchResultPackages =
                 NugetSearchApiResultDeserializer.Deserialize(
                     _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter).GetAwaiter().GetResult());
 
-            _searchResultPrinter.Print(false, searchResultPackages);
+            _searchResultPrinter.Print(_verbosity, _exactMatch, _searchArgument, searchResultPackages);
             return 0;
         }
     }
