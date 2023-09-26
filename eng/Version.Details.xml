@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.8.0-1.23378.8">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.8.0-3.23474.1">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>f5b6c715a742c56b7cc672e47385508fb4df98cc</Sha>
+      <Sha>232f7afa4966411958759c880de3a1765bdb28a0</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23471.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23475.1">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>6dbf3aaa0fc9664df86462f5c70b99800934fccd</Sha>
+      <Sha>e04156dbe14f882a80d4499dbebd45ab156b6c3c</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23253.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23471.1">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>c65b02aef21850de618d37a5304d3bbd829c2733</Sha>
+      <Sha>7b55da982fc6e71c1776c4de89111aee0eecb45a</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.0.0-beta-23228-04">
