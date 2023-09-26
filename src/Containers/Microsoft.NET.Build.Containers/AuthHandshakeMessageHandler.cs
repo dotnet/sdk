@@ -123,8 +123,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         public string ResolvedToken => token ?? access_token ?? throw new ArgumentException(Resource.GetString(nameof(Strings.InvalidTokenResponse)));
         public DateTimeOffset ResolvedExpiration {
             get {
-                var issueTime = this.issued_at ?? DateTimeOffset.UtcNow; // per spec, if no issued_at use the current time
-                var validityDuration = this.expires_in ?? 60; // per spec, if no expires_in use 60 seconds
+                var issueTime = issued_at ?? DateTimeOffset.UtcNow; // per spec, if no issued_at use the current time
+                var validityDuration = expires_in ?? 60; // per spec, if no expires_in use 60 seconds
                 var expirationTime = issueTime.AddSeconds(validityDuration);
                 return expirationTime;
             }
@@ -266,10 +266,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
             if (!tokenResponse.IsSuccessStatusCode)
             {
-                await tokenResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
+                throw new UnableToAccessRepositoryException(_registryName);
             }
-            tokenResponse.EnsureSuccessStatusCode();
-            _logger.LogTrace("Received '{statuscode}'.", tokenResponse.StatusCode);
 
             TokenResponse? token = JsonSerializer.Deserialize<TokenResponse>(tokenResponse.Content.ReadAsStream(cancellationToken));
             if (token is null)

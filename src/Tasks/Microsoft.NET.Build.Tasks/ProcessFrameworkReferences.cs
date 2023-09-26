@@ -341,7 +341,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     foreach (var runtimeIdentifier in RuntimeIdentifiers)
                     {
-                        if (processedPrimaryRuntimeIdentifier && runtimeIdentifier == this.RuntimeIdentifier)
+                        if (processedPrimaryRuntimeIdentifier && runtimeIdentifier == RuntimeIdentifier)
                         {
                             //  We've already processed this RID
                             continue;
@@ -442,9 +442,6 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     else if (IsAotCompatible || EnableAotAnalyzer)
                     {
-                        // Technically this is reachable by setting EnableAotAnalyzer without IsAotCompatible,
-                        // but the recommended way to enable AOT analysis is to set IsAotCompatible,
-                        // so the warning points to the common case.
                         Log.LogWarning(Strings.IsAotCompatibleUnsupported);
                     }
                     else if (PublishTrimmed)
@@ -453,9 +450,6 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     else if (IsTrimmable || EnableTrimAnalyzer)
                     {
-                        // Technically this is reachable by setting EnableTrimAnalyzer without IsTrimmable,
-                        // but the recommended way to enable trim analysis is to set IsTrimmable,
-                        // so the warning points to the common case.
                         Log.LogWarning(Strings.IsTrimmableUnsupported);
                     }
                     else if (EnableSingleFileAnalyzer)
