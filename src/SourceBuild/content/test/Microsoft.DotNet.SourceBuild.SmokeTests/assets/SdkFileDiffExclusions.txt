@@ -45,6 +45,7 @@ sb,./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/*?
 
 # missing workload manifests - https://github.com/dotnet/source-build/issues/3242
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.android/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.ios/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.maccatalyst/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.macos/*
