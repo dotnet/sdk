@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class PackageSearchCommandParser
     {
-        public static readonly CliArgument<string> SearchTermArgument = new("searchTerm")
+        public static readonly CliArgument<string> SearchTermArgument = new("SearchTerm")
         {
             HelpName = LocalizableStrings.SearchTermArgumentName,
             Description = LocalizableStrings.SearchTermDescription
@@ -19,9 +19,20 @@ namespace Microsoft.DotNet.Cli
             HelpName = LocalizableStrings.SourceArgumentName
         };
 
+        public static readonly CliOption<int> Take = new("--take")
+        {
+            Description = LocalizableStrings.TakeDescription,
+            HelpName = LocalizableStrings.TakeArgumentName
+        };
+
         public static readonly CliOption<bool> ExactMatch = new("--exact-match")
         {
             Description = LocalizableStrings.ExactMatchDescription
+        };
+
+        public static readonly CliOption<bool> Interactive = new("--interactive")
+        {
+            Description = LocalizableStrings.InteractiveDescription
         };
 
         public static readonly CliOption<bool> Prerelease = new("--prerelease")
@@ -43,7 +54,9 @@ namespace Microsoft.DotNet.Cli
             command.Arguments.Add(SearchTermArgument);
 
             command.Options.Add(Source);
+            command.Options.Add(Take);
             command.Options.Add(ExactMatch);
+            command.Options.Add(Interactive);
             command.Options.Add(Prerelease);
 
             command.SetAction((parseResult) => new PackageSearchCommand(parseResult).Execute());

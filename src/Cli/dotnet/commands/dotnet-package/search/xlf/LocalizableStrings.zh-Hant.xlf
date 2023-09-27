@@ -12,14 +12,19 @@
         <target state="new">Return exact matches only as a search result.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InteractiveDescription">
+        <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
+        <target state="new">Allows the command to stop and wait for user input or action (for example to complete authentication).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PrereleaseDescription">
         <source>Allow prelease packages to be shown.</source>
         <target state="new">Allow prelease packages to be shown.</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchTermArgumentName">
-        <source>SEARCH_TERM</source>
-        <target state="new">SEARCH_TERM</target>
+        <source>SearchTerm</source>
+        <target state="new">SearchTerm</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchTermDescription">
@@ -35,6 +40,16 @@
       <trans-unit id="SourceDescription">
         <source>A list of package sources to search.</source>
         <target state="new">A list of package sources to search.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TakeArgumentName">
+        <source>Take</source>
+        <target state="new">Take</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TakeDescription">
+        <source>The number of results to return. The default value is 20.</source>
+        <target state="new">The number of results to return. The default value is 20.</target>
         <note />
       </trans-unit>
     </body>

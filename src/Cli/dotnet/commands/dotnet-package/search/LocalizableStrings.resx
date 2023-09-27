@@ -123,11 +123,14 @@
   <data name="ExactMatchDescription" xml:space="preserve">
     <value>Return exact matches only as a search result.</value>
   </data>
+  <data name="InteractiveDescription" xml:space="preserve">
+    <value>Allows the command to stop and wait for user input or action (for example to complete authentication).</value>
+  </data>
   <data name="PrereleaseDescription" xml:space="preserve">
     <value>Allow prelease packages to be shown.</value>
   </data>
   <data name="SearchTermArgumentName" xml:space="preserve">
-    <value>SEARCH_TERM</value>
+    <value>SearchTerm</value>
   </data>
   <data name="SearchTermDescription" xml:space="preserve">
     <value>Search term from package id.</value>
@@ -137,5 +140,11 @@
   </data>
   <data name="SourceDescription" xml:space="preserve">
     <value>A list of package sources to search.</value>
+  </data>
+  <data name="TakeArgumentName" xml:space="preserve">
+    <value>Take</value>
+  </data>
+  <data name="TakeDescription" xml:space="preserve">
+    <value>The number of results to return. The default value is 20.</value>
   </data>
 </root>
