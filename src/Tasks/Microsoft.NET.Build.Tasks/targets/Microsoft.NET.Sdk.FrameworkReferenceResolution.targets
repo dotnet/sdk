@@ -109,6 +109,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 SilenceIsTrimmableUnsupportedWarning="$(_SilenceIsTrimmableUnsupportedWarning)"
                                 EnableTrimAnalyzer="$(EnableTrimAnalyzer)"
                                 EnableSingleFileAnalyzer="$(EnableSingleFileAnalyzer)"
+                                SilenceEnableSingleFileAnalyzerUnsupportedWarning="$(_SilenceEnableSingleFileAnalyzerUnsupportedWarning)"
                                 AotUseKnownRuntimePackForTarget="$(PublishAotUsingRuntimePack)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"

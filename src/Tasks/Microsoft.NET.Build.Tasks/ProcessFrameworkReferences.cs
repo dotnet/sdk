@@ -59,6 +59,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool EnableSingleFileAnalyzer { get; set; }
 
+        public bool SilenceEnableSingleFileAnalyzerUnsupportedWarning { get; set; }
+
         public bool AotUseKnownRuntimePackForTarget { get; set; }
 
         public string RuntimeIdentifier { get; set; }
@@ -462,7 +464,8 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         // There's no IsSingleFileCompatible setting. EnableSingleFileAnalyzer is the
                         // recommended way to ensure single-file compatibility for libraries.
-                        Log.LogWarning(Strings.EnableSingleFileAnalyzerUnsupported);
+                        if (!SilenceEnableSingleFileAnalyzerUnsupportedWarning)
+                            Log.LogWarning(Strings.EnableSingleFileAnalyzerUnsupported);
                     }
                     else
                     {

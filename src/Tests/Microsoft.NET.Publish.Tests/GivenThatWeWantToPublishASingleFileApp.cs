@@ -653,6 +653,31 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining($"warning NETSDK1211");
         }
 
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for single-file
+        [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for single-file and targeting.
+        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for single-file, but leaves a "gap" for the supported net6./net7.0 TFMs.
+        public void EnableSingleFile_warns_when_expected_for_not_correctly_multitargeted_libraries(string targetFrameworks, bool shouldWarn)
+        {
+            
+            var testProject = new TestProject()
+            {
+                Name = "ClassLibTest",
+                TargetFrameworks = targetFrameworks
+            };
+            testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks);
+
+            var buildCommand = new BuildCommand(testAsset);
+            var resultAssertion = buildCommand.Execute()
+                .Should().Pass();
+            if (shouldWarn) {
+                resultAssertion.And.HaveStdOutContaining($"warning NETSDK1211");
+            } else {
+                resultAssertion.And.NotHaveStdOutContaining($"warning");
+            }
+        }
+
         private TestProject CreateTestProjectWithAnalyzerWarnings(string targetFramework, string projectName, bool isExecutable)
         {
             var testProject = new TestProject()

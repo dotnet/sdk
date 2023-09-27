@@ -45,15 +45,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 
     <!-- ProcessFrameworkReferences warns when the project settings introduce a dependency on a
-         tool pack that's not available for the target framework. For trimming and AOT, the recommendation
+         tool pack that's not available for the target framework. For trimming, AOT, and single-file, the recommendation
          is to multitarget the project to include a more recent TargetFramework. For correctly multitargeted
          projects, the warning is usually just noise, so we silence it.
 
          Correctly multitargeted projects include a TargetFramework that is compatible with the requested
-         functionality (trimming/AOT), and doesn't leave a "gap" where the incompatible TargetFramework's
+         functionality (trimming/AOT/single-file), and doesn't leave a "gap" where the incompatible TargetFramework's
          assembly could be consumed from an app that uses the functionality. In other words, correctly multitargeted
-         projects should include at least one TFM that supports the given functionality, and is no larger than the
-         minimum supported TargetFramework that the SDK can target while supporting this functionality.
+         projects should include at least one TFM that:
+         - supports the given functionality, and
+         - is no larger than the minimum non-EOL TargetFramework that supports this functionality.
 
          The following logic determines whether the project is correctly multi-targeted based on its TargetFrameworks,
          and silences the warning if it is. -->
@@ -61,9 +62,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_FirstTargetFrameworkToSupportTrimming>net6.0</_FirstTargetFrameworkToSupportTrimming>
       <_FirstTargetFrameworkToSupportAot>net7.0</_FirstTargetFrameworkToSupportAot>
-      <!-- The min non-EOL TFM has already caught up with the first TFM to support trimming. No need to compare against it. -->
+      <_FirstTargetFrameworkToSupportSingleFile>net6.0</_FirstTargetFrameworkToSupportSingleFile>
+      <!-- The min non-EOL TFM has already caught up with the first TFM to support trimming/singlefile. No need to compare against it. -->
       <_MinNonEolTargetFrameworkForTrimming>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForTrimming>
-      <!-- Get the min non-EOL TFM that supports AOT.-->
+      <_MinNonEolTargetFrameworkForSingleFile>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForSingleFile>
+      <!-- Get the min non-EOL TFM that supports AOT. -->
       <_MinNonEolTargetFrameworkForAot>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForAot>
       <_MinNonEolTargetFrameworkForAot Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(_FirstTargetFrameworkToSupportAot)', '$(_MinimumNonEolSupportedNetCoreTargetFramework)'))">$(_FirstTargetFrameworkToSupportAot)</_MinNonEolTargetFrameworkForAot>
     </PropertyGroup>
@@ -75,22 +78,29 @@ Copyright (c) .NET Foundation. All rights reserved.
         <SupportedByMinNonEolTargetFrameworkForTrimming>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForTrimming)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForTrimming>
         <SupportsAot>$([MSBuild]::IsTargetFrameworkCompatible('%(Identity)', '$(_FirstTargetFrameworkToSupportAot)'))</SupportsAot>
         <SupportedByMinNonEolTargetFrameworkForAot>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForAot)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForAot>
+        <SupportsSingleFile>$([MSBuild]::IsTargetFrameworkCompatible('%(Identity)', '$(_FirstTargetFrameworkToSupportSingleFile)'))</SupportsSingleFile>
+        <SupportedByMinNonEolTargetFrameworkForSingleFile>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForSingleFile)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForSingleFile>
       </_DecomposedTargetFramework>
 
-      <_TargetFrameworksToSilenceIsTrimmableUnsupportedWarning
+      <_TargetFrameworkToSilenceIsTrimmableUnsupportedWarning
         Include="@(_DecomposedTargetFramework)"
         Condition="'%(SupportsTrimming)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForTrimming)' == 'true'" />
-      <_TargetFrameworksToSilenceIsAotCompatibleUnsupportedWarning
+      <_TargetFrameworkToSilenceIsAotCompatibleUnsupportedWarning
         Include="@(_DecomposedTargetFramework->'%(Identity)')"
         Condition="'%(SupportsAot)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForAot)' == 'true'" />
+      <_TargetFrameworkToSilenceEnableSingleFileAnalyzerUnsupportedWarning
+        Include="@(_DecomposedTargetFramework)"
+        Condition="'%(SupportsSingleFile)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForSingleFile)' == 'true'" />
     </ItemGroup>
 
     <PropertyGroup>
       <!-- Don't warn if the library multitargets and includes TFM that's supported by trimming/AOT and is supported by the min non-EOL TFM that supports trimming/AOT. -->
       <_SilenceIsTrimmableUnsupportedWarning Condition="'$(_SilenceIsTrimmableUnsupportedWarning)' == '' And
-                                                        @(_TargetFrameworksToSilenceIsTrimmableUnsupportedWarning->Count()) > 0">true</_SilenceIsTrimmableUnsupportedWarning>
+                                                        @(_TargetFrameworkToSilenceIsTrimmableUnsupportedWarning->Count()) > 0">true</_SilenceIsTrimmableUnsupportedWarning>
       <_SilenceIsAotCompatibleUnsupportedWarning Condition="'$(_SilenceIsAotCompatibleUnsupportedWarning)' == '' And 
-                                                            @(_TargetFrameworksToSilenceIsAotCompatibleUnsupportedWarning->Count()) > 0">true</_SilenceIsAotCompatibleUnsupportedWarning>
+                                                            @(_TargetFrameworkToSilenceIsAotCompatibleUnsupportedWarning->Count()) > 0">true</_SilenceIsAotCompatibleUnsupportedWarning>
+      <_SilenceEnableSingleFileAnalyzerUnsupportedWarning Condition="'$(_SilenceEnableSingleFileAnalyzerUnsupportedWarning)' == '' And
+                                                          @(_TargetFrameworkToSilenceEnableSingleFileAnalyzerUnsupportedWarning->Count()) > 0">true</_SilenceEnableSingleFileAnalyzerUnsupportedWarning>
     </PropertyGroup>
 
   </Target>
