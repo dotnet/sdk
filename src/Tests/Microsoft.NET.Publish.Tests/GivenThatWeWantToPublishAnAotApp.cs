@@ -612,6 +612,31 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for AOT
+        [InlineData("netstandard2.0;net7.0", false)] // Net7.0 is the min TFM supported for AOT and targeting.
+        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for AOT, but leaves a "gap" for the supported net7.0 TFMs.
+        public void IsAotCompatible_warns_when_expected_for_not_correctly_multitarget_libraries(string targetFrameworks, bool shouldWarn)
+        {
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFrameworks);
+
+            var testProject = new TestProject()
+            {
+                Name = "ClassLibTest",
+                TargetFrameworks = targetFrameworks
+            };
+            testProject.AdditionalProperties["IsAotCompatible"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks);
+            var buildCommand = new BuildCommand(testAsset);
+            var resultAssertion = buildCommand.Execute()
+                .Should().Pass();
+            if (shouldWarn) {
+                resultAssertion.And.HaveStdOutContaining($"warning NETSDK1210");
+            } else {
+                resultAssertion.And.NotHaveStdOutContaining($"warning");
+            }
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void Requires_analyzers_produce_warnings_without_PublishAot_being_set(string targetFramework)
         {

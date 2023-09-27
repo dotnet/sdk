@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ResolvedFileToPublish>
   </ItemDefinitionGroup>
 
-  <Target Name="_ComputeRequiresILLinkPack" BeforeTargets="ProcessFrameworkReferences">
+  <Target Name="_ComputeToolPackInputsToProcessFrameworkReferences" BeforeTargets="ProcessFrameworkReferences">
     <!-- Keep this in sync with the warnings produced for RequiresILLinkPack in ProcessFrameworkReferences.cs. 
          Must be set late enough to see the inferred value of EnableSingleFileAnalyzer. -->
     <PropertyGroup>
@@ -42,6 +42,57 @@ Copyright (c) .NET Foundation. All rights reserved.
           '$(EnableSingleFileAnalyzer)' == 'true')">true</_RequiresILLinkPack>
       <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == ''">false</_RequiresILLinkPack>
     </PropertyGroup>
+
+
+    <!-- ProcessFrameworkReferences warns when the project settings introduce a dependency on a
+         tool pack that's not available for the target framework. For trimming and AOT, the recommendation
+         is to multitarget the project to include a more recent TargetFramework. For correctly multitargeted
+         projects, the warning is usually just noise, so we silence it.
+
+         Correctly multitargeted projects include a TargetFramework that is compatible with the requested
+         functionality (trimming/AOT), and doesn't leave a "gap" where the incompatible TargetFramework's
+         assembly could be consumed from an app that uses the functionality. In other words, correctly multitargeted
+         projects should include at least one TFM that supports the given functionality, and is no larger than the
+         minimum supported TargetFramework that the SDK can target while supporting this functionality.
+
+         The following logic determines whether the project is correctly multi-targeted based on its TargetFrameworks,
+         and silences the warning if it is. -->
+
+    <PropertyGroup>
+      <_FirstTargetFrameworkToSupportTrimming>net6.0</_FirstTargetFrameworkToSupportTrimming>
+      <_FirstTargetFrameworkToSupportAot>net7.0</_FirstTargetFrameworkToSupportAot>
+      <!-- The min non-EOL TFM has already caught up with the first TFM to support trimming. No need to compare against it. -->
+      <_MinNonEolTargetFrameworkForTrimming>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForTrimming>
+      <!-- Get the min non-EOL TFM that supports AOT.-->
+      <_MinNonEolTargetFrameworkForAot>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForAot>
+      <_MinNonEolTargetFrameworkForAot Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(_FirstTargetFrameworkToSupportAot)', '$(_MinimumNonEolSupportedNetCoreTargetFramework)'))">$(_FirstTargetFrameworkToSupportAot)</_MinNonEolTargetFrameworkForAot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFrameworks)" />
+      <_DecomposedTargetFramework Include="@(_TargetFramework)">
+        <SupportsTrimming>$([MSBuild]::IsTargetFrameworkCompatible('%(Identity)', '$(_FirstTargetFrameworkToSupportTrimming)'))</SupportsTrimming>
+        <SupportedByMinNonEolTargetFrameworkForTrimming>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForTrimming)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForTrimming>
+        <SupportsAot>$([MSBuild]::IsTargetFrameworkCompatible('%(Identity)', '$(_FirstTargetFrameworkToSupportAot)'))</SupportsAot>
+        <SupportedByMinNonEolTargetFrameworkForAot>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForAot)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForAot>
+      </_DecomposedTargetFramework>
+
+      <_TargetFrameworksToSilenceIsTrimmableUnsupportedWarning
+        Include="@(_DecomposedTargetFramework)"
+        Condition="'%(SupportsTrimming)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForTrimming)' == 'true'" />
+      <_TargetFrameworksToSilenceIsAotCompatibleUnsupportedWarning
+        Include="@(_DecomposedTargetFramework->'%(Identity)')"
+        Condition="'%(SupportsAot)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForAot)' == 'true'" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <!-- Don't warn if the library multitargets and includes TFM that's supported by trimming/AOT and is supported by the min non-EOL TFM that supports trimming/AOT. -->
+      <_SilenceIsTrimmableUnsupportedWarning Condition="'$(_SilenceIsTrimmableUnsupportedWarning)' == '' And
+                                                        @(_TargetFrameworksToSilenceIsTrimmableUnsupportedWarning->Count()) > 0">true</_SilenceIsTrimmableUnsupportedWarning>
+      <_SilenceIsAotCompatibleUnsupportedWarning Condition="'$(_SilenceIsAotCompatibleUnsupportedWarning)' == '' And 
+                                                            @(_TargetFrameworksToSilenceIsAotCompatibleUnsupportedWarning->Count()) > 0">true</_SilenceIsAotCompatibleUnsupportedWarning>
+    </PropertyGroup>
+
   </Target>
 
   <!--

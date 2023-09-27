@@ -183,6 +183,28 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for trimming
+        [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for trimming and targeting.
+        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for trimming, but leaves a "gap" for the supported net6.0/net7.0 TFMs.
+        public void IsTrimmable_warns_when_expected_for_not_correctly_multitargeted_libraries(string targetFrameworks, bool shouldWarn)
+        {
+            var projectName = "HelloWorld";
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFrameworks);
+
+            var testProject = CreateTestProjectForILLinkTesting(targetFrameworks, projectName);
+            testProject.AdditionalProperties["IsTrimmable"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks);
+            var buildCommand = new BuildCommand(testAsset);
+            var resultAssertion = buildCommand.Execute()
+                .Should().Pass();
+            if (shouldWarn) {
+                resultAssertion.And.HaveStdOutContaining($"warning NETSDK1212");
+            } else {
+                resultAssertion.And.NotHaveStdOutContaining($"warning");
+            }
+        }
+
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("netstandard2.1")]
         public void RequiresILLinkPack_errors_for_unsupported_target_framework(string targetFramework)
         {
@@ -2090,7 +2112,7 @@ public static class UnusedNonTrimmableAssembly
         }
 
         private TestProject CreateTestProjectForILLinkTesting(
-            string targetFramework,
+            string targetFrameworks,
             string mainProjectName,
             string referenceProjectName = null,
             bool usePackageReference = true,
@@ -2103,7 +2125,7 @@ public static class UnusedNonTrimmableAssembly
             var testProject = new TestProject()
             {
                 Name = mainProjectName,
-                TargetFrameworks = targetFramework,
+                TargetFrameworks = targetFrameworks,
                 IsExe = true
             };
 
@@ -2114,31 +2136,33 @@ public static class UnusedNonTrimmableAssembly
 
             testProject.SourceFiles[$"{mainProjectName}.cs"] = @"
 using System;
-public class Program
+namespace HelloWorld
 {
-    public static void Main()
+    public class Program
     {
-        Console.WriteLine(""Hello world"");
-    }
+        public static void Main()
+        {
+            Console.WriteLine(""Hello world"");
+        }
 
-    public static void UnusedMethod()
-    {
-    }
+        public static void UnusedMethod()
+        {
+        }
 ";
 
             if (addAssemblyReference)
             {
                 testProject.SourceFiles[$"{mainProjectName}.cs"] += @"
-    public static void UseClassLib()
-    {
-        ClassLib.UsedMethod();
+        public static void UseClassLib()
+        {
+            ClassLib.UsedMethod();
+        }
+";
+            }
+
+            testProject.SourceFiles[$"{mainProjectName}.cs"] += @"
     }
 }";
-            }
-            else
-            {
-                testProject.SourceFiles[$"{mainProjectName}.cs"] += @"}";
-            }
 
             if (referenceProjectName == null)
             {
@@ -2153,7 +2177,7 @@ public class Program
                 // NOTE: If using a package reference for the reference project, it will be retrieved
                 // from the nuget cache. Set the reference project TFM to the lowest common denominator
                 // of these tests to prevent conflicts.
-                TargetFrameworks = usePackageReference ? "netcoreapp3.0" : targetFramework,
+                TargetFrameworks = usePackageReference ? "netcoreapp3.0" : targetFrameworks,
             };
             referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = @"
 using System;
@@ -2192,7 +2216,7 @@ public class ClassLib
 
             if (usePackageReference)
             {
-                var referenceAsset = GetProjectReference(referenceProject, callingMethod, referenceProjectIdentifier ?? targetFramework);
+                var referenceAsset = GetProjectReference(referenceProject, callingMethod, referenceProjectIdentifier ?? targetFrameworks);
                 testProject.ReferencedProjects.Add(referenceAsset.TestProject);
             }
             else
