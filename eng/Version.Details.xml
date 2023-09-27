@@ -386,6 +386,16 @@
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
+    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-rtm.23504.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>22b8a5665f5725a2c7bb09cfbe88f2cdc9847c1a</Sha>
+    </Dependency>
+    <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rtm.23504.8">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>22b8a5665f5725a2c7bb09cfbe88f2cdc9847c1a</Sha>
+    </Dependency>
+    <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
     <Dependency Name="Microsoft.Extensions.Logging.Console" Version="8.0.0-rtm.23504.8">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>22b8a5665f5725a2c7bb09cfbe88f2cdc9847c1a</Sha>
