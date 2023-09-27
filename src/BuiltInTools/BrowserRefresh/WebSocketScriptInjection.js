@@ -47,7 +47,8 @@ setTimeout(async function () {
         'BlazorHotReloadDeltav1': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas, false),
         'BlazorHotReloadDeltav2': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas, true),
         'HotReloadDiagnosticsv1': () => displayDiagnostics(payload.diagnostics),
-        'BlazorRequestApplyUpdateCapabilities': getBlazorWasmApplyUpdateCapabilities,
+        'BlazorRequestApplyUpdateCapabilities': () => getBlazorWasmApplyUpdateCapabilities(false),
+        'BlazorRequestApplyUpdateCapabilities2': () => getBlazorWasmApplyUpdateCapabilities(true),
         'AspNetCoreHotReloadApplied': () => aspnetCoreHotReloadApplied()
       };
 
@@ -94,13 +95,15 @@ setTimeout(async function () {
       .forEach(e => updateCssElement(e));
   }
 
-  function getBlazorWasmApplyUpdateCapabilities() {
+  function getBlazorWasmApplyUpdateCapabilities(sendErrorToClient) {
     let applyUpdateCapabilities;
     try {
       applyUpdateCapabilities = window.Blazor._internal.getApplyUpdateCapabilities();
     } catch (error) {
       console.warn(error);
-      applyUpdateCapabilities = '!' + error.stack;
+      if (sendErrorToClient) {
+        applyUpdateCapabilities = '!' + error.stack;
+      }
     }
     connection.send(applyUpdateCapabilities);
   }

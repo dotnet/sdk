@@ -178,7 +178,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private readonly struct BlazorRequestApplyUpdateCapabilities
         {
-            public string Type => "BlazorRequestApplyUpdateCapabilities";
+            public string Type => "BlazorRequestApplyUpdateCapabilities2";
         }
     }
 }
