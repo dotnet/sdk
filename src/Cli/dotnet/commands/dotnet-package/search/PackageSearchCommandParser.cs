@@ -24,13 +24,6 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.ExactMatchDescription
         };
 
-        public static readonly CliOption<string> Verbosity = new("--verbosity")
-
-        {
-            Description = LocalizableStrings.VerbosityDescription,
-            HelpName = LocalizableStrings.VerbosityArgumentName
-        };
-
         public static readonly CliOption<bool> Prerelease = new("--prerelease")
         {
             Description = LocalizableStrings.PrereleaseDescription
@@ -51,7 +44,6 @@ namespace Microsoft.DotNet.Cli
 
             command.Options.Add(Source);
             command.Options.Add(ExactMatch);
-            command.Options.Add(Verbosity);
             command.Options.Add(Prerelease);
 
             command.SetAction((parseResult) => new PackageSearchCommand(parseResult).Execute());

@@ -10,7 +10,6 @@ namespace Microsoft.DotNet.Tools.Package.Search
         private string _source;
         private string _searchArgument;
         private bool _exactMatch;
-        private string _verbosity;
         private bool _prerelease;
         private readonly NugetSearchResultPrinter _searchResultPrinter;
         private readonly INugetSearchApiRequest _nugetToolSearchApiRequest;
@@ -20,7 +19,6 @@ namespace Microsoft.DotNet.Tools.Package.Search
             _source = parseResult.GetValue(PackageSearchCommandParser.Source);
             _searchArgument = parseResult.GetValue(PackageSearchCommandParser.SearchTermArgument);
             _exactMatch = parseResult.GetValue(PackageSearchCommandParser.ExactMatch);
-            _verbosity = parseResult.GetValue(PackageSearchCommandParser.Verbosity);
             _prerelease = parseResult.GetValue(PackageSearchCommandParser.Prerelease);
             _searchResultPrinter = new NugetSearchResultPrinter(Reporter.Output);
             _nugetToolSearchApiRequest = new NugetSearchApiRequest();
@@ -32,7 +30,7 @@ namespace Microsoft.DotNet.Tools.Package.Search
                 NugetSearchApiResultDeserializer.Deserialize(
                     _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter).GetAwaiter().GetResult());
 
-            _searchResultPrinter.Print(_verbosity, _exactMatch, _searchArgument, searchResultPackages);
+            _searchResultPrinter.Print(_exactMatch, _searchArgument, searchResultPackages);
             return 0;
         }
     }

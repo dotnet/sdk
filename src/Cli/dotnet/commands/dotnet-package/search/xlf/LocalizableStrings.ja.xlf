@@ -37,16 +37,6 @@
         <target state="new">A list of package sources to search.</target>
         <note />
       </trans-unit>
-      <trans-unit id="VerbosityArgumentName">
-        <source>Verbosity</source>
-        <target state="new">Verbosity</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VerbosityDescription">
-        <source>The amount of details in the output : quiet, normal, detailed.</source>
-        <target state="new">The amount of details in the output : quiet, normal, detailed.</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>

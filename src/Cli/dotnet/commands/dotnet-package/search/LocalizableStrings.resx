@@ -138,10 +138,4 @@
   <data name="SourceDescription" xml:space="preserve">
     <value>A list of package sources to search.</value>
   </data>
-  <data name="VerbosityArgumentName" xml:space="preserve">
-    <value>Verbosity</value>
-  </data>
-  <data name="VerbosityDescription" xml:space="preserve">
-    <value>The amount of details in the output : quiet, normal, detailed.</value>
-  </data>
 </root>
