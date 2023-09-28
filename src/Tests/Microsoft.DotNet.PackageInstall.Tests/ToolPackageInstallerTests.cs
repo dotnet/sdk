@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Action a = () => installer.InstallPackage(new PackageLocation(), packageId: TestPackageId,
                 versionRange: VersionRange.Parse(TestPackageVersion), targetFramework: _testTargetframework);
 
-            a.Should().Throw<ToolPackageException>().WithMessage(Tools.Tool.Install.LocalizableStrings.ToolInstallationRestoreFailed);
+            a.Should().Throw<ToolPackageException>().WithMessage(LocalizableStrings.ToolInstallationRestoreFailed);
 
             reporter.Lines.Count.Should().Be(1);
             reporter.Lines[0].Should().Contain(TestPackageId.ToString());
@@ -460,7 +460,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 }
             };
 
-            a.Should().Throw<ToolPackageException>().WithMessage(Tools.Tool.Install.LocalizableStrings.ToolInstallationRestoreFailed);
+            a.Should().Throw<ToolPackageException>().WithMessage(LocalizableStrings.ToolInstallationRestoreFailed);
 
             AssertInstallRollBack(fileSystem, store);
         }
@@ -1049,7 +1049,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     Path.GetRandomFileName() + " " + Path.GetRandomFileName());
 
             FilePath nugetConfigFullPath =
-                new FilePath(Path.GetFullPath(Path.Combine(tempPathForNugetConfigWithWhiteSpace, nugetConfigName)));
+                new(Path.GetFullPath(Path.Combine(tempPathForNugetConfigWithWhiteSpace, nugetConfigName)));
             return nugetConfigFullPath;
         }
 
@@ -1058,7 +1058,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
-        private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
+        private static readonly PackageId TestPackageId = new("global.tool.console.demo");
         private static readonly IEnumerable<NuGetFramework> TestFrameworks = new NuGetFramework[] { NuGetFramework.Parse("netcoreapp2.1") };
 
         public ToolPackageInstallerTests(ITestOutputHelper log) : base(log)

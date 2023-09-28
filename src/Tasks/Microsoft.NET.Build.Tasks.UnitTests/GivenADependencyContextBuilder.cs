@@ -35,7 +35,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             object[] resolvedNuGetFiles)
         {
             LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
-            LockFileLookup lockFileLookup = new LockFileLookup(lockFile);
+            LockFileLookup lockFileLookup = new(lockFile);
 
             SingleProjectInfo mainProject = SingleProjectInfo.Create(
                 "/usr/Path",
@@ -83,10 +83,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 // write the result file out on failure for easy comparison
 
-                using (JsonTextWriter writer = new JsonTextWriter(File.CreateText($"result-{baselineFileName}.deps.json")))
+                using (JsonTextWriter writer = new(File.CreateText($"result-{baselineFileName}.deps.json")))
                 {
-                    JsonSerializer serializer = new JsonSerializer();
-                    serializer.Formatting = Formatting.Indented;
+                    JsonSerializer serializer = new()
+                    {
+                        Formatting = Formatting.Indented
+                    };
                     serializer.Serialize(writer, result);
                 }
 
@@ -148,7 +150,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         private static JObject ReadJson(string path)
         {
-            using (JsonTextReader jsonReader = new JsonTextReader(File.OpenText(path)))
+            using (JsonTextReader jsonReader = new(File.OpenText(path)))
             {
                 return JObject.Load(jsonReader);
             }

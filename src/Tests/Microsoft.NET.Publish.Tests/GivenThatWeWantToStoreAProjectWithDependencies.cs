@@ -65,9 +65,10 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute($"/p:RuntimeIdentifier={_runtimeRid}", $"/p:TargetFramework={_tfm}", $"/p:ComposeDir={OutputFolder}", $"/p:ComposeWorkingDir={WorkingDir}", "/p:DoNotDecorateComposeDir=true", "/p:PreserveComposeWorkingDir=true", "/p:CreateProfilingSymbols=false")
                 .Should()
                 .Pass();
-            DirectoryInfo storeDirectory = new DirectoryInfo(OutputFolder);
+            DirectoryInfo storeDirectory = new(OutputFolder);
 
-            List<string> files_on_disk = new List<string> {
+            List<string> files_on_disk = new()
+            {
                "artifact.xml",
                "newtonsoft.json/9.0.1/lib/netstandard1.0/Newtonsoft.Json.dll",
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.Core.dll",
@@ -100,9 +101,10 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute($"/p:RuntimeIdentifier={_runtimeRid}", $"/p:TargetFramework={_tfm}", $"/p:ComposeDir={OutputFolder}", "/p:SkipOptimization=true", $"/p:ComposeWorkingDir={WorkingDir}", "/p:DoNotDecorateComposeDir=true", "/p:PreserveComposeWorkingDir=true", "/p:CreateProfilingSymbols=false")
                 .Should()
                 .Pass();
-            DirectoryInfo storeDirectory = new DirectoryInfo(OutputFolder);
+            DirectoryInfo storeDirectory = new(OutputFolder);
 
-            List<string> files_on_disk = new List<string> {
+            List<string> files_on_disk = new()
+            {
                "artifact.xml",
                "newtonsoft.json/9.0.1/lib/netstandard1.0/Newtonsoft.Json.dll",
                "fluentassertions/4.12.0/lib/netstandard1.3/FluentAssertions.Core.dll",
@@ -138,9 +140,10 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Pass();
 
-            DirectoryInfo storeDirectory = new DirectoryInfo(OutputFolder);
+            DirectoryInfo storeDirectory = new(OutputFolder);
 
-            List<string> files_on_disk = new List<string> {
+            List<string> files_on_disk = new()
+            {
                "artifact.xml",
                $"runtime.{_runtimeRid}.microsoft.netcore.coredistools/1.0.1-prerelease-00001/runtimes/{_runtimeRid}/native/{_libPrefix}coredistools{FileConstants.DynamicLibSuffix}",
                $"runtime.{_runtimeRid}.microsoft.netcore.coredistools/1.0.1-prerelease-00001/runtimes/{_runtimeRid}/native/coredistools.h"
@@ -156,8 +159,10 @@ namespace Microsoft.NET.Publish.Tests
                 .CopyTestAsset("TargetManifests", "multifile")
                 .WithSource();
 
-            var storeCommand = new ComposeStoreCommand(Log, simpleDependenciesAsset.TestRoot, "NewtonsoftFilterProfile.xml");
-            storeCommand.WorkingDirectory = simpleDependenciesAsset.Path;
+            var storeCommand = new ComposeStoreCommand(Log, simpleDependenciesAsset.TestRoot, "NewtonsoftFilterProfile.xml")
+            {
+                WorkingDirectory = simpleDependenciesAsset.Path
+            };
 
             var OutputFolder = Path.Combine(simpleDependenciesAsset.TestRoot, "o");
             var WorkingDir = Path.Combine(simpleDependenciesAsset.TestRoot, "w");
@@ -168,9 +173,10 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute($"/p:RuntimeIdentifier={_runtimeRid}", $"/p:TargetFramework={_tfm}", $"/p:Additionalprojects={additionalproj1}%3b{additionalproj2}", $"/p:ComposeDir={OutputFolder}", $"/p:ComposeWorkingDir={WorkingDir}", "/p:DoNotDecorateComposeDir=true", "/p:CreateProfilingSymbols=false")
                 .Should()
                 .Pass();
-            DirectoryInfo storeDirectory = new DirectoryInfo(OutputFolder);
+            DirectoryInfo storeDirectory = new(OutputFolder);
 
-            List<string> files_on_disk = new List<string> {
+            List<string> files_on_disk = new()
+            {
                "artifact.xml",
                "newtonsoft.json/9.0.2-beta2/lib/netstandard1.1/Newtonsoft.Json.dll",
                "newtonsoft.json/9.0.1/lib/netstandard1.0/Newtonsoft.Json.dll",

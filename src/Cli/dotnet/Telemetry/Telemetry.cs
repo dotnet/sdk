@@ -136,8 +136,10 @@ namespace Microsoft.DotNet.Cli.Telemetry
         {
             try
             {
-                var persistenceChannel = new PersistenceChannel.PersistenceChannel(sendersCount: _senderCount);
-                persistenceChannel.SendingInterval = TimeSpan.FromMilliseconds(1);
+                var persistenceChannel = new PersistenceChannel.PersistenceChannel(sendersCount: _senderCount)
+                {
+                    SendingInterval = TimeSpan.FromMilliseconds(1)
+                };
 
                 var config = TelemetryConfiguration.CreateDefault();
                 config.TelemetryChannel = persistenceChannel;
@@ -189,7 +191,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
 
         private Dictionary<string, double> GetEventMeasures(IDictionary<string, double> measurements)
         {
-            Dictionary<string, double> eventMeasurements = new Dictionary<string, double>(_commonMeasurements);
+            Dictionary<string, double> eventMeasurements = new(_commonMeasurements);
             if (measurements != null)
             {
                 foreach (KeyValuePair<string, double> measurement in measurements)

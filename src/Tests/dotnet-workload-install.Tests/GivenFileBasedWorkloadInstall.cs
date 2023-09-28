@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         static PackInfo CreatePackInfo(string id, string version, WorkloadPackKind kind, string path, string resolvedPackageId)
-            => new PackInfo(new WorkloadPackId(id), version, kind, path, resolvedPackageId);
+            => new(new WorkloadPackId(id), version, kind, path, resolvedPackageId);
 
         [Fact]
         public void GivenManagedInstallItCanInstallDirectoryPacks()
@@ -463,7 +463,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory(testName, identifier: identifier).Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
             INuGetPackageDownloader nugetInstaller = failingInstaller ? new FailingNuGetPackageDownloader(testDirectory) : new MockNuGetPackageDownloader(dotnetRoot, manifestDownload);
-            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
+            var workloadResolver = CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
             var sdkFeatureBand = new SdkFeatureBand("6.0.300");
             return (dotnetRoot, new FileBasedInstaller(_reporter, sdkFeatureBand, workloadResolver, userProfileDir: testDirectory, nugetInstaller, dotnetRoot, packageSourceLocation: packageSourceLocation), nugetInstaller);
         }
