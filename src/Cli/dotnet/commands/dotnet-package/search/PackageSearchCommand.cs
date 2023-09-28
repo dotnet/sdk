@@ -9,7 +9,8 @@ namespace Microsoft.DotNet.Tools.Package.Search
     {
         private string _searchArgument;
         private string _source;
-        private int _take;
+        private int? _take;
+        private int? _skip;
         private bool _exactMatch;
         private bool _interactive;
         private bool _prerelease;
@@ -20,6 +21,7 @@ namespace Microsoft.DotNet.Tools.Package.Search
         {
             _source = parseResult.GetValue(PackageSearchCommandParser.Source);
             _take = parseResult.GetValue(PackageSearchCommandParser.Take);
+            _skip = parseResult.GetValue(PackageSearchCommandParser.Skip);
             _searchArgument = parseResult.GetValue(PackageSearchCommandParser.SearchTermArgument);
             _exactMatch = parseResult.GetValue(PackageSearchCommandParser.ExactMatch);
             _interactive = parseResult.GetValue(PackageSearchCommandParser.Interactive);
@@ -29,7 +31,7 @@ namespace Microsoft.DotNet.Tools.Package.Search
         }
         public override int Execute()
         {
-            NugetSearchApiParameter nugetSearchApiParameter = new NugetSearchApiParameter(_searchArgument, prerelease: _prerelease, take: _take);
+            NugetSearchApiParameter nugetSearchApiParameter = new NugetSearchApiParameter(_searchArgument, prerelease: _prerelease, take: _take, skip: _skip);
             IReadOnlyCollection<SearchResultPackage> searchResultPackages =
                 NugetSearchApiResultDeserializer.Deserialize(
                     _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter).GetAwaiter().GetResult());

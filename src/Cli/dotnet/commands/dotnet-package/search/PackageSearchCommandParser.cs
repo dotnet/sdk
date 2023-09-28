@@ -19,7 +19,13 @@ namespace Microsoft.DotNet.Cli
             HelpName = LocalizableStrings.SourceArgumentName
         };
 
-        public static readonly CliOption<int> Take = new("--take")
+        public static readonly CliOption<int?> Take = new("--take")
+        {
+            Description = LocalizableStrings.TakeDescription,
+            HelpName = LocalizableStrings.TakeArgumentName
+        };
+
+        public static readonly CliOption<int?> Skip = new("--skip")
         {
             Description = LocalizableStrings.TakeDescription,
             HelpName = LocalizableStrings.TakeArgumentName
@@ -55,6 +61,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Options.Add(Source);
             command.Options.Add(Take);
+            command.Options.Add(Skip);
             command.Options.Add(ExactMatch);
             command.Options.Add(Interactive);
             command.Options.Add(Prerelease);
