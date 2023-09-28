@@ -633,27 +633,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("netstandard2.0")]
-        public void EnableSingleFileAnalyzer_warns_for_unsupported_target_framework(string targetFramework)
-        {
-            var testProject = new TestProject()
-            {
-                Name = "ClassLibTest",
-                TargetFrameworks = targetFramework
-            };
-            testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            buildCommand
-                .Execute()
-                .Should().Pass()
-                // Note: can't check for Strings.EnableSingleFileAnalyzerUnsupported because each line of
-                // the message gets prefixed with a file path by MSBuild.
-                .And.HaveStdOutContaining($"warning NETSDK1211");
-        }
-
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0", true)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for single-file
         [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for single-file and targeting.
         [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for single-file, but leaves a "gap" for the supported net6./net7.0 TFMs.
@@ -672,7 +652,11 @@ namespace Microsoft.NET.Publish.Tests
             var resultAssertion = buildCommand.Execute()
                 .Should().Pass();
             if (shouldWarn) {
-                resultAssertion.And.HaveStdOutContaining($"warning NETSDK1211");
+                // Note: can't check for Strings.EnableSingleFileAnalyzerUnsupported because each line of
+                // the message gets prefixed with a file path by MSBuild.
+                resultAssertion
+                    .And.HaveStdOutContaining($"warning NETSDK1211")
+                    .And.HaveStdOutContaining($"<EnableSingleFileAnalyzer Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))\">true</EnableSingleFileAnalyzer>");
             } else {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }

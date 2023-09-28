@@ -591,27 +591,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("netstandard2.0")]
-        public void IsAotCompatible_warns_for_unsupported_target_framework(string targetFramework)
-        {
-            var testProject = new TestProject()
-            {
-                Name = "ClassLibTest",
-                TargetFrameworks = targetFramework
-            };
-            testProject.AdditionalProperties["IsAotCompatible"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
-
-            var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            buildCommand
-                .Execute()
-                .Should().Pass()
-                // Note: can't check for Strings.IsAotCompatibleUnsupported because each line of
-                // the message gets prefixed with a file path by MSBuild.
-                .And.HaveStdOutContaining("warning NETSDK1210");
-        }
-
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0", true)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for AOT
         [InlineData("netstandard2.0;net7.0", false)] // Net7.0 is the min TFM supported for AOT and targeting.
         [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for AOT, but leaves a "gap" for the supported net7.0 TFMs.
@@ -630,7 +610,11 @@ namespace Microsoft.NET.Publish.Tests
             var resultAssertion = buildCommand.Execute()
                 .Should().Pass();
             if (shouldWarn) {
-                resultAssertion.And.HaveStdOutContaining($"warning NETSDK1210");
+                resultAssertion
+                    // Note: can't check for Strings.IsAotCompatibleUnsupported because each line of
+                    // the message gets prefixed with a file path by MSBuild.
+                    .And.HaveStdOutContaining($"warning NETSDK1210")
+                    .And.HaveStdOutContaining($"<IsAotCompatible Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net7.0'))\">true</IsAotCompatible>");
             } else {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }

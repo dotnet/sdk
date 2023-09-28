@@ -165,24 +165,8 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("netstandard2.0")]
-        [InlineData("netstandard2.1")]
-        public void IsTrimmable_warns_for_unsupported_target_framework(string targetFramework)
-        {
-            var projectName = "HelloWorld";
-            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
-
-            var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute("/p:IsTrimmable=true")
-                .Should().Pass()
-                // Note: can't check for Strings.IsTrimmableUnsupported because each line of
-                // the message gets prefixed with a file path by MSBuild.
-                .And.HaveStdOutContaining($"warning NETSDK1212");
-        }
-
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("netstandard2.0", true)]
+        [InlineData("netstandard2.1", true)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for trimming
         [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for trimming and targeting.
         [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for trimming, but leaves a "gap" for the supported net6.0/net7.0 TFMs.
@@ -198,7 +182,11 @@ namespace Microsoft.NET.Publish.Tests
             var resultAssertion = buildCommand.Execute()
                 .Should().Pass();
             if (shouldWarn) {
-                resultAssertion.And.HaveStdOutContaining($"warning NETSDK1212");
+                resultAssertion
+                    // Note: can't check for Strings.IsTrimmableUnsupported because each line of
+                    // the message gets prefixed with a file path by MSBuild.
+                    .And.HaveStdOutContaining($"warning NETSDK1212")
+                    .And.HaveStdOutContaining($"<IsTrimmable Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))\">true</IsTrimmable>");
             } else {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
