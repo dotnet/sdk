@@ -135,6 +135,12 @@
   <data name="SearchTermDescription" xml:space="preserve">
     <value>Search term from package id.</value>
   </data>
+  <data name="SkipArgumentName" xml:space="preserve">
+    <value>Skip</value>
+  </data>
+  <data name="SkipDescription" xml:space="preserve">
+    <value>The number of results to skip, for pagination.</value>
+  </data>
   <data name="SourceArgumentName" xml:space="preserve">
     <value>Source</value>
   </data>

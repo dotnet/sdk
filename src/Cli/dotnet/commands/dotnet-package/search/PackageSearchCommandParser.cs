@@ -27,8 +27,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<int?> Skip = new("--skip")
         {
-            Description = LocalizableStrings.TakeDescription,
-            HelpName = LocalizableStrings.TakeArgumentName
+            Description = LocalizableStrings.SkipDescription,
+            HelpName = LocalizableStrings.SkipArgumentName
         };
 
         public static readonly CliOption<bool> ExactMatch = new("--exact-match")
