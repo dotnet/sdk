@@ -81,7 +81,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                         .Select(arg => arg!.Syntax));
                 var argumentListNode = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments));
 
-                editor.ReplaceNode(oldArgumentListNode, argumentListNode);
+                editor.ReplaceNode(oldArgumentListNode, argumentListNode.WithTriviaFrom(oldArgumentListNode));
             }
         }
     }
