@@ -20,6 +20,7 @@
     <Platform Condition="'$(Platform)' == '' AND ('$(BuildArchitecture)' == 'arm64' OR '$(BuildArchitecture)' == 'arm')">$(BuildArchitecture)</Platform>
     <Platform Condition="'$(Platform)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Platform>
     <Platform Condition="'$(Platform)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Platform>
+    <Platform Condition="'$(Platform)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Platform>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
 
     <UseStableVersions Condition="'$(UseStableVersions)' == ''">false</UseStableVersions>

@@ -176,12 +176,14 @@
           @(Net50AppHostRids);
           osx-arm64;
           linux-s390x;
+          linux-loongarch64;
           "/>
 
       <Net60RuntimePackRids Include="
           @(Net50RuntimePackRids);
           osx-arm64;
           linux-s390x;
+          linux-loongarch64;
           " />
 
       <!-- In .NET 6 the browser-wasm runtime pack started using the Mono naming pattern -->
@@ -337,7 +339,7 @@
 
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
       <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);linux-musl-arm;win-arm64" />
-      <AspNetCore60RuntimePackRids Include="@(AspNetCore50RuntimePackRids);osx-arm64;linux-s390x" />
+      <AspNetCore60RuntimePackRids Include="@(AspNetCore50RuntimePackRids);osx-arm64;linux-s390x;linux-loongarch64" />
       <AspNetCore70RuntimePackRids Include="@(AspNetCore60RuntimePackRids);linux-ppc64le" />
       <AspNetCoreRuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
 
