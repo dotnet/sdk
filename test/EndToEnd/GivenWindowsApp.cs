@@ -12,6 +12,8 @@ namespace EndToEnd
 {
     public class GivenWindowsApp : TestBase
     {
+
+
         [WindowsOnlyTheory]
         [InlineData("10.0.17763.0")]
         [InlineData("10.0.18362.0")]
@@ -32,6 +34,8 @@ namespace EndToEnd
             //  Update TargetFramework to the right version of .NET Core
             project.Root.Element(ns + "PropertyGroup")
                 .Add(new XElement(ns + "TargetPlatformVersion", targetPlatformVersion));
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = TestAssetInfo.currentTfm;
 
             project.Save(projectPath);
 

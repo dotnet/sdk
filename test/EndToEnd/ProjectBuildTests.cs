@@ -16,9 +16,6 @@ namespace EndToEnd.Tests
 {
     public class ProjectBuildTests : TestBase
     {
-        // This is needed each release after we upgrade to 9.0 but the templates haven't been upgraded yet
-        private static readonly string currentTfm = "net9.0";
-
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
@@ -30,6 +27,15 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
                 .Should().Pass();
+
+            string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
+
+            var project = XDocument.Load(projectPath);
+            var ns = project.Root.Name.Namespace;
+
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = TestAssetInfo.currentTfm;
+            project.Save(projectPath);
 
             new RestoreCommand()
                 .WithWorkingDirectory(projectDirectory)
@@ -76,7 +82,7 @@ namespace EndToEnd.Tests
 
             project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk.Web";
             project.Root.Element(ns + "PropertyGroup")
-                .Element(ns + "TargetFramework").Value = currentTfm;
+                .Element(ns + "TargetFramework").Value = TestAssetInfo.currentTfm;
             project.Save(projectPath);
 
             new BuildCommand()
