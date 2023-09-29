@@ -83,6 +83,7 @@
     </ItemGroup>
 
     <CheckForPoison FilesToCheck="@(FinalCliTarball)"
+                    ProjectDirPath="$(ProjectDir)"
                     HashCatalogFilePath="$(PoisonReportDataFile)"
                     MarkerFileName="$(PoisonMarkerFile)"
                     PoisonReportOutputFilePath="$(PoisonUsageReportFile)"
