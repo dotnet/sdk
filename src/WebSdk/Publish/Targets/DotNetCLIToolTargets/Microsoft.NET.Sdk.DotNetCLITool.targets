@@ -87,7 +87,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
   <PropertyGroup>
     <_OtherNetProjectPostPublishDependsOn>
-      _InitPublishIntermediateOutputPath
+      _InitPublishIntermediateOutputPath;
       _PublishFiles;
     </_OtherNetProjectPostPublishDependsOn>
   </PropertyGroup>
