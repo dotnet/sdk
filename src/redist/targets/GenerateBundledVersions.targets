@@ -98,7 +98,7 @@
       <!-- TODO: Once .NET 8.0.X has released, update these version numbers to 8.0.$(VersionFeature80) -->
       <_NET80RuntimePackVersion>8.0.0-preview.7.23375.6</_NET80RuntimePackVersion>
       <_NET80TargetingPackVersion>8.0.0-preview.7.23375.6</_NET80TargetingPackVersion>
-      <_NET80WebAssemblyPackVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</_NET80WebAssemblyPackVersion>
+      <_NET80WebAssemblyPackVersion>8.0.0-preview.7.23375.6</_NET80WebAssemblyPackVersion>
       <_WindowsDesktop80RuntimePackVersion>8.0.0-preview.7.23376.1</_WindowsDesktop80RuntimePackVersion>
       <_WindowsDesktop80TargetingPackVersion>8.0.0-preview.7.23376.1</_WindowsDesktop80TargetingPackVersion>
       <_AspNet80RuntimePackVersion>8.0.0-preview.7.23375.9</_AspNet80RuntimePackVersion>
@@ -106,7 +106,7 @@
 
       <_NET70RuntimePackVersion>7.0.$(VersionFeature70)</_NET70RuntimePackVersion>
       <_NET70TargetingPackVersion>7.0.$(VersionFeature70)</_NET70TargetingPackVersion>
-      <_NET70WebAssemblyPackVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</_NET70WebAssemblyPackVersion>
+      <_NET70WebAssemblyPackVersion>7.0.$(VersionFeature70)</_NET70WebAssemblyPackVersion>
       <_WindowsDesktop70RuntimePackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70RuntimePackVersion>
       <_WindowsDesktop70TargetingPackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70TargetingPackVersion>
       <_AspNet70RuntimePackVersion>7.0.$(VersionFeature70)</_AspNet70RuntimePackVersion>
@@ -222,18 +222,17 @@
           @(Net70RuntimePackRids);
           " />
 
+      <Net80AppHostRids Remove="win-arm" />
+
       <NetCoreAppHostRids Include="
           @(Net80AppHostRids);
           " />
 
-      <NetCoreAppHostRids Remove="win-arm" />
+      <Net80RuntimePackRids Remove="win-arm" />
 
       <NetCoreRuntimePackRids Include="
           @(Net80RuntimePackRids);
           " />
-
-      <NetCoreRuntimePackRids Remove="win-arm" />
-
       <!--
         In source-build, we build the current RID from source, which may be
         non-portable and/or not an official RID.
@@ -364,9 +363,9 @@
       <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);linux-musl-arm;win-arm64" />
       <AspNetCore60RuntimePackRids Include="@(AspNetCore50RuntimePackRids);osx-arm64;linux-s390x" />
       <AspNetCore70RuntimePackRids Include="@(AspNetCore60RuntimePackRids);linux-ppc64le" />
-      <AspNetCoreRuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
-
+      <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
       <AspNetCore80RuntimePackRids Remove="win-arm" />
+      <AspNetCoreRuntimePackRids Include="@(AspNetCore80RuntimePackRids)" />
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
@@ -627,7 +626,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="net8.0"
                               RuntimeFrameworkName="Microsoft.NETCore.App"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftNETCoreAppDefaultRuntimeFrameworkVersion)"
+                              DefaultRuntimeFrameworkVersion="$(_NET80RuntimePackVersion)"
                               LatestRuntimeFrameworkVersion="$(_NET80RuntimePackVersion)"
                               TargetingPackName="Microsoft.NETCore.App.Ref"
                               TargetingPackVersion="$(_NET80TargetingPackVersion)"
@@ -686,7 +685,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net8.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="8.0.0"
+                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop80RuntimePackVersion)"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop80RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop80TargetingPackVersion)"
@@ -698,7 +697,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WPF"
                               TargetFramework="net8.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="8.0.0"
+                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop80RuntimePackVersion)"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop80RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop80TargetingPackVersion)"
@@ -711,7 +710,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App.WindowsForms"
                               TargetFramework="net8.0"
                               RuntimeFrameworkName="Microsoft.WindowsDesktop.App"
-                              DefaultRuntimeFrameworkVersion="8.0.0"
+                              DefaultRuntimeFrameworkVersion="$(_WindowsDesktop80RuntimePackVersion)"
                               LatestRuntimeFrameworkVersion="$(_WindowsDesktop80RuntimePackVersion)"
                               TargetingPackName="Microsoft.WindowsDesktop.App.Ref"
                               TargetingPackVersion="$(_WindowsDesktop80TargetingPackVersion)"
@@ -724,7 +723,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownFrameworkReference Include="Microsoft.AspNetCore.App"
                               TargetFramework="net8.0"
                               RuntimeFrameworkName="Microsoft.AspNetCore.App"
-                              DefaultRuntimeFrameworkVersion="8.0.0"
+                              DefaultRuntimeFrameworkVersion="$(_AspNet80RuntimePackVersion)"
                               LatestRuntimeFrameworkVersion="$(_AspNet80RuntimePackVersion)"
                               TargetingPackName="Microsoft.AspNetCore.App.Ref"
                               TargetingPackVersion="$(_AspNet80TargetingPackVersion)"
