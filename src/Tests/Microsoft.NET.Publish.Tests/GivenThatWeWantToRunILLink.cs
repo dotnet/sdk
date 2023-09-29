@@ -164,7 +164,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining($"error {Strings.PublishTrimmedRequiresVersion30}");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.8.0")]
         [InlineData("netstandard2.0", true)]
         [InlineData("netstandard2.1", true)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for trimming

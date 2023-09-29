@@ -590,7 +590,7 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("warning IL3002");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.8.0")]
         [InlineData("netstandard2.0", true)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for AOT
         [InlineData("netstandard2.0;net7.0", false)] // Net7.0 is the min TFM supported for AOT and targeting.
