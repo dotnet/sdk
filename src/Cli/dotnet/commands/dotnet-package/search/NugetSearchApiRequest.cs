@@ -1,0 +1,174 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Globalization;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using LocalizableStrings = Microsoft.DotNet.Tools.Package.Search.LocalizableStrings;
+
+namespace Microsoft.DotNet.Cli.commands.package.search
+{
+    internal class NugetSearchApiRequest
+    {
+        private readonly string _sourceSeparator = new string('=', 20);
+        private readonly string _packageSeparator = new string('-', 20);
+        private string _searchTerm;
+        private int? _skip;
+        private int? _take;
+        private bool _prerelease;
+        private List<string> _sources;
+        private bool _exactMatch;
+
+        public NugetSearchApiRequest(string searchTerm, int? skip, int? take, bool prerelease, bool exactMatch, List<string> sources)
+        {
+            _searchTerm = searchTerm;
+            _skip = skip;
+            _take = take;
+            _prerelease = prerelease;
+            _sources = sources;
+            _exactMatch = exactMatch;
+        }
+        public async void ExecuteCommandAsync()
+        {
+            var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
+            
+            IList<PackageSource> listEndpoints = GetEndpointsAsync();
+
+            WarnForHTTPSources(listEndpoints);
+            foreach (PackageSource source in listEndpoints)
+            {
+                Console.WriteLine($"Name {source.Source}");
+                SourceRepository repository = Repository.Factory.GetCoreV3(source);
+                Console.WriteLine($"Name {repository.PackageSource}");
+                PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>(CancellationToken.None);
+                Console.WriteLine($"Name {source.Name}");
+                if (resource is null)
+                {
+                    Console.WriteLine($"{source.Name} 2");
+                    taskList.Add((null, source));
+                    continue;
+                }
+                Console.WriteLine($"{source.Name}3");
+                taskList.Add((Task.Run(() => resource.SearchAsync(
+                    _searchTerm,
+                    new SearchFilter(includePrerelease: _prerelease),
+                    skip: _skip ?? 0,
+                    take: _take ?? 20,
+                    NullLogger.Instance,
+                    CancellationToken.None
+                    )), source));
+                Console.WriteLine($"{source.Name}4");
+            }
+            Console.WriteLine("wow " + taskList.Count().ToString() );
+            foreach (var taskItem in taskList)
+            {
+                Console.WriteLine("WTF");
+                var (task, source) = taskItem;
+
+                if (task is null)
+                {
+                    Console.WriteLine(_sourceSeparator);
+                    Console.WriteLine($"Source: {source.Name}");
+                    Console.WriteLine(_packageSeparator);
+                    Console.WriteLine("Failed to obtain a search resource.");
+                    Console.WriteLine(_packageSeparator);
+                    Console.WriteLine();
+                    continue;
+                }
+
+                var results = await task;
+
+                Console.WriteLine(_sourceSeparator);
+                Console.WriteLine($"Source: {source.Name}"); // System.Console is used so that output is not suppressed by Verbosity.
+                Console.WriteLine(_packageSeparator);
+            }
+        }
+
+        private IList<PackageSource> GetEndpointsAsync()
+        {
+            ISettings settings = NuGet.Configuration.Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
+                    configFileName: null,
+                    machineWideSettings: new XPlatMachineWideSetting());
+            PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);
+            List<PackageSource> configurationSources = sourceProvider.LoadPackageSources()
+                .Where(p => p.IsEnabled)
+                .ToList();
+
+            IList<PackageSource> packageSources;
+            if (_sources.Count > 0)
+            {
+                packageSources = _sources
+                    .Select(s => ResolveSource(configurationSources, s))
+                    .ToList();
+            }
+            else
+            {
+                packageSources = configurationSources;
+            }
+            return packageSources;
+        }
+
+        private static PackageSource ResolveSource(IEnumerable<PackageSource> availableSources, string source)
+        {
+            var resolvedSource = availableSources.FirstOrDefault(
+                    f => f.Source.Equals(source, StringComparison.OrdinalIgnoreCase) ||
+                        f.Name.Equals(source, StringComparison.OrdinalIgnoreCase));
+
+            if (resolvedSource == null)
+            {
+                ValidateSource(source);
+                return new PackageSource(source);
+            }
+            else
+            {
+                return resolvedSource;
+            }
+        }
+
+        public static void ValidateSource(string source)
+        {
+            if (!Uri.TryCreate(source, UriKind.Absolute, out Uri result))
+            {
+                throw new Exception("Invalid source " + source);
+            }
+        }
+
+        private void WarnForHTTPSources(IList<PackageSource> packageSources)
+        {
+            List<PackageSource> httpPackageSources = null;
+            foreach (PackageSource packageSource in packageSources)
+            {
+                if (packageSource.IsHttp && !packageSource.IsHttps)
+                {
+                    if (httpPackageSources == null)
+                    {
+                        httpPackageSources = new();
+                    }
+                    httpPackageSources.Add(packageSource);
+                }
+            }
+
+            if (httpPackageSources != null && httpPackageSources.Count != 0)
+            {
+                if (httpPackageSources.Count == 1)
+                {
+                    Console.WriteLine(
+                        string.Format(CultureInfo.CurrentCulture,
+                        LocalizableStrings.Warning_HttpServerUsage,
+                        "search",
+                        httpPackageSources[0]));
+                }
+                else
+                {
+                    Console.WriteLine(
+                        string.Format(CultureInfo.CurrentCulture,
+                        LocalizableStrings.Warning_HttpServerUsage,
+                        "search",
+                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
+                }
+            }
+        }
+    }
+}

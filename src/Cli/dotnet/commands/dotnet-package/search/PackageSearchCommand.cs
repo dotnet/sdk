@@ -1,42 +1,33 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.NugetSearch;
-using Microsoft.DotNet.Tools.Tool.Search; //searchresultpackage
+using Microsoft.DotNet.Cli.commands.package.search;
 namespace Microsoft.DotNet.Tools.Package.Search
 {
     internal class PackageSearchCommand : CommandBase
     {
         private string _searchArgument;
-        private string _source;
+        private List<string> _sources;
         private int? _take;
         private int? _skip;
         private bool _exactMatch;
         private bool _interactive;
         private bool _prerelease;
-        private readonly NugetSearchResultPrinter _searchResultPrinter;
-        private readonly INugetSearchApiRequest _nugetToolSearchApiRequest;
+        private readonly NugetSearchApiRequest _nugetToolSearchApiRequest;
 
         public PackageSearchCommand(ParseResult parseResult) : base(parseResult)
         {
-            _source = parseResult.GetValue(PackageSearchCommandParser.Source);
+            _sources = parseResult.GetValue(PackageSearchCommandParser.Sources);
             _take = parseResult.GetValue(PackageSearchCommandParser.Take);
             _skip = parseResult.GetValue(PackageSearchCommandParser.Skip);
             _searchArgument = parseResult.GetValue(PackageSearchCommandParser.SearchTermArgument);
             _exactMatch = parseResult.GetValue(PackageSearchCommandParser.ExactMatch);
             _interactive = parseResult.GetValue(PackageSearchCommandParser.Interactive);
             _prerelease = parseResult.GetValue(PackageSearchCommandParser.Prerelease);
-            _searchResultPrinter = new NugetSearchResultPrinter(Reporter.Output);
-            _nugetToolSearchApiRequest = new NugetSearchApiRequest();
+            _nugetToolSearchApiRequest = new NugetSearchApiRequest(_searchArgument, _skip, _take, _prerelease, _exactMatch, _sources);
         }
         public override int Execute()
         {
-            NugetSearchApiParameter nugetSearchApiParameter = new NugetSearchApiParameter(_searchArgument, prerelease: _prerelease, take: _take, skip: _skip);
-            IReadOnlyCollection<SearchResultPackage> searchResultPackages =
-                NugetSearchApiResultDeserializer.Deserialize(
-                    _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter).GetAwaiter().GetResult());
-
-            _searchResultPrinter.Print(_exactMatch, _searchArgument, searchResultPackages);
+            _nugetToolSearchApiRequest.ExecuteCommandAsync();
             return 0;
         }
     }

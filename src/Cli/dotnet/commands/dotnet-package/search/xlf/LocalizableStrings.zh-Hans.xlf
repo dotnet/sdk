@@ -32,6 +32,16 @@
         <target state="new">Search term from package id.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SkipArgumentName">
+        <source>Skip</source>
+        <target state="new">Skip</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipDescription">
+        <source>The number of results to skip, for pagination.</source>
+        <target state="new">The number of results to skip, for pagination.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SourceArgumentName">
         <source>Source</source>
         <target state="new">Source</target>
@@ -50,6 +60,11 @@
       <trans-unit id="TakeDescription">
         <source>The number of results to return. The default value is 20.</source>
         <target state="new">The number of results to return. The default value is 20.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Warning_HttpServerUsage">
+        <source>You are running the '{0}' operation with an 'HTTP' source, '{1}' Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source</source>
+        <target state="new">You are running the '{0}' operation with an 'HTTP' source, '{1}' Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source</target>
         <note />
       </trans-unit>
     </body>

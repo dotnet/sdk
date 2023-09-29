@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.SearchTermDescription
         };
 
-        public static readonly CliOption<string> Source = new("--source")
+        public static readonly CliOption<List<string>> Sources = new("--source")
         {
             Description = LocalizableStrings.SourceDescription,
             HelpName = LocalizableStrings.SourceArgumentName
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Arguments.Add(SearchTermArgument);
 
-            command.Options.Add(Source);
+            command.Options.Add(Sources);
             command.Options.Add(Take);
             command.Options.Add(Skip);
             command.Options.Add(ExactMatch);
