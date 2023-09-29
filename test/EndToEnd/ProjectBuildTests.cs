@@ -16,6 +16,9 @@ namespace EndToEnd.Tests
 {
     public class ProjectBuildTests : TestBase
     {
+        // This is needed each release after we upgrade to 9.0 but the templates haven't been upgraded yet
+        private static readonly string currentTfm = "net9.0";
+
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
@@ -54,7 +57,7 @@ namespace EndToEnd.Tests
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
-        [Fact]
+        [Fact(Skip ="The current aspnet runtime is built against an 8.0 core runtime")]
         public void ItCanRunAnAppUsingTheWebSdk()
         {
             var directory = TestAssets.CreateTestDirectory();
@@ -72,6 +75,8 @@ namespace EndToEnd.Tests
             var ns = project.Root.Name.Namespace;
 
             project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk.Web";
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = currentTfm;
             project.Save(projectPath);
 
             new BuildCommand()
