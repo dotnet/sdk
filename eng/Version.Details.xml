@@ -34,11 +34,11 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>301ba1ee5d1cfff28a8866924733603f3adf4936</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.NetCore.SharedFramework.x64.6.0" Version="6.0.23-servicing.23475.15">
+    <Dependency Name="VS.Redist.Common.NetCore.SharedFramework.x64.6.0" Version="6.0.23-servicing.23479.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>301ba1ee5d1cfff28a8866924733603f3adf4936</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.NetCore.TargetingPack.x64.6.0" Version="6.0.23-servicing.23475.15">
+    <Dependency Name="VS.Redist.Common.NetCore.TargetingPack.x64.6.0" Version="6.0.23-servicing.23479.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>301ba1ee5d1cfff28a8866924733603f3adf4936</Sha>
     </Dependency>
@@ -54,7 +54,7 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>a08d9ce2caf02455c0b825bcdc32974bdf769a80</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.HostModel" Version="6.0.23-servicing.23475.15">
+    <Dependency Name="Microsoft.NET.HostModel" Version="6.0.23-servicing.23479.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>301ba1ee5d1cfff28a8866924733603f3adf4936</Sha>
     </Dependency>
