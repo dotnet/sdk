@@ -75,18 +75,16 @@ namespace Microsoft.DotNet.Cli
             {
                 return true;
             }
-            else
+
+            for (var i = 0; i < args.Length; i++)
             {
-                for (var i = 0; i < args.Length; i++)
+                if (args[i].Equals(subCommand))
                 {
-                    if (args[i].Equals(subCommand))
-                    {
-                        return false;
-                    }
-                    else if (DiagOption.Aliases.Contains(args[i]))
-                    {
-                        return true;
-                    }
+                    return false;
+                }
+                else if (DiagOption.Aliases.Contains(args[i]))
+                {
+                    return true;
                 }
             }
 
