@@ -106,7 +106,7 @@ setTimeout(async function () {
       let messageAndStack = error.stack || message
       if (!messageAndStack.includes(message))
       {
-         messageAndStack = messageAndStack + "\n" + message;
+         messageAndStack = message + "\n" + messageAndStack;
       }
 
       applyUpdateCapabilities = sendErrorToClient ? "!" + messageAndStack : '';
