@@ -102,7 +102,14 @@ setTimeout(async function () {
     } catch (error) {
       console.warn(error);
 
-      applyUpdateCapabilities = sendErrorToClient ? (error.stack || error.message || '<unknown error>') : '';
+      const message = error.message || '<unknown error>'
+      let messageAndStack = error.stack || message
+      if (!messageAndStack.includes(message))
+      {
+         messageAndStack = messageAndStack + "\n" + message;
+      }
+
+      applyUpdateCapabilities = sendErrorToClient ? "!" + messageAndStack : '';
     }
     connection.send(applyUpdateCapabilities);
   }
