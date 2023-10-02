@@ -17,6 +17,8 @@ namespace Microsoft.DotNet.NativeWrapper
         private readonly Func<string, string> _getEnvironmentVariable;
         private readonly Func<string> _getCurrentProcessPath;
 
+        private static volatile string s_defaultCurrentProcessPath;
+
         public EnvironmentProvider(Func<string, string> getEnvironmentVariable)
             : this(getEnvironmentVariable, GetCurrentProcessPath)
         { }
@@ -119,12 +121,17 @@ namespace Microsoft.DotNet.NativeWrapper
 
         private static string GetCurrentProcessPath()
         {
-            string currentProcessPath;
+            // On some platforms current process path is expensive to calculate so we cache it in a static field.
+            string currentProcessPath = s_defaultCurrentProcessPath;
+            if (currentProcessPath == null)
+            {
 #if NET6_0_OR_GREATER
-            currentProcessPath = Environment.ProcessPath;
+                currentProcessPath = Environment.ProcessPath;
 #else
-            currentProcessPath = Process.GetCurrentProcess().MainModule.FileName;
+                currentProcessPath = Process.GetCurrentProcess().MainModule.FileName;
 #endif
+                s_defaultCurrentProcessPath = currentProcessPath;
+            }
             return currentProcessPath;
         }
     }
