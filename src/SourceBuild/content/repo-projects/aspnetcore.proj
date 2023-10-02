@@ -15,7 +15,6 @@
     <BuildCommandArgs>$(BuildCommandArgs) --arch $(Platform)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) --no-build-repo-tasks</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) --no-build-nodejs</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:PublishCompressedFilesPathPrefix=$(SourceBuiltAspNetCoreRuntime)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PortableBuild=$(_portableRidOverridden) /p:TargetRuntimeIdentifier=$(OverrideTargetRid)</BuildCommandArgs>
     <!-- Update to 1.0.0 version of reference assemblies which are built in SBRP instead of the preview.2 version
          included by Arcade -->

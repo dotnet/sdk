@@ -174,8 +174,6 @@
            (https://github.com/dotnet/source-build/issues/3043). -->
       <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" 
                                            Exclude="$(PrebuiltSourceBuiltPackagesPath)System.Drawing.Common*.nupkg" />
-                                      
-      <_CurrentAdditionalAssetDirs Include="$(SourceBuiltToolsetDir)" Condition="Exists('$(SourceBuiltToolsetDir)')" />
     </ItemGroup>
 
     <Error Condition="'$(PackageVersionPropsFlowType)' != 'AllPackages' and '$(PackageVersionPropsFlowType)' != 'DependenciesOnly'"
@@ -190,7 +188,6 @@
                                ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
                                VersionPropsFlowType="$(PackageVersionPropsFlowType)"
                                VersionDetails="$(_VersionDetailsXml)"
-                               AdditionalAssetDirs="@(_CurrentAdditionalAssetDirs)"
                                OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
 
     <!-- Create previously source-built inputs info -->

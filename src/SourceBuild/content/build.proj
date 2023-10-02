@@ -20,7 +20,6 @@
     <MakeDir Directories="$(SourceBuiltBlobFeedDir)" />
     <MakeDir Directories="$(SourceBuiltPackagesPath)" />
     <MakeDir Directories="$(SourceBuiltAssetsDir)" />
-    <MakeDir Directories="$(LocalBlobStorageRoot)" />
     <MakeDir Directories="$(MSBuildDebugPathTargetDir)" />
     <MakeDir Directories="$(RoslynDebugPathTargetDir)" />
     <MakeDir Directories="$(AspNetRazorBuildServerLogDir)" />
