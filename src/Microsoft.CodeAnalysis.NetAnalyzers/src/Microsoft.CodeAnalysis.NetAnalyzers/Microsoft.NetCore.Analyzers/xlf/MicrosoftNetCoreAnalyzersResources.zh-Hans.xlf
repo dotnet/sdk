@@ -2213,6 +2213,21 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
         <target state="translated">为格式化方法提供正确的参数</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
+        <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</source>
+        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
+        <source>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</source>
+        <target state="new">Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">
+        <source>Set 'MaxResponseHeadersLength' properly</source>
+        <target state="new">Set 'MaxResponseHeadersLength' properly</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
         <source>Providing a parameterless constructor that is as visible as the containing type for a type derived from 'System.Runtime.InteropServices.SafeHandle' enables better performance and usage with source-generated interop solutions.</source>
         <target state="translated">提供与派生自 “System.Runtime.InteropServices.SafeHandle” 的类型的包含类型一样可见的无参数构造函数可改进源生成的互操作解决方案的性能和使用情况。</target>
