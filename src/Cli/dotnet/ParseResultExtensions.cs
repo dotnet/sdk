@@ -61,12 +61,15 @@ namespace Microsoft.DotNet.Cli
             var subargs = args.ToList();
 
             // Don't remove any arguments that are being passed to the app in dotnet run
-            var runArgs = subargs.Contains("--") ? subargs.GetRange(subargs.IndexOf("--"), subargs.Count() - subargs.IndexOf("--")) : new List<string>();
-            subargs = subargs.Contains("--") ? subargs.GetRange(0, subargs.IndexOf("--")) : subargs;
+            var dashDashIndex = subargs.IndexOf("--");
+            var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : new List<string>(0);
+            subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
 
-            subargs = subargs.SkipWhile(arg => DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet")).ToList();
-            subargs.RemoveAt(0); // remove top level command (ex build or publish)
-            return subargs.Concat(runArgs).ToArray();
+            return subargs
+                .SkipWhile(arg => DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
+                .Skip(1) // remove top level command (ex build or publish)
+                .Concat(runArgs)
+                .ToArray();
         }
 
         public static bool DiagOptionPrecedesSubcommand(this string[] args, string subCommand)
