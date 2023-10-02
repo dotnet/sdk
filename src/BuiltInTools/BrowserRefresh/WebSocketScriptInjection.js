@@ -101,7 +101,8 @@ setTimeout(async function () {
       applyUpdateCapabilities = window.Blazor._internal.getApplyUpdateCapabilities();
     } catch (error) {
       console.warn(error);
-      applyUpdateCapabilities = sendErrorToClient ? '!' + error.stack : '';
+
+      applyUpdateCapabilities = sendErrorToClient ? (error.stack || error.message || '<unknown error>') : '';
     }
     connection.send(applyUpdateCapabilities);
   }
