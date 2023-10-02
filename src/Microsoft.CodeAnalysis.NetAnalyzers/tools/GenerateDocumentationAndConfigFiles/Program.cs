@@ -1654,7 +1654,7 @@ namespace GenerateDocumentationAndConfigFiles
 
             const string AddAllResxFilesAsAdditionalFilesTarget = """
                   <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
-                  <Target Name="AddAllResxFilesAsAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile" Condition="'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'">
+                  <Target Name="AddAllResxFilesAsAdditionalFiles" DependsOnTargets="PrepareResourceNames" BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile" Condition="'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'">
                     <ItemGroup>
                       <EmbeddedResourceWithResxExtension Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.resx'" />
                       <AdditionalFiles Include="@(EmbeddedResourceWithResxExtension)" />
