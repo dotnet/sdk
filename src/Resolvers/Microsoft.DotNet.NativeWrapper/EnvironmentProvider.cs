@@ -33,17 +33,12 @@ namespace Microsoft.DotNet.NativeWrapper
         {
             get
             {
-                if (_searchPaths == null)
-                {
-                    var searchPaths =
-                        _getEnvironmentVariable(Constants.PATH)
-                        .Split(new char[] { Path.PathSeparator }, options: StringSplitOptions.RemoveEmptyEntries)
-                        .Select(p => p.Trim('"'))
-                        .Where(p => p.IndexOfAny(s_invalidPathChars) == -1)
-                        .ToList();
-
-                    _searchPaths = searchPaths;
-                }
+                _searchPaths ??=
+                    _getEnvironmentVariable(Constants.PATH)
+                    .Split(new char[] { Path.PathSeparator }, options: StringSplitOptions.RemoveEmptyEntries)
+                    .Select(p => p.Trim('"'))
+                    .Where(p => p.IndexOfAny(s_invalidPathChars) == -1)
+                    .ToList();
 
                 return _searchPaths;
             }
@@ -53,7 +48,8 @@ namespace Microsoft.DotNet.NativeWrapper
         {
             var commandNameWithExtension = commandName + Constants.ExeSuffix;
             var commandPath = SearchPaths
-                .FirstOrDefault(p => File.Exists(Path.Combine(p, commandNameWithExtension)));
+                .Select(p => Path.Combine(p, commandNameWithExtension))
+                .FirstOrDefault(File.Exists);
 
             return commandPath;
         }
