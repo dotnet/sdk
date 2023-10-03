@@ -1919,8 +1919,8 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="translated">Ciąg „AsSpan” jest bardziej wydajny niż ciąg „Substring”. Ciąg „Substring” wykonuje kopię ciągu O(n), natomiast ciąg „AsSpan” nie wykonuje i ponadto ma stały koszt.</target>
+        <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
+        <target state="needs-review-translation">Ciąg „AsSpan” jest bardziej wydajny niż ciąg „Substring”. Ciąg „Substring” wykonuje kopię ciągu O(n), natomiast ciąg „AsSpan” nie wykonuje i ponadto ma stały koszt.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">

@@ -1919,8 +1919,8 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="translated">'AsSpan'은 'Substring'보다 효율적입니다. 'Substring'은 O(n) 문자열 복사를 수행하는 반면 'AsSpan'은 수행하지 않으며 일정한 비용이 듭니다.</target>
+        <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
+        <target state="needs-review-translation">'AsSpan'은 'Substring'보다 효율적입니다. 'Substring'은 O(n) 문자열 복사를 수행하는 반면 'AsSpan'은 수행하지 않으며 일정한 비용이 듭니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">

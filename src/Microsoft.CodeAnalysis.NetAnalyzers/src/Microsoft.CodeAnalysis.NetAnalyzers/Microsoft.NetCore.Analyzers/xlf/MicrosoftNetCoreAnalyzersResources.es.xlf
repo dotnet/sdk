@@ -1919,8 +1919,8 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="translated">'AsSpan' es más eficaz que 'Substring'. 'Substring' realiza una copia de cadena O(n), mientras que 'AsSpan' no lo hace y tiene un costo constante.</target>
+        <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
+        <target state="needs-review-translation">'AsSpan' es más eficaz que 'Substring'. 'Substring' realiza una copia de cadena O(n), mientras que 'AsSpan' no lo hace y tiene un costo constante.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
