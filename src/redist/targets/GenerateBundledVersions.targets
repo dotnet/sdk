@@ -667,7 +667,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
                      TargetFramework="net8.0"
-                     ILLinkPackVersion="$(_NET80ILLinkPackVersion)" />
+                     ILLinkPackVersion="$(_NET80RuntimePackVersion)" />
     
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net8.0"
