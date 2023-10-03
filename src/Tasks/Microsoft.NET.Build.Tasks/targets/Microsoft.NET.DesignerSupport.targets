@@ -128,12 +128,18 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_DesignerShadowCopy Include="@(ReferenceCopyLocalPaths)" />
 
       <!--
-        For .NET Core, we do not include NuGet package assets or runtime pack
-        assets, irrespective of self-contained / copy-local settings. Designer
+        For .NET Core, we do not include NuGet package assets,
+        irrespective of self-contained / copy-local settings. Designer
         will load these from the NuGet cache or shared framework always.
       -->
       <_DesignerShadowCopy
-        Remove="@(_ResolvedCopyLocalBuildAssets);@(RuntimePackAsset)"
+        Remove="@(_ResolvedCopyLocalBuildAssets)"
+        Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
+        />
+
+      <!-- Include runtimepack assets -->
+      <_DesignerShadowCopy
+        Include="@(RuntimePackAsset)"
         Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
         />
 
