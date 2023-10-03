@@ -178,8 +178,8 @@ namespace Microsoft.NET.Publish.Tests
         [RequiresMSBuildVersionTheory("17.8.0")]
         [InlineData("netstandard2.0", true)]
         [InlineData("netstandard2.1", true)]
-        [InlineData("netcoreapp3.1", false)]
-        [InlineData("net5.0", false)]
+        [InlineData("netcoreapp3.1", true)]
+        [InlineData("net5.0", true)]
         [InlineData("net6.0", false)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for trimming
         [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for trimming and targeting.
