@@ -74,9 +74,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
                 string? displayName = parameterParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "displayName").LocalizedString;
                 string? description = parameterParts.SingleOrDefault(p => p.NameParts.Skip(1).FirstOrDefault() == "description").LocalizedString;
 
-                IReadOnlyDictionary<string, ParameterChoiceLocalizationModel>? choiceModels = LoadChoiceModels(strings
-                    .Where(s => s.NameParts.Skip(1).FirstOrDefault() == "choices")
-                    .Select(s => (s.NameParts.Skip(2), s.LocalizedString)));
+                IReadOnlyDictionary<string, ParameterChoiceLocalizationModel>? choiceModels = LoadChoiceModels(parameterParts
+                    .Where(p => p.NameParts.Skip(1).FirstOrDefault() == "choices")
+                    .Select(p => (p.NameParts.Skip(2), p.LocalizedString)));
 
                 ParameterSymbolLocalizationModel paramLoc = new ParameterSymbolLocalizationModel(
                     symbolName,
