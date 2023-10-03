@@ -272,7 +272,7 @@ public class EndToEndTests : IDisposable
         }
 
         string imageName = NewImageName();
-        string imageTag = $"1.0-{projectType}";
+        string imageTag = $"1.0-{projectType}-{addPackageReference}";
 
         // Build & publish the project
         CommandResult commandResult = new DotnetCommand(
@@ -304,7 +304,7 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
-        var containerName = "test-container-1";
+        var containerName = $"test-container-1-{projectType}-{addPackageReference}";
         CommandResult processResult = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
