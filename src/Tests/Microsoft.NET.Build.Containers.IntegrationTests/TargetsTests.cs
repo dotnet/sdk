@@ -164,6 +164,8 @@ public class TargetsTests
     [InlineData("6.0.100-preview.1", "v6.0", "6.0")]
     [InlineData("8.0.100-dev", "v8.0", "8.0-preview")]
     [InlineData("8.0.100-ci", "v8.0", "8.0-preview")]
+    [InlineData("8.0.100-rtm.23502.3", "v8.0", "8.0")]
+    [InlineData("8.0.100-servicing.23502.3", "v8.0", "8.0")]
     [InlineData("8.0.100-alpha.12345", "v8.0", "8.0-preview")]
     [InlineData("9.0.100-alpha.12345", "v9.0", "9.0-preview")]
     [Theory]
