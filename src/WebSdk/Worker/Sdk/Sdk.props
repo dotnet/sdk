@@ -24,7 +24,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
-  <Import Condition="'$(WorkerSdkImportPublishSdk)' == 'true'" Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" />
 
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.Worker.props"
 		Condition="Exists('$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.Worker.props')" />

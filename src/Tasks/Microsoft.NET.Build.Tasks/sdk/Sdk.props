@@ -33,7 +33,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
 
-  
+
   <!-- We need to put the UseArtifactsOutput logic after the import of Directory.Build.props, but before the MSBuild Project Extensions .props import.
        However, both of these things happen in Microsoft.Common.props with no opportunity to insert logic in between them.
 
@@ -68,7 +68,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <UseArtifactsIntermediateOutput Condition="'$(UseArtifactsIntermediateOutput)' == ''">true</UseArtifactsIntermediateOutput>
     <ArtifactsProjectName Condition="'$(ArtifactsProjectName)' == ''">$(MSBuildProjectName)</ArtifactsProjectName>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(UseArtifactsOutput)' == 'true' And '$(BaseIntermediateOutputPath)' == '' And '$(UseArtifactsIntermediateOutput)' == 'true'">
     <BaseIntermediateOutputPath Condition="'$(IncludeProjectNameInArtifactsPaths)' == 'true'">$(ArtifactsPath)\obj\$(ArtifactsProjectName)\</BaseIntermediateOutputPath>
     <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$(ArtifactsPath)\obj\</BaseIntermediateOutputPath>
@@ -87,4 +87,5 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(AlternateCommonProps)" Condition="'$(AlternateCommonProps)' != ''" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="'$(AlternateCommonProps)' == ''"/>
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.props"  />
+  <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" />
 </Project>
