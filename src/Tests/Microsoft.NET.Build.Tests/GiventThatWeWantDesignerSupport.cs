@@ -17,6 +17,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net46")]
         [InlineData("netcoreapp3.0")]
         [InlineData("net5.0-windows")]
+        [InlineData("net7.0-windows10.0.17763")]
         public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework)
         {
             if (targetFramework == "net5.0-windows" && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -91,6 +92,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 case "netcoreapp3.0":
                 case "net5.0-windows":
+                case "net7.0-windows10.0.17763":
                     var depsFileLibraries = GetRuntimeLibraryFileNames(depsFile);
                     depsFileLibraries.Should().BeEquivalentTo(new[] { "Newtonsoft.Json.dll" });
                     
@@ -101,13 +103,21 @@ namespace Microsoft.NET.Build.Tests
                     options["tfm"].Value<string>().Should().Be(targetFramework.Split('-')[0]);
                     options["additionalProbingPaths"].Value<JArray>().Should().NotBeEmpty();
 
-                    otherFiles.Should().BeEquivalentTo(new[] { "ReferencedProject.dll", "ReferencedProject.pdb" });
+                    if (targetFramework == "net7.0-windows10.0.17763")
+                    {
+                        otherFiles.Should().BeEquivalentTo(["ReferencedProject.dll", "ReferencedProject.pdb", "Microsoft.Windows.SDK.NET.dll", "WinRT.Runtime.dll"]);
+                    }
+                    else
+                    {
+                        otherFiles.Should().BeEquivalentTo(["ReferencedProject.dll", "ReferencedProject.pdb"]);
+                    }
+
                     break;
 
                 case "net46":
                     depsFile.Should().BeNull();
                     runtimeConfig.Should().BeNull();
-                    otherFiles.Should().BeEquivalentTo(new[] { "Newtonsoft.Json.dll", "ReferencedProject.dll", "ReferencedProject.pdb" });
+                    otherFiles.Should().BeEquivalentTo(["Newtonsoft.Json.dll", "ReferencedProject.dll", "ReferencedProject.pdb"]);
                     break;
             }
         }
