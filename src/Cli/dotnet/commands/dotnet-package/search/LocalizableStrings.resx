@@ -154,6 +154,6 @@
     <value>The number of results to return. The default value is 20.</value>
   </data>
   <data name="Warning_HttpServerUsage" xml:space="preserve">
-    <value>You are running the '{0}' operation with an 'HTTP' source, '{1}' Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source</value>
+    <value>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</value>
   </data>
 </root>
