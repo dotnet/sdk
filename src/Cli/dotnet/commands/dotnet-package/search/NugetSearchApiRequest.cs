@@ -39,18 +39,13 @@ namespace Microsoft.DotNet.Cli.commands.package.search
             WarnForHTTPSources(listEndpoints);
             foreach (PackageSource source in listEndpoints)
             {
-                Console.WriteLine($"Name {source.Source}");
                 SourceRepository repository = Repository.Factory.GetCoreV3(source);
-                Console.WriteLine($"Name {repository.PackageSource}");
                 PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>(CancellationToken.None);
-                Console.WriteLine($"Name {source.Name}");
                 if (resource is null)
                 {
-                    Console.WriteLine($"{source.Name} 2");
                     taskList.Add((null, source));
                     continue;
                 }
-                Console.WriteLine($"{source.Name}3");
                 taskList.Add((Task.Run(() => resource.SearchAsync(
                     _searchTerm,
                     new SearchFilter(includePrerelease: _prerelease),
@@ -59,12 +54,9 @@ namespace Microsoft.DotNet.Cli.commands.package.search
                     NullLogger.Instance,
                     CancellationToken.None
                     )), source));
-                Console.WriteLine($"{source.Name}4");
             }
-            Console.WriteLine("wow " + taskList.Count().ToString() );
             foreach (var taskItem in taskList)
             {
-                Console.WriteLine("WTF");
                 var (task, source) = taskItem;
 
                 if (task is null)
