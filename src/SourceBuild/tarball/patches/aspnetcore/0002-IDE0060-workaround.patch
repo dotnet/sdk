@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Fri, 12 Aug 2022 23:02:54 +0000
+Subject: [PATCH] IDE0060 workaround
+
+Backport: https://github.com/dotnet/roslyn-analyzers/issues/6228
+---
+ src/Http/Routing/src/Matching/Ascii.cs | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/Http/Routing/src/Matching/Ascii.cs b/src/Http/Routing/src/Matching/Ascii.cs
+index 081af0bb07..393a9eb65f 100644
+--- a/src/Http/Routing/src/Matching/Ascii.cs
++++ b/src/Http/Routing/src/Matching/Ascii.cs
+@@ -12,7 +12,6 @@ internal static class Ascii
+     // and we know that the spans are the same length.
+     //
+     // Similar to https://github.com/dotnet/coreclr/blob/master/src/System.Private.CoreLib/shared/System/Globalization/CompareInfo.cs#L549
+-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+     public static bool AsciiIgnoreCaseEquals(ReadOnlySpan<char> a, ReadOnlySpan<char> b, int length)
+     {
+         // The caller should have checked the length. We enforce that here by THROWING if the

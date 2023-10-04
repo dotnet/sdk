@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: MichaelSimons <msimons@microsoft.com>
+Date: Thu, 27 Oct 2022 02:47:08 +0000
+Subject: [PATCH] Address obsolete errors
+
+Backport: https://github.com/dotnet/aspnetcore/pull/44734
+---
+ src/Servers/Kestrel/Core/src/KestrelServerOptions.cs | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Servers/Kestrel/Core/src/KestrelServerOptions.cs b/src/Servers/Kestrel/Core/src/KestrelServerOptions.cs
+index f31880e891..fc6322dd41 100644
+--- a/src/Servers/Kestrel/Core/src/KestrelServerOptions.cs
++++ b/src/Servers/Kestrel/Core/src/KestrelServerOptions.cs
+@@ -252,9 +252,6 @@ public class KestrelServerOptions
+         writer.WritePropertyName(nameof(AllowResponseHeaderCompression));
+         writer.WriteBooleanValue(AllowResponseHeaderCompression);
+ 
+-        writer.WritePropertyName(nameof(EnableAltSvc));
+-        writer.WriteBooleanValue(EnableAltSvc);
+-
+         writer.WritePropertyName(nameof(IsDevCertLoaded));
+         writer.WriteBooleanValue(IsDevCertLoaded);
+ 

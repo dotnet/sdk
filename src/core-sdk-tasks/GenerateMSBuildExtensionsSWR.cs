@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Build
 
                 foreach (var file in files)
                 {
-                    sb.Append(@"  file source=""!(bindpath.sources)\Redist\Common\NetCoreSDK\MSBuildExtensions\");
+                    sb.Append(@"  file source=""$(PkgVS_Redist_Common_Net_Core_SDK_MSBuildExtensions)\");
                     sb.Append(Path.Combine(relativeSourcePath, Path.GetFileName(file)));
                     sb.AppendLine("\"");
                 }
