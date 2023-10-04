@@ -31,6 +31,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return _manifestUpdates;
         }
 
+        public (ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand) GetInstalledManifestVersion(ManifestId manifestId)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand)
         {
             GetManifestPackageDownloadsCallCount++;

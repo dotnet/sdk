@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 {
                     if (!int.TryParse(_afterID, out int index))
                     {
-                        throw;
+                        throw new GracefulException(LocalizableStrings.WorkloadHistoryRecordNonIntegerId, isUserError: true);
                     }
 
                     var workloadHistoryRecord = workloadHistoryRecords[index - 1];
@@ -177,7 +177,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 {
                     if (!int.TryParse(_beforeID, out int index))
                     {
-                        throw;
+                        throw new GracefulException(LocalizableStrings.WorkloadHistoryRecordNonIntegerId, isUserError: true);
                     }
 
                     var workloadHistoryRecord = workloadHistoryRecords[index - 1];
@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 }
                 else
                 {
-                    throw;
+                    throw new GracefulException(LocalizableStrings.WorkloadHistoryRecordNoIdSpecified, isUserError: true);
                 }
 
                 var currentWorkloadState = WorkloadRollbackInfo.FromManifests(_workloadResolver.GetInstalledManifests());

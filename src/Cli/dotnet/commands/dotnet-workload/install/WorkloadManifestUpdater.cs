@@ -369,7 +369,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return (manifestWithBand, workloads);
         }
 
-        private ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId)
+        public ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId)
         {
             var manifest = _workloadResolver.GetInstalledManifests().FirstOrDefault(manifest => manifest.Id.ToLowerInvariant().Equals(manifestId.ToString()));
             if (manifest == null)

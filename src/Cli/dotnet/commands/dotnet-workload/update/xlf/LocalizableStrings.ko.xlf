@@ -72,6 +72,16 @@
         <target state="translated">캐시할 워크로드 업데이트 패키지를 다운로드하지 못했습니다. {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadHistoryRecordNoIdSpecified">
+        <source>Must specify a workload history ID via --before or --after when updating or installing from workload history records. You can see IDs using the `dotnet workload history` command.</source>
+        <target state="new">Must specify a workload history ID via --before or --after when updating or installing from workload history records. You can see IDs using the `dotnet workload history` command.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryRecordNonIntegerId">
+        <source>The ID of a workload history record should be an integer. Check the value passed in with --before or --after.</source>
+        <target state="new">The ID of a workload history record should be an integer. Check the value passed in with --before or --after.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">알림 매니페스트를 업데이트했습니다.</target>

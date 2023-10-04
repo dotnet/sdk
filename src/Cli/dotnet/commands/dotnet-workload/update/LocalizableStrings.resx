@@ -138,6 +138,12 @@
   <data name="WorkloadUpdateFailed" xml:space="preserve">
     <value>Workload update failed: {0}</value>
   </data>
+  <data name="WorkloadHistoryRecordNonIntegerId" xml:space="preserve">
+    <value>The ID of a workload history record should be an integer. Check the value passed in with --before or --after.</value>
+  </data>
+  <data name="WorkloadHistoryRecordNoIdSpecified" xml:space="preserve">
+    <value>Must specify a workload history ID via --before or --after when updating or installing from workload history records. You can see IDs using the `dotnet workload history` command.</value>
+  </data>
   <data name="FromPreviousSdkOptionDescription" xml:space="preserve">
     <value>Include workloads installed with earlier SDK versions in update.</value>
   </data>
