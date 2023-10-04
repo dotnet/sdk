@@ -8,9 +8,9 @@ using NuGet.Protocol.Core.Types;
 
 namespace Microsoft.DotNet.NugetSearch
 {
-    internal class NugetSearchApiRequest : INugetSearchApiRequest
+    internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
     {
-        public async Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter)
+        public async Task<string> GetResult(NugetToolSearchApiParameter nugetSearchApiParameter)
         {
             var queryUrl = await ConstructUrl(
                 nugetSearchApiParameter.SearchTerm,

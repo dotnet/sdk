@@ -7,9 +7,9 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.NugetSearch
 {
-    internal class NugetSearchApiParameter
+    internal class NugetToolSearchApiParameter
     {
-        public NugetSearchApiParameter(
+        public NugetToolSearchApiParameter(
             string searchTerm = null,
             int? skip = null,
             int? take = null,
@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.NugetSearch
         public bool Prerelease { get; }
         public string PackageType { get; }
 
-        public NugetSearchApiParameter(ParseResult parseResult, string packageType)
+        public NugetToolSearchApiParameter(ParseResult parseResult, string packageType)
         {
             var searchTerm = parseResult.GetValue(ToolSearchCommandParser.SearchTermArgument);
 

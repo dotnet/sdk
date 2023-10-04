@@ -10,23 +10,23 @@ namespace Microsoft.DotNet.Tools.Tool.Search
 {
     internal class ToolSearchCommand : CommandBase
     {
-        private readonly INugetSearchApiRequest _nugetToolSearchApiRequest;
+        private readonly INugetToolSearchApiRequest _nugetToolSearchApiRequest;
         private readonly SearchResultPrinter _searchResultPrinter;
 
         public ToolSearchCommand(
             ParseResult result,
-            INugetSearchApiRequest nugetToolSearchApiRequest = null
+            INugetToolSearchApiRequest nugetToolSearchApiRequest = null
         )
             : base(result)
         {
-            _nugetToolSearchApiRequest = nugetToolSearchApiRequest ?? new NugetSearchApiRequest();
+            _nugetToolSearchApiRequest = nugetToolSearchApiRequest ?? new NugetToolSearchApiRequest();
             _searchResultPrinter = new SearchResultPrinter(Reporter.Output);
         }
 
         public override int Execute()
         {
             var isDetailed = _parseResult.GetValue(ToolSearchCommandParser.DetailOption);
-            NugetSearchApiParameter nugetSearchApiParameter = new NugetSearchApiParameter(_parseResult, "dotnettool");
+            NugetToolSearchApiParameter nugetSearchApiParameter = new NugetToolSearchApiParameter(_parseResult, "dotnettool");
             IReadOnlyCollection<SearchResultPackage> searchResultPackages =
                 NugetSearchApiResultDeserializer.Deserialize(
                     _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter).GetAwaiter().GetResult());

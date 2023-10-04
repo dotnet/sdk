@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="CommandDescription">
-        <source>Search for a package in nuget.org. </source>
-        <target state="new">Search for a package in nuget.org. </target>
+        <source>Search for a package in nuget.org.</source>
+        <target state="new">Search for a package in nuget.org.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExactMatchDescription">
@@ -63,8 +63,8 @@
         <note />
       </trans-unit>
       <trans-unit id="Warning_HttpServerUsage">
-        <source>You are running the '{0}' operation with an 'HTTP' source, '{1}' Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source</source>
-        <target state="new">You are running the '{0}' operation with an 'HTTP' source, '{1}' Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source</target>
+        <source>You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</source>
+        <target state="new">You are running the '{0}' operation with an 'HTTP' source, '{1}'. Non-HTTPS access will be removed in a future version. Consider migrating to an 'HTTPS' source.</target>
         <note />
       </trans-unit>
     </body>

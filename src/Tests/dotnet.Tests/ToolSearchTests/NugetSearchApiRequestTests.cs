@@ -12,7 +12,7 @@ namespace dotnet.Tests.ToolSearchTests
         [Fact]
         public void WhenPassedInRequestParametersItCanConstructTheUrl()
         {
-            NugetSearchApiRequest.ConstructUrl("mytool", 3, 4, true, _domainAndPathOverride)
+            NugetToolSearchApiRequest.ConstructUrl("mytool", 3, 4, true, _domainAndPathOverride)
                 .GetAwaiter().GetResult()
                 .AbsoluteUri
                 .Should().Be(
@@ -22,7 +22,7 @@ namespace dotnet.Tests.ToolSearchTests
         [Fact]
         public void WhenPassedWithoutParameterItCanConstructTheUrl()
         {
-            NugetSearchApiRequest.ConstructUrl(domainAndPathOverride: _domainAndPathOverride)
+            NugetToolSearchApiRequest.ConstructUrl(domainAndPathOverride: _domainAndPathOverride)
                 .GetAwaiter().GetResult()
                 .AbsoluteUri
                 .Should().Be(
