@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -25,7 +24,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly SdkFeatureBand _sdkFeatureBand;
         private readonly string _userProfileDir;
         private readonly PackageSourceLocation _packageSourceLocation;
-        Func<string, string> _getEnvironmentVariable;
+        private readonly Func<string, string> _getEnvironmentVariable;
         private readonly IWorkloadInstallationRecordRepository _workloadRecordRepo;
         private readonly IWorkloadManifestInstaller _workloadManifestInstaller;
         private readonly bool _displayManifestUpdates;
@@ -225,42 +224,33 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 try
                 {
-                    var packageId = _workloadManifestInstaller.GetManifestPackageId(new ManifestId(manifest.Id), providedSdkFeatureBand);
-
-                    bool success;
-                    // After checking the --sdk-version, check the current sdk band, and then the manifest band in that order
-                    (success, var latestVersion) = await GetPackageVersion(packageId, packageSourceLocation: _packageSourceLocation, includePreview: includePreviews);
-                    if (success)
-                    {
-                        downloads.Add(new WorkloadDownload(manifest.Id, packageId.ToString(), latestVersion.ToString()));
-                    }
-
-                    if (!success && !installedSdkFeatureBand.Equals(providedSdkFeatureBand))
-                    {
-                        var newPackageId = _workloadManifestInstaller.GetManifestPackageId(new ManifestId(manifest.Id), installedSdkFeatureBand);
-
-                        (success, latestVersion) = await GetPackageVersion(newPackageId, packageSourceLocation: _packageSourceLocation, includePreview: includePreviews);
-
-                        if (success)
-                        {
-                            downloads.Add(new WorkloadDownload(manifest.Id, newPackageId.ToString(), latestVersion.ToString()));
-                        }
-                    }
+                    PackageId? providedPackageId = null;
                     var fallbackFeatureBand = new SdkFeatureBand(manifest.ManifestFeatureBand);
-                    if (!success && !fallbackFeatureBand.Equals(installedSdkFeatureBand))
+                    SdkFeatureBand[] bands = [providedSdkFeatureBand, installedSdkFeatureBand, fallbackFeatureBand];
+                    var success = false;
+                    var bandIndex = 0;
+                    do
                     {
-                        var newPackageId = _workloadManifestInstaller.GetManifestPackageId(new ManifestId(manifest.Id), fallbackFeatureBand);
+                        var packageId = _workloadManifestInstaller.GetManifestPackageId(new ManifestId(manifest.Id), bands[bandIndex]);
+                        providedPackageId ??= packageId;
 
-                        (success, latestVersion) = await GetPackageVersion(newPackageId, packageSourceLocation: _packageSourceLocation, includePreview: includePreviews);
-
-                        if (success)
+                        try
                         {
-                            downloads.Add(new WorkloadDownload(manifest.Id, newPackageId.ToString(), latestVersion.ToString()));
+                            var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(packageId, _packageSourceLocation, includePreviews);
+                            success = true;
+                            downloads.Add(new WorkloadDownload(manifest.Id, packageId.ToString(), latestVersion.ToString()));
                         }
-                    }
+                        catch (NuGetPackageNotFoundException)
+                        {
+                        }
+
+                        bandIndex++;
+                    // If unsuccessful and the previous band doesn't equal the current one, we'll attempt to get the package version again with the new band.
+                    } while (bandIndex < bands.Length && !success && !bands[bandIndex].Equals(bands[bandIndex - 1]));
+
                     if (!success)
                     {
-                        _reporter.WriteLine(string.Format(LocalizableStrings.ManifestPackageUrlNotResolved, packageId));
+                        _reporter.WriteLine(string.Format(LocalizableStrings.ManifestPackageUrlNotResolved, providedPackageId));
                     }
                 }
                 catch
@@ -377,8 +367,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private bool AdManifestSentinelIsDueForUpdate()
         {
             var sentinelPath = GetAdvertisingManifestSentinelPath(_sdkFeatureBand);
-            int updateIntervalHours;
-            if (!int.TryParse(_getEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS), out updateIntervalHours))
+            if (!int.TryParse(_getEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS), out int updateIntervalHours))
             {
                 updateIntervalHours = 24;
             }
@@ -492,19 +481,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             string offlinePath = GetOfflinePackagePath(sdkFeatureBand, manifestId, offlineCache);
             return (Success: offlinePath != null, PackagePath: offlinePath);
-        }
-
-        private async Task<(bool Success, NuGetVersion LatestVersion)> GetPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
-        {
-            try
-            {
-                var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(packageId, packageSourceLocation: packageSourceLocation, includePreview: includePreview);
-                return (Success: true, LatestVersion: latestVersion);
-            }
-            catch (NuGetPackageNotFoundException)
-            {
-                return (Success: false, LatestVersion: null);
-            }
         }
 
         private string GetAdvertisingManifestPath(SdkFeatureBand featureBand, ManifestId manifestId) => Path.Combine(_userProfileDir, "sdk-advertising", featureBand.ToString(), manifestId.ToString());
