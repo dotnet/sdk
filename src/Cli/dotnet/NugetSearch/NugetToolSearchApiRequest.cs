@@ -10,14 +10,13 @@ namespace Microsoft.DotNet.NugetSearch
 {
     internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
     {
-        public async Task<string> GetResult(NugetToolSearchApiParameter nugetSearchApiParameter)
+        public async Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter)
         {
             var queryUrl = await ConstructUrl(
                 nugetSearchApiParameter.SearchTerm,
                 nugetSearchApiParameter.Skip,
                 nugetSearchApiParameter.Take,
-                nugetSearchApiParameter.Prerelease,
-                packageType : nugetSearchApiParameter.PackageType);
+                nugetSearchApiParameter.Prerelease);
 
             var httpClient = new HttpClient();
             using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
@@ -42,7 +41,7 @@ namespace Microsoft.DotNet.NugetSearch
         }
 
         internal static async Task<Uri> ConstructUrl(string searchTerm = null, int? skip = null, int? take = null,
-            bool prerelease = false, Uri domainAndPathOverride = null, string packageType = null)
+            bool prerelease = false, Uri domainAndPathOverride = null)
         {
             var uriBuilder = new UriBuilder(domainAndPathOverride ?? await DomainAndPath());
             NameValueCollection query = HttpUtility.ParseQueryString(uriBuilder.Query);
@@ -51,11 +50,7 @@ namespace Microsoft.DotNet.NugetSearch
                 query["q"] = searchTerm;
             }
 
-            if (!string.IsNullOrWhiteSpace(packageType))
-            {
-                    query["packageType"] = packageType;
-            }
-            
+            query["packageType"] = "dotnettool";
 
             // This is a field for internal nuget back
             // compactabiliy should be "2.0.0" for all new API usage
