@@ -64,17 +64,14 @@ namespace Microsoft.DotNet.Workloads.Workload.History
 
             if (!displayRecords.Any())
             {
-                //  TODO: Localize
-                Reporter.WriteLine("No workload history found");
+                Reporter.WriteLine(LocalizableStrings.NoHistoryFound);
             }
 
             var table = new PrintableTable<WorkloadHistoryDisplay.DisplayRecord>();
-            //  TODO: Localize column names
-            table.AddColumn("ID", r => r.ID?.ToString() ?? "");
-            table.AddColumn("Date", r => r.TimeStarted?.ToString() ?? "");
-            table.AddColumn("Command", r => r.Command);
-            //  TODO: Do we localize the separator between workloads?
-            table.AddColumn("Workloads", r => r.Workloads == null ? "" : string.Join(", ", r.Workloads));
+            table.AddColumn(LocalizableStrings.Id, r => r.ID?.ToString() ?? "");
+            table.AddColumn(LocalizableStrings.Date, r => r.TimeStarted?.ToString() ?? "");
+            table.AddColumn(LocalizableStrings.Command, r => r.Command);
+            table.AddColumn(LocalizableStrings.Workloads, r => r.Workloads == null ? "" : string.Join(", ", r.Workloads));
 
             Reporter.WriteLine();
             table.PrintRows(displayRecords, l => Reporter.WriteLine(l));
