@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.NugetSearch
                 var searchResultPackage = new SearchResultPackage(new PackageId(deserializedPackage.Id),
                     deserializedPackage.Version, deserializedPackage.Description, deserializedPackage.Summary,
                     deserializedPackage.Tags, authors, deserializedPackage.TotalDownloads, deserializedPackage.Verified,
-                    versions, deserializedPackage.Deprecation, deserializedPackage.Vulnerabilities, deserializedPackage.LicenseUrl);
+                    versions);
 
                 resultPackages.Add(searchResultPackage);
             }
