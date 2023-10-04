@@ -22,12 +22,13 @@
 
   <ItemGroup Label=".NET 9.0 templates">
     <Bundled90Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates90PackageVersion)" />
-    <Bundled80Templates Include="Microsoft.DotNet.Common.ProjectTemplates.8.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates80PackageVersion)" />
-    <Bundled80Templates Include="Microsoft.DotNet.Test.ProjectTemplates.8.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates80PackageVersion)" />
     <Bundled90Templates Include="Microsoft.DotNet.Web.ItemTemplates.9.0" PackageVersion="$(AspNetCorePackageVersionFor90Templates)" />
     <Bundled90Templates Include="Microsoft.DotNet.Web.ProjectTemplates.9.0" PackageVersion="$(AspNetCorePackageVersionFor90Templates)" UseVersionForTemplateInstallPath="true" />
     <Bundled90Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates90PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <Bundled90Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates90PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <!-- Not available yet for 9.0 -->
+    <Bundled90Templates Include="Microsoft.DotNet.Common.ProjectTemplates.8.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates80PackageVersion)" />
+    <Bundled90Templates Include="Microsoft.DotNet.Test.ProjectTemplates.8.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates80PackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Label=".NET 8.0 templates">

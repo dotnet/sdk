@@ -583,45 +583,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                               RuntimePackExcludedRuntimeIdentifiers="android%3Blinux-bionic"
                               />
 
-    <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
-                              TargetFramework="net9.0-windows10.0.17763.0"
-                              RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
-                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
-                              TargetingPackName="Microsoft.Windows.SDK.NET.Ref"
-                              TargetingPackVersion="$(MicrosoftWindowsSDKNETRef10_0_17763PackageVersion)"
-                              RuntimePackAlwaysCopyLocal="true"
-                              RuntimePackNamePatterns="Microsoft.Windows.SDK.NET.Ref"
-                              RuntimePackRuntimeIdentifiers="any"
-                              IsWindowsOnly="true"
-                              />
-
-    <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
-                              TargetFramework="net9.0-windows10.0.18362.0"
-                              RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
-                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
-                              TargetingPackName="Microsoft.Windows.SDK.NET.Ref"
-                              TargetingPackVersion="$(MicrosoftWindowsSDKNETRef10_0_18362PackageVersion)"
-                              RuntimePackAlwaysCopyLocal="true"
-                              RuntimePackNamePatterns="Microsoft.Windows.SDK.NET.Ref"
-                              RuntimePackRuntimeIdentifiers="any"
-                              IsWindowsOnly="true"
-                              />
-
-    <KnownFrameworkReference Include="Microsoft.Windows.SDK.NET.Ref"
-                              TargetFramework="net9.0-windows10.0.19041.0"
-                              RuntimeFrameworkName="Microsoft.Windows.SDK.NET.Ref"
-                              DefaultRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
-                              LatestRuntimeFrameworkVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
-                              TargetingPackName="Microsoft.Windows.SDK.NET.Ref"
-                              TargetingPackVersion="$(MicrosoftWindowsSDKNETRef10_0_19041PackageVersion)"
-                              RuntimePackAlwaysCopyLocal="true"
-                              RuntimePackNamePatterns="Microsoft.Windows.SDK.NET.Ref"
-                              RuntimePackRuntimeIdentifiers="any"
-                              IsWindowsOnly="true"
-                              />
-
     <!-- .NET 8.0 -->
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="net8.0"

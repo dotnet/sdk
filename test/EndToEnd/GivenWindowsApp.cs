@@ -12,8 +12,6 @@ namespace EndToEnd
 {
     public class GivenWindowsApp : TestBase
     {
-
-
         [WindowsOnlyTheory]
         [InlineData("10.0.17763.0")]
         [InlineData("10.0.18362.0")]
