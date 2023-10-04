@@ -25,5 +25,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads);
 
         void DeleteUpdatableWorkloadsFile();
+
+        (ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand) GetInstalledManifestVersion(ManifestId manifestId);
     }
 }

@@ -382,7 +382,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        private (ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand) GetInstalledManifestVersion(ManifestId manifestId)
+        public (ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand) GetInstalledManifestVersion(ManifestId manifestId)
         {
 
             var manifest = _workloadResolver.GetInstalledManifests()
