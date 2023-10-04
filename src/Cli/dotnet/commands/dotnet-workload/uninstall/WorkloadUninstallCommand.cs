@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
@@ -40,7 +41,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
                 .Select(workloadId => new WorkloadId(workloadId)).ToList().AsReadOnly();
             var dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             userProfileDir = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
-            _sdkVersion = WorkloadOptionsExtensions.GetValidatedSdkVersion(parseResult.GetValueForOption(WorkloadUninstallCommandParser.VersionOption), version, dotnetPath, userProfileDir);
+            _sdkVersion = WorkloadOptionsExtensions.GetValidatedSdkVersion(parseResult.GetValueForOption(WorkloadUninstallCommandParser.VersionOption), version, dotnetPath, userProfileDir, true);
 
             var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, _sdkVersion.ToString(), userProfileDir);
             workloadResolver ??= WorkloadResolver.Create(workloadManifestProvider, dotnetPath, _sdkVersion.ToString(), userProfileDir);
@@ -70,20 +71,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
                         .DeleteWorkloadInstallationRecord(workloadId, featureBand);
                 }
 
-                if (_workloadInstaller.GetInstallationUnit().Equals(InstallationUnit.Packs))
-                {
-                    var installer = _workloadInstaller.GetPackInstaller();
-
-                    installer.GarbageCollectInstalledWorkloadPacks();
-                }
-                else
-                {
-                    var installer = _workloadInstaller.GetWorkloadInstaller();
-                    foreach (var workloadId in _workloadIds)
-                    {
-                        installer.UninstallWorkload(workloadId);
-                    }
-                }
+                _workloadInstaller.GarbageCollectInstalledWorkloadPacks();
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(LocalizableStrings.UninstallSucceeded, string.Join(" ", _workloadIds)));
