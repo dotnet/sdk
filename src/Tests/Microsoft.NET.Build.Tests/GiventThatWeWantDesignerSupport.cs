@@ -20,7 +20,8 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("net7.0-windows10.0.17763")]
         public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework)
         {
-            if (targetFramework == "net5.0-windows" && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if ((targetFramework == "net5.0-windows" || targetFramework == "net7.0-windows10.0.17763")
+                && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // net5.0-windows is windows only scenario
                 return;
