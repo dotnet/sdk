@@ -216,7 +216,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return manifestUpdates;
         }
 
-
         public async Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand)
         {
             var downloads = new List<WorkloadDownload>();
