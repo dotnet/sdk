@@ -120,4 +120,19 @@
   <data name="CommandDescription" xml:space="preserve">
     <value>Shows a history of workload installation actions.</value>
   </data>
+  <data name="NoHistoryFound" xml:space="preserve">
+    <value>No workload history found</value>
+  </data>
+  <data name="Id" xml:space="preserve">
+    <value>Id</value>
+  </data>
+  <data name="Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="Command" xml:space="preserve">
+    <value>Command</value>
+  </data>
+  <data name="Workloads" xml:space="preserve">
+    <value>Workloads</value>
+  </data>
 </root>

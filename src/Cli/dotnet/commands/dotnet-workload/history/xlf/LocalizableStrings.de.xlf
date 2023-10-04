@@ -2,9 +2,34 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="Command">
+        <source>Command</source>
+        <target state="new">Command</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Shows a history of workload installation actions.</source>
         <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Date">
+        <source>Date</source>
+        <target state="new">Date</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Id">
+        <source>Id</source>
+        <target state="new">Id</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoHistoryFound">
+        <source>No workload history found</source>
+        <target state="new">No workload history found</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Workloads">
+        <source>Workloads</source>
+        <target state="new">Workloads</target>
         <note />
       </trans-unit>
     </body>
