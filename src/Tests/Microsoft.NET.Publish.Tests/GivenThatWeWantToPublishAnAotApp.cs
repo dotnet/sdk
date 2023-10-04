@@ -597,6 +597,12 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net7.0", false)]
         public void PublishAot_fails_for_unsupported_target_framework(string targetFramework, bool shouldFail)
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // OSX wasn't supported before net8
+                return;
+            }
+
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = new TestProject()
