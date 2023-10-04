@@ -1919,8 +1919,8 @@ Widening and user defined conversions are not supported with generic types.</sou
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="translated">"AsSpan" более эффективен, чем "Substring". "Substring" выполняет копирование строки O(n), тогда как "AsSpan" не имеет постоянных затрат.</target>
+        <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
+        <target state="needs-review-translation">"AsSpan" более эффективен, чем "Substring". "Substring" выполняет копирование строки O(n), тогда как "AsSpan" не имеет постоянных затрат.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">

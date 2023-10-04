@@ -1919,8 +1919,8 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="translated">'AsSpan', 'Substring'den daha verimlidir. 'Substring' bir O(n) dizesi kopyası oluşturur ama 'AsSpan' bunu yapmaz ve sabit bir maliyeti vardır.</target>
+        <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
+        <target state="needs-review-translation">'AsSpan', 'Substring'den daha verimlidir. 'Substring' bir O(n) dizesi kopyası oluşturur ama 'AsSpan' bunu yapmaz ve sabit bir maliyeti vardır.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">

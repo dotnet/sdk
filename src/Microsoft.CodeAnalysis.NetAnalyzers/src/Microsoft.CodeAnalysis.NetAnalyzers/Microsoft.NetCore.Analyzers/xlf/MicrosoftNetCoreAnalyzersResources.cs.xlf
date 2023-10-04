@@ -1919,8 +1919,8 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="translated">AsSpan je efektivnější než Substring. Substring provádí kopírování řetězce O(n), zatímco AsSpan ho neprovádí a má konstantní náklady.</target>
+        <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
+        <target state="needs-review-translation">AsSpan je efektivnější než Substring. Substring provádí kopírování řetězce O(n), zatímco AsSpan ho neprovádí a má konstantní náklady.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">

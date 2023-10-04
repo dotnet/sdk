@@ -1919,8 +1919,8 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="translated">'AsSpan' の方が 'Substring' より効率的です。'Substring' は O(n) 文字列コピーを実行しますが、'AsSpan' はこれを実行せず、固定コストがあります。</target>
+        <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
+        <target state="needs-review-translation">'AsSpan' の方が 'Substring' より効率的です。'Substring' は O(n) 文字列コピーを実行しますが、'AsSpan' はこれを実行せず、固定コストがあります。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">

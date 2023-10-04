@@ -1919,8 +1919,8 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="translated">"AsSpan" ist effizienter als "Substring". Im Gegensatz zu "Substring" führt "AsSpan" keine O(n)-Zeichenfolgenkopie durch und bietet daher konstante Kosten.</target>
+        <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
+        <target state="needs-review-translation">"AsSpan" ist effizienter als "Substring". Im Gegensatz zu "Substring" führt "AsSpan" keine O(n)-Zeichenfolgenkopie durch und bietet daher konstante Kosten.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">

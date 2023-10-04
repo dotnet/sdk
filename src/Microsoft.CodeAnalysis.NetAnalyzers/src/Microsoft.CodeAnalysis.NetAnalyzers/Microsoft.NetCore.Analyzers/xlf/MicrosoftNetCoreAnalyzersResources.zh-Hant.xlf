@@ -1919,8 +1919,8 @@ Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isi
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="translated">'AsSpan' 比 'Substring' 更有效率。'Substring' 會執行 O(n) 字串複製，而 'AsSpan' 不會且有固定成本。</target>
+        <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
+        <target state="needs-review-translation">'AsSpan' 比 'Substring' 更有效率。'Substring' 會執行 O(n) 字串複製，而 'AsSpan' 不會且有固定成本。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
