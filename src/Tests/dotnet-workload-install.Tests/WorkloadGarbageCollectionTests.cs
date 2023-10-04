@@ -169,8 +169,74 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "TestManifest", "3.0.0", "WorkloadManifest.json")).Should().Exist();
         }
 
-        //  TODO:
-        //  Garbage collect with install state with manifests
+        [Fact]
+        public void GarbageCollectManifestsWithInstallState()
+        {
+            CreateMockManifest("TestManifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
+            CreateMockManifest("TestManifest", "2.0.0", "6.0.300", sourceManifestName: @"Sample2_v2.json");
+            CreateMockManifest("TestManifest", "3.0.0", "6.0.300", sourceManifestName: @"Sample2_v3.json");
+
+            CreateManifestRecord("TestManifest", "1.0.0", "6.0.100", "6.0.300");
+            CreateManifestRecord("TestManifest", "2.0.0", "6.0.300", "6.0.300");
+            CreateManifestRecord("TestManifest", "3.0.0", "6.0.300", "6.0.300");
+
+            CreateInstallState("6.0.300",
+               """
+                {
+                    "manifests": {
+                        "TestManifest": "2.0.0/6.0.300",
+                    }
+                }
+                """);
+
+            var (installer, getResolver) = GetTestInstaller("6.0.300");
+
+            var packsToKeep = new PackInfo[]
+            {
+                CreatePackInfo("Xamarin.Android.Sdk", "8.4.7", WorkloadPackKind.Sdk),
+                CreatePackInfo("Xamarin.Android.Framework", "8.5.0", WorkloadPackKind.Framework),
+                CreatePackInfo("Xamarin.Android.Runtime", "8.5.0.1", WorkloadPackKind.Library)
+            };
+
+            var packsToCollect = new PackInfo[]
+            {
+                CreatePackInfo("Xamarin.Android.Framework", "8.6.0", WorkloadPackKind.Framework),
+                CreatePackInfo("Xamarin.Android.Runtime", "8.6.0.0", WorkloadPackKind.Library)
+            };
+
+            foreach (var pack in packsToKeep.Concat(packsToCollect))
+            {
+                CreateInstalledPack(pack, "6.0.300");
+            }
+
+            // Write workload install record for 6.0.300
+            var workloadsRecordPath = Path.Combine(_dotnetRoot, "metadata", "workloads", "6.0.300", "InstalledWorkloads");
+            Directory.CreateDirectory(workloadsRecordPath);
+            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build"));
+
+            installer.GarbageCollect(getResolver);
+
+            foreach (var pack in packsToCollect)
+            {
+                PackShouldExist(pack, false);
+                PackRecord(pack, "6.0.300").Should().NotExist();
+            }
+            foreach (var pack in packsToKeep)
+            {
+                PackShouldExist(pack, true);
+                PackRecord(pack, "6.0.300").Should().Exist();
+            }
+
+            ManifestRecord("TestManifest", "1.0.0", "6.0.100", "6.0.300").Should().NotExist();
+            ManifestRecord("TestManifest", "2.0.0", "6.0.300", "6.0.300").Should().Exist();
+            ManifestRecord("TestManifest", "3.0.0", "6.0.300", "6.0.300").Should().NotExist();
+
+            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.100", "TestManifest", "1.0.0", "WorkloadManifest.json")).Should().NotExist();
+            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "TestManifest", "2.0.0", "WorkloadManifest.json")).Should().Exist();
+            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "TestManifest", "3.0.0", "WorkloadManifest.json")).Should().NotExist();
+        }
+
+        //  Additional scenarios to add tests for once workload sets are added:
         //  Garbage collect workload sets
         //  Garbage collect with install state with workload set
         //  Don't garbage collect baseline workload set
@@ -247,6 +313,16 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             {
                 Directory.CreateDirectory(pack.Path);
             }
+        }
+
+        private void CreateInstallState(string featureBand, string installStateContents)
+        {
+            var installStateFolder = Path.Combine(_dotnetRoot!, "metadata", "workloads", featureBand, "InstallState");
+            Directory.CreateDirectory(installStateFolder);
+
+            string installStatePath = Path.Combine(installStateFolder, "default.json");
+
+            File.WriteAllText(installStatePath, installStateContents);
         }
 
         private void CreateDotnetRoot([CallerMemberName]string testName = "", string identifier = "")
