@@ -26,7 +26,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            List<string> buildWarnings = new List<string>();
+            List<string> buildWarnings = new();
 
             var packageReferencesToUpdate = new List<ITaskItem>();
 
@@ -66,7 +66,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 var implicitPackageReferenceVersion = new ImplicitPackageReferenceVersion(item);
 
-                if (implicitPackageReferenceVersion.TargetFrameworkVersion == this.TargetFrameworkVersion)
+                if (implicitPackageReferenceVersion.TargetFrameworkVersion == TargetFrameworkVersion)
                 {
                     result.Add(implicitPackageReferenceVersion.Name, implicitPackageReferenceVersion);
                 }

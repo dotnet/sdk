@@ -91,7 +91,7 @@ namespace Microsoft.NET.Build.Tasks
             Dictionary<string, LockFileTargetLibrary> libraryLookup =
                 runtimeLibraries.ToDictionary(e => e.Name, StringComparer.OrdinalIgnoreCase);
 
-            HashSet<string> allExclusionList = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> allExclusionList = new(StringComparer.OrdinalIgnoreCase);
 
             if (IsFrameworkDependent && PlatformLibrary != null)
             {
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 // If the platform library is not Microsoft.NETCore.App, treat it as an implicit dependency.
                 // This makes it so Microsoft.AspNet.* 2.x platforms also exclude Microsoft.NETCore.App files.
-                if (PlatformLibrary.Name.Length > 0 && !String.Equals(PlatformLibrary.Name, NetCorePlatformLibrary, StringComparison.OrdinalIgnoreCase))
+                if (PlatformLibrary.Name.Length > 0 && !string.Equals(PlatformLibrary.Name, NetCorePlatformLibrary, StringComparison.OrdinalIgnoreCase))
                 {
                     var library = _lockFileTarget.GetLibrary(NetCorePlatformLibrary);
                     if (library != null)

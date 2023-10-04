@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 //  The same workload pack may be aliased from two different names, for example
                 //  Microsoft.NETCore.App.Runtime.Mono.android-arm is aliased from Microsoft.NETCore.App.Runtime.Mono.net6.android-arm and
                 //  from Microsoft.NETCore.App.Runtime.Mono.net6.android-arm64
-                HashSet<(WorkloadPackId id, string version)> expectedWorkloadPacks = new HashSet<(WorkloadPackId id, string version)>();
+                HashSet<(WorkloadPackId id, string version)> expectedWorkloadPacks = new();
                 foreach (var expectedPack in installedPackInfos)
                 {
                     if (!expectedPack.Id.ToString().Equals(expectedPack.ResolvedPackageId, StringComparison.OrdinalIgnoreCase))
@@ -144,14 +144,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 IEnumerable<WorkloadPackRecord> installedWorkloadPacks = GetWorkloadPackRecords();
 
-                List<WorkloadPackRecord> packsToRemove = new List<WorkloadPackRecord>();
+                List<WorkloadPackRecord> packsToRemove = new();
 
                 // We first need to clean up the dependents and then do a pass at removing them. Querying the installed packs
                 // is effectively a table scan of the registry to make sure we have accurate information and there's a
                 // potential perf hit for both memory and speed when enumerating large sets of registry entries.
                 foreach (WorkloadPackRecord packRecord in installedWorkloadPacks)
                 {
-                    DependencyProvider depProvider = new DependencyProvider(packRecord.ProviderKeyName);
+                    DependencyProvider depProvider = new(packRecord.ProviderKeyName);
 
                     UpdateDependentReferenceCounts(packRecord, depProvider, installedFeatureBands, expectedWorkloadPacks, cleanAllPacks);
 
@@ -221,7 +221,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 try
                 {
-                    SdkFeatureBand dependentFeatureBand = new SdkFeatureBand(dependentParts[1]);
+                    SdkFeatureBand dependentFeatureBand = new(dependentParts[1]);
 
                     if (!installedFeatureBands.Contains(dependentFeatureBand))
                     {
@@ -285,7 +285,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         Log?.LogMessage($"ProductCode mismatch! Cached package: {msi.ProductCode}, pack record: {record.ProductCode}.");
                         string logFile = GetMsiLogName(record, InstallAction.Uninstall);
-                        uint error = ExecuteWithProgress(String.Format(LocalizableStrings.MsiProgressUninstall, id), () => UninstallMsi(record.ProductCode, logFile));
+                        uint error = ExecuteWithProgress(string.Format(LocalizableStrings.MsiProgressUninstall, id), () => UninstallMsi(record.ProductCode, logFile));
                         ExitOnError(error, $"Failed to uninstall {msi.MsiPath}.");
                     }
                     else
@@ -375,7 +375,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 Log?.LogMessage($"Rolling back manifest update.");
 
                 // The provider keys for manifest packages are stable across feature bands so we retain dependents during upgrades.
-                DependencyProvider depProvider = new DependencyProvider(msi.Manifest.ProviderKeyName);
+                DependencyProvider depProvider = new(msi.Manifest.ProviderKeyName);
 
                 // Try and remove the SDK dependency, but ignore any remaining dependencies since
                 // we want to force the removal of the old version. The remaining dependencies and the provider
@@ -506,7 +506,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 // Check the provider key first in case we were installed and we only need to remove
                 // a dependent.
-                DependencyProvider depProvider = new DependencyProvider(msi.Manifest.ProviderKeyName);
+                DependencyProvider depProvider = new(msi.Manifest.ProviderKeyName);
 
                 // Try and remove the dependent against this SDK. If any remain we'll simply exit.
                 UpdateDependent(InstallRequestType.RemoveDependent, msi.Manifest.ProviderKeyName, _dependent);
@@ -622,7 +622,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     string packageDataPath = Path.Combine(extractionPath, "data");
                     if (!Cache.TryGetMsiPathFromPackageData(packageDataPath, out string msiPath, out _))
                     {
-                        throw new FileNotFoundException(String.Format(LocalizableStrings.ManifestMsiNotFoundInNuGetPackage, extractionPath));
+                        throw new FileNotFoundException(string.Format(LocalizableStrings.ManifestMsiNotFoundInNuGetPackage, extractionPath));
                     }
                     string msiExtractionPath = Path.Combine(extractionPath, "msi");
 
@@ -640,7 +640,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         if (result != Error.SUCCESS)
                         {
                             Log?.LogMessage($"ExtractManifestAsync: Admin install failed: {result}");
-                            throw new GracefulException(String.Format(LocalizableStrings.FailedToExtractMsi, msiPath));
+                            throw new GracefulException(string.Format(LocalizableStrings.FailedToExtractMsi, msiPath));
                         }
                     }
 
@@ -655,7 +655,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (manifestFolder == null)
                     {
-                        throw new GracefulException(String.Format(LocalizableStrings.ExpectedSingleManifest, nupkgPath));
+                        throw new GracefulException(string.Format(LocalizableStrings.ExpectedSingleManifest, nupkgPath));
                     }
 
                     FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(manifestFolder, targetPath));
@@ -966,17 +966,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 case InstallAction.MinorUpdate:
                 case InstallAction.Install:
                 case InstallAction.MajorUpgrade:
-                    error = ExecuteWithProgress(String.Format(LocalizableStrings.MsiProgressInstall, name), () => InstallMsi(msi.MsiPath, logFile));
+                    error = ExecuteWithProgress(string.Format(LocalizableStrings.MsiProgressInstall, name), () => InstallMsi(msi.MsiPath, logFile));
                     ExitOnError(error, $"Failed to install {msi.Payload}.");
                     break;
 
                 case InstallAction.Repair:
-                    error = ExecuteWithProgress(String.Format(LocalizableStrings.MsiProgressRepair, name), () => RepairMsi(msi.ProductCode, logFile));
+                    error = ExecuteWithProgress(string.Format(LocalizableStrings.MsiProgressRepair, name), () => RepairMsi(msi.ProductCode, logFile));
                     ExitOnError(error, $"Failed to repair {msi.Payload}.");
                     break;
 
                 case InstallAction.Uninstall:
-                    error = ExecuteWithProgress(String.Format(LocalizableStrings.MsiProgressUninstall, name), () => UninstallMsi(msi.ProductCode, logFile));
+                    error = ExecuteWithProgress(string.Format(LocalizableStrings.MsiProgressUninstall, name), () => UninstallMsi(msi.ProductCode, logFile));
                     ExitOnError(error, $"Failed to remove {msi.Payload}.");
                     break;
 

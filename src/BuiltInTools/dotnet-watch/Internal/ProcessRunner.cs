@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         {
             private readonly IReporter _reporter;
             private readonly Process _process;
-            private readonly TaskCompletionSource _tcs = new TaskCompletionSource();
+            private readonly TaskCompletionSource _tcs = new();
             private volatile bool _disposed;
 
             public ProcessState(Process process, IReporter reporter)
@@ -182,7 +182,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                         // events.
                         //
                         // See the remarks here: https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.process.waitforexit#System_Diagnostics_Process_WaitForExit_System_Int32_
-                        if (!_process.WaitForExit(Int32.MaxValue))
+                        if (!_process.WaitForExit(int.MaxValue))
                         {
                             throw new TimeoutException();
                         }
