@@ -308,6 +308,69 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                             "\"different-command-nameA\" \"different-command-nameB\"", _packageIdA, "\"a\"")));
         }
 
+        [Fact]
+        public void ItRestoresMultipleTools()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+
+            string configContents = """
+                {
+                  "version": 1,
+                  "isRoot": true,
+                  "tools": {
+                    "cake.tool": {
+                      "version": "2.3.0",
+                      "commands": [
+                        "dotnet-cake"
+                      ]
+                    },
+                    "powershell": {
+                      "version": "7.3.7",
+                      "commands": [
+                        "pwsh"
+                      ]
+                    },
+                    "api-tools": {
+                      "version": "1.3.5",
+                      "commands": [
+                        "api-tools"
+                      ]
+                    },
+                    "dotnet-ef": {
+                      "version": "8.0.0-rc.1.23419.6",
+                      "commands": [
+                        "dotnet-ef"
+                      ]
+                    }
+                  }
+                }
+                """;
+
+            File.WriteAllText(Path.Combine(testDir, "dotnet-tools.json"), configContents);
+
+            string CliHome = Path.Combine(testDir, ".home");
+            Directory.CreateDirectory(CliHome);
+
+            var toolRestoreCommand = new DotnetCommand(Log, "tool", "restore")
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", CliHome)
+                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
+                .WithWorkingDirectory(testDir);
+
+            toolRestoreCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            //  Delete tool resolver cache and then run command again.  NuGet packages will still be downloaded to packages folder, making it more likely to hit concurrency issues
+            //  in the tool code
+            Directory.Delete(CliHome, true);
+
+            toolRestoreCommand
+                .Execute()
+                .Should()
+                .Pass();
+        }
+
         private class CacheRow
         {
             public string Version { get; set; }
