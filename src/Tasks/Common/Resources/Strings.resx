@@ -641,7 +641,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1133: "}</comment>
   </data>
   <data name="CannotHaveSolutionLevelRuntimeIdentifier" xml:space="preserve">
-    <value>NETSDK1134: Building a solution with a specific RuntimeIdentifier is not supported. If you would like to publish for a single RID, specifiy the RID at the individual project level instead.</value>
+    <value>NETSDK1134: Building a solution with a specific RuntimeIdentifier is not supported. If you would like to publish for a single RID, specify the RID at the individual project level instead.</value>
     <comment>{StrBegin="NETSDK1134: "}</comment>
   </data>
   <data name="CannotHaveSupportedOSPlatformVersionHigherThanTargetPlatformVersion" xml:space="preserve">
@@ -825,7 +825,7 @@ You may need to build the project on another operating system or architecture, o
   </data>
   <data name="SelfContainedOptionShouldBeUsedWithRuntime" xml:space="preserve">
     <value>NETSDK1179: One of '--self-contained' or '--no-self-contained' options are required when '--runtime' is used.</value>
-    <comment>{StrBegin="NETSDK1179: "}</comment>
+    <comment>{StrBegin="NETSDK1179: "}{Locked="--self-contained"}{Locked="--no-self-contained"}{Locked="--runtime"}</comment>
   </data>
   <data name="CouldNotGetPackVersionFromWorkloadManifests" xml:space="preserve">
     <value>NETSDK1181: Error getting pack version: Pack '{0}' was not present in workload manifests.</value>
@@ -875,12 +875,28 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</value>
     <comment>{StrBegin="NETSDK1192: "}</comment>
   </data>
+  <data name="PublishSelfContainedMustBeBool" xml:space="preserve">
+    <value>NETSDK1193: If PublishSelfContained is set, it must be either true or false. The value given was '{0}'.</value>
+    <comment>{StrBegin="NETSDK1193: "}</comment>
+  </data>
+  <data name="CannotHaveSolutionLevelOutputPath" xml:space="preserve">
+    <value>NETSDK1194: The "--output" option isn't supported when building a solution. Specifying a solution-level output path results in all projects copying outputs to the same directory, which can lead to inconsistent builds.</value>
+    <comment>{StrBegin="NETSDK1194: "}{Locked="--output"}</comment>
+  </data>
   <data name="AotNotSupported" xml:space="preserve">
     <value>NETSDK1196: The SDK does not support ahead-of-time compilation. Set the PublishAot property to false.</value>
     <comment>{StrBegin="NETSDK1196: "}</comment>
   </data>
+  <data name="PublishProfileNotPresent" xml:space="preserve">
+    <value>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</value>
+    <comment>{StrBegin="NETSDK1198: "}</comment>
+  </data>
   <data name="WorkloadIsEol" xml:space="preserve">
     <value>NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</value>
     <comment>{StrBegin="NETSDK1202: "}</comment>
+  </data>
+  <data name="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework" xml:space="preserve">
+    <value>NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.</value>
+    <comment>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</comment>
   </data>
 </root>

@@ -32,6 +32,11 @@
         <target state="translated">Ön sürüm paketlerinin yüklenmesini sağlar.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CorruptSolutionProjectFolderStructure">
+        <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
+        <target state="translated">'{0}' çözüm dosyasında EndProject etiketleri eksik veya proje GUID'i etrafında geçersiz alt-üst proje klasörü eşlemeleri var: '{1}'. Çözümü manuel olarak onarın veya Visual Studio'da açıp kaydetmeyi deneyin."</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CouldNotFindAnyProjectInDirectory">
         <source>Could not find any project in `{0}`.</source>
         <target state="translated">`{0}` içinde proje bulunamadı.</target>
@@ -182,8 +187,8 @@ export PATH="$PATH:{0}"
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
-        <target state="translated">'--self-contained' ve '--no-self-contained' seçenekleri birlikte kullanılamaz.</target>
-        <note />
+        <target state="needs-review-translation">'--self-contained' ve '--no-self-contained' seçenekleri birlikte kullanılamaz.</target>
+        <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.

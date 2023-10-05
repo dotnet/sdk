@@ -32,6 +32,11 @@
         <target state="translated">Zezwala na instalowanie pakietów wersji wstępnych.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CorruptSolutionProjectFolderStructure">
+        <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
+        <target state="translated">W pliku rozwiązania „{0}” brakuje tagów EndProject lub ma nieprawidłowe mapowania folderu projektu podrzędnego nadrzędnego wokół identyfikatora GUID projektu: „{1}”. Napraw ręcznie rozwiązanie lub spróbuj otworzyć je i zapisać w programie Visual Studio.”</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CouldNotFindAnyProjectInDirectory">
         <source>Could not find any project in `{0}`.</source>
         <target state="translated">Nie można odnaleźć żadnego projektu w lokalizacji „{0}”.</target>
@@ -182,8 +187,8 @@ export PATH="$PATH:{0}"
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
-        <target state="translated">Opcji „--self-contained” i „--no-self-contained” nie można używać razem.</target>
-        <note />
+        <target state="needs-review-translation">Opcji „--self-contained” i „--no-self-contained” nie można używać razem.</target>
+        <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.

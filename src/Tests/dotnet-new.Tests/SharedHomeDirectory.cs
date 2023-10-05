@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public SharedHomeDirectory(IMessageSink messageSink)
         {
             Log = new SharedTestOutputHelper(messageSink);
+            Log.WriteLine("Initializing SharedHomeDirectory for folder {0}", HomeDirectory);
             Initialize();
         }
 
@@ -40,7 +41,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 workingDirectory = Directory.GetCurrentDirectory();
             }
-            var args = new List<string> { "-i", packageName, };
+            List<string> args = new() { "install", packageName };
             if (!string.IsNullOrWhiteSpace(nugetSource))
             {
                 args.AddRange(new[] { "--nuget-source", nugetSource });
@@ -59,22 +60,16 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             new DotnetNewCommand(Log)
                 .WithCustomHive(HomeDirectory)
+                .WithDebug()
                 .Execute()
                 .Should()
                 .ExitWith(0)
                 .And
                 .NotHaveStdErr();
 
-            new DotnetNewCommand(Log, "--install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates31Path)
+            new DotnetNewCommand(Log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates60Path)
                 .WithCustomHive(HomeDirectory)
-                .Execute()
-                .Should()
-                .ExitWith(0)
-                .And
-                .NotHaveStdErr();
-
-            new DotnetNewCommand(Log, "--install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates50Path)
-                .WithCustomHive(HomeDirectory)
+                .WithDebug()
                 .Execute()
                 .Should()
                 .ExitWith(0)

@@ -23,14 +23,14 @@ namespace Microsoft.DotNet.Cli
                 IsHidden = true
             }.ForwardAsProperty()
             .AllowSingleArgPerToken();
-            
+
         public static Option<VerbosityOptions> VerbosityOption =
             new ForwardedOption<VerbosityOptions>(
                 new string[] { "-v", "--verbosity" },
                 description: CommonLocalizableStrings.VerbosityOptionDescription)
-                {
-                    ArgumentHelpName = CommonLocalizableStrings.LevelArgumentName
-                }.ForwardAsSingle(o => $"-verbosity:{o}");
+            {
+                ArgumentHelpName = CommonLocalizableStrings.LevelArgumentName
+            }.ForwardAsSingle(o => $"-verbosity:{o}");
 
         public static Option<VerbosityOptions> HiddenVerbosityOption =
             new ForwardedOption<VerbosityOptions>(
@@ -47,15 +47,21 @@ namespace Microsoft.DotNet.Cli
                 description)
             {
                 ArgumentHelpName = CommonLocalizableStrings.FrameworkArgumentName
-                    
+
             }.ForwardAsSingle(o => $"-property:TargetFramework={o}")
             .AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
         private static string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
-        private static Func<string, IEnumerable<string>> RuntimeArgFunc = o => new string[] { $"-property:RuntimeIdentifier={o}", "-property:_CommandLineDefinedRuntimeIdentifier=true" };
         private static CompletionDelegate RuntimeCompletions = Complete.RunTimesFromProjectFile;
-        
-        public static Option<string> RuntimeOption = 
+        public static IEnumerable<string> RuntimeArgFunc(string rid)
+        {
+            if (GetArchFromRid(rid) == "amd64")
+            {
+                rid = GetOsFromRid(rid) + "-x64";
+            }
+            return new string[] { $"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true" };
+        }
+        public static Option<string> RuntimeOption =
             new ForwardedOption<string>(
                 new string[] { "-r", "--runtime" })
             {
@@ -72,7 +78,9 @@ namespace Microsoft.DotNet.Cli
             .AddCompletions(RuntimeCompletions);
 
         public static Option<bool> CurrentRuntimeOption(string description) =>
-            new ForwardedOption<bool>("--use-current-runtime", description)
+            new ForwardedOption<bool>(
+                new string[] { "--ucr", "--use-current-runtime" },
+                description)
                 .ForwardAs("-property:UseCurrentRuntimeIdentifier=True");
 
         public static Option<string> ConfigurationOption(string description) =>
@@ -92,9 +100,13 @@ namespace Microsoft.DotNet.Cli
                 ArgumentHelpName = CommonLocalizableStrings.VersionSuffixArgumentName
             }.ForwardAsSingle(o => $"-property:VersionSuffix={o}");
 
-        public static Argument<T> DefaultToCurrentDirectory<T>(this Argument<T> arg)
+        public static Lazy<string> NormalizedCurrentDirectory = new Lazy<string>(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
+
+        public static Argument<string> DefaultToCurrentDirectory(this Argument<string> arg)
         {
-            arg.SetDefaultValue(PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
+            // we set this lazily so that we don't pay the overhead of determining the
+            // CWD multiple times, one for each Argument that uses this.
+            arg.SetDefaultValueFactory(() => NormalizedCurrentDirectory.Value);
             return arg;
         }
 
@@ -156,7 +168,7 @@ namespace Microsoft.DotNet.Cli
                 "--no-self-contained",
                 CommonLocalizableStrings.FrameworkDependentOptionDescription)
             // Flip the argument so that if this option is specified we get selfcontained=false
-            .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p)); 
+            .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p));
 
         public static readonly Option<string> TestPlatformOption = new Option<string>("--Platform");
 
@@ -184,7 +196,7 @@ namespace Microsoft.DotNet.Cli
                 // ResolveOsOptionToRuntimeIdentifier handles resolving the RID when both arch and os are specified
                 return Array.Empty<string>();
             }
-            
+
             var selfContainedSpecified = parseResult.HasOption(SelfContainedOption) || parseResult.HasOption(NoSelfContainedOption);
             return ResolveRidShorthandOptions(null, arg, selfContainedSpecified);
         }
@@ -218,6 +230,7 @@ namespace Microsoft.DotNet.Cli
         internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string os, string arch)
         {
             var currentRid = GetCurrentRuntimeId();
+            arch = arch == "amd64" ? "x64" : arch;
             os = string.IsNullOrEmpty(os) ? GetOsFromRid(currentRid) : os;
             arch = string.IsNullOrEmpty(arch) ? GetArchFromRid(currentRid) : arch;
             return $"{os}-{arch}";
@@ -231,7 +244,7 @@ namespace Microsoft.DotNet.Cli
 
             var dotnetRootPath = Path.GetDirectoryName(Environment.ProcessPath);
             // When running under test the path does not always contain "dotnet".
-			// The sdk folder is /d/ when run on helix because of space issues
+            // The sdk folder is /d/ when run on helix because of space issues
             dotnetRootPath = Path.GetFileName(dotnetRootPath).Contains("dotnet") || Path.GetFileName(dotnetRootPath).Contains("x64") || Path.GetFileName(dotnetRootPath).Equals("d") ? dotnetRootPath : Path.Combine(dotnetRootPath, "dotnet");
             return dotnetRootPath;
         }

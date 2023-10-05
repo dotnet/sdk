@@ -702,6 +702,7 @@ The default is 'true' if a runtime identifier is specified.</value>
   </data>
   <data name="SelfContainAndNoSelfContainedConflict" xml:space="preserve">
     <value>The '--self-contained' and '--no-self-contained' options cannot be used together.</value>
+    <comment>{Locked="--self-contained"}{Locked="--no-self-contained"}</comment>
   </data>
   <data name="DisableBuildServersOptionDescription" xml:space="preserve">
     <value>Force the command to ignore any persistent build servers.</value>
@@ -711,5 +712,8 @@ The default is 'true' if a runtime identifier is specified.</value>
   </data>
   <data name="CustomConfigurationDisablesPublishAndPackReleaseProperties" xml:space="preserve">
     <value>A custom configuration was detected in the project '{0}', so the property '{1}' will not take effect.</value>
+  </data>
+  <data name="CorruptSolutionProjectFolderStructure" xml:space="preserve">
+    <value>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</value>
   </data>
 </root>

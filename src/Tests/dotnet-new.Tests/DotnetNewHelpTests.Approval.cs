@@ -4,13 +4,13 @@
 
 using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     [UsesVerify]
-    [Collection("Verify Tests")]
     public partial class DotnetNewHelpTests : BaseIntegrationTest
     {
         [Theory]
@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string workingDirectory = CreateTemporaryFolder();
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "class", "-h")
+            CommandResult commandResult = new DotnetNewCommand(_log, "classli", "-h")
                 .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute();
@@ -249,7 +249,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string workingDirectory = CreateTemporaryFolder();
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "console", "--help", "--framework", "net7.0")
+            CommandResult commandResult = new DotnetNewCommand(_log, "console", "--help", "--framework", ToolsetInfo.CurrentTargetFramework)
                 .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute();

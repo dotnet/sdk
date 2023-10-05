@@ -525,7 +525,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="MissingRequiredParameter">
         <source>Missing mandatory option(s) for the template '{1}': {0}.</source>
-        <target state="needs-review-translation">範本 '{1}'缺少強制選項 '{0}'。</target>
+        <target state="translated">遺漏範本 '{1}' 的強制選項: {0}。</target>
         <note>{0} - comma-separated list of missing options, each option is quoted.</note>
       </trans-unit>
       <trans-unit id="MountPointFactories">
@@ -550,7 +550,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="OperationCancelled">
         <source>The operation was cancelled.</source>
-        <target state="new">The operation was cancelled.</target>
+        <target state="translated">作業已取消。</target>
         <note />
       </trans-unit>
       <trans-unit id="OptionalWorkloadsSyncFailed">
@@ -707,9 +707,9 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="RerunCommandAndPassForceToCreateAnyway">
-        <source>Rerun the command and pass --force to accept and create.</source>
-        <target state="translated">重新執行命令並傳遞 --強制接受並建立。</target>
-        <note />
+        <source>To create the template anyway, run the command with '{0}' option:</source>
+        <target state="translated">若仍要建立範本，請使用 '{0}' 選項執行命令:</target>
+        <note>{0} - additional option name (--force)</note>
       </trans-unit>
       <trans-unit id="RunHelpForInformationAboutAcceptedParameters">
         <source>For usage information, run: </source>
@@ -1064,7 +1064,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="UnexpectedResult">
         <source>Template generation ended with unexpected result: '{0}'. Details: {1}</source>
-        <target state="new">Template generation ended with unexpected result: '{0}'. Details: {1}</target>
+        <target state="translated">範本產生已結束，發生非預期的結果: '{0}'。詳細資料: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="UnknownChangeKind">

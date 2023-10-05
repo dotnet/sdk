@@ -32,6 +32,11 @@
         <target state="translated">Permet d'installer les packages de préversion.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CorruptSolutionProjectFolderStructure">
+        <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
+        <target state="translated">Il manque des balises EndProject au fichier solution '{0}' ou des mappages de dossiers de projet parent-enfant non valides autour du GUID du projet : '{1}'. Réparez manuellement la solution ou essayez de l’ouvrir et de l’enregistrer dans Visual Studio. »</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CouldNotFindAnyProjectInDirectory">
         <source>Could not find any project in `{0}`.</source>
         <target state="translated">Projet introuvable dans '{0}'.</target>
@@ -182,8 +187,8 @@ export PATH="$PATH:{0}"
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
-        <target state="translated">Les options « --autonome » et « --non-autonome » ne peuvent pas être utilisées ensemble.</target>
-        <note />
+        <target state="needs-review-translation">Les options « --autonome » et « --non-autonome » ne peuvent pas être utilisées ensemble.</target>
+        <note>{Locked="--self-contained"}{Locked="--no-self-contained"}</note>
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.

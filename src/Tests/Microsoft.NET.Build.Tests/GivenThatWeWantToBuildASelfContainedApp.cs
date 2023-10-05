@@ -350,7 +350,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.4.0.51802")]
-        [InlineData("net6.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_can_publish_runtime_specific_apps_with_library_dependencies_self_contained(string targetFramework)
         {
 
@@ -383,8 +383,62 @@ namespace Microsoft.NET.Build.Tests
             publishCommand.Execute(new[] { "-property:SelfContained=true", "-property:_CommandLineDefinedSelfContained=true", $"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true" }).Should().Pass().And.NotHaveStdOutContaining("warning");
         }
 
+        [Fact]
+        public void It_does_not_build_SelfContained_due_to_PublishSelfContained_being_true()
+        {
+            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld", identifier: "ItDoesNotBuildSCDueToPSC")
+                .WithSource()
+                .WithTargetFramework(targetFramework)
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "PublishSelfContained", "true"));
+                });
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
+            outputDirectory.Should().NotHaveFile("hostfxr.dll"); // This file will only appear if SelfContained. 
+        }
+
         [Theory]
-        [InlineData("net7.0")]
+        [InlineData("PublishReadyToRun")]
+        [InlineData("PublishSingleFile")]
+        [InlineData("PublishSelfContained")]
+        [InlineData("PublishAot")]
+        public void It_builds_without_implicit_rid_with_RuntimeIdentifier_specific_during_publish_only_properties(string property)
+        {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = tfm,
+            };
+            testProject.AdditionalProperties[property] = "true";
+            testProject.RecordProperties("RuntimeIdentifier");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: property);
+
+            var buildCommand = new DotnetBuildCommand(testAsset);
+            buildCommand
+               .Execute()
+               .Should()
+               .Pass();
+
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: tfm);
+            properties["RuntimeIdentifier"].Should().Be("");
+        }
+
+        [Theory]
+        [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_output_with_Prefer32Bit(string targetFramework)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
