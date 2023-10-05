@@ -227,10 +227,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     var fallbackFeatureBand = new SdkFeatureBand(manifest.ManifestFeatureBand);
                     SdkFeatureBand[] bands = [providedSdkFeatureBand, installedSdkFeatureBand, fallbackFeatureBand];
                     var success = false;
-                    var bandIndex = 0;
-                    do
+                    foreach (var band in bands.Distinct())
                     {
-                        var packageId = _workloadManifestInstaller.GetManifestPackageId(new ManifestId(manifest.Id), bands[bandIndex]);
+                        var packageId = _workloadManifestInstaller.GetManifestPackageId(new ManifestId(manifest.Id), band);
                         providedPackageId ??= packageId;
 
                         try
@@ -238,14 +237,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(packageId, _packageSourceLocation, includePreviews);
                             success = true;
                             downloads.Add(new WorkloadDownload(manifest.Id, packageId.ToString(), latestVersion.ToString()));
+                            break;
                         }
                         catch (NuGetPackageNotFoundException)
                         {
                         }
-
-                        bandIndex++;
-                    // If unsuccessful and the previous band doesn't equal the current one, we'll attempt to get the package version again with the new band.
-                    } while (bandIndex < bands.Length && !success && !bands[bandIndex].Equals(bands[bandIndex - 1]));
+                    }
 
                     if (!success)
                     {
