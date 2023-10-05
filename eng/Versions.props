@@ -177,12 +177,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/sourcelink -->
-    <MicrosoftBuildTasksGitVersion>8.0.0-beta.23469.2</MicrosoftBuildTasksGitVersion>
-    <MicrosoftSourceLinkCommonVersion>8.0.0-beta.23469.2</MicrosoftSourceLinkCommonVersion>
-    <MicrosoftSourceLinkAzureReposGitVersion>8.0.0-beta.23469.2</MicrosoftSourceLinkAzureReposGitVersion>
-    <MicrosoftSourceLinkGitHubVersion>8.0.0-beta.23469.2</MicrosoftSourceLinkGitHubVersion>
-    <MicrosoftSourceLinkGitLabVersion>8.0.0-beta.23469.2</MicrosoftSourceLinkGitLabVersion>
-    <MicrosoftSourceLinkBitbucketGitVersion>8.0.0-beta.23469.2</MicrosoftSourceLinkBitbucketGitVersion>
+    <MicrosoftBuildTasksGitVersion>8.0.0-beta.23503.2</MicrosoftBuildTasksGitVersion>
+    <MicrosoftSourceLinkCommonVersion>8.0.0-beta.23503.2</MicrosoftSourceLinkCommonVersion>
+    <MicrosoftSourceLinkAzureReposGitVersion>8.0.0-beta.23503.2</MicrosoftSourceLinkAzureReposGitVersion>
+    <MicrosoftSourceLinkGitHubVersion>8.0.0-beta.23503.2</MicrosoftSourceLinkGitHubVersion>
+    <MicrosoftSourceLinkGitLabVersion>8.0.0-beta.23503.2</MicrosoftSourceLinkGitLabVersion>
+    <MicrosoftSourceLinkBitbucketGitVersion>8.0.0-beta.23503.2</MicrosoftSourceLinkBitbucketGitVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
@@ -208,7 +208,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Workloads from dotnet/emsdk -->
-    <MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportPackageVersion>8.0.0-rtm.23470.1</MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportPackageVersion>
+    <MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportPackageVersion>8.0.0-rtm.23469.3</MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportPackageVersion>
     <EmscriptenWorkloadManifestVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportPackageVersion)</EmscriptenWorkloadManifestVersion>
     <!-- emsdk workload prerelease version band must match the emsdk feature band -->
     <EmscriptenWorkloadFeatureBand>8.0.100$([System.Text.RegularExpressions.Regex]::Match($(EmscriptenWorkloadManifestVersion), `-rtm|-[A-z]*\.*\d*`))</EmscriptenWorkloadFeatureBand>
