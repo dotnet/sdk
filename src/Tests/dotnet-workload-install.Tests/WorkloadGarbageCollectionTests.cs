@@ -29,8 +29,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GivenManagedInstallItCanGarbageCollect()
         {
-            CreateMockManifest("TestManifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
-            CreateMockManifest("TestManifest", "2.0.0", "6.0.300", sourceManifestName: @"Sample2_v2.json");
+            CreateMockManifest("testmanifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
+            CreateMockManifest("testmanifest", "2.0.0", "6.0.300", sourceManifestName: @"Sample2_v2.json");
 
             var (installer, getResolver) = GetTestInstaller();
             var packsToKeep = new PackInfo[]
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GivenManagedInstallItCanGarbageCollectPacksMissingFromManifest()
         {
-            CreateMockManifest("TestManifest", "1.0.0");
+            CreateMockManifest("testmanifest", "1.0.0");
             var (installer, getResolver) = GetTestInstaller();
             // Define packs that don't show up in the manifest
             var packs = new PackInfo[]
@@ -114,13 +114,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GarbageCollectManifests()
         {
-            CreateMockManifest("TestManifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
-            CreateMockManifest("TestManifest", "2.0.0", "6.0.300", sourceManifestName: @"Sample2_v2.json");
-            CreateMockManifest("TestManifest", "3.0.0", "6.0.300", sourceManifestName: @"Sample2_v3.json");
+            CreateMockManifest("testmanifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
+            CreateMockManifest("testmanifest", "2.0.0", "6.0.300", sourceManifestName: @"Sample2_v2.json");
+            CreateMockManifest("testmanifest", "3.0.0", "6.0.300", sourceManifestName: @"Sample2_v3.json");
 
-            CreateManifestRecord("TestManifest", "1.0.0", "6.0.100", "6.0.300");
-            CreateManifestRecord("TestManifest", "2.0.0", "6.0.300", "6.0.300");
-            CreateManifestRecord("TestManifest", "3.0.0", "6.0.300", "6.0.300");
+            CreateManifestRecord("testmanifest", "1.0.0", "6.0.100", "6.0.300");
+            CreateManifestRecord("testmanifest", "2.0.0", "6.0.300", "6.0.300");
+            CreateManifestRecord("testmanifest", "3.0.0", "6.0.300", "6.0.300");
 
             var (installer, getResolver) = GetTestInstaller("6.0.300");
 
@@ -160,31 +160,31 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 PackRecord(pack, "6.0.300").Should().Exist();
             }
 
-            ManifestRecord("TestManifest", "1.0.0", "6.0.100", "6.0.300").Should().NotExist();
-            ManifestRecord("TestManifest", "2.0.0", "6.0.300", "6.0.300").Should().NotExist();
-            ManifestRecord("TestManifest", "3.0.0", "6.0.300", "6.0.300").Should().Exist();
+            ManifestRecord("testmanifest", "1.0.0", "6.0.100", "6.0.300").Should().NotExist();
+            ManifestRecord("testmanifest", "2.0.0", "6.0.300", "6.0.300").Should().NotExist();
+            ManifestRecord("testmanifest", "3.0.0", "6.0.300", "6.0.300").Should().Exist();
 
-            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.100", "TestManifest", "1.0.0", "WorkloadManifest.json")).Should().NotExist();
-            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "TestManifest", "2.0.0", "WorkloadManifest.json")).Should().NotExist();
-            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "TestManifest", "3.0.0", "WorkloadManifest.json")).Should().Exist();
+            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.100", "testmanifest", "1.0.0", "WorkloadManifest.json")).Should().NotExist();
+            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "testmanifest", "2.0.0", "WorkloadManifest.json")).Should().NotExist();
+            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "testmanifest", "3.0.0", "WorkloadManifest.json")).Should().Exist();
         }
 
         [Fact]
         public void GarbageCollectManifestsWithInstallState()
         {
-            CreateMockManifest("TestManifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
-            CreateMockManifest("TestManifest", "2.0.0", "6.0.300", sourceManifestName: @"Sample2_v2.json");
-            CreateMockManifest("TestManifest", "3.0.0", "6.0.300", sourceManifestName: @"Sample2_v3.json");
+            CreateMockManifest("testmanifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
+            CreateMockManifest("testmanifest", "2.0.0", "6.0.300", sourceManifestName: @"Sample2_v2.json");
+            CreateMockManifest("testmanifest", "3.0.0", "6.0.300", sourceManifestName: @"Sample2_v3.json");
 
-            CreateManifestRecord("TestManifest", "1.0.0", "6.0.100", "6.0.300");
-            CreateManifestRecord("TestManifest", "2.0.0", "6.0.300", "6.0.300");
-            CreateManifestRecord("TestManifest", "3.0.0", "6.0.300", "6.0.300");
+            CreateManifestRecord("testmanifest", "1.0.0", "6.0.100", "6.0.300");
+            CreateManifestRecord("testmanifest", "2.0.0", "6.0.300", "6.0.300");
+            CreateManifestRecord("testmanifest", "3.0.0", "6.0.300", "6.0.300");
 
             CreateInstallState("6.0.300",
                """
                 {
                     "manifests": {
-                        "TestManifest": "2.0.0/6.0.300",
+                        "testmanifest": "2.0.0/6.0.300",
                     }
                 }
                 """);
@@ -227,13 +227,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 PackRecord(pack, "6.0.300").Should().Exist();
             }
 
-            ManifestRecord("TestManifest", "1.0.0", "6.0.100", "6.0.300").Should().NotExist();
-            ManifestRecord("TestManifest", "2.0.0", "6.0.300", "6.0.300").Should().Exist();
-            ManifestRecord("TestManifest", "3.0.0", "6.0.300", "6.0.300").Should().NotExist();
+            ManifestRecord("testmanifest", "1.0.0", "6.0.100", "6.0.300").Should().NotExist();
+            ManifestRecord("testmanifest", "2.0.0", "6.0.300", "6.0.300").Should().Exist();
+            ManifestRecord("testmanifest", "3.0.0", "6.0.300", "6.0.300").Should().NotExist();
 
-            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.100", "TestManifest", "1.0.0", "WorkloadManifest.json")).Should().NotExist();
-            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "TestManifest", "2.0.0", "WorkloadManifest.json")).Should().Exist();
-            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "TestManifest", "3.0.0", "WorkloadManifest.json")).Should().NotExist();
+            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.100", "testmanifest", "1.0.0", "WorkloadManifest.json")).Should().NotExist();
+            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "testmanifest", "2.0.0", "WorkloadManifest.json")).Should().Exist();
+            new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "testmanifest", "3.0.0", "WorkloadManifest.json")).Should().NotExist();
         }
 
         //  Additional scenarios to add tests for once workload sets are added:
