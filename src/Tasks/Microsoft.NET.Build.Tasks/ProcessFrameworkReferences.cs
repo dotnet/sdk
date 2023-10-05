@@ -451,17 +451,11 @@ namespace Microsoft.NET.Build.Tasks
                         // items that bypass the error above.
                         Log.LogError(Strings.AotUnsupportedTargetFramework);
                     } else if (IsAotCompatible || EnableAotAnalyzer) {
-                        // Technically this is reachable by setting EnableAotAnalyzer without IsAotCompatible,
-                        // but the recommended way to enable AOT analysis is to set IsAotCompatible,
-                        // so the warning points to the common case.
                         if (!SilenceIsAotCompatibleUnsupportedWarning)
                             Log.LogWarning(Strings.IsAotCompatibleUnsupported, MinNonEolTargetFrameworkForAot);
                     } else if (PublishTrimmed) {
                         Log.LogError(Strings.PublishTrimmedRequiresVersion30);
                     } else if (IsTrimmable || EnableTrimAnalyzer) {
-                        // Technically this is reachable by setting EnableTrimAnalyzer without IsTrimmable,
-                        // but the recommended way to enable trim analysis is to set IsTrimmable,
-                        // so the warning points to the common case.
                         if (!SilenceIsTrimmableUnsupportedWarning)
                             Log.LogWarning(Strings.IsTrimmableUnsupported, MinNonEolTargetFrameworkForTrimming);
                     } else if (EnableSingleFileAnalyzer) {

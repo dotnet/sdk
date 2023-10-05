@@ -149,7 +149,7 @@
       </trans-unit>
       <trans-unit id="WorkloadVersionNotFound">
         <source>Workload version {0} was not found.</source>
-        <target state="new">Workload version {0} was not found.</target>
+        <target state="translated">A versão {0} da carga de trabalho não foi encontrada.</target>
         <note />
       </trans-unit>
     </body>

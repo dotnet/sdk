@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
-        <target state="new">Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
+        <target state="translated">La asignación de origen del paquete está habilitada, pero no se encontró ningún origen en el id. de paquete especificado: {0}. Consulte la documentación de asignación de origen del paquete en https://aka.ms/nuget-package-source-mapping para obtener más detalles.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
-        <target state="new">Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
+        <target state="translated">La asignación de origen del paquete está habilitada, pero no hay ningún origen asignado en el id. de paquete especificado: {0}. Consulte la documentación de asignación de origen del paquete en https://aka.ms/nuget-package-source-mapping para obtener más detalles.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">
