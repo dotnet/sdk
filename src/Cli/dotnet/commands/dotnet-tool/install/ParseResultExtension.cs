@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             if (string.IsNullOrEmpty(packageVersion))
             {
                 var nugetToolSearchApiRequest = new NugetToolSearchApiRequest();
-                NugetToolSearchApiParameter nugetSearchApiParameter = new(searchTerm: packageId, prerelease: prerelease);
+                NugetSearchApiParameter nugetSearchApiParameter = new(searchTerm: packageId, prerelease: prerelease);
                 IReadOnlyCollection<SearchResultPackage> searchResultPackages =
                     NugetSearchApiResultDeserializer.Deserialize(
                         nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter).GetAwaiter().GetResult());
