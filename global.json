@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "9.0.100-alpha.1.23421.9",
+    "dotnet": "9.0.100-alpha.1.23504.14",
     "runtimes": {
       "dotnet": [
         "$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)"
