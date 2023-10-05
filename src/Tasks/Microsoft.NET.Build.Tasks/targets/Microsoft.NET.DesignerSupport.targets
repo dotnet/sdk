@@ -139,7 +139,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- Include runtimepack assets -->
       <_DesignerShadowCopy
-        Include="@(RuntimePackAsset)"
+        Include="@(RuntimePackAsset->WithMetadataValue('RuntimePackAlwaysCopyLocal', 'true'))"
         Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
         />
 
