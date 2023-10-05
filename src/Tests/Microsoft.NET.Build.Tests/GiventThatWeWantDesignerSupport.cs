@@ -14,11 +14,15 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("net46")]
-        [InlineData("netcoreapp3.0")]
-        [InlineData("net5.0-windows")]
-        [InlineData("net7.0-windows10.0.17763")]
-        public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework)
+        [InlineData("net46", "true")]
+        [InlineData("net46", "false")]
+        [InlineData("netcoreapp3.0", "true")]
+        [InlineData("netcoreapp3.0", "false")]
+        [InlineData("net5.0-windows", "true")]
+        [InlineData("net5.0-windows", "false")]
+        [InlineData("net7.0-windows10.0.17763", "true")]
+        [InlineData("net7.0-windows10.0.17763", "false")]
+        public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework, string isSelfContained)
         {
             if ((targetFramework == "net5.0-windows" || targetFramework == "net7.0-windows10.0.17763")
                 && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -39,7 +43,8 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true,
                 TargetFrameworks = targetFramework,
                 PackageReferences = { new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()) },
-                ReferencedProjects = { projectRef }
+                ReferencedProjects = { projectRef },
+                SelfContained = isSelfContained
             };
 
             var asset = _testAssetsManager
