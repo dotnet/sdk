@@ -5,12 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using HashAlgorithmName = System.Security.Cryptography.HashAlgorithmName;
@@ -37,13 +34,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private const string FirstPartyCertificateSubject =
             "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US";
 
-        private DirectoryPath _tempDirectory;
-        private ILogger _logger;
-
-        public FirstPartyNuGetPackageSigningVerifier(DirectoryPath? tempDirectory = null, ILogger logger = null)
+        public FirstPartyNuGetPackageSigningVerifier()
         {
-            _tempDirectory = tempDirectory ?? new DirectoryPath(PathUtilities.CreateTempSubdirectory());
-            _logger = logger ?? new NullLogger();
         }
 
         public bool Verify(FilePath nupkgToVerify, out string commandOutput)
@@ -89,7 +81,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         private static bool NuGetVerify(FilePath nupkgToVerify, out string commandOutput)
         {
-            var args = new[] { "verify", "--all", nupkgToVerify.Value };
+            var args = new[] {"verify", "--all", nupkgToVerify.Value};
             var command = new DotNetCommandFactory(alwaysRunOutOfProc: true)
                 .Create("nuget", args);
 
