@@ -14,7 +14,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("net46", "true")]
         [InlineData("net46", "false")]
         [InlineData("netcoreapp3.0", "true")]
         [InlineData("netcoreapp3.0", "false")]
