@@ -770,6 +770,7 @@ namespace Microsoft.NET.Publish.Tests
                     break;
                 case "net7.0":
                 case "net8.0":
+                case "net9.0":
                     expectedWarnings.AddRange(new string[] {
                     "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssembly(IntPtr, IntPtr",
                     "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssemblyInContextWhenSupported(IntPtr, IntPtr",
