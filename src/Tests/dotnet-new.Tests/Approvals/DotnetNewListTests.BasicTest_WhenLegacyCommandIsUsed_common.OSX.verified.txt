@@ -4,7 +4,7 @@ For more information, run:
 
 These templates matched your input: 
 
-Template Name                                 Short Name                  Language    Tags                            
+Template Name                                 Short Name                  Language    Tags                          
 --------------------------------------------  --------------------------  ----------  ------------------------------
 API Controller                                apicontroller               [C#]        Web/ASP.NET                   
 ASP.NET Core Empty                            web                         [C#],F#     Web/Empty                     
