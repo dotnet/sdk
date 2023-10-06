@@ -1,5 +1,6 @@
 <Project>
   <Target Name="GenerateArchives"
+          Condition="'$(Pack)' == 'true'"
           DependsOnTargets="GenerateLayout;GetCurrentRuntimeInformation"
           BeforeTargets="AfterBuild">
 
