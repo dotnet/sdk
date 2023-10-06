@@ -433,50 +433,27 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private static string GetAdvertisingWorkloadsFilePath(string userProfileDir, SdkFeatureBand featureBand) => Path.Combine(userProfileDir, $".workloadAdvertisingUpdates{featureBand}");
 
-        private async Task<String> GetOnlinePackagePath(SdkFeatureBand sdkFeatureBand, ManifestId manifestId, bool includePreviews)
-        {
-            string packagePath = await _nugetPackageDownloader.DownloadPackageAsync(
-                _workloadManifestInstaller.GetManifestPackageId(manifestId, sdkFeatureBand),
-                packageSourceLocation: _packageSourceLocation,
-                includePreview: includePreviews);
-
-            return packagePath;
-        }
-
-        private string GetOfflinePackagePath(SdkFeatureBand sdkFeatureBand, ManifestId manifestId, DirectoryPath? offlineCache = null)
-        {
-            string packagePath = Directory.GetFiles(offlineCache.Value.Value)
-                .Where(path =>
-                {
-                    if (!path.EndsWith(".nupkg"))
-                    {
-                        return false;
-                    }
-                    var manifestPackageId = _workloadManifestInstaller.GetManifestPackageId(manifestId, sdkFeatureBand).ToString();
-                    return Path.GetFileName(path).StartsWith(manifestPackageId, StringComparison.OrdinalIgnoreCase);
-                })
-                .Max();
-
-            return packagePath;
-        }
-
         private async Task<(bool Success, string PackagePath)> GetManifestPackageUpdate(SdkFeatureBand sdkFeatureBand, ManifestId manifestId, bool includePreviews, DirectoryPath? offlineCache = null)
         {
-            if (offlineCache == null || !offlineCache.HasValue)
+            var manifestPackageId = _workloadManifestInstaller.GetManifestPackageId(manifestId, sdkFeatureBand);
+            if (offlineCache != null)
             {
-                try
-                {
-                    string onlinePath = await GetOnlinePackagePath(sdkFeatureBand, manifestId, includePreviews);
-                    return (Success: true, PackagePath: onlinePath);
-                }
-                catch (NuGetPackageNotFoundException)
-                {
-                    return (Success: false, PackagePath: null);
-                }
+                string offlinePackagePath = Directory.GetFiles(offlineCache.Value.Value)
+                    .Where(path => path.EndsWith(".nupkg") && Path.GetFileName(path).StartsWith(manifestPackageId.ToString(), StringComparison.OrdinalIgnoreCase))
+                    .Max();
+                return (Success: offlinePackagePath != null, PackagePath: offlinePackagePath);
             }
 
-            string offlinePath = GetOfflinePackagePath(sdkFeatureBand, manifestId, offlineCache);
-            return (Success: offlinePath != null, PackagePath: offlinePath);
+            try
+            {
+                string onlinePackagePath = await _nugetPackageDownloader.DownloadPackageAsync(
+                    manifestPackageId, packageSourceLocation: _packageSourceLocation, includePreview: includePreviews);
+                return (Success: true, PackagePath: onlinePackagePath);
+            }
+            catch (NuGetPackageNotFoundException)
+            {
+                return (Success: false, PackagePath: null);
+            }
         }
 
         private string GetAdvertisingManifestPath(SdkFeatureBand featureBand, ManifestId manifestId) => Path.Combine(_userProfileDir, "sdk-advertising", featureBand.ToString(), manifestId.ToString());
