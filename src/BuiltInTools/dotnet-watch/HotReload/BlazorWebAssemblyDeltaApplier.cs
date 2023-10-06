@@ -60,6 +60,13 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                     var capabilities = Encoding.UTF8.GetString(buffer.AsSpan(0, response.Value.Count));
 
+                    // error while fetching capabilities from WASM:
+                    if (capabilities.StartsWith("!"))
+                    {
+                        _reporter.Error($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
+                        return ImmutableArray<string>.Empty;
+                    }
+
                     // Capabilities are expressed a space-separated string.
                     // e.g. https://github.com/dotnet/runtime/blob/14343bdc281102bf6fffa1ecdd920221d46761bc/src/coreclr/System.Private.CoreLib/src/System/Reflection/Metadata/AssemblyExtensions.cs#L87
                     return capabilities.Split(' ').ToImmutableArray();
@@ -171,7 +178,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private readonly struct BlazorRequestApplyUpdateCapabilities
         {
-            public string Type => "BlazorRequestApplyUpdateCapabilities";
+            public string Type => "BlazorRequestApplyUpdateCapabilities2";
         }
     }
 }
