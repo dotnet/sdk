@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Cli
         public static readonly string ALLOW_TARGETING_PACK_CACHING = "DOTNETSDK_ALLOW_TARGETING_PACK_CACHING";
         public static readonly string WORKLOAD_PACK_ROOTS = "DOTNETSDK_WORKLOAD_PACK_ROOTS";
         public static readonly string WORKLOAD_MANIFEST_ROOTS = "DOTNETSDK_WORKLOAD_MANIFEST_ROOTS";
+        public static readonly string WORKLOAD_MANIFEST_IGNORE_DEFAULT_ROOTS = "DOTNETSDK_WORKLOAD_MANIFEST_IGNORE_DEFAULT_ROOTS";
         public static readonly string WORKLOAD_UPDATE_NOTIFY_DISABLE = "DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE";
         public static readonly string WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS = "DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS";
         public static readonly string WORKLOAD_DISABLE_PACK_GROUPS = "DOTNET_CLI_WORKLOAD_DISABLE_PACK_GROUPS";
@@ -22,8 +23,11 @@ namespace Microsoft.DotNet.Cli
         public static readonly string ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS = "DOTNET_CLI_ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS";
         public static readonly string ENABLE_PACK_RELEASE_FOR_SOLUTIONS = "DOTNET_CLI_ENABLE_PACK_RELEASE_FOR_SOLUTIONS";
         public static readonly string DOTNET_ROOT = "DOTNET_ROOT";
+		
+        public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG = "DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG";
+        public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR = "DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR";
+        public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER = "DOTNET_MSBUILD_SDK_RESOLVER_SDKS_VER";
         public static readonly string DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT = "DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT";
-
 
 #if NET7_0_OR_GREATER
         private static readonly Version s_version6_0 = new(6, 0);

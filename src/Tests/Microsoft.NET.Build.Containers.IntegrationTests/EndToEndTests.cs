@@ -2,32 +2,34 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using Xunit;
-using Xunit.Abstractions;
+using System.Xml.Linq;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.Build.Containers.Resources;
 using Microsoft.NET.Build.Containers.UnitTests;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Commands;
-using Microsoft.DotNet.Cli.Utils;
-using System.IO;
-using System.Xml.Linq;
-using Microsoft.NET.Build.Containers.Resources;
+using Xunit;
+using Xunit.Abstractions;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 [Collection("Docker tests")]
-public class EndToEndTests
+public class EndToEndTests : IDisposable
 {
     private ITestOutputHelper _testOutput;
+    private readonly TestLoggerFactory _loggerFactory;
 
     public EndToEndTests(ITestOutputHelper testOutput)
     {
         _testOutput = testOutput;
+        _loggerFactory = new TestLoggerFactory(testOutput);
     }
 
     public static string NewImageName([CallerMemberName] string callerMemberName = "")
     {
-        var (normalizedName, warning, error) = ContainerHelpers.NormalizeImageName(callerMemberName);
+        var (normalizedName, warning, error) = ContainerHelpers.NormalizeRepository(callerMemberName);
         if (error is (var format, var args))
         {
             throw new ArgumentException(String.Format(Strings.ResourceManager.GetString(format)!, args));
@@ -36,14 +38,20 @@ public class EndToEndTests
         return normalizedName!; // non-null if error is null
     }
 
+    public void Dispose()
+    {
+        _loggerFactory.Dispose();
+    }
+
     [DockerDaemonAvailableFact]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithRegistryPushAndPull));
         string publishDirectory = BuildLocalApp();
 
         // Build the image
 
-        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry));
+        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry), logger);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.BaseImage,
@@ -66,7 +74,7 @@ public class EndToEndTests
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net6ImageTag);
         var destinationReference = new ImageReference(registry, NewImageName(), "latest");
 
-        await registry.PushAsync(builtImage, sourceReference, destinationReference, Console.WriteLine, cancellationToken: default).ConfigureAwait(false);
+        await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default).ConfigureAwait(false);
 
         // pull it back locally
         new RunExeCommand(_testOutput, "docker", "pull", $"{DockerRegistryManager.LocalRegistry}/{NewImageName()}:latest")
@@ -82,11 +90,12 @@ public class EndToEndTests
     [DockerDaemonAvailableFact]
     public async Task ApiEndToEndWithLocalLoad()
     {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithLocalLoad));
         string publishDirectory = BuildLocalApp();
 
         // Build the image
 
-        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry));
+        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry), logger);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.BaseImage,
@@ -108,7 +117,7 @@ public class EndToEndTests
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net6ImageTag);
         var destinationReference = new ImageReference(registry, NewImageName(), "latest");
 
-        await new LocalDocker(Console.WriteLine).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new LocalDocker(logger).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
         new RunExeCommand(_testOutput, "docker", "run", "--rm", "--tty", $"{NewImageName()}:latest")
@@ -127,7 +136,8 @@ public class EndToEndTests
         }
         Directory.CreateDirectory(workingDirectory);
 
-        new DotnetCommand(_testOutput, "new", "console", "-f", tfm, "-o", "MinimalTestApp")
+        new DotnetNewCommand(_testOutput, "console", "-f", tfm, "-o", "MinimalTestApp")
+            .WithVirtualHive()        
             .WithWorkingDirectory(workingDirectory)
             .Execute()
             .Should().Pass();
@@ -142,8 +152,7 @@ public class EndToEndTests
     }
 
     [DockerDaemonAvailableTheory]
-    //ignored until is in: https://github.com/dotnet/sdk/pull/31488 to avoid adding Microsoft.NET.Build.Containers v0.4.0 to feeds
-    //[InlineData(false)]
+    [InlineData(false)]
     [InlineData(true)]
     public async Task EndToEnd_NoAPI_Web(bool addPackageReference)
     {
@@ -163,19 +172,8 @@ public class EndToEndTests
         newProjectDir.Create();
         privateNuGetAssets.Create();
 
-        var packageDirPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "package");
-        var packagedir = new DirectoryInfo(packageDirPath);
-
-        // do not pollute the primary/global NuGet package store with the private package(s)
-        FileInfo[] nupkgs = packagedir.GetFiles("*.nupkg");
-        if (nupkgs == null || nupkgs.Length == 0)
-        {
-            // Build Microsoft.NET.Build.Containers.csproj & wait.
-            // for now, fail.
-            Assert.Fail("No nupkg found in expected package folder. You may need to rerun the build");
-        }
-
-        new DotnetCommand(_testOutput, "new", "webapi", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, "webapi", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()  
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
@@ -186,14 +184,16 @@ public class EndToEndTests
         {
             File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-            new DotnetCommand(_testOutput, "nuget", "add", "source", packagedir.FullName, "--name", "local-temp")
+            (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+
+            new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
                 .Should().Pass();
 
             // Add package to the project
-            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
+            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
@@ -214,7 +214,7 @@ public class EndToEndTests
         string imageTag = "1.0";
 
         // Build & publish the project
-        new DotnetCommand(
+        CommandResult commandResult = new DotnetCommand(
             _testOutput,
             "publish",
             "/p:publishprofile=DefaultContainer",
@@ -222,12 +222,22 @@ public class EndToEndTests
             "/bl",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageDefault}",
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
-            $"/p:ContainerImageName={imageName}",
+            $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
-            .Execute()
-            .Should().Pass();
+            .Execute();
+
+        commandResult.Should().Pass();
+
+        if (addPackageReference)
+        {
+            commandResult.Should().HaveStdOutContaining("warning : Microsoft.NET.Build.Containers NuGet package is explicitly referenced. Consider removing the package reference to Microsoft.NET.Build.Containers as it is now part of .NET SDK.");
+        }
+        else
+        {
+            commandResult.Should().NotHaveStdOutContaining("warning");
+        }
 
         new RunExeCommand(_testOutput, "docker", "pull", $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
             .Execute()
@@ -306,18 +316,8 @@ public class EndToEndTests
         newProjectDir.Create();
         privateNuGetAssets.Create();
 
-        var packageDirPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "package");
-        var packagedir = new DirectoryInfo(packageDirPath);
-
-        FileInfo[] nupkgs = packagedir.GetFiles("*.nupkg");
-        if (nupkgs == null || nupkgs.Length == 0)
-        {
-            // Build Microsoft.NET.Build.Containers.csproj & wait.
-            // for now, fail.
-            Assert.Fail("No nupkg found in expected package folder. You may need to rerun the build");
-        }
-
-        new DotnetCommand(_testOutput, "new", "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
@@ -326,14 +326,16 @@ public class EndToEndTests
 
         File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-        new DotnetCommand(_testOutput, "nuget", "add", "source", packagedir.FullName, "--name", "local-temp")
+        (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+
+        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", TestContext.Current.ToolsetUnderTest.SdkVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -351,7 +353,7 @@ public class EndToEndTests
             "/bl",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageDefault}",
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
-            $"/p:ContainerImageName={imageName}",
+            $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
@@ -386,10 +388,11 @@ public class EndToEndTests
     [DockerDaemonAvailableTheory]
     public async Task CanPackageForAllSupportedContainerRIDs(string dockerPlatform, string rid, string workingDir)
     {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(CanPackageForAllSupportedContainerRIDs));
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
         // Build the image
-        Registry registry = new(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.BaseImageSource));
+        Registry registry = new(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.BaseImageSource), logger);
 
         ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
             DockerRegistryManager.BaseImage,
@@ -412,7 +415,7 @@ public class EndToEndTests
         // Load the image into the local Docker daemon
         var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net7ImageTag);
         var destinationReference = new ImageReference(registry, NewImageName(), rid);
-        await new LocalDocker(Console.WriteLine).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new LocalDocker(logger).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
         new RunExeCommand(

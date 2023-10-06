@@ -15,13 +15,13 @@ parameters:
   timeoutInMinutes: 180
 
 jobs:
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/7.0.4xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0.1xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
   - template: /eng/common/templates/job/onelocbuild.yml
     parameters:
       CreatePr: true
       LclSource: lclFilesfromPackage
       LclPackageId: 'LCL-JUNO-PROD-DOTNETSDK'
-      MirrorBranch: release/7.0.4xx
+      MirrorBranch: release/8.0.1xx
       MirrorRepo: sdk
 
 - ${{ if not(contains(parameters.agentOs, 'TemplateEngine')) }}:
@@ -76,6 +76,7 @@ jobs:
                     /p:Test=false
                     $(_InternalRuntimeDownloadArgs)
                     $(_OfficialBuildArgs)
+          continueOnError: false
           displayName: Build
           env:
             BuildConfig: $(_BuildConfig)
@@ -106,6 +107,7 @@ jobs:
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
                     /p:Test=false
+          continueOnError: false
           displayName: Build
           env:
             BuildConfig: $(_BuildConfig)
@@ -149,6 +151,7 @@ jobs:
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
                     -p:Test=false
+          continueOnError: false
           displayName: Build
           env:
             BuildConfig: $(_BuildConfig)
@@ -251,6 +254,7 @@ jobs:
                     $(_OfficialBuildIdArgs)
                     /p:Test=false
                     $(_InternalRuntimeDownloadArgs)
+          continueOnError: false
           displayName: Build
           env:
             BuildConfig: $(_BuildConfig)

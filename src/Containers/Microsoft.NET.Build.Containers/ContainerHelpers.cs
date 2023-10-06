@@ -19,8 +19,6 @@ public static class ContainerHelpers
 
     internal const string HostObjectPass = "SDK_CONTAINER_REGISTRY_PWORD";
 
-    internal const string ChunkedUploadEnabled = "SDK_CONTAINER_REGISTRY_CHUNKED_UPLOAD";
-
     /// <summary>
     /// Matches an environment variable name - must start with a letter or underscore, and can only contain letters, numbers, and underscores.
     /// </summary>
@@ -261,20 +259,20 @@ public static class ContainerHelpers
     /// <summary>
     /// Checks if a given container image name adheres to the image name spec. If not, and recoverable, then normalizes invalid characters.
     /// </summary>
-    internal static (string? normalizedImageName, (string, object[])? normalizationWarning, (string, object[])? normalizationError) NormalizeImageName(string containerImageName)
+    internal static (string? normalizedImageName, (string, object[])? normalizationWarning, (string, object[])? normalizationError) NormalizeRepository(string containerRepository)
     {
-        if (IsValidImageName(containerImageName))
+        if (IsValidImageName(containerRepository))
         {
-            return (containerImageName, null, null);
+            return (containerRepository, null, null);
         }
         else
         {
             // check for leading alphanumeric character
-            char firstChar = containerImageName[0];
+            char firstChar = containerRepository[0];
             if (!IsAlpha(firstChar) && !IsNumeric(firstChar))
             {
                 // The name did not start with an alphanumeric character, so we can't normalize it.
-                var error = (nameof(Strings.InvalidImageName_NonAlphanumericStartCharacter), new []{ containerImageName });
+                var error = (nameof(Strings.InvalidImageName_NonAlphanumericStartCharacter), new []{ containerRepository });
                 return (null, null, error);
             }
 
@@ -283,10 +281,10 @@ public static class ContainerHelpers
             // after the normalization to check if our invariants hold
             var normalizedAllChars = true;
             var normalizationOccurred = false;
-            var builder = new StringBuilder(containerImageName);
-            for (int i = 0; i < containerImageName.Length; i++)
+            var builder = new StringBuilder(containerRepository);
+            for (int i = 0; i < containerRepository.Length; i++)
             {
-                var current = containerImageName[i];
+                var current = containerRepository[i];
                 if (IsLowerAlpha(current) || IsNumeric(current) || IsAllowedPunctuation(current))
                 {
                     // no need to set the builder's char here, since we preloaded
@@ -309,21 +307,21 @@ public static class ContainerHelpers
             if (normalizedAllChars)
             {
                 // The name was normalized to all dashes, so there was nothing recoverable. We should throw.
-                var error = (nameof(Strings.InvalidImageName_EntireNameIsInvalidCharacters), new string[] { containerImageName });
+                var error = (nameof(Strings.InvalidImageName_EntireNameIsInvalidCharacters), new string[] { containerRepository });
                 return (null, null, error);
             }
 
             // check for warning/notification that we did indeed perform normalization
             if (normalizationOccurred)
             {
-                var warning = (nameof(Strings.NormalizedContainerName), new string[]{ containerImageName, normalizedImageName });
+                var warning = (nameof(Strings.NormalizedContainerName), new string[]{ containerRepository, normalizedImageName });
                 return (normalizedImageName, warning, null);
             }
 
             // user value was already normalized, so we don't need to do anything
             else
             {
-                return (containerImageName, null, null);
+                return (containerRepository, null, null);
             }
         }
 
