@@ -1,6 +1,6 @@
 <Project>
   <Target Name="GenerateArchives"
-          Condition="'$(Pack)' == 'true'"
+          Condition="'$(PackInstaller)' == 'true'"
           DependsOnTargets="GenerateLayout;GetCurrentRuntimeInformation"
           BeforeTargets="AfterBuild">
 
