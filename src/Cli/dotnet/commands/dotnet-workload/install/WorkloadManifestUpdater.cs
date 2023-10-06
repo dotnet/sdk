@@ -163,14 +163,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             var currentManifestIds = GetInstalledManifestIds();
             foreach (var manifestId in currentManifestIds)
             {
-                var (installedVersion, installedBand) = GetInstalledManifestVersion(manifestId);
                 var advertisingInfo = GetAdvertisingManifestVersionAndWorkloads(manifestId);
                 if (advertisingInfo == null)
                 {
                     continue;
                 }
-                var ((adVersion, adBand), adWorkloads) = advertisingInfo.Value;
 
+                var (installedVersion, installedBand) = GetInstalledManifestVersion(manifestId);
+                var ((adVersion, adBand), adWorkloads) = advertisingInfo.Value;
                 if ((adVersion.CompareTo(installedVersion) > 0 && adBand.Equals(installedBand)) ||
                     adBand.CompareTo(installedBand) > 0)
                 {
