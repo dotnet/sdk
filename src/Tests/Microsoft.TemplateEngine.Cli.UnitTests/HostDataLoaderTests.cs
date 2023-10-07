@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         public void CanLoadHostDataFile()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            HostSpecificDataLoader hostSpecificDataLoader = new HostSpecificDataLoader(engineEnvironmentSettings);
+            HostSpecificDataLoader hostSpecificDataLoader = new(engineEnvironmentSettings);
             Assert.True(engineEnvironmentSettings.TryGetMountPoint(Directory.GetCurrentDirectory(), out IMountPoint? mountPoint));
             Assert.NotNull(mountPoint);
             IFile? dataFile = mountPoint!.FileInfo("/Resources/dotnetcli.host.json");
@@ -54,13 +54,13 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         public void CanReadHostDataFromITemplateInfo()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            HostSpecificDataLoader hostSpecificDataLoader = new HostSpecificDataLoader(engineEnvironmentSettings);
+            HostSpecificDataLoader hostSpecificDataLoader = new(engineEnvironmentSettings);
             Assert.True(engineEnvironmentSettings.TryGetMountPoint(Directory.GetCurrentDirectory(), out IMountPoint? mountPoint));
             Assert.NotNull(mountPoint);
             IFile? dataFile = mountPoint!.FileInfo("/Resources/dotnetcli.host.json");
             Assert.NotNull(dataFile);
             using Stream s = dataFile.OpenRead();
-            using TextReader tr = new StreamReader(s, System.Text.Encoding.UTF8, true);
+            using TextReader tr = new StreamReader(s, Encoding.UTF8, true);
 
             string json = tr.ReadToEnd();
             ITemplateInfo template = A.Fake<ITemplateInfo>(builder => builder.Implements<ITemplateInfoHostJsonCache>().Implements<ITemplateInfo>());
@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         public void ReturnDefaultForInvalidEntry()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            HostSpecificDataLoader hostSpecificDataLoader = new HostSpecificDataLoader(engineEnvironmentSettings);
+            HostSpecificDataLoader hostSpecificDataLoader = new(engineEnvironmentSettings);
 
             ITemplateInfo template = A.Fake<ITemplateInfo>(builder => builder.Implements<ITemplateInfoHostJsonCache>().Implements<ITemplateInfo>());
             A.CallTo(() => ((ITemplateInfoHostJsonCache)template).HostData).Returns(null);
@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         public void ReturnDefaultForInvalidFile()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
-            HostSpecificDataLoader hostSpecificDataLoader = new HostSpecificDataLoader(engineEnvironmentSettings);
+            HostSpecificDataLoader hostSpecificDataLoader = new(engineEnvironmentSettings);
 
             ITemplateInfo template = A.Fake<ITemplateInfo>();
             A.CallTo(() => template.MountPointUri).Returns(Directory.GetCurrentDirectory());

@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Tools.Test
 
         public static TestCommand FromArgs(string[] args, string testSessionCorrelationId = null, string msbuildPath = null)
         {
-            var parser = Microsoft.DotNet.Cli.Parser.Instance;
+            var parser = Parser.Instance;
             var parseResult = parser.ParseFrom("dotnet test", args);
 
             // settings parameters are after -- (including --), these should not be considered by the parser
@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Tools.Test
                 result.OptionValuesToBeForwarded(TestCommandParser.GetCommand()) // all msbuild-recognized tokens
                     .Concat(unMatchedNonSettingsArgs); // all tokens that the test-parser doesn't explicitly track (minus the settings tokens)
 
-            VSTestTrace.SafeWriteTrace(() => $"MSBuild args from forwarded options: {String.Join(", ", parsedArgs)}");
+            VSTestTrace.SafeWriteTrace(() => $"MSBuild args from forwarded options: {string.Join(", ", parsedArgs)}");
             msbuildArgs.AddRange(parsedArgs);
 
             if (settings.Any())

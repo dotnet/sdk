@@ -140,16 +140,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         private ResolveTargetingPackAssets InitializeTask(string mockPackageDirectory, IBuildEngine buildEngine)
         {
-            var task = new ResolveTargetingPackAssets()
+            var task = new ResolveTargetingPackAssets
             {
                 BuildEngine = buildEngine,
+                FrameworkReferences = DefaultFrameworkReferences(),
+                ResolvedTargetingPacks = DefaultTargetingPacks(mockPackageDirectory),
+                ProjectLanguage = "C#"
             };
-
-            task.FrameworkReferences = DefaultFrameworkReferences();
-
-            task.ResolvedTargetingPacks = DefaultTargetingPacks(mockPackageDirectory);
-
-            task.ProjectLanguage = "C#";
 
             return task;
         }
@@ -280,7 +277,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             FrameworkListDefinition defaultObject = (FrameworkListDefinition)constructor.Invoke(args);
 
-            List<string> seenKeys = new List<string>(args.Length + 1);
+            List<string> seenKeys = new(args.Length + 1);
 
             seenKeys.Add(defaultObject.CacheKey());
 

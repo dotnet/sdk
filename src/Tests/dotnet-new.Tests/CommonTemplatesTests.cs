@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");
             }
 
-            VerificationEngine engine = new VerificationEngine(_logger);
+            VerificationEngine engine = new(_logger);
             await engine.Execute(options).ConfigureAwait(false);
         }
 
@@ -214,7 +214,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
             );
 
-            VerificationEngine engine = new VerificationEngine(_logger);
+            VerificationEngine engine = new(_logger);
             await engine.Execute(options).ConfigureAwait(false);
 
             Directory.Delete(workingDir, true);
@@ -416,7 +416,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
             );
 
-            VerificationEngine engine = new VerificationEngine(_logger);
+            VerificationEngine engine = new(_logger);
             await engine.Execute(options).ConfigureAwait(false);
 
             if (buildPass)

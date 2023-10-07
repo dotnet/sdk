@@ -239,9 +239,10 @@ namespace Microsoft.NET.Build.Tests
                 var getValuesCommand = new GetValuesCommand(testAsset,
                     valueName: "Analyzer",
                     GetValuesCommand.ValueType.Item,
-                    targetFramework);
-
-                getValuesCommand.DependsOnTargets = "ResolveLockFileAnalyzers";
+                    targetFramework)
+                {
+                    DependsOnTargets = "ResolveLockFileAnalyzers"
+                };
 
                 getValuesCommand.Execute("-p:TargetFramework=" + targetFramework).Should().Pass();
 
@@ -252,7 +253,7 @@ namespace Microsoft.NET.Build.Tests
             GetAnalyzersForTargetFramework("net472").Should().BeEmpty();
         }
 
-        static readonly List<string> nugetRoots = new List<string>()
+        static readonly List<string> nugetRoots = new()
             {
                 TestContext.Current.NuGetCachePath,
                 Path.Combine(FileConstants.UserProfileFolder, ".dotnet", "NuGetFallbackFolder"),

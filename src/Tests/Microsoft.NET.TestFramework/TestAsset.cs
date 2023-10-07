@@ -49,7 +49,7 @@ namespace Microsoft.NET.TestFramework
         {
             _projectFiles = new List<string>();
 
-            var files = Directory.GetFiles(base.Path, "*.*", SearchOption.AllDirectories);
+            var files = Directory.GetFiles(Path, "*.*", SearchOption.AllDirectories);
 
             foreach (string file in files)
             {
@@ -99,10 +99,10 @@ namespace Microsoft.NET.TestFramework
 
             foreach (string[] property in Properties)
             {
-                this.UpdateProjProperty(property[0], property[1], property[2]);
+                UpdateProjProperty(property[0], property[1], property[2]);
             }
 
-            this.ReplaceTheNewtonsoftJsonPackageVersionVariable();
+            ReplaceTheNewtonsoftJsonPackageVersionVariable();
 
             return this;
         }
