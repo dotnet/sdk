@@ -169,10 +169,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // However, we can test a setup where no workloads are installed and --info is provided. 
 
             _reporter.Clear();
-            _ = new WorkloadId[] { new WorkloadId("xamarin-android"), new WorkloadId("xamarin-android-build") };
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
-            _ = new MockPackWorkloadInstaller();
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android"});
 
