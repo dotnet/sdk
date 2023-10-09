@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Globalization;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using System.Diagnostics;
 using LocalizableStrings = Microsoft.DotNet.Tools.Package.Search.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.commands.package.search
@@ -30,17 +32,16 @@ namespace Microsoft.DotNet.Cli.commands.package.search
             _sources = sources;
             _exactMatch = exactMatch;
         }
-        public async void ExecuteCommandAsync()
+        public async Task ExecuteCommandAsync()
         {
             var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
-            
             IList<PackageSource> listEndpoints = GetEndpointsAsync();
-
             WarnForHTTPSources(listEndpoints);
             foreach (PackageSource source in listEndpoints)
             {
                 SourceRepository repository = Repository.Factory.GetCoreV3(source);
-                PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>(CancellationToken.None);
+                var cancellation = CancellationToken.None;
+                PackageSearchResource resource = await repository.GetResourceAsync<PackageSearchResource>(cancellation);
                 if (resource is null)
                 {
                     taskList.Add((null, source));
@@ -55,6 +56,7 @@ namespace Microsoft.DotNet.Cli.commands.package.search
                     CancellationToken.None
                     )), source));
             }
+
             foreach (var taskItem in taskList)
             {
                 var (task, source) = taskItem;
@@ -74,13 +76,33 @@ namespace Microsoft.DotNet.Cli.commands.package.search
 
                 Console.WriteLine(_sourceSeparator);
                 Console.WriteLine($"Source: {source.Name}"); // System.Console is used so that output is not suppressed by Verbosity.
+                PrintResult(results);
                 Console.WriteLine(_packageSeparator);
+            }
+        }
+
+        private void PrintResult(IEnumerable<IPackageSearchMetadata> results)
+        {
+            if (_exactMatch && results?.Any() == true &&
+                results.First().Identity.Id.Equals(_searchTerm, StringComparison.OrdinalIgnoreCase))
+            {
+                // we are doing exact match and if the result from the API are sorted, the first result should be the package we are searching
+                IPackageSearchMetadata result = results.First();
+                Console.WriteLine($"{result.Identity.Id} | {result.Identity.Version} | Downloads: {(result.DownloadCount.HasValue ? result.DownloadCount.ToString() : "N/A")}");
+                return;
+            }
+            else
+            {
+                foreach (IPackageSearchMetadata result in results)
+                {
+                    Console.WriteLine($"{result.Identity.Id} | {result.Identity.Version} | Downloads: {(result.DownloadCount.HasValue ? result.DownloadCount.ToString() : "N/A")}");
+                }
             }
         }
 
         private IList<PackageSource> GetEndpointsAsync()
         {
-            ISettings settings = NuGet.Configuration.Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
+            ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
                     configFileName: null,
                     machineWideSettings: new XPlatMachineWideSetting());
             PackageSourceProvider sourceProvider = new PackageSourceProvider(settings);

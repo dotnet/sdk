@@ -1,6 +1,8 @@
 using System.CommandLine;
+using System.Diagnostics;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.commands.package.search;
+using System;
 namespace Microsoft.DotNet.Tools.Package.Search
 {
     internal class PackageSearchCommand : CommandBase
@@ -27,7 +29,7 @@ namespace Microsoft.DotNet.Tools.Package.Search
         }
         public override int Execute()
         {
-            _nugetToolSearchApiRequest.ExecuteCommandAsync();
+            Task.Run(() => _nugetToolSearchApiRequest.ExecuteCommandAsync()).Wait();
             return 0;
         }
     }
