@@ -231,8 +231,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.Equal(PostActionExecutionStatus.Success, result);
 
             //2 post actions were executed
-            Assert.Equal(1, trueProcessor.Calls.Count);
-            Assert.Equal(1, falseProcessor.Calls.Count);
+            Assert.Single(trueProcessor.Calls);
+            Assert.Single(falseProcessor.Calls);
             Assert.Equal(postAction1, falseProcessor.Calls[0].PostAction);
             Assert.Equal(postAction2, trueProcessor.Calls[0].PostAction);
         }
@@ -278,7 +278,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
 
             //only first post action was executed
             Assert.Empty(trueProcessor.Calls);
-            Assert.Equal(1, falseProcessor.Calls.Count);
+            Assert.Single(falseProcessor.Calls);
             Assert.Equal(postAction1, falseProcessor.Calls[0].PostAction);
         }
 

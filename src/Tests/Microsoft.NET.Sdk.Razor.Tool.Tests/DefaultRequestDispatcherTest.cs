@@ -42,7 +42,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         {
             // Arrange
             var memoryStream = new MemoryStream();
-            await EmptyServerRequest.WriteAsync(memoryStream, CancellationToken.None).ConfigureAwait(true);
+            await EmptyServerRequest.WriteAsync(memoryStream, CancellationToken.None);
             memoryStream.Position = 0;
 
             var stream = new Mock<Stream>(MockBehavior.Strict);

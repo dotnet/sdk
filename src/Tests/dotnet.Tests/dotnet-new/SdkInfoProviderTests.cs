@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
     public class SdkInfoProviderTests
     {
         [Fact]
-        public void GetInstalledVersionsAsync_ShouldContainCurrentVersion()
+        public async Task GetInstalledVersionsAsync_ShouldContainCurrentVersion()
         {
             string dotnetRootUnderTest = TestContext.Current.ToolsetUnderTest.DotNetRoot;
             string? pathOrig = Environment.GetEnvironmentVariable("PATH");
@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 // make sure current process path is not picked up as the dontet executable location
                 ISdkInfoProvider sp = new SdkInfoProvider(() => string.Empty);
 
-                string currentVersion = sp.GetCurrentVersionAsync(default).Result;
+                string currentVersion = await sp.GetCurrentVersionAsync(default);
                 List<string>? allVersions = sp.GetInstalledVersionsAsync(default).Result?.ToList();
 
                 currentVersion.Should().NotBeNullOrEmpty("Current Sdk version should be populated");

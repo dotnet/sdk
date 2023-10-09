@@ -53,7 +53,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var host = new Mock<ConnectionHost>(MockBehavior.Strict);
             host
                 .Setup(x => x.WaitForConnectionAsync(It.IsAny<CancellationToken>()))
-                .Returns(() =>
+                .Returns(async () =>
                 {
                     // Use a thread instead of Task to guarantee this code runs on a different
                     // thread and we can validate the mutex state. 
@@ -82,7 +82,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                     // ensure the above check completes before the server hits a timeout and 
                     // releases the mutex. 
                     thread.Start();
-                    source.Task.Wait();
+                    await source.Task;
 
                     return new TaskCompletionSource<Connection>().Task;
                 });

@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watcher.Tools
     public class StaticFileHandlerTest
     {
         [Fact]
-        public async ValueTask TryHandleFileAction_WritesUpdateCssMessage()
+        public async Task TryHandleFileAction_WritesUpdateCssMessage()
         {
             // Arrange
             var server = new Mock<BrowserRefreshServer>(NullReporter.Singleton);
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         }
 
         [Fact]
-        public async ValueTask TryHandleFileAction_CausesBrowserRefreshForNonCssFile()
+        public async Task TryHandleFileAction_CausesBrowserRefreshForNonCssFile()
         {
             // Arrange
             var server = new Mock<BrowserRefreshServer>(NullReporter.Singleton);
