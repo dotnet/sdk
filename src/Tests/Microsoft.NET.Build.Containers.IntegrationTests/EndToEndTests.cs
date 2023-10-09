@@ -37,7 +37,7 @@ public class EndToEndTests : IDisposable
     {
         _loggerFactory.Dispose();
     }
-    
+
     [DockerAvailableFact]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
@@ -310,29 +310,39 @@ public class EndToEndTests : IDisposable
             "--rm",
             "--name",
             containerName,
-            "--publish",
-            "5017:8080",
+            "-P",
             "--detach",
             $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
         .Execute();
         processResult.Should().Pass();
         Assert.NotNull(processResult.StdOut);
-
         string appContainerId = processResult.StdOut.Trim();
 
         bool everSucceeded = false;
 
-        HttpClient client = new();
 
 
         if (projectType == "webapi")
         {
+            var portCommand =
+            ContainerCli.PortCommand(_testOutput, containerName, 8080)
+                .Execute();
+            portCommand.Should().Pass();
+            var port = portCommand.StdOut.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
+            _testOutput.WriteLine($"Discovered port was '{port}'");
+            var tempUri = new Uri($"http://{port}", UriKind.Absolute);
+            var appUri = new UriBuilder(tempUri)
+            {
+                Host = "localhost"
+            }.Uri;
+            HttpClient client = new();
+            client.BaseAddress = appUri;
             // Give the server a moment to catch up, but no more than necessary.
             for (int retry = 0; retry < 10; retry++)
             {
                 try
                 {
-                    var response = await client.GetAsync("http://localhost:5017/weatherforecast").ConfigureAwait(false);
+                    var response = await client.GetAsync($"weatherforecast").ConfigureAwait(false);
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -347,20 +357,30 @@ public class EndToEndTests : IDisposable
             ContainerCli.LogsCommand(_testOutput, appContainerId)
             .Execute()
             .Should().Pass();
-            Assert.True(everSucceeded, "http://localhost:5017/weatherforecast never responded.");
+            Assert.True(everSucceeded, $"{appUri}weatherforecast never responded.");
+
+            ContainerCli.StopCommand(_testOutput, appContainerId)
+           .Execute()
+           .Should().Pass();
+        }
+        else if (projectType == "worker")
+        {
+            // the worker template needs a second to start up and emit the logs we are looking for
+            await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+            var containerLogs =
+            ContainerCli.LogsCommand(_testOutput, appContainerId)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Worker running at");
+
+            ContainerCli.StopCommand(_testOutput, appContainerId)
+            .Execute()
+            .Should().Pass();
         }
         else
         {
-            var containerLogs =
-            ContainerCli.LogsCommand(_testOutput, appContainerId)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOutContaining("Worker running at");
+            throw new NotImplementedException("Unknown project type");
         }
-
-        ContainerCli.StopCommand(_testOutput, appContainerId)
-            .Execute()
-            .Should().Pass();
 
         newProjectDir.Delete(true);
         privateNuGetAssets.Delete(true);
