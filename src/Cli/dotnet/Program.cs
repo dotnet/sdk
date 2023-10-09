@@ -255,7 +255,7 @@ namespace Microsoft.DotNet.Cli
                 catch (CommandUnknownException e)
                 {
                     Reporter.Output.WriteLine(e.Message.Red());
-                    Reporter.Output.WriteLine(e.InstructionMessage, ConsoleColor.Yellow);
+                    Reporter.Output.WriteLine(e.InstructionMessage);
                     exitCode = 1;
                 }
             }
