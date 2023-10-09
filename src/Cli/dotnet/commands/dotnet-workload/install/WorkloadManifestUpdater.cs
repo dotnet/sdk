@@ -355,9 +355,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 throw new Exception(string.Format(LocalizableStrings.ManifestDoesNotExist, manifestId.ToString()));
             }
-            var version = new ManifestVersion(manifest.Version);
-            var band = new SdkFeatureBand(manifest.ManifestFeatureBand);
-            return new(version, band);
+            return new(new ManifestVersion(manifest.Version), new SdkFeatureBand(manifest.ManifestFeatureBand));
         }
 
         private bool AdManifestSentinelIsDueForUpdate()
