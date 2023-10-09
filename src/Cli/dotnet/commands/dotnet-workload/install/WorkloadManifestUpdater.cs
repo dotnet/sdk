@@ -246,12 +246,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (!success)
                     {
-                        _reporter.WriteLine(string.Format(LocalizableStrings.ManifestPackageUrlNotResolved, providedPackageId));
+                        _reporter.WriteLine(LocalizableStrings.ManifestPackageUrlNotResolved, providedPackageId);
                     }
                 }
                 catch
                 {
-                    _reporter.WriteLine(string.Format(LocalizableStrings.ManifestPackageUrlNotResolved, manifest.Id));
+                    _reporter.WriteLine(LocalizableStrings.ManifestPackageUrlNotResolved, manifest.Id);
                 }
             }
             return downloads;
@@ -281,7 +281,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 if (!success)
                 {
-                    _reporter.WriteLine(string.Format(LocalizableStrings.AdManifestPackageDoesNotExist, manifestId));
+                    _reporter.WriteLine(LocalizableStrings.AdManifestPackageDoesNotExist, manifestId);
                     return;
                 }
 
@@ -292,13 +292,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 if (_displayManifestUpdates)
                 {
-                    _reporter.WriteLine(string.Format(LocalizableStrings.AdManifestUpdated, manifestId));
+                    _reporter.WriteLine(LocalizableStrings.AdManifestUpdated, manifestId);
                 }
 
             }
             catch (Exception e)
             {
-                _reporter.WriteLine(string.Format(LocalizableStrings.FailedAdManifestUpdate, manifestId, e.Message));
+                _reporter.WriteLine(LocalizableStrings.FailedAdManifestUpdate, manifestId, e.Message);
             }
             finally
             {
