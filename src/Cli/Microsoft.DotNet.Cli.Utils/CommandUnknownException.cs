@@ -5,18 +5,23 @@ namespace Microsoft.DotNet.Cli.Utils
 {
     public class CommandUnknownException : GracefulException
     {
-        public CommandUnknownException(string commandName) : base(string.Format(
-            LocalizableStrings.NoExecutableFoundMatchingCommand,
-            commandName))
+        public string InstructionMessage { get; } = string.Empty;
+
+        public CommandUnknownException(string commandName) : base(
+            LocalizableStrings.NoExecutableFoundMatchingCommandErrorMessage)
         {
+            InstructionMessage = string.Format(
+                LocalizableStrings.NoExecutableFoundMatchingCommand,
+                commandName);
         }
 
         public CommandUnknownException(string commandName, Exception innerException) : base(
-            string.Format(
-                LocalizableStrings.NoExecutableFoundMatchingCommand,
-                commandName),
+            LocalizableStrings.NoExecutableFoundMatchingCommand,
             innerException)
         {
+            InstructionMessage = string.Format(
+                LocalizableStrings.NoExecutableFoundMatchingCommand,
+                commandName);
         }
     }
 }
