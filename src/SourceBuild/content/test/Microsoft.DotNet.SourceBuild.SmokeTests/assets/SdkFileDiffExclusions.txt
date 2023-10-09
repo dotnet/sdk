@@ -45,6 +45,7 @@ sb,./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/*?
 
 # missing workload manifests - https://github.com/dotnet/source-build/issues/3242
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.android/*
+msft,./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.ios/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.maccatalyst/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.macos/*
@@ -57,6 +58,11 @@ sb,./packs/Microsoft.NETCore.App.Runtime.*/*
 
 # netfx tooling - dumpminitool - https://github.com/dotnet/source-build/issues/3289
 msft,./sdk/x.y.z/Extensions/dump/*
+
+# https://github.com/dotnet/msbuild/issues/9213
+msft,./sdk/x.y.z/**/System.Windows.Extensions.dll
+msft,./sdk/x.y.z/**/System.Security.Permissions.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Diagnostics.EventLog.dll
 
 # netfx runtimes for dotnet-watch - https://github.com/dotnet/source-build/issues/3285
 msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Elfie.dll
@@ -77,11 +83,6 @@ msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Drawing.Common.dll
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.ProtectedData.dll
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll
-
-# https://github.com/dotnet/source-build/issues/3632
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/*/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
-sb,./sdk/x.y.z/DotnetTools/dotnet-format/*/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.resources.dll
-sb,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll
 
 # netfx runtimes for fsharp - https://github.com/dotnet/source-build/issues/3290
 msft,./sdk/x.y.z/FSharp/Microsoft.VisualStudio.Setup.Configuration.Interop.dll

@@ -4,6 +4,7 @@
   <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="CheckForPoison" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageBurndownData" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="CreateSdkSymbolsLayout" />
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
@@ -57,6 +58,84 @@
     <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj" Targets="WritePrebuiltUsageData;ReportPrebuiltUsage" />
   </Target>
 
+  <Target Name="DiscoverSymbolsTarballs"
+          AfterTargets="Build">
+    <ItemGroup>
+      <SymbolsTarball Include="$(OutputPath)Symbols.*.tar.gz" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ExtractSymbolsTarballs"
+          AfterTargets="Build"
+          DependsOnTargets="DiscoverSymbolsTarballs"
+          Outputs="%(SymbolsTarball.Identity)">
+
+    <PropertyGroup>
+      <Filename>$([System.IO.Path]::GetFileName('%(SymbolsTarball.Identity)'))</Filename>
+      <RepositoryName>$(Filename.Split('.')[1])</RepositoryName>
+      <UnifiedSymbolsLayout>$(ArtifactsTmpDir)Symbols</UnifiedSymbolsLayout>
+      <DestinationFolder>$(UnifiedSymbolsLayout)/$(RepositoryName)</DestinationFolder>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(DestinationFolder)" />
+    <Exec Command="tar -xzf %(SymbolsTarball.Identity) -C $(DestinationFolder)"
+          WorkingDirectory="$(SymbolsRoot)" />
+
+    <Delete Files="%(SymbolsTarball.Identity)" />
+  </Target>
+
+  <!-- After building, repackage symbols into a single tarball. -->
+  <Target Name="RepackageSymbols"
+          AfterTargets="Build"
+          DependsOnTargets="
+            DetermineMicrosoftSourceBuildIntermediateInstallerVersion;
+            DiscoverSymbolsTarballs;
+            ExtractSymbolsTarballs">
+    <PropertyGroup>
+      <UnifiedSymbolsTarball>$(OutputPath)dotnet-symbols-$(MicrosoftSourceBuildIntermediateInstallerVersion)-$(TargetRid).tar.gz</UnifiedSymbolsTarball>
+    </PropertyGroup>
+
+    <Exec Command="tar --numeric-owner -czf $(UnifiedSymbolsTarball) *"
+          WorkingDirectory="$(UnifiedSymbolsLayout)" />
+
+    <Message Importance="High" Text="Packaged all symbols in '$(UnifiedSymbolsTarball)'" />
+  </Target>
+
+  <!-- After building, create the sdk symbols tarball. -->
+  <Target Name="CreateSdkSymbolsTarball"
+          AfterTargets="Build"
+          DependsOnTargets="RepackageSymbols">
+    <ItemGroup>
+      <SdkTarballItem Include="$(OutputPath)dotnet-sdk-*$(TarBallExtension)"
+                      Exclude="$(OutputPath)dotnet-sdk-symbols-*$(TarBallExtension)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <SdkSymbolsLayout>$(ArtifactsTmpDir)SdkSymbols</SdkSymbolsLayout>
+      <SdkSymbolsTarball>$(OutputPath)dotnet-sdk-symbols-$(MicrosoftSourceBuildIntermediateInstallerVersion)-$(TargetRid).tar.gz</SdkSymbolsTarball>
+      <SdkLayout>$(ArtifactsTmpDir)Sdk</SdkLayout>
+      <SdkTarball>%(SdkTarballItem.Identity)</SdkTarball>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(SdkLayout)" />
+    <Exec Command="tar -xzf $(SdkTarball) -C $(SdkLayout)"
+          WorkingDirectory="$(OutputPath)" />
+
+    <CreateSdkSymbolsLayout SdkLayoutPath="$(SdkLayout)"
+                            AllSymbolsPath="$(UnifiedSymbolsLayout)"
+                            SdkSymbolsLayoutPath="$(SdkSymbolsLayout)"
+                            FailOnMissingPDBs="true" />
+
+    <Exec Command="tar --numeric-owner -czf $(SdkSymbolsTarball) *"
+          WorkingDirectory="$(SdkSymbolsLayout)" />
+
+    <Message Importance="High" Text="Packaged sdk symbols in '$(SdkSymbolsTarball)'" />
+
+    <RemoveDir Directories="$(UnifiedSymbolsLayout)" />
+    <RemoveDir Directories="$(SdkSymbolsLayout)" />
+    <RemoveDir Directories="$(SdkLayout)" />
+  </Target>
+
   <!--
     Dev scenario: rewrite a prebuilt-report. This makes it easy to add data to an existing
     prebuilt report without performing another full build. This doesn't reevalutate which packages
@@ -104,7 +183,8 @@
 
   <Target Name="RunSmokeTest">
     <ItemGroup>
-      <SdkTarballItem Include="$(SourceBuiltTarBallPath)**/dotnet-sdk*$(TarBallExtension)" />
+      <SdkTarballItem Include="$(SourceBuiltTarBallPath)**/dotnet-sdk*$(TarBallExtension)"
+                      Exclude="$(SourceBuiltTarBallPath)**/dotnet-sdk-symbols*$(TarBallExtension)" />
       <SourceBuiltArtifactsItem Include="$(SourceBuiltTarBallPath)**/Private.SourceBuilt.Artifacts.*$(TarBallExtension)" />
     </ItemGroup>
 
