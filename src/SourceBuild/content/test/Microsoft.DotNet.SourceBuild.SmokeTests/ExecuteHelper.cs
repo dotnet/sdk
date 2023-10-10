@@ -17,10 +17,14 @@ internal static class ExecuteHelper
         string args,
         ITestOutputHelper outputHelper,
         bool logOutput = false,
+        bool excludeInfo = false,
         Action<Process>? configureCallback = null,
         int millisecondTimeout = -1)
     {
-        outputHelper.WriteLine($"Executing: {fileName} {args}");
+        if (!excludeInfo)
+        {
+            outputHelper.WriteLine($"Executing: {fileName} {args}");
+        }
 
         Process process = new()
         {

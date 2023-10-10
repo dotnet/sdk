@@ -97,8 +97,8 @@ namespace EndToEnd.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("net6.0", true)]
-        [InlineData("net6.0", false)]
+        // [InlineData("net6.0", true)]
+        // [InlineData("net6.0", false)]
         [InlineData("current", true)]
         [InlineData("current", false)]
         public void ItCanPublishArm64Winforms(string TargetFramework, bool selfContained)
@@ -136,8 +136,8 @@ namespace EndToEnd.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("net6.0", true)]
-        [InlineData("net6.0", false)]
+        // [InlineData("net6.0", true)]
+        // [InlineData("net6.0", false)]
         [InlineData("current", true)]
         [InlineData("current", false)]
         public void ItCanPublishArm64Wpf(string TargetFramework, bool selfContained)

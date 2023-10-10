@@ -41,10 +41,11 @@
             "**/*.dll",
             "**/*.Dll",
             "**/*.exe",
-            "**/*.pdb",
             "**/*.mdb",
-            "**/*.zip",
-            "**/*.nupkg"
+            "**/*.nupkg",
+            "**/*.pdb",
+            "**/*.tgz",            
+            "**/*.zip"
         ]
     },
 
@@ -176,7 +177,11 @@
         },
         {
             "name": "vstest",
-            "defaultRemote": "https://github.com/microsoft/vstest"
+            "defaultRemote": "https://github.com/microsoft/vstest",
+            "exclude": [
+                // Non-OSS license used in VS specific build configurations.
+                "src/package/licenses/LICENSE_VS.txt"
+            ]
         },
         {
             "name": "xdt",

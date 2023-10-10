@@ -62,6 +62,19 @@ public static class Utilities
         }
     }
 
+    public static void ExtractNupkg(string package, string outputDir)
+    {
+        Directory.CreateDirectory(outputDir);
+
+        using ZipArchive zip = ZipFile.OpenRead(package);
+        foreach (ZipArchiveEntry entry in zip.Entries)
+        {
+            string outputPath = Path.Combine(outputDir, entry.FullName);
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            entry.ExtractToFile(outputPath);
+        }
+    }
+
     public static async Task RetryAsync(Func<Task> executor, ITestOutputHelper outputHelper)
     {
         await Utilities.RetryAsync(
@@ -121,5 +134,13 @@ public static class Utilities
         {
             throw new ArgumentException($"{variableName} is null, empty, or whitespace.");
         }
+    }
+
+    public static string GetFile(string path, string pattern)
+    {
+        string[] files = Directory.GetFiles(path, pattern, SearchOption.AllDirectories);
+        Assert.False(files.Length > 1, $"Found multiple files matching the pattern {pattern}: {Environment.NewLine}{string.Join(Environment.NewLine, files)}");
+        Assert.False(files.Length == 0, $"Did not find any files matching the pattern {pattern}");
+        return files[0];
     }
 }
