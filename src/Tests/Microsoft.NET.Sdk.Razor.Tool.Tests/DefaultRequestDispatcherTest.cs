@@ -86,11 +86,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var buildTaskCancellationToken = default(CancellationToken);
             var compilerHost = CreateCompilerHost(c =>
             {
+#pragma warning disable xUnit1031
                 c.ExecuteFunc = (req, ct) =>
                 {
                     Task.WaitAll(buildTaskSource.Task);
                     return EmptyServerResponse;
                 };
+#pragma warning restore xUnit1031
             });
 
             var dispatcher = new DefaultRequestDispatcher(connectionHost, compilerHost, CancellationToken.None);
