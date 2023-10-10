@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Tools.Package.Search
         private bool _exactMatch;
         private bool _interactive;
         private bool _prerelease;
-        private readonly NugetSearchApiRequest _nugetToolSearchApiRequest;
+        private readonly NuGetSearchApiRequest _nugetToolSearchApiRequest;
 
         public PackageSearchCommand(ParseResult parseResult) : base(parseResult)
         {
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tools.Package.Search
             _exactMatch = parseResult.GetValue(PackageSearchCommandParser.ExactMatch);
             _interactive = parseResult.GetValue(PackageSearchCommandParser.Interactive);
             _prerelease = parseResult.GetValue(PackageSearchCommandParser.Prerelease);
-            _nugetToolSearchApiRequest = new NugetSearchApiRequest(_searchArgument, _skip, _take, _prerelease, _exactMatch, _sources);
+            _nugetToolSearchApiRequest = new NuGetSearchApiRequest(_searchArgument, _skip, _take, _prerelease, _exactMatch, _sources);
         }
         public override int Execute()
         {

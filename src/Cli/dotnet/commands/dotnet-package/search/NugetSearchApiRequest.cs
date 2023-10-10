@@ -12,7 +12,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Package.Search.LocalizableStri
 
 namespace Microsoft.DotNet.Cli.commands.package.search
 {
-    internal class NugetSearchApiRequest
+    internal class NuGetSearchApiRequest : INugetSearchApiRequest
     {
         private readonly string _sourceSeparator = new string('=', 20);
         private readonly string _packageSeparator = new string('-', 20);
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.commands.package.search
         private List<string> _sources;
         private bool _exactMatch;
 
-        public NugetSearchApiRequest(string searchTerm, int? skip, int? take, bool prerelease, bool exactMatch, List<string> sources)
+        public NuGetSearchApiRequest(string searchTerm, int? skip, int? take, bool prerelease, bool exactMatch, List<string> sources)
         {
             _searchTerm = searchTerm;
             _skip = skip;
@@ -36,7 +36,6 @@ namespace Microsoft.DotNet.Cli.commands.package.search
         {
             var taskList = new List<(Task<IEnumerable<IPackageSearchMetadata>>, PackageSource)>();
             IList<PackageSource> listEndpoints = GetEndpointsAsync();
-            WarnForHTTPSources(listEndpoints);
             foreach (PackageSource source in listEndpoints)
             {
                 SourceRepository repository = Repository.Factory.GetCoreV3(source);
@@ -100,7 +99,7 @@ namespace Microsoft.DotNet.Cli.commands.package.search
             }
         }
 
-        private IList<PackageSource> GetEndpointsAsync()
+        public virtual IList<PackageSource> GetEndpointsAsync()
         {
             ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory(),
                     configFileName: null,
@@ -141,47 +140,11 @@ namespace Microsoft.DotNet.Cli.commands.package.search
             }
         }
 
-        public static void ValidateSource(string source)
+        private static void ValidateSource(string source)
         {
             if (!Uri.TryCreate(source, UriKind.Absolute, out Uri result))
             {
                 throw new Exception("Invalid source " + source);
-            }
-        }
-
-        private void WarnForHTTPSources(IList<PackageSource> packageSources)
-        {
-            List<PackageSource> httpPackageSources = null;
-            foreach (PackageSource packageSource in packageSources)
-            {
-                if (packageSource.IsHttp && !packageSource.IsHttps)
-                {
-                    if (httpPackageSources == null)
-                    {
-                        httpPackageSources = new();
-                    }
-                    httpPackageSources.Add(packageSource);
-                }
-            }
-
-            if (httpPackageSources != null && httpPackageSources.Count != 0)
-            {
-                if (httpPackageSources.Count == 1)
-                {
-                    Console.WriteLine(
-                        string.Format(CultureInfo.CurrentCulture,
-                        LocalizableStrings.Warning_HttpServerUsage,
-                        "search",
-                        httpPackageSources[0]));
-                }
-                else
-                {
-                    Console.WriteLine(
-                        string.Format(CultureInfo.CurrentCulture,
-                        LocalizableStrings.Warning_HttpServerUsage,
-                        "search",
-                        Environment.NewLine + string.Join(Environment.NewLine, httpPackageSources.Select(e => e.Name))));
-                }
             }
         }
     }
