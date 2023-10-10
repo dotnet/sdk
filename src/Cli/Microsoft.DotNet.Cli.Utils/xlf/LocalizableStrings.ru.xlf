@@ -12,6 +12,11 @@
         <target state="translated">Неправильный формат текста команды "{0}"</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoExecutableFoundMatchingCommandErrorMessage">
+        <source>Could not execute because the specified command or file was not found.</source>
+        <target state="new">Could not execute because the specified command or file was not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
         <source>Unable to locate dotnet multiplexer</source>
         <target state="translated">Не удается найти мультиплексор dotnet.</target>
@@ -28,12 +33,11 @@
         <note />
       </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommand">
-        <source>Could not execute because the specified command or file was not found.
-Possible reasons for this include:
+        <source>Possible reasons for this include:
   * You misspelled a built-in dotnet command.
   * You intended to execute a .NET program, but {0} does not exist.
   * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</source>
-        <target state="translated">Не удалось выполнить, так как не найдены указанная команда или указанный файл.
+        <target state="needs-review-translation">Не удалось выполнить, так как не найдены указанная команда или указанный файл.
 Возможные причины:
   * вы неправильно набрали встроенную команду dotnet;
   * вы планировали выполнить программу .NET, однако {0} не существует;
