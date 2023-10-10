@@ -15,10 +15,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultContentItems Condition=" '$(EnableDefaultContentItems)' == '' ">true</EnableDefaultContentItems>
     <RunWorkingDirectory Condition=" '$(RunWorkingDirectory)' == '' and '$(EnableDefaultRunWorkingDirectory)' != 'false' ">$(MSBuildProjectDirectory)</RunWorkingDirectory>
     <MSBuildWorkerTargetsPath>$(MSBuildExtensionsPath)\Microsoft\VisualStudio\Managed.Worker\</MSBuildWorkerTargetsPath>
+    <WorkerSdkImportPublishSdk Condition="'$(WorkerSdkImportPublishSdk)' == ''" >true</WorkerSdkImportPublishSdk>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildWorkerTargetsPath)Microsoft.Worker.Designtime.targets" 
+  <Import Project="$(MSBuildWorkerTargetsPath)Microsoft.Worker.Designtime.targets"
          Condition="Exists('$(MSBuildWorkerTargetsPath)Microsoft.Worker.Designtime.targets')" />
+
+  <Import Condition="'$(WorkerSdkImportPublishSdk)' == 'true'" Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" />
 
   <ItemGroup>
     <ProjectCapability Include="DotNetCoreWorker" />
