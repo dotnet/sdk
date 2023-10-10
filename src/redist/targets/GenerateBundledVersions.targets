@@ -106,7 +106,8 @@
 
       <_NET70RuntimePackVersion>7.0.$(VersionFeature70)</_NET70RuntimePackVersion>
       <_NET70TargetingPackVersion>7.0.$(VersionFeature70)</_NET70TargetingPackVersion>
-      <_NET70WebAssemblyPackVersion>7.0.$(VersionFeature70)</_NET70WebAssemblyPackVersion>
+      <!-- TODO: Once .NET 8.0.X has released, update these version numbers to 8.0.$(VersionFeature80) -->
+      <_NET70WebAssemblyPackVersion>8.0.0-preview.7.23375.9</_NET70WebAssemblyPackVersion>
       <_WindowsDesktop70RuntimePackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70RuntimePackVersion>
       <_WindowsDesktop70TargetingPackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70TargetingPackVersion>
       <_AspNet70RuntimePackVersion>7.0.$(VersionFeature70)</_AspNet70RuntimePackVersion>
