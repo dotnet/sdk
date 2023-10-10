@@ -51,9 +51,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var mutexName = MutexName.GetServerMutexName(pipeName);
             var compilerHost = new Mock<CompilerHost>(MockBehavior.Strict);
             var host = new Mock<ConnectionHost>(MockBehavior.Strict);
+#pragma warning disable xUnit1031
             host
                 .Setup(x => x.WaitForConnectionAsync(It.IsAny<CancellationToken>()))
-                .Returns(async () =>
+                .Returns(() =>
                 {
                     // Use a thread instead of Task to guarantee this code runs on a different
                     // thread and we can validate the mutex state. 
@@ -82,10 +83,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                     // ensure the above check completes before the server hits a timeout and 
                     // releases the mutex. 
                     thread.Start();
-                    await source.Task;
+                    source.Task.Wait();
 
                     return new TaskCompletionSource<Connection>().Task;
                 });
+#pragma warning restore xUnit1031
 
             var result = ServerUtilities.RunServer(pipeName, host.Object, compilerHost.Object, keepAlive: TimeSpan.FromSeconds(1));
             Assert.Equal(0, result);
