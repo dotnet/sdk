@@ -34,8 +34,7 @@ public class BasicScenarioTests : SmokeTests
         {
             yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.Console,
                 // R2R is not supported on Mono (see https://github.com/dotnet/runtime/issues/88419#issuecomment-1623762676)
-                // Disable R2R tests due to https://github.com/dotnet/source-build/issues/3591
-                DotNetActions.Build | DotNetActions.Run | DotNetActions.PublishComplex);
+                DotNetActions.Build | DotNetActions.Run | (DotNetHelper.ShouldPublishComplex() ? DotNetActions.None : DotNetActions.PublishComplex) | (helper.IsMonoRuntime ? DotNetActions.None : DotNetActions.PublishR2R));
             yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.ClassLib, DotNetActions.Build | DotNetActions.Publish);
             yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.XUnit,    DotNetActions.Test);
             yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.NUnit,    DotNetActions.Test);
