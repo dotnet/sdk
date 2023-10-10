@@ -110,7 +110,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 connectionTask, accept: true, cancellationToken: CancellationToken.None);
 
             // Wait until WaitForDisconnectAsync task is actually created and running.
-            await readyTaskSource.Task.ConfigureAwait(false);
+            await readyTaskSource.Task;
 
             // Act
             // Now simulate a disconnect by the client.
@@ -144,7 +144,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             // Assert
             Assert.Equal(ConnectionResult.Reason.CompilationNotStarted, connectionResult.CloseReason);
             stream.WriteStream.Position = 0;
-            var response = await ServerResponse.ReadAsync(stream.WriteStream).ConfigureAwait(false);
+            var response = await ServerResponse.ReadAsync(stream.WriteStream);
             Assert.Equal(ServerResponse.ResponseType.Rejected, response.Type);
         }
 
@@ -168,7 +168,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             // Assert
             Assert.Equal(ConnectionResult.Reason.ClientShutdownRequest, connectionResult.CloseReason);
             stream.WriteStream.Position = 0;
-            var response = await ServerResponse.ReadAsync(stream.WriteStream).ConfigureAwait(false);
+            var response = await ServerResponse.ReadAsync(stream.WriteStream);
             Assert.Equal(ServerResponse.ResponseType.Shutdown, response.Type);
         }
 

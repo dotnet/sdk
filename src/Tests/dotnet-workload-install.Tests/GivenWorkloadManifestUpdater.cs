@@ -202,7 +202,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void ItCanFallbackAndAdvertiseCorrectUpdate(bool useOfflineCache)
+        public async Task ItCanFallbackAndAdvertiseCorrectUpdate(bool useOfflineCache)
         {
             //  Currently installed - 6.0.200 workload manifest
             //  Current SDK - 6.0.300
@@ -244,13 +244,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 Directory.CreateDirectory(offlineCacheDir);
                 File.Create(Path.Combine(offlineCacheDir, $"{testManifestName}.Manifest-6.0.200.nupkg"));
 
-                manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true, offlineCache: new DirectoryPath(offlineCacheDir)).Wait();
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true, offlineCache: new DirectoryPath(offlineCacheDir));
             }
             else
             {
                 nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.300");
 
-                manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true).Wait();
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true);
 
                 //  Assert
                 //  6.0.300 manifest was requested and then 6.0.200 manifest was requested
@@ -320,7 +320,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 offlineCacheDir = Path.Combine(testDir, "offlineCache");
                 Directory.CreateDirectory(offlineCacheDir);             // empty dir because it shouldn't find any manifests to update
 
-                manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true, offlineCache: new DirectoryPath(offlineCacheDir)).Wait();
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true, offlineCache: new DirectoryPath(offlineCacheDir));
             }
             else
             {
@@ -346,7 +346,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
-        public void GivenNoUpdatesAreAvailableAndNoRollbackItGivesAppropriateMessage(bool useOfflineCache)
+        public async Task GivenNoUpdatesAreAvailableAndNoRollbackItGivesAppropriateMessage(bool useOfflineCache)
         {
             //  Currently installed - none
             //  Current SDK - 6.0.300
@@ -386,13 +386,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 offlineCacheDir = Path.Combine(testDir, "offlineCache");
                 Directory.CreateDirectory(offlineCacheDir);             // empty dir because it shouldn't find any manifests to update
 
-                manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true, offlineCache: new DirectoryPath(offlineCacheDir)).Wait();
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true, offlineCache: new DirectoryPath(offlineCacheDir));
             }
             else
             {
                 nugetDownloader.PackageIdsToNotFind.Add($"{testManifestName}.Manifest-6.0.300");
 
-                manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true).Wait();
+                await manifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews: true);
 
 
                 // only 6.0.300 manifest was requested
@@ -533,7 +533,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [Fact]
-        public void GivenWorkloadManifestUpdateItChoosesHighestManifestVersionInCache()
+        public async Task GivenWorkloadManifestUpdateItChoosesHighestManifestVersionInCache()
         {
             var manifestId = "mock-manifest";
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
@@ -559,7 +559,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installationRepo = new MockInstallationRecordRepository();
             var installer = new MockPackWorkloadInstaller();
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, testDir, installationRepo, installer);
-            manifestUpdater.UpdateAdvertisingManifestsAsync(false, new DirectoryPath(offlineCache)).Wait();
+            await manifestUpdater.UpdateAdvertisingManifestsAsync(false, new DirectoryPath(offlineCache));
 
             // We should have chosen the higher version manifest package to install/ extract
             installer.ExtractCallParams.Count().Should().Be(1);

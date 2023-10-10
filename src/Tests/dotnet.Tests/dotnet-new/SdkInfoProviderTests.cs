@@ -23,11 +23,11 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 ISdkInfoProvider sp = new SdkInfoProvider(() => string.Empty);
 
                 string currentVersion = await sp.GetCurrentVersionAsync(default);
-                List<string>? allVersions = sp.GetInstalledVersionsAsync(default).Result?.ToList();
+                IEnumerable<string> allVersions = await sp.GetInstalledVersionsAsync(default);
 
                 currentVersion.Should().NotBeNullOrEmpty("Current Sdk version should be populated");
-                allVersions.Should().NotBeNull();
-                allVersions.Should().Contain(currentVersion, "All installed versions should contain current version");
+                allVersions.ToList().Should().NotBeNull();
+                allVersions.ToList().Should().Contain(currentVersion, "All installed versions should contain current version");
             }
             finally
             {
