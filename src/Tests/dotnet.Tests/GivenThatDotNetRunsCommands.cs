@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute("crash")
                 .Should().Fail()
-                     .And.HaveStdErrContaining(string.Format(LocalizableStrings.NoExecutableFoundMatchingCommand, "dotnet-crash"));
+                     .And.HaveStdErrContaining(string.Format(LocalizableStrings.NoExecutableFoundMatchingCommandErrorMessage, "dotnet-crash"));
         }
 
         [Theory]
