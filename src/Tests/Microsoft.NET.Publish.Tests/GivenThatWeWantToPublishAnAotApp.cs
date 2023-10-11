@@ -62,7 +62,7 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(publishedDll).Should().BeFalse();
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
@@ -153,7 +153,7 @@ namespace Microsoft.NET.Publish.Tests
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
             // There should be a debug file
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             // The app accesses the runtime config file key-value pair
@@ -205,7 +205,7 @@ namespace Microsoft.NET.Publish.Tests
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
             // There should be a debug file
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             // The app accesses the runtime config file key-value pair
@@ -293,7 +293,7 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(publishedDll).Should().BeFalse();
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             var command = new RunExeCommand(Log, publishedExe)
