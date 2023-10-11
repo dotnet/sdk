@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
         }
 
         [Fact]
-        public void EnqueuedContentIsEqualToPeekedContent()
+        public async Task EnqueuedContentIsEqualToPeekedContent()
         {
             // Setup
             StorageService storage = new();
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
             Transmission transmissionToEnqueue = CreateTransmission(new TraceTelemetry("mock_item"));
 
             // Act
-            storage.EnqueueAsync(transmissionToEnqueue).ConfigureAwait(false).GetAwaiter().GetResult();
+            await storage.EnqueueAsync(transmissionToEnqueue);
             StorageTransmission peekedTransmission = storage.Peek();
 
             // Asserts
@@ -89,14 +89,14 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
         }
 
         [Fact]
-        public void PeekedItemIsReturnedAgainAfterTheItemInTheFirstCallToPeekIsDisposed()
+        public async Task PeekedItemIsReturnedAgainAfterTheItemInTheFirstCallToPeekIsDisposed()
         {
             // Setup - create a storage with one item
             StorageService storage = new();
             storage.Init(GetTemporaryPath());
 
             Transmission transmissionToEnqueue = CreateTransmission(new TraceTelemetry("mock_item"));
-            storage.EnqueueAsync(transmissionToEnqueue).ConfigureAwait(false).GetAwaiter().GetResult();
+            await storage.EnqueueAsync(transmissionToEnqueue);
 
             // Act
             StorageTransmission firstPeekedTransmission;
