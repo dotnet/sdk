@@ -202,16 +202,16 @@ namespace EndToEnd.Tests
 
             string expectedOutput =
 @"[\-\s]+
-[\w \.]+webapp,razor\s+\[C#\][\w\ \/]+
-[\w \.]+classlib\s+\[C#\],F#,VB[\w\ \/]+
-[\w \.]+console\s+\[C#\],F#,VB[\w\ \/]+
+[\w \.\(\)]+webapp,razor\s+\[C#\][\w\ \/]+
+[\w \.\(\)]+classlib\s+\[C#\],F#,VB[\w\ \/]+
+[\w \.\(\)]+console\s+\[C#\],F#,VB[\w\ \/]+
 ";
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 expectedOutput +=
-@"[\w \.]+winforms\s+\[C#\],VB[\w\ \/]+
-[\w \.]+\wpf\s+\[C#\],VB[\w\ \/]+
+@"[\w \.\(\)]+winforms\s+\[C#\],VB[\w\ \/]+
+[\w \.\(\)]+\wpf\s+\[C#\],VB[\w\ \/]+
 ";
             }
             //list should end with new line
