@@ -161,7 +161,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute().Should().Pass();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901",,Skip="https://github.com/dotnet/installer/issues/17453")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901",Skip="https://github.com/dotnet/installer/issues/17453")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_runs_in_release_with_no_config_when_PublishAot_is_enabled(string targetFramework)
         {
