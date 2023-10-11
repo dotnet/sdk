@@ -334,15 +334,15 @@
         win-x64;
         " />
 
-      <Net80ILCompilerSupportedRids Include="@(Net70ILCompilerSupportedRids)" />
-
       <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
            https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
-      <ILCompilerSupportedRids Include="
-        @(Net80ILCompilerSupportedRids);
+      <Net80ILCompilerSupportedRids Include="
+        @(Net70ILCompilerSupportedRids);
         osx-x64;
         osx-arm64;
         " />
+
+      <ILCompilerSupportedRids Include="@(Net80ILCompilerSupportedRids)" />
 
       <NativeAOTRuntimePackRids Include="
           ios-arm64;
