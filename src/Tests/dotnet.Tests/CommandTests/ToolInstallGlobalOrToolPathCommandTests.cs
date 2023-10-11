@@ -35,6 +35,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private const string PackageId = "global.tool.console.demo";
         private const string PackageVersion = "1.0.4";
         private const string ToolCommandName = "SimulatorCommand";
+        private readonly string UnlistedPackageId = "Elemental.SysInfoTool";
 
         public ToolInstallGlobalOrToolPathCommandTests()
         {
@@ -331,6 +332,31 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public void WhenRunWithValidVersionRangeItShouldSucceed()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version [1.0,2.0]");
+
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                result,
+                _createToolPackageStoresAndDownloader,
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            _reporter
+                .Lines
+                .Should()
+                .Equal(string.Format(
+                    LocalizableStrings.InstallationSucceeded,
+                    ToolCommandName,
+                    PackageId,
+                    PackageVersion).Green());
+        }
+
+        [Fact]
+        public void WhenRunWithValidUnlistedVersionRangeItShouldSucceed()
+        {
+            const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {UnlistedPackageId} --version 0.5.0 --add-source {nugetSourcePath}");
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
