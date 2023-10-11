@@ -222,8 +222,7 @@
             "tags": [
               "PortedFromFxCop",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
-              "CompilationEnd"
+              "EnabledRuleInAggressiveMode"
             ]
           }
         },
@@ -6463,8 +6462,7 @@
             "tags": [
               "PortedFromFxCop",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
-              "CompilationEnd"
+              "EnabledRuleInAggressiveMode"
             ]
           }
         },
