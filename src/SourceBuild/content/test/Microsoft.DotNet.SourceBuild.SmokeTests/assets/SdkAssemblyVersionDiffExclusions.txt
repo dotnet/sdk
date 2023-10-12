@@ -38,3 +38,8 @@
 ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.AnalyzerUtilities.dll
 ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.DiaSymReader.dll
 ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll
+
+# https://github.com/dotnet/source-build/issues/3658
+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/analyzers/dotnet/**/Microsoft.Extensions.Configuration.Binder.SourceGeneration*.dll
+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/analyzers/dotnet/**/Microsoft.Extensions.Logging.Generators*.dll
+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/analyzers/dotnet/**/Microsoft.Extensions.Options.SourceGeneration*.dll
