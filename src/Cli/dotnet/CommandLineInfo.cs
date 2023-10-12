@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli
         {
             Reporter.Output.WriteLine();
             Reporter.Output.WriteLine($"{LocalizableStrings.DotnetWorkloadInfoLabel}");
-            WorkloadCommandParser.ShowWorkloadsInfo();
+            WorkloadCommandParser.ShowWorkloadsInfo(showVersion: false);
         }
 
         private static string GetDisplayRid(DotnetVersionFile versionFile)
