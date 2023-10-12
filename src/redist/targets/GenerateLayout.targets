@@ -123,6 +123,12 @@
       <Arm64AppHostRid>win-arm64</Arm64AppHostRid>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And '$(Architecture)' == 'arm64'">
+      <AlternateAppHostRid>win-x86</AlternateAppHostRid>
+      <x64AppHostRid>win-x64</x64AppHostRid>
+      <ArmAppHostRid>win-arm</ArmAppHostRid>
+    </PropertyGroup>
+
     <ItemGroup>
       <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
         <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
@@ -175,6 +181,13 @@
 
       <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_Arm64" Condition="'$(Arm64AppHostRid)' != ''">
         <PackageName>Microsoft.NETCore.App.Host.$(Arm64AppHostRid)</PackageName>
+        <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
+        <TargetFramework>$(TargetFramework)</TargetFramework>
+        <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
+      </BundledLayoutPackage>
+
+      <BundledLayoutPackage Include="MicrosoftNetCoreAppHostPackNupkg_x64" Condition="'$(x64AppHostRid)' != ''">
+        <PackageName>Microsoft.NETCore.App.Host.$(x64AppHostRid)</PackageName>
         <PackageVersion>$(MicrosoftNETCoreAppHostPackageVersion)</PackageVersion>
         <TargetFramework>$(TargetFramework)</TargetFramework>
         <RelativeLayoutPath>packs/%(PackageName)/%(PackageVersion)</RelativeLayoutPath>
@@ -459,7 +472,7 @@
   <Target Name="GenerateVersionFile"
           DependsOnTargets="SetupBundledComponents;GetCommitHash;GenerateFullNuGetVersion">
     <WriteLinesToFile File="$(SdkOutputDirectory).version"
-                      Lines="$(GitCommitHash);$(Version);$(Rid)"
+                      Lines="$(GitCommitHash);$(Version);$(Rid);$(FullNugetVersion)"
                       Overwrite="true" />
 
     <!-- This is a hack to make the full nuget version available during the publishing step -->
