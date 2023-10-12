@@ -37,7 +37,7 @@
          no that we do not silently miss cross-genning some bits. When a TFM for a tool is updated,
          update its path explicitly. If all TFMs match, update DefaultToolTfm -->
     <PropertyGroup>
-      <DefaultToolTfm>net8.0</DefaultToolTfm>
+      <DefaultToolTfm>net9.0</DefaultToolTfm>
 
       <NetSdkTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
       <BlazorWasmTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
