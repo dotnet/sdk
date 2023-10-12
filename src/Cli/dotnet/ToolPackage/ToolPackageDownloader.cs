@@ -93,6 +93,12 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true);
 
                     var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
+
+                    bool givenSpecificVersion = false;
+                    if (!string.IsNullOrEmpty(versionRange.OriginalString))
+                    {
+                        givenSpecificVersion = true;
+                    }
                     NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
                     rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
@@ -116,7 +122,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     if (package == null)
                     {
-                        DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, packageVersion, packageSourceLocation).GetAwaiter().GetResult();
+                        DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, packageVersion, packageSourceLocation, givenSpecificVersion).GetAwaiter().GetResult();
                     }
                     else if(isGlobalTool)
                     {
@@ -236,10 +242,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             string packagesRootPath,
             IToolPackageStore toolPackageStore,
             NuGetVersion packageVersion,
-            PackageSourceLocation packageSourceLocation
+            PackageSourceLocation packageSourceLocation,
+            bool includeUnlisted = false
             )
         {
-            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation).ConfigureAwait(false);
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted).ConfigureAwait(false);
 
             // look for package on disk and read the version
             NuGetVersion version;
