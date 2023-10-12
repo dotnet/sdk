@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
+using System.IO.Enumeration;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -17,6 +19,37 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 public static class Utilities
 {
+    /// <summary>
+    /// Returns whether the given file path is excluded by the given exclusions using glob file matching.
+    /// </summary>
+    public static bool IsFileExcluded(string filePath, IEnumerable<string> exclusions) =>
+        GetMatchingFileExclusions(filePath, exclusions, exclusion => exclusion).Any();
+
+    public static IEnumerable<T> GetMatchingFileExclusions<T>(string filePath, IEnumerable<T> exclusions, Func<T, string> getExclusionExpression) =>
+        exclusions.Where(exclusion => FileSystemName.MatchesSimpleExpression(getExclusionExpression(exclusion), filePath));
+
+    /// <summary>
+    /// Parses a common file format in the test suite for listing file exclusions.
+    /// </summary>
+    /// <param name="exclusionsFileName">Name of the exclusions file.</param>
+    /// <param name="prefix">When specified, filters the exclusions to those that begin with the prefix value.</param>
+    public static IEnumerable<string> ParseExclusionsFile(string exclusionsFileName, string? prefix = null)
+    {
+        string exclusionsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), exclusionsFileName);
+        int prefixSkip = prefix?.Length + 1 ?? 0;
+        return File.ReadAllLines(exclusionsFilePath)
+            // process only specific exclusions if a prefix is provided
+            .Where(line => prefix is null || line.StartsWith(prefix + ","))
+            .Select(line =>
+            {
+                // Ignore comments
+                var index = line.IndexOf('#');
+                return index >= 0 ? line[prefixSkip..index].TrimEnd() : line[prefixSkip..];
+            })
+            .Where(line => !string.IsNullOrEmpty(line))
+            .ToList();
+    }
+    
     public static void ExtractTarball(string tarballPath, string outputDir, ITestOutputHelper outputHelper)
     {
         // TarFile doesn't properly handle hard links (https://github.com/dotnet/runtime/pull/85378#discussion_r1221817490),
