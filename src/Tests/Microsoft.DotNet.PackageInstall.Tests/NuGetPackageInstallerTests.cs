@@ -179,11 +179,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
             var mockPackageSourceMapping = new PackageSourceMapping(patterns);
 
-            Action a = () => _toolInstaller.DownloadPackageAsync(
+            Action a = async () => await _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
-                packageSourceMapping: mockPackageSourceMapping).GetAwaiter().GetResult();
+                packageSourceMapping: mockPackageSourceMapping);
             a.Should().Throw<NuGetPackageInstallerException>().And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
@@ -200,11 +200,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
             var mockPackageSourceMapping = new PackageSourceMapping(patterns);
 
-            Action a = () => _toolInstaller.DownloadPackageAsync(
+            Action a = async () => await _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
-                packageSourceMapping: mockPackageSourceMapping).GetAwaiter().GetResult();
+                packageSourceMapping: mockPackageSourceMapping);
             a.Should().Throw<NuGetPackageInstallerException>().And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
