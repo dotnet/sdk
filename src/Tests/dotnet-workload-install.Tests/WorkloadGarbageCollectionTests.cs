@@ -114,16 +114,25 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Fact]
         public void GarbageCollectManifests()
         {
+            //  ARRANGE
+            //  Create different versions of a manifest, one with a previous feature band
             CreateMockManifest("testmanifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
             CreateMockManifest("testmanifest", "2.0.0", "6.0.300", sourceManifestName: @"Sample2_v2.json");
             CreateMockManifest("testmanifest", "3.0.0", "6.0.300", sourceManifestName: @"Sample2_v3.json");
 
+            //  Create manifest installation records (all for "current" version of SDK: 6.0.300)
             CreateManifestRecord("testmanifest", "1.0.0", "6.0.100", "6.0.300");
             CreateManifestRecord("testmanifest", "2.0.0", "6.0.300", "6.0.300");
             CreateManifestRecord("testmanifest", "3.0.0", "6.0.300", "6.0.300");
 
             var (installer, getResolver) = GetTestInstaller("6.0.300");
 
+            // Write workload install record for xamarin-android-build workload for 6.0.300
+            var workloadsRecordPath = Path.Combine(_dotnetRoot, "metadata", "workloads", "6.0.300", "InstalledWorkloads");
+            Directory.CreateDirectory(workloadsRecordPath);
+            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build"));
+
+            //  These packs are referenced by xamarin-android-build from the 3.0 manifest, which is the latest one and therefore the one that will be kept
             var packsToKeep = new PackInfo[]
             {
                 CreatePackInfo("Xamarin.Android.Sdk", "8.4.7", WorkloadPackKind.Sdk),
@@ -131,35 +140,25 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 CreatePackInfo("Xamarin.Android.Runtime", "8.6.0.0", WorkloadPackKind.Library)
             };
 
+            //  These packs are referenced by earlier versions of the manifest, and should be garbage collected
             var packsToCollect = new PackInfo[]
             {
                 CreatePackInfo("Xamarin.Android.Framework", "8.4.0", WorkloadPackKind.Framework),
                 CreatePackInfo("Xamarin.Android.Runtime", "8.4.7.4", WorkloadPackKind.Library)
             };
 
+            //  Create packs and installation records
             foreach (var pack in packsToKeep.Concat(packsToCollect))
             {
                 CreateInstalledPack(pack, "6.0.300");
             }
 
-            // Write workload install record for 6.0.300
-            var workloadsRecordPath = Path.Combine(_dotnetRoot, "metadata", "workloads", "6.0.300", "InstalledWorkloads");
-            Directory.CreateDirectory(workloadsRecordPath);
-            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build"));
-
+            //  ACT: garbage collect
             installer.GarbageCollect(getResolver);
 
-            foreach (var pack in packsToCollect)
-            {
-                PackShouldExist(pack, false);
-                PackRecord(pack, "6.0.300").Should().NotExist();
-            }
-            foreach (var pack in packsToKeep)
-            {
-                PackShouldExist(pack, true);
-                PackRecord(pack, "6.0.300").Should().Exist();
-            }
+            //  ASSERT
 
+            //  Only the latest manifest version and its installation record should be kept
             ManifestRecord("testmanifest", "1.0.0", "6.0.100", "6.0.300").Should().NotExist();
             ManifestRecord("testmanifest", "2.0.0", "6.0.300", "6.0.300").Should().NotExist();
             ManifestRecord("testmanifest", "3.0.0", "6.0.300", "6.0.300").Should().Exist();
@@ -167,19 +166,36 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.100", "testmanifest", "1.0.0", "WorkloadManifest.json")).Should().NotExist();
             new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "testmanifest", "2.0.0", "WorkloadManifest.json")).Should().NotExist();
             new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "testmanifest", "3.0.0", "WorkloadManifest.json")).Should().Exist();
+
+            //  Packs which should be collected should be removed, as well as their installation records
+            foreach (var pack in packsToCollect)
+            {
+                PackShouldExist(pack, false);
+                PackRecord(pack, "6.0.300").Should().NotExist();
+            }
+            //  Packs which should be kept should still exist, as well as their installation records
+            foreach (var pack in packsToKeep)
+            {
+                PackShouldExist(pack, true);
+                PackRecord(pack, "6.0.300").Should().Exist();
+            }
         }
 
         [Fact]
         public void GarbageCollectManifestsWithInstallState()
         {
+            //  ARRANGE
+            //  Create different versions of a manifest, one with a previous feature band
             CreateMockManifest("testmanifest", "1.0.0", "6.0.100", sourceManifestName: @"Sample2.json");
             CreateMockManifest("testmanifest", "2.0.0", "6.0.300", sourceManifestName: @"Sample2_v2.json");
             CreateMockManifest("testmanifest", "3.0.0", "6.0.300", sourceManifestName: @"Sample2_v3.json");
 
+            //  Create manifest installation records (all for "current" version of SDK: 6.0.300)
             CreateManifestRecord("testmanifest", "1.0.0", "6.0.100", "6.0.300");
             CreateManifestRecord("testmanifest", "2.0.0", "6.0.300", "6.0.300");
             CreateManifestRecord("testmanifest", "3.0.0", "6.0.300", "6.0.300");
 
+            //  Create install state pinning the 2.0.0 version of the manifest
             CreateInstallState("6.0.300",
                """
                 {
@@ -191,6 +207,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             var (installer, getResolver) = GetTestInstaller("6.0.300");
 
+            // Write workload install record for xamarin-android-build workload for 6.0.300
+            var workloadsRecordPath = Path.Combine(_dotnetRoot, "metadata", "workloads", "6.0.300", "InstalledWorkloads");
+            Directory.CreateDirectory(workloadsRecordPath);
+            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build"));
+
+            //  These packs are referenced by xamarin-android-build from the 2.0 manifest, which is the one that should be kept due to the install state
             var packsToKeep = new PackInfo[]
             {
                 CreatePackInfo("Xamarin.Android.Sdk", "8.4.7", WorkloadPackKind.Sdk),
@@ -198,35 +220,25 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 CreatePackInfo("Xamarin.Android.Runtime", "8.5.0.1", WorkloadPackKind.Library)
             };
 
+            //  These packs are referenced by version 3.0 of the manifest, and should be garbage collected
             var packsToCollect = new PackInfo[]
             {
                 CreatePackInfo("Xamarin.Android.Framework", "8.6.0", WorkloadPackKind.Framework),
                 CreatePackInfo("Xamarin.Android.Runtime", "8.6.0.0", WorkloadPackKind.Library)
             };
 
+            //  Create packs and installation records
             foreach (var pack in packsToKeep.Concat(packsToCollect))
             {
                 CreateInstalledPack(pack, "6.0.300");
             }
 
-            // Write workload install record for 6.0.300
-            var workloadsRecordPath = Path.Combine(_dotnetRoot, "metadata", "workloads", "6.0.300", "InstalledWorkloads");
-            Directory.CreateDirectory(workloadsRecordPath);
-            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build"));
-
+            //  ACT: garbage collect
             installer.GarbageCollect(getResolver);
 
-            foreach (var pack in packsToCollect)
-            {
-                PackShouldExist(pack, false);
-                PackRecord(pack, "6.0.300").Should().NotExist();
-            }
-            foreach (var pack in packsToKeep)
-            {
-                PackShouldExist(pack, true);
-                PackRecord(pack, "6.0.300").Should().Exist();
-            }
+            //  ASSERT
 
+            //  Only the pinned manifest version (2.0.0) and its installation record should be kept
             ManifestRecord("testmanifest", "1.0.0", "6.0.100", "6.0.300").Should().NotExist();
             ManifestRecord("testmanifest", "2.0.0", "6.0.300", "6.0.300").Should().Exist();
             ManifestRecord("testmanifest", "3.0.0", "6.0.300", "6.0.300").Should().NotExist();
@@ -234,9 +246,23 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.100", "testmanifest", "1.0.0", "WorkloadManifest.json")).Should().NotExist();
             new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "testmanifest", "2.0.0", "WorkloadManifest.json")).Should().Exist();
             new FileInfo(Path.Combine(_dotnetRoot, "sdk-manifests", "6.0.300", "testmanifest", "3.0.0", "WorkloadManifest.json")).Should().NotExist();
+
+            //  Packs which should be collected should be removed, as well as their installation records
+            foreach (var pack in packsToCollect)
+            {
+                PackShouldExist(pack, false);
+                PackRecord(pack, "6.0.300").Should().NotExist();
+            }
+            //  Packs which should be kept should still exist, as well as their installation records
+            foreach (var pack in packsToKeep)
+            {
+                PackShouldExist(pack, true);
+                PackRecord(pack, "6.0.300").Should().Exist();
+            }
+
         }
 
-        //  Additional scenarios to add tests for once workload sets are added:
+        //  TODO: Additional scenarios to add tests for once workload sets are added:
         //  Garbage collect workload sets
         //  Garbage collect with install state with workload set
         //  Don't garbage collect baseline workload set
@@ -277,7 +303,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             string path;
             if (kind == WorkloadPackKind.Library)
             {
-                path = Path.Combine(_dotnetRoot, "library-packs", $"resolvedPackageId.{version}.nupkg");
+                path = Path.Combine(_dotnetRoot, "library-packs", $"{resolvedPackageId}.{version}.nupkg");
             }
             else
             {
