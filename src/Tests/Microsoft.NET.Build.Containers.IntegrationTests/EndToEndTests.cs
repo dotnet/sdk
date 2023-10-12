@@ -176,7 +176,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = ToolsetInfo.CurrentTargetFramework, string rid = "linux-x64")
+    private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = ToolsetInfo.NextTargetFramework, string rid = "linux-x64")
     {
         string workingDirectory = Path.Combine(TestSettings.TestArtifactsDirectory, testName);
 
@@ -197,7 +197,7 @@ public class EndToEndTests : IDisposable
             new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", tfm, "-c", "Debug")
                 .WithWorkingDirectory(workingDirectory);
 
-        if (tfm == ToolsetInfo.CurrentTargetFramework)
+        if (tfm == ToolsetInfo.NextTargetFramework)
         {
             publishCommand.Arguments.AddRange(new[] { "-p", $"RuntimeFrameworkVersion=8.0.0-preview.3.23174.8" });
         }
@@ -230,7 +230,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Create();
         privateNuGetAssets.Create();
 
-        new DotnetNewCommand(_testOutput, "webapi", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, "webapi", "-f", ToolsetInfo.NextTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
@@ -251,7 +251,7 @@ public class EndToEndTests : IDisposable
                 .Should().Pass();
 
             // Add package to the project
-            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.NextTargetFramework, "-v", packageVersion)
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
@@ -372,7 +372,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Create();
         privateNuGetAssets.Create();
 
-        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.NextTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
@@ -391,7 +391,7 @@ public class EndToEndTests : IDisposable
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.NextTargetFramework, "-v", packageVersion)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -443,7 +443,7 @@ public class EndToEndTests : IDisposable
     public async Task CanPackageForAllSupportedContainerRIDs(string dockerPlatform, string rid, string workingDir)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanPackageForAllSupportedContainerRIDs));
-        string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
+        string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.NextTargetFramework, rid: rid);
 
         // Build the image
         Registry registry = new(DockerRegistryManager.BaseImageSource, logger);
