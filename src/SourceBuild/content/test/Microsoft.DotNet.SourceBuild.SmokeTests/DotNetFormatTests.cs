@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-public class DotNetFormatTests : SmokeTests
+public class DotNetFormatTests : SdkTests
 {
     private const string TestFileName = "FormatTest.cs";
     private const string UnformattedFileName = "FormatTestUnformatted.cs";

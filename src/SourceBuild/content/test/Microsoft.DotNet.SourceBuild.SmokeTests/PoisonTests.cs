@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests
 {
-    public class PoisonTests : SmokeTests
+    public class PoisonTests : SdkTests
     {
         public PoisonTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
