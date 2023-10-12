@@ -61,7 +61,7 @@ namespace Microsoft.Win32.Msi.Manual.Tests
         void InstallMsi(string path)
         {
             // Configure event handler for install messages
-            UserInterfaceHandler ux = new UserInterfaceHandler(InstallLogMode.ACTIONDATA | InstallLogMode.ACTIONSTART | InstallLogMode.PROGRESS);
+            UserInterfaceHandler ux = new(InstallLogMode.ACTIONDATA | InstallLogMode.ACTIONSTART | InstallLogMode.PROGRESS);
 
             ux.ActionData += OnActionData;
             ux.ActionStart += OnActionStart;
@@ -104,7 +104,7 @@ namespace Microsoft.Win32.Msi.Manual.Tests
             Console.SetCursorPosition(0, top);
         }
 
-        void OnActionData(Object sender, ActionDataEventArgs e)
+        void OnActionData(object sender, ActionDataEventArgs e)
         {
             if (ActionDataEnabled)
             {
@@ -115,7 +115,7 @@ namespace Microsoft.Win32.Msi.Manual.Tests
             e.Result = DialogResult.IDOK;
         }
 
-        void OnActionStart(Object send, ActionStartEventArgs e)
+        void OnActionStart(object send, ActionStartEventArgs e)
         {
             if (ActionDataEnabled)
             {
@@ -134,7 +134,7 @@ namespace Microsoft.Win32.Msi.Manual.Tests
             e.Result = DialogResult.IDOK;
         }
 
-        void OnProgress(Object send, ProgressEventArgs e)
+        void OnProgress(object send, ProgressEventArgs e)
         {
             e.Result = DialogResult.IDOK;
 

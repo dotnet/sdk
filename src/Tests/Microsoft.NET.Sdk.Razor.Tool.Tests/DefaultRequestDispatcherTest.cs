@@ -7,7 +7,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
     public class DefaultRequestDispatcherTest
     {
-        private static ServerRequest EmptyServerRequest => new ServerRequest(1, Array.Empty<RequestArgument>());
+        private static ServerRequest EmptyServerRequest => new(1, Array.Empty<RequestArgument>());
 
         private static ServerResponse EmptyServerResponse => new CompletedServerResponse(
             returnCode: 0,
@@ -42,7 +42,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
         {
             // Arrange
             var memoryStream = new MemoryStream();
-            await EmptyServerRequest.WriteAsync(memoryStream, CancellationToken.None).ConfigureAwait(true);
+            await EmptyServerRequest.WriteAsync(memoryStream, CancellationToken.None);
             memoryStream.Position = 0;
 
             var stream = new Mock<Stream>(MockBehavior.Strict);
@@ -86,11 +86,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var buildTaskCancellationToken = default(CancellationToken);
             var compilerHost = CreateCompilerHost(c =>
             {
+#pragma warning disable xUnit1031
                 c.ExecuteFunc = (req, ct) =>
                 {
                     Task.WaitAll(buildTaskSource.Task);
                     return EmptyServerResponse;
                 };
+#pragma warning restore xUnit1031
             });
 
             var dispatcher = new DefaultRequestDispatcher(connectionHost, compilerHost, CancellationToken.None);
@@ -110,7 +112,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 connectionTask, accept: true, cancellationToken: CancellationToken.None);
 
             // Wait until WaitForDisconnectAsync task is actually created and running.
-            await readyTaskSource.Task.ConfigureAwait(false);
+            await readyTaskSource.Task;
 
             // Act
             // Now simulate a disconnect by the client.
@@ -144,7 +146,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             // Assert
             Assert.Equal(ConnectionResult.Reason.CompilationNotStarted, connectionResult.CloseReason);
             stream.WriteStream.Position = 0;
-            var response = await ServerResponse.ReadAsync(stream.WriteStream).ConfigureAwait(false);
+            var response = await ServerResponse.ReadAsync(stream.WriteStream);
             Assert.Equal(ServerResponse.ResponseType.Rejected, response.Type);
         }
 
@@ -168,7 +170,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             // Assert
             Assert.Equal(ConnectionResult.Reason.ClientShutdownRequest, connectionResult.CloseReason);
             stream.WriteStream.Position = 0;
-            var response = await ServerResponse.ReadAsync(stream.WriteStream).ConfigureAwait(false);
+            var response = await ServerResponse.ReadAsync(stream.WriteStream);
             Assert.Equal(ServerResponse.ResponseType.Shutdown, response.Type);
         }
 
@@ -514,8 +516,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
         private class TestableStream : Stream
         {
-            internal readonly MemoryStream ReadStream = new MemoryStream();
-            internal readonly MemoryStream WriteStream = new MemoryStream();
+            internal readonly MemoryStream ReadStream = new();
+            internal readonly MemoryStream WriteStream = new();
 
             public override bool CanRead => true;
             public override bool CanSeek => false;

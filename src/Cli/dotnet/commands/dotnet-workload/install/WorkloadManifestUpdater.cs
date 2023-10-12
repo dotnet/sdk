@@ -84,11 +84,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             WriteUpdatableWorkloadsFile();
         }
 
-        public async static Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
+        public static async Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
         {
             try
             {
-                var manifestUpdater = WorkloadManifestUpdater.GetInstance(userProfileDir);
+                var manifestUpdater = GetInstance(userProfileDir);
                 await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
             }
             catch (Exception)
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             try
             {
                 var backgroundUpdatesDisabled = bool.TryParse(Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE), out var disableEnvVar) && disableEnvVar;
-                SdkFeatureBand featureBand = new SdkFeatureBand(Product.Version);
+                SdkFeatureBand featureBand = new(Product.Version);
                 var adUpdatesFile = GetAdvertisingWorkloadsFilePath(CliFolderPathCalculator.DotnetUserProfileFolderPath, featureBand);
                 if (!backgroundUpdatesDisabled && File.Exists(adUpdatesFile))
                 {
@@ -318,7 +318,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 await _workloadManifestInstaller.ExtractManifestAsync(packagePath, adManifestPath);
 
-                // add file that contains the advertisted manifest feature band so GetAdvertisingManifestVersionAndWorkloads will use correct feature band, regardless of if rollback occurred or not
+                // add file that contains the advertised manifest feature band so GetAdvertisingManifestVersionAndWorkloads will use correct feature band, regardless of if rollback occurred or not
                 File.WriteAllText(Path.Combine(adManifestPath, "AdvertisedManifestFeatureBand.txt"), currentFeatureBand);
 
                 if (_displayManifestUpdates)
@@ -364,7 +364,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 return null;
             }
 
-            using (FileStream fsSource = new FileStream(manifestPath, FileMode.Open, FileAccess.Read))
+            using (FileStream fsSource = new(manifestPath, FileMode.Open, FileAccess.Read))
             {
                 var manifest = WorkloadManifestReader.ReadWorkloadManifest(manifestId.ToString(), fsSource, manifestPath);
                 // we need to know the feature band of the advertised manifest (read it from the AdvertisedManifestFeatureBand.txt file)
@@ -470,7 +470,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private static string GetAdvertisingWorkloadsFilePath(string userProfileDir, SdkFeatureBand featureBand) => Path.Combine(userProfileDir, $".workloadAdvertisingUpdates{featureBand}");
 
-        private async Task<String> GetOnlinePackagePath(SdkFeatureBand sdkFeatureBand, ManifestId manifestId, bool includePreviews)
+        private async Task<string> GetOnlinePackagePath(SdkFeatureBand sdkFeatureBand, ManifestId manifestId, bool includePreviews)
         {
             string packagePath = await _nugetPackageDownloader.DownloadPackageAsync(
                 _workloadManifestInstaller.GetManifestPackageId(manifestId, sdkFeatureBand),

@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
     public class WorkloadsInfoProviderTests
     {
         [Fact]
-        public void InstalledWorkloads_ShouldReturnExpectedWorkloads()
+        public async Task InstalledWorkloads_ShouldReturnExpectedWorkloads()
         {
             // Setup
 
@@ -44,10 +44,10 @@ namespace Microsoft.DotNet.Cli.New.Tests
             IWorkloadsInfoProvider wp = new WorkloadsInfoProvider(new Lazy<IWorkloadsRepositoryEnumerator>(workloadsEnumerator));
 
             // Act
-            var workloads = wp.GetInstalledWorkloadsAsync(default).Result;
+            var workloads = await wp.GetInstalledWorkloadsAsync(default);
 
             // Assert
-            List<WorkloadInfo> expected = new List<WorkloadInfo>()
+            List<WorkloadInfo> expected = new()
             {
                 new WorkloadInfo("A", "Description: A"), new WorkloadInfo("B", "Description: B")
             };

@@ -39,7 +39,7 @@ public class RegistryTests : IDisposable
         containerTag ??= "latest";
 
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanReadManifestFromRegistry));
-        Registry registry = new Registry(containerRegistry, logger);
+        Registry registry = new(containerRegistry, logger);
 
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
 
@@ -48,7 +48,7 @@ public class RegistryTests : IDisposable
             containerTag,
             "linux-x64",
             ridgraphfile,
-            cancellationToken: default).ConfigureAwait(false);
+            cancellationToken: default);
 
         Assert.NotNull(downloadedImage);
     }
