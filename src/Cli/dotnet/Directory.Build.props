@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+
+  <Import Project="..\..\..\Directory.Build.props" />
+
+  <!-- Global usings -->
+  <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
+  <ItemGroup>
+    <!-- Aliases -->
+    <!-- Note: '%3C' is for '<' and '%3E' is for '>' -->
+    <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />
+  </ItemGroup>
+
+</Project>
