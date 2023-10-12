@@ -431,7 +431,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string packageLocation = await packageManager.GetNuGetPackage(
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0",
                 minimumVersion: new NuGet.Versioning.NuGetVersion(6, 0, 0),
-                logger: new XunitNuGetLogger(_messageSink)).ConfigureAwait(false);
+                logger: new XunitNuGetLogger(_messageSink));
 
             _messageSink.OnMessage(new DiagnosticMessage($"{nameof(InstallingSamePackageFromRemoteUpdatesLocal)}: Microsoft.DotNet.Common.ProjectTemplates.5.0 is downloaded to {packageLocation}.)"));
 

@@ -510,7 +510,7 @@ namespace Microsoft.NET.Publish.Tests
             }
             else
             {
-                Assert.True(false, "unexpected value");
+                Assert.Fail("unexpected value");
             }
         }
 
