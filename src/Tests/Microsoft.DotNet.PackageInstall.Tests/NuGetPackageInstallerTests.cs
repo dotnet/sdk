@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [Fact]
-        public void GivenNoPackageSourceMappingItShouldError()
+        public async Task GivenNoPackageSourceMappingItShouldError()
         {
             string getTestLocalFeedPath = GetTestLocalFeedPath();
             string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
@@ -179,16 +179,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
             var mockPackageSourceMapping = new PackageSourceMapping(patterns);
 
-            Action a = async () => await _toolInstaller.DownloadPackageAsync(
+            Func<Task> a = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
                 packageSourceMapping: mockPackageSourceMapping);
-            a.Should().Throw<NuGetPackageInstallerException>().And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
-        public void GivenPackageSourceMappingFeedNotFoundItShouldError()
+        public async Task GivenPackageSourceMappingFeedNotFoundItShouldError()
         {
             string getTestLocalFeedPath = GetTestLocalFeedPath();
             string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
@@ -200,12 +200,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
             var mockPackageSourceMapping = new PackageSourceMapping(patterns);
 
-            Action a = async () => await _toolInstaller.DownloadPackageAsync(
+            Func<Task> a = () => _toolInstaller.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
                 packageSourceMapping: mockPackageSourceMapping);
-            a.Should().Throw<NuGetPackageInstallerException>().And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
