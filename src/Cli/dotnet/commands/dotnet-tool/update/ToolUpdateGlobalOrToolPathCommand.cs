@@ -11,12 +11,13 @@ using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
+using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace Microsoft.DotNet.Tools.Tool.Update
 {
     internal delegate IShellShimRepository CreateShellShimRepository(string appHostSourceDirectory, DirectoryPath? nonGlobalLocation = null);
 
-    internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller, IToolPackageUninstaller) CreateToolPackageStoresAndInstallerAndUninstaller(
+    internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownloader, IToolPackageUninstaller) CreateToolPackageStoresAndDownloaderAndUninstaller(
         DirectoryPath? nonGlobalLocation = null,
         IEnumerable<string> additionalRestoreArguments = null);
 
@@ -25,20 +26,20 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly IReporter _reporter;
         private readonly IReporter _errorReporter;
         private readonly CreateShellShimRepository _createShellShimRepository;
-        private readonly CreateToolPackageStoresAndInstallerAndUninstaller _createToolPackageStoreInstallerUninstaller;
+        private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
 
         private readonly PackageId _packageId;
         private readonly string _configFilePath;
         private readonly string _framework;
         private readonly string[] _additionalFeeds;
         private readonly bool _global;
-        private readonly string _verbosity;
+        private readonly VerbosityOptions _verbosity;
         private readonly string _toolPath;
         private readonly IEnumerable<string> _forwardRestoreArguments;
         private readonly string _packageVersion;
 
         public ToolUpdateGlobalOrToolPathCommand(ParseResult parseResult,
-            CreateToolPackageStoresAndInstallerAndUninstaller createToolPackageStoreInstallerUninstaller = null,
+            CreateToolPackageStoresAndDownloaderAndUninstaller createToolPackageStoreDownloaderUninstaller = null,
             CreateShellShimRepository createShellShimRepository = null,
             IReporter reporter = null)
             : base(parseResult)
@@ -49,12 +50,12 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _additionalFeeds = parseResult.GetValue(ToolUpdateCommandParser.AddSourceOption);
             _packageVersion = parseResult.GetValue(ToolUpdateCommandParser.VersionOption);
             _global = parseResult.GetValue(ToolUpdateCommandParser.GlobalOption);
-            _verbosity = Enum.GetName(parseResult.GetValue(ToolUpdateCommandParser.VerbosityOption));
+            _verbosity = parseResult.GetValue(ToolUpdateCommandParser.VerbosityOption);
             _toolPath = parseResult.GetValue(ToolUpdateCommandParser.ToolPathOption);
             _forwardRestoreArguments = parseResult.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand());
 
-            _createToolPackageStoreInstallerUninstaller = createToolPackageStoreInstallerUninstaller ??
-                                                  ToolPackageFactory.CreateToolPackageStoresAndInstallerAndUninstaller;
+            _createToolPackageStoreDownloaderUninstaller = createToolPackageStoreDownloaderUninstaller ??
+                                                  ToolPackageFactory.CreateToolPackageStoresAndDownloaderAndUninstaller;
 
             _createShellShimRepository =
                 createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
@@ -77,8 +78,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             (IToolPackageStore toolPackageStore,
              IToolPackageStoreQuery toolPackageStoreQuery,
-             IToolPackageInstaller toolPackageInstaller,
-             IToolPackageUninstaller toolPackageUninstaller) = _createToolPackageStoreInstallerUninstaller(toolPath, _forwardRestoreArguments);
+             IToolPackageDownloader toolPackageDownloader,
+             IToolPackageUninstaller toolPackageUninstaller) = _createToolPackageStoreDownloaderUninstaller(toolPath, _forwardRestoreArguments);
 
             var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
             IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
@@ -104,12 +105,14 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
                 RunWithHandlingInstallError(() =>
                 {
-                    IToolPackage newInstalledPackage = toolPackageInstaller.InstallPackage(
-                        new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _additionalFeeds),
+                    IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
+                    new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _additionalFeeds), 
                         packageId: _packageId,
-                        targetFramework: _framework,
                         versionRange: versionRange,
-                        verbosity: _verbosity);
+                        targetFramework: _framework,
+                        verbosity: _verbosity,
+                        isGlobalTool: true
+                    );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage);
 

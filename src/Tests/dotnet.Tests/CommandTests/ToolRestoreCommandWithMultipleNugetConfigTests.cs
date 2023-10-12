@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
     public class ToolRestoreCommandWithMultipleNugetConfigTests
     {
         private readonly IFileSystem _fileSystem;
-        private ToolPackageInstallerMock _toolPackageInstallerMock;
+        private ToolPackageDownloaderMock _toolPackageDownloaderMock;
         private readonly ParseResult _parseResult;
         private readonly BufferedReporter _reporter;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
@@ -69,44 +69,42 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _nugetConfigUnderSubDir = Path.Combine(subDir, "nuget.config");
             _fileSystem.File.CreateEmptyFile(_nugetConfigUnderSubDir);
 
-            _toolPackageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
+            _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
                 toolPackageStoreMock,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter,
-                    new List<MockFeed>
+                _fileSystem,
+                _reporter,
+                new List<MockFeed>
+                {
+                    new MockFeed
                     {
-                        new MockFeed
+                        Type = MockFeedType.FeedFromLookUpNugetConfig,
+                        Uri = _nugetConfigUnderTestRoot,
+                        Packages = new List<MockFeedPackage>
                         {
-                            Type = MockFeedType.FeedFromLookUpNugetConfig,
-                            Uri = _nugetConfigUnderTestRoot,
-                            Packages = new List<MockFeedPackage>
+                            new MockFeedPackage
                             {
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageIdA.ToString(),
-                                    Version = _packageVersionA.ToNormalizedString(),
-                                    ToolCommandName = _toolCommandNameA.ToString()
-                                },
-                            }
-                        },
-
-                        new MockFeed
-                        {
-                            Type = MockFeedType.FeedFromLookUpNugetConfig,
-                            Uri = _nugetConfigUnderSubDir,
-                            Packages = new List<MockFeedPackage>
-                            {
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageIdB.ToString(),
-                                    Version = _packageVersionB.ToNormalizedString(),
-                                    ToolCommandName = _toolCommandNameB.ToString()
-                                },
-                            }
+                                PackageId = _packageIdA.ToString(),
+                                Version = _packageVersionA.ToNormalizedString(),
+                                ToolCommandName = _toolCommandNameA.ToString()
+                            },
                         }
-                    }));
+                    },
+
+                    new MockFeed
+                    {
+                        Type = MockFeedType.FeedFromLookUpNugetConfig,
+                        Uri = _nugetConfigUnderSubDir,
+                        Packages = new List<MockFeedPackage>
+                        {
+                            new MockFeedPackage
+                            {
+                                PackageId = _packageIdB.ToString(),
+                                Version = _packageVersionB.ToNormalizedString(),
+                                ToolCommandName = _toolCommandNameB.ToString()
+                            },
+                        }
+                    }
+                });
         }
 
         [Fact]
@@ -124,7 +122,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 });
 
             ToolRestoreCommand toolRestoreCommand = new(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
