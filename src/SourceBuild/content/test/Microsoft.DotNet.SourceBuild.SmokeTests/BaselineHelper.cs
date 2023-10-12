@@ -41,12 +41,12 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
             Assert.Null(message);
         }
 
-        public static void CompareBaselineContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
+        public static void CompareBaselineContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper, bool warnOnDiffs = false, string baselineSubDir = "")
         {
-            string actualFilePath = Path.Combine(DotNetHelper.LogsDirectory, $"Updated{baselineFileName}");
+            string actualFilePath = Path.Combine(TestBase.LogsDirectory, $"Updated{baselineFileName}");
             File.WriteAllText(actualFilePath, actualContents);
 
-            CompareFiles(GetBaselineFilePath(baselineFileName), actualFilePath, outputHelper, warnOnDiffs);
+            CompareFiles(GetBaselineFilePath(baselineFileName, baselineSubDir), actualFilePath, outputHelper, warnOnDiffs);
         }
 
         public static void CompareFiles(string expectedFilePath, string actualFilePath, ITestOutputHelper outputHelper, bool warnOnDiffs = false)
@@ -87,7 +87,8 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
         public static string GetAssetsDirectory() => Path.Combine(Directory.GetCurrentDirectory(), "assets");
 
-        public static string GetBaselineFilePath(string baselineFileName) => Path.Combine(GetAssetsDirectory(), "baselines", baselineFileName);
+        public static string GetBaselineFilePath(string baselineFileName, string baselineSubDir = "") =>
+            Path.Combine(GetAssetsDirectory(), "baselines", baselineSubDir, baselineFileName);
 
         public static string RemoveRids(string diff, bool isPortable = false) =>
             isPortable ? diff.Replace(Config.PortableRid, "portable-rid") : diff.Replace(Config.TargetRid, "banana-rid");
