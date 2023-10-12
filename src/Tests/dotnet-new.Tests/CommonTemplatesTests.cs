@@ -164,8 +164,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData(new object[] { "console", "VB" })]
         public async void AotVariants(string name, string language)
         {
-            // "net8.0";
-            string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            // templates have not be updated to 9 yet "net8.0";
+            //string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            string currentDefaultFramework = "net8.0";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{language}");
             string outputDir = "MyProject";
@@ -336,8 +337,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             bool supportsImplicitUsings,
             bool supportsFileScopedNs)
         {
-            // "net8.0";
-            string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            // Templates have not been updated to net9.0 yet "net8.0";
+            string currentDefaultFramework = "net8.0";
+            //string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");
             string outputDir = "MyProject";

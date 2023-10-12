@@ -9,6 +9,8 @@ set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
 set DOTNET_MULTILEVEL_LOOKUP=0
 set TestFullMSBuild=%1
+set DOTNET_ROLL_FORWARD=Major
+set DOTNET_ROLL_FORWARD_TO_PRERELEASE=1
 
 set TestExecutionDirectory=%CD%\testExecutionDirectory
 mkdir %TestExecutionDirectory%

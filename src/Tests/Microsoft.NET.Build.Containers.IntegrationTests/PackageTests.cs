@@ -66,7 +66,7 @@ public class PackageTests
     public void PackageContentTest()
     {
         string ignoredZipFileEntriesPrefix = "package/services/metadata";
-
+        var netTFM = ToolsetInfo.NextTargetFramework;
         IReadOnlyList<string> packageContents = new List<string>()
         {
               "_rels/.rels",
@@ -124,28 +124,28 @@ public class PackageTests
               "tasks/net472/NuGet.ProjectModel.dll",
               "tasks/net472/NuGet.Protocol.dll",
               "tasks/net472/NuGet.Versioning.dll",
-              "tasks/net8.0/Microsoft.DotNet.Cli.Utils.dll",
-              "tasks/net8.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
-              "tasks/net8.0/Microsoft.Extensions.DependencyInjection.dll",
-              "tasks/net8.0/Microsoft.Extensions.DependencyModel.dll",
-              "tasks/net8.0/Microsoft.Extensions.Logging.Abstractions.dll",
-              "tasks/net8.0/Microsoft.Extensions.Logging.dll",
-              "tasks/net8.0/Microsoft.Extensions.Options.dll",
-              "tasks/net8.0/Microsoft.Extensions.Primitives.dll",
-              "tasks/net8.0/Microsoft.NET.Build.Containers.deps.json",
-              "tasks/net8.0/Microsoft.NET.Build.Containers.dll",
-              "tasks/net8.0/Newtonsoft.Json.dll",
-              "tasks/net8.0/NuGet.Common.dll",
-              "tasks/net8.0/NuGet.Configuration.dll",
-              "tasks/net8.0/NuGet.DependencyResolver.Core.dll",
-              "tasks/net8.0/NuGet.Frameworks.dll",
-              "tasks/net8.0/NuGet.LibraryModel.dll",
-              "tasks/net8.0/NuGet.Packaging.dll",
-              "tasks/net8.0/NuGet.Packaging.Core.dll",
-              "tasks/net8.0/NuGet.ProjectModel.dll",
-              "tasks/net8.0/NuGet.Protocol.dll",
-              "tasks/net8.0/NuGet.Versioning.dll",
-              "tasks/net8.0/Valleysoft.DockerCredsProvider.dll"
+              $"tasks/{netTFM}/Microsoft.DotNet.Cli.Utils.dll",
+              $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
+              $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.dll",
+              $"tasks/{netTFM}/Microsoft.Extensions.DependencyModel.dll",
+              $"tasks/{netTFM}/Microsoft.Extensions.Logging.Abstractions.dll",
+              $"tasks/{netTFM}/Microsoft.Extensions.Logging.dll",
+              $"tasks/{netTFM}/Microsoft.Extensions.Options.dll",
+              $"tasks/{netTFM}/Microsoft.Extensions.Primitives.dll",
+              $"tasks/{netTFM}/Microsoft.NET.Build.Containers.deps.json",
+              $"tasks/{netTFM}/Microsoft.NET.Build.Containers.dll",
+              $"tasks/{netTFM}/Newtonsoft.Json.dll",
+              $"tasks/{netTFM}/NuGet.Common.dll",
+              $"tasks/{netTFM}/NuGet.Configuration.dll",
+              $"tasks/{netTFM}/NuGet.DependencyResolver.Core.dll",
+              $"tasks/{netTFM}/NuGet.Frameworks.dll",
+              $"tasks/{netTFM}/NuGet.LibraryModel.dll",
+              $"tasks/{netTFM}/NuGet.Packaging.dll",
+              $"tasks/{netTFM}/NuGet.Packaging.Core.dll",
+              $"tasks/{netTFM}/NuGet.ProjectModel.dll",
+              $"tasks/{netTFM}/NuGet.Protocol.dll",
+              $"tasks/{netTFM}/NuGet.Versioning.dll",
+              $"tasks/{netTFM}/Valleysoft.DockerCredsProvider.dll"
         };
 
         (string packageFilePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
