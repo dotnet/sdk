@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
 
             IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, targetBasePath);
-            Assert.Equal(1, solutionFiles.Count);
+            Assert.Single(solutionFiles);
             Assert.Equal(solutionFileFullPath, solutionFiles[0]);
         }
 

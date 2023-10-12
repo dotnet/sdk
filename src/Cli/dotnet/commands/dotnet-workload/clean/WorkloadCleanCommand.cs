@@ -24,31 +24,23 @@ namespace Microsoft.DotNet.Workloads.Workload.Clean
         private readonly ReleaseVersion _sdkVersion;
         private readonly IInstaller _workloadInstaller;
         private readonly IWorkloadResolver _workloadResolver;
+        protected readonly IWorkloadResolverFactory _workloadResolverFactory;
 
         public WorkloadCleanCommand(
             ParseResult parseResult,
             IReporter? reporter = null,
-            IWorkloadResolver? workloadResolver = null,
-            string? dotnetDir = null,
-            string? version = null,
-            string? userProfileDir = null
-            ) : base(parseResult, reporter: reporter)
+            IWorkloadResolverFactory? workloadResolverFactory = null) : base(parseResult, reporter: reporter)
         {
             _cleanAll = parseResult.GetValue(WorkloadCleanCommandParser.CleanAllOption);
 
-            var creationParameters = new WorkloadResolverFactory.CreationParameters()
-            {
-                DotnetPath = dotnetDir,
-                UserProfileDir = userProfileDir,
-                GlobalJsonStartDir = null,
-                SdkVersionFromOption = parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption),
-                VersionForTesting = version,
-                CheckIfFeatureBandManifestExists = true,
-                WorkloadResolverForTesting = workloadResolver,
-                UseInstalledSdkVersionForResolver = true
-            };
+            _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
-            var creationResult = WorkloadResolverFactory.Create(creationParameters);
+            if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
+            {
+                throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            }
+
+            var creationResult = _workloadResolverFactory.Create();
 
             _dotnetPath = creationResult.DotnetPath;
             _userProfileDir = creationResult.UserProfileDir;
@@ -67,7 +59,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Clean
 
         private void ExecuteGarbageCollection()
         {
-            _workloadInstaller.GarbageCollectInstalledWorkloadPacks(cleanAllPacks: _cleanAll);
+            _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion),
+                cleanAllPacks: _cleanAll);
+
             DisplayUninstallableVSWorkloads();
         }
 

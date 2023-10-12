@@ -24,8 +24,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             using var packageManager = new PackageManager();
             string packagePath = await packageManager.GetNuGetPackage(
                 templatePackName: "Microsoft.Azure.WebJobs.ProjectTemplates",
-                downloadDirectory: Path.GetDirectoryName(testTemplatesPackagePath))
-                .ConfigureAwait(false);
+                downloadDirectory: Path.GetDirectoryName(testTemplatesPackagePath));
 
             _templateDiscoveryTool.Run(
                 _log,
