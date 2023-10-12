@@ -1278,6 +1278,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectCapability Include="CrossPlatformExecutable" />
   </ItemGroup>
 
+  <!-- Native AOT compilation -->
+  <!-- Native AOT properties should be shown by default for projects targeting .NET 8 or higher, except for WPF and WinForms projects -->
+  <ItemGroup Condition="'$(UseWPF)' != 'true'
+             and '$(UseWindowsForms)' != 'true'
+             and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+             and $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '8.0'))">
+    <ProjectCapability Include="NativeAOT"/>
+  </ItemGroup>
+
   <!-- Reference Manager capabilities -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <ProjectCapability Remove="ReferenceManagerAssemblies" />

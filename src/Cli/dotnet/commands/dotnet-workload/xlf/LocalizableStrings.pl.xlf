@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="WorkloadVersionDescription">
         <source>Display the currently installed workload version.</source>
-        <target state="new">Display the currently installed workload version.</target>
+        <target state="translated">Wyświetl aktualnie zainstalowaną wersję obciążenia.</target>
         <note />
       </trans-unit>
     </body>
