@@ -12,7 +12,6 @@ using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
-using WorkloadCollection = System.Collections.Generic.Dictionary<Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition>;
 
 namespace Microsoft.DotNet.Workloads.Workload.List
 {
