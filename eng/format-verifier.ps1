@@ -51,6 +51,14 @@ try {
         .\eng\common\Build.ps1 -restore
     }
 
+    # project-system doesn't use Arcade so we may not have installed a local .dotnet sdk.
+    if (Test-Path '.\.dotnet') {
+        $dotnetPath = Join-Path $repoPath ".dotnet"
+        $parentDotNetPath = Join-Path $dotnetPath "dotnet.exe"
+    }
+
+    $Env:DOTNET_ROOT = $dotnetPath
+
     if ($stage -eq "prepare" -or $stage -eq "format-workspace") {
         Write-Output "$(Get-Date) - Finding solutions."
         $solutions = Get-ChildItem -Filter *.sln -Recurse -Depth 2 | Select-Object -ExpandProperty FullName | Where-Object { $_ -match '.sln$' }

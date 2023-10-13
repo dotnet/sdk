@@ -27,20 +27,20 @@
     <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
     <!-- nuget -->
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
-    <NuGetVersion>6.7.0-rc.111</NuGetVersion>
+    <NuGetVersion>6.8.0-preview.1.41</NuGetVersion>
     <!-- roslyn -->
-    <MicrosoftCodeAnalysisVersion>4.7.0-3.23373.1</MicrosoftCodeAnalysisVersion>
+    <MicrosoftCodeAnalysisVersion>4.8.0-3.23474.1</MicrosoftCodeAnalysisVersion>
     <!-- roslyn-sdk -->
-    <MicrosoftCodeAnalysisAnalzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalzerTestingVersion>
+    <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <!-- runtime -->
-    <MicrosoftExtensionsFileSystemGlobbingVersion>7.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
-    <MicrosoftExtensionsLoggingVersion>7.0.0</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>8.0.0-rc.1.23408.3</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsLoggingVersion>8.0.0-rc.1.23408.3</MicrosoftExtensionsLoggingVersion>
     <!-- symreader -->
     <MicrosoftDiaSymReaderVersion>2.0.0</MicrosoftDiaSymReaderVersion>
     <!-- external -->
     <BenchmarkDotNetVersion>0.13.5</BenchmarkDotNetVersion>
     <BenchmarkDotNetAnnotationsVersion>0.13.5</BenchmarkDotNetAnnotationsVersion>
-    <MicrosoftBuildLocatorVersion>1.5.5</MicrosoftBuildLocatorVersion>
+    <MicrosoftBuildLocatorVersion>1.6.10</MicrosoftBuildLocatorVersion>
     <MicrosoftVisualStudioCompositionVersion>17.4.16</MicrosoftVisualStudioCompositionVersion>
   </PropertyGroup>
 </Project>
