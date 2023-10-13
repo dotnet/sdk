@@ -89,7 +89,7 @@ public class EndToEndTests : IDisposable
     public async Task ApiEndToEndWithLocalLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithLocalLoad));
-        string publishDirectory = BuildLocalApp(tfm: "net8.0");
+        string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.NextTargetFramework);
 
         // Build the image
 
@@ -130,7 +130,7 @@ public class EndToEndTests : IDisposable
     public async Task ApiEndToEndWithArchiveWritingAndLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithArchiveWritingAndLoad));
-        string publishDirectory = BuildLocalApp(tfm: "net8.0");
+        string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.NextTargetFramework);
 
         // Build the image
 
