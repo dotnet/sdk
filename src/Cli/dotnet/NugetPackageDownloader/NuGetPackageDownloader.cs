@@ -527,9 +527,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             VersionRange versionRange,
              PackageSourceLocation packageSourceLocation = null)
         {
-            if(!string.IsNullOrEmpty(versionRange.OriginalString))
+            if(versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
             {
-                return NuGetVersion.Parse(versionRange.OriginalString);
+                return NuGetVersion.Parse(versionRange.MinVersion.ToString());
             }
 
             CancellationToken cancellationToken = CancellationToken.None;

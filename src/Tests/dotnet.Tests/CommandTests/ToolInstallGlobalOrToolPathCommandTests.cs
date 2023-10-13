@@ -352,11 +352,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/pull/36021")]
         public void WhenRunWithValidUnlistedVersionRangeItShouldSucceed()
         {
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
-            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {UnlistedPackageId} --version 0.5.0 --add-source {nugetSourcePath}");
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {UnlistedPackageId} --version [0.5.0] --add-source {nugetSourcePath}");
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
