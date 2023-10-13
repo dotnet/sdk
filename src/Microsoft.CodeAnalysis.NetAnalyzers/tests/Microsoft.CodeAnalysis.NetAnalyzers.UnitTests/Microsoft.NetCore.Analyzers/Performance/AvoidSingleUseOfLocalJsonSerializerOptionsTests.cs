@@ -45,7 +45,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     static void Main(string[] args)
                     {
                         JsonSerializerOptions options = {|CA1869:new JsonSerializerOptions()|};
-                        options.AllowTrailingCommas = true;        
+                        options.AllowTrailingCommas = true;
 
                         string json = JsonSerializer.Serialize(args, options);
                         Console.WriteLine(json);
@@ -237,6 +237,101 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 }
                 """);
 
+        [Theory]
+        [InlineData("""
+            for (int i = 0; i < values.Length; i++)
+            {
+                JsonSerializerOptions opt = {|CA1869:new JsonSerializerOptions()|};
+                concatJson += JsonSerializer.Serialize(values[i], opt);
+            }
+            """)]
+        [InlineData("""
+            foreach (T value in values)
+            {
+                JsonSerializerOptions opt = {|CA1869:new JsonSerializerOptions()|};
+                concatJson += JsonSerializer.Serialize(value, opt);
+            }
+            """)]
+        [InlineData("""
+            if (values.Length == 0) 
+                return concatJson;
+
+            int i = 0;
+            do
+            {
+                JsonSerializerOptions opt = {|CA1869:new JsonSerializerOptions()|};
+                concatJson += JsonSerializer.Serialize(values[i++], opt);
+            }
+            while (i < values.Length);
+            """)]
+        [InlineData("""
+            int i = 0;
+            while (i < values.Length)
+            {
+                JsonSerializerOptions opt = {|CA1869:new JsonSerializerOptions()|};
+                concatJson += JsonSerializer.Serialize(values[i++], opt);
+            }
+            """)]
+        public Task CS_UseNewLocalOptionsAsArgument_JsonSerializerOptions_OnLoop(string loop)
+            => VerifyCS.VerifyAnalyzerAsync($$"""
+                using System.Text.Json;
+
+                class Program
+                {
+                    static string Serialize<T>(T[] values)
+                    {
+                        string concatJson = "";
+
+                        {{loop}}
+
+                        return concatJson;
+                    }
+                }
+                """);
+
+        [Theory]
+        [InlineData("""
+            For i = 0 To values.Length
+                Dim opt = {|CA1869:New JsonSerializerOptions()|}
+                concatJson += JsonSerializer.Serialize(values(i), opt)
+            Next
+            """)]
+        [InlineData("""
+            For Each value In values
+                Dim opt = {|CA1869:New JsonSerializerOptions()|}
+                concatJson += JsonSerializer.Serialize(value, opt)
+            Next
+            """)]
+        [InlineData("""
+            Dim i = 0
+            Do While i < values.Length
+                Dim opt = {|CA1869:New JsonSerializerOptions()|}
+                concatJson += JsonSerializer.Serialize(values(i), opt)
+                i = i + 1
+            Loop
+            """)]
+        [InlineData("""
+            Dim i = 0
+            Do
+                Dim opt = {|CA1869:New JsonSerializerOptions()|}
+                concatJson += JsonSerializer.Serialize(values(i), opt)
+                i = i + 1
+            Loop While i < values.Length
+            """)]
+        public Task VB_UseNewLocalOptionsAsArgument_JsonSerializerOptions_OnLoop(string loop)
+            => VerifyVB.VerifyAnalyzerAsync($$"""
+                Imports System.Text.Json
+
+                Class Program
+                    Shared Function Serialize(Of T)(values As T()) As String
+                        Dim concatJson = ""
+
+                        {{loop}}
+
+                        return concatJson
+                    End Function
+                End Class
+                """);
         #endregion
 
         #region No Diagnostic Tests
@@ -276,6 +371,87 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
 
         [Fact]
+        public Task CS_UseNewOptionsAsArgument_InterlockedCompareExchange_NoWarn()
+            => VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.Json;
+                using System.Threading;
+
+                class Program
+                {
+                    static JsonSerializerOptions s_options;
+                    static string Serialize<T>(T value)
+                    {
+                        return JsonSerializer.Serialize(value,
+                            s_options ??
+                            Interlocked.CompareExchange(ref s_options, new JsonSerializerOptions() {WriteIndented = true}, null) ??
+                            s_options);
+                    }
+                }
+                """);
+
+        [Fact]
+        public Task CS_UseNewLocalOptionsAsArgument_MethodWithJsonOptionsArgument_NoWarn()
+            => VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.Json;
+
+                class Program
+                {
+                    static string Serialize<T>(T value)
+                    {
+                        JsonSerializerOptions options = TweakOptions(new JsonSerializerOptions());
+                        return JsonSerializer.Serialize(value, options);
+                    }
+
+                    static JsonSerializerOptions TweakOptions(JsonSerializerOptions options)
+                    {
+                        options.WriteIndented = true;
+                        return options;
+                    }
+                }
+                """);
+
+        [Fact]
+        public Task CS_UseNewLocalOptionsAsArgument_MethodWithJsonOptionsArgument_VarDeclaration_ReturnsNonOptions_NoWarn()
+            => VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.Json;
+
+                class Program
+                {
+                    static string Serialize<T>(T value)
+                    {
+                        T newValue = ProcessOptions<T>(new JsonSerializerOptions());
+                        return JsonSerializer.Serialize(newValue);
+                    }
+
+                    static T ProcessOptions<T>(JsonSerializerOptions options)
+                    {
+                        return default;
+                    }
+                }
+                """);
+
+        [Fact]
+        public Task CS_UseNewLocalOptionsAsArgument_MethodWithJsonOptionsArgument_ExprStatement_ReturnsNonOptions_NoWarn()
+            => VerifyCS.VerifyAnalyzerAsync("""
+                using System.Text.Json;
+
+                class Program
+                {
+                    static string Serialize<T>(T value)
+                    {
+                        T newValue;
+                        newValue = ProcessOptions<T>(new JsonSerializerOptions());
+                        return JsonSerializer.Serialize(newValue);
+                    }
+
+                    static T ProcessOptions<T>(JsonSerializerOptions options)
+                    {
+                        return default;
+                    }
+                }
+                """);
+
+        [Fact]
         public Task CS_UseNewLocalOptionsAsArgument_EscapeCurrentScope_NonSerializerMethod_NoWarn()
             => VerifyCS.VerifyAnalyzerAsync("""
                 using System.Text.Json;
@@ -304,6 +480,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             test.TestCode = $$"""
                 using System;
                 using System.Text.Json;
+                using System.Threading;
 
                 class Program
                 {
@@ -358,27 +535,49 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         {
             string target = useField ? "s_options" : "Options";
 
-            return new List<string>()
+            var l = new List<string>()
             {
-                $@"JsonSerializerOptions opt = new JsonSerializerOptions();
-                    {target} = opt;",
+                $"""
+                JsonSerializerOptions opt = new JsonSerializerOptions();
+                {target} = opt;
+                """,
 
-                $@"JsonSerializerOptions opt;
-                    {target} = opt = new JsonSerializerOptions();",
+                $"""
+                JsonSerializerOptions opt;
+                {target} = opt = new JsonSerializerOptions();
+                """,
 
-                $@"JsonSerializerOptions opt = {target} = new JsonSerializerOptions();",
+                $"JsonSerializerOptions opt = {target} = new JsonSerializerOptions();",
 
-                $@"JsonSerializerOptions opt = {target} ??= new JsonSerializerOptions();",
+                $"JsonSerializerOptions opt = {target} ??= new JsonSerializerOptions();",
 
-                $@"JsonSerializerOptions opt = new JsonSerializerOptions();
-                    {target} ??= opt;",
+                $"""
+                JsonSerializerOptions opt = new JsonSerializerOptions();
+                {target} ??= opt;
+                """,
 
-                $@"JsonSerializerOptions opt = new JsonSerializerOptions();
-                    ({target}, _) = (opt, 42);",
+                $"""
+                JsonSerializerOptions opt = new JsonSerializerOptions();
+                ({target}, _) = (opt, 42);
+                """,
 
-                $@"JsonSerializerOptions opt = new JsonSerializerOptions();
-                    (({target}, _), _) = ((opt, 42), 42);"
+                $"""
+                JsonSerializerOptions opt = new JsonSerializerOptions();
+                (({target}, _), _) = ((opt, 42), 42);
+                """
             };
+
+            if (useField)
+            {
+                l.Add("""
+                JsonSerializerOptions opt = 
+                    s_options ?? 
+                    Interlocked.CompareExchange(ref s_options, new JsonSerializerOptions() {WriteIndented = true}, null) ??
+                    s_options;
+                """);
+            }
+
+            return l;
         }
 
         [Fact]
@@ -433,7 +632,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                 class Program
                 {
-                    static JsonSerializerOptions s_options;    
+                    static JsonSerializerOptions s_options;
 
                     static string Serialize<T>(T value)
                     {
@@ -442,7 +641,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                         s_options = {{expression}};
 
-                        return JsonSerializer.Serialize(value, opt1);   
+                        return JsonSerializer.Serialize(value, opt1);
                     }
                 }
                 """);
@@ -457,14 +656,14 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                 class Program
                 {
-                    static JsonSerializerOptions s_options;    
+                    static JsonSerializerOptions s_options;
 
                     static string Serialize<T>(T value)
                     {
                         JsonSerializerOptions opt1, opt2;
                         {{expression}} = new JsonSerializerOptions();
 
-                        return JsonSerializer.Serialize(value, opt1);   
+                        return JsonSerializer.Serialize(value, opt1);
                     }
                 }
                 """);
@@ -530,6 +729,96 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         }
                     }
                 }
+                """);
+
+        [Theory]
+        [InlineData("""
+            for (int i = 0; i < values.Length; i++)
+            {
+                concatJson += JsonSerializer.Serialize(values[i], opt);
+            }
+            """)]
+        [InlineData("""
+            foreach (T value in values)
+            {
+                concatJson += JsonSerializer.Serialize(value, opt);
+            }
+            """)]
+        [InlineData("""
+            if (values.Length == 0) 
+                return concatJson;
+
+            int i = 0;
+            do
+            {
+                concatJson += JsonSerializer.Serialize(values[i++], opt);
+            }
+            while (i < values.Length);
+            """)]
+        [InlineData("""
+            int i = 0;
+            while (i < values.Length)
+            {
+                concatJson += JsonSerializer.Serialize(values[i++], opt);
+            }
+            """)]
+        public Task CS_UseNewLocalOptionsAsArgument_JsonSerializerOptions_BeforeLoop_NoWarn(string loop)
+            => VerifyCS.VerifyAnalyzerAsync($$"""
+                using System.Text.Json;
+
+                class Program
+                {
+                    static string Serialize<T>(T[] values)
+                    {
+                        JsonSerializerOptions opt = new JsonSerializerOptions();
+                        string concatJson = "";
+
+                        {{loop}}
+
+                        return concatJson;
+                    }
+                }
+                """);
+
+        [Theory]
+        [InlineData("""
+            For i = 0 To values.Length
+                concatJson += JsonSerializer.Serialize(values(i), opt)
+            Next
+            """)]
+        [InlineData("""
+            For Each value In values
+                concatJson += JsonSerializer.Serialize(value, opt)
+            Next
+            """)]
+        [InlineData("""
+            Dim i = 0
+            Do While i < values.Length
+                concatJson += JsonSerializer.Serialize(values(i), opt)
+                i = i + 1
+            Loop
+            """)]
+        [InlineData("""
+            Dim i = 0
+            Do
+                concatJson += JsonSerializer.Serialize(values(i), opt)
+                i = i + 1
+            Loop While i < values.Length
+            """)]
+        public Task VB_UseNewLocalOptionsAsArgument_JsonSerializerOptions_BeforeLoop_NoWarn(string loop)
+            => VerifyVB.VerifyAnalyzerAsync($$"""
+                Imports System.Text.Json
+
+                Class Program
+                    Shared Function Serialize(Of T)(values As T()) As String
+                        Dim opt = New JsonSerializerOptions()
+                        Dim concatJson = ""
+
+                        {{loop}}
+
+                        return concatJson
+                    End Function
+                End Class
                 """);
         #endregion
     }
