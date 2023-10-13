@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using System.CommandLine.Parsing;
 using System.Threading;
@@ -62,10 +63,8 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             }
         }
 
-        private class FormatWhitespaceHandler : CliAction
+        private class FormatWhitespaceHandler : AsynchronousCliAction
         {
-            public override int Invoke(ParseResult parseResult) => InvokeAsync(parseResult, CancellationToken.None).GetAwaiter().GetResult();
-
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {
                 var formatOptions = parseResult.ParseVerbosityOption(FormatOptions.Instance);
