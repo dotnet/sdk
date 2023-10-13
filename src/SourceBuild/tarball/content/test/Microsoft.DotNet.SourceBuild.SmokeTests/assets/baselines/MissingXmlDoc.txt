@@ -1,7 +1,6 @@
 Microsoft.AspNetCore.App.Ref/analyzers/dotnet/cs/Microsoft.AspNetCore.App.Analyzers.xml
 Microsoft.AspNetCore.App.Ref/analyzers/dotnet/cs/Microsoft.AspNetCore.App.CodeFixes.xml
 Microsoft.AspNetCore.App.Ref/analyzers/dotnet/roslyn4.0/cs/Microsoft.Extensions.Logging.Generators.xml
-Microsoft.AspNetCore.App.Ref/ref/netx.y/System.Runtime.CompilerServices.Unsafe.xml
 Microsoft.NETCore.App.Ref/analyzers/dotnet/cs/System.Text.Json.SourceGeneration.xml
 Microsoft.NETCore.App.Ref/ref/netx.y/Microsoft.VisualBasic.xml
 Microsoft.NETCore.App.Ref/ref/netx.y/mscorlib.xml
