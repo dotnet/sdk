@@ -823,7 +823,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
         <source>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized. See https://aka.ms/netsdk1083 for more information.</source>
-        <target state="needs-review-translation">NETSDK1083: 無法辨識指定的 RuntimeIdentifier '{0}'。</target>
+        <target state="translated">NETSDK1083: 無法辨識指定的 RuntimeIdentifier '{0}'。如需詳細資訊，請參閱 https://aka.ms/netsdk1083。</target>
         <note>{StrBegin="NETSDK1083: "}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierWasNotSpecified">

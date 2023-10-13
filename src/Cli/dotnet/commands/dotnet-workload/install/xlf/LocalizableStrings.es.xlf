@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
-        <target state="new">Uninstalling workload manifest {0} version {1}...</target>
+        <target state="translated">Desinstalando el manifiesto de carga de trabajo {0} versión {1}...</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
@@ -229,7 +229,7 @@
       </trans-unit>
       <trans-unit id="SdkVersionOptionNotSupported">
         <source>The --sdk-version option is no longer supported for this command.</source>
-        <target state="new">The --sdk-version option is no longer supported for this command.</target>
+        <target state="translated">La opción --sdk-version ya no es compatible con este comando.</target>
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">

@@ -89,31 +89,15 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
         // this would be a switch, but we have to support net47x where Range and Index aren't available
         if (releaseLabels.Length == 0)
         {
-            return $"{major}.{minor}";
-        }
-        else
-        {
-            var channel = releaseLabels[0];
-            if (channel == "rc" || channel == "preview")
-            {
+            case null or "rtm" or "servicing":
+                return $"{major}.{minor}";
+            case "rc" or "preview":
                 if (releaseLabels.Length > 1)
                 {
                     // Per the dotnet-docker team, the major.minor preview tag format is a fluke and the major.minor.0 form
                     // should be used for all previews going forward.
                     return $"{major}.{minor}.0-{channel}.{releaseLabels[1]}";
                 }
-                else
-                {
-                    Log.LogError(Resources.Strings.InvalidSdkPrereleaseVersion, channel);
-                    return null;
-                }
-            }
-            else if (channel == "alpha" || channel == "dev" || channel == "ci")
-            {
-                return $"{major}.{minor}-preview";
-            }
-            else
-            {
                 Log.LogError(Resources.Strings.InvalidSdkPrereleaseVersion, channel);
                 return null;
             }

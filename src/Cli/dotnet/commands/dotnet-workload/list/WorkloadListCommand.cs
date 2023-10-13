@@ -12,6 +12,7 @@ using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
+using WorkloadCollection = System.Collections.Generic.Dictionary<Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition>;
 
 namespace Microsoft.DotNet.Workloads.Workload.List
 {
@@ -55,7 +56,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             string userProfileDir1 = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
             _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(resolvedReporter,
-                _workloadListHelper.WorkloadResolver, PackageDownloader, userProfileDir1, TempDirectoryPath, _workloadListHelper.WorkloadRecordRepo, _workloadListHelper.Installer);
+                _workloadListHelper.WorkloadResolver, PackageDownloader, userProfileDir1, _workloadListHelper.WorkloadRecordRepo, _workloadListHelper.Installer);
         }
 
         public override int Execute()
@@ -66,9 +67,9 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             {
                 _workloadListHelper.CheckTargetSdkVersionIsValid();
 
-                UpdateAvailableEntry[] updateAvailable = GetUpdateAvailable(installedList);
-                ListOutput listOutput = new(installedList.Select(id => id.ToString()).ToArray(),
-                    updateAvailable);
+                var updateAvailable = GetUpdateAvailable(installedList);
+                var installed = installedList.Select(id => id.ToString()).ToArray();
+                ListOutput listOutput = new(installed, updateAvailable.ToArray());
 
                 Reporter.WriteLine(JsonSerializer.Serialize(listOutput, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
             }
@@ -105,29 +106,23 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             return 0;
         }
 
-        internal UpdateAvailableEntry[] GetUpdateAvailable(IEnumerable<WorkloadId> installedList)
+        internal IEnumerable<UpdateAvailableEntry> GetUpdateAvailable(IEnumerable<WorkloadId> installedList)
         {
-            HashSet<WorkloadId> installedWorkloads = installedList.ToHashSet();
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews).Wait();
-            var manifestsToUpdate =
-                _workloadManifestUpdater.CalculateManifestUpdates();
+            var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestUpdates();
 
-            List<UpdateAvailableEntry> updateList = new();
-            foreach ((ManifestVersionUpdate manifestUpdate, Dictionary<WorkloadId, WorkloadDefinition> workloads) in manifestsToUpdate)
+            foreach ((ManifestVersionUpdate manifestUpdate, WorkloadCollection workloads) in manifestsToUpdate)
             {
-                foreach ((WorkloadId WorkloadId, WorkloadDefinition workloadDefinition) in
-                    workloads)
+                foreach ((WorkloadId workloadId, WorkloadDefinition workloadDefinition) in workloads)
                 {
-                    if (installedWorkloads.Contains(new WorkloadId(WorkloadId.ToString())))
+                    if (installedList.Contains(workloadId))
                     {
-                        updateList.Add(new UpdateAvailableEntry(manifestUpdate.ExistingVersion.ToString(),
+                        yield return new UpdateAvailableEntry(manifestUpdate.ExistingVersion.ToString(),
                             manifestUpdate.NewVersion.ToString(),
-                            workloadDefinition.Description, WorkloadId.ToString()));
+                            workloadDefinition.Description, workloadId.ToString());
                     }
                 }
             }
-
-            return updateList.ToArray();
         }
 
         internal record ListOutput(string[] Installed, UpdateAvailableEntry[] UpdateAvailable);
