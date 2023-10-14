@@ -309,7 +309,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 await _workloadManifestInstaller.ExtractManifestAsync(packagePath, adManifestPath);
 
                 // add file that contains the advertised manifest feature band so GetAdvertisingManifestVersionAndWorkloads will use correct feature band, regardless of if rollback occurred or not
-                File.WriteAllText(Path.Combine(adManifestPath, "AdvertisedManifestFeatureBand.txt"), currentFeatureBand);
+                File.WriteAllText(Path.Combine(adManifestPath, "AdvertisedManifestFeatureBand.txt"), currentFeatureBand.ToString());
 
                 if (_displayManifestUpdates)
                 {
@@ -352,7 +352,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 return null;
             }
 
-            using (FileStream fsSource = new(manifestPath, FileMode.Open, FileAccess.Read))
+            using FileStream fsSource = new(manifestPath, FileMode.Open, FileAccess.Read);
+            var manifest = WorkloadManifestReader.ReadWorkloadManifest(manifestId.ToString(), fsSource, manifestPath);
+            // we need to know the feature band of the advertised manifest (read it from the AdvertisedManifestFeatureBand.txt file)
+            // if we don't find the file then use the current feature band
+            var adManifestFeatureBandPath = Path.Combine(GetAdvertisingManifestPath(_sdkFeatureBand, manifestId), "AdvertisedManifestFeatureBand.txt");
+
+            SdkFeatureBand adManifestFeatureBand = _sdkFeatureBand;
+            if (File.Exists(adManifestFeatureBandPath))
             {
                 adManifestFeatureBand = new SdkFeatureBand(File.ReadAllText(adManifestFeatureBandPath));
             }
@@ -445,14 +452,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private static string GetAdvertisingWorkloadsFilePath(string userProfileDir, SdkFeatureBand featureBand) => Path.Combine(userProfileDir, $".workloadAdvertisingUpdates{featureBand}");
 
-        private async Task<string> GetOnlinePackagePath(SdkFeatureBand sdkFeatureBand, ManifestId manifestId, bool includePreviews)
-        {
-            string packagePath = await _nugetPackageDownloader.DownloadPackageAsync(
-                _workloadManifestInstaller.GetManifestPackageId(manifestId, sdkFeatureBand),
-                packageSourceLocation: _packageSourceLocation,
-                includePreview: includePreviews);
-        }
         private string GetAdvertisingManifestPath(SdkFeatureBand featureBand, ManifestId manifestId) => Path.Combine(_userProfileDir, "sdk-advertising", featureBand.ToString(), manifestId.ToString());
+
         private record ManifestVersionWithBand(ManifestVersion Version, SdkFeatureBand Band);
     }
 }

@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installationRepo = new MockInstallationRecordRepository();
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, userProfileDir: Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller());
 
-            var manifestUpdates = manifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate);
+            var manifestUpdates = manifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates);
         }
 
