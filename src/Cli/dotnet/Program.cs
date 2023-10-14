@@ -166,9 +166,12 @@ namespace Microsoft.DotNet.Cli
                     bool telemetryOptout = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
                     bool addGlobalToolsToPath = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_ADD_GLOBAL_TOOLS_TO_PATH, defaultValue: true);
                     bool nologo = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_NOLOGO, defaultValue: false);
-                    bool skipWorkloadIntegrityCheck = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK,
-                        // Default the workload integrity check skip to true if the command is being ran in CI. Otherwise, false.
-                        defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
+
+                    // Default the workload integrity check skip to true if the command is being ran in CI,
+                    // or the command is on Linux and not running as sudo since sudo is required for updating the workload manifests.
+                    bool skipWicDefault = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment() ||
+                        (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && !SudoEnvironmentDirectoryOverride.IsRunningUnderSudo());
+                    bool skipWorkloadIntegrityCheck = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK, defaultValue: skipWicDefault);
 
                     ReportDotnetHomeUsage(environmentProvider);
 

@@ -14,18 +14,9 @@ namespace Microsoft.DotNet.Cli
     public static class SudoEnvironmentDirectoryOverride
     {
         /// <summary>
-        /// Not for security use. Detect if command is running under sudo
-        /// via if SUDO_UID being set.
+        /// Not for security use. Detect if command is running under sudo via if SUDO_UID being set.
         /// </summary>
-        public static bool IsRunningUnderSudo()
-        {
-            if (!string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SUDO_UID")))
-            {
-                return true;
-            }
-
-            return false;
-        }
+        public static bool IsRunningUnderSudo() => !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("SUDO_UID"));
 
         public static void OverrideEnvironmentVariableToTmp(ParseResult parseResult)
         {
