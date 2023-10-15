@@ -16,7 +16,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// <summary>
     /// CA2007: <inheritdoc cref="DoNotDirectlyAwaitATaskTitle"/>
     /// </summary>
-    public abstract class DoNotDirectlyAwaitATaskAnalyzer : DiagnosticAnalyzer
+    [DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+    public sealed class DoNotDirectlyAwaitATaskAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA2007";
 
@@ -81,17 +82,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                         if (configuredAsyncEnumerable is not null)
                         {
-                            RegisterLanguageSpecificChecks(context, configuredAsyncEnumerable);
+                            context.RegisterOperationAction(ctx => AnalyzeAwaitForEachLoopOperation(ctx, configuredAsyncEnumerable), OperationKind.Loop);
                         }
                     }
                 });
             });
         }
 
-#pragma warning disable RS1012
-        protected virtual void RegisterLanguageSpecificChecks(OperationBlockStartAnalysisContext context, INamedTypeSymbol configuredAsyncEnumerable)
-#pragma warning restore RS1012
+        private static void AnalyzeAwaitForEachLoopOperation(OperationAnalysisContext context, INamedTypeSymbol configuredAsyncEnumerable)
         {
+            if (context.Operation is IForEachLoopOperation { IsAsynchronous: true, Collection.Type: not null } forEachOperation
+                && !forEachOperation.Collection.Type.OriginalDefinition.Equals(configuredAsyncEnumerable, SymbolEqualityComparer.Default))
+            {
+                context.ReportDiagnostic(forEachOperation.Collection.CreateDiagnostic(Rule));
+            }
         }
 
         private static void AnalyzeAwaitOperation(OperationAnalysisContext context, ImmutableArray<INamedTypeSymbol> taskTypes)

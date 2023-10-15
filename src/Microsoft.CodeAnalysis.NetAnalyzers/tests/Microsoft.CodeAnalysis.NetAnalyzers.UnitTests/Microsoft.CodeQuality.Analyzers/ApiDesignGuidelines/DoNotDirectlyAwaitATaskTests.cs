@@ -7,10 +7,10 @@ using Test.Utilities;
 using Xunit;
 using Microsoft.CodeAnalysis.CSharp;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpDoNotDirectlyAwaitATask,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskFixer>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicDoNotDirectlyAwaitATask,
+    Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests

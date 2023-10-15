@@ -436,25 +436,6 @@
             ]
           }
         },
-        "CA2007": {
-          "id": "CA2007",
-          "shortDescription": "Consider calling ConfigureAwait on the awaited task",
-          "fullDescription": "When an asynchronous method awaits a Task directly, continuation occurs in the same thread that created the task. Consider calling Task.ConfigureAwait(Boolean) to signal your intention for continuation. Call ConfigureAwait(false) on the task to schedule continuations to the thread pool, thereby avoiding a deadlock on the UI thread. Passing false is a good option for app-independent libraries. Calling ConfigureAwait(true) on the task has the same behavior as not explicitly calling ConfigureAwait. By explicitly calling this method, you're letting readers know you intentionally want to perform the continuation on the original synchronization context.",
-          "defaultLevel": "warning",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007",
-          "properties": {
-            "category": "Reliability",
-            "isEnabledByDefault": false,
-            "typeName": "CSharpDoNotDirectlyAwaitATask",
-            "languages": [
-              "C#"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
         "CA2014": {
           "id": "CA2014",
           "shortDescription": "Do not use stackalloc in loops",
@@ -3426,6 +3407,26 @@
             ],
             "tags": [
               "PortedFromFxCop",
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2007": {
+          "id": "CA2007",
+          "shortDescription": "Consider calling ConfigureAwait on the awaited task",
+          "fullDescription": "When an asynchronous method awaits a Task directly, continuation occurs in the same thread that created the task. Consider calling Task.ConfigureAwait(Boolean) to signal your intention for continuation. Call ConfigureAwait(false) on the task to schedule continuations to the thread pool, thereby avoiding a deadlock on the UI thread. Passing false is a good option for app-independent libraries. Calling ConfigureAwait(true) on the task has the same behavior as not explicitly calling ConfigureAwait. By explicitly calling this method, you're letting readers know you intentionally want to perform the continuation on the original synchronization context.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": false,
+            "typeName": "DoNotDirectlyAwaitATaskAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
               "Telemetry",
               "EnabledRuleInAggressiveMode"
             ]
@@ -6590,25 +6591,6 @@
             "category": "Performance",
             "isEnabledByDefault": false,
             "typeName": "BasicUseStringMethodCharOverloadWithSingleCharacters",
-            "languages": [
-              "Visual Basic"
-            ],
-            "tags": [
-              "Telemetry",
-              "EnabledRuleInAggressiveMode"
-            ]
-          }
-        },
-        "CA2007": {
-          "id": "CA2007",
-          "shortDescription": "Consider calling ConfigureAwait on the awaited task",
-          "fullDescription": "When an asynchronous method awaits a Task directly, continuation occurs in the same thread that created the task. Consider calling Task.ConfigureAwait(Boolean) to signal your intention for continuation. Call ConfigureAwait(false) on the task to schedule continuations to the thread pool, thereby avoiding a deadlock on the UI thread. Passing false is a good option for app-independent libraries. Calling ConfigureAwait(true) on the task has the same behavior as not explicitly calling ConfigureAwait. By explicitly calling this method, you're letting readers know you intentionally want to perform the continuation on the original synchronization context.",
-          "defaultLevel": "warning",
-          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007",
-          "properties": {
-            "category": "Reliability",
-            "isEnabledByDefault": false,
-            "typeName": "BasicDoNotDirectlyAwaitATask",
             "languages": [
               "Visual Basic"
             ],
