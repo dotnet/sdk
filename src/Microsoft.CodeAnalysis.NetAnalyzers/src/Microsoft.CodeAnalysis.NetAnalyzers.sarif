@@ -126,6 +126,25 @@
             ]
           }
         },
+        "CA1515": {
+          "id": "CA1515",
+          "shortDescription": "Consider making public types internal",
+          "fullDescription": "Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1515",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": false,
+            "typeName": "CSharpMakeTypesInternal",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1802": {
           "id": "CA1802",
           "shortDescription": "Use literals where appropriate",
@@ -203,8 +222,7 @@
             "tags": [
               "PortedFromFxCop",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
-              "CompilationEnd"
+              "EnabledRuleInAggressiveMode"
             ]
           }
         },
@@ -3032,7 +3050,7 @@
         "CA1846": {
           "id": "CA1846",
           "shortDescription": "Prefer 'AsSpan' over 'Substring'",
-          "fullDescription": "'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.",
+          "fullDescription": "'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.",
           "defaultLevel": "note",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846",
           "properties": {
@@ -4425,6 +4443,26 @@
             "category": "Usage",
             "isEnabledByDefault": true,
             "typeName": "DoNotUseConfigureAwaitWithSuppressThrowing",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2262": {
+          "id": "CA2262",
+          "shortDescription": "Set 'MaxResponseHeadersLength' properly",
+          "fullDescription": "The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2262",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectly",
             "languages": [
               "C#",
               "Visual Basic"
@@ -6327,6 +6365,25 @@
             ]
           }
         },
+        "CA1515": {
+          "id": "CA1515",
+          "shortDescription": "Consider making public types internal",
+          "fullDescription": "Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1515",
+          "properties": {
+            "category": "Maintainability",
+            "isEnabledByDefault": false,
+            "typeName": "BasicMakeTypesInternal",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA1802": {
           "id": "CA1802",
           "shortDescription": "Use literals where appropriate",
@@ -6404,8 +6461,7 @@
             "tags": [
               "PortedFromFxCop",
               "Telemetry",
-              "EnabledRuleInAggressiveMode",
-              "CompilationEnd"
+              "EnabledRuleInAggressiveMode"
             ]
           }
         },

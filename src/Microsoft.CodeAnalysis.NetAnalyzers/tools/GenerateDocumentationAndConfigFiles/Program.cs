@@ -251,9 +251,11 @@ namespace GenerateDocumentationAndConfigFiles
                 var disableNetAnalyzersImport = getDisableNetAnalyzersImport();
 
                 var fileContents =
-$@"<Project>
-  {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsAsErrors()}{getCompilerVisibleProperties()}
-</Project>";
+                    $"""
+                    <Project>
+                      {disableNetAnalyzersImport}{getCodeAnalysisTreatWarningsAsErrors()}{getCompilerVisibleProperties()}
+                    </Project>
+                    """;
                 var directory = Directory.CreateDirectory(propsFileDir);
                 var fileWithPath = Path.Combine(directory.FullName, propsFileName);
 
@@ -266,16 +268,18 @@ $@"<Project>
 
                     fileWithPath = Path.Combine(directory.FullName, propsFileToDisableNetAnalyzersInNuGetPackageName);
                     fileContents =
-$@"<Project>
-  <!-- 
-    PropertyGroup to disable built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
-    This props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
-  -->
-  <PropertyGroup>
-    <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <{NetAnalyzersNugetAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersNugetAssemblyVersionPropertyName}>
-  </PropertyGroup>
-</Project>";
+                        $"""
+                        <Project>
+                          <!-- 
+                            PropertyGroup to disable built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
+                            This props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
+                          -->
+                          <PropertyGroup>
+                            <EnableNETAnalyzers>false</EnableNETAnalyzers>
+                            <{NetAnalyzersNugetAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersNugetAssemblyVersionPropertyName}>
+                          </PropertyGroup>
+                        </Project>
+                        """;
                     // This doesn't need validation as the generated file is part of artifacts.
                     File.WriteAllText(fileWithPath, fileContents);
                 }
@@ -288,21 +292,23 @@ $@"<Project>
                     {
                         Debug.Assert(analyzerPackageName is NetAnalyzersPackageName or TextAnalyzersPackageName);
 
-                        return $@"
-  <!-- 
-    This import includes an additional props file that disables built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
-    This additional props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
-  -->
-  <Import Project=""{propsFileToDisableNetAnalyzersInNuGetPackageName}"" Condition=""Exists('{propsFileToDisableNetAnalyzersInNuGetPackageName}')"" />
+                        return $"""
 
-  <!--
-    PropertyGroup to set the NetAnalyzers version installed in the SDK.
-    We rely on the additional props file '{propsFileToDisableNetAnalyzersInNuGetPackageName}' not being present in the SDK.
-  -->
-  <PropertyGroup Condition=""!Exists('{propsFileToDisableNetAnalyzersInNuGetPackageName}')"">
-    <{NetAnalyzersSDKAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersSDKAssemblyVersionPropertyName}>
-  </PropertyGroup>
-";
+                              <!-- 
+                                This import includes an additional props file that disables built-in analyzers from .NET SDK that have the identical CA rules to those implemented in this package.
+                                This additional props file should only be present in the analyzer NuGet package, it should **not** be inserted into the .NET SDK.
+                              -->
+                              <Import Project="{propsFileToDisableNetAnalyzersInNuGetPackageName}" Condition="Exists('{propsFileToDisableNetAnalyzersInNuGetPackageName}')" />
+
+                              <!--
+                                PropertyGroup to set the NetAnalyzers version installed in the SDK.
+                                We rely on the additional props file '{propsFileToDisableNetAnalyzersInNuGetPackageName}' not being present in the SDK.
+                              -->
+                              <PropertyGroup Condition="!Exists('{propsFileToDisableNetAnalyzersInNuGetPackageName}')">
+                                <{NetAnalyzersSDKAssemblyVersionPropertyName}>{analyzerVersion}</{NetAnalyzersSDKAssemblyVersionPropertyName}>
+                              </PropertyGroup>
+
+                            """;
                     }
 
                     Debug.Assert(!containsPortedFxCopRules);
@@ -313,34 +319,38 @@ $@"<Project>
             string getCodeAnalysisTreatWarningsAsErrors()
             {
                 var allRuleIds = string.Join(';', allRulesById.Keys);
-                return $@"
-  <!-- 
-    This property group handles 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
-  -->
-  <PropertyGroup>
-    <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
-    <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
-    <WarningsNotAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
-  </PropertyGroup>";
+                return $"""
+
+                      <!-- 
+                        This property group handles 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
+                      -->
+                      <PropertyGroup>
+                        <CodeAnalysisRuleIds>{allRuleIds}</CodeAnalysisRuleIds>
+                        <EffectiveCodeAnalysisTreatWarningsAsErrors Condition="'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+                        <WarningsNotAsErrors Condition="'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+                      </PropertyGroup>
+                    """;
             }
 
             string getCompilerVisibleProperties()
             {
                 return analyzerPackageName switch
                 {
-                    ResxSourceGeneratorPackageName => @"
-  <ItemGroup>
-    <CompilerVisibleProperty Include=""RootNamespace"" />
-    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""WithCulture"" />
-    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""GenerateSource"" />
-    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""RelativeDir"" />
-    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""OmitGetResourceString"" />
-    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""AsConstants"" />
-    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""IncludeDefaultValues"" />
-    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""EmitFormatMethods"" />
-    <CompilerVisibleItemMetadata Include=""AdditionalFiles"" MetadataName=""Public"" />
-  </ItemGroup>
-",
+                    ResxSourceGeneratorPackageName => """
+
+                      <ItemGroup>
+                        <CompilerVisibleProperty Include="RootNamespace" />
+                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="WithCulture" />
+                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="GenerateSource" />
+                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="RelativeDir" />
+                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="OmitGetResourceString" />
+                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="AsConstants" />
+                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="IncludeDefaultValues" />
+                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="EmitFormatMethods" />
+                        <CompilerVisibleItemMetadata Include="AdditionalFiles" MetadataName="Public" />
+                      </ItemGroup>
+
+                    """,
                     _ => "",
                 };
             }
@@ -582,11 +592,13 @@ $@"<Project>
                 var fileWithPath = Path.Combine(directory.FullName, "RulesMissingDocumentation.md");
 
                 var builder = new StringBuilder();
-                builder.Append(@"# Rules without documentation
+                builder.Append("""
+                    # Rules without documentation
 
-Rule ID | Missing Help Link | Title |
---------|-------------------|-------|
-");
+                    Rule ID | Missing Help Link | Title |
+                    --------|-------------------|-------|
+
+                    """);
                 var actualContent = Array.Empty<string>();
                 if (validateOnly)
                 {
@@ -1403,8 +1415,10 @@ Rule ID | Missing Help Link | Title |
             }
 
             var fileContents =
-$@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificContents(packageName)}
-</Project>";
+                $"""
+                <Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificContents(packageName)}
+                </Project>
+                """;
             var directory = Directory.CreateDirectory(targetsFileDir);
             var fileWithPath = Path.Combine(directory.FullName, targetsFileName);
             File.WriteAllText(fileWithPath, fileContents);
@@ -1457,36 +1471,38 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
                     packageName, packageVersionPropName, category, analysisLevelPropName,
                     analysisLevelPrefixPropName, analysisLevelSuffixPropName, effectiveAnalysisLevelPropName);
 
-                return $@"
-  <Target Name=""AddGlobalAnalyzerConfigForPackage_{trimmedPackageName}"" BeforeTargets=""CoreCompile"" {afterTargets}Condition=""{targetCondition}"">
-    <!-- PropertyGroup to compute global analyzer config file to be used -->
-    <PropertyGroup>{propertyStringForSettingDefaultPropertyValues}
-      <!-- Set the default analysis mode, if not set by the user -->
-      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>$({analysisLevelSuffixPropName})</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
-      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">$({analysisModePropName})</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
-      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllEnabledByDefault'"">{nameof(AnalysisMode.All)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
-      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllDisabledByDefault'"">{nameof(AnalysisMode.None)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
-      <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''"">{nameof(AnalysisMode.Default)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+                return $"""
 
-      <!-- Default 'EffectiveCodeAnalysisTreatWarningsAsErrors' to 'CodeAnalysisTreatWarningsAsErrors' for escalating relevant code analysis warnings to errors. -->
-      <!-- We use a separate property to allow users to override 'CodeAnalysisTreatWarningsAsErrors' implementation from .NET7 or older SDK, which had a known issue: https://github.com/dotnet/roslyn-analyzers/issues/6281 -->
-      <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
-      <!-- Choose GlobalAnalyzerConfig file with '_warnaserror' suffix if 'EffectiveCodeAnalysisTreatWarningsAsErrors' is 'true'. -->
-      <_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'true'"">_warnaserror</_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix>
+                      <Target Name="AddGlobalAnalyzerConfigForPackage_{trimmedPackageName}" BeforeTargets="CoreCompile" {afterTargets}Condition="{targetCondition}">
+                        <!-- PropertyGroup to compute global analyzer config file to be used -->
+                        <PropertyGroup>{propertyStringForSettingDefaultPropertyValues}
+                          <!-- Set the default analysis mode, if not set by the user -->
+                          <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>$({analysisLevelSuffixPropName})</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+                          <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition="'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''">$({analysisModePropName})</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+                          <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition="'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllEnabledByDefault'">{nameof(AnalysisMode.All)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+                          <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition="'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == 'AllDisabledByDefault'">{nameof(AnalysisMode.None)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
+                          <_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName} Condition="'$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})' == ''">{nameof(AnalysisMode.Default)}</_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName}>
 
-      <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
-      <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition=""'$({packageVersionPropName})' != ''"">{analysisLevelPropName}_$({packageVersionPropName}.Replace(""."",""_""))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix).globalconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
-      <_GlobalAnalyzerConfigFileName_{trimmedPackageName}>$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}.ToLowerInvariant())</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
+                          <!-- Default 'EffectiveCodeAnalysisTreatWarningsAsErrors' to 'CodeAnalysisTreatWarningsAsErrors' for escalating relevant code analysis warnings to errors. -->
+                          <!-- We use a separate property to allow users to override 'CodeAnalysisTreatWarningsAsErrors' implementation from .NET7 or older SDK, which had a known issue: https://github.com/dotnet/roslyn-analyzers/issues/6281 -->
+                          <EffectiveCodeAnalysisTreatWarningsAsErrors Condition="'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+                          <!-- Choose GlobalAnalyzerConfig file with '_warnaserror' suffix if 'EffectiveCodeAnalysisTreatWarningsAsErrors' is 'true'. -->
+                          <_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix Condition="'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'true'">_warnaserror</_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix>
 
-      <_GlobalAnalyzerConfigDir_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigDir_{trimmedPackageName})' == ''"">$(MSBuildThisFileDirectory)config</_GlobalAnalyzerConfigDir_{trimmedPackageName}>
-      <_GlobalAnalyzerConfigFile_{trimmedPackageName} Condition=""'$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})' != ''"">$(_GlobalAnalyzerConfigDir_{trimmedPackageName})\$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})</_GlobalAnalyzerConfigFile_{trimmedPackageName}>
-    </PropertyGroup>
+                          <!-- GlobalAnalyzerConfig file name based on user specified package version '{packageVersionPropName}', if any. We replace '.' with '_' to map the version string to file name suffix. -->
+                          <_GlobalAnalyzerConfigFileName_{trimmedPackageName} Condition="'$({packageVersionPropName})' != ''">{analysisLevelPropName}_$({packageVersionPropName}.Replace(".","_"))_$(_GlobalAnalyzerConfigAnalysisMode_{trimmedPackageName})$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}_WarnAsErrorSuffix).globalconfig</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
+                          <_GlobalAnalyzerConfigFileName_{trimmedPackageName}>$(_GlobalAnalyzerConfigFileName_{trimmedPackageName}.ToLowerInvariant())</_GlobalAnalyzerConfigFileName_{trimmedPackageName}>
 
-    <ItemGroup Condition=""Exists('$(_GlobalAnalyzerConfigFile_{trimmedPackageName})')"">
-      <EditorConfigFiles Include=""$(_GlobalAnalyzerConfigFile_{trimmedPackageName})"" />
-    </ItemGroup>
-  </Target>
-";
+                          <_GlobalAnalyzerConfigDir_{trimmedPackageName} Condition="'$(_GlobalAnalyzerConfigDir_{trimmedPackageName})' == ''">$(MSBuildThisFileDirectory)config</_GlobalAnalyzerConfigDir_{trimmedPackageName}>
+                          <_GlobalAnalyzerConfigFile_{trimmedPackageName} Condition="'$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})' != ''">$(_GlobalAnalyzerConfigDir_{trimmedPackageName})\$(_GlobalAnalyzerConfigFileName_{trimmedPackageName})</_GlobalAnalyzerConfigFile_{trimmedPackageName}>
+                        </PropertyGroup>
+
+                        <ItemGroup Condition="Exists('$(_GlobalAnalyzerConfigFile_{trimmedPackageName})')">
+                          <EditorConfigFiles Include="$(_GlobalAnalyzerConfigFile_{trimmedPackageName})" />
+                        </ItemGroup>
+                      </Target>
+
+                    """;
 
                 static string GetPropertyStringForSettingDefaultPropertyValues(
                     string packageName,
@@ -1507,39 +1523,43 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
                             // category-specific AnalysisLevel property values. In future, we should consider removing similar logic from
                             // SDK targets for core AnalysisLevel and instead generalize this logic.
 
-                            propertyStr += $@"
-      <!-- Default '{analysisLevelPropName}' to the core 'AnalysisLevel' and compute '{analysisLevelPrefixPropName}', '{analysisLevelSuffixPropName}' and '{effectiveAnalysisLevelPropName}' -->
-      <{analysisLevelPropName} Condition=""'$({analysisLevelPropName})' == ''"">$(AnalysisLevel)</{analysisLevelPropName}>
+                            propertyStr += $"""
 
-      <!-- {analysisLevelPropName} can also contain compound values with a prefix and suffix separated by a '-' character.
-           The prefix indicates the core AnalysisLevel for '{category}' rules and the suffix indicates the bucket of
-           rules to enable for '{category}' rules by default. For example, some valid compound values for {analysisLevelPropName} are:
-             1. '5-all' - Indicates core {analysisLevelPropName} = '5' with 'all' the '{category}' rules enabled by default.
-             2. 'latest-none' - Indicates core {analysisLevelPropName} = 'latest' with 'none' of the '{category}' rules enabled by default.
-           {analysisLevelPrefixPropName} is used to set the {effectiveAnalysisLevelPropName} below.
-           {analysisLevelSuffixPropName} is used to map to the correct global config.
-      -->
-      <{analysisLevelPrefixPropName} Condition=""$({analysisLevelPropName}.Contains('-'))"">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '-(.)*', ''))</{analysisLevelPrefixPropName}>
-      <{analysisLevelSuffixPropName} Condition=""'$({analysisLevelPrefixPropName})' != ''"">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '$({analysisLevelPrefixPropName})-', ''))</{analysisLevelSuffixPropName}>
+                                      <!-- Default '{analysisLevelPropName}' to the core 'AnalysisLevel' and compute '{analysisLevelPrefixPropName}', '{analysisLevelSuffixPropName}' and '{effectiveAnalysisLevelPropName}' -->
+                                      <{analysisLevelPropName} Condition="'$({analysisLevelPropName})' == ''">$(AnalysisLevel)</{analysisLevelPropName}>
 
-      <!-- {effectiveAnalysisLevelPropName} is used to differentiate from user specified strings (such as 'none')
-           and an implied numerical option (such as '4') -->
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'"">$(_NoneAnalysisLevel)</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'"">$(_LatestAnalysisLevel)</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'"">$(_PreviewAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+                                      <!-- {analysisLevelPropName} can also contain compound values with a prefix and suffix separated by a '-' character.
+                                           The prefix indicates the core AnalysisLevel for '{category}' rules and the suffix indicates the bucket of
+                                           rules to enable for '{category}' rules by default. For example, some valid compound values for {analysisLevelPropName} are:
+                                             1. '5-all' - Indicates core {analysisLevelPropName} = '5' with 'all' the '{category}' rules enabled by default.
+                                             2. 'latest-none' - Indicates core {analysisLevelPropName} = 'latest' with 'none' of the '{category}' rules enabled by default.
+                                           {analysisLevelPrefixPropName} is used to set the {effectiveAnalysisLevelPropName} below.
+                                           {analysisLevelSuffixPropName} is used to map to the correct global config.
+                                      -->
+                                      <{analysisLevelPrefixPropName} Condition="$({analysisLevelPropName}.Contains('-'))">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '-(.)*', ''))</{analysisLevelPrefixPropName}>
+                                      <{analysisLevelSuffixPropName} Condition="'$({analysisLevelPrefixPropName})' != ''">$([System.Text.RegularExpressions.Regex]::Replace($({analysisLevelPropName}), '$({analysisLevelPrefixPropName})-', ''))</{analysisLevelSuffixPropName}>
 
-      <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
-      <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And
-                                         '$({analysisLevelPrefixPropName})' != ''"">$({analysisLevelPrefixPropName})</{effectiveAnalysisLevelPropName}>
-      <{effectiveAnalysisLevelPropName} Condition=""'$({effectiveAnalysisLevelPropName})' == '' And
-                                         '$({analysisLevelPropName})' != ''"">$({analysisLevelPropName})</{effectiveAnalysisLevelPropName}>
-";
+                                      <!-- {effectiveAnalysisLevelPropName} is used to differentiate from user specified strings (such as 'none')
+                                           and an implied numerical option (such as '4') -->
+                                      <{effectiveAnalysisLevelPropName} Condition="'$({analysisLevelPropName})' == 'none' or '$({analysisLevelPrefixPropName})' == 'none'">$(_NoneAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+                                      <{effectiveAnalysisLevelPropName} Condition="'$({analysisLevelPropName})' == 'latest' or '$({analysisLevelPrefixPropName})' == 'latest'">$(_LatestAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+                                      <{effectiveAnalysisLevelPropName} Condition="'$({analysisLevelPropName})' == 'preview' or '$({analysisLevelPrefixPropName})' == 'preview'">$(_PreviewAnalysisLevel)</{effectiveAnalysisLevelPropName}>
+
+                                      <!-- Set {effectiveAnalysisLevelPropName} to the value of {analysisLevelPropName} if it is a version number -->
+                                      <{effectiveAnalysisLevelPropName} Condition="'$({effectiveAnalysisLevelPropName})' == '' And
+                                                                         '$({analysisLevelPrefixPropName})' != ''">$({analysisLevelPrefixPropName})</{effectiveAnalysisLevelPropName}>
+                                      <{effectiveAnalysisLevelPropName} Condition="'$({effectiveAnalysisLevelPropName})' == '' And
+                                                                         '$({analysisLevelPropName})' != ''">$({analysisLevelPropName})</{effectiveAnalysisLevelPropName}>
+
+                                """;
                         }
 
-                        propertyStr += $@"
-      <!-- Default '{packageVersionPropName}' to '{effectiveAnalysisLevelPropName}' with trimmed trailing '.0' -->
-      <{packageVersionPropName} Condition=""'$({packageVersionPropName})' == '' and $({effectiveAnalysisLevelPropName}) != ''"">$([System.Text.RegularExpressions.Regex]::Replace($({effectiveAnalysisLevelPropName}), '(.0)*$', ''))</{packageVersionPropName}>
-";
+                        propertyStr += $"""
+
+                                  <!-- Default '{packageVersionPropName}' to '{effectiveAnalysisLevelPropName}' with trimmed trailing '.0' -->
+                                  <{packageVersionPropName} Condition="'$({packageVersionPropName})' == '' and $({effectiveAnalysisLevelPropName}) != ''">$([System.Text.RegularExpressions.Regex]::Replace($({effectiveAnalysisLevelPropName}), '(.0)*$', ''))</{packageVersionPropName}>
+
+                            """;
                         return propertyStr;
                     }
 
@@ -1570,9 +1590,11 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
                 static void AddItemGroupForCompilerVisibleProperties(List<string> compilerVisibleProperties, StringBuilder builder)
                 {
-                    builder.AppendLine($@"
-  <!-- MSBuild properties to thread to the analyzers as options --> 
-  <ItemGroup>");
+                    builder.AppendLine($"""
+
+                          <!-- MSBuild properties to thread to the analyzers as options --> 
+                          <ItemGroup>
+                        """);
                     foreach (var compilerVisibleProperty in compilerVisibleProperties)
                     {
                         builder.AppendLine($@"    <CompilerVisibleProperty Include=""{compilerVisibleProperty}"" />");
@@ -1588,10 +1610,12 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
                     // - Key: Item name prefixed with an '_' and suffixed with a 'List' to reduce chances of conflicts with any existing project property.
                     // - Value: Concatenated item metadata values, separated by a ',' character. See https://github.com/dotnet/sdk/issues/12706#issuecomment-668219422 for details.
 
-                    builder.Append($@"
-  <!-- MSBuild item metadata to thread to the analyzers as options -->
-  <PropertyGroup>
-");
+                    builder.Append($"""
+
+                          <!-- MSBuild item metadata to thread to the analyzers as options -->
+                          <PropertyGroup>
+
+                        """);
                     var compilerVisibleProperties = new List<string>();
                     foreach (var field in typeof(MSBuildItemOptionNames).GetFields())
                     {
@@ -1612,90 +1636,104 @@ $@"<Project>{GetCommonContents(packageName, categories)}{GetPackageSpecificConte
 
             static string GetCodeAnalysisTreatWarningsAsErrorsTargetContents()
             {
-                return $@"
-  <!--
-    Design-time target to handle 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
-    Note that a similar 'WarningsNotAsErrors' property group is present in the generated props file to ensure this functionality on command line builds.
-  -->
-  <Target Name=""_CodeAnalysisTreatWarningsAsErrors"" BeforeTargets=""CoreCompile"" Condition=""'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'"">
-    <PropertyGroup>
-      <EffectiveCodeAnalysisTreatWarningsAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''"">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
-      <WarningsNotAsErrors Condition=""'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'"">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
-    </PropertyGroup>
-  </Target>
-";
+                return $"""
+
+                      <!--
+                        Design-time target to handle 'CodeAnalysisTreatWarningsAsErrors = false' for the CA rule ids implemented in this package.
+                        Note that a similar 'WarningsNotAsErrors' property group is present in the generated props file to ensure this functionality on command line builds.
+                      -->
+                      <Target Name="_CodeAnalysisTreatWarningsAsErrors" BeforeTargets="CoreCompile" Condition="'$(DesignTimeBuild)' == 'true' OR '$(BuildingProject)' != 'true'">
+                        <PropertyGroup>
+                          <EffectiveCodeAnalysisTreatWarningsAsErrors Condition="'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == ''">$(CodeAnalysisTreatWarningsAsErrors)</EffectiveCodeAnalysisTreatWarningsAsErrors>
+                          <WarningsNotAsErrors Condition="'$(EffectiveCodeAnalysisTreatWarningsAsErrors)' == 'false' and '$(TreatWarningsAsErrors)' == 'true'">$(WarningsNotAsErrors);$(CodeAnalysisRuleIds)</WarningsNotAsErrors>
+                        </PropertyGroup>
+                      </Target>
+
+                    """;
             }
 
-            const string AddAllResxFilesAsAdditionalFilesTarget = @"  <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
-  <Target Name=""AddAllResxFilesAsAdditionalFiles"" BeforeTargets=""GenerateMSBuildEditorConfigFileCore;CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'"">
-    <ItemGroup>
-      <EmbeddedResourceWithResxExtension Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx'"" />
-      <AdditionalFiles Include=""@(EmbeddedResourceWithResxExtension)"" />
-    </ItemGroup>
-  </Target>";
+            const string AddAllResxFilesAsAdditionalFilesTarget = """
+                  <!-- Target to add all 'EmbeddedResource' files with '.resx' extension as analyzer additional files -->
+                  <Target Name="AddAllResxFilesAsAdditionalFiles" DependsOnTargets="PrepareResourceNames" BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile" Condition="'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' != 'true'">
+                    <ItemGroup>
+                      <EmbeddedResourceWithResxExtension Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.resx'" />
+                      <AdditionalFiles Include="@(EmbeddedResourceWithResxExtension)" />
+                    </ItemGroup>
+                  </Target>
+                """;
 
             static string GetPackageSpecificContents(string packageName)
                 => packageName switch
                 {
-                    CodeAnalysisAnalyzersPackageName => $@"
-{AddAllResxFilesAsAdditionalFilesTarget}
+                    CodeAnalysisAnalyzersPackageName => $"""
 
-  <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
-  <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Shipped.md')"" >
-	<AdditionalFiles Include=""AnalyzerReleases.Shipped.md"" />
-  </ItemGroup>
-  <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Unshipped.md')"" >
-	<AdditionalFiles Include=""AnalyzerReleases.Unshipped.md"" />
-  </ItemGroup>",
-                    PublicApiAnalyzersPackageName => @"
+                    {AddAllResxFilesAsAdditionalFilesTarget}
 
-  <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
-  <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt')"" >
-	<AdditionalFiles Include=""PublicAPI.Shipped.txt"" />
-  </ItemGroup>
-  <ItemGroup Condition=""Exists('$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt')"" >
-	<AdditionalFiles Include=""PublicAPI.Unshipped.txt"" />
-  </ItemGroup>",
-                    PerformanceSensitiveAnalyzersPackageName => @"
-  <PropertyGroup>
-    <GeneratePerformanceSensitiveAttribute Condition=""'$(GeneratePerformanceSensitiveAttribute)' == ''"">true</GeneratePerformanceSensitiveAttribute>
-    <PerformanceSensitiveAttributePath Condition=""'$(PerformanceSensitiveAttributePath)' == ''"">$(MSBuildThisFileDirectory)PerformanceSensitiveAttribute$(DefaultLanguageSourceExtension)</PerformanceSensitiveAttributePath>
-  </PropertyGroup>
+                      <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
+                      <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Shipped.md')" >
+                    	<AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+                      </ItemGroup>
+                      <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\AnalyzerReleases.Unshipped.md')" >
+                    	<AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+                      </ItemGroup>
+                    """,
+                    PublicApiAnalyzersPackageName => """
 
-  <ItemGroup Condition=""'$(GeneratePerformanceSensitiveAttribute)' == 'true' and Exists($(PerformanceSensitiveAttributePath))"">
-    <Compile Include=""$(PerformanceSensitiveAttributePath)"" Visible=""false"" />
 
-    <!-- Make sure the source file is embedded in PDB to support Source Link -->
-    <EmbeddedFiles Condition=""'$(DebugType)' != 'none'"" Include=""$(PerformanceSensitiveAttributePath)"" />
-  </ItemGroup>",
-                    NetAnalyzersPackageName => $@"
-  <!-- Target to report a warning when SDK NetAnalyzers version is higher than the referenced NuGet NetAnalyzers version -->
-  <Target Name=""_ReportUpgradeNetAnalyzersNuGetWarning"" BeforeTargets=""CoreCompile"" Condition=""'$(_SkipUpgradeNetAnalyzersNuGetWarning)' != 'true' "">
-    <Warning Text =""The .NET SDK has newer analyzers with version '$({NetAnalyzersSDKAssemblyVersionPropertyName})' than what version '$({NetAnalyzersNugetAssemblyVersionPropertyName})' of '{NetAnalyzersPackageName}' package provides. Update or remove this package reference. You can suppress this warning by setting the MSBuild property '_SkipUpgradeNetAnalyzersNuGetWarning' to 'true'.""
-             Condition=""'$({NetAnalyzersNugetAssemblyVersionPropertyName})' != '' AND
-                         '$({NetAnalyzersSDKAssemblyVersionPropertyName})' != '' AND
-                          $({NetAnalyzersNugetAssemblyVersionPropertyName}) &lt; $({NetAnalyzersSDKAssemblyVersionPropertyName})""/>
-  </Target>",
-                    ResxSourceGeneratorPackageName => $@"
-  <!-- Special handling for embedded resources to show as nested in Solution Explorer -->
-  <ItemGroup>
-    <!-- Localized embedded resources are just dependent on the parent RESX -->
-    <EmbeddedResource Update=""**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx"" DependentUpon=""$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))"" />
-  </ItemGroup>
+                      <!-- Workaround for https://github.com/dotnet/roslyn/issues/4655 -->
+                      <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\PublicAPI.Shipped.txt')" >
+                    	<AdditionalFiles Include="PublicAPI.Shipped.txt" />
+                      </ItemGroup>
+                      <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\PublicAPI.Unshipped.txt')" >
+                    	<AdditionalFiles Include="PublicAPI.Unshipped.txt" />
+                      </ItemGroup>
+                    """,
+                    PerformanceSensitiveAnalyzersPackageName => """
 
-{AddAllResxFilesAsAdditionalFilesTarget}
+                      <PropertyGroup>
+                        <GeneratePerformanceSensitiveAttribute Condition="'$(GeneratePerformanceSensitiveAttribute)' == ''">true</GeneratePerformanceSensitiveAttribute>
+                        <PerformanceSensitiveAttributePath Condition="'$(PerformanceSensitiveAttributePath)' == ''">$(MSBuildThisFileDirectory)PerformanceSensitiveAttribute$(DefaultLanguageSourceExtension)</PerformanceSensitiveAttributePath>
+                      </PropertyGroup>
 
-  <!-- Target to add 'EmbeddedResource' files with '.resx' extension and explicit- or implicit-GenerateSource as analyzer additional files. This only needs to run when SkipAddAllResxFilesAsAdditionalFiles is set to true.
-         Explicit GenerateSource: The embedded resource has GenerateSource=""true""
-         Implicit GenerateSource: The embedded resource did not set GenerateSource, and also does not have WithCulture set to true
-  -->
-  <Target Name=""AddGenerateSourceResxFilesAsAdditionalFiles"" BeforeTargets=""GenerateMSBuildEditorConfigFileCore;CoreCompile"" Condition=""'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' == 'true' AND '$(SkipAddGenerateSourceResxFilesAsAdditionalFiles)' != 'true'"">
-    <ItemGroup>
-      <EmbeddedResourceWithResxExtensionAndGenerateSource Include=""@(EmbeddedResource)"" Condition=""'%(Extension)' == '.resx' AND ('%(EmbeddedResource.GenerateSource)' == 'true' OR ('%(EmbeddedResource.GenerateSource)' != 'false' AND '%(EmbeddedResource.WithCulture)' != 'true'))"" />
-      <AdditionalFiles Include=""@(EmbeddedResourceWithResxExtensionAndGenerateSource)"" />
-    </ItemGroup>
-  </Target>
-",
+                      <ItemGroup Condition="'$(GeneratePerformanceSensitiveAttribute)' == 'true' and Exists($(PerformanceSensitiveAttributePath))">
+                        <Compile Include="$(PerformanceSensitiveAttributePath)" Visible="false" />
+
+                        <!-- Make sure the source file is embedded in PDB to support Source Link -->
+                        <EmbeddedFiles Condition="'$(DebugType)' != 'none'" Include="$(PerformanceSensitiveAttributePath)" />
+                      </ItemGroup>
+                    """,
+                    NetAnalyzersPackageName => $"""
+
+                      <!-- Target to report a warning when SDK NetAnalyzers version is higher than the referenced NuGet NetAnalyzers version -->
+                      <Target Name="_ReportUpgradeNetAnalyzersNuGetWarning" BeforeTargets="CoreCompile" Condition="'$(_SkipUpgradeNetAnalyzersNuGetWarning)' != 'true' ">
+                        <Warning Text ="The .NET SDK has newer analyzers with version '$({NetAnalyzersSDKAssemblyVersionPropertyName})' than what version '$({NetAnalyzersNugetAssemblyVersionPropertyName})' of '{NetAnalyzersPackageName}' package provides. Update or remove this package reference. You can suppress this warning by setting the MSBuild property '_SkipUpgradeNetAnalyzersNuGetWarning' to 'true'."
+                                 Condition="'$({NetAnalyzersNugetAssemblyVersionPropertyName})' != '' AND
+                                             '$({NetAnalyzersSDKAssemblyVersionPropertyName})' != '' AND
+                                              $({NetAnalyzersNugetAssemblyVersionPropertyName}) &lt; $({NetAnalyzersSDKAssemblyVersionPropertyName})"/>
+                      </Target>
+                    """,
+                    ResxSourceGeneratorPackageName => $"""
+
+                      <!-- Special handling for embedded resources to show as nested in Solution Explorer -->
+                      <ItemGroup>
+                        <!-- Localized embedded resources are just dependent on the parent RESX -->
+                        <EmbeddedResource Update="**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx" DependentUpon="$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))" />
+                      </ItemGroup>
+
+                    {AddAllResxFilesAsAdditionalFilesTarget}
+
+                      <!-- Target to add 'EmbeddedResource' files with '.resx' extension and explicit- or implicit-GenerateSource as analyzer additional files. This only needs to run when SkipAddAllResxFilesAsAdditionalFiles is set to true.
+                             Explicit GenerateSource: The embedded resource has GenerateSource="true"
+                             Implicit GenerateSource: The embedded resource did not set GenerateSource, and also does not have WithCulture set to true
+                      -->
+                      <Target Name="AddGenerateSourceResxFilesAsAdditionalFiles" BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile" Condition="'@(EmbeddedResource)' != '' AND '$(SkipAddAllResxFilesAsAdditionalFiles)' == 'true' AND '$(SkipAddGenerateSourceResxFilesAsAdditionalFiles)' != 'true'">
+                        <ItemGroup>
+                          <EmbeddedResourceWithResxExtensionAndGenerateSource Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.resx' AND ('%(EmbeddedResource.GenerateSource)' == 'true' OR ('%(EmbeddedResource.GenerateSource)' != 'false' AND '%(EmbeddedResource.WithCulture)' != 'true'))" />
+                          <AdditionalFiles Include="@(EmbeddedResourceWithResxExtensionAndGenerateSource)" />
+                        </ItemGroup>
+                      </Target>
+
+                    """,
                     _ => string.Empty,
                 };
         }

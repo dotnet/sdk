@@ -1919,8 +1919,8 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
-        <source>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="translated">« AsSpan » est plus efficace, « SUBSTRING ». 'Substring’ effectue une copie de chaîne O (n), alors que ’AsSpan’ ne possède pas un coût constant.</target>
+        <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
+        <target state="needs-review-translation">« AsSpan » est plus efficace, « SUBSTRING ». 'Substring’ effectue une copie de chaîne O (n), alors que ’AsSpan’ ne possède pas un coût constant.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
@@ -2211,6 +2211,21 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsTitle">
         <source>Provide correct arguments to formatting methods</source>
         <target state="translated">Indiquer le nombre correct d'arguments dans les méthodes de mise en forme</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
+        <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</source>
+        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
+        <source>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</source>
+        <target state="new">Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">
+        <source>Set 'MaxResponseHeadersLength' properly</source>
+        <target state="new">Set 'MaxResponseHeadersLength' properly</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">

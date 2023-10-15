@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
@@ -33,10 +34,9 @@ namespace Microsoft.NetCore.Analyzers.Resources
             RuleLevel.IdeSuggestion,
             description: CreateLocalizableResourceString(nameof(MarkAssembliesWithNeutralResourcesLanguageDescription)),
             isPortedFxCopRule: true,
-            isDataflowRule: false,
-            isReportedAtCompilationEnd: true);
+            isDataflowRule: false);
 
-        protected abstract void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Action onResourceFound, INamedTypeSymbol generatedCode);
+        protected abstract void RegisterAttributeAnalyzer(CompilationStartAnalysisContext context, Func<bool> shouldAnalyze, Action<SyntaxNodeAnalysisContext> onResourceFound, INamedTypeSymbol generatedCode);
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
@@ -68,28 +68,48 @@ namespace Microsoft.NetCore.Analyzers.Resources
                     return;
                 }
 
-                var hasResource = false;
-                RegisterAttributeAnalyzer(context, () => hasResource = true, generatedCode);
+                var alreadyReportedDiagnostic = new StrongBox<bool>(false);
+                var @lock = new object();
 
-                context.RegisterCompilationEndAction(context =>
-                {
-                    // there is nothing to do.
-                    if (!hasResource)
+                RegisterAttributeAnalyzer(
+                    context,
+                    shouldAnalyze: () =>
                     {
-                        return;
-                    }
+                        // This value can only change from false to true. So no need to lock if it's already true here.
+                        if (alreadyReportedDiagnostic.Value)
+                        {
+                            return false;
+                        }
 
-                    if (data != null &&
-                        data.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken) is { } attributeSyntax)
+                        lock (@lock)
+                        {
+                            return !alreadyReportedDiagnostic.Value;
+                        }
+                    },
+                    onResourceFound: context =>
                     {
-                        // we have the attribute but its doing it wrong.
-                        context.ReportDiagnostic(attributeSyntax.CreateDiagnostic(Rule));
-                        return;
-                    }
+                        lock (@lock)
+                        {
+                            if (alreadyReportedDiagnostic.Value)
+                            {
+                                return;
+                            }
 
-                    // attribute just don't exist
-                    context.ReportNoLocationDiagnostic(Rule);
-                });
+                            alreadyReportedDiagnostic.Value = true;
+
+                            if (data != null &&
+                                data.ApplicationSyntaxReference?.GetSyntax(context.CancellationToken) is { } attributeSyntax)
+                            {
+                                // we have the attribute but its doing it wrong.
+                                context.ReportDiagnostic(attributeSyntax.CreateDiagnostic(Rule));
+                                return;
+                            }
+
+                            // attribute just don't exist
+                            context.ReportNoLocationDiagnostic(Rule);
+                        }
+                    },
+                    generatedCode);
             });
         }
 

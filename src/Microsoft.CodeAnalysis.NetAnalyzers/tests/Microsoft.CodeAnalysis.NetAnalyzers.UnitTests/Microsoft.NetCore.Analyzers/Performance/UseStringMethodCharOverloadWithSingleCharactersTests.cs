@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.CSharp.NetAnalyzers.Microsoft.NetCore.Analyzers.Performance.CSharpUseStringMethodCharOverloadWithSingleCharacters,
@@ -117,6 +118,47 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         $"Use 'string.{method}(char)' instead of 'string.{method}(string)' when you have a string with a single char",
                         d.GetMessage(CultureInfo.InvariantCulture));
                 });
+        }
+
+        [Fact]
+        [WorkItem(6930, "https://github.com/dotnet/roslyn-analyzers/issues/6930")]
+        public async Task CS_PreservesTrivia()
+        {
+            var testCode = $$"""
+                using System;
+
+                public class TestClass
+                {
+                    public void TestMethod(string str)
+                    {
+                        if (str != "abc"
+                                || 2 == str.IndexOf{|CA1865:(".", StringComparison.Ordinal)|}
+                                || str == "test")
+                        {
+                	        return;
+                        }
+                    }
+                }
+                """;
+
+            var fixedCode = $$"""
+                using System;
+
+                public class TestClass
+                {
+                    public void TestMethod(string str)
+                    {
+                        if (str != "abc"
+                                || 2 == str.IndexOf('.')
+                                || str == "test")
+                        {
+                	        return;
+                        }
+                    }
+                }
+                """;
+
+            await VerifyCSAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
         [Theory]
@@ -344,6 +386,41 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """;
 
             await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21);
+        }
+
+        [Fact]
+        [WorkItem(6930, "https://github.com/dotnet/roslyn-analyzers/issues/6930")]
+        public async Task VB_PreservesTrivia()
+        {
+            var testCode = $$"""
+                Imports System
+
+                Public Class TestClass
+                    Public Sub TestMethod(str As String)
+                        If str <> "abc" _
+                                Or 2 = str.IndexOf{|CA1865:(".", StringComparison.Ordinal)|} _
+                                Or str = "test"
+                            Return
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            var fixedCode = $$"""
+                Imports System
+
+                Public Class TestClass
+                    Public Sub TestMethod(str As String)
+                        If str <> "abc" _
+                                Or 2 = str.IndexOf("."c) _
+                                Or str = "test"
+                            Return
+                        End If
+                    End Sub
+                End Class
+                """;
+
+            await VerifyVBAsync(testCode, ReferenceAssemblies.NetStandard.NetStandard21, fixedCode);
         }
 
         [Theory]

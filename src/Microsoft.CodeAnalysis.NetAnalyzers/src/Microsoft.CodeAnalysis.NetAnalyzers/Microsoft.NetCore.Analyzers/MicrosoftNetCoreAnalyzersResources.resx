@@ -1283,6 +1283,15 @@
   <data name="ProvideCorrectArgumentToEnumHasFlagDescription" xml:space="preserve">
     <value>'Enum.HasFlag' method expects the 'enum' argument to be of the same 'enum' type as the instance on which the method is invoked and that this 'enum' is marked with 'System.FlagsAttribute'. If these are different 'enum' types, an unhandled exception will be thrown at runtime. If the 'enum' type is not marked with 'System.FlagsAttribute' the call will always return 'false' at runtime.</value>
   </data>
+  <data name="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle" xml:space="preserve">
+    <value>Set 'MaxResponseHeadersLength' properly</value>
+  </data>
+  <data name="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage" xml:space="preserve">
+    <value>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</value>
+  </data>
+  <data name="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription" xml:space="preserve">
+    <value>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</value>
+  </data>
   <data name="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType" xml:space="preserve">
     <value>The argument type, '{0}', must be the same as the enum type '{1}'</value>
   </data>
@@ -1468,7 +1477,7 @@
     <value>'Buffer.BlockCopy' expects the number of bytes to be copied for the 'count' argument. Using 'Array.Length' may not match the number of bytes that needs to be copied.</value>
   </data>
   <data name="PreferAsSpanOverSubstringDescription" xml:space="preserve">
-    <value>'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</value>
+    <value>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</value>
   </data>
   <data name="PreferAsSpanOverSubstringMessage" xml:space="preserve">
     <value>Prefer 'AsSpan' over 'Substring' when span-based overloads are available</value>
