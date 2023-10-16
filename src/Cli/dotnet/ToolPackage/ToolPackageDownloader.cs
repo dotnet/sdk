@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
 
                     bool givenSpecificVersion = false;
-                    if (!string.IsNullOrEmpty(versionRange.OriginalString))
+                    if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
                     {
                         givenSpecificVersion = true;
                     }
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     if (package == null)
                     {
-                        DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, packageVersion, packageSourceLocation, givenSpecificVersion).GetAwaiter().GetResult();
+                        DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
                     }
                     else if(isGlobalTool)
                     {

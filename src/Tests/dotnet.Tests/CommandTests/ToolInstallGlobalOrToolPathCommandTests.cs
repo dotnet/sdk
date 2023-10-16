@@ -19,7 +19,7 @@ using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolInstallGlobalOrToolPathCommandTests
+    public class ToolInstallGlobalOrToolPathCommandTests: SdkTest
     {
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
@@ -35,9 +35,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private const string PackageId = "global.tool.console.demo";
         private const string PackageVersion = "1.0.4";
         private const string ToolCommandName = "SimulatorCommand";
-        private readonly string UnlistedPackageId = "Elemental.SysInfoTool";
+        private readonly string UnlistedPackageId = "elemental.sysinfotool";
 
-        public ToolInstallGlobalOrToolPathCommandTests()
+        public ToolInstallGlobalOrToolPathCommandTests(ITestOutputHelper log): base(log)
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
@@ -352,11 +352,38 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/pull/36021")]
+        // [Fact(Skip = "https://github.com/dotnet/sdk/pull/36021")]
+        [Fact]
         public void WhenRunWithValidUnlistedVersionRangeItShouldSucceed()
         {
+            /*const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+
+            var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--version", "[0.5.0]", "--add-source", nugetSourcePath)
+                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
+                .WithWorkingDirectory(testDir);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Pass();
+
+            // Uninstall the unlisted package
+            var toolUninstallCommand = new DotnetCommand(Log, "tool", "uninstall", "-g", UnlistedPackageId);
+            toolUninstallCommand.Execute().Should().Pass();*/
+
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
-            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {UnlistedPackageId} --version [0.5.0] --add-source {nugetSourcePath}");
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+
+            var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--add-source", nugetSourcePath)
+                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
+                .WithWorkingDirectory(testDir);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Fail();
+        }
+
+        [Fact]
+        public void WhenRunWithoutValidVersionUnlistedToolItShouldThrow()
+        {
+            const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
+            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {UnlistedPackageId} --add-source {nugetSourcePath}");
 
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
@@ -365,16 +392,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            Action action = () => toolInstallGlobalOrToolPathCommand.Execute();
 
-            _reporter
-                .Lines
-                .Should()
-                .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
-                    ToolCommandName,
-                    PackageId,
-                    PackageVersion).Green());
+            action
+                .Should().Throw<GracefulException>()
+                .And.Message.Should().Contain(
+                    LocalizableStrings.ToolInstallationRestoreFailed +
+                    Environment.NewLine + string.Format(LocalizableStrings.ToolInstallationFailedWithRestoreGuidance, UnlistedPackageId));
         }
 
         [Fact]

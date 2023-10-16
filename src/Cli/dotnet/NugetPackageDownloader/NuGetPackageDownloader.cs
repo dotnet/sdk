@@ -529,7 +529,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             if(versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
             {
-                return NuGetVersion.Parse(versionRange.MinVersion.ToString());
+                return versionRange.MinVersion;
             }
 
             CancellationToken cancellationToken = CancellationToken.None;
