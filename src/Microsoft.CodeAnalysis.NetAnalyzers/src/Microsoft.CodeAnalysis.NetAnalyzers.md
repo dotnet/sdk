@@ -924,6 +924,18 @@ An explicit length calculation can be error-prone and can be avoided when slicin
 |CodeFix|True|
 ---
 
+## [CA1515](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1515): Consider making public types internal
+
+Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.
+
+|Item|Value|
+|-|-|
+|Category|Maintainability|
+|Enabled|False|
+|Severity|Warning|
+|CodeFix|True|
+---
+
 ## [CA1700](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1700): Do not name enum values 'Reserved'
 
 This rule assumes that an enumeration member that has a name that contains "reserved" is not currently used but is a placeholder to be renamed or removed in a future version. Renaming or removing a member is a breaking change.
@@ -1526,7 +1538,7 @@ It is more efficient to use 'AsSpan' and 'string.Concat', instead of 'Substring'
 
 ## [CA1846](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1846): Prefer 'AsSpan' over 'Substring'
 
-'AsSpan' is more efficient then 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.
+'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.
 
 |Item|Value|
 |-|-|
@@ -2559,6 +2571,18 @@ The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generi
 |Category|Usage|
 |Enabled|True|
 |Severity|Warning|
+|CodeFix|False|
+---
+
+## [CA2262](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2262): Set 'MaxResponseHeadersLength' properly
+
+The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Info|
 |CodeFix|False|
 ---
 

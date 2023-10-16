@@ -1,4 +1,4 @@
-' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 Imports Microsoft.NetCore.Analyzers.Resources
 Imports Microsoft.CodeAnalysis
@@ -13,9 +13,13 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Resources
     <DiagnosticAnalyzer(LanguageNames.VisualBasic)>
     Public NotInheritable Class BasicMarkAssembliesWithNeutralResourcesLanguageAnalyzer
         Inherits MarkAssembliesWithNeutralResourcesLanguageAnalyzer
-        Protected Overrides Sub RegisterAttributeAnalyzer(context As CompilationStartAnalysisContext, onResourceFound As Action, generatedCode As INamedTypeSymbol)
+        Protected Overrides Sub RegisterAttributeAnalyzer(context As CompilationStartAnalysisContext, shouldAnalyze As Func(Of Boolean), onResourceFound As Action(Of SyntaxNodeAnalysisContext), generatedCode As INamedTypeSymbol)
             context.RegisterSyntaxNodeAction(
                 Sub(nc)
+                    If Not shouldAnalyze() Then
+                        Return
+                    End If
+
                     Dim attributeSyntax = DirectCast(nc.Node, AttributeSyntax)
                     If Not CheckBasicAttribute(attributeSyntax) Then
                         Return
@@ -25,7 +29,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Resources
                         Return
                     End If
 
-                    onResourceFound()
+                    onResourceFound(nc)
                 End Sub, SyntaxKind.Attribute)
         End Sub
 

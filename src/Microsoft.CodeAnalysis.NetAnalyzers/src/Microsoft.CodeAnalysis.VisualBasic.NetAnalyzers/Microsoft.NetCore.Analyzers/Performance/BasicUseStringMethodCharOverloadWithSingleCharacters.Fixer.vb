@@ -71,7 +71,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         [Select](Function(arg) TryCast(model.GetOperation(arg), IArgumentOperation)).Where(Function(arg) PreserveArgument(arg)).[Select](Function(arg) arg.Syntax))
                 Dim argumentListNode = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments))
 
-                editor.ReplaceNode(oldArgumentListNode, argumentListNode)
+                editor.ReplaceNode(oldArgumentListNode, argumentListNode.WithTriviaFrom(oldArgumentListNode))
             End Sub
         End Class
     End Class
