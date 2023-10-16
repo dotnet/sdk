@@ -25,14 +25,14 @@
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-rtm.23506.12">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-rtm.23513.17">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b17a34c818bd5e01fdb9827fea64727a5fc51025</Sha>
+      <Sha>60b77a63df30362ed1c66a834fcb8f8956ea113b</Sha>
       <SourceBuild RepoName="runtime" />
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0-rtm.23506.12">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0-rtm.23513.17">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b17a34c818bd5e01fdb9827fea64727a5fc51025</Sha>
+      <Sha>60b77a63df30362ed1c66a834fcb8f8956ea113b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.430701">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
