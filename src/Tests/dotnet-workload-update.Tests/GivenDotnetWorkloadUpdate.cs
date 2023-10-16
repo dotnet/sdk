@@ -214,7 +214,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android") };
             var cachePath = Path.Combine(_testAssetsManager.CreateTestDirectory(identifier: "cachePath").Path, "mockCachePath");
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--download-to-cache", cachePath });
-            (_, var command, var installer, _, var manifestUpdater, var packageDownloader) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, includeInstalledPacks: true, installedFeatureBand: "6.0.100");
+            (_, var command, _, _, var manifestUpdater, var packageDownloader) = GetTestInstallers(parseResult, installedWorkloads: mockWorkloadIds, includeInstalledPacks: true, installedFeatureBand: "6.0.100");
 
             command.Execute();
 
@@ -324,22 +324,19 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", "rollback.json" });
 
             var manifestsToUpdate =
-                new (ManifestVersionUpdate manifestUpdate,
-                Dictionary<WorkloadId, WorkloadDefinition> Workloads)[]
+                new ManifestUpdateWithWorkloads[]
                     {
-                        (new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), existingSdkFeatureBand, new ManifestVersion("2.0.0"), newSdkFeatureBand),
-                            null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), existingSdkFeatureBand, new ManifestVersion("2.0.0"), newSdkFeatureBand), null),
                     };
-
-            (var dotnetPath, var updateCommand, var packInstaller, var workloadResolver, var workloadManifestUpdater, var nuGetPackageDownloader) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
+            (var dotnetPath, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
 
             updateCommand.UpdateWorkloads();
 
-            packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].manifestUpdate.ManifestId);
-            packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].manifestUpdate.NewVersion);
-            packInstaller.InstalledManifests[0].manifestUpdate.NewFeatureBand.Should().Be(manifestsToUpdate[0].manifestUpdate.NewFeatureBand);
-            packInstaller.InstalledManifests[0].manifestUpdate.ExistingVersion.Should().Be(manifestsToUpdate[0].manifestUpdate.ExistingVersion);
-            packInstaller.InstalledManifests[0].manifestUpdate.ExistingFeatureBand.Should().Be(manifestsToUpdate[0].manifestUpdate.ExistingFeatureBand);
+            packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
+            packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
+            packInstaller.InstalledManifests[0].manifestUpdate.NewFeatureBand.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewFeatureBand);
+            packInstaller.InstalledManifests[0].manifestUpdate.ExistingVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.ExistingVersion);
+            packInstaller.InstalledManifests[0].manifestUpdate.ExistingFeatureBand.Should().Be(manifestsToUpdate[0].ManifestUpdate.ExistingFeatureBand);
             packInstaller.InstalledManifests[0].offlineCache.Should().Be(null);
 
             var defaultJsonPath = Path.Combine(dotnetPath, "dotnet", "metadata", "workloads", "6.0.300", "InstallState", "default.json");
@@ -355,23 +352,18 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-rollback-file", "rollback.json" });
 
             var manifestsToUpdate =
-                new (ManifestVersionUpdate manifestUpdate,
-                Dictionary<WorkloadId, WorkloadDefinition> Workloads)[]
+                new ManifestUpdateWithWorkloads[]
                     {
-                        (new ManifestVersionUpdate(new ManifestId("mock-manifest-1"), new ManifestVersion("1.0.0"), "6.0.300", new ManifestVersion("2.0.0"), "6.0.100"),
-                            null),
-                        (new ManifestVersionUpdate(new ManifestId("mock-manifest-2"), new ManifestVersion("1.0.0"), "6.0.100", new ManifestVersion("2.0.0"), "6.0.300"),
-                            null),
-                        (new ManifestVersionUpdate(new ManifestId("mock-manifest-3"), new ManifestVersion("1.0.0"), "5.0.100", new ManifestVersion("2.0.0"), "6.0.100"),
-                            null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-1"), new ManifestVersion("1.0.0"), "6.0.300", new ManifestVersion("2.0.0"), "6.0.100"), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-2"), new ManifestVersion("1.0.0"), "6.0.100", new ManifestVersion("2.0.0"), "6.0.300"), null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest-3"), new ManifestVersion("1.0.0"), "5.0.100", new ManifestVersion("2.0.0"), "6.0.100"), null),
                     };
-
-            (_, var updateCommand, var packInstaller, var workloadResolver, var workloadManifestUpdater, var nuGetPackageDownloader) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", installedFeatureBand: "6.0.300");
+            (_, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", installedFeatureBand: "6.0.300");
 
             updateCommand.UpdateWorkloads();
 
-            packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].manifestUpdate.ManifestId);
-            packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].manifestUpdate.NewVersion);
+            packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
+            packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
             packInstaller.InstalledManifests[0].manifestUpdate.NewFeatureBand.Should().Be("6.0.100");
             packInstaller.InstalledManifests[1].manifestUpdate.NewFeatureBand.Should().Be("6.0.300");
             packInstaller.InstalledManifests[2].manifestUpdate.NewFeatureBand.Should().Be("6.0.100");
@@ -416,7 +408,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             [CallerMemberName] string testName = "",
             string failingWorkload = null,
             string failingPack = null,
-            IEnumerable<(ManifestVersionUpdate manifestUpdate, Dictionary<WorkloadId, WorkloadDefinition> Workloads)> manifestUpdates = null,
+            IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null,
             IList<WorkloadId> installedWorkloads = null,
             bool includeInstalledPacks = false,
             string sdkVersion = "6.0.100",
@@ -442,7 +434,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var workloadResolver = CreateForTests(new MockManifestProvider(new[] { copiedManifestFile }), dotnetRoot);
             installer.WorkloadResolver = workloadResolver;
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
-            var manifestUpdater = new MockWorkloadManifestUpdater(manifestUpdates, _manifestPath);
+            var manifestUpdater = new MockWorkloadManifestUpdater(manifestUpdates);
 
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkVersion, workloadResolver, userProfileDir: testDirectory);
 
