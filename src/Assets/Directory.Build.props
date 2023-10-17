@@ -7,5 +7,7 @@ get the build customization from the rest of the repo.
   <PropertyGroup>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.tmp</DefaultItemExcludes>
+    <!-- try using the roslyn compiler for the SDK in the tests --!>
+    <BuildWithNetFrameworkHostedCompiler>true</BuildWithNetFrameworkHostedCompiler>
   </PropertyGroup>
 </Project>
