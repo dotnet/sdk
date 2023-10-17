@@ -52,15 +52,25 @@ namespace Dotnet_new3
             }
         }
 
-        private static IEnumerable<Action<HelpContext>> CustomHelpLayout(HelpContext context)
+        private static IEnumerable<Func<HelpContext, bool>> CustomHelpLayout(HelpContext context)
         {
             if (context.ParseResult.CommandResult.Command is ICustomHelp custom)
             {
-                return custom.CustomHelpLayout();
+                foreach (var layout in custom.CustomHelpLayout())
+                {
+                    yield return hc =>
+                    {
+                        layout(hc);
+                        return true;
+                    };
+                }
             }
             else
             {
-                return HelpBuilder.Default.GetLayout();
+                foreach (var layout in HelpBuilder.Default.GetLayout())
+                {
+                    yield return layout;
+                }
             }
         }
     }
