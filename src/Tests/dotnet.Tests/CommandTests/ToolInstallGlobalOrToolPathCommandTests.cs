@@ -352,11 +352,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        // [Fact(Skip = "https://github.com/dotnet/sdk/pull/36021")]
         [Fact]
         public void WhenRunWithValidUnlistedVersionRangeItShouldSucceed()
         {
-            /*const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
+            const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
             var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--version", "[0.5.0]", "--add-source", nugetSourcePath)
@@ -367,8 +366,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             // Uninstall the unlisted package
             var toolUninstallCommand = new DotnetCommand(Log, "tool", "uninstall", "-g", UnlistedPackageId);
-            toolUninstallCommand.Execute().Should().Pass();*/
+            toolUninstallCommand.Execute().Should().Pass();
+        }
 
+        [Fact]
+        public void WhenRunWithoutValidVersionUnlistedToolItShouldThrow()
+        {
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
             var testDir = _testAssetsManager.CreateTestDirectory().Path;
 
@@ -377,28 +380,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .WithWorkingDirectory(testDir);
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Fail();
-        }
-
-        [Fact]
-        public void WhenRunWithoutValidVersionUnlistedToolItShouldThrow()
-        {
-            const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
-            ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {UnlistedPackageId} --add-source {nugetSourcePath}");
-
-            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
-                result,
-                _createToolPackageStoresAndDownloader,
-                _createShellShimRepository,
-                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
-                _reporter);
-
-            Action action = () => toolInstallGlobalOrToolPathCommand.Execute();
-
-            action
-                .Should().Throw<GracefulException>()
-                .And.Message.Should().Contain(
-                    LocalizableStrings.ToolInstallationRestoreFailed +
-                    Environment.NewLine + string.Format(LocalizableStrings.ToolInstallationFailedWithRestoreGuidance, UnlistedPackageId));
         }
 
         [Fact]
