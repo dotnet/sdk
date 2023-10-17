@@ -1492,25 +1492,6 @@
       "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\dotnet.wasm.br"
     },
     {
-      "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt.dat.br",
-      "SourceId": "BlazorWasmHosted60.Client",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/icudt.dat.br",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt.dat",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "br",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\Client\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\icudt.dat.br"
-    },
-    {
       "Identity": "${ProjectPath}\\Client\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt.dat.gz",
       "SourceId": "BlazorWasmHosted60.Client",
       "SourceType": "Project",
