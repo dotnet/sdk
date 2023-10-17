@@ -13,7 +13,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Build_SimpleMvc_UsingDotnetMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
             => Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully();
 
-        [FullMSBuildOnlyFactAttribute]
+        [FullMSBuildOnlyFactAttribute(Skip="https://github.com/dotnet/installer/issues/17453")]
         public void Build_SimpleMvc_UsingDesktopMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
             => Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully();
 
