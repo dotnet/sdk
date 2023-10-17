@@ -16,8 +16,7 @@ namespace Microsoft.DotNet.Cli.Utils
         }
 
         public CommandUnknownException(string commandName, Exception innerException) : base(
-            LocalizableStrings.NoExecutableFoundMatchingCommand,
-            innerException)
+            LocalizableStrings.NoExecutableFoundMatchingCommandErrorMessage)
         {
             InstructionMessage = string.Format(
                 LocalizableStrings.NoExecutableFoundMatchingCommand,
