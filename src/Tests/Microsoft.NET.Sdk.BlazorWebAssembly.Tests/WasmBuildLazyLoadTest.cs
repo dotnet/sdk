@@ -10,7 +10,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public WasmBuildLazyLoadTest(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_LazyLoadExplicitAssembly_Debug_Works()
         {
             // Arrange
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_LazyLoadExplicitAssembly_Release_Works()
         {
             // Arrange
@@ -107,7 +107,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_LazyLoadExplicitAssembly_Debug_Works()
         {
             // Arrange
@@ -156,7 +156,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_LazyLoadExplicitAssembly_Release_Works()
         {
             // Arrange
@@ -204,7 +204,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_LazyLoadExplicitAssembly_InvalidAssembly()
         {
             // Arrange
@@ -225,7 +225,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             buildCommand.Execute().Should().Fail().And.HaveStdOutContaining("BLAZORSDK1001");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_LazyLoadExplicitAssembly_InvalidAssembly()
         {
             // Arrange
