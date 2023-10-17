@@ -60,8 +60,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
                 .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****")));
 
             VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options)
-                .ConfigureAwait(false);
+            await engine.Execute(options);
         }
 
         private string GetSamplesTemplateLocation() => Path.Combine(CodeBaseRoot, "dotnet-template-samples", "content");

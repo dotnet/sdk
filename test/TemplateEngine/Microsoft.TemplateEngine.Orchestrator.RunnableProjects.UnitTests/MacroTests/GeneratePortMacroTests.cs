@@ -27,7 +27,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratePortNumberConfig config = new(macro, "test", "integer", 3000, 4000, 5000);
             macro.Evaluate(_engineEnvironmentSettings, variables, config);
 
-            Assert.Equal(1, variables.Count);
+            Assert.Single(variables);
 
             int result = (int)variables["test"];
 
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratedSymbol symbol = new("test", macro.Type, jsonParameters);
             macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
 
-            Assert.Equal(1, variables.Count);
+            Assert.Single(variables);
 
             int result = (int)variables["test"];
 
@@ -66,7 +66,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratePortNumberConfig config = new(macro, "test", "integer", 3000, 4000, 5000);
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, config);
 
-            Assert.Equal(1, variables.Count);
+            Assert.Single(variables);
             Assert.Equal(4000, variables["test"]);
         }
 
@@ -86,7 +86,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratePortNumberMacro macro = new();
 
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, macro.CreateConfig(_engineEnvironmentSettings, deferredConfig));
-            Assert.Equal(1, variables.Count);
+            Assert.Single(variables);
             Assert.Equal(4000, variables["test"]);
         }
 
@@ -102,7 +102,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             GeneratePortNumberMacro macro = new();
 
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, macro.CreateConfig(_engineEnvironmentSettings, deferredConfig));
-            Assert.Equal(1, variables.Count);
+            Assert.Single(variables);
             Assert.Equal(GeneratePortNumberConfig.LowPortDefault, variables["test"]);
         }
 

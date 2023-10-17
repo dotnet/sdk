@@ -22,11 +22,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             string queryString = $"{searchResources[0].Uri}?q=Microsoft.DotNet.Common.ProjectTemplates.5.0&skip=0&take=10&prerelease=true&semVerLevel=2.0.0";
             Uri queryUri = new Uri(queryString);
             using (HttpClient client = new HttpClient())
-            using (HttpResponseMessage response = await client.GetAsync(queryUri, CancellationToken.None).ConfigureAwait(false))
+            using (HttpResponseMessage response = await client.GetAsync(queryUri, CancellationToken.None))
             {
                 if (response.IsSuccessStatusCode)
                 {
-                    string responseText = await response.Content.ReadAsStringAsync(CancellationToken.None).ConfigureAwait(false);
+                    string responseText = await response.Content.ReadAsStringAsync(CancellationToken.None);
 
                     NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JObject.Parse(responseText));
                     Assert.Equal(1, resultsForPage.TotalHits);
@@ -44,7 +44,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 }
                 else
                 {
-                    Assert.True(false, "HTTP request failed.");
+                    Assert.Fail("HTTP request failed.");
                 }
             }
         }

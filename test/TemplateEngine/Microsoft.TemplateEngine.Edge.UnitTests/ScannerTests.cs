@@ -31,11 +31,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             Scanner scanner = new(settings);
 
-            ScanResult result = await scanner.ScanAsync(templatesLocation, default).ConfigureAwait(false);
+            ScanResult result = await scanner.ScanAsync(templatesLocation, default);
 
-            Assert.Equal(0, result.Templates.Count);
+            Assert.Empty(result.Templates);
 #pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Equal(0, result.Localizations.Count);
+            Assert.Empty(result.Localizations);
 #pragma warning restore CS0618 // Type or member is obsolete
 
             string errorMessage = Assert.Single(loggedMessages, l => l.Level is LogLevel.Error).Message;
@@ -54,11 +54,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             Scanner scanner = new(settings);
 
-            ScanResult result = await scanner.ScanAsync(templatesLocation, default).ConfigureAwait(false);
+            ScanResult result = await scanner.ScanAsync(templatesLocation, default);
 
-            Assert.Equal(0, result.Templates.Count);
+            Assert.Empty(result.Templates);
 #pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Equal(0, result.Localizations.Count);
+            Assert.Empty(result.Localizations);
 #pragma warning restore CS0618 // Type or member is obsolete
 
             List<string> errorMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Error).Select(e => e.Message).ToList();
@@ -106,11 +106,11 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             Scanner scanner = new(settings);
 
-            ScanResult result = await scanner.ScanAsync(templatesLocation, default).ConfigureAwait(false);
+            ScanResult result = await scanner.ScanAsync(templatesLocation, default);
 
-            Assert.Equal(1, result.Templates.Count);
+            Assert.Single(result.Templates);
 #pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Equal(0, result.Localizations.Count);
+            Assert.Empty(result.Localizations);
 #pragma warning restore CS0618 // Type or member is obsolete
 
             List<string> errorMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Error).Select(e => e.Message).OrderBy(em => em).ToList();

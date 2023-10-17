@@ -42,7 +42,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                  new MockTemplateSearchProviderFactory(Guid.NewGuid(), "provider2", provider2));
 
             var searchCoordinator = new TemplateSearchCoordinator(_engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, p => p.Templates.ToList(), default).ConfigureAwait(false);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, p => p.Templates.ToList(), default);
 
             Assert.Equal(2, searchResult.Count);
             Assert.Single(searchResult, r => r.Provider.Factory.DisplayName == "provider1");
@@ -73,7 +73,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                     .ToList();
 
             var searchCoordinator = new TemplateSearchCoordinator(_engineEnvironmentSettings);
-            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default).ConfigureAwait(false);
+            var searchResult = await searchCoordinator.SearchAsync(p => true, Filter, default);
             Assert.Equal(2, searchResult.Count);
 
             var searchResultDictionary = searchResult.ToDictionary(r => r.Provider.Factory.DisplayName);

@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             string modifier = expectedChange ? string.Empty : "not ";
             if (expectedChange ^ changed)
             {
-                Assert.False(true, $"Expected value to {modifier} be changed");
+                Assert.Fail($"Expected value to {modifier} be changed");
             }
         }
     }
