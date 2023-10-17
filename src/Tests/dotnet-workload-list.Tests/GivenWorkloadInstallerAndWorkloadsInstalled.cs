@@ -10,7 +10,6 @@ using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using WorkloadCollection = System.Collections.Generic.Dictionary<Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition>;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
