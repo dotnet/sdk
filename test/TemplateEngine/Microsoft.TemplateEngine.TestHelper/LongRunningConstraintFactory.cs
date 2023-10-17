@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.TestHelper
 
         public async Task<ITemplateConstraint> CreateTemplateConstraintAsync(IEngineEnvironmentSettings environmentSettings, CancellationToken cancellationToken)
         {
-            await Task.Delay(_msDelay).ConfigureAwait(false);
+            await Task.Delay(_msDelay);
             return new TestConstraint(this);
         }
 

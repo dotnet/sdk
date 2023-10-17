@@ -31,7 +31,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             var parsedCache = TemplateSearchCache.FromJObject(cache, environmentSettings.Host.Logger);
 
-            Assert.Equal(1, parsedCache.TemplatePackages.Count);
+            Assert.Single(parsedCache.TemplatePackages);
             Assert.Equal(2, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
 
             Assert.IsAssignableFrom<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
@@ -52,7 +52,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             var parsedCache = TemplateSearchCache.FromJObject(cache, environmentSettings.Host.Logger);
 
-            Assert.Equal(1, parsedCache.TemplatePackages.Count);
+            Assert.Single(parsedCache.TemplatePackages);
             Assert.Equal(3, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
 
             Assert.IsAssignableFrom<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
@@ -77,7 +77,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
 
             var parsedCache = TemplateSearchCache.FromJObject(cache, environmentSettings.Host.Logger);
 
-            Assert.Equal(1, parsedCache.TemplatePackages.Count);
+            Assert.Single(parsedCache.TemplatePackages);
             Assert.Equal(1, parsedCache.TemplatePackages.Sum(p => p.Templates.Count));
 
             Assert.IsAssignableFrom<ITemplateInfo>(parsedCache.TemplatePackages[0].Templates[0]);
@@ -92,7 +92,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                 A.Fake<ITemplateSearchProviderFactory>(),
                 environmentSettings,
                 new Dictionary<string, Func<object, object>>());
-            async Task<string> Search() => await sourceFileProvider.GetSearchFileAsync(default).ConfigureAwait(false);
+            async Task<string> Search() => await sourceFileProvider.GetSearchFileAsync(default);
             await TestUtils.AttemptSearch<string, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
             string content = environmentSettings.Host.FileSystem.ReadAllText(Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json"));
             var jObj = JObject.Parse(content);
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateSearch.Common.UnitTests
                 environmentSettings,
                 new Dictionary<string, Func<object, object>>(),
                 new[] { "https://go.microsoft.com/fwlink/?linkid=2087906&clcid=0x409" });  //v1 search cache
-            async Task<string> Search() => await sourceFileProvider.GetSearchFileAsync(default).ConfigureAwait(false);
+            async Task<string> Search() => await sourceFileProvider.GetSearchFileAsync(default);
             await TestUtils.AttemptSearch<string, HttpRequestException>(3, TimeSpan.FromSeconds(10), Search);
             string content = environmentSettings.Host.FileSystem.ReadAllText(Path.Combine(environmentSettings.Paths.HostVersionSettingsDir, "nugetTemplateSearchInfo.json"));
             var jObj = JObject.Parse(content);

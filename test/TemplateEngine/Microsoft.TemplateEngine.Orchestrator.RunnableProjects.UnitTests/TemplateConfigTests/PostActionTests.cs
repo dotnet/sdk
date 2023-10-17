@@ -319,7 +319,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configString));
 
-            Assert.Equal(1, configModel.PostActionModels.Count);
+            Assert.Single(configModel.PostActionModels);
             Assert.True(configModel.PostActionModels.Single().ApplyFileRenamesToManualInstructions);
 
             Assert.Equal("Foo", configModel.PostActionModels.Single().ApplyFileRenamesToArgs.Single());
@@ -356,7 +356,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configString));
 
-            Assert.Equal(1, configModel.PostActionModels.Count);
+            Assert.Single(configModel.PostActionModels);
             Assert.True(configModel.PostActionModels.Single().ApplyFileRenamesToManualInstructions);
 
             Assert.Equal("Baz", configModel.PostActionModels.Single().ApplyFileRenamesToArgs.Single());

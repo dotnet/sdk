@@ -47,7 +47,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
             RunnableProjectGenerator generator = new RunnableProjectGenerator();
-            IReadOnlyList<IScanTemplateInfo>? templates = await (generator as IGenerator).GetTemplatesFromMountPointAsync(mountPoint, default).ConfigureAwait(false);
+            IReadOnlyList<IScanTemplateInfo>? templates = await (generator as IGenerator).GetTemplatesFromMountPointAsync(mountPoint, default);
 
             Assert.Single(templates);
             var template = templates[0];

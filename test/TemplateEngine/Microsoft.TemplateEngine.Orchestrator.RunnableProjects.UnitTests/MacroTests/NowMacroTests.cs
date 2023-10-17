@@ -101,7 +101,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             NowMacroConfig config = new(macro, "test", "yyyy-MM-dd HH:mm:ss");
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, config);
 
-            Assert.Equal(1, variables.Count);
+            Assert.Single(variables);
             Assert.Equal("1900-01-01 00:00:00", variables["test"].ToString());
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, macro.CreateConfig(_engineEnvironmentSettings, deferredConfig));
 
-            Assert.Equal(1, variables.Count);
+            Assert.Single(variables);
             Assert.Equal("1900-01-01 00:00:00", variables["test"].ToString());
         }
 
