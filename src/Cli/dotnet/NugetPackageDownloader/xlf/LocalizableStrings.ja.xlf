@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
-        <target state="new">Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
+        <target state="translated">パッケージ ソース マッピングが有効になっていますが、指定されたパッケージ ID {0} にソースが見つかりません。詳細については、https://aka.ms/nuget-package-source-mapping にあるパッケージ ソース マッピングのドキュメントを参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
-        <target state="new">Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
+        <target state="translated">パッケージ ソース マッピングが有効になっていますが、指定されたパッケージ ID {0} にソースがマッピングされていません。詳細については、https://aka.ms/nuget-package-source-mapping にあるパッケージ ソース マッピングのドキュメントを参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">

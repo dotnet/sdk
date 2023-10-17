@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
-        <target state="new">Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
+        <target state="translated">Mapování zdroje balíčku je povoleno, ale pod zadaným ID balíčku nebyl nalezen žádný zdroj: {0}. Další podrobnosti najdete v dokumentaci k mapování zdrojů balíčků na https://aka.ms/nuget-package-source-mapping.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
-        <target state="new">Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
+        <target state="translated">Mapování zdroje balíčku je povoleno, ale pod zadaným ID balíčku není namapován žádný zdroj: {0}. Další podrobnosti najdete v dokumentaci k mapování zdrojů balíčků na https://aka.ms/nuget-package-source-mapping.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">

@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                                 _dotnetPath, TempDirectoryPath, packageSourceLocation: _packageSourceLocation, RestoreActionConfiguration,
                                 elevationRequired: !_printDownloadLinkOnly && !_printRollbackDefinitionOnly && string.IsNullOrWhiteSpace(_downloadToCacheOption));
 
-            _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir, TempDirectoryPath,
+            _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, sdkFeatureBand: _sdkFeatureBand);
         }
 
@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
             var manifestsToUpdate = useRollback ?
                 _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate);
+                _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
 
             UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, offlineCache);
 
