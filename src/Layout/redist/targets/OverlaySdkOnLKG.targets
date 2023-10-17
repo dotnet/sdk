@@ -96,11 +96,15 @@
 
     <!-- Install a coherent set of workload manifests -->
     <Exec Condition="Exists('$(RedistLayoutPath)TestRollback.json')"
-          Command="$(RedistLayoutPath)dotnet workload update --from-rollback-file $(RedistLayoutPath)TestRollback.json"
+          Command="$(RedistLayoutPath)dotnet workload update --from-rollback-file $(RedistLayoutPath)TestRollback.json -v diag"
           EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)"/>
 
+    <ItemGroup>
+      <MonoToolchainCurrentWorkloadManifests Include="$(RedistLayoutPath)\sdk-manifests\$(MonoWorkloadFeatureBand)\microsoft.net.workload.mono.toolchain.current\*\WorkloadManifest.targets" />
+    </ItemGroup>
+
     <OverrideWasmRuntimePackVersions Properties="@(WasmRuntimePackVersion)" 
-      WorkloadManifestPath="$(RedistLayoutPath)\sdk-manifests\$(MonoWorkloadFeatureBand)\microsoft.net.workload.mono.toolchain.current\WorkloadManifest.targets" />
+      WorkloadManifestPath="%(MonoToolchainCurrentWorkloadManifests.FullPath)" />
   </Target>
 
 

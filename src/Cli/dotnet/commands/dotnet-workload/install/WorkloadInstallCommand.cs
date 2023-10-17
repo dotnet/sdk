@@ -23,19 +23,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public WorkloadInstallCommand(
             ParseResult parseResult,
             IReporter reporter = null,
-            IWorkloadResolver workloadResolver = null,
+            IWorkloadResolverFactory workloadResolverFactory = null,
             IInstaller workloadInstaller = null,
             INuGetPackageDownloader nugetPackageDownloader = null,
             IWorkloadManifestUpdater workloadManifestUpdater = null,
-            string dotnetDir = null,
-            string userProfileDir = null,
             string tempDirPath = null,
-            string version = null,
-            IReadOnlyCollection<string> workloadIds = null,
-            string installedFeatureBand = null)
-            : base(parseResult, reporter: reporter, workloadResolver: workloadResolver, workloadInstaller: workloadInstaller,
+            IReadOnlyCollection<string> workloadIds = null)
+            : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
                   nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
-                  dotnetDir: dotnetDir, userProfileDir: userProfileDir, tempDirPath: tempDirPath, version: version, installedFeatureBand: installedFeatureBand)
+                  tempDirPath: tempDirPath)
         {
             _skipManifestUpdate = parseResult.GetValue(WorkloadInstallCommandParser.SkipManifestUpdateOption);
             _workloadIds = workloadIds ?? parseResult.GetValue(WorkloadInstallCommandParser.WorkloadIdArgument).ToList().AsReadOnly();
@@ -43,10 +39,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             _workloadInstaller = _workloadInstallerFromConstructor ??
                                  WorkloadInstallerFactory.GetWorkloadInstaller(resolvedReporter, _sdkFeatureBand,
-                                     workloadResolver ?? _workloadResolver, Verbosity, _userProfileDir, VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
+                                     _workloadResolver, Verbosity, _userProfileDir, VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
                                      _packageSourceLocation, RestoreActionConfiguration, elevationRequired: !_printDownloadLinkOnly && string.IsNullOrWhiteSpace(_downloadToCacheOption));
 
-            _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, workloadResolver ?? _workloadResolver, PackageDownloader, _userProfileDir, TempDirectoryPath,
+            _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
 
             ValidateWorkloadIdsInput();
@@ -139,7 +135,20 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             Reporter.WriteLine();
 
-            var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate>();
+            var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate> ();
+            var useRollback = false;
+
+            if (!skipManifestUpdate)
+            {
+                var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+                if (File.Exists(installStateFilePath))
+                {
+                    //  If there is a rollback state file, then we don't want to automatically update workloads when a workload is installed
+                    //  To update to a new version, the user would need to run "dotnet workload update"
+                    skipManifestUpdate = true;
+                }
+            }
+
             if (!skipManifestUpdate)
             {
                 if (Verbosity != VerbosityOptions.quiet && Verbosity != VerbosityOptions.q)
@@ -155,32 +164,34 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
 
+                useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
-                manifestsToUpdate = string.IsNullOrWhiteSpace(_fromRollbackDefinition) ?
-                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate) :
-                    _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition);
+                manifestsToUpdate = useRollback ?
+                    _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
 
-            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache);
+            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
 
-            TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, offlineCache);
+            TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
             Reporter.WriteLine();
             Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIds)));
             Reporter.WriteLine();
         }
 
-        internal static void TryRunGarbageCollection(IInstaller workloadInstaller, IReporter reporter, VerbosityOptions verbosity, DirectoryPath? offlineCache = null)
+        internal static void TryRunGarbageCollection(IInstaller workloadInstaller, IReporter reporter, VerbosityOptions verbosity, Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null)
         {
             try
             {
-                workloadInstaller.GarbageCollectInstalledWorkloadPacks(offlineCache);
+                workloadInstaller.GarbageCollect(getResolverForWorkloadSet, offlineCache);
             }
             catch (Exception e)
             {
                 // Garbage collection failed, warn user
                 reporter.WriteLine(string.Format(LocalizableStrings.GarbageCollectionFailed,
-                    verbosity.IsDetailedOrDiagnostic() ? e.StackTrace.ToString() : e.Message).Yellow());
+                    verbosity.IsDetailedOrDiagnostic() ? e.ToString() : e.Message).Yellow());
             }
         }
 
@@ -189,7 +200,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             IEnumerable<WorkloadId> workloadIds,
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
-            DirectoryPath? offlineCache)
+            DirectoryPath? offlineCache,
+            bool usingRollback)
         {
             IEnumerable<PackInfo> workloadPackToInstall = new List<PackInfo>();
             IEnumerable<WorkloadId> newWorkloadInstallRecords = new List<WorkloadId>();
@@ -220,6 +232,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     foreach (var workloadId in newWorkloadInstallRecords)
                     {
                         recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
+                    }
+
+                    if (usingRollback)
+                    {
+                        UpdateInstallState(true, manifestsToUpdate);
                     }
                 },
                 rollback: () =>

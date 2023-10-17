@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly ToolUpdateLocalCommand _defaultToolUpdateLocalCommand;
         private readonly string _pathToPlacePackages;
         private readonly IToolPackageStore _toolPackageStore;
-        private readonly ToolPackageInstallerMock _toolPackageInstallerMock;
+        private readonly ToolPackageDownloaderMock _toolPackageDownloaderMock;
         private readonly NuGetVersion _packageOriginalVersionA;
         private readonly NuGetVersion _packageNewVersionA;
         private readonly PackageId _packageIdA = new("local.tool.console.a");
@@ -70,16 +70,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     }
                 }
             };
-            _toolPackageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
-                _toolPackageStore,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter,
-                    new List<MockFeed>
-                    {
-                        _mockFeed
-                    }));
+
+            _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
+                store: _toolPackageStore,
+                fileSystem: _fileSystem,
+                reporter: _reporter,       
+                new List<MockFeed>
+                {
+                    _mockFeed
+                });
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(
@@ -97,7 +96,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _toolRestoreCommand = new ToolRestoreCommand(
                 _parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -106,7 +105,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _defaultToolUpdateLocalCommand = new ToolUpdateLocalCommand(
                 _parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
@@ -194,7 +193,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             ToolUpdateLocalCommand toolUpdateLocalCommand = new(
                 parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
@@ -214,7 +213,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             ToolUpdateLocalCommand toolUpdateLocalCommand = new(
                 parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
@@ -353,3 +352,4 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 }";
     }
 }
+

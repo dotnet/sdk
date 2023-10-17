@@ -17,13 +17,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public partial class SdkDirectoryWorkloadManifestProvider
     {
-        class InstallState
+        public class InstallState
         {
             public string? WorkloadSetVersion { get; set; }
             public WorkloadSet? Manifests { get; set; }
         }
 
-        static class InstallStateReader
+        public static class InstallStateReader
         {
             public static InstallState ReadInstallState(string installStatePath)
             {

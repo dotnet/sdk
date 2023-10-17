@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
                 return Verify(e.Message);
             }
 
-            Assert.True(false, "should not land here");
+            Assert.Fail("should not land here");
             return Task.FromResult(1);
 
         }
@@ -75,7 +75,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.Empty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default).ConfigureAwait(false));
+            Assert.Empty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default));
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.NotEmpty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default).ConfigureAwait(false));
+            Assert.NotEmpty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default));
         }
 
         [Fact]
@@ -100,7 +100,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             var templateConstraintManager = new TemplateConstraintManager(settings);
 
-            Assert.NotEmpty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default).ConfigureAwait(false));
+            Assert.NotEmpty(await TemplateCommand.ValidateConstraintsAsync(templateConstraintManager, template, default));
         }
 
     }

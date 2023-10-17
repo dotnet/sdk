@@ -147,6 +147,11 @@
         <target state="translated">{1} で指定されたワークロード バージョン {0} が見つかりませんでした。</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotFound">
+        <source>Workload version {0} was not found.</source>
+        <target state="translated">ワークロード バージョン {0} が見つかりませんでした。</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

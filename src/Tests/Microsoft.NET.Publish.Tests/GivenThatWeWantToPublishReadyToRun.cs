@@ -335,7 +335,7 @@ namespace Microsoft.NET.Publish.Tests
                 return TargetOSEnum.Linux;
             }
 
-            Assert.True(false, $"{runtimeIdentifier} could not be converted into a known OS type. Adjust the if statement above until this does not happen");
+            Assert.Fail($"{runtimeIdentifier} could not be converted into a known OS type. Adjust the if statement above until this does not happen");
             return TargetOSEnum.Windows;
         }
 

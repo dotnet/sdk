@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
             var project = new TestProject
             {
                 Name = "packagethatwillgomissing",
-                TargetFrameworks = targetFrameworkIdentifier == ".NETCoreApp" ? ToolsetInfo.CurrentTargetFramework : "netstandard2.1",
+                TargetFrameworks = targetFrameworkIdentifier == ".NETCoreApp" ? ToolsetInfo.NextTargetFramework : "netstandard2.1",
             };
 
             TestAsset asset = _testAssetsManager

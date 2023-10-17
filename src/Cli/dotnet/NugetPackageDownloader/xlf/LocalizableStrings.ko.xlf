@@ -7,6 +7,11 @@
         <target state="translated">{0} 버전 {1} 다운로드에 실패했습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">패키지 원본 매핑을 사용하도록 설정된 상태이나 지정된 패키지 ID {0}에서 원본을 찾을 수 없습니다. 자세한 내용은 https://aka.ms/nuget-package-source-mapping에 있는 패키지 원본 매핑에 대한 설명서를 참조하세요.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
         <source>Failed to load NuGet source {0}</source>
         <target state="translated">NuGet 원본 {0}을(를) 로드하지 못했습니다.</target>
@@ -15,6 +20,11 @@
       <trans-unit id="FailedToLoadNuGetSourceSourceIsNotValid">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
         <target state="translated">NuGet 원본 {0}을(를) 로드하지 못했습니다. 원본이 유효하지 않습니다. 추가 처리에서 건너뛰세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">패키지 원본 매핑을 사용하도록 설정된 상태이나 지정된 패키지 ID {0}에 매핑된 원본이 없습니다. 자세한 내용은 https://aka.ms/nuget-package-source-mapping에 있는 패키지 원본 매핑에 대한 설명서를 참조하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">

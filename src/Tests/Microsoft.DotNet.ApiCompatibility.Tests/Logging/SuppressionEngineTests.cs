@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
         {
             EmptyTestSuppressionEngine suppressionEngine = new();
 
-            Assert.Equal(0, suppressionEngine.Suppressions.Count);
+            Assert.Empty(suppressionEngine.Suppressions);
             Assert.Empty(suppressionEngine.WriteSuppressionsToFile(string.Empty, preserveUnnecessarySuppressions: true));
         }
 

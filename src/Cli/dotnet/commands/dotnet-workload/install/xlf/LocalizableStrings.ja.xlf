@@ -27,6 +27,11 @@
         <target state="translated">更新されたワークロード マニフェストを確認しています。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadManifest">
+        <source>Uninstalling workload manifest {0} version {1}...</source>
+        <target state="translated">ワークロード マニフェスト {0} のバージョン {1} をアンインストールしています...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
         <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">ワークロード パック {0} バージョン {1} をアンインストールしています...</target>
@@ -100,11 +105,6 @@
       <trans-unit id="IncludePreviewOptionDescription">
         <source>Allow prerelease workload manifests.</source>
         <target state="translated">プレリリースのワークロード マニフェストを許可します。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="IncompatibleManifests">
-        <source>The current SDK isn't compatible with workload manifests of SDK version {0}.</source>
-        <target state="translated">現在の SDK は、SDK バージョン {0} のワークロード マニフェストと互換性がありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="InstallationSucceeded">
@@ -182,11 +182,6 @@
         <target state="translated">{0} を削除しています </target>
         <note />
       </trans-unit>
-      <trans-unit id="NoManifestsExistForFeatureBand">
-        <source>No manifests exist for SDK version {0}.</source>
-        <target state="translated">SDK バージョン {0} のマニフェストが存在しません。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">親プロセス ({0}) との信頼関係を確立できませんでした。</target>
@@ -231,6 +226,11 @@
         <source>Rolling back pack {0} installation...</source>
         <target state="translated">パック {0} のインストールをロールバックしています...</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SdkVersionOptionNotSupported">
+        <source>The --sdk-version option is no longer supported for this command.</source>
+        <target state="translated">このコマンドでは、--sdk-version オプションはサポートされなくなりました。</target>
+        <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">
         <source>Skip updating the workload manifests.</source>

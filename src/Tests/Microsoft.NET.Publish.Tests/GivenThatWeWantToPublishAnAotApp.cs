@@ -19,7 +19,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [RequiresMSBuildVersionTheory("17.8.0")]
+        [RequiresMSBuildVersionTheory("17.8.0",Skip="https://github.com/dotnet/installer/issues/17453")]
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_enabled(string targetFramework)
         {
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(publishedDll).Should().BeFalse();
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
@@ -108,7 +108,7 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901",Skip="https://github.com/dotnet/installer/issues/17453")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_runs_in_debug_with_no_config_when_PublishAot_is_enabled(string targetFramework)
         {
@@ -153,7 +153,7 @@ namespace Microsoft.NET.Publish.Tests
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
             // There should be a debug file
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             // The app accesses the runtime config file key-value pair
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute().Should().Pass();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [RequiresMSBuildVersionTheory("17.0.0.32901",Skip="https://github.com/dotnet/installer/issues/17453")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_runs_in_release_with_no_config_when_PublishAot_is_enabled(string targetFramework)
         {
@@ -205,7 +205,7 @@ namespace Microsoft.NET.Publish.Tests
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
             // There should be a debug file
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             // The app accesses the runtime config file key-value pair
@@ -293,7 +293,7 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(publishedDll).Should().BeFalse();
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             var command = new RunExeCommand(Log, publishedExe)
