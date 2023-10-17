@@ -78,9 +78,9 @@ stages:
           name: $(DncEngInternalBuildPool)
           demands: ImageOverride -equals 1es-windows-2022
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
+        helixTargetQueue: Windows.VS2022.amd64.Open
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
-        helixTargetQueue: Windows.Amd64.VS2022.Pre
+        helixTargetQueue: Windows.VS2022.amd64
       strategy:
         matrix:
           Build_Release:
