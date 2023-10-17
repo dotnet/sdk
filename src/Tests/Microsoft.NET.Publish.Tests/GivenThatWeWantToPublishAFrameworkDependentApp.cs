@@ -112,7 +112,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining(Strings.FrameworkDependentAppHostRequiresVersion21.Replace("“", "\"").Replace("”", "\""));
+                .HaveStdOutContaining(Strings.FrameworkDependentAppHostRequiresVersion21.Replace("\u0093", "\"").Replace("\u0094", "\""));
         }
     }
 }
