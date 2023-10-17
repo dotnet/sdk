@@ -1,12 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
 using EmptyFiles;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.TestFramework;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -68,14 +65,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                ScrubbersDefinition.Empty
                .AddScrubber(sb => sb.Replace(DateTime.Now.ToString("MM/dd/yyyy"), "**/**/****")));
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            await engine.Execute(options)
-                .ConfigureAwait(false);
+            VerificationEngine engine = new(_log);
+            await engine.Execute(options);
         }
 
         private string GetScenarioName(string[]? args)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
 
             if (args != null)
             {

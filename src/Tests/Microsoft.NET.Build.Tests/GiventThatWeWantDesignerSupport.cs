@@ -1,20 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -25,12 +14,17 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("net46")]
-        [InlineData("netcoreapp3.0")]
-        [InlineData("net5.0-windows")]
-        public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework)
+        [InlineData("net46", "false")]
+        [InlineData("netcoreapp3.0", "true")]
+        [InlineData("netcoreapp3.0", "false")]
+        [InlineData("net5.0-windows", "true")]
+        [InlineData("net5.0-windows", "false")]
+        [InlineData("net7.0-windows10.0.17763", "true")]
+        [InlineData("net7.0-windows10.0.17763", "false")]
+        public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework, string isSelfContained)
         {
-            if (targetFramework == "net5.0-windows" && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if ((targetFramework == "net5.0-windows" || targetFramework == "net7.0-windows10.0.17763")
+                && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // net5.0-windows is windows only scenario
                 return;
@@ -47,15 +41,16 @@ namespace Microsoft.NET.Build.Tests
                 Name = "DesignerTest",
                 IsExe = true,
                 TargetFrameworks = targetFramework,
-                PackageReferences = { new TestPackageReference("NewtonSoft.Json", "13.0.1") },
-                ReferencedProjects = { projectRef }
+                PackageReferences = { new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()) },
+                ReferencedProjects = { projectRef },
+                SelfContained = isSelfContained
             };
 
             var asset = _testAssetsManager
                 .CreateTestProject(project, identifier: targetFramework);
 
             var command = new GetValuesCommand(
-                Log, 
+                Log,
                 Path.Combine(asset.Path, project.Name),
                 targetFramework,
                 "DesignerRuntimeImplementationProjectOutputGroupOutput",
@@ -67,12 +62,12 @@ namespace Microsoft.NET.Build.Tests
 
             command.Execute().Should().Pass();
 
-            var items = 
+            var items =
                 from item in command.GetValuesWithMetadata()
                 select new
                 {
-                   Identity = item.value,
-                   TargetPath = item.metadata["TargetPath"]
+                    Identity = item.value,
+                    TargetPath = item.metadata["TargetPath"]
                 };
 
             string depsFile = null;
@@ -102,9 +97,10 @@ namespace Microsoft.NET.Build.Tests
             {
                 case "netcoreapp3.0":
                 case "net5.0-windows":
+                case "net7.0-windows10.0.17763":
                     var depsFileLibraries = GetRuntimeLibraryFileNames(depsFile);
                     depsFileLibraries.Should().BeEquivalentTo(new[] { "Newtonsoft.Json.dll" });
-                    
+
                     var options = GetRuntimeOptions(runtimeConfig);
                     options["configProperties"]["Microsoft.NETCore.DotNetHostPolicy.SetAppPaths"].Value<bool>().Should().BeTrue();
                     // runtimeconfiguration should not have platform.
@@ -112,13 +108,21 @@ namespace Microsoft.NET.Build.Tests
                     options["tfm"].Value<string>().Should().Be(targetFramework.Split('-')[0]);
                     options["additionalProbingPaths"].Value<JArray>().Should().NotBeEmpty();
 
-                    otherFiles.Should().BeEquivalentTo(new[] { "ReferencedProject.dll", "ReferencedProject.pdb" });
+                    if (targetFramework == "net7.0-windows10.0.17763")
+                    {
+                        otherFiles.Should().BeEquivalentTo(["ReferencedProject.dll", "ReferencedProject.pdb", "Microsoft.Windows.SDK.NET.dll", "WinRT.Runtime.dll"]);
+                    }
+                    else
+                    {
+                        otherFiles.Should().BeEquivalentTo(["ReferencedProject.dll", "ReferencedProject.pdb"]);
+                    }
+
                     break;
 
                 case "net46":
                     depsFile.Should().BeNull();
                     runtimeConfig.Should().BeNull();
-                    otherFiles.Should().BeEquivalentTo(new[] { "Newtonsoft.Json.dll", "ReferencedProject.dll", "ReferencedProject.pdb" });
+                    otherFiles.Should().BeEquivalentTo(["Newtonsoft.Json.dll", "ReferencedProject.dll", "ReferencedProject.pdb"]);
                     break;
             }
         }
@@ -132,7 +136,7 @@ namespace Microsoft.NET.Build.Tests
         private static IEnumerable<string> GetRuntimeLibraryFileNames(string depsFilePath)
         {
             var deps = ParseDepsFile(depsFilePath);
-  
+
             return deps.RuntimeLibraries
                        .SelectMany(r => r.RuntimeAssemblyGroups)
                        .SelectMany(a => a.AssetPaths)
@@ -152,7 +156,7 @@ namespace Microsoft.NET.Build.Tests
         {
             using (var stream = File.OpenRead(path))
             using (var reader = new DependencyContextJsonReader())
-            { 
+            {
                 return reader.Read(stream);
             }
         }

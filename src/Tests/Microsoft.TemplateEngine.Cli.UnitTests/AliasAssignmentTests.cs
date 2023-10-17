@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using FakeItEasy;
-using FluentAssertions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Edge;
@@ -20,7 +19,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         {
             get
             {
-                HashSet<string> initiallyTakenAliases = new HashSet<string>()
+                HashSet<string> initiallyTakenAliases = new()
                 {
                     "-h", "--help",
                     "-l", "--list",
@@ -136,7 +135,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         [Fact]
         public void ShortNameGenerationShouldNotProduceDuplicates()
         {
-            List<CliTemplateParameter> paramList = new List<CliTemplateParameter>();
+            List<CliTemplateParameter> paramList = new();
             for (int i = 0; i < 10; i++)
             {
                 paramList.Add(new CliTemplateParameter("par" + i));
@@ -151,7 +150,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         [Fact]
         public void ShortNameSkippedAfter4Reps()
         {
-            List<CliTemplateParameter> paramList = new List<CliTemplateParameter>();
+            List<CliTemplateParameter> paramList = new();
             for (int i = 0; i < 8; i++)
             {
                 paramList.Add(new CliTemplateParameter("par" + i));
@@ -273,9 +272,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         }
 
         [Theory]
-#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(GetTemplateData))]
-#pragma warning restore CA1825 // Avoid zero-length array allocations.
         public void CanOverrideAliasesForParameterWithHostData(string hostJsonData, string expectedJsonResult)
         {
             var hostData = new HostSpecificTemplateData(string.IsNullOrEmpty(hostJsonData) ? null : JObject.Parse(hostJsonData));

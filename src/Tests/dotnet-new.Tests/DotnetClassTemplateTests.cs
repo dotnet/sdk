@@ -1,14 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using NuGet.Packaging;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -97,8 +92,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                    }
                }));
 
-            VerificationEngine engine = new VerificationEngine(_logger);
-            await engine.Execute(options).ConfigureAwait(false);
+            VerificationEngine engine = new(_logger);
+            await engine.Execute(options);
 
             ValidateInstantiatedProject(workingDir);
         }
@@ -177,8 +172,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                    }
                }));
 
-            VerificationEngine engine = new VerificationEngine(_logger);
-            await engine.Execute(options).ConfigureAwait(false);
+            VerificationEngine engine = new(_logger);
+            await engine.Execute(options);
 
             ValidateInstantiatedProject(workingDir);
         }
@@ -246,7 +241,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private string GetFolderName(string templateShortName, string langVersion, string targetFramework)
         {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new();
             sb.Append($"{templateShortName}");
 
             if (!string.IsNullOrEmpty(langVersion))

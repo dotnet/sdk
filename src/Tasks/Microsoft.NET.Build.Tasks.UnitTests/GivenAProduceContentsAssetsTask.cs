@@ -3,9 +3,6 @@
 
 using FluentAssertions;
 using Microsoft.Build.Framework;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -27,8 +24,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             };
 
             // mock preprocessor
-            var assetPreprocessor = new MockContentAssetPreprocessor((s) => false);
-            assetPreprocessor.MockReadContent = inputText;
+            var assetPreprocessor = new MockContentAssetPreprocessor((s) => false)
+            {
+                MockReadContent = inputText
+            };
 
             // input items
             var contentPreprocessorValues = GetPreprocessorValueItems(preprocessorValues);
@@ -60,7 +59,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void ItOutputsFileWritesForProcessedContent()
         {
             // sample data
-            string [] contentFiles = new string[] 
+            string[] contentFiles = new string[]
             {
                 Path.Combine("contentFiles", "any", "samplepp.txt"),
                 Path.Combine("contentFiles", "any", "image.png"),
@@ -76,8 +75,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             };
 
             // mock preprocessor
-            var assetPreprocessor = new MockContentAssetPreprocessor((s) => false);
-            assetPreprocessor.MockReadContent = inputText;
+            var assetPreprocessor = new MockContentAssetPreprocessor((s) => false)
+            {
+                MockReadContent = inputText
+            };
 
             // input items
             var contentPreprocessorValues = GetPreprocessorValueItems(preprocessorValues);
@@ -130,8 +131,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             };
 
             // mock preprocessor
-            var assetPreprocessor = new MockContentAssetPreprocessor((s) => false);
-            assetPreprocessor.MockReadContent = inputText;
+            var assetPreprocessor = new MockContentAssetPreprocessor((s) => false)
+            {
+                MockReadContent = inputText
+            };
 
             // input items
             var contentPreprocessorValues = GetPreprocessorValueItems(preprocessorValues);
@@ -139,9 +142,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var contentFileDependencies = new ITaskItem[]
             {
                 GetFileDep(packageId, packageVersion, contentFiles[0], copyToOutput: true, ppOutputPath: "samplepp.output.txt"),
-                GetFileDep(packageId, packageVersion, contentFiles[1], copyToOutput: true, 
+                GetFileDep(packageId, packageVersion, contentFiles[1], copyToOutput: true,
                     outputPath: Path.Combine("output", contentFiles[1])),
-                GetFileDep(packageId, packageVersion, contentFiles[2], copyToOutput: true, 
+                GetFileDep(packageId, packageVersion, contentFiles[2], copyToOutput: true,
                     outputPath: Path.Combine("output", contentFiles[2])),
                 GetFileDep(packageId, packageVersion, contentFiles[3], copyToOutput: false),
             };
@@ -207,8 +210,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             };
 
             // mock preprocessor
-            var assetPreprocessor = new MockContentAssetPreprocessor((s) => false);
-            assetPreprocessor.MockReadContent = inputText;
+            var assetPreprocessor = new MockContentAssetPreprocessor((s) => false)
+            {
+                MockReadContent = inputText
+            };
 
             // input items
             var contentPreprocessorValues = GetPreprocessorValueItems(preprocessorValues);
@@ -283,14 +288,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             };
 
             // mock preprocessor
-            var assetPreprocessor = new MockContentAssetPreprocessor((s) => false);
-            assetPreprocessor.MockReadContent = inputText;
+            var assetPreprocessor = new MockContentAssetPreprocessor((s) => false)
+            {
+                MockReadContent = inputText
+            };
 
             // input items
             var contentPreprocessorValues = GetPreprocessorValueItems(preprocessorValues);
             var contentFileDependencies = new ITaskItem[]
             {
-                GetFileDep(packageId, packageVersion, contentFiles[0], buildAction: "Content", copyToOutput: true, 
+                GetFileDep(packageId, packageVersion, contentFiles[0], buildAction: "Content", copyToOutput: true,
                     ppOutputPath: "samplepp1.output.txt"),
                 GetFileDep(packageId, packageVersion, contentFiles[0], buildAction: "Content", copyToOutput: true,
                     ppOutputPath: "samplepp2.output.txt"),
@@ -312,7 +319,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.Execute().Should().BeTrue();
 
             // Asserts
-            string[] assetWritePaths = new string[] 
+            string[] assetWritePaths = new string[]
             {
                 Path.Combine(ContentOutputDirectory, "test", "LibA", "1.2.3", "samplepp1.output.txt"),
                 Path.Combine(ContentOutputDirectory, "test", "LibA", "1.2.3", "samplepp2.output.txt")
@@ -464,7 +471,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 item = contentItems[i];
                 item.ItemSpec.Should().Be(
-                    Path.Combine(PackageRootDirectory, "LibA", "1.2.3", contentFiles[i+1]));
+                    Path.Combine(PackageRootDirectory, "LibA", "1.2.3", contentFiles[i + 1]));
                 item.GetMetadata("ProcessedItemType").Should().Be("Content");
                 item.GetMetadata(MetadataKeys.NuGetPackageId).Should().Be(packageId);
                 item.GetMetadata(MetadataKeys.NuGetPackageVersion).Should().Be(packageVersion);
@@ -482,7 +489,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 metadata: new Dictionary<string, string> { { "Value", kvp.Value } })).ToArray();
 
         private static ITaskItem GetFileDep(string packageId, string packageVersion, string path, string ppOutputPath = null,
-            string codeLanguage = "any", bool copyToOutput = false, string buildAction = "none", 
+            string codeLanguage = "any", bool copyToOutput = false, string buildAction = "none",
             string outputPath = null)
             => new MockTaskItem(
                 itemSpec: Path.Combine(PackageRootDirectory, packageId, packageVersion, path),

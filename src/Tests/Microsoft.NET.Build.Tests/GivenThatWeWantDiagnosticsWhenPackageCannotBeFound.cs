@@ -1,17 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Text.RegularExpressions;
-using FluentAssertions;
-using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantDiagnosticsWhenPackageCannotBeFound : SdkTest
@@ -70,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
                package.Version,
                $"{package.ID}.{package.Version}.nupkg.sha512");
 
-            var nupkgMetadataFile =  Path.Combine(
+            var nupkgMetadataFile = Path.Combine(
                TestContext.Current.NuGetCachePath,
                package.ID,
                package.Version,

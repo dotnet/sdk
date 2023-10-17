@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.IO;
-using System.Threading;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
@@ -13,7 +10,7 @@ namespace Microsoft.DotNet.Cli.Utils
     /// </summary>
     public sealed class BlockingMemoryStream : Stream
     {
-        private readonly BlockingCollection<byte[]> _buffers = new BlockingCollection<byte[]>();
+        private readonly BlockingCollection<byte[]> _buffers = new();
         private ArraySegment<byte> _remaining;
 
         public override void Write(byte[] buffer, int offset, int count)

@@ -1,12 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -130,7 +126,7 @@ namespace Microsoft.NET.Build.Tasks
 
                     return (ITaskItem)ret;
                 },
-                StringComparer.OrdinalIgnoreCase).ToArray();            
+                StringComparer.OrdinalIgnoreCase).ToArray();
         }
 
         static string GetKeyValue(string key, ITaskItem item)

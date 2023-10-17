@@ -1,10 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.NugetSearch;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools.Tool.Search;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
@@ -13,6 +18,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
     {
         public static VersionRange GetVersionRange(this ParseResult parseResult)
         {
+            string packageId = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
             string packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             bool prerelease = parseResult.GetValue(ToolInstallCommandParser.PrereleaseOption);
 
@@ -37,7 +43,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         LocalizableStrings.InvalidNuGetVersionRange,
                         packageVersion));
             }
-
             return versionRange;
         }
     }

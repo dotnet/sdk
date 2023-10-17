@@ -1,19 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -28,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void MSTestSingleTFM()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("3");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("3");
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log)
@@ -170,7 +160,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItAcceptsMultipleLoggersAsCliArguments()
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("10");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("10");
             var trxFileNamePattern = "custom*.trx";
             string trxLoggerDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -207,7 +197,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void TestWillNotBuildTheProjectIfNoBuildArgsIsGiven()
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("5");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("5");
             string configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
             string expectedError = Path.Combine(testProjectDirectory, "bin",
                                    configuration, ToolsetInfo.CurrentTargetFramework, "VSTestCore.dll");
@@ -235,7 +225,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void TestWillCreateTrxLoggerInTheSpecifiedResultsDirectoryBySwitch()
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("6");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("6");
 
             string trxLoggerDirectory = Path.Combine(testProjectDirectory, "TR", "x.y");
 
@@ -251,7 +241,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                        .Execute("--logger", "trx", "--results-directory", trxLoggerDirectory);
 
             // Verify
-            String[] trxFiles = Directory.GetFiles(trxLoggerDirectory, "*.trx");
+            string[] trxFiles = Directory.GetFiles(trxLoggerDirectory, "*.trx");
             Assert.Single(trxFiles);
             result.StdOut.Should().Contain(trxFiles[0]);
 
@@ -266,7 +256,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItCreatesTrxReportInTheSpecifiedResultsDirectoryByArgs()
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("7");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("7");
             var trxFileNamePattern = "custom*.trx";
             string trxLoggerDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -352,7 +342,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItUsesVerbosityPassedToDefineVerbosityOfConsoleLoggerOfTheTests(string verbosity, bool shouldShowPassedTests)
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp($"9_{verbosity}");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp($"9_{verbosity}");
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log)
@@ -424,7 +414,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void ItAcceptsNoLogoAsCliArguments()
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("14");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("14");
 
             // Call test with logger enable
             CommandResult result = new DotnetTestCommand(Log)
@@ -444,7 +434,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.Windows)]
         public void ItCreatesCoverageFileWhenCodeCoverageEnabledByRunsettings()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("11");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("11");
 
             string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -475,7 +465,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Verify coverage file.
-            DirectoryInfo d = new DirectoryInfo(resultsDirectory);
+            DirectoryInfo d = new(resultsDirectory);
             FileInfo[] coverageFileInfos = d.GetFiles("*.coverage", SearchOption.AllDirectories);
             Assert.Single(coverageFileInfos);
 
@@ -485,7 +475,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX | TestPlatforms.Linux)]
         public void ItCreatesCoverageFileInResultsDirectory()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("12");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("12");
 
             string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -511,7 +501,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Verify coverage file.
-            DirectoryInfo d = new DirectoryInfo(resultsDirectory);
+            DirectoryInfo d = new(resultsDirectory);
             FileInfo[] coverageFileInfos = d.GetFiles("*.coverage", SearchOption.AllDirectories);
             Assert.Single(coverageFileInfos);
 
@@ -521,7 +511,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX | TestPlatforms.Linux)]
         public void ItCreatesCoberturaFileProvidedByCommandInResultsDirectory()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("15");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("15");
 
             string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -547,7 +537,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Verify coverage file.
-            DirectoryInfo d = new DirectoryInfo(resultsDirectory);
+            DirectoryInfo d = new(resultsDirectory);
             FileInfo[] coverageFileInfos = d.GetFiles("*.cobertura.xml", SearchOption.AllDirectories);
             Assert.Single(coverageFileInfos);
 
@@ -557,7 +547,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.Windows)]
         public void ItHandlesMultipleCollectCommandInResultsDirectory()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("16");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("16");
 
             string resultsDirectory = Path.Combine(testProjectDirectory, "RD");
 
@@ -588,7 +578,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Verify coverage file.
-            DirectoryInfo d = new DirectoryInfo(resultsDirectory);
+            DirectoryInfo d = new(resultsDirectory);
             FileInfo[] coverageFileInfos = d.GetFiles("*.coverage", SearchOption.AllDirectories);
             Assert.Empty(coverageFileInfos);
 
@@ -598,7 +588,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.FreeBSD)]
         public void ItShouldShowWarningMessageOnCollectCodeCoverage()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("13");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("13");
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log)
@@ -622,7 +612,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [PlatformSpecificFact(TestPlatforms.Linux, Skip = "https://github.com/dotnet/sdk/issues/22865")]
         public void ItShouldShowWarningMessageOnCollectCodeCoverageThatProfilerWasNotInitialized()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("13");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("13");
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log)

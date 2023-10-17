@@ -2,15 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Utilities;
-using System;
-using System.Text;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
 {
     public abstract class KuduConnect
     {
         private KuduConnectionInfo _connectionInfo;
-        private object _syncObject = new object();
+        private object _syncObject = new();
         internal KuduConnect(KuduConnectionInfo connectionInfo, TaskLoggingHelper logger)
         {
             _connectionInfo = connectionInfo;
@@ -35,10 +33,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             {
                 lock (_syncObject)
                 {
-                    string authInfo = String.Format("{0}:{1}", _connectionInfo.UserName, _connectionInfo.Password);
+                    string authInfo = string.Format("{0}:{1}", _connectionInfo.UserName, _connectionInfo.Password);
                     return Convert.ToBase64String(Encoding.UTF8.GetBytes(authInfo));
                 }
             }
-        } 
+        }
     }
 }

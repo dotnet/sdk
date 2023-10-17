@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
@@ -15,7 +14,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
-            DirectoryPath? downloadFolder = null);
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null);
 
         Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion = null,
@@ -27,5 +27,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId,
              PackageSourceLocation packageSourceLocation = null,
              bool includePreview = false);
-    }
+
+        Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
+            VersionRange versionRange,
+             PackageSourceLocation packageSourceLocation = null);
+    } 
 }

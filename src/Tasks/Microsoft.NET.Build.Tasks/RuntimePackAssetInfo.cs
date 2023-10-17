@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
@@ -22,9 +21,11 @@ namespace Microsoft.NET.Build.Tasks
 
         public static RuntimePackAssetInfo FromItem(ITaskItem item)
         {
-            var assetInfo = new RuntimePackAssetInfo();
-            assetInfo.SourcePath = item.ItemSpec;
-            assetInfo.DestinationSubPath = item.GetMetadata(MetadataKeys.DestinationSubPath);
+            var assetInfo = new RuntimePackAssetInfo
+            {
+                SourcePath = item.ItemSpec,
+                DestinationSubPath = item.GetMetadata(MetadataKeys.DestinationSubPath)
+            };
 
             string assetTypeString = item.GetMetadata(MetadataKeys.AssetType);
             if (assetTypeString.Equals("runtime", StringComparison.OrdinalIgnoreCase))

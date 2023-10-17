@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -31,9 +29,9 @@ namespace Microsoft.DotNet.Cli.Build
         {
             JToken deps;
             using (var file = File.OpenText(depsFile))
-            using (JsonTextReader reader = new JsonTextReader(file))
+            using (JsonTextReader reader = new(file))
             {
-                deps = JObject.ReadFrom(reader);
+                deps = JToken.ReadFrom(reader);
             }
 
             foreach (JProperty target in deps["targets"])

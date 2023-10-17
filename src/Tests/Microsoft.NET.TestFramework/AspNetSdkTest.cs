@@ -1,15 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.TestFramework
 {
@@ -30,12 +23,12 @@ namespace Microsoft.NET.TestFramework
             [CallerMemberName] string callerName = "",
             string subdirectory = "",
             string overrideTfm = null,
-            string identifier = null) 
+            string identifier = null)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
-                .WithProjectChanges(project => 
+                .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
                     var targetFramework = project.Descendants()
@@ -51,6 +44,10 @@ namespace Microsoft.NET.TestFramework
                         targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
                     }
                 });
+
+            foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(_testAssetsManager.TestAssetsRoot, "WasmOverride")))
+                File.Copy(assetPath, Path.Combine(projectDirectory.Path, Path.GetFileName(assetPath)));
+
             return projectDirectory;
         }
 

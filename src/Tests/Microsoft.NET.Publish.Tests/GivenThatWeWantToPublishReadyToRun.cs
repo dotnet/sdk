@@ -1,23 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using NuGet.Frameworks;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -347,7 +335,7 @@ namespace Microsoft.NET.Publish.Tests
                 return TargetOSEnum.Linux;
             }
 
-            Assert.True(false, $"{runtimeIdentifier} could not be converted into a known OS type. Adjust the if statement above until this does not happen");
+            Assert.Fail($"{runtimeIdentifier} could not be converted into a known OS type. Adjust the if statement above until this does not happen");
             return TargetOSEnum.Windows;
         }
 
@@ -487,9 +475,9 @@ public class Program
                 }
 
                 // Legacy perfmap file naming prior to .NET 6
-                using (FileStream fs = new FileStream(assemblyFile, FileMode.Open, FileAccess.Read))
+                using (FileStream fs = new(assemblyFile, FileMode.Open, FileAccess.Read))
                 {
-                    PEReader pereader = new PEReader(fs);
+                    PEReader pereader = new(fs);
                     MetadataReader mdReader = pereader.GetMetadataReader();
                     Guid mvid = mdReader.GetGuid(mdReader.GetModuleDefinition().Mvid);
 
@@ -502,7 +490,7 @@ public class Program
 
         public static bool DoesImageHaveR2RInfo(string path)
         {
-            using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+            using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))
             {
                 using (var pereader = new PEReader(fs))
                 {

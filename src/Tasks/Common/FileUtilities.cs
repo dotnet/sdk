@@ -6,10 +6,7 @@
 #nullable disable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -30,7 +27,7 @@ namespace Microsoft.NET.Build.Tasks
             return null;
         }
 
-        static readonly HashSet<string> s_assemblyExtensions = new HashSet<string>(new[] { ".dll", ".exe", ".winmd" }, StringComparer.OrdinalIgnoreCase);
+        static readonly HashSet<string> s_assemblyExtensions = new(new[] { ".dll", ".exe", ".winmd" }, StringComparer.OrdinalIgnoreCase);
         public static Version TryGetAssemblyVersion(string sourcePath)
         {
             var extension = Path.GetExtension(sourcePath);

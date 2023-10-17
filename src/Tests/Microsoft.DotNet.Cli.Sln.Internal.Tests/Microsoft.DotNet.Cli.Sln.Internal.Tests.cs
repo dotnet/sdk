@@ -1,17 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using FluentAssertions;
-using Xunit;
-using Microsoft.DotNet.Cli.Sln.Internal;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using System.Runtime.CompilerServices;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Sln.Internal.Tests
 {
@@ -106,12 +96,12 @@ EndGlobal
 
         private string CreateFile([CallerMemberName] string callerName = null, string identifier = null)
         {
-            var folder = _testAssetsManager.CreateTestDirectory(testName: callerName +  identifier);
+            var folder = _testAssetsManager.CreateTestDirectory(testName: callerName + identifier);
             var filename = Path.Combine(folder.Path, Guid.NewGuid().ToString() + ".tmp");
             using (new FileStream(filename, FileMode.CreateNew)) { }
             return filename;
         }
-        
+
 
         [Fact]
         public void WhenGivenAValidSlnFileItReadsAndVerifiesContents()
@@ -269,7 +259,7 @@ EndGlobal
             var attr = File.GetAttributes(tmpFile);
             attr = attr | FileAttributes.ReadOnly;
             File.SetAttributes(tmpFile, attr);
-        
+
             Action act = () => SlnFile.Read(tmpFile);
             act.Should().NotThrow("Because readonly file is not being modified.");
         }

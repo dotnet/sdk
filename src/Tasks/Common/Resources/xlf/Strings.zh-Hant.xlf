@@ -14,17 +14,17 @@
       </trans-unit>
       <trans-unit id="AotUnsupportedHostRuntimeIdentifier">
         <source>NETSDK1204: Ahead-of-time compilation is not supported on the current platform '{0}'.</source>
-        <target state="new">NETSDK1204: Ahead-of-time compilation is not supported on the current platform '{0}'.</target>
+        <target state="translated">NETSDK1204: 目前的平台 '{0}' 不支援提前編譯。</target>
         <note>{StrBegin="NETSDK1204: "}</note>
       </trans-unit>
       <trans-unit id="AotUnsupportedTargetFramework">
         <source>NETSDK1207: Ahead-of-time compilation is not supported for the target framework.</source>
-        <target state="new">NETSDK1207: Ahead-of-time compilation is not supported for the target framework.</target>
+        <target state="translated">NETSDK1207: 目標架構不支援提前編譯。</target>
         <note>{StrBegin="NETSDK1207: "}</note>
       </trans-unit>
       <trans-unit id="AotUnsupportedTargetRuntimeIdentifier">
         <source>NETSDK1203: Ahead-of-time compilation is not supported for the target runtime identifier '{0}'.</source>
-        <target state="new">NETSDK1203: Ahead-of-time compilation is not supported for the target runtime identifier '{0}'.</target>
+        <target state="translated">NETSDK1203: 目標執行階段識別碼 '{0}' 不支援提前編譯。</target>
         <note>{StrBegin="NETSDK1203: "}</note>
       </trans-unit>
       <trans-unit id="AppConfigRequiresRootConfiguration">
@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="ArtifactsPathCannotBeSetInProject">
         <source>NETSDK1199: The ArtifactsPath and UseArtifactsOutput properties cannot be set in a project file, due to MSBuild ordering constraints. They must be set in a Directory.Build.props file or from the command line. See https://aka.ms/netsdk1199 for more information.</source>
-        <target state="new">NETSDK1199: The ArtifactsPath and UseArtifactsOutput properties cannot be set in a project file, due to MSBuild ordering constraints. They must be set in a Directory.Build.props file or from the command line. See https://aka.ms/netsdk1199 for more information.</target>
+        <target state="translated">NETSDK1199: 由於 MSBuild 順序條件約束，無法在專案檔案中設定 ArtifactsPath 和 UseArtifactsOutput 屬性。它們必須在 Directory.Build.props 檔案中或從命令列設定。如需詳細資訊，請參閱 https://aka.ms/netsdk1199。</target>
         <note>{StrBegin="NETSDK1199: "}</note>
       </trans-unit>
       <trans-unit id="AspNetCoreAllNotSupported">
@@ -399,6 +399,13 @@
         <target state="translated">NETSDK1169: 已為兩個型別程式庫 '{1}' 和 '{2}' 指定了相同的資源識別碼 {0}。不允許重複的型別程式庫識別碼。</target>
         <note>{StrBegin="NETSDK1169: "}</note>
       </trans-unit>
+      <trans-unit id="EnableSingleFileAnalyzerUnsupported">
+        <source>NETSDK1211: EnableSingleFileAnalyzer is not supported for the target framework. Consider multi-targeting to a supported framework to enable single-file analysis, and set EnableSingleFileAnalyzer only for the supported frameworks. For example:
+&lt;EnableSingleFileAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/EnableSingleFileAnalyzer&gt;</source>
+        <target state="new">NETSDK1211: EnableSingleFileAnalyzer is not supported for the target framework. Consider multi-targeting to a supported framework to enable single-file analysis, and set EnableSingleFileAnalyzer only for the supported frameworks. For example:
+&lt;EnableSingleFileAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/EnableSingleFileAnalyzer&gt;</target>
+        <note>{StrBegin="NETSDK1211: "}</note>
+      </trans-unit>
       <trans-unit id="EncounteredConflict_Info">
         <source>Encountered conflict between '{0}' and '{1}'.</source>
         <target state="translated">'{0}' 與 '{1}' 之間發生衝突。</target>
@@ -475,13 +482,13 @@
         <note>{StrBegin="NETSDK1141: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkFailed">
-        <source>NETSDK1144: Optimizing assemblies for size failed. Optimization can be disabled by setting the PublishTrimmed property to false.</source>
-        <target state="translated">NETSDK1144: 將元件大小最佳化失敗。將 PublishTrimmed 屬性設定為 false，可停用最佳化。</target>
+        <source>NETSDK1144: Optimizing assemblies for size failed.</source>
+        <target state="needs-review-translation">NETSDK1144: 將元件大小最佳化失敗。將 PublishTrimmed 屬性設定為 false，可停用最佳化。</target>
         <note>{StrBegin="NETSDK1144: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNoValidRuntimePackageError">
         <source>NETSDK1195: Trimming, or code compatibility analysis for trimming, single-file deployment, or ahead-of-time compilation is not supported for the target framework. For more information, see https://aka.ms/netsdk1195</source>
-        <target state="new">NETSDK1195: Trimming, or code compatibility analysis for trimming, single-file deployment, or ahead-of-time compilation is not supported for the target framework. For more information, see https://aka.ms/netsdk1195</target>
+        <target state="translated">NETSDK1195: 目標架構不支援針對修剪、單一檔案部署或提前編譯的修剪或程式碼相容性分析。如需詳細資訊，請參閱 https://aka.ms/netsdk1195</target>
         <note>{StrBegin="NETSDK1195: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNotSupportedError">
@@ -562,6 +569,20 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1170: 為型別程式庫 '{0}' 提供的型別程式庫識別碼 '{1}' 無效。識別碼必須是小於 65536 的正整數。</target>
         <note>{StrBegin="NETSDK1170: "}</note>
       </trans-unit>
+      <trans-unit id="IsAotCompatibleUnsupported">
+        <source>NETSDK1210: IsAotCompatible and EnableAotAnalyzer are not supported for the target framework. Consider multi-targeting to a supported framework to enable ahead-of-time compilation analysis, and set IsAotCompatible only for the supported frameworks. For example:
+&lt;IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsAotCompatible&gt;</source>
+        <target state="new">NETSDK1210: IsAotCompatible and EnableAotAnalyzer are not supported for the target framework. Consider multi-targeting to a supported framework to enable ahead-of-time compilation analysis, and set IsAotCompatible only for the supported frameworks. For example:
+&lt;IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsAotCompatible&gt;</target>
+        <note>{StrBegin="NETSDK1210: "}</note>
+      </trans-unit>
+      <trans-unit id="IsTrimmableUnsupported">
+        <source>NETSDK1212: IsTrimmable and EnableTrimAnalyzer are not supported for the target framework. Consider multi-targeting to a supported framework to enable trimming, and set IsTrimmable only for the supported frameworks. For example:
+&lt;IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsTrimmable&gt;</source>
+        <target state="new">NETSDK1212: IsTrimmable and EnableTrimAnalyzer are not supported for the target framework. Consider multi-targeting to a supported framework to enable trimming, and set IsTrimmable only for the supported frameworks. For example:
+&lt;IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsTrimmable&gt;</target>
+        <note>{StrBegin="NETSDK1212: "}</note>
+      </trans-unit>
       <trans-unit id="JitLibraryNotFound">
         <source>NETSDK1157: JIT library '{0}' not found.</source>
         <target state="translated">NETSDK1157: 找不到 JIT 程式庫 '{0}'。</target>
@@ -610,15 +631,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1115: 目前的 .NET SDK 不支援在不使用 .NET SDK 預設的情形下使用 .NET Framework。這可能是因為 C++/CLI 專案 CLRSupport 屬性與 TargetFramework 不相符所致。</target>
         <note>{StrBegin="NETSDK1115: "}</note>
       </trans-unit>
-      <trans-unit id="Net6NotCompatibleWithDev16">
-        <source>NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</source>
-        <target state="translated">NETSDK1182: 不支援在 Visual Studio 2019 中以 .NET 6.0 或更高版本為目標。</target>
-        <note>{StrBegin="NETSDK1182: "}</note>
-      </trans-unit>
-      <trans-unit id="Net7NotCompatibleWithDev173">
-        <source>NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</source>
-        <target state="translated">NETSDK1192: 不支援在 Visual Studio 2022 17.3 中以 .NET 7.0 或更高版本為目標。</target>
-        <note>{StrBegin="NETSDK1192: "}</note>
+      <trans-unit id="Net8NotCompatibleWithDev177">
+        <source>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</source>
+        <target state="translated">NETSDK1213: 不支援在 Visual Studio 2022 17.7 中以 .NET 8.0 或更高版本為目標。</target>
+        <note>{StrBegin="NETSDK1213: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -677,7 +693,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="NonPortableRuntimeIdentifierDetected">
         <source>NETSDK1206: Found version-specific or distribution-specific runtime identifier(s): {0}. Affected libraries: {1}. In .NET 8.0 and higher, assets for version-specific and distribution-specific runtime identifiers will not be found by default. See https://aka.ms/dotnet/rid-usage for details.</source>
-        <target state="new">NETSDK1206: Found version-specific or distribution-specific runtime identifier(s): {0}. Affected libraries: {1}. In .NET 8.0 and higher, assets for version-specific and distribution-specific runtime identifiers will not be found by default. See https://aka.ms/dotnet/rid-usage for details.</target>
+        <target state="translated">NETSDK1206: 找到版本特定或發佈特定的執行階段識別碼: {0}。受影響的程式庫: {1}。在 .NET 8.0 及更新版本中，預設會找不到版本特定和發佈特定執行階段識別碼的資產。如需詳細資料，請參閱 https://aka.ms/dotnet/rid-usage。</target>
         <note>{StrBegin="NETSDK1206: "}</note>
       </trans-unit>
       <trans-unit id="NonSelfContainedExeCannotReferenceSelfContained">
@@ -702,12 +718,12 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PackageContainsIncorrectlyCasedLocale">
         <source>NETSDK1187: Package {0} {1} has a resource with the locale '{2}'. This locale has been normalized to the standard format '{3}' to prevent casing issues in the build. Consider notifying the package author about this casing issue.</source>
-        <target state="needs-review-translation">NETSDK1187: 封裝 {0} {1} 具有地區設定 '{2}' 的資源。此地區設定已標準化為標準格式 '{3}' 以避免組建中發生大小寫問題。請考慮通知封裝作者這個大小寫問題。</target>
+        <target state="translated">NETSDK1187: 封裝 {0} {1} 具有地區設定 '{2}' 的資源。此地區設定已標準化為標準格式 '{3}' 以避免組建中發生大小寫問題。請考慮通知封裝作者這個大小寫問題。</target>
         <note>{StrBegin="NETSDK1187: "} 0 is a package name, 1 is a package version, 2 is the incorrect locale string, and 3 is the correct locale string.</note>
       </trans-unit>
       <trans-unit id="PackageContainsUnknownLocale">
         <source>NETSDK1188: Package {0} {1} has a resource with the locale '{2}'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.</source>
-        <target state="needs-review-translation">NETSDK1188: 封裝 {0} {1} 具有地區設定為 '{2}' 的資源。.NET 無法辨識此地區設定。請考慮通知封裝作者，其似乎使用不正確的地區設定。</target>
+        <target state="translated">NETSDK1188: 封裝 {0} {1} 具有地區設定為 '{2}' 的資源。.NET 無法辨識此地區設定。請考慮通知封裝作者，其似乎使用不正確的地區設定。</target>
         <note>{StrBegin="NETSDK1188: "} 0 is a package name, 1 is a package version, and 2 is the incorrect locale string</note>
       </trans-unit>
       <trans-unit id="PackageNotFound">
@@ -777,7 +793,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PublishUnsupportedWithoutTargetFramework">
         <source>NETSDK1129: The 'Publish' target is not supported without specifying a target framework. The current project targets multiple frameworks, you must specify one of the following frameworks in order to publish: {0}</source>
-        <target state="new">NETSDK1129: The 'Publish' target is not supported without specifying a target framework. The current project targets multiple frameworks, you must specify one of the following frameworks in order to publish: {0}</target>
+        <target state="translated">NETSDK1129: 若未指定目標架構，則不支援 'Publish' 目標。目前的專案以多個架構為目標，您必須指定下列其中一個架構才能發佈: {0}</target>
         <note>{StrBegin="NETSDK1129: "}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunCompilationFailed">
@@ -792,7 +808,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="ReadyToRunNoValidRuntimePackageError">
         <source>NETSDK1094: Unable to optimize assemblies for performance: a valid runtime package was not found. Either set the PublishReadyToRun property to false, or use a supported runtime identifier when publishing. When targeting .NET 6 or higher, make sure to restore packages with the PublishReadyToRun property set to true.</source>
-        <target state="needs-review-translation">NETSDK1094: 無法最佳化組件的效能: 找不到有效的執行階段套件。請將 PublishReadyToRun 屬性設定為 false，或在發佈時使用支援的執行階段識別碼。以 .NET 6 或更高版本為目標時，請務必還原套件，將 PublishReadyToRun 屬性設為 true。</target>
+        <target state="translated">NETSDK1094: 無法最佳化組件的效能: 找不到有效的執行階段套件。請將 PublishReadyToRun 屬性設定為 false，或在發佈時使用支援的執行階段識別碼。以 .NET 6 或更高版本為目標時，請務必還原套件，將 PublishReadyToRun 屬性設為 true。</target>
         <note>{StrBegin="NETSDK1094: "}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
@@ -806,8 +822,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1103: "}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
-        <source>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized.</source>
-        <target state="translated">NETSDK1083: 無法辨識指定的 RuntimeIdentifier '{0}'。</target>
+        <source>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized. See https://aka.ms/netsdk1083 for more information.</source>
+        <target state="translated">NETSDK1083: 無法辨識指定的 RuntimeIdentifier '{0}'。如需詳細資訊，請參閱 https://aka.ms/netsdk1083。</target>
         <note>{StrBegin="NETSDK1083: "}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierWasNotSpecified">
@@ -817,7 +833,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="RuntimeIdentifierWillNoLongerImplySelfContained">
         <source>NETSDK1201: For projects targeting .NET 8.0 and higher, specifying a RuntimeIdentifier will no longer produce a self contained app by default. To continue building self-contained apps, set the SelfContained property to true or use the --self-contained argument.</source>
-        <target state="new">NETSDK1201: For projects targeting .NET 8.0 and higher, specifying a RuntimeIdentifier will no longer produce a self contained app by default. To continue building self-contained apps, set the SelfContained property to true or use the --self-contained argument.</target>
+        <target state="translated">NETSDK1201: 針對以 .NET 8.0 及更新版本為目標的專案，指定 RuntimeIdentifier 預設將不再產生獨立式應用程式。若要繼續建置獨立式應用程式，請將 SelfContained 屬性設定為 true 或使用 --self-contained 引數。</target>
         <note>{StrBegin="NETSDK1201: "}</note>
       </trans-unit>
       <trans-unit id="RuntimeListNotFound">
@@ -853,7 +869,7 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="SolutionProjectConfigurationsConflict">
         <source>NETSDK1197: Multiple solution project(s) contain conflicting '{0}' values; ensure the values match. Consider using a Directory.build.props file to set the property for all projects. Conflicting projects:
 {1}</source>
-        <target state="new">NETSDK1197: Multiple solution project(s) contain conflicting '{0}' values; ensure the values match. Consider using a Directory.build.props file to set the property for all projects. Conflicting projects:
+        <target state="translated">NETSDK1197: 多個解決方案專案包含衝突的 '{0}' 值; 請確保值相符。考慮使用 Directory.build.props 檔案來設定所有專案的屬性。衝突的專案: 
 {1}</target>
         <note>{StrBegin="NETSDK1197: "}</note>
       </trans-unit>
@@ -953,8 +969,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1050: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetFrameworkVersion">
-        <source>NETSDK1045: The current .NET SDK does not support targeting {0} {1}.  Either target {0} {2} or lower, or use a version of the .NET SDK that supports {0} {1}.</source>
-        <target state="translated">NETSDK1045: 目前的 .NET SDK 不支援以 {0} {1} 作為目標。請以 {0} {2} 或更低版本作為目標，或是使用支援 {0} {1} 的 .NET SDK 版本。</target>
+        <source>NETSDK1045: The current .NET SDK does not support targeting {0} {1}.  Either target {0} {2} or lower, or use a version of the .NET SDK that supports {0} {1}. Download the .NET SDK from https://aka.ms/dotnet/download</source>
+        <target state="translated">NETSDK1045: 目前的 .NET SDK 不支援將 {0} {1} 設定為目標。請將 {0} {2} 或更低版本設定為目標，或是使用支援 {0} {1} 的 .NET SDK 版本。若要下載 .NET SDK，請至 https://aka.ms/dotnet/download</target>
         <note>{StrBegin="NETSDK1045: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifier">
@@ -964,8 +980,13 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UseArtifactsOutputRequiresDirectoryBuildProps">
         <source>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</source>
-        <target state="new">NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</target>
+        <target state="translated">NETSDK1200: 如果 UseArtifactsPath 設定為 true 且未設定 ArtifactsPath，則必須有 Directory.Build.props 檔案，才能判斷成品資料夾的位置。</target>
         <note>{StrBegin="NETSDK1200: "}</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedVisualStudioVersion">
+        <source>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</source>
+        <target state="translated">NETSDK1209: 目前的 Visual Studio 版本不支援將 {0} {1} 設定為目標。請將 {0} {2} 或更低版本設定為目標，或是使用 Visual Studio 版本 {3} 或更新版本</target>
+        <note>{StrBegin="NETSDK1209: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled">
         <source>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</source>
@@ -979,7 +1000,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UsingPreviewSdk">
         <source>NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</source>
-        <target state="new">NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</target>
+        <target state="translated">NETSDK1057: 您目前使用的是 .NET 預覽版。請參閱: https://aka.ms/dotnet-support-policy</target>
         <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">

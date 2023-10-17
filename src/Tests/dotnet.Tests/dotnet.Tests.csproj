@@ -148,7 +148,6 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.DotNet.PackageInstall.Tests\Microsoft.DotNet.PackageInstall.Tests.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
     <ProjectReference Include="..\..\Cli\dotnet\dotnet.csproj" />
@@ -158,17 +157,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
-    <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
-    <PackageReference Include="Microsoft.TemplateEngine.Mocks" Version="$(MicrosoftTemplateEngineMocksPackageVersion)" />
-    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" Version="$(MicrosoftTemplateEngineTestHelperPackageVersion)" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="System.ComponentModel.TypeConverter" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
+    <PackageReference Include="Microsoft.TemplateEngine.Mocks" />
+    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
     <!-- This package comes from dotnet/runtime-assets -->
-    <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" Version="$(MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Installer.Windows.Security.TestData" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Global usings -->
+  <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
+  <ItemGroup>
+    <!-- Aliases -->
+    <!-- Note: '%3C' is for '<' and '%3E' is for '>' -->
+    <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

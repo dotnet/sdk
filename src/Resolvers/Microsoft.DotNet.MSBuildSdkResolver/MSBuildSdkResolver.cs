@@ -1,17 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.DotNetSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver;
-using Microsoft.DotNet.Cli;
 
 #nullable disable
 
@@ -35,11 +31,11 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private readonly Func<string> _getCurrentProcessPath;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
-        private static CachingWorkloadResolver _staticWorkloadResolver = new CachingWorkloadResolver();
+        private static CachingWorkloadResolver _staticWorkloadResolver = new();
 
         private bool _shouldLog = false;
 
-        public DotNetMSBuildSdkResolver() 
+        public DotNetMSBuildSdkResolver()
             : this(Environment.GetEnvironmentVariable, null, VSSettings.Ambient)
         {
         }
@@ -301,7 +297,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             {
                 startDir = Path.GetDirectoryName(context.SolutionFilePath);
             }
-            else if(!string.IsNullOrWhiteSpace(context.ProjectFilePath))
+            else if (!string.IsNullOrWhiteSpace(context.ProjectFilePath))
             {
                 startDir = Path.GetDirectoryName(context.ProjectFilePath);
             }
@@ -347,7 +343,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
         class ResolverLogger
         {
-            public List<object> Messages = new List<object>();
+            public List<object> Messages = new();
 
             public ResolverLogger()
             {

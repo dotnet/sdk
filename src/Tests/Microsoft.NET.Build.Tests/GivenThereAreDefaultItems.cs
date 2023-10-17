@@ -2,22 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Assertions;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Xml.Linq;
-using Xunit;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit.Abstractions;
-using NuGet.ProjectModel;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -120,7 +107,7 @@ namespace Microsoft.NET.Build.Tests
 
                 project.Root.Element(ns + "PropertyGroup").Add(new XElement(ns + "EnableDefaultItems", "False"));
 
-                XElement itemGroup = new XElement(ns + "ItemGroup");
+                XElement itemGroup = new(ns + "ItemGroup");
                 project.Root.Add(itemGroup);
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", "**\\*.cs")));
             };
@@ -162,7 +149,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 var ns = project.Root.Name.Namespace;
 
-                XElement itemGroup = new XElement(ns + "ItemGroup");
+                XElement itemGroup = new(ns + "ItemGroup");
                 project.Root.Add(itemGroup);
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", "..\\Shared\\**\\*.cs")));
             };
@@ -198,7 +185,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 var ns = project.Root.Name.Namespace;
 
-                XElement itemGroup = new XElement(ns + "ItemGroup");
+                XElement itemGroup = new(ns + "ItemGroup");
                 project.Root.Add(itemGroup);
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Remove", "Excluded\\**\\*.cs")));
             };
@@ -235,7 +222,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 var ns = project.Root.Name.Namespace;
 
-                XElement itemGroup = new XElement(ns + "ItemGroup");
+                XElement itemGroup = new(ns + "ItemGroup");
                 project.Root.Add(itemGroup);
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", "obj\\Class2.cs")));
             };
@@ -271,7 +258,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 var ns = project.Root.Name.Namespace;
 
-                XElement itemGroup = new XElement(ns + "ItemGroup");
+                XElement itemGroup = new(ns + "ItemGroup");
                 project.Root.Add(itemGroup);
                 itemGroup.Add(new XElement(ns + "EmbeddedResource", new XAttribute("Include", "CSharpAsResource.cs")));
                 itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Remove", "CSharpAsResource.cs")));
@@ -321,7 +308,7 @@ namespace Microsoft.NET.Build.Tests
             {
                 var ns = project.Root.Name.Namespace;
 
-                XElement itemGroup = new XElement(ns + "ItemGroup");
+                XElement itemGroup = new(ns + "ItemGroup");
                 project.Root.Add(itemGroup);
                 itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "CSharpAsContent.cs"),
                     new XAttribute("CopyToOutputDirectory", "true")));
@@ -389,7 +376,7 @@ namespace Microsoft.NET.Build.Tests
                 {
                     // "Manual" include via project file modification.
                     var ns = project.Root.Name.Namespace;
-                    XElement itemGroup = new XElement(ns + "ItemGroup");
+                    XElement itemGroup = new(ns + "ItemGroup");
                     project.Root.Add(itemGroup);
                     itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", testProject.Name + ".cs")));
                     itemGroup.Add(new XElement(ns + "Compile", new XAttribute("Include", testProject.Name + "Program.cs")));
@@ -693,7 +680,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass()
                 .And
                 .NotHaveStdOutContaining("NETSDK1071");
-                ;
+            ;
 
             LockFile lockFile = LockFileUtilities.GetLockFile(Path.Combine(buildCommand.ProjectRootPath, "obj", "project.assets.json"), NullLogger.Instance);
 
@@ -711,9 +698,9 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
-            
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+
             testProject.SourceFiles["Test.cs"] = @"
 public class Class1
 {
@@ -828,7 +815,7 @@ public class Class1
             var projectFolder = Path.Combine(testAsset.TestRoot, testProject.Name);
 
             File.WriteAllText(Path.Combine(projectFolder, "ResourcesResw.resw"), "<root/>");
-            List<string> imageFiles = new List<string>{ "TestImage1.png", "TestImage2.bmp", "TestImage3.jpg", "TestImage4.dds", "TestImage5.tif", "TestImage6.tga", "TestImage7.gif" };
+            List<string> imageFiles = new() { "TestImage1.png", "TestImage2.bmp", "TestImage3.jpg", "TestImage4.dds", "TestImage5.tif", "TestImage6.tga", "TestImage7.gif" };
             foreach (string fileName in imageFiles)
             {
                 File.WriteAllText(Path.Combine(projectFolder, fileName), "");
@@ -873,7 +860,7 @@ public class Class1
             //  Other default attributes generated by .NET SDK (for example AssemblyDescriptionAttribute and AssemblyTitleAttribute) come from
             //      { AssemblyName}.AssemblyInfo.cs in the intermediate output path
             var itemsToRemove = compileItems.Where(i =>
-                    i.EndsWith("AssemblyAttributes.cs", System.StringComparison.OrdinalIgnoreCase) ||
+                    i.EndsWith("AssemblyAttributes.cs", StringComparison.OrdinalIgnoreCase) ||
                     i.EndsWith("AssemblyInfo.cs", StringComparison.OrdinalIgnoreCase))
                 .ToList();
 

@@ -1,20 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Xml.Linq;
-using Xunit.Abstractions;
-using System.Collections.Generic;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -60,7 +47,7 @@ namespace Microsoft.NET.Publish.Tests
             }
 
             testProject.ReferencedProjects.Add(testLibraryProject);
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("System.Data.SqlClient", "4.4.3"));
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: appTargetFramework + withoutCopyingRefs);
@@ -197,7 +184,7 @@ namespace Microsoft.NET.Publish.Tests
             File.WriteAllLines(manifestFile, new[]
             {
                 "<StoreArtifacts>",
-                @"  <Package Id=""Newtonsoft.Json"" Version=""13.0.1"" />",
+                $@"  <Package Id=""Newtonsoft.Json"" Version=""{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}"" />",
                 @"  <Package Id=""System.Data.SqlClient"" Version=""4.3.0"" />",
                 "</StoreArtifacts>",
             });
@@ -232,7 +219,7 @@ namespace Microsoft.NET.Publish.Tests
             refsDirectory.Should().NotHaveFile("Newtonsoft.Json.dll");
         }
 
-        Dictionary<string, string> CompileLibraryNames = new Dictionary<string, string>()
+        Dictionary<string, string> CompileLibraryNames = new()
         {
             { "net46",
 @"TestApp.exe

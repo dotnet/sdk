@@ -1,20 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -60,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid();
 
-            List<string> arguments = new List<string>();
+            List<string> arguments = new();
             if (passSelfContained)
             {
                 arguments.Add("--self-contained");

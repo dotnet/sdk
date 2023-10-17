@@ -1,21 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using Microsoft.CodeAnalysis;
+using System.Buffers;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using System.Text.Json.Serialization;
-using NuGet.Frameworks;
 using NuGet.Versioning;
-using System.Text.Json;
-using System.Text;
-using System.Buffers;
 
 namespace Microsoft.DotNet.ToolManifest
 {
@@ -174,8 +165,10 @@ namespace Microsoft.DotNet.ToolManifest
 
                         foreach (var toolJson in tools.EnumerateObject())
                         {
-                            var serializableLocalToolSinglePackage = new SerializableLocalToolSinglePackage();
-                            serializableLocalToolSinglePackage.PackageId = toolJson.Name;
+                            var serializableLocalToolSinglePackage = new SerializableLocalToolSinglePackage
+                            {
+                                PackageId = toolJson.Name
+                            };
                             if (toolJson.Value.TryGetStringValue(JsonPropertyVersion, out var versionJson))
                             {
                                 serializableLocalToolSinglePackage.Version = versionJson;
@@ -228,7 +221,7 @@ namespace Microsoft.DotNet.ToolManifest
             FilePath path,
             DirectoryPath correspondingDirectory)
         {
-            List<ToolManifestPackage> result = new List<ToolManifestPackage>();
+            List<ToolManifestPackage> result = new();
             var errors = new List<string>();
 
             ValidateVersion(deserializedManifest, errors);

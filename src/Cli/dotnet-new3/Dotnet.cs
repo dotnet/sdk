@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Text;
 
 namespace Dotnet_new3
 {
@@ -71,7 +70,7 @@ namespace Dotnet_new3
 
         internal static Dotnet AddProjectsToSolution(string solutionFile, IReadOnlyList<string> projects, string? solutionFolder = null)
         {
-            List<string> allArgs = new List<string>()
+            List<string> allArgs = new()
             {
                 "sln",
                 solutionFile,

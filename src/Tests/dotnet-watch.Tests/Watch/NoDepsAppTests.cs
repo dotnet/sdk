@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.DotNet.Watcher.Tests
 {
     public class NoDepsAppTests : DotNetWatchTestBase
@@ -22,14 +16,13 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task RestartProcessOnFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
-                .WithSource()
-                .Path;
+                .WithSource();
 
-            await App.StartWatcherAsync(testAsset, new[] { "--no-hot-reload", "--no-exit" });
+            await App.StartWatcherAsync(testAsset, applicationArguments: ["--no-hot-reload", "--no-exit"]);
             var processIdentifier = await App.AssertOutputLineStartsWith("Process identifier =");
 
             // Then wait for it to restart when we change a file
-            var fileToChange = Path.Combine(testAsset, "Program.cs");
+            var fileToChange = Path.Combine(testAsset.Path, "Program.cs");
             var programCs = File.ReadAllText(fileToChange);
             File.WriteAllText(fileToChange, programCs);
 
@@ -44,15 +37,14 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task RestartProcessThatTerminatesAfterFileChange()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
-                .WithSource()
-                .Path;
+                .WithSource();
 
             await App.StartWatcherAsync(testAsset);
             var processIdentifier = await App.AssertOutputLineStartsWith("Process identifier =");
             await App.AssertExited(); // process should exit after run
             await App.AssertWaitingForFileChange();
 
-            var fileToChange = Path.Combine(testAsset, "Program.cs");
+            var fileToChange = Path.Combine(testAsset.Path, "Program.cs");
 
             try
             {

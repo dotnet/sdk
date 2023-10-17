@@ -7,6 +7,11 @@
         <target state="translated">{0} sürüm {1} indirilemedi.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">Paket Kaynak Eşlemesi etkinleştirildi ancak belirtilen paket kimliği altında kaynak bulunamadı: {0}. Paket Kaynak Eşlemesi hakkında daha fazla ayrıntı için https://aka.ms/nuget-package-source-mapping belgelerine bakın.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
         <source>Failed to load NuGet source {0}</source>
         <target state="translated">{0} NuGet kaynağı yüklemesi yüklenemedi</target>
@@ -15,6 +20,11 @@
       <trans-unit id="FailedToLoadNuGetSourceSourceIsNotValid">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
         <target state="translated">{0} NuGet kaynağı yüklenemedi: kaynak geçerli değil. Daha fazla işlemede atlanacak.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">Paket Kaynak Eşlemesi etkinleştirildi ancak belirtilen paket kimliği altında eşlenen kaynak bulunamadı: {0}. Paket Kaynak Eşlemesi hakkında daha fazla ayrıntı için https://aka.ms/nuget-package-source-mapping belgelerine bakın.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">

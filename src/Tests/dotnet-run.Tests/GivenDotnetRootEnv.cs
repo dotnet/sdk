@@ -1,21 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
     public class GivenDotnetRootEnv : SdkTest
     {
-        private static Version Version6_0 = new Version(6, 0);
+        private static Version Version6_0 = new(6, 0);
 
         public GivenDotnetRootEnv(ITestOutputHelper log) : base(log)
         {

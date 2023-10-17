@@ -1,16 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantBuildsToBeIncremental : SdkTest
@@ -46,7 +36,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("netcoreapp1.1")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void ResolvePackageAssets_runs_incrementally(string targetFramework)
-        { 
+        {
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()

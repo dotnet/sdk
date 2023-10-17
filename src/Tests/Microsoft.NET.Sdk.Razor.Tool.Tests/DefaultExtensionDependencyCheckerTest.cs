@@ -1,19 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using Microsoft.NET.Sdk.Razor.Tool;
-using Microsoft.NET.TestFramework;
 using Moq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
     public class DefaultExtensionDependencyCheckerTest : SdkTest
     {
-        public DefaultExtensionDependencyCheckerTest(ITestOutputHelper log) : base(log) {}
+        public DefaultExtensionDependencyCheckerTest(ITestOutputHelper log) : base(log) { }
 
         [Fact]
         public void Check_ReturnsFalse_WithMissingDependency()
@@ -54,7 +48,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
             // Assert
             Assert.True(result, "Check should have passed: " + output.ToString());
-            
+
         }
 
         [Fact]
@@ -90,7 +84,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             // Arrange
             var directory = _testAssetsManager.CreateTestDirectory();
             var output = new StringWriter();
-            
+
             var deltaFilePath = LoaderTestResources.Delta.WriteToFile(directory.Path, "Delta.dll");
 
             var loader = new Mock<ExtensionAssemblyLoader>();

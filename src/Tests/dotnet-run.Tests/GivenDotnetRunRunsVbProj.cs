@@ -1,17 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.Utils;
-using Xunit;
-using Xunit.Abstractions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
@@ -56,7 +46,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute("--launch-profile", "first");
 
-            string expectedError = String.Format(LocalizableStrings.DuplicateCaseInsensitiveLaunchProfileNames, "\tfirst," + (OperatingSystem.IsWindows() ? "\r" : "") + "\n\tFIRST");
+            string expectedError = string.Format(LocalizableStrings.DuplicateCaseInsensitiveLaunchProfileNames, "\tfirst," + (OperatingSystem.IsWindows() ? "\r" : "") + "\n\tFIRST");
             runResult
                 .Should()
                 .Fail()
@@ -79,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdErrContaining(String.Format(LocalizableStrings.LaunchProfileDoesNotExist, invalidLaunchProfileName));
+                .HaveStdErrContaining(string.Format(LocalizableStrings.LaunchProfileDoesNotExist, invalidLaunchProfileName));
         }
 
         [Theory]

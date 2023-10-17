@@ -3,11 +3,9 @@
 
 using System.Diagnostics;
 using System.Formats.Tar;
-using System.Globalization;
 using System.IO.Compression;
-using System.Security.Cryptography;
-using System.Text;
 using System.IO.Enumeration;
+using System.Security.Cryptography;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -207,7 +205,7 @@ internal class Layer
 
     internal virtual Stream OpenBackingFile() => File.OpenRead(BackingFile);
 
-    private readonly static char[] PathSeparators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+    private static readonly char[] PathSeparators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
 
     /// <summary>
     /// A stream capable of computing the hash digest of raw uncompressed data while also compressing it.

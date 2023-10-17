@@ -3,13 +3,8 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -169,7 +164,7 @@ namespace Microsoft.TemplateEngine.MSBuildEvaluation
                 }
 
                 //For multi-target project, we need to do additional evaluation for each target framework.
-                Dictionary<string, Project?> evaluatedTfmBasedProjects = new Dictionary<string, Project?>();
+                Dictionary<string, Project?> evaluatedTfmBasedProjects = new();
                 innerBuildWatch.Start();
                 foreach (string tfm in targetFrameworks)
                 {

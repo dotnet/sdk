@@ -1,17 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
+using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.ShellShim
@@ -62,7 +58,8 @@ namespace Microsoft.DotNet.ShellShim
             }
 
             var packageId = new PackageId($"microsoft.netcore.app.host.{rid}");
-            var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(packageId, packageSourceLocation: _packageSourceLocation);
+            NuGetVersion packageVersion = null;
+            var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation: _packageSourceLocation);
             var content = await _nugetPackageDownloader.ExtractPackageAsync(packagePath, _tempDir);
 
             return Path.Combine(_tempDir.Value, "runtimes", rid, "native");

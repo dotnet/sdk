@@ -9,17 +9,13 @@
 /// Copyright(c) 2006 Microsoft Corporation
 ///--------------------------------------------------------------------------------------------
 
+using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 using Framework = Microsoft.Build.Framework;
 using Utilities = Microsoft.Build.Utilities;
-using System.Threading.Tasks;
-using System;
-using System.IO;
-using System.Collections.Generic;
-using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
 {
-    sealed public class KuduDeploy : Utilities.Task
+    public sealed class KuduDeploy : Utilities.Task
     {
         public static readonly int TimeoutMilliseconds = 180000;
         [Framework.Required]
@@ -63,29 +59,29 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             set;
         }
 
-
         internal KuduConnectionInfo GetConnectionInfo()
         {
-            KuduConnectionInfo connectionInfo = new KuduConnectionInfo();
-            connectionInfo.DestinationUrl = PublishUrl;
-
-            connectionInfo.UserName = UserName;
-            connectionInfo.Password = Password;
-            connectionInfo.SiteName = PublishSiteName;
+            KuduConnectionInfo connectionInfo = new()
+            {
+                DestinationUrl = PublishUrl,
+                UserName = UserName,
+                Password = Password,
+                SiteName = PublishSiteName
+            };
 
             return connectionInfo;
         }
 
         public override bool Execute()
         {
-            if (String.IsNullOrEmpty(PublishIntermediateOutputPath))
+            if (string.IsNullOrEmpty(PublishIntermediateOutputPath))
             {
                 Log.LogError(Resources.KUDUDEPLOY_DeployOutputPathEmpty);
                 return false;
             }
 
             KuduConnectionInfo connectionInfo = GetConnectionInfo();
-            if (String.IsNullOrEmpty(connectionInfo.UserName) || String.IsNullOrEmpty(connectionInfo.Password) || String.IsNullOrEmpty(connectionInfo.DestinationUrl))
+            if (string.IsNullOrEmpty(connectionInfo.UserName) || string.IsNullOrEmpty(connectionInfo.Password) || string.IsNullOrEmpty(connectionInfo.DestinationUrl))
             {
                 Log.LogError(Resources.KUDUDEPLOY_ConnectionInfoMissing);
                 return false;
@@ -95,7 +91,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
 
             if (publishStatus)
             {
-                Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, Resources.KUDUDEPLOY_PublishSucceeded);
+                Log.LogMessage(Framework.MessageImportance.High, Resources.KUDUDEPLOY_PublishSucceeded);
             }
             else
             {
@@ -106,10 +102,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
         }
 
         internal bool DeployFiles(KuduConnectionInfo connectionInfo)
-        {          
-            KuduVfsDeploy fileDeploy = new KuduVfsDeploy(connectionInfo, Log);
+        {
+            KuduVfsDeploy fileDeploy = new(connectionInfo, Log);
 
-            bool success; 
+            bool success;
             if (!DeployIndividualFiles)
             {
                 success = DeployZipFile(connectionInfo);
@@ -117,18 +113,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             }
 
             // Deploy the files.
-            Task deployTask = fileDeploy.DeployAsync(PublishIntermediateOutputPath);
+            System.Threading.Tasks.Task deployTask = fileDeploy.DeployAsync(PublishIntermediateOutputPath);
             try
             {
                 success = deployTask.Wait(TimeoutMilliseconds);
                 if (!success)
                 {
-                    Log.LogError(String.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, Resources.KUDUDEPLOY_OperationTimeout));
+                    Log.LogError(string.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, Resources.KUDUDEPLOY_OperationTimeout));
                 }
             }
             catch (AggregateException ae)
             {
-                Log.LogError(String.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, ae.Flatten().Message));
+                Log.LogError(string.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, ae.Flatten().Message));
                 success = false;
             }
 
@@ -136,25 +132,25 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
         }
 
 
-#region Zip File Publish
+        #region Zip File Publish
         internal bool DeployZipFile(KuduConnectionInfo connectionInfo)
         {
             bool success;
-            KuduZipDeploy zipDeploy = new KuduZipDeploy(connectionInfo, Log);
-            
+            KuduZipDeploy zipDeploy = new(connectionInfo, Log);
+
             string zipFileFullPath = CreateZipFile(PublishIntermediateOutputPath);
-            Task<bool> zipTask = zipDeploy.DeployAsync(zipFileFullPath);
+            System.Threading.Tasks.Task<bool> zipTask = zipDeploy.DeployAsync(zipFileFullPath);
             try
             {
                 success = zipTask.Wait(TimeoutMilliseconds);
                 if (!success)
                 {
-                    Log.LogError(String.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, Resources.KUDUDEPLOY_OperationTimeout));
+                    Log.LogError(string.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, Resources.KUDUDEPLOY_OperationTimeout));
                 }
             }
-            catch(AggregateException ae)
+            catch (AggregateException ae)
             {
-                Log.LogError(String.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, ae.Flatten().Message));
+                Log.LogError(string.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, ae.Flatten().Message));
                 success = false;
             }
 
@@ -167,44 +163,44 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
         internal string CreateZipFile(string sourcePath)
         {
             // Zip the files from PublishOutput path.
-            string zipFileFullPath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), String.Format("Publish{0}.zip", new Random().Next(Int32.MaxValue)));
-            Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, String.Format(Resources.KUDUDEPLOY_CopyingToTempLocation, zipFileFullPath));
+            string zipFileFullPath = Path.Combine(Path.GetTempPath(), string.Format("Publish{0}.zip", new Random().Next(int.MaxValue)));
+            Log.LogMessage(Framework.MessageImportance.High, string.Format(Resources.KUDUDEPLOY_CopyingToTempLocation, zipFileFullPath));
 
             try
             {
                 System.IO.Compression.ZipFile.CreateFromDirectory(sourcePath, zipFileFullPath);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                Log.LogError(String.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, e.Message));
+                Log.LogError(string.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, e.Message));
                 // If we are unable to zip the file, then we fail.
                 return null;
             }
 
-            Log.LogMessage(Microsoft.Build.Framework.MessageImportance.High, Resources.KUDUDEPLOY_CopyingToTempLocationCompleted);
+            Log.LogMessage(Framework.MessageImportance.High, Resources.KUDUDEPLOY_CopyingToTempLocationCompleted);
 
             return zipFileFullPath;
         }
 
-        internal Task DeleteTempZipFile(string tempFilePath)
+        internal System.Threading.Tasks.Task DeleteTempZipFile(string tempFilePath)
         {
-             return Task.Factory.StartNew(
-                () =>
-                {
-                    if (File.Exists(tempFilePath))
-                    {
-                        try
-                        {
-                            File.Delete(tempFilePath);
-                        }
-                        catch
-                        {
-                            // We dont need to do any thing if we are unable to delete the temp file.
-                        }
-                    }
-                });
+            return System.Threading.Tasks.Task.Factory.StartNew(
+               () =>
+               {
+                   if (File.Exists(tempFilePath))
+                   {
+                       try
+                       {
+                           File.Delete(tempFilePath);
+                       }
+                       catch
+                       {
+                           // We don't need to do any thing if we are unable to delete the temp file.
+                       }
+                   }
+               });
         }
 
-#endregion
+        #endregion
     }
 }

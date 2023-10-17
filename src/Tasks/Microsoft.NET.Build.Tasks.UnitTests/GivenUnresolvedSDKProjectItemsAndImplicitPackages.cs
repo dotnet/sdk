@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Xunit;
@@ -62,18 +60,22 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     { MetadataKeys.Version, "1.2.3" }
                 });
 
-            var task = new CollectSDKReferencesDesignTime();
-            task.SdkReferences = new[] {
-                sdkReference1,
-                sdkReference2
+            var task = new CollectSDKReferencesDesignTime
+            {
+                SdkReferences = new[]
+                {
+                    sdkReference1,
+                    sdkReference2
+                },
+                PackageReferences = new ITaskItem[]
+                {
+                    packageReference1,
+                    packageReference2,
+                    packageReference3,
+                    defaultImplicitPackage1
+                },
+                DefaultImplicitPackages = "DefaultImplicitPackage1;SomeOtherImplicitPackage"
             };
-            task.PackageReferences = new ITaskItem[] {
-                packageReference1,
-                packageReference2,
-                packageReference3,
-                defaultImplicitPackage1
-            };
-            task.DefaultImplicitPackages = "DefaultImplicitPackage1;SomeOtherImplicitPackage";
 
             // Act
             var result = task.Execute();

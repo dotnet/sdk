@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Deployment.DotNet.Releases;
 
 #nullable disable
@@ -24,7 +23,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 // Treat preview versions as their own feature bands
                 var prereleaseComponents = fullVersion.Prerelease.Split('.');
-                var formattedPrerelease = prereleaseComponents.Length > 1 ? 
+                var formattedPrerelease = prereleaseComponents.Length > 1 ?
                     $"{prereleaseComponents[0]}.{prereleaseComponents[1]}"
                     : prereleaseComponents[0];
                 _featureBand = new ReleaseVersion(fullVersion.Major, fullVersion.Minor, fullVersion.SdkFeatureBand, formattedPrerelease);
@@ -48,7 +47,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public override int GetHashCode()
         {
-            return ToString().GetHashCode();
+            return _featureBand.GetHashCode();
         }
 
         public override string ToString()

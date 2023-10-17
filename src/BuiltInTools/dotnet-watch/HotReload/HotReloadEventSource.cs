@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System;
 using System.Diagnostics.Tracing;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -29,6 +28,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [Event(2, Message = "Hot reload finished for {0}", Level = EventLevel.Informational, Keywords = Keywords.Perf)]
         public void HotReloadEnd(StartType handlerType) { WriteEvent(2, handlerType); }
 
-        public static readonly HotReloadEventSource Log = new HotReloadEventSource();
+        public static readonly HotReloadEventSource Log = new();
     }
 }

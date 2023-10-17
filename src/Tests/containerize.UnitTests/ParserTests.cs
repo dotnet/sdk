@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.NET.Build.Containers;
-using Xunit;
 
 namespace containerize.UnitTests;
 
@@ -116,7 +114,7 @@ public class ParserTests
         }
 
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
-        Assert.Equal(1, parseResult.Errors.Count);
+        Assert.Single(parseResult.Errors);
 
         Assert.Equal($"Incorrectly formatted labels: {string.Join(";", labelStr)}", parseResult.Errors[0].Message);
     }
@@ -234,7 +232,7 @@ public class ParserTests
         baseArgs.Add(portStr);
 
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
-        Assert.Equal(1, parseResult.Errors.Count);
+        Assert.Single(parseResult.Errors);
 
         Assert.Equal(errorMessage, parseResult.Errors[0].Message);
     }

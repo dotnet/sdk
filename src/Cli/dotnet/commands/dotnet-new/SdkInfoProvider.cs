@@ -1,13 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
@@ -39,7 +32,7 @@ namespace Microsoft.DotNet.Tools.New
         public Task<IEnumerable<string>> GetInstalledVersionsAsync(CancellationToken cancellationToken)
         {
             // Get the dotnet directory, while ignoring custom msbuild resolvers
-            string dotnetDir = Microsoft.DotNet.NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(
+            string dotnetDir = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(
                 key =>
                     key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
                         ? null
@@ -55,7 +48,7 @@ namespace Microsoft.DotNet.Tools.New
             }
             // The NETCoreSdkResolverNativeWrapper is not properly initialized (case of OSx in test env) - let's manually perform what
             //  sdk_info::get_all_sdk_infos does
-            catch (Exception e) when(e is HostFxrRuntimePropertyNotSetException or HostFxrNotFoundException)
+            catch (Exception e) when (e is HostFxrRuntimePropertyNotSetException or HostFxrNotFoundException)
             {
                 string sdkDir = Path.Combine(dotnetDir, "sdk");
                 sdks =

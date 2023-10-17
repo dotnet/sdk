@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
@@ -16,7 +11,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             typeLibraryIdMap = null;
             errors = Enumerable.Empty<string>();
-            List<string> errorsLocal = new List<string>();
+            List<string> errorsLocal = new();
             if (typeLibraries is null || typeLibraries.Length == 0)
             {
                 return true;

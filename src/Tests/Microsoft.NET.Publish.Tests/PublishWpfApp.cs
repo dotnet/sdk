@@ -1,15 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Publish.Tests
 {
     public class PublishWpfApp : SdkTest
@@ -53,7 +44,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(Log, testDir.Path);
 
-            publishCommand.Execute($"/p:RuntimeIdentifier={rid}")
+            publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
                 .Should()
                 .Pass();
 

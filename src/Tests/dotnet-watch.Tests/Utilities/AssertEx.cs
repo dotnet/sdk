@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -26,10 +23,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             var actual = new HashSet<string>(actualFiles.Where(p => !string.IsNullOrEmpty(p)).Select(normalize));
             if (!expected.SetEquals(actual))
             {
-                throw new AssertActualExpectedException(
+                throw NotEqualException.ForEqualValues(
                     expected: "\n" + string.Join("\n", expected.OrderBy(p => p)),
                     actual: "\n" + string.Join("\n", actual.OrderBy(p => p)),
-                    userMessage: "File sets should be equal");
+                    banner: "File sets should be equal");
             }
         }
 
@@ -37,7 +34,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             if (expectedFiles.Count != actualFiles.Count)
             {
-                throw new AssertCollectionCountException(expectedFiles.Count, actualFiles.Count);
+                throw NotEqualException.ForEqualCollections($"{expectedFiles.Count}", $"{actualFiles.Count}");
             }
 
             foreach (var expected in expectedFiles)
@@ -46,18 +43,18 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                 if (actual.FilePath is null)
                 {
-                    throw new AssertActualExpectedException(
+                    throw NotEqualException.ForEqualValues(
                         expected: $"Expected to find  {expected.FilePath}.",
                         actual: "\n" + string.Join("\n", actualFiles.Select(f => f.FilePath)),
-                        userMessage: "File sets should be equal.");
+                        banner: "File sets should be equal.");
                 }
 
                 if (expected.IsStaticFile != actual.IsStaticFile || expected.StaticWebAssetPath != actual.StaticWebAssetPath)
                 {
-                    throw new AssertActualExpectedException(
+                    throw NotEqualException.ForEqualValues(
                         expected: $"FileKind: {expected.IsStaticFile} StaticWebAssetPath {expected.StaticWebAssetPath}",
                         actual: $"FileKind: {actual.IsStaticFile} StaticWebAssetPath {actual.StaticWebAssetPath}",
-                        userMessage: "Flle sets should be equal.");
+                        banner: "Flle sets should be equal.");
                 }
             }
 

@@ -1,20 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -476,16 +463,16 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(ProjectDirectory);
-            publish.Execute($"/p:PublishSingleFile=true /p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
+            publish.Execute("/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
 
-            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug", RuntimeInformation.RuntimeIdentifier).ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the build manifest file.
             var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
             new FileInfo(path).Should().Exist();
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
-            AssertManifest(manifest, expectedManifest);
+            AssertManifest(manifest, expectedManifest, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
 
             // GenerateStaticWebAssetsManifest should not copy the file to the output folder.
             var finalPath = Path.Combine(publishPath, "ComponentApp.staticwebassets.runtime.json");
@@ -497,7 +484,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath));
             AssertManifest(
                 publishManifest,
-                LoadPublishManifest());
+                LoadPublishManifest(),
+                runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
 
             AssertPublishAssets(
                 publishManifest,
@@ -655,9 +643,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            publish.Execute($"/p:PublishSingleFile=true /p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
+            publish.Execute("/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
 
-            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug", RuntimeInformation.RuntimeIdentifier).ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
             // GenerateStaticWebAssetsManifest should generate the manifest file.
@@ -665,7 +653,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(path).Should().Exist();
             AssertManifest(
                 StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path)),
-                LoadBuildManifest());
+                LoadBuildManifest(),
+                runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
 
             // GenerateStaticWebAssetsManifest should not copy the file to the output folder.
             var finalPath = Path.Combine(publishPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
@@ -675,7 +664,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var intermediatePublishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
             new FileInfo(path).Should().Exist();
             var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(intermediatePublishManifestPath));
-            AssertManifest(publishManifest, LoadPublishManifest());
+            AssertManifest(publishManifest, LoadPublishManifest(), runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
 
             AssertPublishAssets(
                 publishManifest,
@@ -973,7 +962,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 var tfm = project.Root.Descendants("TargetFramework").Single();
                 tfm.Name = "TargetFrameworks";
-                tfm.Value="net6.0;" + DefaultTfm;
+                tfm.Value = "net6.0;" + DefaultTfm;
             });
 
             var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path);
@@ -2196,12 +2185,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;{ToolsetInfo.CurrentTargetFramework};net6.0;net5.0</TargetFrameworks>
+    <TargetFrameworks>{ToolsetInfo.NextTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'"" Include=""browser"" />
+    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{ToolsetInfo.NextTargetFramework}'"" Include=""browser"" />
   </ItemGroup>
 
   <ItemGroup>
@@ -2273,12 +2262,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;{ToolsetInfo.CurrentTargetFramework};net6.0;net5.0</TargetFrameworks>
+    <TargetFrameworks>{ToolsetInfo.NextTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'"" Include=""browser"" />
+    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{ToolsetInfo.NextTargetFramework}'"" Include=""browser"" />
   </ItemGroup>
 
   <ItemGroup>
@@ -2352,12 +2341,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 var parse = XDocument.Parse($@"<Project Sdk=""Microsoft.NET.Sdk.Razor"">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;{ToolsetInfo.CurrentTargetFramework};net6.0;net5.0</TargetFrameworks>
+    <TargetFrameworks>{ToolsetInfo.NextTargetFramework};net8.0;net7.0;net6.0;net5.0</TargetFrameworks>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
-    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'"" Include=""browser"" />
+    <SupportedPlatform Condition=""'$(TargetFramework)' == 'net6.0' OR '$(TargetFramework)' == 'net7.0' OR '$(TargetFramework)' == 'net8.0' OR '$(TargetFramework)' == '{ToolsetInfo.NextTargetFramework}'"" Include=""browser"" />
   </ItemGroup>
 
   <ItemGroup>

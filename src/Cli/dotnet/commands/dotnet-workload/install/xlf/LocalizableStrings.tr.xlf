@@ -27,8 +27,13 @@
         <target state="translated">Güncelleştirilmiş iş yükü bildirimleri denetleniyor.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadManifest">
+        <source>Uninstalling workload manifest {0} version {1}...</source>
+        <target state="translated">İş yükü bildirimi {0} sürümü {1} yükleniyor...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
-        <source>Uninstalling workload pack {0} version {1}…</source>
+        <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">{0} iş yükü paketi sürüm {1} kaldırılıyor...</target>
         <note />
       </trans-unit>
@@ -43,8 +48,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DownloadingPackToCacheMessage">
-        <source>Downloading pack {0} version {1} to offline cache {2}…</source>
-        <target state="translated">{0} paketi sürüm{1}, çevrimdışı {2} önbelleğine indiriliyor...</target>
+        <source>Downloading pack {0} version {1} to offline cache {2}...</source>
+        <target state="translated">{0} paketi sürüm{1}, {2} çevrimdışı önbelleğine indiriliyor...</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectedSingleManifest">
@@ -102,11 +107,6 @@
         <target state="translated">Yayın öncesi iş yükü bildirimlerine izin ver.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IncompatibleManifests">
-        <source>The current SDK isn't compatible with workload manifests of SDK version {0}.</source>
-        <target state="translated">Geçerli SDK, SDK sürüm {0} iş yükü bildirimleri ile uyumlu değil.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="translated">İş yükleri başarıyla yüklendi {0}.</target>
@@ -118,8 +118,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InstallingWorkloadManifest">
-        <source>Installing workload manifest {0} version {1}…</source>
-        <target state="translated">İş yükü bildirimi {0} sürüm {1} yükleniyor...</target>
+        <source>Installing workload manifest {0} version {1}...</source>
+        <target state="translated">{0} iş yükü bildirimi sürüm {1} yükleniyor...</target>
         <note />
       </trans-unit>
       <trans-unit id="InsufficientPrivilegeToStartServer">
@@ -182,11 +182,6 @@
         <target state="translated">{0} kaldırılıyor </target>
         <note />
       </trans-unit>
-      <trans-unit id="NoManifestsExistForFeatureBand">
-        <source>No manifests exist for SDK version {0}.</source>
-        <target state="translated">SDK sürüm {0} için bildirim yok.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">Üst işlemle ({0}) bir güven ilişkisi kurulamadı.</target>
@@ -199,7 +194,7 @@
       </trans-unit>
       <trans-unit id="PendingReboot">
         <source>The machine has a pending reboot. The workload operation will continue, but you may need to restart.</source>
-        <target state="needs-review-translation">Makinede bekleyen bir yeniden başlatma işlemi var. Yükleme devam edecek ancak yeniden başlatmanız gerekebilir.</target>
+        <target state="translated">Makinede bekleyen bir yeniden başlatma işlemi var. İş yükü işlemi devam edecek ancak yeniden başlatmanız gerekebilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingPackageUrls">
@@ -231,6 +226,11 @@
         <source>Rolling back pack {0} installation...</source>
         <target state="translated">{0} paketi için yükleme geri alınıyor...</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SdkVersionOptionNotSupported">
+        <source>The --sdk-version option is no longer supported for this command.</source>
+        <target state="translated">--sdk-version seçeneği artık bu komut için desteklenmiyor.</target>
+        <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">
         <source>Skip updating the workload manifests.</source>

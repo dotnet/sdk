@@ -1,23 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-
-using FluentAssertions;
-
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -243,7 +228,7 @@ public class NETFramework
         [WindowsOnlyFact]
         public void It_resolves_assembly_conflicts_with_a_NETFramework_library()
         {
-            TestProject project = new TestProject()
+            TestProject project = new()
             {
                 Name = "NETFrameworkLibrary",
                 TargetFrameworks = "net462",
@@ -294,7 +279,7 @@ public static class {project.Name}
         [InlineData(true)]
         public void It_uses_hintpath_when_replacing_simple_name_references(bool useFacades)
         {
-            TestProject project = new TestProject()
+            TestProject project = new()
             {
                 Name = "NETFrameworkLibrary",
                 TargetFrameworks = "net462",
@@ -374,7 +359,7 @@ public static class {project.Name}
         {
             string hintPath = BuildReferencedBuildAndReturnOutputDllPath();
 
-            TestProject project = new TestProject()
+            TestProject project = new()
             {
                 Name = "NETFrameworkLibrary",
                 TargetFrameworks = "net462",
@@ -402,7 +387,7 @@ public static class {project.Name}
 
         private string BuildReferencedBuildAndReturnOutputDllPath()
         {
-            TestProject referencedProject = new TestProject()
+            TestProject referencedProject = new()
             {
                 Name = "NETFrameworkLibrary",
                 TargetFrameworks = "net462",
@@ -425,7 +410,7 @@ public static class {project.Name}
         [WindowsOnlyFact]
         public void A_target_can_depend_on_RunResolvePublishAssemblies()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "DependsOnPublish",
                 TargetFrameworks = "net462",

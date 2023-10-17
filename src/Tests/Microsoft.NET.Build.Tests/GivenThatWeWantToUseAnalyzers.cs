@@ -1,20 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Linq;
-using FluentAssertions;
-using System.Xml.Linq;
-using System.Collections.Generic;
-using System;
-using Xunit.Abstractions;
-using System.Runtime.InteropServices;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToUseAnalyzers : SdkTest
@@ -42,11 +28,33 @@ namespace Microsoft.NET.Build.Tests
                 });
 
             VerifyRequestDelegateGeneratorIsUsed(asset, isEnabled);
-            VerifyInterceptorsFeatureEnabled(asset, isEnabled);
+            VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.AspNetCore.Http.Generated");
+        }
+
+        [Theory]
+        [InlineData("WebApp", false)]
+        [InlineData("WebApp", true)]
+        [InlineData("WebApp", null)]
+        public void It_resolves_configbindinggenerator_correctly(string testAssetName, bool? isEnabled)
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    if (isEnabled != null)
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("EnableConfigurationBindingGenerator", isEnabled)));
+                    }
+                });
+
+            VerifyConfigBindingGeneratorIsUsed(asset, isEnabled);
+            VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
         [Fact]
-        public void It_enables_requestdelegategenerator_for_PublishAot()
+        public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishAot()
         {
             var asset = _testAssetsManager
                 .CopyTestAsset("WebApp")
@@ -58,10 +66,28 @@ namespace Microsoft.NET.Build.Tests
                 });
 
             VerifyRequestDelegateGeneratorIsUsed(asset, expectEnabled: true);
-            VerifyInterceptorsFeatureEnabled(asset, expectEnabled: true);
+            VerifyConfigBindingGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyInterceptorsFeatureProperties(asset, expectEnabled: true, "Microsoft.AspNetCore.Http.Generated", "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
-        private void VerifyRequestDelegateGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
+        [Fact]
+        public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishTrimmed()
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset("WebApp")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("PublishTrimmed", "true")));
+                });
+
+            VerifyRequestDelegateGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyConfigBindingGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyInterceptorsFeatureProperties(asset, expectEnabled: true, "Microsoft.AspNetCore.Http.Generated", "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
+        }
+
+        private void VerifyGeneratorIsUsed(TestAsset asset, bool? expectEnabled, string generatorName)
         {
             var command = new GetValuesCommand(
                 Log,
@@ -77,16 +103,22 @@ namespace Microsoft.NET.Build.Tests
 
             var analyzers = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains("Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll")));
+            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(generatorName)));
         }
 
-        private void VerifyInterceptorsFeatureEnabled(TestAsset asset, bool? expectEnabled)
+        private void VerifyRequestDelegateGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
+            => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll");
+
+        private void VerifyConfigBindingGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
+            => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll");
+
+        private void VerifyInterceptorsFeatureProperties(TestAsset asset, bool? expectEnabled, params string[] expectedNamespaces)
         {
             var command = new GetValuesCommand(
                 Log,
                 asset.Path,
                 ToolsetInfo.CurrentTargetFramework,
-                "Features",
+                "InterceptorsPreviewNamespaces",
                 GetValuesCommand.ValueType.Property);
 
             command
@@ -94,9 +126,9 @@ namespace Microsoft.NET.Build.Tests
                 .Execute()
                 .Should().Pass();
 
-            var features = command.GetValues();
+            var namespaces = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, features.Any(feature => feature.Contains("InterceptorsPreview")));
+            Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
         }
 
         [Theory]
@@ -156,7 +188,7 @@ namespace Microsoft.NET.Build.Tests
                     break;
 
                 case "VB":
-                    analyzers.Select(x => GetPackageAndPath(x)).Should().BeEquivalentTo( new[]
+                    analyzers.Select(x => GetPackageAndPath(x)).Should().BeEquivalentTo(new[]
                         {
                             ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll"),
                             ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll"),
@@ -207,9 +239,10 @@ namespace Microsoft.NET.Build.Tests
                 var getValuesCommand = new GetValuesCommand(testAsset,
                     valueName: "Analyzer",
                     GetValuesCommand.ValueType.Item,
-                    targetFramework);
-
-                getValuesCommand.DependsOnTargets = "ResolveLockFileAnalyzers";
+                    targetFramework)
+                {
+                    DependsOnTargets = "ResolveLockFileAnalyzers"
+                };
 
                 getValuesCommand.Execute("-p:TargetFramework=" + targetFramework).Should().Pass();
 
@@ -220,7 +253,7 @@ namespace Microsoft.NET.Build.Tests
             GetAnalyzersForTargetFramework("net472").Should().BeEmpty();
         }
 
-        static readonly List<string> nugetRoots = new List<string>()
+        static readonly List<string> nugetRoots = new()
             {
                 TestContext.Current.NuGetCachePath,
                 Path.Combine(FileConstants.UserProfileFolder, ".dotnet", "NuGetFallbackFolder"),

@@ -1,15 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
+using System.CommandLine.Completions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
-using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Completions;
-using System.IO;
-using System.Linq;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -54,7 +50,7 @@ namespace Microsoft.DotNet.Cli
             {
                 Description = CommonLocalizableStrings.ArtifactsPathOptionDescription,
                 HelpName = CommonLocalizableStrings.ArtifactsPathArgumentName
-            }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");            
+            }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
 
         private static string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
         public static IEnumerable<string> RuntimeArgFunc(string rid)
@@ -101,7 +97,7 @@ namespace Microsoft.DotNet.Cli
                 HelpName = CommonLocalizableStrings.VersionSuffixArgumentName
             }.ForwardAsSingle(o => $"-property:VersionSuffix={o}");
 
-        public static Lazy<string> NormalizedCurrentDirectory = new Lazy<string>(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
+        public static Lazy<string> NormalizedCurrentDirectory = new(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
 
         public static CliArgument<string> DefaultToCurrentDirectory(this CliArgument<string> arg)
         {
@@ -111,10 +107,10 @@ namespace Microsoft.DotNet.Cli
             return arg;
         }
 
-        public static CliOption<bool> NoRestoreOption =new("--no-restore")
-            {
-                Description = CommonLocalizableStrings.NoRestoreDescription
-            };
+        public static CliOption<bool> NoRestoreOption = new("--no-restore")
+        {
+            Description = CommonLocalizableStrings.NoRestoreDescription
+        };
 
         public static CliOption<bool> InteractiveMsBuildForwardOption =
             new ForwardedOption<bool>("--interactive")
@@ -123,7 +119,7 @@ namespace Microsoft.DotNet.Cli
             }.ForwardAs("-property:NuGetInteractive=true");
 
         public static CliOption<bool> InteractiveOption =
-            new CliOption<bool>("--interactive")
+            new("--interactive")
             {
                 Description = CommonLocalizableStrings.CommandInteractiveOptionDescription
             };
@@ -150,9 +146,9 @@ namespace Microsoft.DotNet.Cli
             }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
         internal static string ArchOptionValue(ParseResult parseResult) =>
-            string.IsNullOrEmpty(parseResult.GetValue(CommonOptions.ArchitectureOption)) ?
-                parseResult.GetValue(CommonOptions.LongFormArchitectureOption) :
-                parseResult.GetValue(CommonOptions.ArchitectureOption);
+            string.IsNullOrEmpty(parseResult.GetValue(ArchitectureOption)) ?
+                parseResult.GetValue(LongFormArchitectureOption) :
+                parseResult.GetValue(ArchitectureOption);
 
         public static CliOption<string> OperatingSystemOption =
             new ForwardedOption<string>("--os")
@@ -161,7 +157,7 @@ namespace Microsoft.DotNet.Cli
                 HelpName = CommonLocalizableStrings.OSArgumentName
             }.SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
 
-        public static CliOption<bool> DebugOption = new CliOption<bool>("--debug");
+        public static CliOption<bool> DebugOption = new("--debug");
 
         public static CliOption<bool> SelfContainedOption =
             new ForwardedOption<bool>("--self-contained", "--sc")
@@ -178,9 +174,9 @@ namespace Microsoft.DotNet.Cli
             // Flip the argument so that if this option is specified we get selfcontained=false
             .SetForwardingFunction((arg, p) => ForwardSelfContainedOptions(!arg, p));
 
-        public static readonly CliOption<string> TestPlatformOption = new CliOption<string>("--Platform");
+        public static readonly CliOption<string> TestPlatformOption = new("--Platform");
 
-        public static readonly CliOption<string> TestFrameworkOption = new CliOption<string>("--Framework");
+        public static readonly CliOption<string> TestFrameworkOption = new("--Framework");
 
         public static readonly CliOption<string[]> TestLoggerOption = new("--logger");
 
@@ -205,8 +201,7 @@ namespace Microsoft.DotNet.Cli
                 return Array.Empty<string>();
             }
 
-            var selfContainedSpecified = (parseResult.GetResult(SelfContainedOption) ?? parseResult.GetResult(NoSelfContainedOption)) is not null;
-            return ResolveRidShorthandOptions(null, arg, selfContainedSpecified);
+            return ResolveRidShorthandOptions(null, arg);
         }
 
         internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string arg, ParseResult parseResult)
@@ -216,24 +211,12 @@ namespace Microsoft.DotNet.Cli
                 throw new GracefulException(CommonLocalizableStrings.CannotSpecifyBothRuntimeAndOsOptions);
             }
 
-            var selfContainedSpecified = (parseResult.GetResult(SelfContainedOption) ?? parseResult.GetResult(NoSelfContainedOption)) is not null;
-            if (parseResult.BothArchAndOsOptionsSpecified())
-            {
-                return ResolveRidShorthandOptions(arg, ArchOptionValue(parseResult), selfContainedSpecified);
-            }
-
-            return ResolveRidShorthandOptions(arg, null, selfContainedSpecified);
+            var arch = parseResult.BothArchAndOsOptionsSpecified() ? ArchOptionValue(parseResult) : null;
+            return ResolveRidShorthandOptions(arg, arch);
         }
 
-        private static IEnumerable<string> ResolveRidShorthandOptions(string os, string arch, bool userSpecifiedSelfContainedOption)
-        {
-            var properties = new string[] { $"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}" };
-            if (!userSpecifiedSelfContainedOption)
-            {
-                properties = properties.Append("-property:SelfContained=false").ToArray();
-            }
-            return properties;
-        }
+        private static IEnumerable<string> ResolveRidShorthandOptions(string os, string arch) =>
+            new string[] { $"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}" };
 
         internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string os, string arch)
         {
@@ -247,7 +230,7 @@ namespace Microsoft.DotNet.Cli
         public static string GetCurrentRuntimeId()
         {
             // Get the dotnet directory, while ignoring custom msbuild resolvers
-            string dotnetRootPath = Microsoft.DotNet.NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
+            string dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
                 key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
                     ? null
                     : Environment.GetEnvironmentVariable(key));
@@ -266,9 +249,9 @@ namespace Microsoft.DotNet.Cli
             return currentRuntimeIdentifiers[0]; // First rid is the most specific (ex win-x64)
         }
 
-        private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-"));
+        private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
 
-        private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-") + 1, rid.Length - rid.LastIndexOf("-") - 1);
+        private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
 
         private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
         {

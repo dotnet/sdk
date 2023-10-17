@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using FluentAssertions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
-using Microsoft.NET.TestFramework;
 using Moq;
-using Xunit;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -321,16 +315,18 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             string additionalBuildProperties = ";",
             string additionalBuildPropertiesToRemove = ";WebPublishProfileFile")
         {
-            var result = new StaticWebAssetsManifest.ReferencedProjectConfiguration();
-            result.Identity = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), $"{source}.csproj"));
-            result.Version = version;
-            result.Source = source;
-            result.GetPublishAssetsTargets = publishTargets;
-            result.AdditionalPublishProperties = additionalPublishProperties;
-            result.AdditionalPublishPropertiesToRemove = additionalPublishPropertiesToRemove;
-            result.GetBuildAssetsTargets = buildTargets;
-            result.AdditionalBuildProperties = additionalBuildProperties;
-            result.AdditionalBuildPropertiesToRemove = additionalBuildPropertiesToRemove;
+            var result = new StaticWebAssetsManifest.ReferencedProjectConfiguration
+            {
+                Identity = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), $"{source}.csproj")),
+                Version = version,
+                Source = source,
+                GetPublishAssetsTargets = publishTargets,
+                AdditionalPublishProperties = additionalPublishProperties,
+                AdditionalPublishPropertiesToRemove = additionalPublishPropertiesToRemove,
+                GetBuildAssetsTargets = buildTargets,
+                AdditionalBuildProperties = additionalBuildProperties,
+                AdditionalBuildPropertiesToRemove = additionalBuildPropertiesToRemove
+            };
 
             return result;
         }

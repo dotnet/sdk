@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
@@ -15,13 +12,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
     {
         private readonly string _downloadPath;
         private readonly bool _manifestDownload;
-        private NuGetVersion _lastPackageVersion = new NuGetVersion("1.0.0");
+        private NuGetVersion _lastPackageVersion = new("1.0.0");
 
         public List<(PackageId id, NuGetVersion version, DirectoryPath? downloadFolder, PackageSourceLocation packageSourceLocation)> DownloadCallParams = new();
 
-        public List<string> DownloadCallResult = new List<string>();
+        public List<string> DownloadCallResult = new();
 
-        public List<(string, DirectoryPath)> ExtractCallParams = new List<(string, DirectoryPath)>();
+        public List<(string, DirectoryPath)> ExtractCallParams = new();
 
         public HashSet<string> PackageIdsToNotFind { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -39,7 +36,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
-            DirectoryPath? downloadFolder = null)
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null)
         {
             DownloadCallParams.Add((packageId, packageVersion, downloadFolder, packageSourceLocation));
 
@@ -73,10 +71,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
   ""packs"": {{
   }}
 }}";
-                   
-               File.WriteAllText(Path.Combine(dataFolder, "WorkloadManifest.json"), manifestContents);
+
+                File.WriteAllText(Path.Combine(dataFolder, "WorkloadManifest.json"), manifestContents);
             }
-            
+
             return Task.FromResult(new List<string>() as IEnumerable<string>);
         }
 
@@ -84,6 +82,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             return Task.FromResult(new NuGetVersion("10.0.0"));
         }
+
+        public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
+        {
+            return Task.FromResult(new NuGetVersion("10.0.0"));
+        }
+
+
 
         public Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion,

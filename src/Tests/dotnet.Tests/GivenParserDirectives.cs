@@ -1,13 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.DotNet.Tests
 {
     public class GivenParserDirectives : SdkTest
@@ -19,7 +12,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void ItCanInvokeDiagramDirective()
         {
-            string [] args = new[] { "[diagram]", "build", "-o", "output" };
+            string[] args = new[] { "[diagram]", "build", "-o", "output" };
             new DotnetCommand(Log, args)
                 .Execute()
                 .Should()
@@ -31,7 +24,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void ItCanInvokeSuggestDirective()
         {
-            string[] args = new[] { "[suggest]", "--l"};
+            string[] args = new[] { "[suggest]", "--l" };
             new DotnetCommand(Log, args)
                 .Execute()
                 .Should()

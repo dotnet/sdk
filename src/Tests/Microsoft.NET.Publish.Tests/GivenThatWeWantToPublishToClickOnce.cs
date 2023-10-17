@@ -1,19 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using System.Xml.Linq;
-using System.Runtime.CompilerServices;
-using System;
-using Microsoft.Extensions.DependencyModel;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -38,7 +26,7 @@ namespace Microsoft.NET.Publish.Tests
                 ProjectSdk = "Microsoft.NET.Sdk;Microsoft.NET.Sdk.Publish",
                 IsExe = true,
             };
-            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
 
             var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: publishSingleFile.ToString());
 

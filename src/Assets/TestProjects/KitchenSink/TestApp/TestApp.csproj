@@ -14,6 +14,7 @@
     <EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>false</EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization>
     <DebuggerSupport>true</DebuggerSupport>
     <EventSourceSupport>false</EventSourceSupport>
+    <MetricsSupport>false</MetricsSupport>
     <InvariantGlobalization>true</InvariantGlobalization>
     <PredefinedCulturesOnly>true</PredefinedCulturesOnly>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
@@ -26,6 +27,7 @@
     <CustomResourceTypesSupport>false</CustomResourceTypesSupport>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <DynamicCodeSupport>true</DynamicCodeSupport>
+    <XmlResolverIsNetworkingEnabledByDefault>false</XmlResolverIsNetworkingEnabledByDefault>
     <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
     <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
     <_EnableConsumingManagedCodeFromNativeHosting>false</_EnableConsumingManagedCodeFromNativeHosting>
@@ -40,6 +42,8 @@
     <AutoreleasePoolSupport>false</AutoreleasePoolSupport>
     <ThreadPoolMinThreads>2</ThreadPoolMinThreads>
     <ThreadPoolMaxThreads>9</ThreadPoolMaxThreads>
+    <UseWindowsThreadPool>true</UseWindowsThreadPool>
+    <_UseManagedNtlm>true</_UseManagedNtlm>
   </PropertyGroup>
 
   <ItemGroup>

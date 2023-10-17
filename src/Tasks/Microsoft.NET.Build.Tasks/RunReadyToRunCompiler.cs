@@ -1,11 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
-
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -220,7 +215,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private string GetAssemblyReferencesCommands()
         {
-            StringBuilder result = new StringBuilder();
+            StringBuilder result = new();
 
             var references = _createCompositeImage ? ReadyToRunCompositeBuildReferences : ImplementationAssemblyReferences;
 
@@ -270,7 +265,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private string GenerateCrossgenResponseFile()
         {
-            StringBuilder result = new StringBuilder();
+            StringBuilder result = new();
 
             result.AppendLine("/nologo");
 
@@ -300,7 +295,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private string GenerateCrossgen2ResponseFile()
         {
-            StringBuilder result = new StringBuilder();
+            StringBuilder result = new();
 
             string jitPath = Crossgen2Tool.GetMetadata(MetadataKeys.JitPath);
             if (!string.IsNullOrEmpty(jitPath))
@@ -327,7 +322,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     result.AppendLine("--perfmap");
                     result.AppendLine($"--perfmap-path:{Path.GetDirectoryName(_outputPDBImage)}");
-                    
+
                     string perfmapFormatVersion = Crossgen2Tool.GetMetadata(MetadataKeys.PerfmapFormatVersion);
                     if (!string.IsNullOrEmpty(perfmapFormatVersion))
                     {
@@ -346,7 +341,7 @@ namespace Microsoft.NET.Build.Tasks
 
             if (!string.IsNullOrEmpty(Crossgen2ExtraCommandLineArgs))
             {
-                foreach (string extraArg in Crossgen2ExtraCommandLineArgs.Split(new char[]{';'}, StringSplitOptions.RemoveEmptyEntries))
+                foreach (string extraArg in Crossgen2ExtraCommandLineArgs.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     result.AppendLine(extraArg);
                 }

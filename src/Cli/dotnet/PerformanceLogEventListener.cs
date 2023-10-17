@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics.Tracing;
-using System.IO;
-using System.Text;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.Utils
@@ -32,12 +29,12 @@ namespace Microsoft.DotNet.Cli.Utils
         private StreamWriter _writer;
 
         [ThreadStatic]
-        private static StringBuilder s_builder = new StringBuilder();
+        private static StringBuilder s_builder = new();
 
         internal static PerformanceLogEventListener Create(IFileSystem fileSystem, string logDirectory)
         {
             // Only create a listener if the log directory exists.
-            if(string.IsNullOrWhiteSpace(logDirectory) || !fileSystem.Directory.Exists(logDirectory))
+            if (string.IsNullOrWhiteSpace(logDirectory) || !fileSystem.Directory.Exists(logDirectory))
             {
                 return null;
             }
@@ -56,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Utils
             }
             catch
             {
-                if(eventListener != null)
+                if (eventListener != null)
                 {
                     eventListener.Dispose();
                 }
@@ -133,7 +130,7 @@ namespace Microsoft.DotNet.Cli.Utils
                     s_builder.Clear();
                 }
 
-                s_builder.Append($"[{DateTime.UtcNow.ToString("o")}] Event={eventData.EventSource.Name}/{eventData.EventName} ProcessID={Environment.ProcessId} ThreadID={System.Threading.Thread.CurrentThread.ManagedThreadId}\t ");
+                s_builder.Append($"[{DateTime.UtcNow.ToString("o")}] Event={eventData.EventSource.Name}/{eventData.EventName} ProcessID={Environment.ProcessId} ThreadID={Thread.CurrentThread.ManagedThreadId}\t ");
                 for (int i = 0; i < eventData.PayloadNames.Count; i++)
                 {
                     s_builder.Append($"{eventData.PayloadNames[i]}=\"{eventData.Payload[i]}\" ");

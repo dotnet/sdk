@@ -1,13 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Text;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Microsoft.NET.Sdk.Publish.Tasks.MsDeploy;
 using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 
@@ -47,7 +42,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
                 return false;
             }
 
-            using (DefaultHttpClient client = new DefaultHttpClient())
+            using (DefaultHttpClient client = new())
             {
                 System.Threading.Tasks.Task<bool> t = ZipDeployAsync(ZipToPublishPath, user, password, PublishUrl, SiteName, UserAgentVersion, client, true);
                 t.Wait();
@@ -64,7 +59,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
 
             string zipDeployPublishUrl = null;
 
-            if(!string.IsNullOrEmpty(publishUrl))
+            if (!string.IsNullOrEmpty(publishUrl))
             {
                 if (!publishUrl.EndsWith("/"))
                 {
@@ -73,13 +68,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
 
                 zipDeployPublishUrl = publishUrl + "api/zipdeploy";
             }
-            else if(!string.IsNullOrEmpty(siteName))
+            else if (!string.IsNullOrEmpty(siteName))
             {
                 zipDeployPublishUrl = $"https://{siteName}.scm.azurewebsites.net/api/zipdeploy";
             }
             else
             {
-                if(logMessages)
+                if (logMessages)
                 {
                     Log.LogError(Resources.ZIPDEPLOY_InvalidSiteNamePublishUrl);
                 }
@@ -93,7 +88,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
             }
 
             // use the async version of the api
-            Uri uri = new Uri($"{zipDeployPublishUrl}?isAsync=true", UriKind.Absolute);
+            Uri uri = new($"{zipDeployPublishUrl}?isAsync=true", UriKind.Absolute);
             string userAgent = $"{UserAgentName}/{userAgentVersion}";
             FileStream stream = File.OpenRead(zipToPublishPath);
             IHttpResponse response = await client.PostRequestAsync(uri, userName, password, "application/zip", userAgent, Encoding.UTF8, stream);
@@ -141,7 +136,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
 
         private bool GetDestinationCredentials(out string user, out string password)
         {
-            VSHostObject hostObj = new VSHostObject(HostObject as System.Collections.Generic.IEnumerable<ITaskItem>);
+            VSHostObject hostObj = new(HostObject as System.Collections.Generic.IEnumerable<ITaskItem>);
             return hostObj.ExtractCredentials(out user, out password);
         }
     }

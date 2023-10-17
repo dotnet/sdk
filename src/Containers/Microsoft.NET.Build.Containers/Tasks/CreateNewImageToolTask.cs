@@ -1,10 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.Linq;
-using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.Resources;
@@ -46,7 +43,7 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
     /// <returns></returns>
     protected override ProcessStartInfo GetProcessStartInfo(string pathToTool, string commandLineCommands, string responseFileSwitch)
     {
-        VSHostObject hostObj = new VSHostObject(HostObject as System.Collections.Generic.IEnumerable<ITaskItem>);
+        VSHostObject hostObj = new(HostObject as System.Collections.Generic.IEnumerable<ITaskItem>);
         if (hostObj.ExtractCredentials(out string user, out string pass, (string s) => Log.LogWarning(s)))
         {
             extractionInfo = (true, user, pass);
@@ -94,14 +91,6 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredPropertyNotSetOrEmpty), nameof(WorkingDirectory)));
         }
-        if (Entrypoint.Length == 0)
-        {
-            throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredItemsNotSet), nameof(Entrypoint)));
-        }
-        if (Entrypoint.Any(e => string.IsNullOrWhiteSpace(e.ItemSpec)))
-        {
-            throw new InvalidOperationException(Resource.FormatString(nameof(Strings.RequiredItemsContainsEmptyItems), nameof(Entrypoint)));
-        }
 
         CommandLineBuilder builder = new();
 
@@ -112,8 +101,6 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         builder.AppendSwitchIfNotNull("--baseimagename ", BaseImageName);
         builder.AppendSwitchIfNotNull("--repository ", Repository);
         builder.AppendSwitchIfNotNull("--workingdirectory ", WorkingDirectory);
-        ITaskItem[] sanitizedEntryPoints = Entrypoint.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
-        builder.AppendSwitchIfNotNull("--entrypoint ", sanitizedEntryPoints, delimiter: " ");
 
         //optional options
         if (!string.IsNullOrWhiteSpace(BaseImageTag))
@@ -128,13 +115,16 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitchIfNotNull("--localregistry ", LocalRegistry);
         }
-
-        if (EntrypointArgs.Any(e => string.IsNullOrWhiteSpace(e.ItemSpec)))
+        if (!string.IsNullOrWhiteSpace(AppCommandInstruction))
         {
-            Log.LogWarningWithCodeFromResources(nameof(Strings.EmptyValuesIgnored), nameof(EntrypointArgs));
+            builder.AppendSwitchIfNotNull("--appcommandinstruction ", AppCommandInstruction);
         }
-        ITaskItem[] sanitizedEntryPointArgs = EntrypointArgs.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
-        builder.AppendSwitchIfNotNull("--entrypointargs ", sanitizedEntryPointArgs, delimiter: " ");
+
+        AppendSwitchIfNotNullSantized(builder, "--entrypoint ", nameof(Entrypoint), Entrypoint);
+        AppendSwitchIfNotNullSantized(builder, "--entrypointargs ", nameof(EntrypointArgs), EntrypointArgs);
+        AppendSwitchIfNotNullSantized(builder, "--defaultargs ", nameof(DefaultArgs), DefaultArgs);
+        AppendSwitchIfNotNullSantized(builder, "--appcommand ", nameof(AppCommand), AppCommand);
+        AppendSwitchIfNotNullSantized(builder, "--appcommandargs ", nameof(AppCommandArgs), AppCommandArgs);
 
         if (Labels.Any(e => string.IsNullOrWhiteSpace(e.ItemSpec)))
         {
@@ -198,6 +188,16 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         }
 
         return builder.ToString();
+
+        void AppendSwitchIfNotNullSantized(CommandLineBuilder builder, string commandArgName, string propertyName, ITaskItem[] value)
+        {
+            ITaskItem[] santized = value.Where(e => !string.IsNullOrWhiteSpace(e.ItemSpec)).ToArray();
+            if (santized.Length != value.Length)
+            {
+                Log.LogWarningWithCodeFromResources(nameof(Strings.EmptyValuesIgnored), propertyName);
+            }
+            builder.AppendSwitchIfNotNull(commandArgName, santized, delimiter: " ");
+        }
     }
 }
 

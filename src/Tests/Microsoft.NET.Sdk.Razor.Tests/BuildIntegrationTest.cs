@@ -1,27 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class BuildIntegrationTest : AspNetSdkTest
     {
-        public BuildIntegrationTest(ITestOutputHelper log) : base(log) {}
+        public BuildIntegrationTest(ITestOutputHelper log) : base(log) { }
 
         [CoreMSBuildOnlyFact]
         public void Build_SimpleMvc_UsingDotnetMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
@@ -145,7 +131,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset)
-                .WithProjectChanges(project => {
+                .WithProjectChanges(project =>
+                {
                     var ns = project.Root.Name.Namespace;
                     var itemGroup = new XElement(ns + "PropertyGroup");
                     itemGroup.Add(new XElement("PreserveCompilationReferences", "true"));
@@ -201,13 +188,14 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset)
                 .WithProjectChanges((path, project) =>
                 {
-                    if (path.Contains("AppWithP2PReference")) {
+                    if (path.Contains("AppWithP2PReference"))
+                    {
                         var ns = project.Root.Name.Namespace;
                         var itemGroup = new XElement(ns + "ItemGroup");
                         itemGroup.Add(new XElement("ProjectReference", new XAttribute("Include", "..\\AnotherClassLib\\AnotherClassLib.csproj")));
                         project.Root.Add(itemGroup);
                     }
-                });;
+                }); ;
 
             var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
             build.Execute().Should().Pass();

@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
@@ -17,7 +13,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
     {
         private readonly string _baseDirectory;
 
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         private readonly Dictionary<string, (Assembly assembly, AssemblyIdentity identity)> _loadedByPath;
         private readonly Dictionary<AssemblyIdentity, Assembly> _loadedByIdentity;
         private readonly Dictionary<string, AssemblyIdentity> _identityCache;

@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Text;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -74,17 +71,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             }
         }
 
-        private object _sync = new object();
+        private object _sync = new();
         private Process _runningProcess;
         private int _processExitCode;
-        private StringBuilder _standardOut = new StringBuilder();
-        private StringBuilder _standardError = new StringBuilder();
+        private StringBuilder _standardOut = new();
+        private StringBuilder _standardError = new();
         private const string AspNetCoreEnvironment = "ASPNETCORE_ENVIRONMENT";
         private bool GenerateSQLScript(string sqlFileFullPath, string dbContextName, bool isLoggingEnabled = true)
         {
-            string previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment); 
+            string previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment);
             Environment.SetEnvironmentVariable(AspNetCoreEnvironment, "Development");
-            ProcessStartInfo psi = new ProcessStartInfo("dotnet", $@"ef migrations script --no-build --idempotent --configuration {Configuration} --output ""{sqlFileFullPath}"" --context {dbContextName} {EFMigrationsAdditionalArgs}")
+            ProcessStartInfo psi = new("dotnet", $@"ef migrations script --no-build --idempotent --configuration {Configuration} --output ""{sqlFileFullPath}"" --context {dbContextName} {EFMigrationsAdditionalArgs}")
             {
                 WorkingDirectory = ProjectDirectory,
                 CreateNoWindow = true,
@@ -102,9 +99,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                     Log.LogMessage(MessageImportance.High, string.Format("Executing command: {0} {1}", psi.FileName, psi.Arguments));
                 }
 
-                proc = new Process();
-                proc.StartInfo = psi;
-                proc.EnableRaisingEvents = true;
+                proc = new Process
+                {
+                    StartInfo = psi,
+                    EnableRaisingEvents = true
+                };
                 proc.OutputDataReceived += Proc_OutputDataReceived;
                 proc.ErrorDataReceived += Proc_ErrorDataReceived;
                 proc.Exited += Proc_Exited;

@@ -1,11 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.Diagnostics;
-using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -54,7 +51,7 @@ namespace Microsoft.DotNet.Tools.Help
             {
                 psInfo = new ProcessStartInfo
                 {
-                    FileName = "cmd",
+                    FileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe"),
                     Arguments = $"/c start {docUrl}"
                 };
             }
@@ -62,15 +59,19 @@ namespace Microsoft.DotNet.Tools.Help
             {
                 psInfo = new ProcessStartInfo
                 {
-                    FileName = "open",
+                    FileName = @"/usr/bin/open",
                     Arguments = docUrl
                 };
             }
             else
             {
+                var fileName = File.Exists(@"/usr/bin/xdg-open") ? @"/usr/bin/xdg-open" :
+                               File.Exists(@"/usr/sbin/xdg-open") ? @"/usr/sbin/xdg-open" :
+                               File.Exists(@"/sbin/xdg-open") ? @"/sbin/xdg-open" :
+                               "xdg-open";
                 psInfo = new ProcessStartInfo
                 {
-                    FileName = "xdg-open",
+                    FileName = fileName,
                     Arguments = docUrl
                 };
             }
@@ -106,7 +107,7 @@ namespace Microsoft.DotNet.Tools.Help
 
         private bool TryGetDocsLink(string commandName, out string docsLink)
         {
-            var command = Cli.Parser.GetBuiltInCommand(commandName);
+            var command = Parser.GetBuiltInCommand(commandName);
             if (command != null && command as DocumentedCommand != null)
             {
                 docsLink = (command as DocumentedCommand).DocsLink;

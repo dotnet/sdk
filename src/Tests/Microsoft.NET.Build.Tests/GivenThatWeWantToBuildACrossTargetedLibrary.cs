@@ -1,18 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Runtime.InteropServices;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Xml.Linq;
-using System.Linq;
-using FluentAssertions;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToBuildACrossTargetedLibrary : SdkTest
@@ -115,8 +103,10 @@ namespace Microsoft.NET.Build.Tests
                             new XElement(ns + "RuntimeIdentifiers", secondFrameworkRids)));
                 });
 
-            var command = new GetValuesCommand(Log, testAsset.TestRoot, "", valueName: "RuntimeIdentifiers");
-            command.DependsOnTargets = "GetAllRuntimeIdentifiers";
+            var command = new GetValuesCommand(Log, testAsset.TestRoot, "", valueName: "RuntimeIdentifiers")
+            {
+                DependsOnTargets = "GetAllRuntimeIdentifiers"
+            };
             command.ExecuteWithoutRestore().Should().Pass();
             command.GetValues().Should().BeEquivalentTo(expectedCombination.Split(';'));
         }

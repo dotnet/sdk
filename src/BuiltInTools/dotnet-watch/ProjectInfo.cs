@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.DotNet.Watcher
 {
     internal sealed record ProjectInfo
@@ -17,8 +15,8 @@ namespace Microsoft.DotNet.Watcher
         string RunWorkingDirectory
     )
     {
-        private static readonly Version Version3_1 = new Version(3, 1);
-        private static readonly Version Version6_0 = new Version(6, 0);
+        private static readonly Version Version3_1 = new(3, 1);
+        private static readonly Version Version6_0 = new(6, 0);
 
         public bool IsNetCoreApp31OrNewer()
         {

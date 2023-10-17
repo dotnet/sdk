@@ -4,10 +4,7 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit.Abstractions;
 using DiagnosticMessage = Xunit.Sdk.DiagnosticMessage;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
@@ -434,7 +431,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string packageLocation = await packageManager.GetNuGetPackage(
                 "Microsoft.DotNet.Common.ProjectTemplates.5.0",
                 minimumVersion: new NuGet.Versioning.NuGetVersion(6, 0, 0),
-                logger: new XunitNuGetLogger(_messageSink)).ConfigureAwait(false);
+                logger: new XunitNuGetLogger(_messageSink));
 
             _messageSink.OnMessage(new DiagnosticMessage($"{nameof(InstallingSamePackageFromRemoteUpdatesLocal)}: Microsoft.DotNet.Common.ProjectTemplates.5.0 is downloaded to {packageLocation}.)"));
 

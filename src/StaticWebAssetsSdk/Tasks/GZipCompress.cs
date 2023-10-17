@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -28,11 +24,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 Log.LogMessage(MessageImportance.Low, "Created directory '{0}'.", outputDirectory);
             }
 
-            System.Threading.Tasks.Parallel.For(0, FilesToCompress.Length, i =>
+            Parallel.For(0, FilesToCompress.Length, i =>
             {
                 var file = FilesToCompress[i];
                 var outputRelativePath = file.ItemSpec;
-                
+
                 if (!AssetToCompress.TryFindInputFilePath(file, Log, out var inputFullPath))
                 {
                     return;

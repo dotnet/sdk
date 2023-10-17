@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 {
@@ -33,7 +30,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
         {
             // Arrange
             ITaskItem[] taskItemArray = new ITaskItem[1];
-            TaskItem connectionstringTaskItem = new TaskItem(connectionName);
+            TaskItem connectionstringTaskItem = new(connectionName);
             connectionstringTaskItem.SetMetadata("Value", connectionString);
             taskItemArray[0] = connectionstringTaskItem;
 
@@ -60,7 +57,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
         {
             // Arrange
             ITaskItem[] taskItemArray = new ITaskItem[1];
-            TaskItem connectionstringTaskItem = new TaskItem(connectionName);
+            TaskItem connectionstringTaskItem = new(connectionName);
             connectionstringTaskItem.SetMetadata("Value", connectionString);
             taskItemArray[0] = connectionstringTaskItem;
 
@@ -83,7 +80,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
         private static readonly ITaskItem CarConnectionTaskItem = new TaskItem("CarConnection", new Dictionary<string, string>() { { "Value", @"Server=(localdb)\mssqllocaldb; Database=CarDB;Trusted_Connection=True;MultipleActiveResultSets=true" } });
         private static readonly ITaskItem PersonConnectionTaskItem = new TaskItem("PersonConnection", new Dictionary<string, string>() { { "Value", @"Server=(localdb)\mssqllocaldb; Database=PersonDb;Trusted_Connection=True;MultipleActiveResultSets=true" } });
 
-        private static readonly List<object[]> testData = new List<object[]>
+        private static readonly List<object[]> testData = new()
         {
             new object[] {new ITaskItem[] { DefaultConnectionTaskItem } },
             new object[] {new ITaskItem[] { DefaultConnectionTaskItem, CarConnectionTaskItem, PersonConnectionTaskItem } }
@@ -95,7 +92,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
         }
 
         [Theory]
-        [MemberData(nameof(ConnectionStringsData), MemberType=typeof(AppSettingsTransformTests))]
+        [MemberData(nameof(ConnectionStringsData), MemberType = typeof(AppSettingsTransformTests))]
         public void AppSettingsTransform_UpdatesMultipleConnectionStrings(ITaskItem[] values)
         {
             // Arrange

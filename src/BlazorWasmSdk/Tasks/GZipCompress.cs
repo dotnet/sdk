@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -29,7 +24,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly
 
             Directory.CreateDirectory(OutputDirectory);
 
-            System.Threading.Tasks.Parallel.For(0, FilesToCompress.Length, i =>
+            Parallel.For(0, FilesToCompress.Length, i =>
             {
                 var file = FilesToCompress[i];
                 var inputFullPath = file.GetMetadata("FullPath");

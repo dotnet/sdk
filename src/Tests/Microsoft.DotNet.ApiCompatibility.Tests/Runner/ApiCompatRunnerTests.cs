@@ -1,13 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Moq;
-using Xunit;
 
 namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
 {
@@ -49,7 +46,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
                 .Setup(m => m.Create(It.IsAny<bool>()))
                 .Returns(assemblySymbolLoaderMock.Object);
 
-            return new(Mock.Of<ISuppressableLog>(),
+            return new(Mock.Of<ISuppressibleLog>(),
                 suppressionEngineMock.Object,
                 apiComparerFactoryMock.Object,
                 assemblyLoaderFactoryMock.Object);

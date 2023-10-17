@@ -2,11 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System;
 using System.Collections.Immutable;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -28,7 +24,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             _wasmApplier.Initialize(context, cancellationToken);
             _hostApplier.Initialize(context, cancellationToken);
         }
-        
+
         public override async Task<ApplyStatus> Apply(DotNetWatchContext context, ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
             // Apply to both processes.
@@ -67,7 +63,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             }
         }
-        
+
         public override void Dispose()
         {
             _hostApplier.Dispose();

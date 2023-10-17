@@ -1,18 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Runtime.CompilerServices;
-using System.Text;
-using FluentAssertions;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
 using IChannelTelemetry = Microsoft.ApplicationInsights.Channel.ITelemetry;
 
 namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
@@ -34,15 +26,15 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
         }
 
         [Fact]
-        public void EnqueuedContentIsEqualToPeekedContent()
+        public async Task EnqueuedContentIsEqualToPeekedContent()
         {
             // Setup
-            StorageService storage = new StorageService();
+            StorageService storage = new();
             storage.Init(GetTemporaryPath());
             Transmission transmissionToEnqueue = CreateTransmission(new TraceTelemetry("mock_item"));
 
             // Act
-            storage.EnqueueAsync(transmissionToEnqueue).ConfigureAwait(false).GetAwaiter().GetResult();
+            await storage.EnqueueAsync(transmissionToEnqueue);
             StorageTransmission peekedTransmission = storage.Peek();
 
             // Asserts
@@ -57,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
         public void DeletedItemIsNotReturnedInCallsToPeek()
         {
             // Setup - create a storage with one item
-            StorageService storage = new StorageService();
+            StorageService storage = new();
             storage.Init(GetTemporaryPath());
             Transmission transmissionToEnqueue = CreateTransmissionAndEnqueueIt(storage);
 
@@ -82,7 +74,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
         public void PeekedItemIsOnlyReturnedOnce()
         {
             // Setup - create a storage with one item
-            StorageService storage = new StorageService();
+            StorageService storage = new();
             storage.Init(GetTemporaryPath());
 
             Transmission transmissionToEnqueue = CreateTransmissionAndEnqueueIt(storage);
@@ -97,14 +89,14 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
         }
 
         [Fact]
-        public void PeekedItemIsReturnedAgainAfterTheItemInTheFirstCallToPeekIsDisposed()
+        public async Task PeekedItemIsReturnedAgainAfterTheItemInTheFirstCallToPeekIsDisposed()
         {
             // Setup - create a storage with one item
-            StorageService storage = new StorageService();
+            StorageService storage = new();
             storage.Init(GetTemporaryPath());
 
             Transmission transmissionToEnqueue = CreateTransmission(new TraceTelemetry("mock_item"));
-            storage.EnqueueAsync(transmissionToEnqueue).ConfigureAwait(false).GetAwaiter().GetResult();
+            await storage.EnqueueAsync(transmissionToEnqueue);
 
             // Act
             StorageTransmission firstPeekedTransmission;
@@ -123,7 +115,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
         public void WhenStorageHasTwoItemsThenTwoCallsToPeekReturns2DifferentItems()
         {
             // Setup - create a storage with 2 items
-            StorageService storage = new StorageService();
+            StorageService storage = new();
             storage.Init(GetTemporaryPath());
 
             Transmission firstTransmission = CreateTransmissionAndEnqueueIt(storage);
@@ -148,7 +140,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
         public void WhenMaxFilesIsOneThenSecondTransmissionIsDropped()
         {
             // Setup
-            StorageService storage = new StorageService();
+            StorageService storage = new();
             storage.Init(GetTemporaryPath());
 
             storage.MaxFiles = 1;
@@ -166,7 +158,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
         public void WhenMaxSizeIsReachedThenEnqueuedTransmissionsAreDropped()
         {
             // Setup - create a storage with 2 items
-            StorageService storage = new StorageService();
+            StorageService storage = new();
             storage.Init(GetTemporaryPath());
 
             storage.CapacityInBytes = 200; // Each file enqueued in CreateTransmissionAndEnqueueIt is ~300 bytes.
@@ -182,8 +174,8 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel.Tests
 
         private static Transmission CreateTransmission(IChannelTelemetry telemetry)
         {
-            byte[] data = JsonSerializer.Serialize(new[] {telemetry});
-            Transmission transmission = new Transmission(
+            byte[] data = JsonSerializer.Serialize(new[] { telemetry });
+            Transmission transmission = new(
                 new Uri(@"http://some.url"),
                 data,
                 "application/x-json-stream",

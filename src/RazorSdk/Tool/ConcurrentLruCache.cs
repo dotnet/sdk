@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -19,10 +17,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         private readonly Dictionary<TKey, CacheValue> _cache;
         private readonly LinkedList<TKey> _nodeList;
         // This is a naive course-grained lock, it can probably be optimized
-        private readonly object _lockObject = new object();
+        private readonly object _lockObject = new();
 
         public ConcurrentLruCache(int capacity)
-            : this (capacity, EqualityComparer<TKey>.Default)
+            : this(capacity, EqualityComparer<TKey>.Default)
         {
         }
 
@@ -141,7 +139,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         private void MoveNodeToTop(LinkedListNode<TKey> node)
         {
-            if (!object.ReferenceEquals(_nodeList.First, node))
+            if (!ReferenceEquals(_nodeList.First, node))
             {
                 _nodeList.Remove(node);
                 _nodeList.AddFirst(node);

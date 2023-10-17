@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Security.Cryptography;
 
 namespace Microsoft.DotNet.Cli.Utils
@@ -16,11 +15,11 @@ namespace Microsoft.DotNet.Cli.Utils
         public static Guid Create(string name)
         {
             // Any fixed GUID will do for a namespace.
-            Guid namespaceId = new Guid("28F1468D-672B-489A-8E0C-7C5B3030630C");
+            Guid namespaceId = new("28F1468D-672B-489A-8E0C-7C5B3030630C");
 
             using (SHA1 hasher = SHA1.Create())
             {
-                var nameBytes = System.Text.Encoding.UTF8.GetBytes(name ?? string.Empty);
+                var nameBytes = Encoding.UTF8.GetBytes(name ?? string.Empty);
                 var namespaceBytes = namespaceId.ToByteArray();
 
                 SwapGuidByteOrder(namespaceBytes);
@@ -43,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
                 return new Guid(res);
             }
-        }        
+        }
 
         // Do a byte order swap, .NET GUIDs store multi byte components in little
         // endian.

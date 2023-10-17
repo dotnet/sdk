@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Text;
 using Newtonsoft.Json;
 using static Microsoft.Win32.Msi.Error;
 
@@ -53,7 +51,7 @@ namespace Microsoft.DotNet.Installer.Windows
         public static InstallResponseMessage Create(byte[] bytes)
         {
             string json = Encoding.UTF8.GetString(bytes);
-            
+
             return JsonConvert.DeserializeObject<InstallResponseMessage>(json, DefaultSerializerSettings);
         }
 

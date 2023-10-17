@@ -47,6 +47,16 @@
         <target state="translated">Yükleme Türü</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadIntegrityCheck">
+        <source>Checking the state of installed workloads...</source>
+        <target state="translated">Yüklü iş yüklerinin durumu denetleniyor...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIntegrityCheckError">
+        <source>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</source>
+        <target state="translated">İş yükleri doğrulanırken bir sorunla karşılaşıldı. Daha fazla bilgi için "dotnet workload update" komutunu çalıştırın.</target>
+        <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadManfiestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">Bildirim Sürümü</target>
@@ -60,6 +70,11 @@
       <trans-unit id="WorkloadSourceColumn">
         <source>Installation Source</source>
         <target state="translated">Yükleme Kaynağı</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionDescription">
+        <source>Display the currently installed workload version.</source>
+        <target state="translated">Şu anda yüklü olan iş yükü sürümünü görüntüleyin.</target>
         <note />
       </trans-unit>
     </body>

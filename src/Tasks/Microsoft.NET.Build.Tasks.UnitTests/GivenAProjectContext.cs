@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
@@ -34,8 +30,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             HashSet<string> exclusionList =
                 projectContext.GetExcludeFromPublishList(excludeFromPublishPackageIds, libraryLookup);
-            
-            HashSet<string> expectedExclusions = new HashSet<string>()
+
+            HashSet<string> expectedExclusions = new()
             {
                 "Microsoft.Extensions.Logging.Abstractions",
                 "System.Collections.Concurrent",

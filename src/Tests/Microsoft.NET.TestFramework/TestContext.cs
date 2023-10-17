@@ -1,12 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework.Commands;
 using System.Globalization;
-using System.Collections.Generic;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.TestFramework
 {
@@ -84,8 +80,8 @@ namespace Microsoft.NET.TestFramework
             //  one running the tests, it won't interfere
             Environment.SetEnvironmentVariable("MSBuildSdksPath", null);
 
-            TestContext testContext = new TestContext();
-            
+            TestContext testContext = new();
+
             bool runAsTool = false;
             if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "Assets")))
             {
@@ -98,7 +94,7 @@ namespace Microsoft.NET.TestFramework
                 //  This allows testing most of the "tests as global tool" behavior by setting an environment
                 //  variable instead of packing the test, and installing it as a global tool.
                 runAsTool = true;
-                
+
                 testContext.TestAssetsDirectory = FindFolderInTree(Path.Combine("src", "Assets"), AppContext.BaseDirectory);
             }
             else if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_ASSETS_DIRECTORY")))
@@ -188,7 +184,7 @@ namespace Microsoft.NET.TestFramework
             {
                 var nugetFolder = FindFolderInTree(".nuget", AppContext.BaseDirectory, false)
                     ?? Path.Combine(testContext.TestExecutionDirectory, ".nuget");
-                
+
 
                 testContext.NuGetFallbackFolder = Path.Combine(nugetFolder, "NuGetFallbackFolder");
                 testContext.NuGetExePath = Path.Combine(nugetFolder, $"nuget{Constants.ExeSuffix}");
@@ -204,11 +200,11 @@ namespace Microsoft.NET.TestFramework
 
             //  Important to set this before below code which ends up calling through TestContext.Current, which would
             //  result in infinite recursion / stack overflow if TestContext.Current wasn't set
-            TestContext.Current = testContext;
+            Current = testContext;
 
             //  Set up test hooks for in-process tests
             Environment.SetEnvironmentVariable(
-                DotNet.Cli.Utils.Constants.MSBUILD_EXE_PATH,
+                Constants.MSBUILD_EXE_PATH,
                 Path.Combine(testContext.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
 
             Environment.SetEnvironmentVariable(
@@ -216,7 +212,7 @@ namespace Microsoft.NET.TestFramework
                 Path.Combine(testContext.ToolsetUnderTest.SdksPath));
 
 #if NETCOREAPP
-            DotNet.Cli.Utils.MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
+            MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
                 testContext.ToolsetUnderTest.SdkFolderUnderTest;
 #endif
         }
@@ -275,14 +271,14 @@ namespace Microsoft.NET.TestFramework
 
         public void WriteGlobalJson(string path)
         {
-            WriteGlobalJson(path, this.SdkVersion);
+            WriteGlobalJson(path, SdkVersion);
         }
 
         public static void WriteGlobalJson(string path, string sdkVersion)
         {
             if (!string.IsNullOrEmpty(sdkVersion))
             {
-                string globalJsonPath = System.IO.Path.Combine(path, "global.json");
+                string globalJsonPath = Path.Combine(path, "global.json");
                 File.WriteAllText(globalJsonPath, @"{
   ""sdk"": {
     ""version"": """ + sdkVersion + @"""

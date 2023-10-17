@@ -3,14 +3,10 @@
 
 #nullable enable
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.DotNet.Tools.New.PostActionProcessors;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Mocks;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit;
 
 namespace Microsoft.DotNet.Cli.New.Tests
 {
@@ -31,7 +27,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
 
             IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, targetBasePath);
-            Assert.Equal(1, solutionFiles.Count);
+            Assert.Single(solutionFiles);
             Assert.Equal(solutionFileFullPath, solutionFiles[0]);
         }
 

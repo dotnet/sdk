@@ -1,21 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Sln.Internal;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Common;
-using Microsoft.VisualBasic.CompilerServices;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 
@@ -56,7 +43,7 @@ namespace Microsoft.DotNet.Tools.Publish
 
             msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(PublishCommandParser.GetCommand()));
 
-            ReleasePropertyProjectLocator projectLocator = new ReleasePropertyProjectLocator(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE,
+            ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE,
                 new ReleasePropertyProjectLocator.DependentCommandOptions(
                         parseResult.GetValue(PublishCommandParser.SlnOrProjectArgument),
                         parseResult.HasOption(PublishCommandParser.ConfigurationOption) ? parseResult.GetValue(PublishCommandParser.ConfigurationOption) : null,

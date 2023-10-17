@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System;
-using System.Linq;
 using NuGet.Common;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -170,7 +167,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string[] runtimeTargets = null,
             string[] contentFiles = null)
         {
-            List<string> parts = new List<string>();
+            List<string> parts = new();
             parts.Add($"\"type\": \"{type}\"");
 
             if (frameworkAssemblies != null)
@@ -216,7 +213,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string warningLevel = "0",
             string[] targetGraphs = null)
         {
-            List<string> parts = new List<string>();
+            List<string> parts = new();
 
             parts.Add($"\"code\": \"{code}\"");
             parts.Add($"\"level\": \"{level}\"");

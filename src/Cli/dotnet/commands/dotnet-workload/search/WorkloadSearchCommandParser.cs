@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System.CommandLine.Parsing;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Search;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Search.LocalizableStrings;
@@ -13,7 +11,7 @@ namespace Microsoft.DotNet.Cli
     internal static class WorkloadSearchCommandParser
     {
         public static readonly CliArgument<string> WorkloadIdStubArgument =
-            new CliArgument<string>(LocalizableStrings.WorkloadIdStubArgumentName)
+            new(LocalizableStrings.WorkloadIdStubArgumentName)
             {
                 Arity = ArgumentArity.ZeroOrOne,
                 Description = LocalizableStrings.WorkloadIdStubArgumentDescription

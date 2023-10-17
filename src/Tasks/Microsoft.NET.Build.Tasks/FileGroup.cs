@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using NuGet.ProjectModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -87,7 +84,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private static IEnumerable<PathAndPropertiesTuple> SelectPath<T>(IList<T> fileItemList) 
+        private static IEnumerable<PathAndPropertiesTuple> SelectPath<T>(IList<T> fileItemList)
             where T : LockFileItem
             => fileItemList.Select(c => Tuple.Create(c.Path, c.Properties));
     }

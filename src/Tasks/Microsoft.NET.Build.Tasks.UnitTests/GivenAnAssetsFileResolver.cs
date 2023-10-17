@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using FluentAssertions;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
@@ -192,7 +189,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             string sourcedir = Path.GetDirectoryName(sourcepath);
             string destinationSubDirPath = preserveStoreLayout ? sourcedir.Substring(packageRoot.Length) : destinationSubDirectory;
 
-            if (!String.IsNullOrEmpty(destinationSubDirPath) && !destinationSubDirPath.EndsWith(Path.DirectorySeparatorChar))
+            if (!string.IsNullOrEmpty(destinationSubDirPath) && !destinationSubDirPath.EndsWith(Path.DirectorySeparatorChar))
             {
                 destinationSubDirPath += Path.DirectorySeparatorChar;
             }

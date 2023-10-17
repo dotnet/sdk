@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public struct ManifestId : IEquatable<ManifestId>, IComparable<ManifestId>
@@ -31,7 +29,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public override int GetHashCode()
         {
-            return ToString().GetHashCode();
+            return _id.GetHashCode();
         }
 
         public override string ToString()

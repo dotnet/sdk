@@ -1,19 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Microsoft.Build.Construction;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
-using FluentAssertions;
-using System.Linq;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 
 namespace Microsoft.DotNet.Restore.Test
 {
@@ -65,7 +53,7 @@ namespace Microsoft.DotNet.Restore.Test
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             if (extension == ".fsproj")
             {
                 testProject.PackageReferences.Add(new TestPackageReference("FSharp.Core", "6.0.1", updatePackageReference: true));
@@ -148,7 +136,7 @@ namespace Microsoft.DotNet.Restore.Test
                 .Should()
                 .Pass();
 
-            string[] args = new[] { "--packages", dir, "--verbosity",  "quiet" };
+            string[] args = new[] { "--packages", dir, "--verbosity", "quiet" };
             args = HandleStaticGraphEvaluation(useStaticGraphEvaluation, args);
             new DotnetRestoreCommand(Log)
                  .WithWorkingDirectory(rootPath)
@@ -181,7 +169,7 @@ namespace Microsoft.DotNet.Restore.Test
         }
 
         private static string[] HandleStaticGraphEvaluation(bool useStaticGraphEvaluation, string[] args) =>
-            useStaticGraphEvaluation ? 
+            useStaticGraphEvaluation ?
                 args.Append("/p:RestoreUseStaticGraphEvaluation=true").ToArray() :
                 args;
     }

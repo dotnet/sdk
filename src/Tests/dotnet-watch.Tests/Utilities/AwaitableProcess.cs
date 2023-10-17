@@ -1,22 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
     internal class AwaitableProcess : IDisposable
     {
-        private readonly object _testOutputLock = new object();
+        private readonly object _testOutputLock = new();
 
         private Process _process;
         private readonly DotnetCommand _spec;
@@ -76,11 +68,13 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async Task<string> GetOutputLineAsync(Predicate<string> success, Predicate<string> failure)
         {
-            bool failed = false;
-
             using var cancellationOnFailure = new CancellationTokenSource();
 
-            while (!_source.Completion.IsCompleted && !failed)
+            // cancel just before we hit 2 minute time out used on CI (sdk\src\Tests\UnitTests.proj)
+            cancellationOnFailure.CancelAfter(TimeSpan.FromSeconds(110));
+
+            var failedLineCount = 0;
+            while (!_source.Completion.IsCompleted && failedLineCount == 0)
             {
                 try
                 {
@@ -95,14 +89,22 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                         if (failure(line))
                         {
-                            failed = true;
+                            if (failedLineCount == 0)
+                            {
+                                // Limit the time to collect remaining output after a failure to avoid hangs:
+                                cancellationOnFailure.CancelAfter(TimeSpan.FromSeconds(1));
+                            }
 
-                            // Limit the time to collect remaining output after a failure to avoid hangs:
-                            cancellationOnFailure.CancelAfter(TimeSpan.FromSeconds(1));
+                            if (failedLineCount > 100)
+                            {
+                                break;
+                            }
+
+                            failedLineCount++;
                         }
                     }
                 }
-                catch (OperationCanceledException) when (failed)
+                catch (OperationCanceledException) when (failedLineCount > 0)
                 {
                     break;
                 }

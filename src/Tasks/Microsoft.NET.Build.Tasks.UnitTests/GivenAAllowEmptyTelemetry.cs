@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Tasks;
@@ -17,10 +13,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenAAllowEmptyTelemetry
     {
-        private static ITaskItem CreateHashItem(string key, string? value = null, bool? hash = null) {
+        private static ITaskItem CreateHashItem(string key, string? value = null, bool? hash = null)
+        {
             var item = new TaskItem(key);
             item.SetMetadata("Value", value);
-            if(hash is not null) {
+            if (hash is not null)
+            {
                 item.SetMetadata("Hash", hash.Value.ToString());
             }
             return item;
@@ -31,7 +29,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var engine = new MockBuildEngine5();
 
-            AllowEmptyTelemetry telemetryTask = new AllowEmptyTelemetry
+            AllowEmptyTelemetry telemetryTask = new()
             {
                 BuildEngine = engine,
                 EventName = "My event name",
@@ -52,7 +50,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var engine = new MockBuildEngine5();
 
-            AllowEmptyTelemetry telemetryTask = new AllowEmptyTelemetry
+            AllowEmptyTelemetry telemetryTask = new()
             {
                 BuildEngine = engine,
                 EventName = "My event name",
@@ -75,7 +73,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var engine = new MockBuildEngine5();
 
-            AllowEmptyTelemetry telemetryTask = new AllowEmptyTelemetry
+            AllowEmptyTelemetry telemetryTask = new()
             {
                 BuildEngine = engine,
                 EventName = "My event name"
@@ -93,7 +91,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         {
             var engine = new MockBuildEngine5();
 
-            AllowEmptyTelemetry telemetryTask = new AllowEmptyTelemetry
+            AllowEmptyTelemetry telemetryTask = new()
             {
                 BuildEngine = engine,
                 EventName = "My event name",
@@ -114,8 +112,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         /// </summary>
         private class MockBuildEngine5 : MockBuildEngine, IBuildEngine5
         {
-            private readonly object _lockObj = new object();
-            private readonly StringBuilder _log = new StringBuilder();
+            private readonly object _lockObj = new();
+            private readonly StringBuilder _log = new();
 
             internal string Log
             {
@@ -143,7 +141,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             public void LogTelemetry(string eventName, IDictionary<string, string> properties)
             {
                 string message = $"Received telemetry event '{eventName}'{Environment.NewLine}";
-                if (properties is not null) {
+                if (properties is not null)
+                {
                     foreach (string key in properties.Keys)
                     {
                         message += $"  Property '{key}' = '{properties[key]}'{Environment.NewLine}";

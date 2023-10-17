@@ -2,10 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.UnitTests;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -43,7 +39,7 @@ public class RegistryTests : IDisposable
         containerTag ??= "latest";
 
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanReadManifestFromRegistry));
-        Registry registry = new Registry(new Uri($"https://{containerRegistry}"), logger);
+        Registry registry = new(containerRegistry, logger);
 
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
 
@@ -52,7 +48,7 @@ public class RegistryTests : IDisposable
             containerTag,
             "linux-x64",
             ridgraphfile,
-            cancellationToken: default).ConfigureAwait(false);
+            cancellationToken: default);
 
         Assert.NotNull(downloadedImage);
     }

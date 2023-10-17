@@ -1,21 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Linq;
-using FluentAssertions;
-using System.Xml.Linq;
-using System.Runtime.Versioning;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System;
 using System.Runtime.CompilerServices;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
+using System.Runtime.Versioning;
 using Newtonsoft.Json.Linq;
 using NuGet.Versioning;
 
@@ -296,10 +283,11 @@ namespace Microsoft.NET.Build.Tests
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
             var getValuesCommand = new GetValuesCommand(Log, libraryProjectDirectory,
-                "netstandard1.5", "DefineConstants");
-
-            getValuesCommand.ShouldCompile = true;
-            getValuesCommand.Configuration = configuration;
+                "netstandard1.5", "DefineConstants")
+            {
+                ShouldCompile = true,
+                Configuration = configuration
+            };
 
             getValuesCommand
                 .Execute("/p:Configuration=" + configuration)
@@ -592,7 +580,7 @@ class Program
         [InlineData("netcoreapp3.1", "", true)]
         public void It_defines_target_platform_defaults_correctly(string targetFramework, string propertyName, bool defaultsDefined)
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "TargetPlatformDefaults",
                 TargetFrameworks = targetFramework
@@ -626,7 +614,7 @@ class Program
         [InlineData("netcoreapp3.1")]
         public void It_defines_windows_version_default_correctly(string targetFramework)
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "WindowsVersionDefault",
                 ProjectSdk = "Microsoft.NET.Sdk.WindowsDesktop",
@@ -818,7 +806,7 @@ class Program
                 Name = "Library",
                 TargetFrameworks = "netstandard2.0",
                 // references from packages go through a different code path to be marked externally resolved.
-                PackageReferences = { new TestPackageReference("NewtonSoft.Json", "13.0.1") }
+                PackageReferences = { new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()) }
             };
 
             var asset = _testAssetsManager.CreateTestProject(
@@ -910,6 +898,50 @@ class Program
         }
 
         [Theory]
+        [InlineData("True")]
+        [InlineData("False")]
+        [InlineData(null)]
+        public void It_can_evaluate_metrics_support(string value)
+        {
+            var testProj = new TestProject()
+            {
+                Name = "CheckMetricsSupport",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+
+            if (value is not null)
+            {
+                testProj.AdditionalProperties["MetricsSupport"] = value;
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: value);
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            string runtimeConfigName = $"{testProj.Name}.runtimeconfig.json";
+            var outputDirectory = buildCommand.GetOutputDirectory(testProj.TargetFrameworks);
+            outputDirectory.Should().HaveFile(runtimeConfigName);
+
+            string runtimeConfigFile = Path.Combine(outputDirectory.FullName, runtimeConfigName);
+            string runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
+            JObject runtimeConfig = JObject.Parse(runtimeConfigContents);
+            JToken metricsSupport = runtimeConfig["runtimeOptions"]["configProperties"]["System.Diagnostics.Metrics.Meter.IsSupported"];
+
+            if (value is null)
+            {
+                metricsSupport.Should().BeNull();
+            }
+            else
+            {
+                metricsSupport.Value<string>().Should().Be(value);
+            }
+        }
+
+        [Theory]
         [InlineData("netcoreapp2.2", null, false, null, false)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, null, true, null, true)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, "LatestMajor", true, null, true)]
@@ -929,7 +961,7 @@ class Program
                 testProject.AdditionalProperties["RollForward"] = rollForwardValue;
             }
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             if (copyLocal.HasValue)
             {
                 testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = copyLocal.ToString().ToLower();

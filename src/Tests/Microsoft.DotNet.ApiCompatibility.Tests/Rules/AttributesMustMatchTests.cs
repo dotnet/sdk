@@ -1,13 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Tests;
-using Microsoft.DotNet.ApiSymbolExtensions.Tests;
-using Xunit;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
+using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {

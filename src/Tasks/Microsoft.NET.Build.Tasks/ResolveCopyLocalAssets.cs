@@ -1,13 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
-using NuGet.Versioning;
-using System.Collections.Generic;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -16,7 +13,7 @@ namespace Microsoft.NET.Build.Tasks
     /// </summary>
     public class ResolveCopyLocalAssets : TaskBase
     {
-        private readonly List<ITaskItem> _resolvedAssets = new List<ITaskItem>();
+        private readonly List<ITaskItem> _resolvedAssets = new();
 
         public string AssetsFilePath { get; set; }
 
@@ -73,7 +70,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var resolvedFile in assetsFileResolver.Resolve(projectContext, resolveRuntimeTargets: ResolveRuntimeTargets))
             {
-                TaskItem item = new TaskItem(resolvedFile.SourcePath);
+                TaskItem item = new(resolvedFile.SourcePath);
 
                 item.SetMetadata(MetadataKeys.DestinationSubPath, resolvedFile.DestinationSubPath);
                 item.SetMetadata(MetadataKeys.DestinationSubDirectory, resolvedFile.DestinationSubDirectory);

@@ -4,8 +4,6 @@
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.Security.Cryptography;
-using Xunit.Abstractions;
-using Xunit;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -45,7 +43,7 @@ public sealed class LayerEndToEndTests : IDisposable
         Assert.True(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
         Assert.True(allEntries.TryGetValue("app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing TestFile.txt file entry");
     }
-    
+
     [Fact]
     public void SingleFileInFolderWindows()
     {
@@ -87,7 +85,7 @@ public sealed class LayerEndToEndTests : IDisposable
 
             fs.Position = 0;
 
-            using (GZipStream decompressionStream = new GZipStream(fs, CompressionMode.Decompress))
+            using (GZipStream decompressionStream = new(fs, CompressionMode.Decompress))
             {
                 uncompressedHashBytes = SHA256.HashData(decompressionStream);
             }
@@ -108,15 +106,15 @@ public sealed class LayerEndToEndTests : IDisposable
             ContentStore.ArtifactRoot = priorArtifactRoot;
         }
     }
-    
-    
+
+
     private static Dictionary<string, TarEntry> LoadAllTarEntries(string file)
     {
         using var gzip = new GZipStream(File.OpenRead(file), CompressionMode.Decompress);
         using var tar = new TarReader(gzip);
-        
+
         var entries = new Dictionary<string, TarEntry>();
-        
+
         TarEntry? entry;
         while ((entry = tar.GetNextEntry()) != null)
         {

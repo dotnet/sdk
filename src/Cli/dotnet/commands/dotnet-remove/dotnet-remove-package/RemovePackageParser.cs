@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.CommandLine;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Remove.PackageReference;
@@ -11,7 +10,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class RemovePackageParser
     {
-        public static readonly CliArgument<IEnumerable<string>> CmdPackageArgument = new CliArgument<IEnumerable<string>>(Tools.Add.PackageReference.LocalizableStrings.CmdPackage)
+        public static readonly CliArgument<IEnumerable<string>> CmdPackageArgument = new(Tools.Add.PackageReference.LocalizableStrings.CmdPackage)
         {
             Description = LocalizableStrings.AppHelpText,
             Arity = ArgumentArity.OneOrMore,

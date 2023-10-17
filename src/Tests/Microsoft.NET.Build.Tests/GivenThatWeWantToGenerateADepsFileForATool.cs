@@ -1,25 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-
-using FluentAssertions;
 
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 
 using NuGet.Packaging;
 using NuGet.ProjectModel;
-
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -33,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
         [CoreMSBuildOnlyFact]
         public void It_creates_a_deps_file_for_the_tool_and_the_tool_runs()
         {
-            TestProject toolProject = new TestProject()
+            TestProject toolProject = new()
             {
                 Name = "TestTool",
                 TargetFrameworks = "netcoreapp2.2", // netcoreapp2.2 is the highest possible project tools tfm
@@ -52,7 +39,7 @@ namespace Microsoft.NET.Build.Tests
         [CoreMSBuildOnlyFact]
         public void It_handles_conflicts_when_creating_a_tool_deps_file()
         {
-            TestProject toolProject = new TestProject()
+            TestProject toolProject = new()
             {
                 Name = "DependencyContextTool",
                 TargetFrameworks = "netcoreapp2.2", // netcoreapp2.2 is the highest possible project tools tfm
@@ -112,7 +99,7 @@ class Program
 
             string nupkgPath = Path.Combine(packCommand.ProjectRootPath, "bin", "Debug");
 
-            TestProject toolReferencer = new TestProject()
+            TestProject toolReferencer = new()
             {
                 Name = "ToolReferencer",
                 TargetFrameworks = "netcoreapp2.0"
@@ -131,7 +118,7 @@ class Program
                         new XAttribute("Version", "1.0.0")));
                 });
 
-            List<string> sources = new List<string>() { NuGetConfigWriter.DotnetCoreBlobFeed };
+            List<string> sources = new() { NuGetConfigWriter.DotnetCoreBlobFeed };
             sources.Add(nupkgPath);
 
             NuGetConfigWriter.Write(toolReferencerInstance.TestRoot, sources);
@@ -145,7 +132,7 @@ class Program
 
 
             string currentToolsetSdksPath = TestContext.Current.ToolsetUnderTest.SdksPath;
-            
+
             string generateDepsProjectDirectoryPath = Path.Combine(currentToolsetSdksPath, "Microsoft.NET.Sdk", "targets", "GenerateDeps");
             string generateDepsProjectFileName = "GenerateDeps.proj";
 

@@ -1,17 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection.PortableExecutable;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using FluentAssertions;
-using Xunit;
-using Microsoft.NET.TestFramework;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Utilities;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -34,7 +24,7 @@ namespace Microsoft.DotNet.Tests
             CheckDirectoryIsCrossgened(cliPath);
         }
 
-        [Fact(Skip ="This coverage needs to be in core-sdk, which is where crossgen is applied")]
+        [Fact(Skip = "This coverage needs to be in core-sdk, which is where crossgen is applied")]
         public void Shared_Fx_assemblies_must_be_crossgened()
         {
             //  TODO: Update method of finding sharedFxPath
@@ -70,7 +60,7 @@ namespace Microsoft.DotNet.Tests
 
         private static string FindDotnetDirInPath()
         {
-            string dotnetExecutable = $"dotnet{Microsoft.DotNet.Cli.Utils.FileNameSuffixes.CurrentPlatform.Exe}";
+            string dotnetExecutable = $"dotnet{Cli.Utils.FileNameSuffixes.CurrentPlatform.Exe}";
             foreach (string path in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
             {
                 string dotnetPath = Path.Combine(path, dotnetExecutable);

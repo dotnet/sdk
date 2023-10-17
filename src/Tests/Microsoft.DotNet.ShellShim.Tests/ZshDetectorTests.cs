@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Moq;
-using Xunit;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
@@ -15,7 +13,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         [InlineData("/other-place/zsh")]
         public void GivenFollowingEnvironmentVariableValueItCanDetectZsh(string environmentVariableValue)
         {
-            Mock<IEnvironmentProvider> provider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+            Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);
 
             provider
                 .Setup(p => p.GetEnvironmentVariable("SHELL"))
@@ -30,7 +28,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         [InlineData(null)]
         public void GivenFollowingEnvironmentVariableValueItCanDetectItIsNotZsh(string environmentVariableValue)
         {
-            Mock<IEnvironmentProvider> provider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+            Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);
 
             provider
                 .Setup(p => p.GetEnvironmentVariable("SHELL"))

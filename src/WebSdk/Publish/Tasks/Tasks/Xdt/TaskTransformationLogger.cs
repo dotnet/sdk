@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Web.XmlTransform;
@@ -39,7 +37,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
             {
                 if (indentString == null)
                 {
-                    indentString = String.Empty;
+                    indentString = string.Empty;
                     for (int i = 0; i < indentLevel; i++)
                     {
                         indentString += indentStringPiece;
@@ -88,7 +86,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
                     break;
             }
 
-            loggingHelper.LogMessage(importance, String.Concat(IndentString, message), messageArgs);
+            loggingHelper.LogMessage(importance, string.Concat(IndentString, message), messageArgs);
         }
 
         void IXmlTransformationLogger.LogWarning(string message, params object[] messageArgs)
@@ -157,13 +155,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
                 // loggingHelper.LogErrorFromException does not have an overload
                 // that accepts line numbers. So instead, we have to construct
                 // the error message from the exception and use LogError.
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = new();
                 Exception exIterator = ex;
                 while (exIterator != null)
                 {
                     sb.AppendFormat("{0} : {1}", exIterator.GetType().Name, exIterator.Message);
                     sb.AppendLine();
-                    if (!String.IsNullOrEmpty(exIterator.StackTrace))
+                    if (!string.IsNullOrEmpty(exIterator.StackTrace))
                     {
                         sb.Append(exIterator.StackTrace);
                     }

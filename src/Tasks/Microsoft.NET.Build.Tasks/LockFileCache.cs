@@ -1,11 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Diagnostics;
-using System.IO;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using NuGet.Common;
 using NuGet.ProjectModel;
 
@@ -133,7 +129,7 @@ namespace Microsoft.NET.Build.Tasks
             public override System.Threading.Tasks.Task LogAsync(ILogMessage message)
             {
                 Log(message);
-                return System.Threading.Tasks.Task.CompletedTask;
+                return Task.CompletedTask;
             }
         }
     }

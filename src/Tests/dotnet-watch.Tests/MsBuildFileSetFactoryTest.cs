@@ -1,19 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.Extensions.Tools.Internal;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
@@ -366,8 +355,8 @@ $@"<ItemGroup>
             return new MsBuildFileSetFactory(options, _reporter, _muxerPath, projectPath, targetFramework: null, buildProperties: null, new OutputSink(), waitOnError: false, trace: false).CreateAsync(CancellationToken.None);
         }
 
-        private static DotNetWatchOptions GetWatchOptions() => 
-            new DotNetWatchOptions(false, false, false, false, false, TestFlags.None);
+        private static DotNetWatchOptions GetWatchOptions() =>
+            new(false, false, false, false, false, TestFlags.None);
 
         private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject.Name + ".csproj");
 

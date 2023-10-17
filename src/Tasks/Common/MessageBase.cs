@@ -6,8 +6,6 @@
 #nullable disable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
 
-using Microsoft.Build.Framework;
-using System;
 using System.Globalization;
 
 namespace Microsoft.NET.Build.Tasks
@@ -67,7 +65,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 message = FormattedText;
             }
-            
+
 
             LogMessage(message);
         }

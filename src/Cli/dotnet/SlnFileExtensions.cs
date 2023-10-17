@@ -2,15 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Construction;
-using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Microsoft.DotNet.Tools.Common
 {
@@ -75,11 +70,14 @@ namespace Microsoft.DotNet.Tools.Common
                 // section comes first we need to add it first. This doesn't affect correctness but does
                 // stop VS from re-ordering things later on. Since we are keeping the SlnFile class low-level
                 // it shouldn't care about the VS implementation details. That's why we handle this here.
-                slnFile.AddDefaultBuildConfigurations();
+                if (AreBuildConfigurationsApplicable(slnProject.TypeGuid))
+                {
+                    slnFile.AddDefaultBuildConfigurations();
 
-                slnFile.MapSolutionConfigurationsToProject(
-                    projectInstance,
-                    slnFile.ProjectConfigurationsSection.GetOrCreatePropertySet(slnProject.Id));
+                    slnFile.MapSolutionConfigurationsToProject(
+                        projectInstance,
+                        slnFile.ProjectConfigurationsSection.GetOrCreatePropertySet(slnProject.Id));
+                }
 
                 SetupSolutionFolders(slnFile, solutionFolders, relativeProjectPath, slnProject);
 
@@ -88,6 +86,11 @@ namespace Microsoft.DotNet.Tools.Common
                 Reporter.Output.WriteLine(
                     string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, relativeProjectPath));
             }
+        }
+
+        private static bool AreBuildConfigurationsApplicable(string projectTypeGuid)
+        {
+            return !projectTypeGuid.Equals(ProjectTypeGuids.SharedProjectGuid, StringComparison.OrdinalIgnoreCase);
         }
 
         private static void SetupSolutionFolders(SlnFile slnFile, IList<string> solutionFolders, string relativeProjectPath, SlnProject slnProject)
@@ -112,7 +115,7 @@ namespace Microsoft.DotNet.Tools.Common
                                                                    && p.TypeGuid == ProjectTypeGuids.SolutionFolderGuid).FirstOrDefault();
                     if (duplicateProject != null)
                     {
-                       // Try making a new folder for the project to put it under so we can still add it despite there being one with the same name already in the parent folder
+                        // Try making a new folder for the project to put it under so we can still add it despite there being one with the same name already in the parent folder
                         slnFile.AddSolutionFolders(slnProject, new List<string>() { Path.GetDirectoryName(relativeProjectPath) });
                     }
                 }
@@ -202,7 +205,7 @@ namespace Microsoft.DotNet.Tools.Common
                 return projectKey;
             }
 
-            var keyWithoutWhitespace = String.Concat(solutionKey.Where(c => !Char.IsWhiteSpace(c)));
+            var keyWithoutWhitespace = string.Concat(solutionKey.Where(c => !char.IsWhiteSpace(c)));
             if (projectKeys.TryGetValue(keyWithoutWhitespace, out projectKey))
             {
                 return projectKey;
@@ -322,7 +325,7 @@ namespace Microsoft.DotNet.Tools.Common
                 {
                     id = nestedProjects[id];
                     var parentSlnProject = solutionFolderProjects.Where(p => p.Id == id).SingleOrDefault();
-                    if(parentSlnProject == null) // see: https://github.com/dotnet/sdk/pull/28811
+                    if (parentSlnProject == null) // see: https://github.com/dotnet/sdk/pull/28811
                         throw new GracefulException(CommonLocalizableStrings.CorruptSolutionProjectFolderStructure, slnFile.FullPath, id);
                     path = Path.Combine(parentSlnProject.FilePath, path);
                 }
@@ -485,7 +488,8 @@ namespace Microsoft.DotNet.Tools.Common
             {
                 nonSolutionFolderProjects = slnFile.Projects.GetProjectsNotOfType(
                     ProjectTypeGuids.SolutionFolderGuid);
-            } else
+            }
+            else
             {
                 nonSolutionFolderProjects = projectsToSearchFor;
             }

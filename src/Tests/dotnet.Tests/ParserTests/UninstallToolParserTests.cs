@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
-using Xunit;
-using Xunit.Abstractions;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -46,7 +41,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             result.GetValue<string>(ToolUninstallCommandParser.ToolPathOption).Should().Be(@"C:\Tools");
         }
-        
+
         [Fact]
         public void UninstallToolParserCanParseLocalOption()
         {
@@ -55,7 +50,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             result.GetValue<bool>(ToolUninstallCommandParser.LocalOption).Should().Be(true);
         }
-        
+
         [Fact]
         public void UninstallToolParserCanParseToolManifestOption()
         {

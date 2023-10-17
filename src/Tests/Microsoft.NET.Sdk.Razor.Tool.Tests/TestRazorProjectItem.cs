@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Text;
-
 namespace Microsoft.AspNetCore.Razor.Language
 {
     public class TestRazorProjectItem : RazorProjectItem
@@ -11,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly string _fileKind;
 
         public TestRazorProjectItem(
-            string filePath, 
+            string filePath,
             string physicalPath = null,
             string relativePhysicalPath = null,
             string basePath = "/",

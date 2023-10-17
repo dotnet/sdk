@@ -1,22 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.IO;
-using System;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToBuildWithGlobalJson : SdkTest
     {
         public GivenThatWeWantToBuildWithGlobalJson(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [FullMSBuildOnlyTheory]
         [InlineData(true)]
@@ -27,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
             try
             {
                 Environment.SetEnvironmentVariable("MSBUILDINCLUDEDEFAULTSDKRESOLVER", "false");
-                TestProject testProject = new TestProject()
+                TestProject testProject = new()
                 {
                     Name = "FailedResolution",
                     TargetFrameworks = "net5.0"

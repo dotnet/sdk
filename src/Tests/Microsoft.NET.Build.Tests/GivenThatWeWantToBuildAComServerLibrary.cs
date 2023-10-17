@@ -1,16 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Newtonsoft.Json.Linq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -81,7 +72,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [WindowsOnlyTheory]
+        [Theory]
         [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64")]
         [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86")]
         public void It_embeds_the_clsidmap_in_the_comhost_when_rid_specified(string rid)
@@ -154,30 +145,6 @@ namespace Microsoft.NET.Build.Tests
                 .Fail()
                 .And
                 .HaveStdOutContaining("NETSDK1091: ");
-        }
-
-        [PlatformSpecificTheory(TestPlatforms.Linux | TestPlatforms.OSX | TestPlatforms.FreeBSD)]
-        [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64")]
-        [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-x86")]
-        public void It_fails_to_embed_clsid_when_not_on_windows(string rid)
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("ComServer", identifier: rid)
-                .WithSource()
-                .WithProjectChanges(project =>
-                {
-                    var ns = project.Root.Name.Namespace;
-                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                    propertyGroup.Add(new XElement("RuntimeIdentifier", rid));
-                });
-
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand
-                .Execute()
-                .Should()
-                .Fail()
-                .And
-                .HaveStdOutContaining("NETSDK1092: ");
         }
 
         [WindowsOnlyFact]

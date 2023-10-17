@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
-
 namespace Microsoft.NET.TestFramework
 {
     public class PlatformSpecificTheory : TheoryAttribute
@@ -11,7 +9,7 @@ namespace Microsoft.NET.TestFramework
         {
             if (PlatformSpecificFact.ShouldSkip(platforms))
             {
-                this.Skip = "This test is not supported on this platform.";
+                Skip = "This test is not supported on this platform.";
             }
         }
     }

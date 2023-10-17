@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
@@ -35,8 +31,8 @@ namespace Microsoft.NET.Build.Tasks
 
             if (duplicateItems.Any())
             {
-                List<ITaskItem> itemsToAdd = new List<ITaskItem>();
-                List<ITaskItem> itemsToRemove = new List<ITaskItem>();
+                List<ITaskItem> itemsToAdd = new();
+                List<ITaskItem> itemsToRemove = new();
 
                 foreach (var duplicateItemGroup in duplicateItems)
                 {

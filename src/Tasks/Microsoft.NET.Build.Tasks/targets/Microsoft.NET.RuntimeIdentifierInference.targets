@@ -209,7 +209,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(HasRuntimeOutput)' == 'true'">
 
     <!-- The following RID errors are asserts, and we don't expect them to ever occur. The error message is added as a safeguard.-->
-    <NETSdkError Condition="'$(SelfContained)' == 'true' and '$(RuntimeIdentifier)' == ''"
+    <NETSdkError Condition="'$(SelfContained)' == 'true' and '$(RuntimeIdentifier)' == '' and '$(AllowSelfContainedWithoutRuntimeIdentifier)' != 'true'"
                  ResourceName="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed"
                  FormatArguments="SelfContained"/>
 
@@ -221,7 +221,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                 ResourceName="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed"
                 FormatArguments="PublishSingleFile"/>
 
-    <NETSdkError Condition="'$(PublishAot)' == 'true' and '$(RuntimeIdentifier)' == '' and '$(_IsPublishing)' == 'true'"
+    <NETSdkError Condition="'$(PublishAot)' == 'true' and '$(RuntimeIdentifier)' == '' and '$(_IsPublishing)' == 'true' and '$(AllowPublishAotWithoutRuntimeIdentifier)' != 'true'"
                 ResourceName="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed"
                 FormatArguments="PublishAot"/>
 
@@ -245,9 +245,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <NETSdkWarning Condition="'$(PublishReadyToRun)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'"
                  ResourceName="PublishReadyToRunRequiresVersion30" />
-
-    <NETSdkWarning Condition="'$(PublishTrimmed)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &lt; '3.0'"
-                 ResourceName="PublishTrimmedRequiresVersion30" />
 
     <!-- Previously, RuntimeIdentifier (RID) implied SelfContained (SC). A breaking change in 8.0 made it so RID did not activate SC by default.
          So we warn older TFM users before they upgrade to TFM 8.0 or above that they need to add <SelfContained>true</SelfContained> now to keep the same behavior.-->

@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Common;
-using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 {
@@ -42,13 +41,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public Task LogAsync(LogLevel level, string data)
         {
             Log(level, data);
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task LogAsync(ILogMessage message)
         {
             Log(message);
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public void LogDebug(string data)

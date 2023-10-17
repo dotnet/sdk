@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -42,14 +36,14 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
             _targetSdkVersion = targetSdkVersion;
             userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
-            var workloadManifestProvider =
+            ManifestProvider =
                 new SdkDirectoryWorkloadManifestProvider(dotnetPath,
                     string.IsNullOrWhiteSpace(_targetSdkVersion)
                         ? currentSdkReleaseVersion.ToString()
                         : _targetSdkVersion,
                     userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
             WorkloadResolver = workloadResolver ?? NET.Sdk.WorkloadManifestReader.WorkloadResolver.Create(
-                workloadManifestProvider, dotnetPath,
+                ManifestProvider, dotnetPath,
                 currentSdkReleaseVersion.ToString(), userProfileDir);
 
             var restoreConfig = new RestoreActionConfig(Interactive: isInteractive);
@@ -68,11 +62,11 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         }
 
         public IInstaller Installer { get; private init; }
+        public SdkDirectoryWorkloadManifestProvider ManifestProvider { get; }
         public IWorkloadInstallationRecordRepository WorkloadRecordRepo { get; private init; }
         public IWorkloadResolver WorkloadResolver { get; private init; }
 
-        public IEnumerable<WorkloadId> InstalledSdkWorkloadIds =>
-            WorkloadRecordRepo.GetInstalledWorkloads(_currentSdkFeatureBand);
+        public IEnumerable<WorkloadId> InstalledSdkWorkloadIds => WorkloadRecordRepo.GetInstalledWorkloads(_currentSdkFeatureBand);
 
         public InstalledWorkloadsCollection AddInstalledVsWorkloads(IEnumerable<WorkloadId> sdkWorkloadIds)
         {

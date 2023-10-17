@@ -1,22 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.BuildServer;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Utilities;
 using Moq;
-using Xunit;
-using Xunit.Abstractions;
 using LocalizableStrings = Microsoft.DotNet.BuildServer.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.BuildServerTests
@@ -154,7 +144,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
 
             var directoryMock = new Mock<IDirectory>();
             directoryMock.Setup(d => d.Exists(pidDirectory)).Returns(true);
-            directoryMock.Setup(d => d.EnumerateFiles(pidDirectory)).Returns(new [] { pidFilePath });
+            directoryMock.Setup(d => d.EnumerateFiles(pidDirectory)).Returns(new[] { pidFilePath });
 
             var fileMock = new Mock<IFile>();
             fileMock
@@ -165,7 +155,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
                     FileShare.Write | FileShare.Delete,
                     4096,
                     FileOptions.None))
-                .Throws((Exception)Activator.CreateInstance(exceptionType, new object[] { ErrorMessage } ));
+                .Throws((Exception)Activator.CreateInstance(exceptionType, new object[] { ErrorMessage }));
 
             var fileSystemMock = new Mock<IFileSystem>();
             fileSystemMock.SetupGet(fs => fs.Directory).Returns(directoryMock.Object);

@@ -1,20 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using Xunit;
-using FluentAssertions;
-using System.Runtime.InteropServices;
-using System.Linq;
-using Xunit.Abstractions;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -62,7 +49,7 @@ namespace Microsoft.NET.Build.Tests
             foreach (string dependencyTarget in rawDependencyTargets.Split(',', ';', ' ').ToList())
             {
                 TestProject dependencyProject = GetTestProject(ConstantStringValues.DependencyDirectoryNamePrefix + dependencyTarget.Replace('.', '_'), dependencyTarget, true);
-                TestPackageReference dependencyPackageReference = new TestPackageReference(
+                TestPackageReference dependencyPackageReference = new(
                     dependencyProject.Name,
                     "1.0.0",
                     ConstantStringValues.ConstructNuGetPackageReferencePath(dependencyProject, identifier: referencerTarget + testDescription + rawDependencyTargets));
@@ -103,7 +90,7 @@ namespace Microsoft.NET.Build.Tests
             var referencerTestAsset = _testAssetsManager.CreateTestProject(referencerProject, ConstantStringValues.TestDirectoriesNamePrefix, referencerDirectoryNamePostfix);
             var referencerRestoreCommand = referencerTestAsset.GetRestoreCommand(Log, relativePath: referencerProject.Name);
 
-            List<string> referencerRestoreSources = new List<string>();
+            List<string> referencerRestoreSources = new();
 
             //  Modify the restore command to refer to the created NuGet packages
             foreach (TestPackageReference packageReference in referencerProject.PackageReferences)
@@ -179,7 +166,7 @@ namespace Microsoft.NET.Build.Tests
                 testProjectName,
                 "netstandard2.0",
                 "net461",
-                new Dictionary<string, string> { {"DisableImplicitAssetTargetFallback", "true" } });
+                new Dictionary<string, string> { { "DisableImplicitAssetTargetFallback", "true" } });
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             NuGetConfigWriter.Write(testProjectTestAsset.TestRoot, Path.GetDirectoryName(testPackageReference.NupkgPath));
@@ -197,7 +184,7 @@ namespace Microsoft.NET.Build.Tests
                "net462;net472",
                new Dictionary<string, string> { ["CopyLocalLockFileAssemblies"] = "true" });
 
-            
+
             var source = Path.Combine(testPackageReference.NupkgPath, testPackageReference.ID, "bin", "Debug");
             NuGetConfigWriter.Write(testProjectTestAsset.TestRoot, source);
 
@@ -233,10 +220,10 @@ namespace Microsoft.NET.Build.Tests
             {
                 foreach (var additionalProperty in additionalProperties)
                 {
-                    testProject.AdditionalProperties.Add(additionalProperty.Key, additionalProperty.Value);    
+                    testProject.AdditionalProperties.Add(additionalProperty.Key, additionalProperty.Value);
                 }
             }
-            
+
             testProject.PackageReferences.Add(testPackageReference);
 
             var testProjectTestAsset = _testAssetsManager.CreateTestProject(
@@ -249,7 +236,7 @@ namespace Microsoft.NET.Build.Tests
 
         private TestPackageReference CreateTestPackage(string targetFrameworks, string identifier, [CallerMemberName] string callingMethod = "")
         {
-            var project = 
+            var project =
                 new TestProject
                 {
                     Name = $"{targetFrameworks.Replace(';', '_')}_pkg",
@@ -264,7 +251,7 @@ namespace Microsoft.NET.Build.Tests
 
             if (!packageReference.NuGetPackageExists())
             {
-                var testAsset = 
+                var testAsset =
                     _testAssetsManager.CreateTestProject(
                         project,
                         callingMethod,
@@ -281,7 +268,7 @@ namespace Microsoft.NET.Build.Tests
 
         TestProject GetTestProject(string name, string target, bool isSdkProject)
         {
-            TestProject ret = new TestProject()
+            TestProject ret = new()
             {
                 Name = name,
                 IsSdkProject = isSdkProject

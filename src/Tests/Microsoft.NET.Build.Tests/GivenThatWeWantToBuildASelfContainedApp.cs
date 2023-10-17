@@ -1,21 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -172,10 +160,12 @@ namespace Microsoft.NET.Build.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var getValuesCommand = new GetValuesCommand(testAsset, "RuntimePack", GetValuesCommand.ValueType.Item);
-            getValuesCommand.MetadataNames = new List<string>() { "NuGetPackageId", "NuGetPackageVersion" };
-            getValuesCommand.DependsOnTargets = "ProcessFrameworkReferences";
-            getValuesCommand.ShouldRestore = false;
+            var getValuesCommand = new GetValuesCommand(testAsset, "RuntimePack", GetValuesCommand.ValueType.Item)
+            {
+                MetadataNames = new List<string>() { "NuGetPackageId", "NuGetPackageVersion" },
+                DependsOnTargets = "ProcessFrameworkReferences",
+                ShouldRestore = false
+            };
 
             getValuesCommand.Execute()
                 .Should()

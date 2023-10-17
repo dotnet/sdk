@@ -1,19 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -23,7 +11,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        private readonly static List<string> FrameworkAssemblies = new List<string>()
+        private static readonly List<string> FrameworkAssemblies = new()
         {
             "api-ms-win-core-console-l1-1-0.dll",
             "System.Runtime.dll",
@@ -36,7 +24,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(false, false)]
         public void RunPublishItemsOutputGroupTest(bool specifyRid, bool singleFile)
         {
-            var testProject = this.SetupProject(specifyRid, singleFile);
+            var testProject = SetupProject(specifyRid, singleFile);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: specifyRid.ToString() + singleFile.ToString());
 
             var restoreCommand = new RestoreCommand(testAsset);
@@ -101,7 +89,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact]
         public void GroupBuildsWithoutPublish()
         {
-            var testProject = this.SetupProject();
+            var testProject = SetupProject();
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var restoreCommand = new RestoreCommand(testAsset);

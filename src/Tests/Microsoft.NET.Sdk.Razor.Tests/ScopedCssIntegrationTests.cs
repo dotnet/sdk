@@ -1,19 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -101,7 +90,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var scoped = Path.Combine(intermediateOutputPath, "scopedcss", "Styles", "Pages", "Counter.rz.scp.css");
             new FileInfo(scoped).Should().Exist();
             new FileInfo(scoped).Should().Contain("b-overriden");
-            var generated = Path.Combine(intermediateOutputPath, "generated", "Microsoft.NET.Sdk.Razor.SourceGenerators", "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", "Components_Pages_Counter_razor.g.cs");
+            var generated = Path.Combine(intermediateOutputPath, "generated", "Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators", "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", "Components_Pages_Counter_razor.g.cs");
             new FileInfo(generated).Should().Exist();
             new FileInfo(generated).Should().Contain("b-overriden");
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
@@ -330,7 +319,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(generatedBundle).Should().Exist();
             var generatedProjectBundle = Path.Combine(intermediateOutputPath, "scopedcss", "projectbundle", "ComponentApp.bundle.scp.css");
             new FileInfo(generatedProjectBundle).Should().Exist();
-            var generatedCounter = Path.Combine(intermediateOutputPath, "generated", "Microsoft.NET.Sdk.Razor.SourceGenerators", "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", "Components_Pages_Counter_razor.g.cs");
+            var generatedCounter = Path.Combine(intermediateOutputPath, "generated", "Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators", "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", "Components_Pages_Counter_razor.g.cs");
             new FileInfo(generatedCounter).Should().Exist();
 
             var componentThumbprint = FileThumbPrint.Create(generatedCounter);

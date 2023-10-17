@@ -1,17 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Xml.Linq;
-using System.IO;
-using System.Linq;
-using System;
 using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
@@ -27,7 +16,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_errors_when_missing_windows_target_platform(string propertyName)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "MissingTargetPlatform",
                 TargetFrameworks = targetFramework
@@ -51,7 +40,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("UseWPF")]
         public void It_errors_when_missing_transitive_windows_target_platform(string propertyName)
         {
-            TestProject testProjectA = new TestProject()
+            TestProject testProjectA = new()
             {
                 Name = "A",
                 ProjectSdk = "Microsoft.NET.Sdk.WindowsDesktop",
@@ -59,14 +48,14 @@ namespace Microsoft.NET.Build.Tests
             };
             testProjectA.AdditionalProperties[propertyName] = "true";
 
-            TestProject testProjectB = new TestProject()
+            TestProject testProjectB = new()
             {
                 Name = "B",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
             testProjectB.ReferencedProjects.Add(testProjectA);
 
-            TestProject testProjectC = new TestProject()
+            TestProject testProjectC = new()
             {
                 Name = "C",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework
@@ -87,7 +76,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_warns_when_specifying_windows_desktop_sdk()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "windowsDesktopSdk",
                 ProjectSdk = "Microsoft.NET.Sdk.WindowsDesktop",
@@ -108,7 +97,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_does_not_warn_when_multitargeting()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework};net472;netcoreapp3.1";
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "windowsDesktopSdk",
                 ProjectSdk = "Microsoft.NET.Sdk.WindowsDesktop",
@@ -130,7 +119,7 @@ namespace Microsoft.NET.Build.Tests
         public void It_imports_when_targeting_dotnet_3()
         {
             var targetFramework = "netcoreapp3.1";
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "windowsDesktopSdk",
                 TargetFrameworks = targetFramework
@@ -151,7 +140,7 @@ namespace Microsoft.NET.Build.Tests
             getValuesCommand.GetValues().Should().BeEquivalentTo(new[] { "true" });
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/29968")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/29968")]
         public void It_builds_successfully_when_targeting_net_framework()
         {
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
@@ -197,12 +186,12 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1140");
         }
 
-        [WindowsOnlyTheory(Skip="https://github.com/dotnet/sdk/pull/29009")]
+        [WindowsOnlyTheory(Skip = "https://github.com/dotnet/sdk/pull/29009")]
         [InlineData(true)]
         [InlineData(false)]
         public void It_succeeds_if_windows_target_platform_version_does_not_have_trailing_zeros(bool setInTargetframework)
         {
-            if (!setInTargetframework)                
+            if (!setInTargetframework)
             {
                 var sdkVersion = SemanticVersion.Parse(TestContext.Current.ToolsetUnderTest.SdkVersion);
                 if (new SemanticVersion(sdkVersion.Major, sdkVersion.Minor, sdkVersion.Patch) < new SemanticVersion(7, 0, 200))
@@ -466,9 +455,11 @@ namespace Microsoft.NET.Build.Tests
 
         private string GetReferencedWindowsSdkVersion(TestAsset testAsset)
         {
-            var getValueCommand = new GetValuesCommand(testAsset, "PackageDownload", GetValuesCommand.ValueType.Item);
-            getValueCommand.ShouldRestore = false;
-            getValueCommand.DependsOnTargets = "_CheckForInvalidConfigurationAndPlatform;CollectPackageDownloads";
+            var getValueCommand = new GetValuesCommand(testAsset, "PackageDownload", GetValuesCommand.ValueType.Item)
+            {
+                ShouldRestore = false,
+                DependsOnTargets = "_CheckForInvalidConfigurationAndPlatform;CollectPackageDownloads"
+            };
             getValueCommand.MetadataNames.Add("Version");
             getValueCommand.Execute()
                 .Should()

@@ -1,18 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
-using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
-using System;
-using System.IO;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -27,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void GivenAProjectAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("2");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("2");
 
             // Call test
             CommandResult result = new DotnetTestCommand(Log)
@@ -53,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [Fact]
         public void GivenADllAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("3");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("3");
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 

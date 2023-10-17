@@ -1,14 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Xml.Linq;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -264,7 +258,7 @@ namespace Microsoft.NET.Build.Tasks
         /// Pdb files to be copied to the output directory
         /// </remarks>
         [Output]
-        public ITaskItem[] DebugSymbolsFiles { get; private set;}
+        public ITaskItem[] DebugSymbolsFiles { get; private set; }
 
         /// <summary>
         /// List of xml files related to NuGet packages.
@@ -748,10 +742,10 @@ namespace Microsoft.NET.Build.Tasks
                 }
                 else
                 {
-                    _compileTimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, runtimeIdentifier: null); 
+                    _compileTimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, runtimeIdentifier: null);
                     _runtimeTarget = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, _task.RuntimeIdentifier);
                 }
-                
+
 
                 _stringTable = new Dictionary<string, int>(InitialStringTableCapacity, StringComparer.Ordinal);
                 _metadataStrings = new List<string>(InitialStringTableCapacity);
@@ -901,7 +895,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     return StringComparer.OrdinalIgnoreCase.Equals(l1.Item1, l2.Item1)
                         && l1.Item2.Equals(l2.Item2);
-                    
+
                 }
                 public int GetHashCode((string, NuGetVersion) library)
                 {
@@ -920,7 +914,7 @@ namespace Microsoft.NET.Build.Tasks
 
             private void WriteAnalyzers()
             {
-                AnalyzerResolver resolver = new AnalyzerResolver(this);
+                AnalyzerResolver resolver = new(this);
 
                 foreach (var library in _lockFile.Libraries)
                 {
@@ -1406,7 +1400,7 @@ namespace Microsoft.NET.Build.Tasks
                     return false;
                 }
                 else
-                { 
+                {
                     var targetFramework = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, null).TargetFramework;
 
                     if (targetFramework.Version.Major >= 3
@@ -1520,7 +1514,8 @@ namespace Microsoft.NET.Build.Tasks
                         log.LibraryId == package.Name &&
                         log.TargetGraphs.Any(tg =>
                         {
-                            var parsedTargetGraph = NuGetFramework.Parse(tg);
+                            var parts = tg.Split(LockFile.DirectorySeparatorChar);
+                            var parsedTargetGraph = NuGetFramework.Parse(parts[0]);
                             var alias = _lockFile.PackageSpec.TargetFrameworks
                                 .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
                                 ?.TargetAlias ?? tg;
@@ -1580,7 +1575,8 @@ namespace Microsoft.NET.Build.Tasks
                             if (tfm.Version.Major >= 7)
                             {
                                 _task.Log.LogWarning(Strings.PackageContainsUnknownLocale, package.Name, package.Version.ToNormalizedString(), cnf.InvalidCultureName);
-                            } else
+                            }
+                            else
                             {
                                 _task.Log.LogMessage(Strings.PackageContainsUnknownLocale, package.Name, package.Version.ToNormalizedString(), cnf.InvalidCultureName);
                             }
@@ -1650,7 +1646,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 foreach (var library in _runtimeTarget.Libraries)
                 {
-                    if (!library.IsTransitiveProjectReference(_lockFile, ref directProjectDependencies, 
+                    if (!library.IsTransitiveProjectReference(_lockFile, ref directProjectDependencies,
                         _lockFile.GetLockFileTargetAlias(_lockFile.GetTargetAndReturnNullIfNotFound(_targetFramework, null))))
                     {
                         continue;
@@ -1759,7 +1755,7 @@ namespace Microsoft.NET.Build.Tasks
                     shouldIncludeInPublish = false;
                 }
 
-                if (!shouldCopyLocal&& !shouldIncludeInPublish)
+                if (!shouldCopyLocal && !shouldIncludeInPublish)
                 {
                     return false;
                 }
@@ -1817,7 +1813,7 @@ namespace Microsoft.NET.Build.Tasks
 
                         // If the platform library is not Microsoft.NETCore.App, treat it as an implicit dependency.
                         // This makes it so Microsoft.AspNet.* 2.x platforms also exclude Microsoft.NETCore.App files.
-                        if (!String.Equals(platformLibrary.Name, NetCorePlatformLibrary, StringComparison.OrdinalIgnoreCase))
+                        if (!string.Equals(platformLibrary.Name, NetCorePlatformLibrary, StringComparison.OrdinalIgnoreCase))
                         {
                             var library = _runtimeTarget.GetLibrary(NetCorePlatformLibrary);
                             if (library != null)
@@ -1842,12 +1838,12 @@ namespace Microsoft.NET.Build.Tasks
                         //  Exclude transitive dependencies of excluded packages unless they are also dependencies
                         //  of non-excluded packages
 
-                        HashSet<string> includedDependencies = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                        HashSet<string> excludeFromPublishPackageIds = new HashSet<string>(
+                        HashSet<string> includedDependencies = new(StringComparer.OrdinalIgnoreCase);
+                        HashSet<string> excludeFromPublishPackageIds = new(
                             excludeFromPublishPackageReferences.Select(pr => pr.ItemSpec),
                             StringComparer.OrdinalIgnoreCase);
 
-                        Stack<string> dependenciesToWalk = new Stack<string>(
+                        Stack<string> dependenciesToWalk = new(
                             topLevelDependencies.Except(excludeFromPublishPackageIds, StringComparer.OrdinalIgnoreCase));
 
                         while (dependenciesToWalk.Any())
@@ -1901,7 +1897,7 @@ namespace Microsoft.NET.Build.Tasks
 
             private static Dictionary<string, string> GetProjectReferencePaths(LockFile lockFile)
             {
-                Dictionary<string, string> paths = new Dictionary<string, string>();
+                Dictionary<string, string> paths = new();
 
                 foreach (var library in lockFile.Libraries)
                 {

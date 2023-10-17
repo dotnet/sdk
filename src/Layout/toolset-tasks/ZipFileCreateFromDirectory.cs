@@ -1,12 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Compression;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
@@ -71,9 +68,9 @@ namespace Microsoft.DotNet.Build.Tasks
                     for (int i = 0; i < ExcludePatterns.Length; ++i)
                         regexes[i] = new Regex(ExcludePatterns[i].ItemSpec, RegexOptions.IgnoreCase);
 
-                    using (FileStream writer = new FileStream(DestinationArchive, FileMode.CreateNew))
+                    using (FileStream writer = new(DestinationArchive, FileMode.CreateNew))
                     {
-                        using (ZipArchive zipFile = new ZipArchive(writer, ZipArchiveMode.Create))
+                        using (ZipArchive zipFile = new(writer, ZipArchiveMode.Create))
                         {
                             var files = Directory.GetFiles(SourceDirectory, "*", SearchOption.AllDirectories);
 
@@ -106,7 +103,7 @@ namespace Microsoft.DotNet.Build.Tasks
             catch (Exception e)
             {
                 // We have 2 log calls because we want a nice error message but we also want to capture the callstack in the log.
-                Log.LogError("An exception has occured while trying to compress '{0}' into '{1}'.", SourceDirectory, DestinationArchive);
+                Log.LogError("An exception has occurred while trying to compress '{0}' into '{1}'.", SourceDirectory, DestinationArchive);
                 Log.LogMessage(MessageImportance.Low, e.ToString());
                 return false;
             }

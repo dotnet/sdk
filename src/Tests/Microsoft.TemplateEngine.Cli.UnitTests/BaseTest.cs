@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.TestFramework;
-
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
     public abstract class BaseTest
@@ -40,7 +38,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             string templateLocation = Path.GetFullPath(Path.Combine(DotnetNewTestTemplatesBasePath, templateName));
             if (!Directory.Exists(templateLocation))
             {
-                Assert.False(true, $"The test template '{templateName}' does not exist.");
+                Assert.Fail($"The test template '{templateName}' does not exist.");
             }
             return templateLocation;
         }
@@ -50,7 +48,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             folder = Path.GetFullPath(folder);
             if (!Directory.Exists(folder))
             {
-                Assert.False(true, $"The folder '{folder}' does not exist.");
+                Assert.Fail($"The folder '{folder}' does not exist.");
             }
             return folder;
         }
@@ -60,11 +58,11 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             string repoRoot = Path.GetFullPath(Path.Combine(TestContext.Current.TestAssetsDirectory, "..", ".."));
             if (!Directory.Exists(repoRoot))
             {
-                Assert.False(true, $"The repo root cannot be evaluated.");
+                Assert.Fail($"The repo root cannot be evaluated.");
             }
             if (!File.Exists(Path.Combine(repoRoot, "sdk.sln")))
             {
-                Assert.False(true, $"The repo root doesn't contain 'sdk.sln'.");
+                Assert.Fail($"The repo root doesn't contain 'sdk.sln'.");
             }
             return repoRoot;
         }

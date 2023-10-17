@@ -1,12 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Cli.Utils
@@ -129,7 +126,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private static bool ForceUniversalEncodingOptInEnabled()
         {
-            return String.Equals(Environment.GetEnvironmentVariable("DOTNET_CLI_FORCE_UTF8_ENCODING"), "true", StringComparison.OrdinalIgnoreCase);
+            return string.Equals(Environment.GetEnvironmentVariable("DOTNET_CLI_FORCE_UTF8_ENCODING"), "true", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

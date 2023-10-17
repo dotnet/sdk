@@ -1,19 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToReferenceAnAssembly : SdkTest
@@ -37,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
 
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString();
 
-            TestProject dependencyProject = new TestProject()
+            TestProject dependencyProject = new()
             {
                 Name = "Dependency",
                 TargetFrameworks = dependencyTarget,
@@ -62,7 +49,7 @@ public class Class1
             var dependencyAsset = _testAssetsManager.CreateTestProject(dependencyProject, identifier: identifier);
             string dependencyAssemblyPath = RestoreAndBuild(dependencyAsset, dependencyProject);
 
-            TestProject referencerProject = new TestProject()
+            TestProject referencerProject = new()
             {
                 Name = "Referencer",
                 TargetFrameworks = referencerTarget,
@@ -104,7 +91,7 @@ public static class Program
 
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString();
 
-            TestProject dependencyProject = new TestProject()
+            TestProject dependencyProject = new()
             {
                 Name = "Dependency",
                 TargetFrameworks = dependencyTarget,
@@ -183,7 +170,7 @@ public class Class1
             var dependencyAsset = _testAssetsManager.CreateTestProject(dependencyProject, identifier: identifier);
             string dependencyAssemblyPath = RestoreAndBuild(dependencyAsset, dependencyProject);
 
-            TestProject referencerProject = new TestProject()
+            TestProject referencerProject = new()
             {
                 Name = "Referencer",
                 TargetFrameworks = referencerTarget,
@@ -226,7 +213,7 @@ public static class Program
 
             string identifier = referencerTarget.ToString() + "_" + dllDependencyTarget.ToString();
 
-            TestProject dllDependencyProjectDependency = new TestProject()
+            TestProject dllDependencyProjectDependency = new()
             {
                 Name = "DllDependencyDependency",
                 TargetFrameworks = dllDependencyTarget,
@@ -248,7 +235,7 @@ public class Class2
                 return;
             }
 
-            TestProject dllDependencyProject = new TestProject()
+            TestProject dllDependencyProject = new()
             {
                 Name = "DllDependency",
                 TargetFrameworks = dllDependencyTarget,
@@ -268,7 +255,7 @@ public class Class1
             var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
-            TestProject referencerProject = new TestProject()
+            TestProject referencerProject = new()
             {
                 Name = "Referencer",
                 TargetFrameworks = referencerTarget,
@@ -310,7 +297,7 @@ public static class Program
 
             string identifier = referencerTarget.ToString() + "_" + dllDependencyTarget.ToString();
 
-            TestProject dllDependencyProjectDependency = new TestProject()
+            TestProject dllDependencyProjectDependency = new()
             {
                 Name = "DllDependencyDependency",
                 TargetFrameworks = dllDependencyTarget,
@@ -386,7 +373,7 @@ public class Class2
                 return;
             }
 
-            TestProject dllDependencyProject = new TestProject()
+            TestProject dllDependencyProject = new()
             {
                 Name = "DllDependency",
                 TargetFrameworks = dllDependencyTarget,
@@ -406,7 +393,7 @@ public class Class1
             var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
-            TestProject referencerProject = new TestProject()
+            TestProject referencerProject = new()
             {
                 Name = "Referencer",
                 TargetFrameworks = referencerTarget,
@@ -450,7 +437,7 @@ public static class Program
 
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString() + "_" + dllDependencyTarget.ToString();
 
-            TestProject dllDependencyProject = new TestProject()
+            TestProject dllDependencyProject = new()
             {
                 Name = "DllDependency",
                 TargetFrameworks = dllDependencyTarget,
@@ -475,7 +462,7 @@ public class Class2
             var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
-            TestProject dependencyProject = new TestProject()
+            TestProject dependencyProject = new()
             {
                 Name = "Dependency",
                 TargetFrameworks = dependencyTarget,
@@ -492,7 +479,7 @@ public class Class1
 }
 ";
 
-            TestProject referencerProject = new TestProject()
+            TestProject referencerProject = new()
             {
                 Name = "Referencer",
                 TargetFrameworks = referencerTarget,
@@ -535,7 +522,7 @@ public static class Program
 
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString() + "_" + dllDependencyTarget.ToString();
 
-            TestProject dllDependencyProject = new TestProject()
+            TestProject dllDependencyProject = new()
             {
                 Name = "DllDependency",
                 TargetFrameworks = dllDependencyTarget,
@@ -614,7 +601,7 @@ public class Class2
             var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
-            TestProject dependencyProject = new TestProject()
+            TestProject dependencyProject = new()
             {
                 Name = "Dependency",
                 TargetFrameworks = dependencyTarget,
@@ -631,7 +618,7 @@ public class Class1
 }
 ";
 
-            TestProject referencerProject = new TestProject()
+            TestProject referencerProject = new()
             {
                 Name = "Referencer",
                 TargetFrameworks = referencerTarget,
@@ -675,7 +662,7 @@ public static class Program
 
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString() + "_" + dllDependencyTarget.ToString();
 
-            TestProject dllDependencyProjectDependency = new TestProject()
+            TestProject dllDependencyProjectDependency = new()
             {
                 Name = "DllDependencyDependency",
                 TargetFrameworks = dllDependencyTarget,
@@ -697,7 +684,7 @@ public class Class3
                 return;
             }
 
-            TestProject dllDependencyProject = new TestProject()
+            TestProject dllDependencyProject = new()
             {
                 Name = "DllDependency",
                 TargetFrameworks = dllDependencyTarget,
@@ -717,7 +704,7 @@ public class Class2
             var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
-            TestProject dependencyProject = new TestProject()
+            TestProject dependencyProject = new()
             {
                 Name = "Dependency",
                 TargetFrameworks = dependencyTarget,
@@ -734,7 +721,7 @@ public class Class1
 }
 ";
 
-            TestProject referencerProject = new TestProject()
+            TestProject referencerProject = new()
             {
                 Name = "Referencer",
                 TargetFrameworks = referencerTarget,
@@ -777,7 +764,7 @@ public static class Program
 
             string identifier = referencerTarget.ToString() + "_" + dependencyTarget.ToString() + "_" + dllDependencyTarget.ToString();
 
-            TestProject dllDependencyProjectDependency = new TestProject()
+            TestProject dllDependencyProjectDependency = new()
             {
                 Name = "DllDependencyDependency",
                 TargetFrameworks = dllDependencyTarget,
@@ -853,7 +840,7 @@ public class Class3
                 return;
             }
 
-            TestProject dllDependencyProject = new TestProject()
+            TestProject dllDependencyProject = new()
             {
                 Name = "DllDependency",
                 TargetFrameworks = dllDependencyTarget,
@@ -873,7 +860,7 @@ public class Class2
             var dllDependencyAsset = _testAssetsManager.CreateTestProject(dllDependencyProject, identifier: identifier);
             string dllDependencyAssemblyPath = RestoreAndBuild(dllDependencyAsset, dllDependencyProject);
 
-            TestProject dependencyProject = new TestProject()
+            TestProject dependencyProject = new()
             {
                 Name = "Dependency",
                 TargetFrameworks = dependencyTarget,
@@ -890,7 +877,7 @@ public class Class1
 }
 ";
 
-            TestProject referencerProject = new TestProject()
+            TestProject referencerProject = new()
             {
                 Name = "Referencer",
                 TargetFrameworks = referencerTarget,

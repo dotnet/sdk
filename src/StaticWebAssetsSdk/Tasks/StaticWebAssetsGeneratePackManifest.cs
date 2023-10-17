@@ -1,15 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -64,7 +59,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 });
             }
 
-            packageFiles.Sort((x,y) => string.Compare(x.Id, y.Id, StringComparison.Ordinal));
+            packageFiles.Sort((x, y) => string.Compare(x.Id, y.Id, StringComparison.Ordinal));
 
             var manifest = new StaticWebAssetsPackManifest
             {
@@ -119,7 +114,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         {
             public StaticWebAssetPackageFile[] Files { get; set; }
 
-            public string [] ElementsToRemove { get; set; }
+            public string[] ElementsToRemove { get; set; }
         }
     }
 }

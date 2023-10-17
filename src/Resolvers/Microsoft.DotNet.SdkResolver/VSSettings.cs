@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.NativeWrapper;
 
 #if NETFRAMEWORK
@@ -17,7 +14,7 @@ namespace Microsoft.DotNet.DotNetSdkResolver
 {
     public sealed class VSSettings
     {
-        private readonly object _lock = new object();
+        private readonly object _lock = new();
         private readonly string _settingsFilePath;
         private readonly bool _disallowPrereleaseByDefault;
         private FileInfo _settingsFile;
@@ -25,7 +22,7 @@ namespace Microsoft.DotNet.DotNetSdkResolver
 
         // In the product, this singleton is used. It must be safe to use in parallel on multiple threads.
         // In tests, mock instances can be created with the test constructor below.
-        public static readonly VSSettings Ambient = new VSSettings();
+        public static readonly VSSettings Ambient = new();
 
         private VSSettings()
         {
@@ -93,7 +90,7 @@ namespace Microsoft.DotNet.DotNetSdkResolver
 
             // NB: All calls to Exists and LastWriteTimeUtc below will not hit the disk
             //     They will return data obtained during Refresh() here.
-            file.Refresh(); 
+            file.Refresh();
 
             lock (_lock)
             {

@@ -2,14 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Sdk.Publish.Tasks.Xdt;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using Xunit;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 {
@@ -68,7 +60,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                 _webConfigTransformRemoveAll.Save(transformFile);
 
                 // Act
-                TransformXml transformTask = new TransformXml()
+                TransformXml transformTask = new()
                 {
                     Source = sourceFile,
                     Destination = outputFile,
@@ -113,7 +105,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                 _webConfigTransformAdd.Save(transformFile);
 
                 // Act
-                TransformXml transformTask = new TransformXml()
+                TransformXml transformTask = new()
                 {
                     Source = sourceFile,
                     Destination = outputFile,

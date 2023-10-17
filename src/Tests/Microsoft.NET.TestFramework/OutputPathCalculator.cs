@@ -1,18 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Xml.Linq;
-using NuGet.Frameworks;
-using Xunit.Sdk;
-using System.ComponentModel.DataAnnotations;
-
 namespace Microsoft.NET.TestFramework
 {
     public class OutputPathCalculator
@@ -171,7 +159,7 @@ namespace Microsoft.NET.TestFramework
             return !string.IsNullOrEmpty(TargetFrameworks);
         }
 
-        public string GetOutputDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = "")
+        public string GetOutputDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = "", string platform = "")
         {
             if (UseArtifactsOutput)
             {
@@ -200,24 +188,25 @@ namespace Microsoft.NET.TestFramework
             }
             else
             {
-                targetFramework = targetFramework ?? TargetFramework ?? string.Empty;
-                configuration = configuration ?? string.Empty;
-                runtimeIdentifier = runtimeIdentifier ?? RuntimeIdentifier ?? string.Empty;
+                targetFramework ??= TargetFramework ?? string.Empty;
+                configuration ??= string.Empty;
+                runtimeIdentifier ??= RuntimeIdentifier ?? string.Empty;
+                platform ??= string.Empty;
 
                 if (IsSdkProject)
                 {
-                    string output = System.IO.Path.Combine(Path.GetDirectoryName(ProjectPath), "bin", configuration, targetFramework, runtimeIdentifier);
+                    string output = Path.Combine(Path.GetDirectoryName(ProjectPath), "bin", platform, configuration, targetFramework, runtimeIdentifier);
                     return output;
                 }
                 else
                 {
-                    string output = System.IO.Path.Combine(Path.GetDirectoryName(ProjectPath), "bin", configuration);
+                    string output = Path.Combine(Path.GetDirectoryName(ProjectPath), "bin", platform, configuration);
                     return output;
                 }
             }
         }
 
-        public string GetPublishDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = "")
+        public string GetPublishDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = "", string platform = "")
         {
             if (UseArtifactsOutput)
             {
@@ -246,11 +235,12 @@ namespace Microsoft.NET.TestFramework
             }
             else
             {
-                targetFramework = targetFramework ?? TargetFramework ?? string.Empty;
-                configuration = configuration ?? string.Empty;
-                runtimeIdentifier = runtimeIdentifier ?? RuntimeIdentifier ?? string.Empty;
+                targetFramework ??= TargetFramework ?? string.Empty;
+                configuration ??= string.Empty;
+                runtimeIdentifier ??= RuntimeIdentifier ?? string.Empty;
+                platform ??= string.Empty;
 
-                string output = System.IO.Path.Combine(Path.GetDirectoryName(ProjectPath), "bin", configuration, targetFramework, runtimeIdentifier, "publish");
+                string output = Path.Combine(Path.GetDirectoryName(ProjectPath), "bin", platform, configuration, targetFramework, runtimeIdentifier, "publish");
                 return output;
             }
         }
@@ -281,14 +271,14 @@ namespace Microsoft.NET.TestFramework
                 {
                     return Path.Combine(ArtifactsPath, "obj", pivot);
                 }
-                
+
             }
 
             targetFramework = targetFramework ?? TargetFramework ?? string.Empty;
             configuration = configuration ?? string.Empty;
             runtimeIdentifier = runtimeIdentifier ?? RuntimeIdentifier ?? string.Empty;
 
-            string output = System.IO.Path.Combine(Path.GetDirectoryName(ProjectPath), "obj", configuration, targetFramework, runtimeIdentifier);
+            string output = Path.Combine(Path.GetDirectoryName(ProjectPath), "obj", configuration, targetFramework, runtimeIdentifier);
             return output;
         }
 
@@ -296,11 +286,11 @@ namespace Microsoft.NET.TestFramework
         {
             if (UseArtifactsOutput)
             {
-                return System.IO.Path.Combine(ArtifactsPath, "package", configuration.ToLowerInvariant());
+                return Path.Combine(ArtifactsPath, "package", configuration.ToLowerInvariant());
             }
             else
             {
-                return System.IO.Path.Combine(Path.GetDirectoryName(ProjectPath), "bin", configuration);
+                return Path.Combine(Path.GetDirectoryName(ProjectPath), "bin", configuration);
             }
         }
     }

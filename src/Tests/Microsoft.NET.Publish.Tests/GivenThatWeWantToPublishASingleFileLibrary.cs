@@ -1,17 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.CompilerServices;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Publish.Tests
 {
     public class GivenThatWeWantToPublishASingleFileLibrary : SdkTest
@@ -26,13 +15,13 @@ namespace Microsoft.NET.Publish.Tests
         public void ItPublishesSuccessfullyWithRIDAndPublishSingleFileLibrary()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
-            TestProject referencedProject = new TestProject("Library")
+            TestProject referencedProject = new("Library")
             {
                 TargetFrameworks = targetFramework,
                 IsExe = false
             };
 
-            TestProject testProject = new TestProject("MainProject")
+            TestProject testProject = new("MainProject")
             {
                 TargetFrameworks = targetFramework,
                 IsExe = true
@@ -42,7 +31,7 @@ namespace Microsoft.NET.Publish.Tests
             referencedProject.RecordProperties("RuntimeIdentifier");
 
             string rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
-            List<string> args = new List<string>{"/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={rid}"};
+            List<string> args = new() { "/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={rid}" };
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
             new PublishCommand(testAsset)

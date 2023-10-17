@@ -4,14 +4,12 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
-using Microsoft.NET.TestFramework;
-using Xunit;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 public sealed class ProjectInitializer
 {
-    private readonly static string _combinedTargetsLocation;
+    private static readonly string _combinedTargetsLocation;
 
     static ProjectInitializer()
     {
@@ -36,7 +34,7 @@ public sealed class ProjectInitializer
         return tempTargetLocation;
     }
 
-    public static (Project, CapturingLogger, IDisposable) InitProject(Dictionary<string, string> bonusProps, [CallerMemberName]string projectName = "")
+    public static (Project, CapturingLogger, IDisposable) InitProject(Dictionary<string, string> bonusProps, [CallerMemberName] string projectName = "")
     {
         var props = new Dictionary<string, string>();
         // required parameters
@@ -60,7 +58,7 @@ public sealed class ProjectInitializer
             new global::Microsoft.Build.Logging.BinaryLogger() {CollectProjectImports = global::Microsoft.Build.Logging.BinaryLogger.ProjectImportsCollectionMode.Embed, Verbosity = LoggerVerbosity.Diagnostic, Parameters = $"LogFile={safeBinlogFileName}.binlog" },
             new global::Microsoft.Build.Logging.ConsoleLogger(LoggerVerbosity.Detailed)
         };
-        CapturingLogger logs = new CapturingLogger();
+        CapturingLogger logs = new();
         loggers.Add(logs);
 
         var collection = new ProjectCollection(null, loggers, ToolsetDefinitionLocations.Default);

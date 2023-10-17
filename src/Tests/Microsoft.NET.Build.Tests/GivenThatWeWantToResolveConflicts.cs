@@ -1,18 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -78,8 +67,10 @@ namespace Microsoft.NET.Build.Tests
                 projectFolder,
                 targetFramework,
                 "Reference",
-                GetValuesCommand.ValueType.Item);
-            getReferenceCommand.DependsOnTargets = "Build";
+                GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "Build"
+            };
             var result = getReferenceCommand.Execute("/v:detailed").Should().Pass();
             if (expectConflicts)
             {
@@ -97,8 +88,10 @@ namespace Microsoft.NET.Build.Tests
                 projectFolder,
                 targetFramework,
                 "ReferenceCopyLocalPaths",
-                GetValuesCommand.ValueType.Item);
-            getReferenceCopyLocalPathsCommand.DependsOnTargets = "Build";
+                GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "Build"
+            };
             getReferenceCopyLocalPathsCommand.Execute().Should().Pass();
 
             referenceCopyLocalPaths = getReferenceCopyLocalPathsCommand.GetValues();
@@ -107,7 +100,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void CompileConflictsAreNotRemovedFromRuntimeDepsAssets()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "NetStandard2Library",
                 TargetFrameworks = "netstandard2.0",
@@ -142,7 +135,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void AProjectCanReferenceADllInAPackageDirectly()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "ReferencePackageDllDirectly",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
@@ -173,7 +166,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void DuplicateFrameworkAssembly()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "DuplicateFrameworkAssembly",
                 TargetFrameworks = "net472",
@@ -248,7 +241,7 @@ namespace Microsoft.NET.Build.Tests
                     project.Root.Add(itemGroup);
                     itemGroup.Add(new XElement(ns + "EnableNETAnalyzers", "true"));
                     itemGroup.Add(new XElement(ns + "TreatWarningsAsErrors", "true"));
-                    
+
                     // Don't error when generators/analyzers can't be loaded.
                     // This can occur when running tests against FullFramework MSBuild
                     // if the build machine has an MSBuild install with an older version of Roslyn

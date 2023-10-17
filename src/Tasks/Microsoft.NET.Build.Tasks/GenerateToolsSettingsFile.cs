@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using System.Xml.Linq;
-using System.IO;
-using System;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -24,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            using (StringWriter writer = new StringWriter())
+            using (StringWriter writer = new())
             {
                 GenerateDocument(EntryPointRelativePath, CommandName).Save(ToolsSettingsFilePath);
             }

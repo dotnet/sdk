@@ -1,22 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
+using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Xunit;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
-using Microsoft.DotNet.ToolManifest;
-using Microsoft.NET.TestFramework.Utilities;
-using Microsoft.DotNet.Cli;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -29,7 +21,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly BufferedReporter _reporter;
         private readonly string _temporaryDirectory;
         private readonly string _manifestFilePath;
-        private readonly PackageId _packageIdDotnsay = new PackageId("dotnetsay");
+        private readonly PackageId _packageIdDotnsay = new("dotnetsay");
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
         private readonly ToolUninstallLocalCommand _defaultToolUninstallLocalCommand;
@@ -167,7 +159,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _defaultToolUninstallLocalCommand.Execute();
 
             _fileSystem.File.ReadAllText(parentManifestFilePath).Should().Be(
-                _entryRemovedJsonContent, 
+                _entryRemovedJsonContent,
                 "First invoke remove the one in current dir, the second invoke remove the one in parent dir.");
         }
 

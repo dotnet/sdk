@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Threading.Tasks;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.DotNet.Watcher.Tests
 {
     public class BrowserLaunchTests : DotNetWatchTestBase
@@ -20,10 +16,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task LaunchesBrowserOnStart()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
-                .WithSource()
-                .Path;
-
-            App.DotnetWatchArgs.Add("--verbose");
+                .WithSource();
 
             await App.StartWatcherAsync(testAsset, testFlags: TestFlags.BrowserRequired);
 
@@ -35,12 +28,9 @@ namespace Microsoft.DotNet.Watcher.Tests
         public async Task UsesBrowserSpecifiedInEnvironment()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
-                .WithSource()
-                .Path;
+                .WithSource();
 
             App.EnvironmentVariables.Add("DOTNET_WATCH_BROWSER_PATH", "mycustombrowser.bat");
-
-            App.DotnetWatchArgs.Add("--verbose");
 
             await App.StartWatcherAsync(testAsset, testFlags: TestFlags.BrowserRequired);
 

@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
-
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal class InvalidTemplateParametersException : Exception
@@ -21,7 +19,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 if (_message == null)
                 {
-                    StringBuilder stringBuilder = new StringBuilder();
+                    StringBuilder stringBuilder = new();
                     stringBuilder.Append(string.Format(LocalizableStrings.Exception_InvalidTemplateParameters_MessageHeader, Template.Identity, Template.ShortNameList[0]));
 
                     foreach (var error in ParameterErrors)

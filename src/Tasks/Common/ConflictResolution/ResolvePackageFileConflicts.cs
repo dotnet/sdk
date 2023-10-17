@@ -8,20 +8,16 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
     public class ResolvePackageFileConflicts : TaskWithAssemblyResolveHooks
     {
-        private HashSet<ITaskItem> referenceConflicts = new HashSet<ITaskItem>();
-        private HashSet<ITaskItem> analyzerConflicts = new HashSet<ITaskItem>();
-        private HashSet<ITaskItem> copyLocalConflicts = new HashSet<ITaskItem>();
-        private HashSet<ConflictItem> compilePlatformWinners = new HashSet<ConflictItem>();
-        private HashSet<ConflictItem> allConflicts = new HashSet<ConflictItem>();
+        private HashSet<ITaskItem> referenceConflicts = new();
+        private HashSet<ITaskItem> analyzerConflicts = new();
+        private HashSet<ITaskItem> copyLocalConflicts = new();
+        private HashSet<ConflictItem> compilePlatformWinners = new();
+        private HashSet<ConflictItem> allConflicts = new();
 
         public ITaskItem[] References { get; set; }
 
@@ -214,7 +210,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             var conflictItems = new ITaskItem[conflicts.Count];
 
             int i = 0;
-            foreach(var conflict in conflicts)
+            foreach (var conflict in conflicts)
             {
                 conflictItems[i++] = CreateConflictTaskItem(conflict);
             }

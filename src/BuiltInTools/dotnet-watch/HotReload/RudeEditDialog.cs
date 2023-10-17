@@ -2,9 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -43,7 +40,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 "Do you want to restart your app - Yes (y) / No (n) / Always (a) / Never (v)?",
                 KeyPressed,
                 cancellationToken);
-            
+
             switch (key)
             {
                 case ConsoleKey.Escape:

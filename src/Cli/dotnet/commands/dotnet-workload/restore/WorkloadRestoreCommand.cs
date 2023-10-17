@@ -1,13 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
@@ -61,7 +55,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             {
                 var project = new ProjectInstance(projectFile, globalProperties, null);
 
-                bool buildResult = project.Build(new[] {"_GetRequiredWorkloads"},
+                bool buildResult = project.Build(new[] { "_GetRequiredWorkloads" },
                     loggers: new ILogger[]
                     {
                         new ConsoleLogger(Verbosity.ToLoggerVerbosity())

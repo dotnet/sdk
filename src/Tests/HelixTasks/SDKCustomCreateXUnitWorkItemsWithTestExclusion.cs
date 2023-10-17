@@ -1,12 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
 using NuGet.Frameworks;
@@ -131,7 +126,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             // On mac due to https://github.com/dotnet/sdk/issues/3923, we run against workitem directory
             // but on Windows, if we running against working item diretory, we would hit long path.
-            string testExecutionDirectory = netFramework ? "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%" : IsPosixShell ? "-testExecutionDirectory $TestExecutionDirectory"  : "-testExecutionDirectory %TestExecutionDirectory%";
+            string testExecutionDirectory = netFramework ? "-e DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%" : IsPosixShell ? "-testExecutionDirectory $TestExecutionDirectory" : "-testExecutionDirectory %TestExecutionDirectory%";
 
             string msbuildAdditionalSdkResolverFolder = netFramework ? "-e DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\\r" : IsPosixShell ? "" : "-msbuildAdditionalSdkResolverFolder %HELIX_CORRELATION_PAYLOAD%\\r";
 
@@ -141,7 +136,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 msbuildAdditionalSdkResolverFolder = "";
             }
 
-            var scheduler = new AssemblyScheduler(methodLimit: !String.IsNullOrEmpty(Environment.GetEnvironmentVariable("TestFullMSBuild")) ? 32 : 16);
+            var scheduler = new AssemblyScheduler(methodLimit: !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TestFullMSBuild")) ? 32 : 16);
             var assemblyPartitionInfos = scheduler.Schedule(targetPath, netFramework: netFramework);
 
             var partitionedWorkItem = new List<ITaskItem>();
@@ -150,7 +145,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 string command = $"{driver} exec {assemblyName} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} {(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
                 if (netFramework)
                 {
-                    var testFilter = String.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
+                    var testFilter = string.IsNullOrEmpty(assemblyPartitionInfo.ClassListArgumentString) ? "" : $"--filter \"{assemblyPartitionInfo.ClassListArgumentString}\"";
                     command = $"{driver} test {assemblyName} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} {(XUnitArguments != null ? " " + XUnitArguments : "")} --results-directory .\\ --logger trx {testFilter}";
                 }
 

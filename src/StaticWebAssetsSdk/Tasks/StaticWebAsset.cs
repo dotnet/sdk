@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -154,7 +151,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         }
 
         private static StaticWebAsset FromTaskItemCore(ITaskItem item) =>
-            new StaticWebAsset
+            new()
             {
                 // Register the identity as the full path since assets might have come
                 // from packages and other sources and the identity (which is typically
@@ -351,7 +348,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         }
 
         internal bool HasSourceId(string source) =>
-            StaticWebAsset.HasSourceId(SourceId, source);
+            HasSourceId(SourceId, source);
 
         public void Normalize()
         {

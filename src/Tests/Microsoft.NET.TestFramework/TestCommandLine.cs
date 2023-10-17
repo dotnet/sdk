@@ -1,14 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
 using System.Xml;
-using System.Xml.Linq;
 
 namespace Microsoft.NET.TestFramework
 {
@@ -44,9 +37,11 @@ namespace Microsoft.NET.TestFramework
 
         public static TestCommandLine Parse(string[] args)
         {
-            TestCommandLine ret = new TestCommandLine();
-            ret.RemainingArgs = new List<string>();
-            Stack<string> argStack = new Stack<string>(args.Reverse());
+            TestCommandLine ret = new()
+            {
+                RemainingArgs = new List<string>()
+            };
+            Stack<string> argStack = new(args.Reverse());
 
             while (argStack.Any())
             {
@@ -132,10 +127,10 @@ namespace Microsoft.NET.TestFramework
 
         public List<string> GetXunitArgsFromTestConfig()
         {
-            List<TestSpecifier> testsToSkip = new List<TestSpecifier>();
-            List<TestList> testLists = new List<TestList>();
+            List<TestSpecifier> testsToSkip = new();
+            List<TestList> testLists = new();
 
-            List<string> ret = new List<string>();
+            List<string> ret = new();
             foreach (var testConfigFile in TestConfigFiles)
             {
                 var testConfig = XDocument.Load(testConfigFile);
@@ -217,9 +212,10 @@ namespace Microsoft.NET.TestFramework
 
             public static TestList Parse(XElement element)
             {
-                TestList group = new TestList();
-
-                group.Name = element.Attribute("Name")?.Value;
+                TestList group = new()
+                {
+                    Name = element.Attribute("Name")?.Value
+                };
 
                 foreach (var item in element.Elements())
                 {
@@ -244,7 +240,7 @@ namespace Microsoft.NET.TestFramework
 
             public static TestSpecifier Parse(XElement element)
             {
-                TestSpecifier spec = new TestSpecifier();
+                TestSpecifier spec = new();
                 switch (element.Name.LocalName.ToLowerInvariant())
                 {
                     case "method":
@@ -266,7 +262,7 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        public static TestCommandLine HandleCommandLine(string [] args)
+        public static TestCommandLine HandleCommandLine(string[] args)
         {
             TestCommandLine commandLine = Parse(args);
 

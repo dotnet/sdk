@@ -1,13 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using FluentAssertions;
-using System.IO;
-using Xunit;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework;
-using System.Linq;
 using Microsoft.DotNet.DotNetSdkResolver;
 
 namespace Microsoft.DotNet.TemplateLocator.Tests
@@ -32,7 +25,7 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
 
             _manifestDirectory = Path.Combine(_fakeDotnetRootDirectory, "sdk-manifests", "5.0.100");
             Directory.CreateDirectory(_manifestDirectory);
-            
+
         }
 
         [Fact]

@@ -1,12 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.IO;
 using System.Linq;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -27,46 +28,52 @@ namespace Microsoft.DotNet.Cli
             Description = CommonStrings.WorkloadInfoDescription
         };
 
+        public static readonly CliOption<bool> VersionOption = new("--version")
+        {
+            Description = CommonStrings.WorkloadVersionDescription
+        };
+
         public static CliCommand GetCommand()
         {
             Command.Options.Add(InfoOption);
+            Command.Options.Add(VersionOption);
             return Command;
         }
 
-        internal static void ShowWorkloadsInfo(ParseResult parseResult = null, IWorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null)
+        internal static string GetWorkloadsVersion(WorkloadInfoHelper workloadInfoHelper = null)
         {
-            if(workloadInfoHelper != null)
-            {
-                workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
-            }
-            else
-            {
-                workloadInfoHelper ??= new WorkloadInfoHelper(false);
-            }
+            workloadInfoHelper ??= new WorkloadInfoHelper(false);
+
+            return workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
+        }
+
+        internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null)
+        {
+            workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
             IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
             InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
-            reporter ??= Cli.Utils.Reporter.Output;
+            reporter ??= Utils.Reporter.Output;
             string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
 
-            if (!installedList.Any())
+            reporter.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
+
+            if (installedWorkloads.Count == 0)
             {
                 reporter.WriteLine(CommonStrings.NoWorkloadsInstalledInfoWarning);
                 return;
             }
 
+            var manifestInfoDict = workloadInfoHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
 
             foreach (var workload in installedWorkloads.AsEnumerable())
             {
                 var workloadManifest = workloadInfoHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
-                var workloadFeatureBand = new WorkloadManifestInfo(
-                    workloadManifest.Id,
-                    workloadManifest.Version,
-                    Path.GetDirectoryName(workloadManifest.ManifestPath)!).ManifestFeatureBand;
+                var workloadFeatureBand = manifestInfoDict[workloadManifest.Id].ManifestFeatureBand;
 
                 const int align = 10;
                 const string separator = "   ";
 
-                reporter.WriteLine($" {'[' + workload.Key + ']'}");
+                reporter.WriteLine($" [{workload.Key}]");
 
                 reporter.Write($"{separator}{CommonStrings.WorkloadSourceColumn}:");
                 reporter.WriteLine($" {workload.Value,align}");
@@ -78,8 +85,9 @@ namespace Microsoft.DotNet.Cli
                 reporter.WriteLine($"       {workloadManifest.ManifestPath,align}");
 
                 reporter.Write($"{separator}{CommonStrings.WorkloadInstallTypeColumn}:");
-                reporter.WriteLine($"       {WorkloadInstallerFactory.GetWorkloadInstallType(new SdkFeatureBand(workloadFeatureBand), dotnetPath),align}"
+                reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(workloadFeatureBand), dotnetPath).ToString(),align}"
                 );
+                reporter.WriteLine("");
             }
         }
 
@@ -88,7 +96,13 @@ namespace Microsoft.DotNet.Cli
             if (parseResult.HasOption(InfoOption) && parseResult.RootSubCommandResult() == "workload")
             {
                 ShowWorkloadsInfo(parseResult);
-                Cli.Utils.Reporter.Output.WriteLine("");
+                Reporter.Output.WriteLine(string.Empty);
+                return 0;
+            }
+            else if (parseResult.HasOption(VersionOption) && parseResult.RootSubCommandResult() == "workload")
+            {
+                Reporter.Output.WriteLine(GetWorkloadsVersion());
+                Reporter.Output.WriteLine(string.Empty);
                 return 0;
             }
             return parseResult.HandleMissingCommand();
@@ -110,7 +124,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Validators.Add(commandResult =>
             {
-                if (commandResult.GetResult(InfoOption) is null && !commandResult.Children.Any(child => child is CommandResult))
+                if (commandResult.GetResult(InfoOption) is null && commandResult.GetResult(VersionOption) is null && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
                 {
                     commandResult.AddError(Tools.CommonLocalizableStrings.RequiredCommandNotPassed);
                 }

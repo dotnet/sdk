@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Xunit;
-
 namespace Microsoft.NET.TestFramework
 {
     public class CoreMSBuildOnlyTheoryAttribute : TheoryAttribute
@@ -12,7 +9,7 @@ namespace Microsoft.NET.TestFramework
         {
             if (TestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
             {
-                this.Skip = "This test requires Core MSBuild to run";
+                Skip = "This test requires Core MSBuild to run";
             }
         }
     }

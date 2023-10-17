@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Text;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 {
@@ -36,7 +33,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             return GetClearTextPassword(encryptedData);
         }
 
-        public static string GetClearTextPassword(Byte[] encryptedData)
+        public static string GetClearTextPassword(byte[] encryptedData)
         {
             if (encryptedData == null)
             {
@@ -47,7 +44,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             try
             {
 #pragma warning disable CA1416 // This functionality is only expected to work in Windows.
-                Byte[] uncrypted = System.Security.Cryptography.ProtectedData.Unprotect(encryptedData, null, System.Security.Cryptography.DataProtectionScope.CurrentUser);
+                byte[] uncrypted = System.Security.Cryptography.ProtectedData.Unprotect(encryptedData, null, System.Security.Cryptography.DataProtectionScope.CurrentUser);
 #pragma warning restore CA1416 // This functionality is only expected to work in Windows.
                 plainPWD = Encoding.Unicode.GetString(uncrypted);
             }

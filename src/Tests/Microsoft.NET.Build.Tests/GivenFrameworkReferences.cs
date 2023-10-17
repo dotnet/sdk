@@ -1,20 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json.Linq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -314,7 +302,7 @@ namespace FrameworkReferenceTest
 
             testProject.AdditionalProperties["EnableTargetingPackDownload"] = "False";
 
-            //  Set targeting pack folder to nonexistant folder so the project won't use installed targeting packs
+            //  Set targeting pack folder to nonexistent folder so the project won't use installed targeting packs
             testProject.AdditionalProperties["NetCoreTargetingPackRoot"] = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -604,10 +592,10 @@ namespace FrameworkReferenceTest
                 {
                     var ns = project.Root.Name.Namespace;
 
-                project.Root.Elements(ns + "ItemGroup")
-                    .Elements(ns + "FrameworkReference")
-                    .Single(fr => fr.Attribute("Include").Value.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase))
-                    .SetAttributeValue("TargetLatestRuntimePatch", attributeValue.ToString());
+                    project.Root.Elements(ns + "ItemGroup")
+                        .Elements(ns + "FrameworkReference")
+                        .Single(fr => fr.Attribute("Include").Value.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase))
+                        .SetAttributeValue("TargetLatestRuntimePatch", attributeValue.ToString());
                 },
                 identifier: attributeValue.ToString());
 
@@ -757,7 +745,7 @@ namespace FrameworkReferenceTest
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
             string nugetPackagesFolder = Path.Combine(testAsset.TestRoot, "packages");
 
-            var buildCommand = (BuildCommand) new BuildCommand(testAsset)
+            var buildCommand = (BuildCommand)new BuildCommand(testAsset)
                 .WithEnvironmentVariable("NUGET_PACKAGES", nugetPackagesFolder);
 
             buildCommand
@@ -854,8 +842,10 @@ namespace FrameworkReferenceTest
             };
 
             var getValuesCommand = new GetValuesCommand(Log, projectFolder, testProject.TargetFrameworks,
-                "ResolvedFrameworkReference", GetValuesCommand.ValueType.Item);
-            getValuesCommand.DependsOnTargets = "ResolveFrameworkReferences";
+                "ResolvedFrameworkReference", GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "ResolveFrameworkReferences"
+            };
             getValuesCommand.MetadataNames.AddRange(expectedMetadata);
 
             getValuesCommand.Execute().Should().Pass();
@@ -895,7 +885,7 @@ namespace FrameworkReferenceTest
         public void WindowsFormsFrameworkReference(bool selfContained)
         {
             TestFrameworkReferenceProfiles(
-                frameworkReferences: new [] { "Microsoft.WindowsDesktop.App.WindowsForms" },
+                frameworkReferences: new[] { "Microsoft.WindowsDesktop.App.WindowsForms" },
                 expectedReferenceNames: new[] { "Microsoft.Win32.Registry", "System.Windows.Forms" },
                 notExpectedReferenceNames: new[] { "System.Windows.Presentation", "WindowsFormsIntegration" },
                 selfContained);
@@ -1142,7 +1132,7 @@ namespace FrameworkReferenceTest
             string targetFramework = ToolsetInfo.CurrentTargetFramework;
 
             testProject.Name = "TrimInfoTest";
-            testProject.TargetFrameworks = targetFramework;;
+            testProject.TargetFrameworks = targetFramework; ;
             testProject.IsExe = true;
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
             testProject.SelfContained = "true";
@@ -1169,13 +1159,13 @@ namespace FrameworkReferenceTest
                             IsTrimmable = item.metadata["IsTrimmable"]
                         };
 
-            var trimInfo = new Dictionary<string, List<(string asset, string isTrimmable)>> ();
+            var trimInfo = new Dictionary<string, List<(string asset, string isTrimmable)>>();
             foreach (var item in items)
             {
                 List<(string asset, string isTrimmable)> assets;
                 if (!trimInfo.TryGetValue(item.PackageName, out assets))
                 {
-                    assets = trimInfo[item.PackageName] = new List<(string asset, string isTrimmable)> (3);
+                    assets = trimInfo[item.PackageName] = new List<(string asset, string isTrimmable)>(3);
                 }
                 assets.Add((item.Identity, item.IsTrimmable));
             }

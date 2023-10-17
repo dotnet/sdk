@@ -1,26 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security.Policy;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -145,7 +130,7 @@ namespace Microsoft.NET.Publish.Tests
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "Hello.World",
                 TargetFrameworks = targetFramework,
@@ -177,9 +162,6 @@ public static class Program
         }
 
         [Theory]
-        [InlineData("win-arm")]
-        [InlineData("win8-arm")]
-        [InlineData("win81-arm")]
         [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm")]
         [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm64")]
         public void Publish_standalone_post_netcoreapp2_arm_app(string runtimeIdentifier)
@@ -189,7 +171,7 @@ public static class Program
 
             var targetFramework = "netcoreapp2.0";
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "Hello",
                 TargetFrameworks = targetFramework,
@@ -275,7 +257,7 @@ public static class Program
             }
             var rid = ridSpecific ? EnvironmentInfo.GetCompatibleRid(targetFramework) : null;
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = selfContained ? "SelfContainedWithConflicts" :
                     (ridSpecific ? "RidSpecificSharedConflicts" : "PortableWithConflicts"),
@@ -818,7 +800,7 @@ public static class Program
                     throw new ArgumentOutOfRangeException(nameof(type));
             }
 
-            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name, identifier: type)
                 .WithProjectChanges(project =>
@@ -1104,7 +1086,7 @@ public static class Program
             var testProject = new TestProject()
             {
                 Name = "PublishImplicitRid",
-                TargetFrameworks = $"net472;{ToolsetInfo.CurrentTargetFramework}",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
             testProject.AdditionalProperties.Add("IsPublishable", "false");
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: executeOptionsAndProperties);

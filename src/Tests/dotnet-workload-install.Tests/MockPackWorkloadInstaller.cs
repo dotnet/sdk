@@ -1,26 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
+using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using System.Linq;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.DotNet.ToolPackage;
-using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using NuGet.Versioning;
-using System.IO;
+using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
     internal class MockPackWorkloadInstaller : IInstaller
     {
         public IList<PackInfo> InstalledPacks;
-        public List<PackInfo> RolledBackPacks = new List<PackInfo>();
+        public List<PackInfo> RolledBackPacks = new();
         public IList<(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache)> InstalledManifests =
             new List<(ManifestVersionUpdate manifestUpdate, DirectoryPath?)>();
         public string CachePath;
@@ -62,7 +55,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
-            List<PackInfo> packs = new List<PackInfo>();
+            List<PackInfo> packs = new();
 
             transactionContext.Run(action: () =>
             {
@@ -92,7 +85,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null) => throw new NotImplementedException();
 
-        public void GarbageCollectInstalledWorkloadPacks(DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
+        public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
         {
             if (FailingGarbageCollection)
             {

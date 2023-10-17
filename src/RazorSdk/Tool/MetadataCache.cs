@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection.PortableExecutable;
 using Microsoft.CodeAnalysis;
 
@@ -14,7 +12,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         // Store 1000 entries -- arbitrary number
         private const int CacheSize = 1000;
         private readonly ConcurrentLruCache<string, MetadataCacheEntry> _metadataCache =
-            new ConcurrentLruCache<string, MetadataCacheEntry>(CacheSize, StringComparer.OrdinalIgnoreCase);
+            new(CacheSize, StringComparer.OrdinalIgnoreCase);
 
         // For testing purposes only.
         internal ConcurrentLruCache<string, MetadataCacheEntry> Cache => _metadataCache;

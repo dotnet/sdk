@@ -152,7 +152,7 @@ namespace Microsoft.TemplateEngine.Cli
                         Example
                             .For<NewCommand>(args.ParseResult)
                             .WithSubcommand<InstallCommand>()
-                            .WithArgument(InstallCommand.NameArgument, $"{versionCheckResult.TemplatePackage?.Identifier}::{versionCheckResult.LatestVersion}"));
+                            .WithArgument(BaseInstallCommand.NameArgument, $"{versionCheckResult.TemplatePackage?.Identifier}::{versionCheckResult.LatestVersion}"));
                     Reporter.Output.WriteLine();
                 }
             }
@@ -171,7 +171,7 @@ namespace Microsoft.TemplateEngine.Cli
                 Example
                  .For<NewCommand>(args.ParseResult)
                  .WithSubcommand<UninstallCommand>()
-                 .WithArgument(UninstallCommand.NameArgument, packageId));
+                 .WithArgument(BaseUninstallCommand.NameArgument, packageId));
         }
 
         /// <summary>
@@ -203,7 +203,7 @@ namespace Microsoft.TemplateEngine.Cli
 
             // In future we might want give user ability to pick IManagerSourceProvider by Name or GUID
             var managedSourceProvider = _templatePackageManager.GetBuiltInManagedProvider(InstallationScope.Global);
-            List<InstallRequest> installRequests = new List<InstallRequest>();
+            List<InstallRequest> installRequests = new();
 
             foreach (string installArg in args.TemplatePackages)
             {
@@ -223,7 +223,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
 
             //validate if installation requests have unique identifier
-            HashSet<string> identifiers = new HashSet<string>();
+            HashSet<string> identifiers = new();
             foreach (InstallRequest installRequest in installRequests)
             {
                 if (identifiers.Add(installRequest.PackageIdentifier))
@@ -439,7 +439,7 @@ namespace Microsoft.TemplateEngine.Cli
                 IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources, true);
 
                 nuGetPackageMetadata = await GetPackageMetadataFromMultipleFeedsAsync(packageSources, nugetApiManager, packageIdentity, packageVersion, cancellationToken).ConfigureAwait(false);
-                if (nuGetPackageMetadata != null && nuGetPackageMetadata.Source.Source.Contains("api.nuget.org"))
+                if (nuGetPackageMetadata != null && nuGetPackageMetadata.Source.Source.Equals(NugetOrgFeed))
                 {
                     packageTemplates = await CliTemplateSearchCoordinator.SearchForPackageTemplatesAsync(
                         _engineEnvironmentSettings,
@@ -472,7 +472,10 @@ namespace Microsoft.TemplateEngine.Cli
         {
             reporter.WriteLine($"{packageMetadata.Identity.Id}");
             WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_Version, packageMetadata.PackageVersion.ToString(), reporter, 1);
-            WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_PrefixReserved, packageMetadata.PrefixReserved.ToString(), reporter, 1);
+            if (packageMetadata.PrefixReserved != null && packageMetadata.Source.Source.Equals(NugetOrgFeed))
+            {
+                WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_PrefixReserved, packageMetadata.PrefixReserved.ToString(), reporter, 1);
+            }
             WriteIfNotNull(LocalizableStrings.DetailsCommand_Property_Description, packageMetadata.Description, reporter, 1);
 
             string sourceFeed = packageMetadata.Source.Source == packageMetadata.Source.Name ? packageMetadata.Source.Source : $"{packageMetadata.Source.Name} [{packageMetadata.Source.Source}]";
@@ -632,7 +635,7 @@ namespace Microsoft.TemplateEngine.Cli
                     reporter.WriteCommand(
                         Example
                             .For<InstallCommand>(args.ParseResult)
-                            .WithArgument(InstallCommand.NameArgument, installRequests.Select(ir => ir.DisplayName).ToArray())
+                            .WithArgument(BaseInstallCommand.NameArgument, installRequests.Select(ir => ir.DisplayName).ToArray())
                             .WithOption(SharedOptions.ForceOption));
                     return false;
                 }
@@ -650,7 +653,7 @@ namespace Microsoft.TemplateEngine.Cli
             IReadOnlyList<IManagedTemplatePackage> templatePackages = await _templatePackageManager.GetManagedTemplatePackagesAsync(false, cancellationToken).ConfigureAwait(false);
 
             var packagesToUninstall = new Dictionary<IManagedTemplatePackageProvider, List<IManagedTemplatePackage>>();
-            List<string> notFoundPackages = new List<string>();
+            List<string> notFoundPackages = new();
             foreach (var requestedPackageIdentifier in commandArgs.TemplatePackages)
             {
                 bool templatePackageIdentified = false;
@@ -733,7 +736,7 @@ namespace Microsoft.TemplateEngine.Cli
                                  Example
                                     .For<NewCommand>(commandArgs.ParseResult)
                                     .WithSubcommand<UninstallCommand>()
-                                    .WithArgument(UninstallCommand.NameArgument));
+                                    .WithArgument(BaseUninstallCommand.NameArgument));
                         }
                         else
                         {
@@ -741,7 +744,7 @@ namespace Microsoft.TemplateEngine.Cli
                                  Example
                                     .For<NewCommand>(commandArgs.ParseResult)
                                     .WithSubcommand<UninstallCommand>()
-                                    .WithArgument(UninstallCommand.NameArgument, managedPackages.First().Identifier));
+                                    .WithArgument(BaseUninstallCommand.NameArgument, managedPackages.First().Identifier));
                         }
 
                         //TODO:
@@ -836,12 +839,12 @@ namespace Microsoft.TemplateEngine.Cli
                     Example
                         .For<NewCommand>(args.ParseResult)
                         .WithSubcommand<InstallCommand>()
-                        .WithArgument(InstallCommand.NameArgument, $"<package>::<version>"));
+                        .WithArgument(BaseInstallCommand.NameArgument, $"<package>::<version>"));
                 Reporter.Output.WriteCommand(
                       Example
                           .For<NewCommand>(args.ParseResult)
                           .WithSubcommand<InstallCommand>()
-                          .WithArgument(InstallCommand.NameArgument, $"{displayableResults.First().Identifier}::{displayableResults.First().LatestVersion}"));
+                          .WithArgument(BaseInstallCommand.NameArgument, $"{displayableResults.First().Identifier}::{displayableResults.First().LatestVersion}"));
                 Reporter.Output.WriteLine();
                 Reporter.Output.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Update_Info_UpdateAllCommandHeader);
                 Reporter.Output.WriteCommand(
@@ -913,7 +916,7 @@ namespace Microsoft.TemplateEngine.Cli
                     Example
                         .For<NewCommand>(args.ParseResult)
                         .WithSubcommand<UninstallCommand>()
-                        .WithArgument(UninstallCommand.NameArgument, managedSource.Identifier),
+                        .WithArgument(BaseUninstallCommand.NameArgument, managedSource.Identifier),
                     indentLevel: 2);
 
                 Reporter.Output.WriteLine();
@@ -995,7 +998,7 @@ namespace Microsoft.TemplateEngine.Cli
                               string.Format(
                                   LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled,
                                   packageToInstall).Bold().Red());
-                        Reporter.Error.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled_Hint, InstallCommand.ForceOption.Aliases.First());
+                        Reporter.Error.WriteLine(LocalizableStrings.TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled_Hint, BaseInstallCommand.ForceOption.Aliases.First());
                         Reporter.Error.WriteCommand(Example.For<InstallCommand>(parseResult).WithArgument(BaseInstallCommand.NameArgument, packageToInstall).WithOption(BaseInstallCommand.ForceOption));
 
                         break;
@@ -1088,8 +1091,8 @@ namespace Microsoft.TemplateEngine.Cli
             try
             {
                 currentDirectory = Directory.GetCurrentDirectory();
-                ISettings settings = global::NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory);
-                PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+                ISettings settings = Settings.LoadDefaultSettings(currentDirectory);
+                PackageSourceProvider packageSourceProvider = new(settings);
                 defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
                 if (includeNuGetFeed)
                 {
@@ -1099,7 +1102,7 @@ namespace Microsoft.TemplateEngine.Cli
             }
             catch (Exception ex)
             {
-                throw new Exception(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResorces, currentDirectory), ex);
+                throw new Exception(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResources, currentDirectory), ex);
             }
 
             if (additionalSources == null || !additionalSources.Any())
@@ -1111,7 +1114,7 @@ namespace Microsoft.TemplateEngine.Cli
                 return defaultSources;
             }
 
-            List<PackageSource> customSources = new List<PackageSource>();
+            List<PackageSource> customSources = new();
             foreach (string source in additionalSources)
             {
                 if (string.IsNullOrWhiteSpace(source))
@@ -1123,10 +1126,10 @@ namespace Microsoft.TemplateEngine.Cli
                     Reporter.Verbose.WriteLine($"Custom source {source} is already loaded from default configuration.");
                     continue;
                 }
-                PackageSource packageSource = new PackageSource(source);
+                PackageSource packageSource = new(source);
                 if (packageSource.TrySourceAsUri == null)
                 {
-                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResorce, source));
+                    Reporter.Output.WriteLine(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResource, source));
                     continue;
                 }
                 customSources.Add(packageSource);

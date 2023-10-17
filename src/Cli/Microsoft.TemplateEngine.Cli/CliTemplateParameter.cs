@@ -6,7 +6,6 @@ using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Globalization;
-using System.Text;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -28,9 +27,9 @@ namespace Microsoft.TemplateEngine.Cli
     /// </summary>
     internal class CliTemplateParameter
     {
-        private readonly List<string> _shortNameOverrides = new List<string>();
+        private readonly List<string> _shortNameOverrides = new();
 
-        private readonly List<string> _longNameOverrides = new List<string>();
+        private readonly List<string> _longNameOverrides = new();
 
         private readonly TemplateParameterPrecedence _precedence;
 
@@ -459,7 +458,7 @@ namespace Microsoft.TemplateEngine.Cli
 
         private string GetOptionDescription()
         {
-            StringBuilder displayValue = new StringBuilder(255);
+            StringBuilder displayValue = new(255);
             displayValue.AppendLine(Description);
 
             string? precedenceValue = GetPrecedenceInfo(_precedence);

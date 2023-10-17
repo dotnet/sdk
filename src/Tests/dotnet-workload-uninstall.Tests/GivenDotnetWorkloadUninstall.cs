@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -14,11 +9,6 @@ using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Uninstall;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
 {
@@ -159,6 +149,17 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             var sdkFeatureVersion = "6.0.100";
             var uninstallingWorkload = "mock-1";
 
+            static void CreateFile(string path)
+            {
+                string directory = Path.GetDirectoryName(path);
+                Directory.CreateDirectory(directory);
+                using var _ = File.Create(path);
+            }
+
+            //  Create fake SDK directories (so garbage collector will see them as installed versions)
+            CreateFile(Path.Combine(dotnetRoot, "sdk", prevSdkFeatureVersion, "dotnet.dll"));
+            CreateFile(Path.Combine(dotnetRoot, "sdk", sdkFeatureVersion, "dotnet.dll"));
+
             string installRoot = userLocal ? userProfileDir : dotnetRoot;
             if (userLocal)
             {
@@ -205,8 +206,9 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
             var manifestUpdater = new MockWorkloadManifestUpdater();
             var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
-            var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolver: workloadResolver, nugetPackageDownloader: nugetDownloader,
-                workloadManifestUpdater: manifestUpdater, userProfileDir: userProfileDir, version: sdkFeatureVersion, dotnetDir: dotnetRoot, tempDirPath: testDirectory, installedFeatureBand: sdkFeatureVersion);
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+            var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
+                workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute();
         }
 
@@ -218,15 +220,15 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot, userLocal, userProfileDir);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
 
-            var command = new List<string> { "dotnet", "workload", "uninstall", uninstallingWorkload};
-            if(args != null)
+            var command = new List<string> { "dotnet", "workload", "uninstall", uninstallingWorkload };
+            if (args != null)
             {
                 command.AddRange(args);
             }
 
             var uninstallParseResult = Parser.Instance.Parse(command);
-            var uninstallCommand = new WorkloadUninstallCommand(uninstallParseResult, reporter: _reporter, workloadResolver, nugetDownloader,
-                dotnetDir: dotnetRoot, version: sdkFeatureVersion, userProfileDir: userProfileDir);
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+            var uninstallCommand = new WorkloadUninstallCommand(uninstallParseResult, reporter: _reporter, workloadResolverFactory, nugetDownloader);
             return uninstallCommand.Execute();
         }
     }

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
@@ -47,7 +46,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 await templatePackageManager.GetManagedTemplatePackagesAsync(force: false, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(environmentSettings);
-            CliSearchFiltersFactory searchFiltersFactory = new CliSearchFiltersFactory(templatePackages);
+            CliSearchFiltersFactory searchFiltersFactory = new(templatePackages);
 
             IReadOnlyList<SearchResult>? searchResults = await searchCoordinator.SearchAsync(
                 searchFiltersFactory.GetPackFilter(commandArgs),
@@ -95,13 +94,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                  Example
                      .For<NewCommand>(commandArgs.ParseResult)
                      .WithSubcommand<InstallCommand>()
-                     .WithArgument(InstallCommand.NameArgument));
+                     .WithArgument(BaseInstallCommand.NameArgument));
                 Reporter.Output.WriteLine(LocalizableStrings.Generic_ExampleHeader);
                 Reporter.Output.WriteCommand(
                    Example
                        .For<NewCommand>(commandArgs.ParseResult)
                        .WithSubcommand<InstallCommand>()
-                       .WithArgument(InstallCommand.NameArgument, packageIdToShow));
+                       .WithArgument(BaseInstallCommand.NameArgument, packageIdToShow));
                 return NewCommandStatus.Success;
             }
             return NewCommandStatus.NotFound;
@@ -229,7 +228,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             string? defaultLanguage,
             IEnvironment environment)
         {
-            List<SearchResultTableRow> templateGroupsForDisplay = new List<SearchResultTableRow>();
+            List<SearchResultTableRow> templateGroupsForDisplay = new();
 
             foreach (var packSearchResult in results)
             {
@@ -253,13 +252,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             // && !commandInput.RemainingParameters.Any())
             {
                 Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Error_NoTemplateName.Red().Bold());
-                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", SearchCommand.SupportedFilters.Select(f => $"'{f.OptionFactory().Name}'")));
+                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", BaseSearchCommand.SupportedFilters.Select(f => $"'{f.OptionFactory().Name}'")));
                 Reporter.Error.WriteLine(LocalizableStrings.Generic_ExamplesHeader);
                 Reporter.Error.WriteCommand(
                     Example
                         .For<NewCommand>(commandArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArgument(SearchCommand.NameArgument, "web"));
+                        .WithArgument(BaseSearchCommand.NameArgument, "web"));
 
                 Reporter.Error.WriteCommand(
                      Example
@@ -271,7 +270,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                  Example
                     .For<NewCommand>(commandArgs.ParseResult)
                     .WithSubcommand<SearchCommand>()
-                    .WithArgument(SearchCommand.NameArgument, "web")
+                    .WithArgument(BaseSearchCommand.NameArgument, "web")
                     .WithOption(SharedOptionsFactory.CreateLanguageOption(), "C#"));
 
                 return false;
@@ -296,7 +295,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             //IEnumerable<string> appliedTemplateParameters = templateParameters?
             //       .Select(param => string.IsNullOrWhiteSpace(param.Value) ? param.Key : $"{param.Key}='{param.Value}'") ?? Array.Empty<string>();
 
-            StringBuilder inputParameters = new StringBuilder();
+            StringBuilder inputParameters = new();
             string? mainCriteria = commandArgs.SearchNameCriteria;
             if (!string.IsNullOrWhiteSpace(mainCriteria))
             {

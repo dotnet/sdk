@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -83,7 +79,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             }
             catch (Exception ex)
             {
-                Log.LogErrorFromException(ex, showStackTrace: true, showDetail:true, file: null);
+                Log.LogErrorFromException(ex, showStackTrace: true, showDetail: true, file: null);
             }
             return !Log.HasLoggedErrors;
         }

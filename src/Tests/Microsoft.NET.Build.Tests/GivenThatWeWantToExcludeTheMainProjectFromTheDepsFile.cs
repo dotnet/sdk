@@ -1,20 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Xml.Linq;
-using Xunit;
-
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToExcludeTheMainProjectFromTheDepsFile : SdkTest
@@ -26,14 +12,14 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_builds_successfully()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "ExcludeMainProjectFromDeps",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
             };
 
-            TestProject referencedProject = new TestProject()
+            TestProject referencedProject = new()
             {
                 Name = "ReferencedProject",
                 TargetFrameworks = "netstandard2.0",

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
-
 namespace Microsoft.TemplateEngine.Cli.TabularOutput
 {
     internal class TabularOutput
@@ -15,9 +13,9 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
 
     internal class TabularOutput<T>
     {
-        private readonly List<ColumnDefinition> _columns = new List<ColumnDefinition>();
+        private readonly List<ColumnDefinition> _columns = new();
         private readonly IEnumerable<T> _rowDataItems;
-        private readonly List<Tuple<int, bool, IComparer<string>>> _ordering = new List<Tuple<int, bool, IComparer<string>>>();
+        private readonly List<Tuple<int, bool, IComparer<string>>> _ordering = new();
         private readonly TabularOutputSettings _settings;
 
         internal TabularOutput(TabularOutputSettings settings, IEnumerable<T> rows)
@@ -62,7 +60,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             column = null;
             if ((_settings.ColumnsToDisplay.Count == 0 && defaultColumn) || showAlways || (!string.IsNullOrWhiteSpace(columnName) && _settings.ColumnsToDisplay.Contains(columnName)) || _settings.DisplayAllColumns)
             {
-                ColumnDefinition c = new ColumnDefinition(
+                ColumnDefinition c = new(
                     _settings,
                     header,
                     binder,
@@ -77,8 +75,8 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
 
         internal string Layout(int indent = 0)
         {
-            Dictionary<int, int> columnWidthLookup = new Dictionary<int, int>();
-            List<TextWrapper[]> grid = new List<TextWrapper[]>();
+            Dictionary<int, int> columnWidthLookup = new();
+            List<TextWrapper[]> grid = new();
 
             TextWrapper[] header = new TextWrapper[_columns.Count];
             int headerLines = 0;
@@ -106,7 +104,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
 
             CalculateColumnWidth(columnWidthLookup);
 
-            StringBuilder b = new StringBuilder();
+            StringBuilder b = new();
 
             // Render column headers, if any exist
             if (_columns.Any(x => !string.IsNullOrEmpty(x.Header)))
@@ -380,7 +378,7 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
 
             internal TextWrapper(string text, int maxWidth, string newLine, string shrinkReplacement)
             {
-                List<string> lines = new List<string>();
+                List<string> lines = new();
                 int position = 0;
                 int realMaxWidth = 0;
 

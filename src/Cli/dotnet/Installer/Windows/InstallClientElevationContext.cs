@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Reflection;
@@ -76,7 +75,7 @@ namespace Microsoft.DotNet.Installer.Windows
             }
         }
 
-        private void ServerExited(Object sender, EventArgs e)
+        private void ServerExited(object sender, EventArgs e)
         {
             _log?.LogMessage($"Elevated command instance has exited.");
         }

@@ -10,14 +10,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     internal class DetailsCommand : BaseCommand<DetailsCommandArgs>
     {
-        private static NugetApiManager _nugetApiManager = new NugetApiManager();
+        private static NugetApiManager _nugetApiManager = new();
 
         internal DetailsCommand(
             Func<ParseResult, ITemplateEngineHost> hostBuilder)
             : base(hostBuilder, "details", SymbolStrings.Command_Details_Description)
         {
             Arguments.Add(NameArgument);
-            Options.Add(VersionOption);
             Options.Add(InteractiveOption);
             Options.Add(AddSourceOption);
         }
@@ -28,17 +27,18 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Arity = new ArgumentArity(1, 1)
         };
 
-        internal static CliOption<string> VersionOption { get; } = new("--version", "-version")
-        {
-            Description = LocalizableStrings.DetailsCommand_Option_Version,
-            Arity = new ArgumentArity(1, 1)
-        };
+        // Option disabled until https://github.com/dotnet/templating/issues/6811 is solved
+        //internal static CliOption<string> VersionOption { get; } = new("-version", "--version")
+        //{
+        //    Description = LocalizableStrings.DetailsCommand_Option_Version,
+        //    Arity = new ArgumentArity(1, 1)
+        //};
 
         internal virtual CliOption<bool> InteractiveOption { get; } = SharedOptions.InteractiveOption;
 
         internal virtual CliOption<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
 
-        protected async override Task<NewCommandStatus> ExecuteAsync(
+        protected override async Task<NewCommandStatus> ExecuteAsync(
             DetailsCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
@@ -59,6 +59,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return status;
         }
 
-        protected override DetailsCommandArgs ParseContext(ParseResult parseResult) => new DetailsCommandArgs(this, parseResult);
+        protected override DetailsCommandArgs ParseContext(ParseResult parseResult) => new(this, parseResult);
     }
 }

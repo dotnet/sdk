@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Add.ProjectToProjectReference;
 using LocalizableStrings = Microsoft.DotNet.Tools.Add.ProjectToProjectReference.LocalizableStrings;
@@ -10,7 +9,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class AddProjectToProjectReferenceParser
     {
-        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new CliArgument<IEnumerable<string>>(LocalizableStrings.ProjectPathArgumentName)
+        public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.ProjectPathArgumentName)
         {
             Description = LocalizableStrings.ProjectPathArgumentDescription,
             Arity = ArgumentArity.OneOrMore
@@ -20,7 +19,7 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.CmdFrameworkDescription,
             HelpName = Tools.Add.PackageReference.LocalizableStrings.CmdFramework
-                
+
         }.AddCompletions(Complete.TargetFrameworksFromProjectFile);
 
         public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption;

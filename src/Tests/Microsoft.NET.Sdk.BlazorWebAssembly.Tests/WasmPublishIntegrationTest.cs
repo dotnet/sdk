@@ -1,21 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.IO.Compression;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
 using System.Text.Json;
-using System.Xml.Linq;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using FluentAssertions;
-using Xunit;
-using Xunit.Abstractions;
-using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 using Microsoft.NET.Sdk.WebAssembly;
+using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
@@ -120,7 +109,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     reference.Name = "Reference";
                     reference.Add(new XElement(
                         "HintPath",
-                        Path.Combine("..", "razorclasslibrary", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "RazorClassLibrary.dll")));
+                        Path.Combine("..", "razorclasslibrary", "bin", "Debug", ToolsetInfo.NextTargetFramework, "RazorClassLibrary.dll")));
                 }
             });
 
@@ -525,7 +514,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var bootJsonData = new FileInfo(Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json"));
             bootJsonData.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.wasm\"");
-            bootJsonData.Should().Contain("\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
+            bootJsonData.Should().Contain("\"fr\"");
+            bootJsonData.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
 
             VerifyBootManifestHashes(testInstance, blazorPublishDirectory);
         }
@@ -633,8 +623,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
 
             var assemblies = bootJsonData.resources.assembly;
             assemblies.Should().ContainKey("blazorwasm.wasm");
@@ -643,8 +632,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             bootJsonData.resources.satelliteResources.Should().BeNull();
 
-            bootJsonData.config.Should().Contain("appsettings.json");
-            bootJsonData.config.Should().Contain("appsettings.development.json");
+            bootJsonData.config.Should().Contain("../appsettings.json");
+            bootJsonData.config.Should().Contain("../appsettings.development.json");
         }
 
         [Fact]
@@ -692,7 +681,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             });
 
             bootJsonData.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.wasm\"");
-            bootJsonData.Should().Contain("\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
+            bootJsonData.Should().Contain("\"fr\"");
+            bootJsonData.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
         }
 
         [Fact]
@@ -1067,9 +1057,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             });
 
             var bootJsonData = new FileInfo(Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json"));
-            bootJsonData.Should().Contain("\"es-ES\\/classlibrarywithsatelliteassemblies.resources.wasm\"");
-            bootJsonData.Should().Contain("\"ja\\/blazorwasm.resources.wasm\"");
-            bootJsonData.Should().Contain("\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
+            bootJsonData.Should().Contain("\"es-ES\"");
+            bootJsonData.Should().Contain("\"ja\"");
+            bootJsonData.Should().Contain("\"fr\"");
+            bootJsonData.Should().Contain("\"classlibrarywithsatelliteassemblies.resources.wasm\"");
+            bootJsonData.Should().Contain("\"blazorwasm.resources.wasm\"");
+            bootJsonData.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
 
             VerifyBootManifestHashes(testInstance, blazorPublishDirectory);
         }
@@ -1332,13 +1325,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(publishOutputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.Invariant);
-            var runtime = bootJsonData.resources.runtime;
+            bootJsonData.globalizationMode.Should().Be("invariant");
 
-            runtime.Should().ContainKey("dotnet.native.wasm");
-            runtime.Should().NotContainKey("icudt.dat");
-            runtime.Should().NotContainKey("icudt_EFIGS.dat");
-
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.icu.Should().BeNull();
 
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt.dat")).Should().NotExist();

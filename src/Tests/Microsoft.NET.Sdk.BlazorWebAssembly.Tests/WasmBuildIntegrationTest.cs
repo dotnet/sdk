@@ -1,21 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
-using Microsoft.AspNetCore.Razor.Tasks;
-using Microsoft.NET.TestFramework;
 using Microsoft.NET.Sdk.WebAssembly;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
-using static NuGet.Client.ManagedCodeConventions;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
@@ -24,6 +12,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         public WasmBuildIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
 
         private static string customIcuFilename = "icudt_custom.dat";
+        private static string fullIcuFilename = "icudt.dat";
+        private static string hybridIcuFilename = "icudt_hybrid.dat";
+        private static string[] icuShardFilenames = new string[] {
+            "icudt_EFIGS.dat",
+            "icudt_CJK.dat",
+            "icudt_no_CJK.dat"
+        };
 
         [Fact]
         public void BuildMinimal_Works()
@@ -98,7 +93,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     reference.Name = "Reference";
                     reference.Add(new XElement(
                         "HintPath",
-                        Path.Combine("..", "razorclasslibrary", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "RazorClassLibrary.dll")));
+                        Path.Combine("..", "razorclasslibrary", "bin", "Debug", ToolsetInfo.NextTargetFramework, "RazorClassLibrary.dll")));
                 }
             });
 
@@ -178,8 +173,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
 
             var assemblies = bootJsonData.resources.assembly;
             assemblies.Should().ContainKey("blazorwasm.wasm");
@@ -192,8 +186,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             bootJsonData.resources.satelliteResources.Should().BeNull();
 
-            bootJsonData.config.Should().Contain("appsettings.json");
-            bootJsonData.config.Should().Contain("appsettings.development.json");
+            bootJsonData.config.Should().Contain("../appsettings.json");
+            bootJsonData.config.Should().Contain("../appsettings.development.json");
         }
 
         [Fact]
@@ -217,8 +211,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
 
             var assemblies = bootJsonData.resources.assembly;
             assemblies.Should().ContainKey("blazorwasm.wasm");
@@ -257,9 +250,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.native.wasm");
-            runtime.Should().NotContainKey("dotnet.timezones.blat");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.runtime.Should().BeNull();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.timezones.blat")).Should().NotExist();
@@ -289,18 +281,17 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.Invariant);
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.globalizationMode.Should().Be("invariant");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
 
-            runtime.Should().NotContainKey("icudt.dat");
-            runtime.Should().NotContainKey("icudt_EFIGS.dat");
+            bootJsonData.resources.icu.Should().BeNull();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_CJK.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
         }
 
         [Fact]
@@ -328,22 +319,21 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.Invariant);
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.globalizationMode.Should().Be("invariant");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
 
-            runtime.Should().NotContainKey("icudt.dat");
-            runtime.Should().NotContainKey("icudt_EFIGS.dat");
+            bootJsonData.resources.icu.Should().BeNull();
 
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt_CJK.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
         }
 
         [Fact]
-        public void Build_WithBlazorWebAssemblyLoadCustomGlobalizationData_SetsICUDataMode()
+        public void Build_WithBlazorWebAssemblyLoadCustomGlobalizationData_SetsGlobalizationMode()
         {
             // Arrange
             var testAppName = "BlazorWasmMinimal";
@@ -366,26 +356,27 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.Custom);
-            var runtime = bootJsonData.resources.runtime;
+            bootJsonData.globalizationMode.Should().Be("custom");
 
-            runtime.Should().ContainKey("dotnet.native.wasm");
-            runtime.Should().ContainKey(customIcuFilename);
-            runtime.Should().NotContainKey("icudt.dat");
-            runtime.Should().NotContainKey("icudt_CJK.dat");
-            runtime.Should().NotContainKey("icudt_EFIGS.dat");
-            runtime.Should().NotContainKey("icudt_no_CJK.dat");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.icu.Should().ContainKey(customIcuFilename);
+            bootJsonData.resources.icu.Should().NotContainKey(fullIcuFilename);
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
+            }
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", customIcuFilename)).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_CJK.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
         }
 
         [Fact]
-        public void Publish_WithBlazorWebAssemblyLoadCustomGlobalizationData_SetsICUDataMode()
+        public void Publish_WithBlazorWebAssemblyLoadCustomGlobalizationData_SetsGlobalizationMode()
         {
             var testAppName = "BlazorHosted";
             var testInstance = CreateAspNetSdkTestAsset(testAppName);
@@ -408,22 +399,23 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(publishDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.Custom);
-            var runtime = bootJsonData.resources.runtime;
+            bootJsonData.globalizationMode.Should().Be("custom");
 
-            runtime.Should().ContainKey("dotnet.native.wasm");
-            runtime.Should().ContainKey(customIcuFilename);
-            runtime.Should().NotContainKey("icudt.dat");
-            runtime.Should().NotContainKey("icudt_CJK.dat");
-            runtime.Should().NotContainKey("icudt_EFIGS.dat");
-            runtime.Should().NotContainKey("icudt_no_CJK.dat");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.icu.Should().ContainKey(customIcuFilename);
+            bootJsonData.resources.icu.Should().NotContainKey(fullIcuFilename);
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
+            }
 
             new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", customIcuFilename)).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt_CJK.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().NotExist();
+            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
         }
 
         [Fact]
@@ -450,22 +442,27 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.All);
-            var runtime = bootJsonData.resources.runtime;
+            bootJsonData.globalizationMode.Should().Be("all");
 
-            runtime.Should().ContainKey("dotnet.native.wasm");
-            runtime.Should().ContainKey("icudt.dat");
-            runtime.Should().ContainKey("icudt_EFIGS.dat");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.icu.Should().ContainKey(fullIcuFilename);
+            bootJsonData.resources.icu.Should().NotContainKey(hybridIcuFilename);
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
+            }
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt.dat")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_CJK.dat")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", hybridIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
         }
 
         [Fact]
-        public void Publish_WithBlazorWebAssemblyLoadAllGlobalizationData_SetsICUDataMode()
+        public void Publish_WithBlazorWebAssemblyLoadAllGlobalizationData_SetsGlobalizationMode()
         {
             // Arrange
             var testAppName = "BlazorHosted";
@@ -489,18 +486,23 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(publishDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.All);
-            var runtime = bootJsonData.resources.runtime;
+            bootJsonData.globalizationMode.Should().Be("all");
 
-            runtime.Should().ContainKey("dotnet.native.wasm");
-            runtime.Should().ContainKey("icudt.dat");
-            runtime.Should().ContainKey("icudt_EFIGS.dat");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.icu.Should().ContainKey(fullIcuFilename);
+            bootJsonData.resources.icu.Should().NotContainKey(hybridIcuFilename);
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
+            }
 
             new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt.dat")).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt_CJK.dat")).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat")).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().Exist();
+            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().Exist();
+            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", hybridIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
         }
 
         [Fact]
@@ -573,7 +575,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var bootJsonPath = new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "blazor.boot.json"));
             bootJsonPath.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.wasm\"");
-            bootJsonPath.Should().Contain("\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
+            bootJsonPath.Should().Contain("\"fr\"");
+            bootJsonPath.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
         }
 
         [Fact]
@@ -736,7 +739,7 @@ public class TestReference
         private void BuildWasmMinimalAndValidateBootConfig((string name, string value)[] properties, Action<BootJsonData> validateBootConfig)
         {
             var testAppName = "BlazorWasmMinimal";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: String.Join("-", properties.Select(p => p.name + p.value ?? "null")));
+            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: string.Join("-", properties.Select(p => p.name + p.value ?? "null")));
 
             foreach (var property in properties)
             {

@@ -1,13 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.Win32.Msi;
@@ -137,7 +133,7 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             if (!Error.Success(error))
             {
-                StringBuilder sb = new StringBuilder(2048);
+                StringBuilder sb = new(2048);
                 NativeMethods.FormatMessage((uint)(FormatMessage.FromSystem | FormatMessage.IgnoreInserts),
                     IntPtr.Zero, error, 0, sb, (uint)sb.Capacity, IntPtr.Zero);
                 string errorDetail = sb.ToString().TrimEnd(Environment.NewLine.ToCharArray());

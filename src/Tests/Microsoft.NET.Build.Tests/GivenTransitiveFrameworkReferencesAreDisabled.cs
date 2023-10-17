@@ -1,21 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
-using FluentAssertions.Collections;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -164,14 +150,13 @@ namespace Microsoft.NET.Build.Tests
 
             referencedProject.FrameworkReferences.Add("Microsoft.AspNetCore.App");
 
-            var testProject = new TestProject()
+            var testProject = new TestProject
             {
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true,
-                SelfContained = "true"
+                SelfContained = "true",
+                RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid()
             };
-
-            testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid();
             testProject.AdditionalProperties["DisableTransitiveFrameworkReferenceDownloads"] = "True";
             testProject.AdditionalProperties["RestorePackagesPath"] = nugetPackagesFolder;
 

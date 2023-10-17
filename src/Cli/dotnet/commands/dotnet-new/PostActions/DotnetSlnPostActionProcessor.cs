@@ -3,16 +3,12 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
-using Microsoft.TemplateEngine.Utils;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 {

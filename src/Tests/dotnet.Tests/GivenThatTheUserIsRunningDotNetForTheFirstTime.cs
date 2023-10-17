@@ -1,19 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Collections.Generic;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Configurer;
-using Xunit;
-using Xunit.Abstractions;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using System.Runtime.CompilerServices;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 
 //[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -60,7 +50,7 @@ namespace Microsoft.DotNet.Tests
         public DirectoryInfo DotDotnetFolder;
         public string TestDirectory;
 
-        public Dictionary<string, string> ExtraEnvironmentVariables = new Dictionary<string, string>();
+        public Dictionary<string, string> ExtraEnvironmentVariables = new();
 
         public void Init(ITestOutputHelper log, TestAssetsManager testAssets)
         {
@@ -81,7 +71,7 @@ namespace Microsoft.DotNet.Tests
 
         public void Dispose()
         {
-            
+
         }
     }
 
@@ -122,7 +112,7 @@ namespace Microsoft.DotNet.Tests
                 .Should()
                 .ContainVisuallySameFragment(string.Format(
                     Configurer.LocalizableStrings.FirstTimeMessageWelcome,
-                    DotnetFirstTimeUseConfigurer.DeriveDotnetVersionFromProductVersion(expectedVersion),
+                    DotnetFirstTimeUseConfigurer.ParseDotNetVersion(expectedVersion),
                     expectedVersion))
                 .And.ContainVisuallySameFragment(Configurer.LocalizableStrings.FirstTimeMessageMoreInformation)
                 .And.NotContain("Restore completed in");
@@ -178,7 +168,7 @@ namespace Microsoft.DotNet.Tests
                 .Should()
                 .ContainVisuallySameFragment(string.Format(
                     Configurer.LocalizableStrings.FirstTimeMessageWelcome,
-                    DotnetFirstTimeUseConfigurer.DeriveDotnetVersionFromProductVersion(expectedVersion),
+                    DotnetFirstTimeUseConfigurer.ParseDotNetVersion(expectedVersion),
                     expectedVersion))
                 .And.ContainVisuallySameFragment(Configurer.LocalizableStrings.FirstTimeMessageMoreInformation);
         }

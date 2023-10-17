@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -22,17 +19,17 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            Dictionary<string, ITaskItem> facadeDict = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, ITaskItem> facadeDict = new(StringComparer.OrdinalIgnoreCase);
             foreach (var facade in Facades)
             {
                 string filename = facade.GetMetadata("FileName");
-                TaskItem facadeWithMetadata = new TaskItem(filename);
+                TaskItem facadeWithMetadata = new(filename);
                 facadeWithMetadata.SetMetadata(MetadataKeys.HintPath, facade.ItemSpec);
                 facadeWithMetadata.SetMetadata(MetadataKeys.Private, "false");
                 facadeDict[filename] = facadeWithMetadata;
             }
 
-            List<ITaskItem> updatedReferences = new List<ITaskItem>();
+            List<ITaskItem> updatedReferences = new();
 
             foreach (var reference in References)
             {

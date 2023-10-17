@@ -1,12 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System;
-using System.Linq;
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Utils;
 using System.Globalization;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry
 {
@@ -23,8 +20,8 @@ namespace Microsoft.DotNet.Cli.Telemetry
         public IEnumerable<ApplicationInsightsEntryFormat> Filter(object objectToFilter)
         {
             var result = new List<ApplicationInsightsEntryFormat>();
-            Dictionary<string,double> measurements = null;
-             if (objectToFilter is Tuple<ParseResult, Dictionary<string,double>> parseResultWithMeasurements)
+            Dictionary<string, double> measurements = null;
+            if (objectToFilter is Tuple<ParseResult, Dictionary<string, double>> parseResultWithMeasurements)
             {
                 objectToFilter = parseResultWithMeasurements.Item1;
                 measurements = parseResultWithMeasurements.Item2;
@@ -84,7 +81,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
                 }).ToList();
         }
 
-        private static List<IParseResultLogRule> ParseResultLogRules => new List<IParseResultLogRule>
+        private static List<IParseResultLogRule> ParseResultLogRules => new()
         {
             new AllowListToSendFirstArgument(new HashSet<string> {"new", "help"}),
             new AllowListToSendFirstAppliedOptions(new HashSet<string> {"add", "remove", "list", "sln", "nuget"}),
@@ -193,7 +190,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
             return s;
         }
 
-        private Dictionary<string,double> RemoveZeroTimes(Dictionary<string,double> measurements)
+        private Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
         {
             if (measurements != null)
             {

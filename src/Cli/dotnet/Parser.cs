@@ -1,13 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Help;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
@@ -140,9 +136,11 @@ namespace Microsoft.DotNet.Cli
         /// Implements token-per-line response file handling for the CLI. We use this instead of the built-in S.CL handling
         /// to ensure backwards-compatibility with MSBuild.
         /// </summary>
-        public static bool TokenPerLine(string tokenToReplace, out IReadOnlyList<string> replacementTokens, out string errorMessage) {
+        public static bool TokenPerLine(string tokenToReplace, out IReadOnlyList<string> replacementTokens, out string errorMessage)
+        {
             var filePath = Path.GetFullPath(tokenToReplace);
-            if (File.Exists(filePath)) {
+            if (File.Exists(filePath))
+            {
                 var lines = File.ReadAllLines(filePath);
                 var trimmedLines =
                     lines
@@ -155,7 +153,9 @@ namespace Microsoft.DotNet.Cli
                 replacementTokens = trimmedLines.ToArray();
                 errorMessage = null;
                 return true;
-            } else {
+            }
+            else
+            {
                 replacementTokens = null;
                 errorMessage = string.Format(CommonLocalizableStrings.ResponseFileNotFound, tokenToReplace);
                 return false;
@@ -202,7 +202,8 @@ namespace Microsoft.DotNet.Cli
         {
             private DotnetHelpBuilder(int maxWidth = int.MaxValue) : base(maxWidth) { }
 
-            public static Lazy<HelpBuilder> Instance = new(() => {
+            public static Lazy<HelpBuilder> Instance = new(() =>
+            {
                 int windowWidth;
                 try
                 {
@@ -276,7 +277,7 @@ namespace Microsoft.DotNet.Cli
                     option.EnsureHelpName();
                 }
 
-                if (command.Name.Equals(NuGetCommandParser.GetCommand().Name))
+                if (command.Equals(NuGetCommandParser.GetCommand()) || command.Parents.Any(parent => parent == NuGetCommandParser.GetCommand()))
                 {
                     NuGetCommand.Run(context.ParseResult);
                 }

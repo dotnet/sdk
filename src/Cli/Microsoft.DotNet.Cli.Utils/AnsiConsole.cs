@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-
 namespace Microsoft.DotNet.Cli.Utils
 {
     public class AnsiConsole
@@ -14,29 +11,29 @@ namespace Microsoft.DotNet.Cli.Utils
         private AnsiConsole(TextWriter writer)
         {
             Writer = writer;
-    
+
             OriginalForegroundColor = Console.ForegroundColor;
             _boldRecursion = ((int)OriginalForegroundColor & Light) != 0 ? 1 : 0;
 
             _ansiEnabled = string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("NO_COLOR"));
         }
-    
+
         private int _boldRecursion;
 
         public static AnsiConsole GetOutput()
         {
             return new AnsiConsole(Console.Out);
         }
-    
+
         public static AnsiConsole GetError()
         {
             return new AnsiConsole(Console.Error);
         }
-    
+
         public TextWriter Writer { get; }
-    
+
         public ConsoleColor OriginalForegroundColor { get; }
-    
+
         private void SetColor(ConsoleColor color)
         {
             if (!_ansiEnabled)
@@ -46,12 +43,12 @@ namespace Microsoft.DotNet.Cli.Utils
 
             int c = (int)color;
 
-            Console.ForegroundColor = 
+            Console.ForegroundColor =
                 c < 0 ? color :                                   // unknown, just use it
                 _boldRecursion > 0 ? (ConsoleColor)(c | Light) :  // ensure color is light
                 (ConsoleColor)(c & ~Light);                       // ensure color is dark
         }
-    
+
         private void SetBold(bool bold)
         {
             if (!_ansiEnabled)
@@ -64,7 +61,7 @@ namespace Microsoft.DotNet.Cli.Utils
             {
                 return;
             }
-            
+
             // switches on _boldRecursion to handle boldness
             SetColor(Console.ForegroundColor);
         }
@@ -79,7 +76,7 @@ namespace Microsoft.DotNet.Cli.Utils
         public void Write(string message)
         {
             var escapeScan = 0;
-            for (;;)
+            for (; ; )
             {
                 var escapeIndex = message.IndexOf("\x1b[", escapeScan, StringComparison.Ordinal);
                 if (escapeIndex == -1)
@@ -98,7 +95,7 @@ namespace Microsoft.DotNet.Cli.Utils
                     {
                         endIndex += 1;
                     }
-    
+
                     var text = message.Substring(escapeScan, escapeIndex - escapeScan);
                     Writer.Write(text);
                     if (endIndex == message.Length)
@@ -151,7 +148,7 @@ namespace Microsoft.DotNet.Cli.Utils
                             }
                             break;
                     }
-    
+
                     escapeScan = endIndex + 1;
                 }
             }

@@ -1,13 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.MSBuild;
-using Microsoft.DotNet.Cli;
-using System;
 using System.CommandLine;
-using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Tools.MSBuild;
 
 namespace Microsoft.DotNet.Tools.Clean
 {
@@ -21,7 +17,7 @@ namespace Microsoft.DotNet.Tools.Clean
         public static CleanCommand FromArgs(string[] args, string msbuildPath = null)
         {
 
-            var parser = Cli.Parser.Instance;
+            var parser = Parser.Instance;
             var result = parser.ParseFrom("dotnet clean", args);
             return FromParseResult(result, msbuildPath);
         }

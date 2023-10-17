@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -45,7 +44,7 @@ namespace Microsoft.TemplateEngine.Cli
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            ListTemplateResolver resolver = new ListTemplateResolver(_constraintManager, _templatePackageManager, _hostSpecificDataLoader);
+            ListTemplateResolver resolver = new(_constraintManager, _templatePackageManager, _hostSpecificDataLoader);
             TemplateResolutionResult resolutionResult = await resolver.ResolveTemplatesAsync(args, _defaultLanguage, cancellationToken).ConfigureAwait(false);
 
             //IReadOnlyDictionary<string, string?>? appliedParameterMatches = resolutionResult.GetAllMatchedParametersList();
@@ -54,7 +53,7 @@ namespace Microsoft.TemplateEngine.Cli
                 Reporter.Output.WriteLine(LocalizableStrings.TemplatesFoundMatchingInputParameters, GetInputParametersString(args));
                 Reporter.Output.WriteLine();
 
-                TabularOutputSettings settings = new TabularOutputSettings(_engineEnvironmentSettings.Environment, args);
+                TabularOutputSettings settings = new(_engineEnvironmentSettings.Environment, args);
 
                 TemplateGroupDisplay.DisplayTemplateList(
                     _engineEnvironmentSettings,
@@ -78,7 +77,7 @@ namespace Microsoft.TemplateEngine.Cli
                        Example
                            .For<NewCommand>(args.ParseResult)
                            .WithSubcommand<SearchCommand>()
-                           .WithArgument(SearchCommand.NameArgument));
+                           .WithArgument(BaseSearchCommand.NameArgument));
                     Reporter.Output.WriteLine();
                     return NewCommandStatus.Success;
                 }
@@ -110,7 +109,7 @@ namespace Microsoft.TemplateEngine.Cli
                         string.Format(
                             LocalizableStrings.TemplateListCoordinator_Error_FailedConstraints,
                             resolutionResult.ContraintsMismatchGroupCount,
-                            ListCommand.IgnoreConstraintsOption.Name)
+                            BaseListCommand.IgnoreConstraintsOption.Name)
                         .Bold().Red());
                 }
 
@@ -123,7 +122,7 @@ namespace Microsoft.TemplateEngine.Cli
                              Example
                                  .For<NewCommand>(args.ParseResult)
                                  .WithSubcommand<SearchCommand>()
-                                 .WithArgument(SearchCommand.NameArgument));
+                                 .WithArgument(BaseSearchCommand.NameArgument));
                 }
                 else
                 {
@@ -131,7 +130,7 @@ namespace Microsoft.TemplateEngine.Cli
                              Example
                                  .For<NewCommand>(args.ParseResult)
                                  .WithSubcommand<SearchCommand>()
-                                 .WithArgument(SearchCommand.NameArgument, args.ListNameCriteria));
+                                 .WithArgument(BaseSearchCommand.NameArgument, args.ListNameCriteria));
                 }
                 Reporter.Error.WriteLine();
                 return NewCommandStatus.NotFound;
@@ -188,7 +187,7 @@ namespace Microsoft.TemplateEngine.Cli
                      Example
                          .For<NewCommand>(args.ParseResult)
                          .WithSubcommand<SearchCommand>()
-                         .WithArgument(SearchCommand.NameArgument, "web"));
+                         .WithArgument(BaseSearchCommand.NameArgument, "web"));
 
             Reporter.Output.WriteLine();
 
@@ -204,7 +203,7 @@ namespace Microsoft.TemplateEngine.Cli
             //IEnumerable<string> appliedTemplateParameters = templateParameters?
             //       .Select(param => string.IsNullOrWhiteSpace(param.Value) ? param.Key : $"{param.Key}='{param.Value}'") ?? Array.Empty<string>();
 
-            StringBuilder inputParameters = new StringBuilder();
+            StringBuilder inputParameters = new();
             string? mainCriteria = args.ListNameCriteria;
             if (!string.IsNullOrWhiteSpace(mainCriteria))
             {
@@ -235,7 +234,7 @@ namespace Microsoft.TemplateEngine.Cli
             //            templateResolutionResult.IsParameterMismatchReason(parameter.Key))
             //       .Select(param => string.IsNullOrWhiteSpace(param.Value) ? param.Key : $"{param.Key}='{param.Value}'") ?? Array.Empty<string>();
 
-            StringBuilder inputParameters = new StringBuilder();
+            StringBuilder inputParameters = new();
             if (appliedFilters/*.Concat(appliedTemplateParameters)*/.Any())
             {
                 inputParameters.Append(string.Join(separator, appliedFilters/*.Concat(appliedTemplateParameters)*/));

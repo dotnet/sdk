@@ -1,12 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
-using Xunit;
 
 namespace Microsoft.DotNet.ApiCompatibility.Tests
 {
@@ -209,9 +206,9 @@ namespace CompatTests
         {
             string message = difference.Message;
 
-            // make sure it is separater by a space and it is not a substr of a word.
+            // make sure it is separated by a space and is not a substring of a word.
             string left = " " + expectedLeftName;
-            string right = " " + expectedRightName; 
+            string right = " " + expectedRightName;
             if (leftFirst)
             {
                 Assert.Contains(left + " ", message);

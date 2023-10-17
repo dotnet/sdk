@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.Build.Framework;
 
@@ -42,7 +38,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public static IEnumerable<ReferenceInfo> CreateReferenceInfos(IEnumerable<ITaskItem> referencePaths)
         {
-            List<ReferenceInfo> referenceInfos = new List<ReferenceInfo>();
+            List<ReferenceInfo> referenceInfos = new();
             foreach (ITaskItem referencePath in referencePaths)
             {
                 referenceInfos.Add(CreateReferenceInfo(referencePath));
@@ -127,7 +123,7 @@ namespace Microsoft.NET.Build.Tasks
             IEnumerable<ITaskItem> referencePaths,
             IEnumerable<ITaskItem> referenceSatellitePaths)
         {
-            Dictionary<string, ReferenceInfo> directReferences = new Dictionary<string, ReferenceInfo>();
+            Dictionary<string, ReferenceInfo> directReferences = new();
 
             foreach (ITaskItem referencePath in referencePaths)
             {
@@ -178,7 +174,7 @@ namespace Microsoft.NET.Build.Tasks
                 string fusionName = referencePath.GetMetadata("FusionName");
                 if (!string.IsNullOrEmpty(fusionName))
                 {
-                    AssemblyName assemblyName = new AssemblyName(fusionName);
+                    AssemblyName assemblyName = new(fusionName);
                     version = assemblyName.Version?.ToString();
                 }
 

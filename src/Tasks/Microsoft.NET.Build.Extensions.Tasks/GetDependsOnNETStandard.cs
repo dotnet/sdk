@@ -1,10 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Framework;
-using System;
-using System.IO;
 using System.Security;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -20,7 +18,7 @@ namespace Microsoft.NET.Build.Tasks
         // facades since net461 was previously only compatible with netstandard1.4 and thus packages only provided netstandard1.4
         // compatible facades.
         private const string SystemRuntimeAssemblyName = "System.Runtime";
-        private static readonly Version SystemRuntimeMinVersion = new Version(4, 1, 0, 0);
+        private static readonly Version SystemRuntimeMinVersion = new(4, 1, 0, 0);
 
         /// <summary>
         /// Set of reference items to analyze.

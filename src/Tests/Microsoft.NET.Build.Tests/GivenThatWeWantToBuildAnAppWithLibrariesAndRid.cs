@@ -1,18 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -21,6 +10,9 @@ namespace Microsoft.NET.Build.Tests
         public GivenThatWeWantToBuildAnAppWithLibrariesAndRid(ITestOutputHelper log) : base(log)
         {
         }
+
+        // Libuv version used by LibraryWithRid/LibraryWithRids
+        private const string LibuvVersion = "1.10.0";
 
         [Fact]
         public void It_builds_a_RID_specific_runnable_output()
@@ -58,7 +50,7 @@ namespace Microsoft.NET.Build.Tests
                 .Execute()
                 .Should()
                 .Pass()
-                .And.HaveStdOutContaining($"3.13.0 '{runtimeIdentifier}' 3.13.0 '{runtimeIdentifier}' Hello World")
+                .And.HaveStdOutContaining($"{LibuvVersion} '{runtimeIdentifier}' {LibuvVersion} '{runtimeIdentifier}' Hello World")
                 .And.NotHaveStdErr();
         }
 
@@ -70,7 +62,7 @@ namespace Microsoft.NET.Build.Tests
                 .CopyTestAsset("AppWithLibraryAndRid", "BuildFrameworkDependentRIDSpecific")
                 .WithSource();
 
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 //  .NET Core 2.1.0 packages don't support latest versions of OS X, so roll forward to the
                 //  latest patch which does
@@ -111,15 +103,15 @@ namespace Microsoft.NET.Build.Tests
                 "LibraryWithRid.pdb",
                 "LibraryWithRids.dll",
                 "LibraryWithRids.pdb",
-                $"{FileConstants.DynamicLibPrefix}sqlite3{FileConstants.DynamicLibSuffix}"
+                $"libuv{FileConstants.DynamicLibSuffix}"
             };
 
-            outputDirectory.Should().OnlyHaveFiles(expectedFiles.Where(x => !String.IsNullOrEmpty(x)).ToList() );
+            outputDirectory.Should().OnlyHaveFiles(expectedFiles.Where(x => !string.IsNullOrEmpty(x)).ToList());
 
             new DotnetCommand(Log, Path.Combine(outputDirectory.FullName, "App.dll"))
                 .Execute()
                 .Should().Pass()
-                .And.HaveStdOutContaining($"3.13.0 '{runtimeIdentifier}' 3.13.0 '{runtimeIdentifier}' Hello World");
+                .And.HaveStdOutContaining($"{LibuvVersion} '{runtimeIdentifier}' {LibuvVersion} '{runtimeIdentifier}' Hello World");
         }
     }
 }

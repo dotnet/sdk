@@ -47,7 +47,8 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(OverlaySDK)"
-          DestinationFiles="@(OverlaySDK->'$(RedistLayoutPath)\%(RecursiveDir)%(Filename)%(Extension)')" />
+          DestinationFiles="@(OverlaySDK->'$(RedistLayoutPath)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"/>
 
     <PropertyGroup>
       <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)</SdkOutputDirectory>
@@ -58,21 +59,25 @@
     
     <!-- If the stage 0 SDK doesn't have KnownWorkloadManifests.txt, then write a default version -->
     <WriteLinesToFile File="$(SdkOutputDirectory)\KnownWorkloadManifests.txt"
-                      Condition="!Exists('$(Stage0KnownWorkloadManifestsFile)')"
-                      Lines="microsoft.net.sdk.android;microsoft.net.sdk.ios;microsoft.net.sdk.maccatalyst;microsoft.net.sdk.macos;microsoft.net.sdk.maui;microsoft.net.sdk.tvos;microsoft.net.workload.mono.toolchain.current;microsoft.net.workload.emscripten.current;microsoft.net.workload.emscripten.net6;microsoft.net.workload.emscripten.net7;microsoft.net.workload.mono.toolchain.net6;microsoft.net.workload.mono.toolchain.net7"/>
+                      Lines="microsoft.net.sdk.android;microsoft.net.sdk.aspire;microsoft.net.sdk.ios;microsoft.net.sdk.maccatalyst;microsoft.net.sdk.macos;microsoft.net.sdk.maui;microsoft.net.sdk.tvos;microsoft.net.workload.mono.toolchain.current;microsoft.net.workload.emscripten.current;microsoft.net.workload.emscripten.net6;microsoft.net.workload.emscripten.net7;microsoft.net.workload.emscripten.net8;microsoft.net.workload.mono.toolchain.net6;microsoft.net.workload.mono.toolchain.net7;microsoft.net.workload.mono.toolchain.net8"/>
 
     <ItemGroup>
       <WasmWorkloads Include="microsoft.net.workload.mono.toolchain.current" Version="$(MonoWorkloadManifestVersion)/$(MonoWorkloadFeatureBand)"/>
       <WasmWorkloads Include="microsoft.net.workload.mono.toolchain.net6" Version="$(MonoWorkloadManifestVersion)/$(MonoWorkloadFeatureBand)"/>
       <WasmWorkloads Include="microsoft.net.workload.mono.toolchain.net7" Version="$(MonoWorkloadManifestVersion)/$(MonoWorkloadFeatureBand)"/>
+      <WasmWorkloads Include="microsoft.net.workload.mono.toolchain.net8" Version="$(MonoWorkloadManifestVersion)/$(MonoWorkloadFeatureBand)"/>
       <WasmWorkloads Include="microsoft.net.workload.emscripten.current" Version="$(EmscriptenWorkloadManifestVersion)/$(EmscriptenWorkloadFeatureBand)"/>
 	    <WasmWorkloads Include="microsoft.net.workload.emscripten.net6" Version="$(EmscriptenWorkloadManifestVersion)/$(EmscriptenWorkloadFeatureBand)"/>
 	    <WasmWorkloads Include="microsoft.net.workload.emscripten.net7" Version="$(EmscriptenWorkloadManifestVersion)/$(EmscriptenWorkloadFeatureBand)"/>
+      <WasmWorkloads Include="microsoft.net.workload.emscripten.net8" Version="$(EmscriptenWorkloadManifestVersion)/$(EmscriptenWorkloadFeatureBand)"/>
+
+      <WasmRuntimePackVersion Include="_RuntimePackInWorkloadVersion6" Version="$(_RuntimePackInWorkloadVersion6)" />
+      <WasmRuntimePackVersion Include="_RuntimePackInWorkloadVersion7" Version="$(_RuntimePackInWorkloadVersion7)" />
     </ItemGroup>
 
     <!-- Create a rollback file for installing workloads during the build  -->
     <WriteLinesToFile File="$(RedistLayoutPath)TestRollback.json"
-                      Condition="!Exists('$(RedistLayoutPath)TestRollback.json')"
+                      Overwrite="true"
                       Lines="{;@(WasmWorkloads->'&quot;%(Identity)&quot;: &quot;%(Version)&quot;', ', ');}"/>
 
     <OverrideAndCreateBundledNETCoreAppPackageVersion
@@ -91,8 +96,15 @@
 
     <!-- Install a coherent set of workload manifests -->
     <Exec Condition="Exists('$(RedistLayoutPath)TestRollback.json')"
-          Command="$(RedistLayoutPath)dotnet workload update --from-rollback-file $(RedistLayoutPath)TestRollback.json"
+          Command="$(RedistLayoutPath)dotnet workload update --from-rollback-file $(RedistLayoutPath)TestRollback.json -v diag"
           EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)"/>
+
+    <ItemGroup>
+      <MonoToolchainCurrentWorkloadManifests Include="$(RedistLayoutPath)\sdk-manifests\$(MonoWorkloadFeatureBand)\microsoft.net.workload.mono.toolchain.current\*\WorkloadManifest.targets" />
+    </ItemGroup>
+
+    <OverrideWasmRuntimePackVersions Properties="@(WasmRuntimePackVersion)" 
+      WorkloadManifestPath="%(MonoToolchainCurrentWorkloadManifests.FullPath)" />
   </Target>
 
 

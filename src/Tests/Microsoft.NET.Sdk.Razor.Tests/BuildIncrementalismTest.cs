@@ -1,27 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
 using Moq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class BuildIncrementalismTest : AspNetSdkTest
     {
-        public BuildIncrementalismTest(ITestOutputHelper log) : base(log) {}
+        public BuildIncrementalismTest(ITestOutputHelper log) : base(log) { }
 
 
         [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/28780")]
@@ -98,7 +84,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var page = Path.Combine(projectDirectory.Path, "Views", "Shared", "NavMenu.razor");
             File.WriteAllText(page, updatedContent, Encoding.UTF8);
             File.SetLastWriteTimeUtc(page, File.GetLastWriteTimeUtc(page).AddSeconds(1));
-            
+
             build = new BuildCommand(projectDirectory);
             result = build.Execute();
 
@@ -133,7 +119,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var classLibraryDll = Path.Combine(intermediateOutputPath, "ClassLibrary.dll");
             var classLibraryViewsDll = Path.Combine(intermediateOutputPath, "ClassLibrary.Views.dll");
-            var markerFile = Path.Combine(intermediateOutputPath, "ClassLibrary.csproj.CopyComplete");;
+            var markerFile = Path.Combine(intermediateOutputPath, "ClassLibrary.csproj.CopyComplete"); ;
 
             new FileInfo(classLibraryDll).Should().Exist();
             new FileInfo(classLibraryViewsDll).Should().Exist();

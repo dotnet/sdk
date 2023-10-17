@@ -1,10 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 {
@@ -17,7 +15,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
     /// So VS's behavior conforms to webmatrix and wdeploy as much as possible
     /// </summary>
     ///-----------------------------------------------------------------------------
-    sealed public class NormalizeServiceUrl : Task
+    public sealed class NormalizeServiceUrl : Task
     {
         private string _serviceUrl = string.Empty;
         private string _resultUrl = string.Empty;
@@ -29,37 +27,37 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         [Required]
         public string ServiceUrl
         {
-            get { return this._serviceUrl; }
-            set { this._serviceUrl = value; }
+            get { return _serviceUrl; }
+            set { _serviceUrl = value; }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1709:IdentifiersShouldBeCasedCorrectly", MessageId = "WMSVC", Justification = "Special term that used by MSDeploy team for remote service")]
         [Required]
         public bool UseWMSVC
         {
-            get { return this._useWMSVC; }
-            set { this._useWMSVC = value; }
+            get { return _useWMSVC; }
+            set { _useWMSVC = value; }
         }
 
         [Required]
         public bool UseRemoteAgent
         {
-            get { return this._useRemoteAgent; }
-            set { this._useRemoteAgent = value; }
+            get { return _useRemoteAgent; }
+            set { _useRemoteAgent = value; }
         }
 
         [Required]
         public string SiteName
         {
-            get { return this._siteName; }
-            set { this._siteName = value; }
+            get { return _siteName; }
+            set { _siteName = value; }
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1056:UriPropertiesShouldNotBeStrings", Justification = "This is interface with the Msbuild method, all argument is basically pass by string")]
         [Output]
         public string ResultUrl
         {
-            get { return this._resultUrl; }
+            get { return _resultUrl; }
         }
 
         public override bool Execute()
@@ -80,18 +78,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                     }
                     else
                     {
-                        if (string.Compare(tempUrl, "localhost", System.StringComparison.OrdinalIgnoreCase) == 0 ||
-                            string.Compare(tempUrl, "http://localhost", System.StringComparison.OrdinalIgnoreCase) == 0)
+                        if (string.Compare(tempUrl, "localhost", StringComparison.OrdinalIgnoreCase) == 0 ||
+                            string.Compare(tempUrl, "http://localhost", StringComparison.OrdinalIgnoreCase) == 0)
                         {
                             _resultUrl = string.Empty;//through in proc and don't need server name at all.
                         }
                         else
                         {
-                            if (tempUrl.StartsWith("localhost:", System.StringComparison.OrdinalIgnoreCase))
+                            if (tempUrl.StartsWith("localhost:", StringComparison.OrdinalIgnoreCase))
                             {
                                 _resultUrl = string.Concat("http://", tempUrl);
                             }
-                            else if (tempUrl.StartsWith("http://localhost:", System.StringComparison.OrdinalIgnoreCase))
+                            else if (tempUrl.StartsWith("http://localhost:", StringComparison.OrdinalIgnoreCase))
                             {
                                 _resultUrl = tempUrl;
                             }
@@ -167,18 +165,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
         private string ConstructServiceUrlForDeployThruAgentService(string serviceUrl)
         {
-            System.Text.StringBuilder url = new System.Text.StringBuilder("http://");
+            System.Text.StringBuilder url = new("http://");
             int iSpot = 0;
             // It needs to start with http:// 
             // It needs to then have the computer name
             // It should then be "/MSDEPLOYAGENTSERVICE" 
-            if (serviceUrl.StartsWith("http://", System.StringComparison.OrdinalIgnoreCase))
+            if (serviceUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
             {
                 iSpot = "http://".Length;
             }
             url.Append(serviceUrl.Substring(iSpot));
 
-            int msdepSpot = serviceUrl.IndexOf("/MSDEPLOYAGENTSERVICE", System.StringComparison.OrdinalIgnoreCase);
+            int msdepSpot = serviceUrl.IndexOf("/MSDEPLOYAGENTSERVICE", StringComparison.OrdinalIgnoreCase);
             if (msdepSpot < 0)
             {
                 url.Append("/MSDEPLOYAGENTSERVICE");

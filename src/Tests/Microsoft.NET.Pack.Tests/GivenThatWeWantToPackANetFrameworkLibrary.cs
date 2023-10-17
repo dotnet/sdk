@@ -1,20 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Xml.Linq;
-using System.Linq;
-using FluentAssertions;
-using System.Runtime.InteropServices;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Pack.Tests
 {
     public class GivenThatWeWantToPackANetFrameworkLibrary : SdkTest
@@ -26,7 +12,7 @@ namespace Microsoft.NET.Pack.Tests
         [WindowsOnlyFact]
         public void ImplicitReferencesAreNotIncludedAsFrameworkReferences()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackImplicitReferences",
                 TargetFrameworks = "net462",
@@ -48,7 +34,7 @@ namespace Microsoft.NET.Pack.Tests
         [WindowsOnlyFact]
         public void ExplicitReferencesAreIncludedAsFrameworkReferences()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackImplicitReferences",
                 TargetFrameworks = "net462",
@@ -96,7 +82,7 @@ namespace Microsoft.NET.Pack.Tests
 
             string nuspecPath = packCommand.GetIntermediateNuspecPath();
             return nuspecPath;
-           
+
         }
     }
 }

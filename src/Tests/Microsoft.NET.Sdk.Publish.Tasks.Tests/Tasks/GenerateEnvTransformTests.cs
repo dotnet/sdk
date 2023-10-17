@@ -1,12 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 using Microsoft.NET.Sdk.Publish.Tasks.Xdt;
-using Xunit;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 {
@@ -40,7 +35,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         public void GetEnvironmentVariables_HandlesNullAndEmpty(string value, object expected)
         {
             // Arrange
-            GenerateEnvTransform env = new GenerateEnvTransform();
+            GenerateEnvTransform env = new();
 
             // Act 
             var envVariables = env.GetEnvironmentVariables(value);
@@ -53,7 +48,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         public void GenerateEnvTransformDocument_HandlesNullAndEmpty()
         {
             // Arrange
-            GenerateEnvTransform env = new GenerateEnvTransform();
+            GenerateEnvTransform env = new();
 
             // Act 
             XDocument transformDoc = env.GenerateEnvTransformDocument(null, null);
@@ -68,7 +63,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         public void Execute_DoesnotFail_IfEnvVarIsNullOrEmpty(string envVariable, bool expected)
         {
             // Arrange
-            GenerateEnvTransform env = new GenerateEnvTransform()
+            GenerateEnvTransform env = new()
             {
                 WebConfigEnvironmentVariables = envVariable
             };
@@ -94,7 +89,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         public void GetEnvironmentVariables_Returns_CorrectValues(string value, int expectedCount)
         {
             // Arrange
-            GenerateEnvTransform env = new GenerateEnvTransform();
+            GenerateEnvTransform env = new();
 
             // Act 
             var envVariables = env.GetEnvironmentVariables(value);
@@ -116,7 +111,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         [InlineData("envnamewithsemicolon=envvalue%3enVVal;", 1)]
         public void GenerateEnvTransform_GeneretesTransforms_ForAllCases(string envVariables, int expected)
         {
-            GenerateEnvTransform env = new GenerateEnvTransform();
+            GenerateEnvTransform env = new();
             IList<XDocument> templateDocumentList = new List<XDocument>() { _environmentTransformWithLocationTemplate, _environmentTransformWithoutLocationTemplate };
 
             foreach (var template in templateDocumentList)
@@ -149,7 +144,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             try
             {
                 // Arrange
-                List<XDocument> locationWebConfigTemplateList = new List<XDocument>() {WebConfigTransformTemplates.WebConfigTemplate};
+                List<XDocument> locationWebConfigTemplateList = new() { WebConfigTransformTemplates.WebConfigTemplate };
                 foreach (var locationWebConfigTemplate in locationWebConfigTemplateList)
                 {
 
@@ -157,7 +152,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                     XDocument webConfigTemplate = locationWebConfigTemplate;
                     webConfigTemplate.Save(webConfigPath);
 
-                    GenerateEnvTransform env = new GenerateEnvTransform()
+                    GenerateEnvTransform env = new()
                     {
                         WebConfigEnvironmentVariables = envVariables,
                         EnvTransformTemplatePaths = new List<string>() { envTemplatePath }.ToArray(),
@@ -172,7 +167,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                     {
                         Assert.True(File.Exists(generatedPath));
 
-                        TransformXml transformTask = new TransformXml()
+                        TransformXml transformTask = new()
                         {
                             Source = webConfigPath,
                             Destination = webConfigPath,
@@ -219,7 +214,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                 XDocument webConfigTemplate = WebConfigTransformTemplates.WebConfigTemplateWithEnvironmentVariable;
                 webConfigTemplate.Save(webConfigPath);
 
-                GenerateEnvTransform env = new GenerateEnvTransform()
+                GenerateEnvTransform env = new()
                 {
                     WebConfigEnvironmentVariables = envVariables,
                     EnvTransformTemplatePaths = new List<string>() { envTemplatePath }.ToArray(),
@@ -233,7 +228,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                 {
                     Assert.True(File.Exists(generatedPath));
 
-                    TransformXml transformTask = new TransformXml()
+                    TransformXml transformTask = new()
                     {
                         Source = webConfigPath,
                         Destination = webConfigPath,
@@ -275,7 +270,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             string tempDir = Path.GetDirectoryName(envTemplatePath);
             try
             {
-                List<XDocument> locationWebConfigTemplateList = new List<XDocument>() {WebConfigTransformTemplates.WebConfigTemplateWithoutLocation,
+                List<XDocument> locationWebConfigTemplateList = new() {WebConfigTransformTemplates.WebConfigTemplateWithoutLocation,
                                                                                WebConfigTransformTemplates.WebConfigTemplateWithNonRelevantLocationFirst,
                                                                                WebConfigTransformTemplates.WebConfigTemplateWithNonRelevantLocationLast,
                                                                                WebConfigTransformTemplates.WebConfigTemplateWithRelevantLocationFirst,
@@ -287,7 +282,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                     XDocument webConfigTemplate = locationWebConfigTemplate;
                     webConfigTemplate.Save(webConfigPath);
 
-                    GenerateEnvTransform env = new GenerateEnvTransform()
+                    GenerateEnvTransform env = new()
                     {
                         WebConfigEnvironmentVariables = envVariables,
                         EnvTransformTemplatePaths = new List<string>() { envTemplatePath }.ToArray(),
@@ -302,7 +297,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
                     {
                         Assert.True(File.Exists(generatedPath));
 
-                        TransformXml transformTask = new TransformXml()
+                        TransformXml transformTask = new()
                         {
                             Source = webConfigPath,
                             Destination = webConfigPath,

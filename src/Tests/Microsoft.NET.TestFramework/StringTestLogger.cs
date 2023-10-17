@@ -1,16 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.TestFramework
 {
     public class StringTestLogger : ITestOutputHelper
     {
-        StringBuilder _stringBuilder = new StringBuilder();
+        StringBuilder _stringBuilder = new();
 
         public void WriteLine(string message)
         {

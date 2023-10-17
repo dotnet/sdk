@@ -1,22 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.Sdk.Razor.Tool;
 using Moq;
-using Xunit;
 
 namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
     public class ServerLifecycleTest
     {
-        private static ServerRequest EmptyServerRequest => new ServerRequest(1, Array.Empty<RequestArgument>());
+        private static ServerRequest EmptyServerRequest => new(1, Array.Empty<RequestArgument>());
 
         private static ServerResponse EmptyServerResponse => new CompletedServerResponse(
             returnCode: 0,
@@ -59,6 +51,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             var mutexName = MutexName.GetServerMutexName(pipeName);
             var compilerHost = new Mock<CompilerHost>(MockBehavior.Strict);
             var host = new Mock<ConnectionHost>(MockBehavior.Strict);
+#pragma warning disable xUnit1031
             host
                 .Setup(x => x.WaitForConnectionAsync(It.IsAny<CancellationToken>()))
                 .Returns(() =>
@@ -94,6 +87,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 
                     return new TaskCompletionSource<Connection>().Task;
                 });
+#pragma warning restore xUnit1031
 
             var result = ServerUtilities.RunServer(pipeName, host.Object, compilerHost.Object, keepAlive: TimeSpan.FromSeconds(1));
             Assert.Equal(0, result);
@@ -124,6 +118,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             // Arrange
             var startCompilationSource = new TaskCompletionSource<bool>();
             var finishCompilationSource = new TaskCompletionSource<bool>();
+#pragma warning disable xUnit1031
             var host = CreateCompilerHost(c => c.ExecuteFunc = (req, ct) =>
             {
                 // At this point, the connection has been accepted and the compilation has started.
@@ -133,6 +128,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 finishCompilationSource.Task.Wait();
                 return EmptyServerResponse;
             });
+#pragma warning restore xUnit1031
 
             using (var serverData = ServerUtilities.CreateServer(compilerHost: host))
             {
@@ -167,6 +163,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
             // Arrange
             var startCompilationSource = new TaskCompletionSource<bool>();
             var finishCompilationSource = new TaskCompletionSource<bool>();
+#pragma warning disable xUnit1031
             var host = CreateCompilerHost(c => c.ExecuteFunc = (req, ct) =>
             {
                 // At this point, the connection has been accepted and the compilation has started.
@@ -176,6 +173,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests
                 finishCompilationSource.Task.Wait();
                 return EmptyServerResponse;
             });
+#pragma warning restore xUnit1031
 
             using (var serverData = ServerUtilities.CreateServer(compilerHost: host))
             {

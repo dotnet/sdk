@@ -1,20 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -54,8 +41,10 @@ namespace Microsoft.NET.Build.Tests
 
             var projectDirectory = Path.Combine(testAsset.TestRoot, relativeProjectPath);
 
-            var command = new MSBuildCommand(Log, "ResolveAssemblyReferencesDesignTime", projectDirectory);
-            command.WorkingDirectory = projectDirectory;
+            var command = new MSBuildCommand(Log, "ResolveAssemblyReferencesDesignTime", projectDirectory)
+            {
+                WorkingDirectory = projectDirectory
+            };
             var result = command.Execute(args);
 
             result.Should().Pass();
@@ -102,7 +91,7 @@ namespace Microsoft.NET.Build.Tests
                 .Execute()
                 .Should()
                 .Pass();
-       }
+        }
 
         [Theory]
         [InlineData("netcoreapp3.0")]
@@ -117,13 +106,15 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework,
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1", privateAssets: "All"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion(), privateAssets: "All"));
             testProject.PackageReferences.Add(new TestPackageReference("Humanizer", "2.8.26"));
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
-            var getValuesCommand = new GetValuesCommand(testAsset, "_PackageDependenciesDesignTime", GetValuesCommand.ValueType.Item);
-            getValuesCommand.DependsOnTargets = "ResolvePackageDependenciesDesignTime";
+            var getValuesCommand = new GetValuesCommand(testAsset, "_PackageDependenciesDesignTime", GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "ResolvePackageDependenciesDesignTime"
+            };
 
             getValuesCommand.Execute()
                 .Should()
@@ -131,7 +122,7 @@ namespace Microsoft.NET.Build.Tests
 
             getValuesCommand.GetValues()
                 .Should()
-                .BeEquivalentTo("Newtonsoft.Json/13.0.1", "Humanizer/2.8.26");
+                .BeEquivalentTo($"Newtonsoft.Json/{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}", "Humanizer/2.8.26");
         }
 
         [Theory]
@@ -167,10 +158,12 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Fail();
 
-            var getValuesCommand = new GetValuesCommand(testAsset, "_PackageDependenciesDesignTime", GetValuesCommand.ValueType.Item);
-            getValuesCommand.ShouldRestore = false;
-            getValuesCommand.DependsOnTargets = "ResolvePackageDependenciesDesignTime";
-            getValuesCommand.MetadataNames = new List<string>() { "DiagnosticLevel" };
+            var getValuesCommand = new GetValuesCommand(testAsset, "_PackageDependenciesDesignTime", GetValuesCommand.ValueType.Item)
+            {
+                ShouldRestore = false,
+                DependsOnTargets = "ResolvePackageDependenciesDesignTime",
+                MetadataNames = new List<string>() { "DiagnosticLevel" }
+            };
 
             getValuesCommand
                 .WithWorkingDirectory(testAsset.TestRoot)
@@ -201,7 +194,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             //  Add some package references to test more code paths (such as in ResolvePackageAssets)
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1", privateAssets: "All"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion(), privateAssets: "All"));
             testProject.PackageReferences.Add(new TestPackageReference("Humanizer", "2.8.26"));
 
             //  Use a test-specific packages folder
@@ -219,8 +212,10 @@ namespace Microsoft.NET.Build.Tests
 
             string projectFolder = Path.Combine(testAsset.TestRoot, testProject.Name);
 
-            var buildCommand = new MSBuildCommand(Log, null, projectFolder);
-            buildCommand.WorkingDirectory = projectFolder;
+            var buildCommand = new MSBuildCommand(Log, null, projectFolder)
+            {
+                WorkingDirectory = projectFolder
+            };
 
             buildCommand
                 .Execute()

@@ -1,13 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
@@ -16,10 +10,6 @@ using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -33,7 +23,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         private WorkloadListCommand _workloadListCommand;
         private string _testDirectory;
 
-        private List<(ManifestVersionUpdate manifestUpdate, Dictionary<WorkloadId, WorkloadDefinition> Workloads)> _mockManifestUpdates;
+        private List<ManifestUpdateWithWorkloads> _mockManifestUpdates;
 
         private MockNuGetPackageDownloader _nugetDownloader;
         private string _dotnetRoot;
@@ -51,14 +41,14 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             _mockManifestUpdates = new()
             {
-                (
+                new(
                     new ManifestVersionUpdate(
                         new ManifestId("manifest1"),
                         new ManifestVersion(CurrentSdkVersion),
                         currentSdkFeatureBand.ToString(),
                         new ManifestVersion(UpdateAvailableVersion),
                         currentSdkFeatureBand.ToString()),
-                    new Dictionary<WorkloadId, WorkloadDefinition>
+                    new WorkloadCollection
                     {
                         [new WorkloadId(InstallingWorkload)] = new(
                             new WorkloadId(InstallingWorkload), false, XamarinAndroidDescription,
@@ -67,28 +57,28 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                             new WorkloadId("other"), false, "other description",
                             WorkloadDefinitionKind.Dev, null, null, null)
                     }),
-                (
+                new(
                     new ManifestVersionUpdate(
                         new ManifestId("manifest-other"),
                         new ManifestVersion(CurrentSdkVersion),
                         currentSdkFeatureBand.ToString(),
                         new ManifestVersion("7.0.101"),
                         currentSdkFeatureBand.ToString()),
-                    new Dictionary<WorkloadId, WorkloadDefinition>
+                    new WorkloadCollection
                     {
                         [new WorkloadId("other-manifest-workload")] = new(
                             new WorkloadId("other-manifest-workload"), false,
                             "other-manifest-workload description",
                             WorkloadDefinitionKind.Dev, null, null, null)
                     }),
-                (
+                new(
                     new ManifestVersionUpdate(
                         new ManifestId("manifest-older-version"),
                         new ManifestVersion(CurrentSdkVersion),
                         currentSdkFeatureBand.ToString(),
                         new ManifestVersion("6.0.100"),
                         currentSdkFeatureBand.ToString()),
-                    new Dictionary<WorkloadId, WorkloadDefinition>
+                    new WorkloadCollection
                     {
                         [new WorkloadId("other-manifest-workload")] = new(
                             new WorkloadId("other-manifest-workload"), false,
@@ -118,7 +108,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         {
             Setup(nameof(ItShouldGetAvailableUpdate));
             WorkloadListCommand.UpdateAvailableEntry[] result =
-                _workloadListCommand.GetUpdateAvailable(new List<WorkloadId> {new("xamarin-android")});
+                _workloadListCommand.GetUpdateAvailable(new List<WorkloadId> { new("xamarin-android") }).ToArray();
 
             result.Should().NotBeEmpty();
             result[0].WorkloadId.Should().Be(InstallingWorkload, "Only should installed workload");
@@ -185,10 +175,10 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand)
             {
-                SdkFeatureBand featureBand = new SdkFeatureBand(new ReleaseVersion(6, 0, 100));
+                SdkFeatureBand featureBand = new(new ReleaseVersion(6, 0, 100));
                 if (sdkFeatureBand.Equals(featureBand))
                 {
-                    return new[] {new WorkloadId("xamarin-android")};
+                    return new[] { new WorkloadId("xamarin-android") };
                 }
 
                 throw new Exception($"Should not pass other feature band {sdkFeatureBand}");

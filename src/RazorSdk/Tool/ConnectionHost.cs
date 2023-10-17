@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.IO.Pipes;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
@@ -46,7 +42,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             public string PipeName { get; }
 
-            public async override Task<Connection> WaitForConnectionAsync(CancellationToken cancellationToken)
+            public override async Task<Connection> WaitForConnectionAsync(CancellationToken cancellationToken)
             {
                 // Create the pipe and begin waiting for a connection. This  doesn't block, but could fail 
                 // in certain circumstances, such as the OS refusing to create the pipe for some reason 
@@ -95,7 +91,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 Identifier = identifier;
             }
 
-            public async override Task WaitForDisconnectAsync(CancellationToken cancellationToken)
+            public override async Task WaitForDisconnectAsync(CancellationToken cancellationToken)
             {
                 if (!(Stream is PipeStream pipeStream))
                 {

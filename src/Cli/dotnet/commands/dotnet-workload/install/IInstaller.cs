@@ -1,14 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -20,7 +17,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null);
 
-        void GarbageCollectInstalledWorkloadPacks(DirectoryPath? offlineCache = null, bool cleanAllPacks = false);
+        void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false);
 
         void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false);
 
@@ -36,8 +33,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         void ReplaceWorkloadResolver(IWorkloadResolver workloadResolver);
 
         void Shutdown();
-
-
     }
 
     // Interface to pass to workload manifest updater
@@ -66,6 +61,5 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             NuGetPackageId = nuGetPackageId;
             NuGetPackageVersion = nuGetPackageVersion;
         }
-
     }
 }

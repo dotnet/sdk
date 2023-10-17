@@ -1,11 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    class WorkloadManifestFormatException: WorkloadManifestException
+    class WorkloadManifestFormatException : WorkloadManifestException
     {
         public WorkloadManifestFormatException() { }
         public WorkloadManifestFormatException(string messageFormat, params object?[] args) : base(messageFormat, args) { }
@@ -13,7 +11,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public WorkloadManifestFormatException(string message, Exception inner) : base(message, inner) { }
     }
 
-    class WorkloadManifestCompositionException: WorkloadManifestException
+    class WorkloadManifestCompositionException : WorkloadManifestException
     {
         public WorkloadManifestCompositionException() { }
         public WorkloadManifestCompositionException(string messageFormat, params object?[] args) : base(messageFormat, args) { }
@@ -21,10 +19,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public WorkloadManifestCompositionException(string message, Exception inner) : base(message, inner) { }
     }
 
-    abstract public class WorkloadManifestException: Exception
+    public abstract class WorkloadManifestException : Exception
     {
         protected WorkloadManifestException() { }
-        protected WorkloadManifestException(string messageFormat, params object?[] args) : base(string.Format (messageFormat, args)) { }
+        protected WorkloadManifestException(string messageFormat, params object?[] args) : base(string.Format(messageFormat, args)) { }
         protected WorkloadManifestException(string message) : base(message) { }
         protected WorkloadManifestException(string message, Exception inner) : base(message, inner) { }
     }

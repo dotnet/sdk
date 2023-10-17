@@ -1,18 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToControlGeneratedAssemblyInfo : SdkTest
@@ -95,7 +83,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_does_not_include_source_revision_id_if_initialize_source_control_target_not_available()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "ProjectWithSourceRevisionId",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
@@ -112,7 +100,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_does_not_include_source_revision_id_if_source_revision_id_not_set()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "ProjectWithSourceRevisionId",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
@@ -143,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_does_not_include_source_revision_id_if_disabled()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "ProjectWithSourceRevisionId",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
@@ -175,7 +163,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_includes_source_revision_id_if_available__version_without_plus()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "ProjectWithSourceRevisionId",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
@@ -211,7 +199,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void It_includes_source_revision_id_if_available__version_with_plus()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "ProjectWithSourceRevisionId",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
@@ -373,9 +361,9 @@ namespace Microsoft.NET.Build.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(true, true, "net5.0")]
-        [InlineData(true, true, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(true, false, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData(false, false, ToolsetInfo.CurrentTargetFramework)]
+        [InlineData(true, true, ToolsetInfo.NextTargetFramework)]
+        [InlineData(true, false, ToolsetInfo.NextTargetFramework)]
+        [InlineData(false, false, ToolsetInfo.NextTargetFramework)]
         public void TestPreviewFeatures(bool enablePreviewFeatures, bool generateRequiresPreviewFeaturesAttribute, string targetFramework)
         {
             var testAsset = _testAssetsManager
@@ -407,7 +395,7 @@ namespace Microsoft.NET.Build.Tests
             bool contains = false;
             foreach (var attribute in parameterlessAttributes)
             {
-                if (attribute.Equals("RequiresPreviewFeaturesAttribute", System.StringComparison.Ordinal))
+                if (attribute.Equals("RequiresPreviewFeaturesAttribute", StringComparison.Ordinal))
                 {
                     contains = true;
                     break;
@@ -422,7 +410,7 @@ namespace Microsoft.NET.Build.Tests
 
             if (enablePreviewFeatures && generateRequiresPreviewFeaturesAttribute)
             {
-                if (targetFramework == ToolsetInfo.CurrentTargetFramework)
+                if (targetFramework == ToolsetInfo.NextTargetFramework)
                 {
                     Assert.Equal("Preview", langVersion);
                     Assert.True(contains);
@@ -466,7 +454,7 @@ namespace Microsoft.NET.Build.Tests
             bool contains = false;
             foreach (var attribute in parameterlessAttributes)
             {
-                if (attribute.Equals("RequiresPreviewFeaturesAttribute", System.StringComparison.Ordinal))
+                if (attribute.Equals("RequiresPreviewFeaturesAttribute", StringComparison.Ordinal))
                 {
                     contains = true;
                     break;
@@ -474,6 +462,68 @@ namespace Microsoft.NET.Build.Tests
             }
 
             Assert.False(contains);
+        }
+
+        [Theory]
+        [InlineData(true, true, "net6.0", false)]
+        [InlineData(true, false, "net6.0", false)]
+        [InlineData(true, null, "net6.0", false)]
+        [InlineData(false, false, "net6.0", false)]
+        [InlineData(false, null, "net6.0", false)]
+        [InlineData(true, true, "net7.0", true)]
+        [InlineData(true, false, "net7.0", false)]
+        [InlineData(true, null, "net7.0", true)]
+        [InlineData(false, false, "net7.0", false)]
+        [InlineData(false, null, "net7.0", false)]
+        [InlineData(true, true, ToolsetInfo.CurrentTargetFramework, true)]
+        [InlineData(true, false, ToolsetInfo.CurrentTargetFramework, false)]
+        [InlineData(true, null, ToolsetInfo.CurrentTargetFramework, true)]
+        [InlineData(false, false, ToolsetInfo.CurrentTargetFramework, false)]
+        [InlineData(false, null, ToolsetInfo.CurrentTargetFramework, false)]
+        public void TestDisableRuntimeMarshalling(bool disableRuntimeMarshalling, bool? generateDisableRuntimeMarshallingAttribute, string targetFramework, bool shouldHaveAttribute)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "HelloWorld",
+                TargetFrameworks = targetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties["DisableRuntimeMarshalling"] = disableRuntimeMarshalling.ToString();
+            if (generateDisableRuntimeMarshallingAttribute.HasValue)
+            {
+                testProject.AdditionalProperties["GenerateDisableRuntimeMarshallingAttribute"] = generateDisableRuntimeMarshallingAttribute.Value.ToString();
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: disableRuntimeMarshalling.ToString() + "_" + generateDisableRuntimeMarshallingAttribute + "_" + targetFramework);
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var assemblyPath = Path.Combine(buildCommand.GetOutputDirectory(targetFramework).FullName, "HelloWorld.dll");
+
+            var parameterlessAttributes = AssemblyInfo.GetParameterlessAttributes(assemblyPath);
+            bool contains = false;
+            foreach (var attribute in parameterlessAttributes)
+            {
+                if (attribute.Equals("DisableRuntimeMarshallingAttribute", StringComparison.Ordinal))
+                {
+                    contains = true;
+                    break;
+                }
+            }
+
+            if (shouldHaveAttribute)
+            {
+                Assert.True(contains);
+            }
+            else
+            {
+                // The assembly level attribute is generated only for .NET 7 and newer
+                Assert.False(contains);
+            }
         }
 
         [Fact]
@@ -767,7 +817,7 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework, $".NET {ToolsetInfo.CurrentTargetFrameworkVersion}")]
         public void CheckTargetFrameworkDisplayName(string targetFrameworkVersion, string expectedFrameworkDisplayName)
         {
-            TestProject libraryProject = new TestProject()
+            TestProject libraryProject = new()
             {
                 Name = "LibraryProject",
                 TargetFrameworks = targetFrameworkVersion
@@ -777,7 +827,7 @@ namespace Microsoft.NET.Build.Tests
 public class LibraryClass{}
 ";
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "HelloWorld",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,

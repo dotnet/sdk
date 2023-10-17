@@ -1,16 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Microsoft.Css.Parser.Parser;
 using Microsoft.Css.Parser.Tokens;
 using Microsoft.Css.Parser.TreeItems;
@@ -39,7 +33,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         {
             var allDiagnostics = new ConcurrentQueue<ErrorMessage>();
 
-            System.Threading.Tasks.Parallel.For(0, FilesToTransform.Length, i =>
+            Parallel.For(0, FilesToTransform.Length, i =>
             {
                 var input = FilesToTransform[i];
                 var inputFile = input.GetMetadata("FullPath");
@@ -188,7 +182,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             private int FindPositionToInsertInSelector(SimpleSelector lastSimpleSelector)
             {
                 var children = lastSimpleSelector.Children;
-                for (var i  = 0; i < children.Count; i++)
+                for (var i = 0; i < children.Count; i++)
                 {
                     switch (children[i])
                     {

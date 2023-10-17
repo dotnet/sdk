@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -38,9 +34,9 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             {
                 _feeds = new List<MockFeed>();
                 _feeds.Add(new MockFeed
-                    {
-                        Type = MockFeedType.FeedFromGlobalNugetConfig,
-                        Packages = new List<MockFeedPackage>
+                {
+                    Type = MockFeedType.FeedFromGlobalNugetConfig,
+                    Packages = new List<MockFeedPackage>
                         {
                             new MockFeedPackage
                             {
@@ -49,7 +45,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                                 ToolCommandName = DefaultToolCommandName,
                             }
                         }
-                    });
+                });
             }
             else
             {
@@ -99,12 +95,12 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             var packageVersion = feedPackage.Version;
             targetFramework = string.IsNullOrEmpty(targetFramework) ? "targetFramework" : targetFramework;
 
-             var fakeExecutableSubDirectory = Path.Combine(
-                packageId.ToLowerInvariant(),
-                packageVersion.ToLowerInvariant(),
-                "tools",
-                targetFramework,
-                Constants.AnyRid);
+            var fakeExecutableSubDirectory = Path.Combine(
+               packageId.ToLowerInvariant(),
+               packageVersion.ToLowerInvariant(),
+               "tools",
+               targetFramework,
+               Constants.AnyRid);
             var fakeExecutablePath = Path.Combine(fakeExecutableSubDirectory, FakeEntrypointName);
 
             _fileSystem.Directory.CreateDirectory(Path.Combine(assetJsonOutput.Value, fakeExecutableSubDirectory));
@@ -114,7 +110,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 fakeExecutablePath);
             _fileSystem.File.WriteAllText(
                 assetJsonOutput.WithFile(FakeCommandSettingsFileName).Value,
-                JsonSerializer.Serialize(new {Name = feedPackage.ToolCommandName}));
+                JsonSerializer.Serialize(new { Name = feedPackage.ToolCommandName }));
         }
 
         public MockFeedPackage GetPackage(

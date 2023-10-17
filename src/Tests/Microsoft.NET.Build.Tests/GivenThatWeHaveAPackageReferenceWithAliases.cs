@@ -1,19 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using Xunit;
-using Xunit.Abstractions;
-using static System.Net.WebRequestMethods;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -29,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
             var packageReferences = GetPackageReferencesWithConflictingTypes(targetFramework, packageNames: new string[] { "A", "B" });
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "Project",
                 IsExe = false,
@@ -51,7 +39,7 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var packagesPaths = packageReferences.Select(e => Path.GetDirectoryName(e.NupkgPath));
-            List<string> sources = new List<string>() { NuGetConfigWriter.DotnetCoreBlobFeed };
+            List<string> sources = new() { NuGetConfigWriter.DotnetCoreBlobFeed };
             sources.AddRange(packagesPaths);
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
@@ -69,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
             var packageReferenceA = GetPackageReference(targetFramework, "A", ClassLibClassA);
             var packageReferenceB = GetPackageReference(targetFramework, "B", ClassLibClassB);
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "Project",
                 IsExe = false,
@@ -96,7 +84,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.SourceFiles[$"{testProject.Name}.cs"] = ClassLibAandBUsage;
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            List<string> sources = new List<string>() { NuGetConfigWriter.DotnetCoreBlobFeed, Path.GetDirectoryName(packageReferenceA.NupkgPath), Path.GetDirectoryName(packageReferenceB.NupkgPath) };
+            List<string> sources = new() { NuGetConfigWriter.DotnetCoreBlobFeed, Path.GetDirectoryName(packageReferenceA.NupkgPath), Path.GetDirectoryName(packageReferenceB.NupkgPath) };
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -112,7 +100,7 @@ namespace Microsoft.NET.Build.Tests
 
             var packageReferenceA = GetPackageReference(targetFramework, "A", ClassLibMultipleClasses);
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "Project",
                 IsExe = false,
@@ -132,7 +120,7 @@ namespace Microsoft.NET.Build.Tests
             testProject.SourceFiles[$"{testProject.Name}.cs"] = ClassLibAandBUsage;
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            List<string> sources = new List<string>() { NuGetConfigWriter.DotnetCoreBlobFeed, Path.GetDirectoryName(packageReferenceA.NupkgPath) };
+            List<string> sources = new() { NuGetConfigWriter.DotnetCoreBlobFeed, Path.GetDirectoryName(packageReferenceA.NupkgPath) };
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
             var buildCommand = new BuildCommand(testAsset);

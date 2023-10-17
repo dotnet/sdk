@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
@@ -15,7 +14,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         {
             if (!FXVersion.TryParse(version, out _version))
             {
-                throw new ArgumentException(Strings.InvalidManifestVersion, version);     
+                throw new ArgumentException(Strings.InvalidManifestVersion, version);
             }
         }
 
@@ -36,7 +35,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public override int GetHashCode()
         {
-            return _version.GetHashCode();
+            //  FXVersion doesn't define its own hashcode, so convert to string and get its hashcode
+            return ToString().GetHashCode();
         }
 
         public override string ToString()

@@ -1,23 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -38,7 +23,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
 
             string filenameToSkip = "Newtonsoft.Json.dll";
 
@@ -75,9 +60,9 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.RuntimeIdentifier = EnvironmentInfo.GetCompatibleRid(testProject.TargetFrameworks);
 
-            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+            testProject.PackageReferences.Add(new TestPackageReference("Libuv", "1.10.0"));
 
-            string filenameToSkip = FileConstants.DynamicLibPrefix + "sqlite3" + FileConstants.DynamicLibSuffix;
+            string filenameToSkip = "libuv" + FileConstants.DynamicLibSuffix;
 
             TestSkippingFile(testProject, filenameToSkip, "native");
         }
@@ -92,9 +77,9 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+            testProject.PackageReferences.Add(new TestPackageReference("Libuv", "1.10.0"));
 
-            string filenameToSkip = FileConstants.DynamicLibPrefix + "sqlite3" + FileConstants.DynamicLibSuffix;
+            string filenameToSkip = "libuv" + FileConstants.DynamicLibSuffix;
 
             TestSkippingFile(testProject, filenameToSkip, "runtimeTargets");
         }
@@ -241,7 +226,7 @@ namespace Microsoft.NET.Build.Tests
                                         new XAttribute("Condition", $"'%(Filename)%(Extension)' == '{filenameToSkip}'"));
 
                 itemGroup.Add(fileToSkipItem);
-            }            
+            }
 
             var conflictItem = new XElement(ns + "_ConflictPackageFiles",
                                 new XAttribute("Include", "@(_FileToSkip)"),

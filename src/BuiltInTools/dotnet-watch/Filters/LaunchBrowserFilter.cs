@@ -2,20 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.NavigateTo;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
     internal sealed class LaunchBrowserFilter : IWatchFilter, IAsyncDisposable
     {
-        private static readonly Regex NowListeningRegex = new Regex(@"Now listening on: (?<url>.*)\s*$", RegexOptions.None | RegexOptions.Compiled, TimeSpan.FromSeconds(10));
+        private static readonly Regex NowListeningRegex = new(@"Now listening on: (?<url>.*)\s*$", RegexOptions.None | RegexOptions.Compiled, TimeSpan.FromSeconds(10));
         private readonly DotNetWatchOptions _options;
         private readonly string? _browserPath;
         private bool _attemptedBrowserLaunch;

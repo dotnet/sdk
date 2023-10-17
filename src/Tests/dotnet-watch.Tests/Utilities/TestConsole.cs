@@ -1,13 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit.Abstractions;
 
 namespace Microsoft.Extensions.Tools.Internal
 {
@@ -15,7 +9,7 @@ namespace Microsoft.Extensions.Tools.Internal
     {
         private event ConsoleCancelEventHandler _cancelKeyPress = default!;
 
-        private readonly TaskCompletionSource<bool> _cancelKeySubscribed = new TaskCompletionSource<bool>();
+        private readonly TaskCompletionSource<bool> _cancelKeySubscribed = new();
         private readonly TestOutputWriter _testWriter;
 
         public TestConsole(ITestOutputHelper output)
@@ -75,8 +69,8 @@ namespace Microsoft.Extensions.Tools.Internal
         private class TestOutputWriter : TextWriter
         {
             private readonly ITestOutputHelper _output;
-            private readonly StringBuilder _sb = new StringBuilder();
-            private readonly StringBuilder _currentOutput = new StringBuilder();
+            private readonly StringBuilder _sb = new();
+            private readonly StringBuilder _currentOutput = new();
 
             public TestOutputWriter(ITestOutputHelper output)
             {

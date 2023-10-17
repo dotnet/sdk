@@ -1,18 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.InteropServices;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -56,7 +46,7 @@ namespace Microsoft.NET.Publish.Tests
                 msbuildArgs.Add($"/p:UseAppHost={useAppHost}");
             }
 
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX) &&
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) &&
                 targetFramework == "netcoreapp2.1")
             {
                 //  .NET Core 2.1.0 packages don't support latest versions of OS X, so roll forward to the
@@ -122,7 +112,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining(Strings.FrameworkDependentAppHostRequiresVersion21.Replace("“", "\"").Replace("”", "\""));
+                .HaveStdOutContaining(Strings.FrameworkDependentAppHostRequiresVersion21.Replace("\u0093", "\"").Replace("\u0094", "\""));
         }
     }
 }

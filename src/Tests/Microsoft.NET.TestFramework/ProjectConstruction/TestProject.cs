@@ -1,15 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
-using Xunit.Sdk;
 
 namespace Microsoft.NET.TestFramework.ProjectConstruction
 {
@@ -133,10 +127,10 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
         internal void Create(TestAsset targetTestAsset, string testProjectsSourceFolder, string targetExtension = ".csproj")
         {
-            string targetFolder = Path.Combine(targetTestAsset.Path, this.Name);
+            string targetFolder = Path.Combine(targetTestAsset.Path, Name);
             Directory.CreateDirectory(targetFolder);
 
-            string targetProjectPath = Path.Combine(targetFolder, this.Name + targetExtension);
+            string targetProjectPath = Path.Combine(targetFolder, Name + targetExtension);
 
             string sourceProject;
             string sourceProjectBase = Path.Combine(testProjectsSourceFolder, "ProjectConstruction");
@@ -217,30 +211,30 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
             if (IsSdkProject)
             {
-                if (this.TargetFrameworks.Contains(";"))
+                if (TargetFrameworks.Contains(";"))
                 {
-                    propertyGroup.Add(new XElement(ns + "TargetFrameworks", this.TargetFrameworks));
+                    propertyGroup.Add(new XElement(ns + "TargetFrameworks", TargetFrameworks));
                 }
                 else
                 {
-                    propertyGroup.Add(new XElement(ns + "TargetFramework", this.TargetFrameworks));
+                    propertyGroup.Add(new XElement(ns + "TargetFramework", TargetFrameworks));
                 }
 
-                if (!string.IsNullOrEmpty(this.RuntimeFrameworkVersion))
+                if (!string.IsNullOrEmpty(RuntimeFrameworkVersion))
                 {
-                    propertyGroup.Add(new XElement(ns + "RuntimeFrameworkVersion", this.RuntimeFrameworkVersion));
+                    propertyGroup.Add(new XElement(ns + "RuntimeFrameworkVersion", RuntimeFrameworkVersion));
                 }
 
-                if (!string.IsNullOrEmpty(this.RuntimeIdentifier))
+                if (!string.IsNullOrEmpty(RuntimeIdentifier))
                 {
-                    propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", this.RuntimeIdentifier));
+                    propertyGroup.Add(new XElement(ns + "RuntimeIdentifier", RuntimeIdentifier));
                 }
             }
             else
             {
-                if (!string.IsNullOrEmpty(this.TargetFrameworkProfile))
+                if (!string.IsNullOrEmpty(TargetFrameworkProfile))
                 {
-                    propertyGroup.Add(new XElement(ns + "TargetFrameworkProfile", this.TargetFrameworkProfile));
+                    propertyGroup.Add(new XElement(ns + "TargetFrameworkProfile", TargetFrameworkProfile));
 
                     //  To construct an accurate PCL project file, we must modify the import of the CSharp targets;
                     //    building/testing the SDK requires a VSDev command prompt which sets 'VSINSTALLDIR'
@@ -248,7 +242,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                     importGroup.Attribute("Project").Value = "$(VSINSTALLDIR)\\MSBuild\\Microsoft\\Portable\\$(TargetFrameworkVersion)\\Microsoft.Portable.CSharp.targets";
                 }
 
-                propertyGroup.Element(ns + "TargetFrameworkVersion").SetValue(this.TargetFrameworkVersion);
+                propertyGroup.Element(ns + "TargetFrameworkVersion").SetValue(TargetFrameworkVersion);
             }
 
             foreach (var additionalProperty in AdditionalProperties)
@@ -273,21 +267,21 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 }
             }
 
-            if (this.IsExe && !this.IsWinExe)
+            if (IsExe && !IsWinExe)
             {
                 propertyGroup.Element(ns + "OutputType").SetValue("Exe");
             }
-            else if (this.IsWinExe)
+            else if (IsWinExe)
             {
                 propertyGroup.Element(ns + "OutputType").SetValue("WinExe");
             }
 
-            if(this.SelfContained != "")
+            if (SelfContained != "")
             {
-                propertyGroup.Add(new XElement(ns + "SelfContained", String.Equals(this.SelfContained, "true", StringComparison.OrdinalIgnoreCase) ? "true" : "false"));
+                propertyGroup.Add(new XElement(ns + "SelfContained", string.Equals(SelfContained, "true", StringComparison.OrdinalIgnoreCase) ? "true" : "false"));
             }
 
-            if (this.ReferencedProjects.Any())
+            if (ReferencedProjects.Any())
             {
                 var projectReferenceItemGroup = projectXml.Root.Elements(ns + "ItemGroup")
                     .FirstOrDefault(itemGroup => itemGroup.Elements(ns + "ProjectReference").Count() > 0);
@@ -303,7 +297,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 }
             }
 
-            if (this.References.Any())
+            if (References.Any())
             {
                 var referenceItemGroup = projectXml.Root.Elements(ns + "ItemGroup")
                     .FirstOrDefault(itemGroup => itemGroup.Elements(ns + "Reference").Count() > 0);
@@ -320,7 +314,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 }
             }
 
-            if (this.FrameworkReferences.Any())
+            if (FrameworkReferences.Any())
             {
                 var frameworkReferenceItemGroup = new XElement(ns + "ItemGroup");
                 projectXml.Root.Add(frameworkReferenceItemGroup);
@@ -331,7 +325,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 }
             }
 
-            if (this.CopyFilesTargets.Any())
+            if (CopyFilesTargets.Any())
             {
                 foreach (var copyFilesTarget in CopyFilesTargets)
                 {
@@ -365,7 +359,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
             if (SourceFiles.Count == 0)
             {
-                if (this.IsExe || this.IsWinExe)
+                if (IsExe || IsWinExe)
                 {
                     string source =
     @"using System;
@@ -377,7 +371,7 @@ class Program
         Console.WriteLine(""Hello World!"");
 ";
 
-                    foreach (var dependency in this.ReferencedProjects)
+                    foreach (var dependency in ReferencedProjects)
                     {
                         string safeDependencyName = dependency.Name.Replace('.', '_');
 
@@ -388,13 +382,13 @@ class Program
                     source +=
     @"    }
 }";
-                    string sourcePath = Path.Combine(targetFolder, this.Name + "Program.cs");
+                    string sourcePath = Path.Combine(targetFolder, Name + "Program.cs");
 
                     File.WriteAllText(sourcePath, source);
                 }
 
                 {
-                    string safeThisName = this.Name.Replace('.', '_');
+                    string safeThisName = Name.Replace('.', '_');
                     string source =
     $@"using System;
 using System.Collections.Generic;
@@ -403,10 +397,10 @@ namespace {safeThisName}
 {{
     public class {safeThisName}Class
     {{
-        public static string Name {{ get {{ return ""{this.Name}""; }} }}
+        public static string Name {{ get {{ return ""{Name}""; }} }}
         public static List<string> List {{ get {{ return null; }} }}
 ";
-                    foreach (var dependency in this.ReferencedProjects)
+                    foreach (var dependency in ReferencedProjects)
                     {
                         string safeDependencyName = dependency.Name.Replace('.', '_');
 
@@ -417,7 +411,7 @@ namespace {safeThisName}
                     source +=
     @"    }
 }";
-                    string sourcePath = Path.Combine(targetFolder, this.Name + ".cs");
+                    string sourcePath = Path.Combine(targetFolder, Name + ".cs");
 
                     File.WriteAllText(sourcePath, source);
                 }
@@ -503,7 +497,7 @@ namespace {safeThisName}
                 if (colonIndex > 0)
                 {
                     string propertyName = line.Substring(0, colonIndex);
-                    string propertyValue = line.Length == colonIndex + 1 ? String.Empty : line.Substring(colonIndex + 2);
+                    string propertyValue = line.Length == colonIndex + 1 ? string.Empty : line.Substring(colonIndex + 2);
                     propertyValues[propertyName] = propertyValue;
                 }
             }

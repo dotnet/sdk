@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-
 namespace Microsoft.DotNet.Cli.Utils
 {
     public class EnvironmentProvider : IEnvironmentProvider
@@ -14,7 +8,7 @@ namespace Microsoft.DotNet.Cli.Utils
         private static char[] s_pathSeparator = new char[] { Path.PathSeparator };
         private static char[] s_quote = new char[] { '"' };
         private IEnumerable<string> _searchPaths;
-        private readonly Lazy<string> _userHomeDirectory = new Lazy<string>(() => Environment.GetEnvironmentVariable("HOME") ?? string.Empty);
+        private readonly Lazy<string> _userHomeDirectory = new(() => Environment.GetEnvironmentVariable("HOME") ?? string.Empty);
         private IEnumerable<string> _executableExtensions;
 
         public IEnumerable<string> ExecutableExtensions
@@ -28,7 +22,7 @@ namespace Microsoft.DotNet.Cli.Utils
                         ? Environment.GetEnvironmentVariable("PATHEXT")
                             .Split(';')
                             .Select(e => e.ToLower().Trim('"'))
-                        : new [] { string.Empty };
+                        : new[] { string.Empty };
                 }
 
                 return _executableExtensions;

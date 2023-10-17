@@ -1,16 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Tool.Common;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -70,7 +61,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                     $"--add-source {expectedSourceValue1} " +
                     $"--add-source {expectedSourceValue2} console.test.app");
 
-            
+
             result.GetValue<string[]>(ToolInstallCommandParser.AddSourceOption)[0].Should().Be(expectedSourceValue1);
             result.GetValue<string[]>(ToolInstallCommandParser.AddSourceOption)[1].Should().Be(expectedSourceValue2);
         }
@@ -82,7 +73,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             result.GetValue(ToolInstallCommandParser.GlobalOption).Should().Be(true);
         }
-        
+
         [Fact]
         public void InstallToolParserCanGetLocalOption()
         {

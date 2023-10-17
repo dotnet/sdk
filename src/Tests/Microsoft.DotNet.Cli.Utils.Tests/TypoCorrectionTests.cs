@@ -3,8 +3,6 @@
 
 #nullable enable
 
-using FluentAssertions;
-using Xunit;
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
@@ -32,7 +30,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         public void TypoCorrection_BasicTest(string token, string possibleTokens, string expectedTokens, string checkedScenario)
         {
             TypoCorrection.GetSimilarTokens(possibleTokens.Split('|'), token)
-                .Should().BeEquivalentTo(expectedTokens.Split('|', System.StringSplitOptions.RemoveEmptyEntries), checkedScenario);
+                .Should().BeEquivalentTo(expectedTokens.Split('|', StringSplitOptions.RemoveEmptyEntries), checkedScenario);
         }
     }
 }

@@ -1,12 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using FluentAssertions;
 using Microsoft.DotNet.CommandFactory;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Moq;
-using Xunit;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -39,7 +35,7 @@ namespace Microsoft.DotNet.Tests
             resolverCalls.Should()
                 .HaveCount(2)
                 .And
-                .ContainInOrder(new [] {1, 2});
+                .ContainInOrder(new[] { 1, 2 });
 
         }
 
@@ -70,7 +66,7 @@ namespace Microsoft.DotNet.Tests
             resolverCalls.Should()
                 .HaveCount(1)
                 .And
-                .ContainInOrder(new [] {1});
+                .ContainInOrder(new[] { 1 });
 
         }
     }

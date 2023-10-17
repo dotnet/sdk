@@ -1,21 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.CommandLine.Completions;
-using System.IO;
-using System.Linq;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
 using static System.Array;
-using System.Collections.Generic;
 
 namespace Microsoft.DotNet.Cli
 {
     internal static class Complete
     {
-        private static CompletionItem ToCompletionItem(string s) => new CompletionItem(s);
+        private static CompletionItem ToCompletionItem(string s) => new(s);
 
         public static IEnumerable<CompletionItem> TargetFrameworksFromProjectFile(CompletionContext _)
         {

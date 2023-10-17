@@ -1,12 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Xunit;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 {
@@ -16,7 +12,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         private static readonly ITaskItem CarContext = new TaskItem("CarContext", new Dictionary<string, string>() { { "Value", @"Server=(localdb)\mssqllocaldb; Database=CarDB;Trusted_Connection=True;MultipleActiveResultSets=true" } });
         private static readonly ITaskItem PersonContext = new TaskItem("PersonContext", new Dictionary<string, string>() { { "Value", @"Server=(localdb)\mssqllocaldb; Database=PersonDb;Trusted_Connection=True;MultipleActiveResultSets=true" } });
 
-        private static readonly List<object[]> testData = new List<object[]>
+        private static readonly List<object[]> testData = new()
         {
             new object[] {new ITaskItem[] { DefaultContext } },
             new object[] {new ITaskItem[] { DefaultContext, CarContext, PersonContext } }
@@ -41,7 +37,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             }
 
             // Act
-            GenerateEFSQLScripts task = new GenerateEFSQLScripts()
+            GenerateEFSQLScripts task = new()
             {
                 ProjectDirectory = projectFolder,
                 EFPublishDirectory = publishDir,

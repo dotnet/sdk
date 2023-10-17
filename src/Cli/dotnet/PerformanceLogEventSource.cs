@@ -1,12 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.Diagnostics.Tracing;
-using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 
@@ -15,7 +12,7 @@ namespace Microsoft.DotNet.Cli
     [EventSource(Name = "Microsoft-Dotnet-CLI-Performance", Guid = "cbd57d06-3b9f-5374-ed53-cfbcc23cf44f")]
     internal sealed class PerformanceLogEventSource : EventSource
     {
-        internal static PerformanceLogEventSource Log = new PerformanceLogEventSource();
+        internal static PerformanceLogEventSource Log = new();
 
         private PerformanceLogEventSource()
         {
@@ -24,7 +21,7 @@ namespace Microsoft.DotNet.Cli
         [NonEvent]
         internal void LogStartUpInformation(PerformanceLogStartupInformation startupInfo)
         {
-            if(!IsEnabled())
+            if (!IsEnabled())
             {
                 return;
             }
@@ -189,7 +186,7 @@ namespace Microsoft.DotNet.Cli
         [NonEvent]
         internal void LogMachineConfiguration()
         {
-            if(IsEnabled())
+            if (IsEnabled())
             {
                 MachineConfiguration(Environment.MachineName, Environment.ProcessorCount);
             }
@@ -211,7 +208,7 @@ namespace Microsoft.DotNet.Cli
                     try
                     {
                         DriveConfiguration(driveInfo.Name, driveInfo.DriveFormat, driveInfo.DriveType.ToString(),
-                            (double)driveInfo.TotalSize/1024/1024, (double)driveInfo.AvailableFreeSpace/1024/1024);
+                            (double)driveInfo.TotalSize / 1024 / 1024, (double)driveInfo.AvailableFreeSpace / 1024 / 1024);
                     }
                     catch
                     {
@@ -240,7 +237,7 @@ namespace Microsoft.DotNet.Cli
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    Interop.MEMORYSTATUSEX memoryStatusEx = new Interop.MEMORYSTATUSEX();
+                    Interop.MEMORYSTATUSEX memoryStatusEx = new();
                     memoryStatusEx.dwLength = (uint)Marshal.SizeOf(memoryStatusEx);
 
                     if (Interop.GlobalMemoryStatusEx(ref memoryStatusEx))
@@ -249,10 +246,10 @@ namespace Microsoft.DotNet.Cli
                             (int)(memoryStatusEx.ullTotalPhys / 1024 / 1024));
                     }
                 }
-                else if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    ProcMemInfo memInfo = new ProcMemInfo();
-                    if(memInfo.Valid)
+                    ProcMemInfo memInfo = new();
+                    if (memInfo.Valid)
                     {
                         MemoryConfiguration(memInfo.MemoryLoad, memInfo.AvailableMemoryMB, memInfo.TotalMemoryMB);
                     }
@@ -425,7 +422,7 @@ namespace Microsoft.DotNet.Cli
         {
             try
             {
-                using (StreamReader reader = new StreamReader(File.OpenRead("/proc/meminfo")))
+                using (StreamReader reader = new(File.OpenRead("/proc/meminfo")))
                 {
                     string line;
                     while (!Valid && ((line = reader.ReadLine()) != null))

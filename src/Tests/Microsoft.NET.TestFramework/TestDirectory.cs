@@ -1,12 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-
 namespace Microsoft.NET.TestFramework
 {
     public class TestDirectory
@@ -37,8 +31,10 @@ namespace Microsoft.NET.TestFramework
                 try
                 {
                     //  Clear read-only flags on anything in the directory
-                    var dirInfo = new DirectoryInfo(path);
-                    dirInfo.Attributes = FileAttributes.Normal;
+                    var dirInfo = new DirectoryInfo(path)
+                    {
+                        Attributes = FileAttributes.Normal
+                    };
                     foreach (var info in dirInfo.GetFileSystemInfos("*", SearchOption.AllDirectories))
                     {
                         info.Attributes = FileAttributes.Normal;

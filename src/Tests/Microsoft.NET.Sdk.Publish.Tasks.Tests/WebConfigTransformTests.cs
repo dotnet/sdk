@@ -1,14 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 using Microsoft.NET.Sdk.Publish.Tasks;
 using Microsoft.NET.Sdk.Publish.Tasks.Tests;
-using Xunit;
 
 // Some of the tests Copied from https://raw.githubusercontent.com/aspnet/IISIntegration/50f066579a96c6f2b2a4c47524c684e1ef3dfdf0/test/Microsoft.AspNetCore.Server.IISIntegration.Tools.Tests/WebConfigTransformFacts.cs
 
@@ -20,7 +14,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
         public void WebConfigTransform_creates_new_config_if_one_does_not_exist()
         {
             Assert.True(XNode.DeepEquals(WebConfigTransformTemplates.WebConfigTemplate,
-                    WebConfigTransform.Transform(null, "test.dll", configureForAzure: false, useAppHost: true, extension: ".exe", aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName:null, projectFullPath: null)));
+                    WebConfigTransform.Transform(null, "test.dll", configureForAzure: false, useAppHost: true, extension: ".exe", aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName: null, projectFullPath: null)));
 
             Assert.True(XNode.DeepEquals(WebConfigTransformTemplates.WebConfigTemplatePortable,
                     WebConfigTransform.Transform(null, "test.dll", configureForAzure: false, useAppHost: false, extension: null, aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName: null, projectFullPath: null)));
@@ -184,7 +178,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
         public void WebConfigTransform_will_append_Env_IfPassed()
         {
             var input = WebConfigTransformTemplates.WebConfigTemplate;
- 
+
             var output = WebConfigTransform.Transform(input, "test.dll", configureForAzure: false, useAppHost: true, extension: ".exe", aspNetCoreModuleName: null, aspNetCoreHostingModel: null, environmentName: "Production", projectFullPath: null);
             Assert.True(XNode.DeepEquals(output, WebConfigTransformTemplates.WebConfigTemplateWithEnvironmentVariable));
         }
@@ -199,7 +193,7 @@ namespace Microsoft.Net.Sdk.Publish.Tasks.Tests
         }
 
 
-        private static readonly List<object[]> testData = new List<object[]>
+        private static readonly List<object[]> testData = new()
         {
             new object[] {new XDocument(WebConfigTransformTemplates.WebConfigTemplateWithoutLocation) },
             new object[] {new XDocument(WebConfigTransformTemplates.WebConfigTemplateWithNonRelevantLocationFirst) },

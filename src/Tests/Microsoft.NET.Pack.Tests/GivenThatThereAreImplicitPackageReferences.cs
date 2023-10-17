@@ -1,20 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Xml.Linq;
-using System.Linq;
-using FluentAssertions;
-using System.Runtime.InteropServices;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Pack.Tests
 {
     public class GivenThatThereAreImplicitPackageReferences : SdkTest
@@ -26,7 +12,7 @@ namespace Microsoft.NET.Pack.Tests
         [Fact]
         public void Packing_a_netstandard_1_x_library_includes_the_implicit_dependency()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackNetStandard1x",
                 TargetFrameworks = "netstandard1.4",
@@ -45,7 +31,7 @@ namespace Microsoft.NET.Pack.Tests
         [Fact]
         public void Packing_a_netstandard_2_0_library_does_not_include_the_implicit_dependency()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackNetStandard20",
                 TargetFrameworks = "netstandard2.0",
@@ -60,7 +46,7 @@ namespace Microsoft.NET.Pack.Tests
         [Fact]
         public void Packing_a_netcoreapp_1_1_library_includes_the_implicit_dependency()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackNetCoreApp11Library",
                 TargetFrameworks = "netcoreapp1.1",
@@ -81,7 +67,7 @@ namespace Microsoft.NET.Pack.Tests
         [Fact]
         public void Packing_a_netcoreapp_2_0_library_does_not_include_the_implicit_dependency()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackNetCoreApp20Library",
                 TargetFrameworks = "netcoreapp2.0",
@@ -96,7 +82,7 @@ namespace Microsoft.NET.Pack.Tests
         [Fact]
         public void Packing_a_netcoreapp_1_1_app_includes_the_implicit_dependency()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackNetCoreApp11App",
                 TargetFrameworks = "netcoreapp1.1",
@@ -117,7 +103,7 @@ namespace Microsoft.NET.Pack.Tests
         [WindowsOnlyFact]
         public void Packing_an_app_exclude_dependencies_framework_assemblies_dependency()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "Packnet462App",
                 TargetFrameworks = "net462",
@@ -131,7 +117,7 @@ namespace Microsoft.NET.Pack.Tests
             testProject.References.Add("System.Web");
 
             var dependencies = GetFrameworkAssemblies(PackAndGetNuspec(testProject), out var _);
-            
+
             dependencies.Count().Should().Be(1);
             dependencies.Single().Attribute("assemblyName").Value.Should().Be("System.Web");
         }
@@ -141,7 +127,7 @@ namespace Microsoft.NET.Pack.Tests
         [InlineData("netcoreapp3.0")]
         public void Packing_a_netcoreapp_2_0_app_includes_no_dependencies(string targetFramework)
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackApp_" + targetFramework,
                 TargetFrameworks = targetFramework,
@@ -158,7 +144,7 @@ namespace Microsoft.NET.Pack.Tests
         [InlineData("Microsoft.AspNetCore.All")]
         public void Package_an_aspnetcore_2_1_app_does_not_include_the_implicit_dependency(string packageId)
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackAspNetCoreApp21App",
                 TargetFrameworks = "netcoreapp2.1",
@@ -176,7 +162,7 @@ namespace Microsoft.NET.Pack.Tests
         [Fact]
         public void Packing_a_netcoreapp_2_0_DotnetCliTool_app_includes_the_implicit_dependency()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackNetCoreApp20App",
                 TargetFrameworks = "netcoreapp2.0",
@@ -199,7 +185,7 @@ namespace Microsoft.NET.Pack.Tests
         [Fact]
         public void Packing_a_multitargeted_library_includes_implicit_dependencies_when_appropriate()
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "PackMultiTargetedLibrary",
                 TargetFrameworks = $"netstandard1.1;netstandard2.0;netcoreapp1.1;{ToolsetInfo.CurrentTargetFramework}",

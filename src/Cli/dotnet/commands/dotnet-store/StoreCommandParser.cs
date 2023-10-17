@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.CommandLine;
-using System.Linq;
 using Microsoft.DotNet.Tools.Store;
 using LocalizableStrings = Microsoft.DotNet.Tools.Store.LocalizableStrings;
 
@@ -22,7 +20,8 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.ProjectManifestDescription,
             HelpName = LocalizableStrings.ProjectManifest
-        }.ForwardAsMany(o => {
+        }.ForwardAsMany(o =>
+        {
             // the first path doesn't need to go through CommandDirectoryContext.ExpandPath
             // since it is a direct argument to MSBuild, not a property
             var materializedString = $"{o.First()}";

@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.CommandFactory
@@ -50,7 +46,7 @@ namespace Microsoft.DotNet.CommandFactory
             string command,
             IEnumerable<string> args)
         {
-            var comSpec = Environment.GetEnvironmentVariable("ComSpec") ?? "cmd.exe";
+            var comSpec = Environment.GetEnvironmentVariable("ComSpec") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "cmd.exe");
 
             // Handle the case where ComSpec is already the command
             if (command.Equals(comSpec, StringComparison.OrdinalIgnoreCase))

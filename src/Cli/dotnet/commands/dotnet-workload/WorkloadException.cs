@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 
 namespace Microsoft.DotNet.Workloads.Workload
 {
@@ -17,7 +16,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public WorkloadException() : base()
         {
-            
+
         }
 
         public WorkloadException(string? message) : base(message)

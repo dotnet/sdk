@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Pipes;
-using System.Collections.Generic;
 using System.Runtime.Versioning;
-using System.Text;
 
 namespace Microsoft.DotNet.Installer.Windows
 {
@@ -19,7 +17,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// Queue to track log requests issued before the pipestream is connected.
         /// </summary>
-        private readonly Queue<string> _messageQueue = new Queue<string>();
+        private readonly Queue<string> _messageQueue = new();
 
         public string LogPath
         {

@@ -1,13 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks
 {
@@ -35,7 +29,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 
             bool isSuccess = true;
 
-            List<string> generatedFiles = new List<string>();
+            List<string> generatedFiles = new();
             foreach (var envTransformTemplatePath in EnvTransformTemplatePaths)
             {
                 if (File.Exists(envTransformTemplatePath))

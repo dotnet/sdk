@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -79,7 +77,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private class PackageCacheKeyComparer : IEqualityComparer<KeyValuePair<string, NuGetVersion>>
         {
-            public static readonly PackageCacheKeyComparer Instance = new PackageCacheKeyComparer();
+            public static readonly PackageCacheKeyComparer Instance = new();
 
             private PackageCacheKeyComparer()
             {

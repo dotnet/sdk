@@ -1,17 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.NET.Build.Tasks;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using NuGet.Frameworks;
-using NuGet.ProjectModel;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -36,7 +26,7 @@ namespace Microsoft.NET.Build.Tests
             var exe = Path.Combine( //find the platform directory
                 new DirectoryInfo(Path.Combine(testAsset.TestRoot, "CSConsoleApp", "bin")).GetDirectories().Single().FullName,
                 "Debug",
-                ToolsetInfo.CurrentTargetFramework,
+                $"{ToolsetInfo.CurrentTargetFramework}-windows",
                 "publish",
                 "CSConsoleApp.exe");
 
@@ -57,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
                 .WithSource();
 
             new PublishCommand(Log, Path.Combine(testAsset.TestRoot, "NETCoreCppCliTest"))
-                .Execute(new string[] { "-p:Platform=x64", "-p:EnableManagedpackageReferenceSupport=true"})
+                .Execute(new string[] { "-p:Platform=x64", "-p:EnableManagedpackageReferenceSupport=true" })
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining(Strings.NoSupportCppPublishDotnetCore);

@@ -36,12 +36,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" ExcludeAssets="Runtime" />
-    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" Condition="'$(TargetFramework)'=='net472'" />
-    <PackageReference Include="System.Text.Json" Version="$(SystemTextJsonVersion)" Condition="'$(TargetFramework)'=='net472'" />
-    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingPackageVersion)" />
-    <PackageReference Include="Microsoft.Css.Parser" Version="$(MicrosoftCssParserVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" Condition="'$(TargetFramework)'=='net472'" />
+    <PackageReference Include="System.Text.Json" Condition="'$(TargetFramework)'=='net472'" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    <PackageReference Include="Microsoft.Css.Parser" />
   </ItemGroup>
 
   <ItemGroup>
@@ -113,6 +113,13 @@
       <Content Include="$(PackageLayoutOutputPath)**\*" PackagePath="\" />
     </ItemGroup>
   </Target>
+
+  <!-- Global usings -->
+  <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
+  <ItemGroup>
+    <!-- This causes conflicts with System.Threading.Tasks.Task. Giving it an alias to avoid the conflict. -->
+    <Using Include="Microsoft.Build.Utilities.Task" Alias="Task" />
+  </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 

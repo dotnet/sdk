@@ -1,14 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -281,6 +274,40 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
         }
 
+        private static string FindDotNetExecutable()
+        {
+            var expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+            if (!string.IsNullOrEmpty(expectedPath))
+            {
+                return expectedPath;
+            }
+
+#if NET
+            expectedPath = System.Environment.ProcessPath;
+#else
+            expectedPath = Process.GetCurrentProcess().MainModule.FileName;
+#endif
+
+            if ("dotnet".Equals(Path.GetFileNameWithoutExtension(expectedPath), StringComparison.Ordinal))
+            {
+                return expectedPath;
+            }
+
+            // We were probably running from Visual Studio or Build Tools and found MSBuild instead of dotnet. Use the PATH...
+            var paths = Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator);
+            var exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet";
+            foreach (string path in paths)
+            {
+                var dotnetPath = Path.Combine(path, exeName);
+                if (File.Exists(dotnetPath))
+                {
+                    return dotnetPath;
+                }
+            }
+
+            return exeName;
+        }
+
         // Internal for testing.
         internal static bool TryCreateServerCore(string clientDir, string pipeName, out int? processId, bool debug = false)
         {
@@ -288,7 +315,9 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             // The server should be in the same directory as the client
             var expectedCompilerPath = Path.Combine(clientDir, ServerName);
-            var expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
+
+            var expectedPath = FindDotNetExecutable();
+
             var argumentList = new string[]
             {
                 expectedCompilerPath,

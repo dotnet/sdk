@@ -14,17 +14,22 @@
       </trans-unit>
       <trans-unit id="AppCommandArgsSetNoAppCommand">
         <source>CONTAINER2025: ContainerAppCommandArgs are provided without specifying a ContainerAppCommand.</source>
-        <target state="new">CONTAINER2025: ContainerAppCommandArgs are provided without specifying a ContainerAppCommand.</target>
+        <target state="translated">CONTAINER2025: 提供了 ContainerAppCommandArgs，但未指定 ContainerAppCommand。</target>
         <note>{StrBegin="CONTAINER2025: "}</note>
       </trans-unit>
       <trans-unit id="AppCommandSetNotUsed">
         <source>CONTAINER2026: ContainerAppCommand and ContainerAppCommandArgs must be empty when ContainerAppCommandInstruction is '{0}'.</source>
-        <target state="new">CONTAINER2026: ContainerAppCommand and ContainerAppCommandArgs must be empty when ContainerAppCommandInstruction is '{0}'.</target>
+        <target state="translated">CONTAINER2026: 当 ContainerAppCommandInstruction 为“{0}”时，ContainerAppCommand 和 ContainerAppCommandArgs 必须为空。</target>
         <note>{StrBegin="CONTAINER2026: "}</note>
+      </trans-unit>
+      <trans-unit id="ArchiveRegistry_PushInfo">
+        <source>local archive at '{0}'</source>
+        <target state="translated">本地存档在“{0}”</target>
+        <note>{0} is the path to the file written</note>
       </trans-unit>
       <trans-unit id="BaseEntrypointOverwritten">
         <source>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</source>
-        <target state="new">CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</target>
+        <target state="translated">CONTAINER2022: 基础映像具有一个入口点，该入口点将被覆盖以启动应用程序。如果需要，请将 ContainerAppCommandInstruction 设置为 "Entrypoint"。若要保留基础映像入口点，请将 ContainerAppCommandInstruction 设置为 "DefaultArgs"。</target>
         <note>{StrBegin="CONTAINER2022: "}</note>
       </trans-unit>
       <trans-unit id="BaseImageNameParsingFailed">
@@ -34,7 +39,7 @@
       </trans-unit>
       <trans-unit id="BaseImageNameRegistryFallback">
         <source>CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</source>
-        <target state="new">CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</target>
+        <target state="translated">CONTAINER2020: {0} 未指定注册表，将从 Docker Hub 中拉取。请在名称前面添加映像注册表，例如: "{1}/&lt;image&gt;"。</target>
         <note>{StrBegin="CONTAINER2020: "}</note>
       </trans-unit>
       <trans-unit id="BaseImageNameWithSpaces">
@@ -49,22 +54,22 @@
       </trans-unit>
       <trans-unit id="BlobUploadFailed">
         <source>CONTAINER1001: Failed to upload blob using {0}; received status code '{1}'.</source>
-        <target state="new">CONTAINER1001: Failed to upload blob using {0}; received status code '{1}'.</target>
+        <target state="translated">CONTAINER1001: 无法使用 {0} 上传 blob；已收到状态代码“{1}”。</target>
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
-        <source>Pushed container '{0}' to Docker daemon.</source>
-        <target state="new">Pushed container '{0}' to Docker daemon.</target>
+        <source>Pushed image '{0}' to {1}.</source>
+        <target state="translated">已将图像“{0}”推送到 {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToRegistry">
-        <source>Pushed container '{0}' to registry '{1}'.</source>
-        <target state="new">Pushed container '{0}' to registry '{1}'.</target>
+        <source>Pushed image '{0}' to registry '{1}'.</source>
+        <target state="translated">已将映像“{0}”推送到注册表“{1}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImage">
         <source>Building image '{0}' with tags '{1}' on top of base image '{2}'.</source>
-        <target state="new">Building image '{0}' with tags '{1}' on top of base image '{2}'.</target>
+        <target state="translated">在基本映像“{2}”顶部构建标记为“{1}”的映像“{0}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">
@@ -77,6 +82,11 @@
         <target state="translated">CONTAINER2012: 无法识别注册表“{0}”。</target>
         <note>{StrBegin="CONTAINER2012: "}</note>
       </trans-unit>
+      <trans-unit id="DockerCli_PushInfo">
+        <source>local registry via '{0}'</source>
+        <target state="translated">使用“{0}”的本地注册表</target>
+        <note>{0} is the command used</note>
+      </trans-unit>
       <trans-unit id="DockerInfoFailed">
         <source>CONTAINER3002: Failed to get docker info({0})\n{1}\n{2}</source>
         <target state="translated">CONTAINER3002: 无法获取 docker 信息({0})\n{1}\n{2}</target>
@@ -87,9 +97,9 @@
         <target state="translated">CONTAINER3002: 无法获取 docker 信息: {0}</target>
         <note>{StrBegin="CONTAINER3002: "}</note>
       </trans-unit>
-      <trans-unit id="DockerProcessCreationFailed">
+      <trans-unit id="ContainerRuntimeProcessCreationFailed">
         <source>CONTAINER3001: Failed creating {0} process.</source>
-        <target state="new">CONTAINER3001: Failed creating {0} process.</target>
+        <target state="translated">CONTAINER3001: 未能创建 {0} 进程。</target>
         <note>CONTAINER3001: {0} is the name of the command we failed to run, usually 'docker' or 'podman'.</note>
       </trans-unit>
       <trans-unit id="EmptyOrWhitespacePropertyIgnored">
@@ -104,27 +114,27 @@
       </trans-unit>
       <trans-unit id="EntrypointAndAppCommandArgsSetNoAppCommandInstruction">
         <source>CONTAINER2023: A ContainerEntrypoint and ContainerAppCommandArgs are provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</source>
-        <target state="new">CONTAINER2023: A ContainerEntrypoint and ContainerAppCommandArgs are provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</target>
+        <target state="translated">CONTAINER2023: 提供了 ContainerEntrypoint 和 ContainerAppCommandArgs。必须设置 ContainerAppInstruction 以配置应用程序的启动方式。有效说明为 {0}。</target>
         <note>{StrBegin="CONTAINER2023: "}</note>
       </trans-unit>
       <trans-unit id="EntrypointSetNoAppCommandInstruction">
         <source>CONTAINER2027: A ContainerEntrypoint is provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</source>
-        <target state="new">CONTAINER2027: A ContainerEntrypoint is provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</target>
+        <target state="translated">CONTAINER2027: 提供了 ContainerEntrypoint。必须设置 ContainerAppInstruction 以配置应用程序的启动方式。有效说明为 {0}。</target>
         <note>{StrBegin="CONTAINER2027: "}</note>
       </trans-unit>
       <trans-unit id="EntrypointArgsSetNoEntrypoint">
         <source>CONTAINER2024: ContainerEntrypointArgs are provided without specifying a ContainerEntrypoint.</source>
-        <target state="new">CONTAINER2024: ContainerEntrypointArgs are provided without specifying a ContainerEntrypoint.</target>
+        <target state="translated">CONTAINER2024: 提供了 ContainerEntrypointArgs，但未指定 ContainerEntrypoint。</target>
         <note>{StrBegin="CONTAINER2024: "}</note>
       </trans-unit>
       <trans-unit id="EntrypointArgsSetPreferAppCommandArgs">
         <source>CONTAINER2029: ContainerEntrypointArgsSet are provided. Change to use ContainerAppCommandArgs for arguments that must always be set, or ContainerDefaultArgs for arguments that can be overridden when the container is created.</source>
-        <target state="new">CONTAINER2029: ContainerEntrypointArgsSet are provided. Change to use ContainerAppCommandArgs for arguments that must always be set, or ContainerDefaultArgs for arguments that can be overridden when the container is created.</target>
+        <target state="translated">CONTAINER2029: 提供了 ContainerEntrypointArgsSet。对于必须始终设置的参数，请更改为使用 ContainerAppCommandArgs；对于可在创建容器时替代的参数，请更改为使用 ContainerDefaultArgs。</target>
         <note>{StrBegin="CONTAINER2029: "}</note>
       </trans-unit>
       <trans-unit id="EntrypointConflictAppCommand">
         <source>CONTAINER2028: ContainerEntrypoint can not be combined with ContainerAppCommandInstruction '{0}'.</source>
-        <target state="new">CONTAINER2028: ContainerEntrypoint can not be combined with ContainerAppCommandInstruction '{0}'.</target>
+        <target state="translated">CONTAINER2028: ContainerEntrypoint 不能与 ContainerAppCommandInstruction“{0}”一起使用。</target>
         <note>{StrBegin="CONTAINER2028: "}</note>
       </trans-unit>
       <trans-unit id="FailedRetrievingCredentials">
@@ -139,27 +149,27 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
-        <target state="needs-review-translation">CONTAINER1009: 未能将映像加载到本地 Docker 守护程序。stdout: {0}</target>
+        <target state="translated">CONTAINER1009: 未能从本地注册表加载映像。stdout: {0}</target>
         <note>{StrBegin="CONTAINER1009: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
-        <target state="new">CONTAINER1010: Pulling images from local registry is not supported.</target>
+        <target state="translated">CONTAINER1010: 不支持从本地注册表拉取映像。</target>
         <note>{StrBegin="CONTAINER1010: "}</note>
-      </trans-unit>
-      <trans-unit id="InvalidContainerRepository">
-        <source>CONTAINER2014: Invalid {0}: {1}.</source>
-        <target state="translated">CONTAINER2014: 无效 {0}: {1}。</target>
-        <note>{StrBegin="CONTAINER2014: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="translated">CONTAINER2015: {0}: "{1}" 不是有效的环境变量。忽略。</target>
         <note>{StrBegin="CONTAINER2015: "}</note>
       </trans-unit>
-      <trans-unit id="InvalidImageName">
-        <source>CONTAINER2005: The first character of the image name must be a lowercase letter or a digit.</source>
-        <target state="translated">CONTAINER2005: 图像名称的第一个字符必须是小写字母或数字。</target>
+      <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
+        <source>CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</source>
+        <target state="translated">CONTAINER2005: 推断的图像名称“{0}”包含完全无效的字符。图像名称的有效字符包括字母数字字符、-、/ 或 _，图像名称必须以字母数字字符开头。</target>
+        <note>{StrBegin="CONTAINER2005: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidImageName_NonAlphanumericStartCharacter">
+        <source>CONTAINER2005: The first character of the image name '{0}' must be a lowercase letter or a digit and all characters in the name must be an alphanumeric character, -, /, or _.</source>
+        <target state="translated">CONTAINER2005: 图像名称“{0}”的第一个字符必须是小写字母或数字，并且名称中的所有字符都必须是字母数字字符、-、/ 或 _。</target>
         <note>{StrBegin="CONTAINER2005: "}</note>
       </trans-unit>
       <trans-unit id="InvalidPort_Number">
@@ -209,17 +219,17 @@
       </trans-unit>
       <trans-unit id="LocalRegistryNotAvailable">
         <source>CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</source>
-        <target state="new">CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</target>
+        <target state="translated">CONTAINER1012: 本地注册表不可用，但请求推送到本地注册表。</target>
         <note>{StrBegin="CONTAINER1012: "}</note>
       </trans-unit>
       <trans-unit id="LocalDocker_FailedToGetConfig">
         <source>Error while reading daemon config: {0}</source>
-        <target state="new">Error while reading daemon config: {0}</target>
+        <target state="translated">读取守护程序配置时出错: {0}</target>
         <note>{0} is the exception message that ends with period</note>
       </trans-unit>
       <trans-unit id="LocalDocker_LocalDaemonErrors">
         <source>The daemon server reported errors: {0}</source>
-        <target state="new">The daemon server reported errors: {0}</target>
+        <target state="translated">守护程序服务器报告错误: {0}</target>
         <note>{0} are the list of messages, each message starts with new line</note>
       </trans-unit>
       <trans-unit id="MissingLinkToRegistry">
@@ -247,60 +257,75 @@
         <target state="translated">CONTAINER2011: {0} {1} 不存在</target>
         <note>{StrBegin="CONTAINER2011: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryOperationFailed">
+        <source>CONTAINER1017: Unable to communicate with the registry '{0}'.</source>
+        <target state="translated">CONTAINER1017: 无法与注册表“{0}”通信。</target>
+        <note>{StrBegin="CONTAINER1017:" }</note>
+      </trans-unit>
       <trans-unit id="RegistryOutputPushFailed">
         <source>CONTAINER1013: Failed to push to the output registry: {0}</source>
         <target state="translated">CONTAINER1013: 未能推送到输出注册表: {0}</target>
         <note>{StrBegin="CONTAINER1013: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryPullFailed">
+        <source>CONTAINER1014: Manifest pull failed.</source>
+        <target state="translated">CONTAINER1014: 清单拉取失败。</target>
+        <note>{StrBegin="CONTAINER1014: "}</note>
+      </trans-unit>
       <trans-unit id="RegistryPushFailed">
-        <source>CONTAINER1005: Registry push failed.</source>
-        <target state="translated">CONTAINER1005: 注册表推送失败。</target>
+        <source>CONTAINER1005: Registry push failed; received status code '{0}'.</source>
+        <target state="translated">CONTAINER1005: 注册表推送失败，已收到状态代码“{0}”。</target>
         <note>{StrBegin="CONTAINER1005: "}</note>
       </trans-unit>
       <trans-unit id="Registry_ConfigUploadStarted">
         <source>Uploading config to registry at blob '{0}',</source>
-        <target state="new">Uploading config to registry at blob '{0}',</target>
+        <target state="translated">正在将配置上传到 blob“{0}”处的注册表，</target>
         <note />
       </trans-unit>
       <trans-unit id="Registry_ConfigUploaded">
         <source>Uploaded config to registry.</source>
-        <target state="new">Uploaded config to registry.</target>
+        <target state="translated">已将配置上传到注册表。</target>
         <note />
       </trans-unit>
       <trans-unit id="Registry_LayerExists">
         <source>Layer '{0}' already exists.</source>
-        <target state="new">Layer '{0}' already exists.</target>
+        <target state="translated">层“{0}”已存在。</target>
         <note />
       </trans-unit>
       <trans-unit id="Registry_LayerUploadStarted">
         <source>Uploading layer '{0}' to '{1}'.</source>
-        <target state="new">Uploading layer '{0}' to '{1}'.</target>
+        <target state="translated">正在将层“{0}”上传到“{1}”。</target>
         <note>{0} is the layer digest, {1} is the registry name</note>
       </trans-unit>
       <trans-unit id="Registry_LayerUploaded">
         <source>Finished uploading layer '{0}' to '{1}'.</source>
-        <target state="new">Finished uploading layer '{0}' to '{1}'.</target>
+        <target state="translated">已完成将层“{0}”上传到“{1}”。</target>
         <note>{0} is the layer digest, {1} is the registry name</note>
       </trans-unit>
       <trans-unit id="Registry_ManifestUploadStarted">
         <source>Uploading manifest to registry '{0}' as blob '{1}'.</source>
-        <target state="new">Uploading manifest to registry '{0}' as blob '{1}'.</target>
+        <target state="translated">正在将清单作为 blob“{1}”上传到注册表“{0}”。</target>
         <note>{0} is the registry name</note>
       </trans-unit>
       <trans-unit id="Registry_ManifestUploaded">
         <source>Uploaded manifest to '{0}'.</source>
-        <target state="new">Uploaded manifest to '{0}'.</target>
+        <target state="translated">已将清单上传到“{0}”。</target>
         <note>{0} is the registry name</note>
       </trans-unit>
       <trans-unit id="Registry_TagUploadStarted">
         <source>Uploading tag '{0}' to '{1}'.</source>
-        <target state="new">Uploading tag '{0}' to '{1}'.</target>
+        <target state="translated">正在将标记“{0}”上传到“{1}”。</target>
         <note>{1} is the registry name</note>
       </trans-unit>
       <trans-unit id="Registry_TagUploaded">
         <source>Uploaded tag '{0}' to '{1}'.</source>
-        <target state="new">Uploaded tag '{0}' to '{1}'.</target>
+        <target state="translated">已将标记“{0}”上传到“{1}”。</target>
         <note>{1} is the registry name</note>
+      </trans-unit>
+      <trans-unit id="RepositoryNotFound">
+        <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</source>
+        <target state="translated">CONTAINER1015: 无法访问注册表“{2}”中标记“{1}”处的存储库“{0}”。请确认注册表中存在此名称和标记。</target>
+        <note>{StrBegin="CONTAINER1015: "}</note>
       </trans-unit>
       <trans-unit id="RequiredItemsContainsEmptyItems">
         <source>CONTAINER4003: Required '{0}' items contain empty items.</source>
@@ -322,14 +347,19 @@
         <target state="translated">CONTAINER1006: 重试次数过多，正在停止。</target>
         <note>{StrBegin="CONTAINER1006: "}</note>
       </trans-unit>
+      <trans-unit id="UnableToAccessRepository">
+        <source>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</source>
+        <target state="translated">CONTAINER1016: 无法访问注册表“{1}”中的存储库“{0}”。请确认你的凭据正确无误，并且你有权访问此存储库和注册表。</target>
+        <note>{StrBegin="CONTAINER1016:" }</note>
+      </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
-        <target state="new">CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</target>
+        <target state="translated">CONTAINER2021: AppCommandInstruction“{0}”未知。有效的说明为 {1}。</target>
         <note>{StrBegin="CONTAINER2021: "}</note>
       </trans-unit>
       <trans-unit id="UnknownLocalRegistryType">
         <source>CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</source>
-        <target state="new">CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</target>
+        <target state="translated">CONTAINER2002: 本地注册表类型“{0}”未知。有效的本地容器注册表类型为 {1}。</target>
         <note>{StrBegin="CONTAINER2002: "}</note>
       </trans-unit>
       <trans-unit id="UnknownMediaType">

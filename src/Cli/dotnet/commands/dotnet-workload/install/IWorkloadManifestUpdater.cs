@@ -1,9 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
@@ -15,13 +12,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
 
-        IEnumerable<(
-            ManifestVersionUpdate manifestUpdate,
-            Dictionary<WorkloadId, WorkloadDefinition> Workloads
-            )> CalculateManifestUpdates();
+        IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates();
 
-        IEnumerable<ManifestVersionUpdate>
-            CalculateManifestRollbacks(string rollbackDefinitionFilePath);
+        IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath);
 
         Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand);
 
@@ -29,4 +22,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         void DeleteUpdatableWorkloadsFile();
     }
+
+    internal record ManifestUpdateWithWorkloads(ManifestVersionUpdate ManifestUpdate, WorkloadCollection Workloads);
 }

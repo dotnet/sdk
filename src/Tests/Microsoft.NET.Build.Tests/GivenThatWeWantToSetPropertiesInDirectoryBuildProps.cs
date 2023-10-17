@@ -1,19 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Microsoft.NET.TestFramework.Commands;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Xml.Linq;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToSetPropertiesInDirectoryBuildProps : SdkTest
@@ -25,7 +12,7 @@ namespace Microsoft.NET.Build.Tests
         [Fact]
         public void The_default_configuration_can_be_set_to_release()
         {
-            TestProject project = new TestProject()
+            TestProject project = new()
             {
                 Name = "DirectoryBuildPropsTest",
                 TargetFrameworks = "netstandard1.4",
@@ -34,7 +21,7 @@ namespace Microsoft.NET.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(project);
 
             string directoryBuildPropsPath = Path.Combine(testAsset.Path, "Directory.Build.props");
-            
+
             var directoryBuildPropsContent = @"
 <Project>
   <PropertyGroup>

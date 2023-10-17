@@ -1,12 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
-using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Parser;
@@ -32,7 +29,7 @@ namespace Microsoft.DotNet.Cli
             // since commands can have arguments, we must take those as well in order to get accurate help
             var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
             tokenList.Add("-h");
-            Parser.Instance.Parse(tokenList).Invoke();
+            Instance.Parse(tokenList).Invoke();
         }
 
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
@@ -65,7 +62,8 @@ namespace Microsoft.DotNet.Cli
             /// <summary>given a string and a series of parts, ensures that all parts are present in the string in sequential order</summary>
             static bool ErrorContainsAllParts(ReadOnlySpan<char> error, string[] parts)
             {
-                foreach(var part in parts) {
+                foreach (var part in parts)
+                {
                     var foundIndex = error.IndexOf(part);
                     if (foundIndex != -1)
                     {
@@ -91,19 +89,19 @@ namespace Microsoft.DotNet.Cli
         public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
         {
             return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) ||
-                Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
+                GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
         }
 
         public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
         {
-            return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+            return parseResult.CommandResult.Command.Equals(RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
         }
 
         public static bool CanBeInvoked(this ParseResult parseResult)
         {
-            return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
+            return GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
                 parseResult.Tokens.Any(token => token.Type == CliTokenType.Directive) ||
-                (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.DotnetSubCommand)));
+                (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand)));
         }
 
         public static int HandleMissingCommand(this ParseResult parseResult)
@@ -141,7 +139,7 @@ namespace Microsoft.DotNet.Cli
         {
             if (symbolResult.Token() == default)
             {
-                return parseResult.GetResult(Parser.DotnetSubCommand)?.GetValueOrDefault<string>();
+                return parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>();
             }
             else if (symbolResult.Token().Type.Equals(CliTokenType.Command))
             {
@@ -211,7 +209,7 @@ namespace Microsoft.DotNet.Cli
             var optionString = shorthand ? "-p" : "--property";
             var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(CliTokenType.Option));
             var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
-            var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t=> t.Value)).ToArray();
+            var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
         }
 
@@ -236,8 +234,9 @@ namespace Microsoft.DotNet.Cli
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
             {
                 return optionResult.GetValue(optionToGet);
-            } 
-            else {
+            }
+            else
+            {
                 return default;
             }
         }

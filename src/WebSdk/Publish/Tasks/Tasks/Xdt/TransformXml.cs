@@ -2,12 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using Microsoft.NET.Sdk.Publish.Tasks.MsDeploy;
 using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 using Microsoft.Web.XmlTransform;
-using System;
-using System.Diagnostics;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
 {
@@ -22,7 +19,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
         private bool stackTrace = false;
 
         [Required]
-        public String Source
+        public string Source
         {
             get
             {
@@ -45,7 +42,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
 
 
         [Required]
-        public String Transform
+        public string Transform
         {
             get
             {
@@ -63,7 +60,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
             {
                 if (string.IsNullOrEmpty(_transformRootPath))
                 {
-                    return this.SourceRootPath;
+                    return SourceRootPath;
                 }
                 else
                 {
@@ -75,7 +72,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
 
 
         [Required]
-        public String Destination
+        public string Destination
         {
             get
             {
@@ -148,7 +145,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
                 string localPath = Source;
                 if (!string.IsNullOrEmpty(ex.SourceUri))
                 {
-                    Uri sourceUri = new Uri(ex.SourceUri);
+                    Uri sourceUri = new(ex.SourceUri);
                     localPath = sourceUri.LocalPath;
                 }
 
@@ -205,9 +202,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
         {
             try
             {
-                XmlTransformableDocument document = new XmlTransformableDocument();
-
-                document.PreserveWhitespace = true;
+                XmlTransformableDocument document = new()
+                {
+                    PreserveWhitespace = true
+                };
                 document.Load(sourceFile);
 
                 return document;

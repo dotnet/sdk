@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Xunit;
 using Microsoft.DotNet.MSBuildSdkResolver;
-using FluentAssertions;
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
@@ -47,7 +45,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         [Fact]
         public void OrderingMatchesSemVer200Rules()
         {
-            TestCase [] orderedCases = new TestCase []
+            TestCase[] orderedCases = new TestCase[]
             {
                 new TestCase( "1.0.0-0.3.7",                false ),
                 new TestCase( "1.0.0-alpha",                false ),

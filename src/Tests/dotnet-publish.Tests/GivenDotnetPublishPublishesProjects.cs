@@ -1,22 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Publish.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Publish.Tests
 {
@@ -184,7 +171,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"PSC-OVERRIDES-{publishSelfContained}-{selfContainedIsGlobal}-{publishSelfContainedIsGlobal}");
             var publishCommand = new DotnetCommand(Log);
-            List<string> args = new List<string>
+            List<string> args = new()
             {
                 "publish",
                 selfContainedIsGlobal ? $"/p:SelfContained={selfContained}" : "",
@@ -459,7 +446,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             // Another command, which should not be affected by PublishRelease
             new BuildCommand(helloWorldAsset)
                .Execute();
-            
+
             var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release");
             Assert.False(Directory.Exists(expectedAssetPath));
         }

@@ -1,19 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Restore.Tests
 {
@@ -29,7 +19,7 @@ namespace Microsoft.NET.Restore.Tests
         [Fact]
         public void It_can_restore_with_netcoreapp2_2()
         {
-            TestProject toolProject = new TestProject()
+            TestProject toolProject = new()
             {
                 Name = "TestTool" + nameof(It_can_restore_with_netcoreapp2_2),
                 TargetFrameworks = "netcoreapp1.0",
@@ -44,7 +34,7 @@ namespace Microsoft.NET.Restore.Tests
 
             string nupkgPath = Path.Combine(packCommand.ProjectRootPath, "bin", "Debug");
 
-            TestProject toolReferenceProject = new TestProject()
+            TestProject toolReferenceProject = new()
             {
                 Name = "DotNetCliToolReferenceProject",
                 IsExe = true,

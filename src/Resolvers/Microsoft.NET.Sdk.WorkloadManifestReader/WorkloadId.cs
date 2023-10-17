@@ -1,12 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     /// <summary>
-    /// Wraps a workload definition id string to help ensure consistency of behaviour/semantics.
+    /// Wraps a workload definition id string to help ensure consistency of behavior/semantics.
     /// Comparisons are case insensitive but ToString() will return the original string for display purposes.
     /// </summary>
     public readonly struct WorkloadId : IComparable<WorkloadId>, IEquatable<WorkloadId>

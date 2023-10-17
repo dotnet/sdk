@@ -3,9 +3,7 @@
 
 #nullable disable
 
-using System;
 using System.ComponentModel;
-using System.IO;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
@@ -18,7 +16,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private FileSystemWatcher _fileSystemWatcher;
 
-        private readonly object _createLock = new object();
+        private readonly object _createLock = new();
 
         public DotnetFileWatcher(string watchedDirectory)
             : this(watchedDirectory, DefaultWatcherFactory)

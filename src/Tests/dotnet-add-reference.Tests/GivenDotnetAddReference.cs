@@ -1,21 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
 using Microsoft.DotNet.Cli.CommandLineValidation;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.TemplateEngine.Core.Operations;
 using Msbuild.Tests.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Numerics;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Add.Reference.Tests
 {
@@ -239,7 +228,7 @@ Commands:
         {
             var setup = Setup();
             var lib = NewLibWithFrameworks(dir: setup.TestRoot);
-            
+
             int noCondBefore = lib.CsProj().NumberOfItemGroupsWithoutCondition();
             var cmd = new DotnetCommand(Log, "add", lib.CsProjPath, "reference")
                 .WithWorkingDirectory(setup.TestRoot)
@@ -701,7 +690,7 @@ Commands:
             var lib = new ProjDir(setup.LibDir);
             var net45lib = new ProjDir(Path.Combine(setup.TestRoot, "Net45Lib"));
 
-            List<string> args = new List<string>();
+            List<string> args = new();
             if (useFrameworkArg)
             {
                 args.Add("-f");

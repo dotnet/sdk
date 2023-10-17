@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -13,7 +11,7 @@ namespace Microsoft.DotNet.Cli
         private static string SdkRootFolder => Path.Combine(typeof(DotnetFiles).GetTypeInfo().Assembly.Location, "..");
 
         private static Lazy<DotnetVersionFile> s_versionFileObject =
-            new Lazy<DotnetVersionFile>(() => new DotnetVersionFile(VersionFile));
+            new(() => new DotnetVersionFile(VersionFile));
 
         /// <summary>
         /// The SDK ships with a .version file that stores the commit information and SDK version

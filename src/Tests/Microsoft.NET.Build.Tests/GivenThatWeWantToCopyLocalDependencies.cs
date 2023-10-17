@@ -1,23 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Xml.Linq;
-
-using FluentAssertions;
-
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -32,14 +16,14 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "TestProjWithPackageDependencies";
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = ProjectName,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
             var testProjectInstance = _testAssetsManager
@@ -75,7 +59,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "TestProjWithPackageDependencies";
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = ProjectName,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
@@ -83,7 +67,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = "false";
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
             var testProjectInstance = _testAssetsManager
@@ -110,7 +94,7 @@ namespace Microsoft.NET.Build.Tests
 
             var rid = EnvironmentInfo.GetCompatibleRid(ToolsetInfo.CurrentTargetFramework);
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = ProjectName,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
@@ -119,8 +103,8 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties.Add("RuntimeIdentifier", rid);
             testProject.AdditionalProperties.Add("SelfContained", "false");
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
-            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("Libuv", "1.10.0"));
 
             var testProjectInstance = _testAssetsManager
                .CreateTestProject(testProject);
@@ -140,8 +124,8 @@ namespace Microsoft.NET.Build.Tests
                 $"{ProjectName}.pdb",
                 $"{ProjectName}.runtimeconfig.json",
                 "Newtonsoft.Json.dll",
-                // NOTE: this may break in the future when the SDK supports platforms that sqlite does not
-                $"{FileConstants.DynamicLibPrefix}sqlite3{FileConstants.DynamicLibSuffix}"
+                // NOTE: this may break in the future when the SDK supports platforms that libuv does not
+                $"libuv{FileConstants.DynamicLibSuffix}"
             });
         }
 
@@ -150,14 +134,14 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "TestProjWithPackageDependencies";
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = ProjectName,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = false
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
             var testProjectInstance = _testAssetsManager
@@ -182,7 +166,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "TestProjWithPackageDependencies";
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = ProjectName,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
@@ -190,7 +174,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = "true";
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
             var testProjectInstance = _testAssetsManager
@@ -220,13 +204,13 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "TestProjWithPackageDependencies";
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = ProjectName,
                 TargetFrameworks = "netstandard2.0"
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
             var testProjectInstance = _testAssetsManager
@@ -251,7 +235,7 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "TestProjWithPackageDependencies";
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = ProjectName,
                 TargetFrameworks = "netstandard2.0"
@@ -259,7 +243,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties["CopyLocalLockFileAssemblies"] = "true";
             testProject.AdditionalProperties["CopyLocalRuntimeTargetAssets"] = "true";
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
             var testProjectInstance = _testAssetsManager
@@ -289,13 +273,13 @@ namespace Microsoft.NET.Build.Tests
         {
             const string ProjectName = "TestProjWithPackageDependencies";
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = ProjectName,
                 TargetFrameworks = "net46"
             };
 
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
 
             var testProjectInstance = _testAssetsManager
@@ -322,7 +306,7 @@ namespace Microsoft.NET.Build.Tests
 
             var rid = EnvironmentInfo.GetCompatibleRid(ToolsetInfo.CurrentTargetFramework);
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = ProjectName,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
@@ -331,8 +315,8 @@ namespace Microsoft.NET.Build.Tests
             };
 
             testProject.AdditionalProperties.Add("RuntimeIdentifier", rid);
-            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", "13.0.1"));
-            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("Libuv", "1.10.0"));
 
             var testProjectInstance = _testAssetsManager
                .CreateTestProject(testProject);
@@ -352,8 +336,8 @@ namespace Microsoft.NET.Build.Tests
                 $"{ProjectName}.pdb",
                 $"{ProjectName}.runtimeconfig.json",
                 "Newtonsoft.Json.dll",
-                // NOTE: this may break in the future when the SDK supports platforms that sqlite does not
-                $"{FileConstants.DynamicLibPrefix}sqlite3{FileConstants.DynamicLibSuffix}",
+                // NOTE: this may break in the future when the SDK supports platforms that libuv does not
+                $"libuv{FileConstants.DynamicLibSuffix}",
                 $"{FileConstants.DynamicLibPrefix}clrjit{FileConstants.DynamicLibSuffix}",
                 $"{FileConstants.DynamicLibPrefix}hostfxr{FileConstants.DynamicLibSuffix}",
                 $"{FileConstants.DynamicLibPrefix}hostpolicy{FileConstants.DynamicLibSuffix}",

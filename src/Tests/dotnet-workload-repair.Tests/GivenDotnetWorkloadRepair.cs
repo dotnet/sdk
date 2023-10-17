@@ -1,22 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using Microsoft.NET.TestFramework.Utilities;
-using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Repair;
-using System.IO;
+using System.Text.Json;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload.Repair;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Repair.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
@@ -52,8 +45,10 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
                 WorkloadFileBasedInstall.SetUserLocal(dotnetRoot, sdkFeatureVersion);
             }
 
-            var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolver: workloadResolver,
-                nugetPackageDownloader: nugetDownloader, version: sdkFeatureVersion, dotnetDir: dotnetRoot, userProfileDir: userProfileDir);
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+
+            var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
+                nugetPackageDownloader: nugetDownloader);
             repairCommand.Execute();
 
             _reporter.Lines.Should().Contain(LocalizableStrings.NoWorkloadsToRepair);
@@ -79,21 +74,24 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
                 WorkloadFileBasedInstall.SetUserLocal(dotnetRoot, sdkFeatureVersion);
             }
 
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+
             // Install a workload
             var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
-            var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolver: workloadResolver, nugetPackageDownloader: nugetDownloader,
-                workloadManifestUpdater: manifestUpdater, userProfileDir: userProfileDir, version: sdkFeatureVersion, dotnetDir: dotnetRoot, tempDirPath: testDirectory, installedFeatureBand: sdkFeatureVersion);
+            var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
+                workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute();
 
             // Add extra pack dirs and records
             var extraPackRecordPath = Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1", "Test.Pack.A", "1.0.0", sdkFeatureVersion);
             Directory.CreateDirectory(Path.GetDirectoryName(extraPackRecordPath));
-            File.WriteAllText(extraPackRecordPath, string.Empty);
             var extraPackPath = Path.Combine(installRoot, "packs", "Test.Pack.A", "1.0.0");
             Directory.CreateDirectory(extraPackPath);
+            var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(new(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, extraPackPath, "Test.Pack.A"));
+            File.WriteAllText(extraPackRecordPath, packRecordContents);
 
-            var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolver: workloadResolver, userProfileDir: userProfileDir,
-                nugetPackageDownloader: nugetDownloader, version: sdkFeatureVersion, dotnetDir: dotnetRoot, tempDirPath: testDirectory);
+            var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
+                nugetPackageDownloader: nugetDownloader);
             repairCommand.Execute();
 
             // Check that pack dirs and records have been removed
@@ -126,10 +124,12 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
                 WorkloadFileBasedInstall.SetUserLocal(dotnetRoot, sdkFeatureVersion);
             }
 
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkFeatureVersion, workloadResolver, userProfileDir);
+
             // Install a workload
             var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", installingWorkload });
-            var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolver: workloadResolver, nugetPackageDownloader: nugetDownloader,
-                workloadManifestUpdater: manifestUpdater, userProfileDir: userProfileDir, version: sdkFeatureVersion, dotnetDir: dotnetRoot, tempDirPath: testDirectory, installedFeatureBand: sdkFeatureVersion);
+            var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
+                workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
             installCommand.Execute();
 
             // Delete pack dirs/ records
@@ -138,8 +138,8 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
             var deletedPackPath = Path.Combine(installRoot, "packs", "Xamarin.Android.Sdk");
             Directory.Delete(deletedPackPath, true);
 
-            var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolver: workloadResolver, userProfileDir: userProfileDir,
-                nugetPackageDownloader: nugetDownloader, version: sdkFeatureVersion, dotnetDir: dotnetRoot, tempDirPath: testDirectory);
+            var repairCommand = new WorkloadRepairCommand(_parseResult, reporter: _reporter, workloadResolverFactory,
+                nugetPackageDownloader: nugetDownloader);
             repairCommand.Execute();
 
             // Check that pack dirs and records have been replaced

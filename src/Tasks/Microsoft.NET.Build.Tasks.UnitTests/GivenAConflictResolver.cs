@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.NET.Build.Tasks.ConflictResolution;
@@ -51,7 +48,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().Equal(item1, item2);
         }
 
-        
+
         [Fact]
         public void WhenAnItemDoesntExistButDoesNotConflictWithAnythingItIsNotReported()
         {
@@ -203,7 +200,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             result.UnresolvedConflicts.Should().BeEmpty();
         }
 
-        
+
         [Fact]
         public void WhenItemsConflictThePackageRankIsUsedToResolveTheConflict()
         {
@@ -218,9 +215,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [Theory]
-        [InlineData(new[] { 1, 1, 2}, 2)]
-        [InlineData(new[] { 1, 2, 1}, 1)]
-        [InlineData(new[] { 2, 1, 1}, 0)]
+        [InlineData(new[] { 1, 1, 2 }, 2)]
+        [InlineData(new[] { 1, 2, 1 }, 1)]
+        [InlineData(new[] { 2, 1, 1 }, 0)]
         [InlineData(new[] { 1, 1, 2, 1, 2, 2, 3 }, 6)]
         [InlineData(new[] { 1, 1, 2, 3, 1, 2, 2 }, 3)]
         [InlineData(new[] { 3, 1, 1, 2, 1, 2, 2 }, 0)]
@@ -293,7 +290,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [Fact]
         public void WhenCommitWinnerIsFalseOnlyTheFirstResolvedConflictIsReported()
         {
-            var committedItem = new MockConflictItem() { AssemblyVersion = new Version("2.0.0.0") } ;
+            var committedItem = new MockConflictItem() { AssemblyVersion = new Version("2.0.0.0") };
 
             var uncommittedItem1 = new MockConflictItem() { AssemblyVersion = new Version("3.0.0.0") };
             var uncommittedItem2 = new MockConflictItem() { AssemblyVersion = new Version("1.0.0.0") };
@@ -420,7 +417,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         static ConflictResults GetConflicts(MockConflictItem[] itemsToCommit, MockConflictItem[] itemsNotToCommit, ITaskItem[] packageOverrides)
         {
-            ConflictResults ret = new ConflictResults();
+            ConflictResults ret = new();
 
             void ConflictHandler(MockConflictItem winner, MockConflictItem loser)
             {

@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
@@ -76,7 +72,7 @@ namespace Microsoft.DotNet.Tools
                 throw new GracefulException(CommonLocalizableStrings.FoundInvalidProject, projectFile.FullName);
             }
 
-            return new MsbuildProject(projects, project,  interactive);
+            return new MsbuildProject(projects, project, interactive);
         }
 
         public static FileInfo GetProjectFileFromDirectory(string projectDirectory)
@@ -219,7 +215,7 @@ namespace Microsoft.DotNet.Tools
                     project = _projects.LoadProject(
                         ProjectRootElement.FullPath,
                         new Dictionary<string, string>
-                            {["NuGetInteractive"] = "true"},
+                        { ["NuGetInteractive"] = "true" },
                         null);
                 }
                 else

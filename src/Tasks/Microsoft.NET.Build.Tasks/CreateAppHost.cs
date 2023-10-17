@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.NET.HostModel;
 using Microsoft.NET.HostModel.AppHost;
@@ -56,19 +53,8 @@ namespace Microsoft.NET.Build.Tasks
                 var isGUI = WindowsGraphicalUserInterface;
                 var resourcesAssembly = IntermediateAssembly;
 
-                if (!ResourceUpdater.IsSupportedOS())
-                {
-                    if (isGUI)
-                    {
-                        Log.LogWarning(Strings.AppHostCustomizationRequiresWindowsHostWarning);
-                    }
-
-                    isGUI = false;
-                    resourcesAssembly = null;
-                }
-
                 int attempts = 0;
-                
+
                 while (true)
                 {
                     try
@@ -86,14 +72,15 @@ namespace Microsoft.NET.Build.Tasks
                                                ex is HResultException ||
                                                (ex is AggregateException && (ex.InnerException is IOException || ex.InnerException is UnauthorizedAccessException)))
                     {
-                        if (Retries < 0 || attempts == Retries) {
+                        if (Retries < 0 || attempts == Retries)
+                        {
                             throw;
                         }
 
                         ++attempts;
 
                         string message = ex.Message;
-                        if(ex is AggregateException)
+                        if (ex is AggregateException)
                         {
                             message = ex.InnerException.Message;
                         }
@@ -104,7 +91,8 @@ namespace Microsoft.NET.Build.Tasks
                                 Retries + 1,
                                 message));
 
-                        if (RetryDelayMilliseconds > 0) {
+                        if (RetryDelayMilliseconds > 0)
+                        {
                             Thread.Sleep(RetryDelayMilliseconds);
                         }
                     }

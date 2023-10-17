@@ -3,23 +3,15 @@
 
 #nullable enable
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.Tools.New;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.TemplateEngine.Abstractions.Components;
-using Xunit;
 
 namespace Microsoft.DotNet.Cli.New.Tests
 {
     public class SdkInfoProviderTests
     {
         [Fact]
-        public void GetInstalledVersionsAsync_ShouldContainCurrentVersion()
+        public async Task GetInstalledVersionsAsync_ShouldContainCurrentVersion()
         {
             string dotnetRootUnderTest = TestContext.Current.ToolsetUnderTest.DotNetRoot;
             string? pathOrig = Environment.GetEnvironmentVariable("PATH");
@@ -30,12 +22,12 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 // make sure current process path is not picked up as the dontet executable location
                 ISdkInfoProvider sp = new SdkInfoProvider(() => string.Empty);
 
-                string currentVersion = sp.GetCurrentVersionAsync(default).Result;
-                List<string>? allVersions = sp.GetInstalledVersionsAsync(default).Result?.ToList();
+                string currentVersion = await sp.GetCurrentVersionAsync(default);
+                IEnumerable<string> allVersions = await sp.GetInstalledVersionsAsync(default);
 
                 currentVersion.Should().NotBeNullOrEmpty("Current Sdk version should be populated");
-                allVersions.Should().NotBeNull();
-                allVersions.Should().Contain(currentVersion, "All installed versions should contain current version");
+                allVersions.ToList().Should().NotBeNull();
+                allVersions.ToList().Should().Contain(currentVersion, "All installed versions should contain current version");
             }
             finally
             {

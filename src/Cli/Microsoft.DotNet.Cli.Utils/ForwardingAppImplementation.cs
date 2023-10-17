@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
+#if NET
+
 using System.Diagnostics;
-using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Utils
 {
@@ -13,8 +13,6 @@ namespace Microsoft.DotNet.Cli.Utils
     /// </summary>
     internal class ForwardingAppImplementation
     {
-        private const string HostExe = "dotnet";
-
         private readonly string _forwardApplicationPath;
         private readonly IEnumerable<string> _argsToForward;
         private readonly string _depsFile;
@@ -97,7 +95,10 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private string GetHostExeName()
         {
-            return $"{HostExe}{FileNameSuffixes.CurrentPlatform.Exe}";
+            // Should instead make this a full path to dotnet
+            return Environment.ProcessPath;
         }
     }
 }
+
+#endif

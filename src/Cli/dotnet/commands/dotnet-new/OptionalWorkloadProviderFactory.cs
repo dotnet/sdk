@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.TemplateLocator;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
-using System;
 
 namespace Microsoft.DotNet.Tools.New
 {
@@ -14,7 +12,7 @@ namespace Microsoft.DotNet.Tools.New
     /// </summary>
     internal class OptionalWorkloadProviderFactory : ITemplatePackageProviderFactory
     {
-        public static readonly Guid FactoryId = new Guid("{FAE2BB7C-054D-481B-B75C-E9F524193D56}");
+        public static readonly Guid FactoryId = new("{FAE2BB7C-054D-481B-B75C-E9F524193D56}");
 
         public Guid Id => FactoryId;
 

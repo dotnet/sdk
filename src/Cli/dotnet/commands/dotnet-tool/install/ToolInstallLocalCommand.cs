@@ -2,17 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using System.Collections.Generic;
-using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
@@ -29,7 +25,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public ToolInstallLocalCommand(
             ParseResult parseResult,
-            IToolPackageInstaller toolPackageInstaller = null,
+            IToolPackageDownloader toolPackageDownloader = null,
             IToolManifestFinder toolManifestFinder = null,
             IToolManifestEditor toolManifestEditor = null,
             ILocalToolsResolverCache localToolsResolverCache = null,
@@ -47,7 +43,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                                   new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
-            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageInstaller);
+            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader);
         }
 
         public override int Execute()
@@ -97,7 +93,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         e.Message,
                         LocalizableStrings.NoManifestGuide
                     },
-                    verboseMessages: new[] {e.VerboseMessage},
+                    verboseMessages: new[] { e.VerboseMessage },
                     isUserError: false);
             }
         }

@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -99,17 +97,18 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
             internal static ReferencedProjectConfiguration FromTaskItem(ITaskItem arg)
             {
-                var result = new ReferencedProjectConfiguration();
-
-                result.Identity = arg.GetMetadata("FullPath");
-                result.Version = int.Parse(arg.GetMetadata(nameof(Version)), CultureInfo.InvariantCulture);
-                result.Source = arg.GetMetadata(nameof(Source));
-                result.GetBuildAssetsTargets = arg.GetMetadata(nameof(GetBuildAssetsTargets));
-                result.AdditionalBuildProperties = arg.GetMetadata(nameof(AdditionalBuildProperties));
-                result.AdditionalBuildPropertiesToRemove = arg.GetMetadata(nameof(AdditionalBuildPropertiesToRemove));
-                result.GetPublishAssetsTargets = arg.GetMetadata(nameof(GetPublishAssetsTargets));
-                result.AdditionalPublishProperties = arg.GetMetadata(nameof(AdditionalPublishProperties));
-                result.AdditionalPublishPropertiesToRemove = arg.GetMetadata(nameof(AdditionalPublishPropertiesToRemove));
+                var result = new ReferencedProjectConfiguration
+                {
+                    Identity = arg.GetMetadata("FullPath"),
+                    Version = int.Parse(arg.GetMetadata(nameof(Version)), CultureInfo.InvariantCulture),
+                    Source = arg.GetMetadata(nameof(Source)),
+                    GetBuildAssetsTargets = arg.GetMetadata(nameof(GetBuildAssetsTargets)),
+                    AdditionalBuildProperties = arg.GetMetadata(nameof(AdditionalBuildProperties)),
+                    AdditionalBuildPropertiesToRemove = arg.GetMetadata(nameof(AdditionalBuildPropertiesToRemove)),
+                    GetPublishAssetsTargets = arg.GetMetadata(nameof(GetPublishAssetsTargets)),
+                    AdditionalPublishProperties = arg.GetMetadata(nameof(AdditionalPublishProperties)),
+                    AdditionalPublishPropertiesToRemove = arg.GetMetadata(nameof(AdditionalPublishPropertiesToRemove))
+                };
 
                 return result;
             }

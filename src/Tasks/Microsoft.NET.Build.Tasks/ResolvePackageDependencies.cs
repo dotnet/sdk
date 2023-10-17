@@ -5,10 +5,6 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -21,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks
     /// </remarks>
     public sealed class ResolvePackageDependencies : TaskBase
     {
-        private readonly Dictionary<string, string> _fileTypes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string> _fileTypes = new(StringComparer.OrdinalIgnoreCase);
 
         private HashSet<string> _projectFileDependencies;
         private IPackageResolver _packageResolver;
@@ -29,11 +25,11 @@ namespace Microsoft.NET.Build.Tasks
 
         #region Output Items
 
-        private readonly List<ITaskItem> _targetDefinitions = new List<ITaskItem>();
-        private readonly List<ITaskItem> _packageDefinitions = new List<ITaskItem>();
-        private readonly List<ITaskItem> _fileDefinitions = new List<ITaskItem>();
-        private readonly List<ITaskItem> _packageDependencies = new List<ITaskItem>();
-        private readonly List<ITaskItem> _fileDependencies = new List<ITaskItem>();
+        private readonly List<ITaskItem> _targetDefinitions = new();
+        private readonly List<ITaskItem> _packageDefinitions = new();
+        private readonly List<ITaskItem> _fileDefinitions = new();
+        private readonly List<ITaskItem> _packageDependencies = new();
+        private readonly List<ITaskItem> _fileDependencies = new();
 
         /// <summary>
         /// All the targets in the lock file.
@@ -262,7 +258,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             foreach (var target in LockFile.Targets)
             {
-                TaskItem item = new TaskItem(target.Name);
+                TaskItem item = new(target.Name);
                 item.SetMetadata(MetadataKeys.RuntimeIdentifier, target.RuntimeIdentifier ?? string.Empty);
                 item.SetMetadata(MetadataKeys.TargetFramework, TargetFramework);
                 item.SetMetadata(MetadataKeys.TargetFrameworkMoniker, target.TargetFramework.DotNetFrameworkName);
@@ -287,7 +283,7 @@ namespace Microsoft.NET.Build.Tasks
             var transitiveProjectRefs = new HashSet<string>(
                 target.Libraries
                     .Where(lib => lib.IsTransitiveProjectReference(LockFile, ref _projectFileDependencies, frameworkAlias))
-                    .Select(pkg => pkg.Name), 
+                    .Select(pkg => pkg.Name),
                 StringComparer.OrdinalIgnoreCase);
 
             foreach (var package in target.Libraries)
@@ -296,7 +292,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (_projectFileDependencies.Contains(package.Name))
                 {
-                    TaskItem item = new TaskItem(packageId);
+                    TaskItem item = new(packageId);
                     item.SetMetadata(MetadataKeys.ParentTarget, frameworkAlias); // Foreign Key
                     item.SetMetadata(MetadataKeys.ParentPackage, string.Empty); // Foreign Key
 
@@ -312,8 +308,8 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         private void GetPackageDependencies(
-            LockFileTargetLibrary package, 
-            string targetName, 
+            LockFileTargetLibrary package,
+            string targetName,
             Dictionary<string, string> resolvedPackageVersions,
             HashSet<string> transitiveProjectRefs)
         {
@@ -328,7 +324,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 string depsName = $"{deps.Id}/{version}";
 
-                TaskItem item = new TaskItem(depsName);
+                TaskItem item = new(depsName);
                 item.SetMetadata(MetadataKeys.ParentTarget, frameworkAlias); // Foreign Key
                 item.SetMetadata(MetadataKeys.ParentPackage, packageId); // Foreign Key
 
@@ -412,7 +408,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (string.IsNullOrEmpty(relativeMSBuildProjectPath))
                 {
-                    throw new BuildErrorException(Strings.ProjectAssetsConsumedWithoutMSBuildProjectPath, package.Name, ProjectAssetsFile); 
+                    throw new BuildErrorException(Strings.ProjectAssetsConsumedWithoutMSBuildProjectPath, package.Name, ProjectAssetsFile);
                 }
 
                 return GetAbsolutePathFromProjectRelativePath(relativeMSBuildProjectPath);
@@ -439,12 +435,12 @@ namespace Microsoft.NET.Build.Tasks
             {
                 relativePath = relativePath.Replace('/', Path.DirectorySeparatorChar);
             }
-            
+
             if (Path.DirectorySeparatorChar != '\\')
             {
                 relativePath = relativePath.Replace('\\', Path.DirectorySeparatorChar);
             }
-            
+
             return Path.Combine(resolvedPackagePath, relativePath);
         }
 

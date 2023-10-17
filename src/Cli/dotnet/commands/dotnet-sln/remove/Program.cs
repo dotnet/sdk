@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Sln.Internal;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 
 namespace Microsoft.DotNet.Tools.Sln.Remove
@@ -33,7 +27,8 @@ namespace Microsoft.DotNet.Tools.Sln.Remove
             SlnFile slnFile = SlnFileFactory.CreateFromFileOrDirectory(_fileOrDirectory);
 
             var baseDirectory = PathUtility.EnsureTrailingSlash(slnFile.BaseDirectory);
-            var relativeProjectPaths = _arguments.Select(p => {
+            var relativeProjectPaths = _arguments.Select(p =>
+            {
                 var fullPath = Path.GetFullPath(p);
                 return Path.GetRelativePath(
                     baseDirectory,

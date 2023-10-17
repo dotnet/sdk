@@ -1,27 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-
-using FluentAssertions;
-using Xunit;
-
-using Xunit.Abstractions;
-using System.Text.RegularExpressions;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Reflection.Metadata;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToBuildADesktopExe : SdkTest
@@ -156,6 +135,28 @@ namespace Microsoft.NET.Build.Tests
                     .And
                     .HaveStdOutContaining(expectedProgramOutput);
             }
+        }
+
+        [Theory]
+        [InlineData("false", false)]
+        [InlineData("true", true)]
+        [InlineData("", false)]
+        public void It_includes_platform_in_output_path_if_requested(string appendPlatformValue, bool shouldIncludePlatform)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("DesktopMinusRid")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "AppendPlatformToOutputPath", appendPlatformValue));
+                });
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory("net46", platform: shouldIncludePlatform ? "AnyCPU" : "");
+            outputDirectory.GetFiles("DesktopMinusRid.exe").Length.Should().Be(1);
         }
 
         [WindowsOnlyTheory]
@@ -413,7 +414,7 @@ namespace DefaultReferences
 
                     itemGroup.Add(new XElement(ns + "PackageReference",
                                     new XAttribute("Include", "NewtonSoft.Json"),
-                                    new XAttribute("Version", "13.0.1")));
+                                    new XAttribute("Version", ToolsetInfo.GetNewtonsoftJsonPackageVersion())));
                 });
 
             var buildCommand = new BuildCommand(testAsset);
@@ -885,8 +886,8 @@ class Program
         }
 
         [WindowsOnlyTheory]
-        [InlineData("true",  "true")]
-        [InlineData("true",  "false")]
+        [InlineData("true", "true")]
+        [InlineData("true", "false")]
         [InlineData("false", "true")]
         [InlineData("false", "false")]
         public void It_places_package_pdb_and_xml_files_in_output_directory(string enableCopyDebugSymbolFilesFromPackages, string enableDocumentationFilesFromPackages)
@@ -899,7 +900,7 @@ class Program
             };
 
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.Build", "17.3.1"));
-            
+
             testProject.AdditionalProperties.Add("CopyDebugSymbolFilesFromPackages", enableCopyDebugSymbolFilesFromPackages);
             testProject.AdditionalProperties.Add("CopyDocumentationFilesFromPackages", enableDocumentationFilesFromPackages);
 
@@ -919,8 +920,8 @@ class Program
         }
 
         [WindowsOnlyTheory]
-        [InlineData("true",  "true")]
-        [InlineData("true",  "false")]
+        [InlineData("true", "true")]
+        [InlineData("true", "false")]
         [InlineData("false", "true")]
         [InlineData("false", "false")]
         public void It_places_package_pdb_and_xml_files_from_project_references_in_output_directory(string enableCopyDebugSymbolFilesFromPackages, string enableDocumentationFilesFromPackages)
@@ -962,8 +963,8 @@ class Program
         }
 
         [WindowsOnlyTheory]
-        [InlineData("true",  "true")]
-        [InlineData("true",  "false")]
+        [InlineData("true", "true")]
+        [InlineData("true", "false")]
         [InlineData("false", "true")]
         [InlineData("false", "false")]
         public void It_places_package_pdb_and_xml_files_in_publish_directory(string enableCopyDebugSymbolFilesFromPackages, string enableDocumentationFilesFromPackages)

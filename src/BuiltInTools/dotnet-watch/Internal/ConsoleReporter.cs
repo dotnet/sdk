@@ -3,11 +3,6 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Tools.Internal
 {
@@ -17,7 +12,7 @@ namespace Microsoft.Extensions.Tools.Internal
     /// </summary>
     internal sealed class ConsoleReporter : IReporter
     {
-        private readonly object _writeLock = new object();
+        private readonly object _writeLock = new();
 
         public ConsoleReporter(IConsole console)
             : this(console, verbose: false, quiet: false, suppressEmojis: false)

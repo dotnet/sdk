@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using FluentAssertions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
-using Xunit;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -134,7 +130,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void ApplyAllCssScopes_FailsWhenTheScopedCss_DoesNotMatchTheRazorComponent()
         {
             // Arrange
-            var taskInstance = new ApplyCssScopes()
+            var taskInstance = new ApplyCssScopes
             {
                 RazorComponents = new[]
                 {
@@ -147,10 +143,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     new TaskItem("TestFiles/Pages/Index.razor.css", new Dictionary<string, string> { ["CssScope"] = "index-scope" }),
                     new TaskItem("TestFiles/Pages/Counter.razor.css", new Dictionary<string, string> { ["CssScope"] = "counter-scope" }),
                     new TaskItem("TestFiles/Pages/Profile.razor.css", new Dictionary<string, string> { ["CssScope"] = "profile-scope" }),
-                }
+                },
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-
-            taskInstance.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act
             var result = taskInstance.Execute();
@@ -163,7 +158,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void ApplyAllCssScopes_FailsWhenTheScopedCss_DoesNotMatchTheRazorView()
         {
             // Arrange
-            var taskInstance = new ApplyCssScopes()
+            var taskInstance = new ApplyCssScopes
             {
                 RazorGenerate = new[]
                 {
@@ -176,10 +171,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     new TaskItem("TestFiles/Pages/Index.cshtml.css", new Dictionary<string, string> { ["CssScope"] = "index-scope" }),
                     new TaskItem("TestFiles/Pages/Counter.cshtml.css", new Dictionary<string, string> { ["CssScope"] = "counter-scope" }),
                     new TaskItem("TestFiles/Pages/Profile.cshtml.css", new Dictionary<string, string> { ["CssScope"] = "profile-scope" }),
-                }
+                },
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-
-            taskInstance.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act
             var result = taskInstance.Execute();
@@ -250,7 +244,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void ApplyAllCssScopes_FailsWhenMultipleScopedCssFiles_MatchTheSameRazorComponent()
         {
             // Arrange
-            var taskInstance = new ApplyCssScopes()
+            var taskInstance = new ApplyCssScopes
             {
                 RazorComponents = new[]
                 {
@@ -267,10 +261,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                         ["CssScope"] = "conflict-scope",
                         ["RazorComponent"] = "TestFiles/Pages/Index.razor"
                     }),
-                }
+                },
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-
-            taskInstance.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act
             var result = taskInstance.Execute();
@@ -283,7 +276,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void ApplyAllCssScopes_FailsWhenMultipleScopedCssFiles_MatchTheSameRazorView()
         {
             // Arrange
-            var taskInstance = new ApplyCssScopes()
+            var taskInstance = new ApplyCssScopes
             {
                 RazorGenerate = new[]
                 {
@@ -300,10 +293,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                         ["CssScope"] = "conflict-scope",
                         ["View"] = "TestFiles/Pages/Index.cshtml"
                     }),
-                }
+                },
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-
-            taskInstance.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act
             var result = taskInstance.Execute();
@@ -355,7 +347,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void ApplyAllCssScopes_ScopedCssComponentsDontMatchWithScopedCssViewStylesAndViceversa()
         {
             // Arrange
-            var taskInstance = new ApplyCssScopes()
+            var taskInstance = new ApplyCssScopes
             {
                 RazorComponents = new[]
                 {
@@ -373,10 +365,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                     new TaskItem("TestFiles/Pages/_Host.razor.css", new Dictionary<string, string> { ["CssScope"] = "_host-scope" }),
                     new TaskItem("TestFiles/Pages/Index.cshtml.css", new Dictionary<string, string> { ["CssScope"] = "index-scope" }),
                     new TaskItem("TestFiles/Pages/Counter.cshtml.css", new Dictionary<string, string> { ["CssScope"] = "counter-scope" }),
-                }
+                },
+                BuildEngine = Mock.Of<IBuildEngine>()
             };
-
-            taskInstance.BuildEngine = Mock.Of<IBuildEngine>();
 
             // Act
             var result = taskInstance.Execute();

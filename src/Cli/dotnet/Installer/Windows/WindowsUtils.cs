@@ -1,10 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Runtime.Versioning;
 using System.Security.Principal;
-using System.Threading;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Win32;
@@ -66,8 +64,10 @@ namespace Microsoft.DotNet.Installer.Windows
             using RegistryKey sessionKey = localMachineKey?.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager");
 
             string[] pendingFileRenameOperations = (string[])sessionKey?.GetValue("PendingFileRenameOperations") ?? new string[0];
+            // Destination files for pending renames start with !\??\, whereas the source does not have the leading "!".
+            bool hasPendingFileRenames = pendingFileRenameOperations.Any(s => !string.IsNullOrWhiteSpace(s) && s.StartsWith(@"!\??\"));
 
-            return (auKey != null || cbsKey != null || pendingFileRenameOperations.Length > 0);
+            return (auKey != null || cbsKey != null || hasPendingFileRenames);
         }
     }
 }

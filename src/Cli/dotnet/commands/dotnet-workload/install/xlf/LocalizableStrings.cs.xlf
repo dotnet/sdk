@@ -27,9 +27,14 @@
         <target state="translated">Kontrolují se aktualizované manifesty úloh.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadManifest">
+        <source>Uninstalling workload manifest {0} version {1}...</source>
+        <target state="translated">Probíhá odinstalace manifestu úlohy {0} verze {1}...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
-        <source>Uninstalling workload pack {0} version {1}…</source>
-        <target state="translated">Probíhá odinstalace sady úloh {0} verze {1}...</target>
+        <source>Uninstalling workload pack {0} version {1}...</source>
+        <target state="translated">Probíhá odinstalace sady funkcí {0} verze {1}...</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -43,7 +48,7 @@
         <note />
       </trans-unit>
       <trans-unit id="DownloadingPackToCacheMessage">
-        <source>Downloading pack {0} version {1} to offline cache {2}…</source>
+        <source>Downloading pack {0} version {1} to offline cache {2}...</source>
         <target state="translated">Probíhá stahování balíčku {0} verze {1} do offline mezipaměti {2}…</target>
         <note />
       </trans-unit>
@@ -102,11 +107,6 @@
         <target state="translated">Povolit předběžné verze manifestů úloh.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IncompatibleManifests">
-        <source>The current SDK isn't compatible with workload manifests of SDK version {0}.</source>
-        <target state="translated">Aktuální sada SDK není kompatibilní s manifesty úlohy sady SDK verze {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="translated">Úlohy {0} se úspěšně nainstalovaly.</target>
@@ -118,8 +118,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InstallingWorkloadManifest">
-        <source>Installing workload manifest {0} version {1}…</source>
-        <target state="translated">Instaluje se manifest úlohy {0} verze {1}...</target>
+        <source>Installing workload manifest {0} version {1}...</source>
+        <target state="translated">Probíhá instalace manifestu úlohy {0} verze {1}...</target>
         <note />
       </trans-unit>
       <trans-unit id="InsufficientPrivilegeToStartServer">
@@ -182,11 +182,6 @@
         <target state="translated">Odebírání {0}. </target>
         <note />
       </trans-unit>
-      <trans-unit id="NoManifestsExistForFeatureBand">
-        <source>No manifests exist for SDK version {0}.</source>
-        <target state="translated">Pro sadu SDK verze {0} neexistují žádné manifesty.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">Nepovedlo se navázat vztah důvěryhodnosti s nadřazeným procesem ({0}).</target>
@@ -199,7 +194,7 @@
       </trans-unit>
       <trans-unit id="PendingReboot">
         <source>The machine has a pending reboot. The workload operation will continue, but you may need to restart.</source>
-        <target state="needs-review-translation">Počítač čeká na restartování. Instalace bude pokračovat, ale bude pravděpodobně nutné restartovat počítač.</target>
+        <target state="translated">Počítač čeká na restartování. Operace úlohy bude pokračovat, ale možná budete muset provést restartování.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingPackageUrls">
@@ -231,6 +226,11 @@
         <source>Rolling back pack {0} installation...</source>
         <target state="translated">Vrací se zpět instalace balíčku {0}…</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SdkVersionOptionNotSupported">
+        <source>The --sdk-version option is no longer supported for this command.</source>
+        <target state="translated">Možnost --sdk-version se už pro tento příkaz nepodporuje.</target>
+        <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">
         <source>Skip updating the workload manifests.</source>

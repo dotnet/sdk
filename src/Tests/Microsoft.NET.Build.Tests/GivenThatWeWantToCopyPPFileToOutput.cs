@@ -1,32 +1,22 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using System.Xml.Linq;
-
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeHaveAPpContentFile : SdkTest
     {
         public GivenThatWeHaveAPpContentFile(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [Fact]
         public void It_copies_to_output_successfully()
         {
             var packageReference = GetPackageReference();
 
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "CopyPPToOutputTest",
-                IsExe = true, 
+                IsExe = true,
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
             testProject.PackageReferences.Add(packageReference);
@@ -71,7 +61,7 @@ namespace Microsoft.NET.Build.Tests
         private void AddContent(XDocument package)
         {
             var ns = package.Root.Name.Namespace;
-            XElement itemGroup = new XElement(ns + "ItemGroup");
+            XElement itemGroup = new(ns + "ItemGroup");
             itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Nontransformed.ps1"),
                 new XAttribute("PackageCopyToOutput", "true")));
             itemGroup.Add(new XElement(ns + "Content", new XAttribute("Include", "Test.ps1.pp"),

@@ -3,10 +3,7 @@
 
 #nullable enable
 
-using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Threading;
 using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.DotNet.Cli.Utils
@@ -74,7 +71,7 @@ namespace Microsoft.DotNet.Cli.Utils
                     // Clear the kill on close flag because the child process terminated successfully
                     // If this fails, then we have no choice but to terminate any remaining processes in the job
                     SetKillOnJobClose(_job.DangerousGetHandle(), false);
-                    
+
                     _job.Dispose();
                     _job = null;
                 }

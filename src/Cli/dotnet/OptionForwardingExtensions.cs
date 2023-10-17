@@ -1,11 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.Linq;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -46,7 +43,7 @@ namespace Microsoft.DotNet.Cli
         public static ForwardedOption<string[]> ForwardAsProperty(this ForwardedOption<string[]> option) => option
             .SetForwardingFunction((optionVals) =>
                 optionVals
-                    .SelectMany(Microsoft.DotNet.Cli.Utils.MSBuildPropertyParser.ParseProperties)
+                    .SelectMany(Utils.MSBuildPropertyParser.ParseProperties)
                     .Select(keyValue => $"{option.Name}:{keyValue.key}={keyValue.value}")
                 );
 

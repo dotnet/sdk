@@ -1,16 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Common;
-using Microsoft.Extensions.DependencyModel;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
@@ -73,7 +64,7 @@ namespace Microsoft.DotNet.CommandFactory
 
                 return null;
             }
-            
+
             var tools = project.GetTools();
 
             return ResolveCommandSpecFromAllToolLibraries(
@@ -132,7 +123,7 @@ namespace Microsoft.DotNet.CommandFactory
                 ProjectToolsCommandResolverName,
                 string.Join(Environment.NewLine, possiblePackageRoots.Select((p) => $"- {p}"))));
 
-            List<NuGetFramework> toolFrameworksToCheck = new List<NuGetFramework>();
+            List<NuGetFramework> toolFrameworksToCheck = new();
             toolFrameworksToCheck.Add(project.DotnetCliToolTargetFramework);
 
             //  NuGet restore in Visual Studio may restore for netcoreapp1.0.  So if that happens, fall back to
@@ -144,7 +135,7 @@ namespace Microsoft.DotNet.CommandFactory
                 toolFrameworksToCheck.Add(NuGetFramework.Parse("netcoreapp1.0"));
             }
 
-            
+
             LockFile toolLockFile = null;
             NuGetFramework toolTargetFramework = null; ;
 
@@ -249,7 +240,7 @@ namespace Microsoft.DotNet.CommandFactory
         private static async Task<bool> FileExistsWithLock(string path)
         {
             return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
-                path, 
+                path,
                 lockedToken => Task.FromResult(File.Exists(path)),
                 CancellationToken.None);
         }
@@ -452,7 +443,7 @@ namespace Microsoft.DotNet.CommandFactory
                 Reporter.Verbose.WriteLine(string.Format(
                     LocalizableStrings.UnableToGenerateDepsJson,
                     e.Message));
-                
+
                 try
                 {
                     File.Delete(tempDepsFile);

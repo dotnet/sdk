@@ -1,12 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using FluentAssertions;
-using Microsoft.NET.TestFramework;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -14,7 +9,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     public class GetPublishItemsOutputGroupOutputsTests
     {
         private readonly MockTaskItem _apphost
-            = new MockTaskItem(@"C:\work\temp\WindowsDesktopSdkTest_without_ProjectSdk_set\obj\Debug\net5.0\apphost.exe",
+            = new(@"C:\work\temp\WindowsDesktopSdkTest_without_ProjectSdk_set\obj\Debug\net5.0\apphost.exe",
                 new Dictionary<string, string>
                 {
                     {"RelativePath", "WindowsDesktopSdkTest_without_ProjectSdk_set.exe"},
@@ -25,7 +20,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
 
         private readonly MockTaskItem _dll =
-            new MockTaskItem(@"obj\Debug\net5.0\WindowsDesktopSdkTest_without_ProjectSdk_set.dll",
+            new(@"obj\Debug\net5.0\WindowsDesktopSdkTest_without_ProjectSdk_set.dll",
                 new Dictionary<string, string>
                 {
                     {"RelativePath", "WindowsDesktopSdkTest_without_ProjectSdk_set.dll"},
@@ -36,12 +31,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         [WindowsOnlyFact]
         public void It_can_expand_OutputPath()
         {
-            var task = new GetPublishItemsOutputGroupOutputs();
-
-            task.PublishDir = @"bin\Debug\net5.0\publish\";
-            task.ResolvedFileToPublish = new[]
+            var task = new GetPublishItemsOutputGroupOutputs
             {
-                _apphost, _dll, _dll
+                PublishDir = @"bin\Debug\net5.0\publish\",
+                ResolvedFileToPublish = new[]
+                {
+                    _apphost, _dll, _dll
+                }
             };
 
             task.Execute().Should().BeTrue();

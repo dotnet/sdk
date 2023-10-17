@@ -6,7 +6,6 @@
 #nullable disable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
 
-using System;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -24,7 +23,7 @@ namespace Microsoft.NET.Build.Tasks
         /// <returns>Boolean true or false, corresponding to the string.</returns>
         internal static bool ConvertStringToBool(string parameterValue, bool defaultValue = false)
         {
-            if (String.IsNullOrEmpty(parameterValue))
+            if (string.IsNullOrEmpty(parameterValue))
             {
                 return defaultValue;
             }
@@ -49,12 +48,12 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         private static bool ValidBooleanTrue(string parameterValue)
         {
-            return ((String.Compare(parameterValue, "true", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "on", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "yes", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!false", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!off", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!no", StringComparison.OrdinalIgnoreCase) == 0));
+            return ((string.Compare(parameterValue, "true", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "on", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "yes", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!false", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!off", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!no", StringComparison.OrdinalIgnoreCase) == 0));
         }
 
         /// <summary>
@@ -63,12 +62,12 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         private static bool ValidBooleanFalse(string parameterValue)
         {
-            return ((String.Compare(parameterValue, "false", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "off", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "no", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!true", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!on", StringComparison.OrdinalIgnoreCase) == 0) ||
-                    (String.Compare(parameterValue, "!yes", StringComparison.OrdinalIgnoreCase) == 0));
+            return ((string.Compare(parameterValue, "false", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "off", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "no", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!true", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!on", StringComparison.OrdinalIgnoreCase) == 0) ||
+                    (string.Compare(parameterValue, "!yes", StringComparison.OrdinalIgnoreCase) == 0));
         }
     }
 }

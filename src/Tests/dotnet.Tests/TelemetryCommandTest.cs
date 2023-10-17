@@ -1,16 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using System.Collections.Generic;
-using System;
-using Xunit;
-using Microsoft.NET.TestFramework;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -33,7 +26,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void NoTelemetryIfCommandIsInvalid()
         {
-            string[] args = { "publish", "-r"};
+            string[] args = { "publish", "-r" };
             Action a = () => { Cli.Program.ProcessArgs(args); };
             a.Should().NotThrow<ArgumentOutOfRangeException>();
         }
@@ -366,7 +359,7 @@ namespace Microsoft.DotNet.Tests
         [WindowsOnlyFact]
         public void InternalreportinstallsuccessCommandCollectExeNameWithEventname()
         {
-            FakeRecordEventNameTelemetry fakeTelemetry = new FakeRecordEventNameTelemetry();
+            FakeRecordEventNameTelemetry fakeTelemetry = new();
             string[] args = { "c:\\mypath\\dotnet-sdk-latest-win-x64.exe" };
 
             InternalReportinstallsuccess.ProcessInputAndSendTelemetry(args, fakeTelemetry);

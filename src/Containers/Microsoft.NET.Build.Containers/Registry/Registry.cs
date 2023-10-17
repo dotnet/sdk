@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Utils;
+using System.Diagnostics;
+using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
-using System.Diagnostics;
-using System.Net.Http.Json;
-using System.Text;
-using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -27,22 +25,26 @@ internal sealed class Registry
     /// This is used in user-facing error messages, and it should match what the user would manually enter as
     /// part of Docker commands like `docker login`.
     /// </summary>
-    public string RegistryName { get; init; }
+    public string RegistryName { get; }
 
-    internal Registry(Uri baseUri, ILogger logger) : this(baseUri, logger, new DefaultRegistryAPI(baseUri, logger), new RegistrySettings()) { }
+    internal Registry(string registryName, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null) :
+        this(ContainerHelpers.TryExpandRegistryToUri(registryName), logger, registryAPI, settings)
+    { }
 
-    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings settings)
+    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI? registryAPI = null, RegistrySettings? settings = null)
     {
-        _logger = logger;
-        _registryAPI = registryAPI;
-        _settings = settings;
         RegistryName = DeriveRegistryName(baseUri);
-        BaseUri = baseUri;
+
         // "docker.io" is not a real registry. Replace the uri to refer to an actual registry.
-        if (BaseUri.Host == ContainerHelpers.DockerRegistryAlias)
+        if (baseUri.Host == ContainerHelpers.DockerRegistryAlias)
         {
-            BaseUri = new UriBuilder(BaseUri.ToString()) { Host = DockerHubRegistry1 }.Uri;
+            baseUri = new UriBuilder(baseUri.ToString()) { Host = DockerHubRegistry1 }.Uri;
         }
+        BaseUri = baseUri;
+
+        _logger = logger;
+        _settings = settings ?? new RegistrySettings();
+        _registryAPI = registryAPI ?? new DefaultRegistryAPI(RegistryName, BaseUri, logger);
     }
 
     private static string DeriveRegistryName(Uri baseUri)
@@ -90,7 +92,8 @@ internal sealed class Registry
     /// <remarks>
     /// Google Artifact Registry locations (one for each availability zone) are of the form "ZONE-docker.pkg.dev".
     /// </remarks>
-    public bool IsGoogleArtifactRegistry {
+    public bool IsGoogleArtifactRegistry
+    {
         get => RegistryName.EndsWith("-docker.pkg.dev", StringComparison.Ordinal);
     }
 
@@ -103,7 +106,7 @@ internal sealed class Registry
     public async Task<ImageBuilder> GetImageManifestAsync(string repositoryName, string reference, string runtimeIdentifier, string runtimeIdentifierGraphPath, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        HttpResponseMessage initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
 
         return initialManifestResponse.Content.Headers.ContentType?.MediaType switch
         {
@@ -136,7 +139,7 @@ internal sealed class Registry
         JsonNode configDoc = await _registryAPI.Blob.GetJsonAsync(repositoryName, configSha, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
-        return new ImageBuilder(manifest, new ImageConfig(configDoc));
+        return new ImageBuilder(manifest, new ImageConfig(configDoc), _logger);
     }
 
     private async Task<ImageBuilder> PickBestImageFromManifestListAsync(
@@ -149,13 +152,14 @@ internal sealed class Registry
     {
         cancellationToken.ThrowIfCancellationRequested();
         var runtimeGraph = GetRuntimeGraphForDotNet(runtimeIdentifierGraphPath);
-        var (ridDict, graphForManifestList) = ConstructRuntimeGraphForManifestList(manifestList, runtimeGraph);
-        var bestManifestRid = CheckIfRidExistsInGraph(graphForManifestList, ridDict.Keys, runtimeIdentifier);
-        if (bestManifestRid is null) {
-            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, graphForManifestList.Runtimes.Keys);
+        var ridManifestDict = GetManifestsByRid(manifestList);
+        var bestManifestRid = GetBestMatchingRid(runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
+        if (bestManifestRid is null)
+        {
+            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
         }
-        PlatformSpecificManifest matchingManifest = ridDict[bestManifestRid];
-        HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
+        PlatformSpecificManifest matchingManifest = ridManifestDict[bestManifestRid];
+        using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -165,23 +169,32 @@ internal sealed class Registry
             cancellationToken).ConfigureAwait(false);
     }
 
-    private static string? CheckIfRidExistsInGraph(RuntimeGraph graphForManifestList, IEnumerable<string> leafRids, string userRid) => leafRids.FirstOrDefault(leaf => graphForManifestList.AreCompatible(leaf, userRid));
-
-    private (IReadOnlyDictionary<string, PlatformSpecificManifest>, RuntimeGraph) ConstructRuntimeGraphForManifestList(ManifestListV2 manifestList, RuntimeGraph dotnetRuntimeGraph)
+    IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(ManifestListV2 manifestList)
     {
         var ridDict = new Dictionary<string, PlatformSpecificManifest>();
-        var runtimeDescriptionSet = new HashSet<RuntimeDescription>();
-        foreach (var manifest in manifestList.manifests) {
+        foreach (var manifest in manifestList.manifests)
+        {
             if (CreateRidForPlatform(manifest.platform) is { } rid)
             {
-                if (ridDict.TryAdd(rid, manifest)) {
-                    AddRidAndDescendantsToSet(runtimeDescriptionSet, rid, dotnetRuntimeGraph);
-                }
+                ridDict.TryAdd(rid, manifest);
             }
         }
 
-        var graph = new RuntimeGraph(runtimeDescriptionSet);
-        return (ridDict, graph);
+        return ridDict;
+    }
+
+    private static string? GetBestMatchingRid(RuntimeGraph runtimeGraph, string runtimeIdentifier, IEnumerable<string> availableRuntimeIdentifiers)
+    {
+        HashSet<string> availableRids = new(availableRuntimeIdentifiers, StringComparer.Ordinal);
+        foreach (var candidateRuntimeIdentifier in runtimeGraph.ExpandRuntime(runtimeIdentifier))
+        {
+            if (availableRids.Contains(candidateRuntimeIdentifier))
+            {
+                return candidateRuntimeIdentifier;
+            }
+        }
+
+        return null;
     }
 
     private static string? CreateRidForPlatform(PlatformInformation platform)
@@ -197,7 +210,7 @@ internal sealed class Registry
         // TODO: we _may_ need OS-specific version parsing. Need to do more research on what the field looks like across more manifest lists.
         var versionPart = platform.version?.Split('.') switch
         {
-            [var major, .. ] => major,
+            [var major, ..] => major,
             _ => null
         };
         var platformPart = platform.architecture switch
@@ -216,13 +229,6 @@ internal sealed class Registry
     }
 
     private static RuntimeGraph GetRuntimeGraphForDotNet(string ridGraphPath) => JsonRuntimeFormat.ReadRuntimeGraph(ridGraphPath);
-
-    private void AddRidAndDescendantsToSet(HashSet<RuntimeDescription> runtimeDescriptionSet, string rid, RuntimeGraph dotnetRuntimeGraph)
-    {
-        var R = dotnetRuntimeGraph.Runtimes[rid];
-        runtimeDescriptionSet.Add(R);
-        foreach (var r in R.InheritedRuntimes) AddRidAndDescendantsToSet(runtimeDescriptionSet, r, dotnetRuntimeGraph);
-    }
 
     /// <summary>
     /// Ensure a blob associated with <paramref name="repository"/> from the registry is available locally.
@@ -291,13 +297,13 @@ internal sealed class Registry
 
             int bytesRead = await contents.ReadAsync(chunkBackingStore, cancellationToken).ConfigureAwait(false);
 
-            ByteArrayContent content = new (chunkBackingStore, offset: 0, count: bytesRead);
+            ByteArrayContent content = new(chunkBackingStore, offset: 0, count: bytesRead);
             content.Headers.ContentLength = bytesRead;
 
             // manual because ACR throws an error with the .NET type {"Range":"bytes 0-84521/*","Reason":"the Content-Range header format is invalid"}
             //    content.Headers.Add("Content-Range", $"0-{contents.Length - 1}");
             Debug.Assert(content.Headers.TryAddWithoutValidation("Content-Range", $"{chunkStart}-{chunkStart + bytesRead - 1}"));
-            
+
             NextChunkUploadInformation nextChunk = await _registryAPI.Blob.Upload.UploadChunkAsync(patchUri, content, cancellationToken).ConfigureAwait(false);
             patchUri = nextChunk.UploadUri;
 
@@ -358,10 +364,13 @@ internal sealed class Registry
 
     }
 
-    public async Task PushAsync(BuiltImage builtImage, ImageReference source, ImageReference destination, CancellationToken cancellationToken)
+    public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
+        => PushAsync(builtImage, source, destination, pushTags: true, cancellationToken);
+
+    private async Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, bool pushTags, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        Registry destinationRegistry = destination.Registry!;
+        Registry destinationRegistry = destination.RemoteRegistry!;
 
         Func<Descriptor, Task> uploadLayerFunc = async (descriptor) =>
         {
@@ -376,7 +385,7 @@ internal sealed class Registry
             }
 
             // Blob wasn't there; can we tell the server to get it from the base image?
-            if (! await _registryAPI.Blob.Upload.TryMountAsync(destination.Repository, source.Repository, digest, cancellationToken).ConfigureAwait(false))
+            if (!await _registryAPI.Blob.Upload.TryMountAsync(destination.Repository, source.Repository, digest, cancellationToken).ConfigureAwait(false))
             {
                 // The blob wasn't already available in another namespace, so fall back to explicitly uploading it
 
@@ -388,7 +397,8 @@ internal sealed class Registry
                     await destinationRegistry.PushLayerAsync(Layer.FromDescriptor(descriptor), destination.Repository, cancellationToken).ConfigureAwait(false);
                     _logger.LogInformation(Strings.Registry_LayerUploaded, digest, destinationRegistry.RegistryName);
                 }
-                else {
+                else
+                {
                     throw new NotImplementedException(Resource.GetString(nameof(Strings.MissingLinkToRegistry)));
                 }
             }
@@ -400,14 +410,14 @@ internal sealed class Registry
         }
         else
         {
-            foreach(var descriptor in builtImage.LayerDescriptors)
+            foreach (var descriptor in builtImage.LayerDescriptors)
             {
                 await uploadLayerFunc(descriptor).ConfigureAwait(false);
             }
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream stringStream = new MemoryStream(Encoding.UTF8.GetBytes(builtImage.Config)))
+        using (MemoryStream stringStream = new(Encoding.UTF8.GetBytes(builtImage.Config)))
         {
             var configDigest = builtImage.ImageDigest;
             _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
@@ -415,15 +425,25 @@ internal sealed class Registry
             _logger.LogInformation(Strings.Registry_ConfigUploaded);
         }
 
-        //manifest upload
-        string manifestDigest = builtImage.Manifest.GetDigest();
-        _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, manifestDigest);
-        await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
-        _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
-
-        //tag upload
-        _logger.LogInformation(Strings.Registry_TagUploadStarted, destination.Tag, RegistryName);
-        await _registryAPI.Manifest.PutAsync(destination.Repository, destination.Tag, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
-        _logger.LogInformation(Strings.Registry_TagUploaded, destination.Tag, RegistryName);
+        // Tags can refer to an image manifest or an image manifest list.
+        // In the first case, we push tags to the registry.
+        // In the second case, we push the manifest digest so the manifest list can refer to it.
+        if (pushTags)
+        {
+            Debug.Assert(destination.Tags.Length > 0);
+            foreach (string tag in destination.Tags)
+            {
+                _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
+                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
+            }
+        }
+        else
+        {
+            string manifestDigest = builtImage.Manifest.GetDigest();
+            _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, manifestDigest);
+            await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
+        }
     }
 }

@@ -1,20 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -32,7 +20,7 @@ namespace Microsoft.NET.Publish.Tests
                 .CopyTestAsset("SimpleDependencies")
                 .WithSource();
 
-            PublishCommand publishCommand = new PublishCommand(simpleDependenciesAsset);
+            PublishCommand publishCommand = new(simpleDependenciesAsset);
             publishCommand
                 .Execute()
                 .Should()
@@ -51,7 +39,7 @@ namespace Microsoft.NET.Publish.Tests
 
             string appPath = publishCommand.GetPublishedAppPath("SimpleDependencies", targetFramework);
 
-            TestCommand runAppCommand = new DotnetCommand(Log,  appPath, "one", "two" );
+            TestCommand runAppCommand = new DotnetCommand(Log, appPath, "one", "two");
 
             string expectedOutput =
 @"{
@@ -74,7 +62,7 @@ namespace Microsoft.NET.Publish.Tests
                 .CopyTestAsset("DesktopNeedsBindingRedirects")
                 .WithSource();
 
-            PublishCommand publishCommand = new PublishCommand(testAsset);
+            PublishCommand publishCommand = new(testAsset);
             publishCommand
                 .Execute()
                 .Should()
@@ -102,7 +90,7 @@ namespace Microsoft.NET.Publish.Tests
                 .WithSource();
 
             var appProjectDirectory = Path.Combine(testAsset.TestRoot, "App");
-            PublishCommand publishCommand = new PublishCommand(Log, appProjectDirectory);
+            PublishCommand publishCommand = new(Log, appProjectDirectory);
             publishCommand
                 .Execute()
                 .Should()
@@ -126,13 +114,13 @@ namespace Microsoft.NET.Publish.Tests
                     targetFrameworkElement.SetValue(targetFramework);
                 });
 
-            string filterProjDir = _testAssetsManager.GetAndValidateTestProjectDirectory("StoreManifests");
+            string filterProjDir = _testAssetsManager.CopyTestAsset("StoreManifests").WithSource().Path;
             string manifestFileName1 = "NewtonsoftFilterProfile.xml";
             string manifestFileName2 = "NewtonsoftMultipleVersions.xml";
             string manifestFile1 = Path.Combine(filterProjDir, manifestFileName1);
             string manifestFile2 = Path.Combine(filterProjDir, manifestFileName2);
 
-            PublishCommand publishCommand = new PublishCommand(simpleDependenciesAsset);
+            PublishCommand publishCommand = new(simpleDependenciesAsset);
             publishCommand
                 .Execute($"/p:TargetManifestFiles={manifestFile1}%3b{manifestFile2}")
                 .Should()
@@ -150,7 +138,7 @@ namespace Microsoft.NET.Publish.Tests
             var runtimeConfig = ReadJson(Path.Combine(publishDirectory.FullName, $"{project}.runtimeconfig.json"));
             runtimeConfig["runtimeOptions"]["tfm"].ToString().Should().Be(targetFramework);
             var depsJson = ReadJson(Path.Combine(publishDirectory.FullName, $"{project}.deps.json"));
-            depsJson["libraries"]["Newtonsoft.Json/13.0.1"]["runtimeStoreManifestName"].ToString().Should().Be($"{manifestFileName1};{manifestFileName2}");
+            depsJson["libraries"][$"Newtonsoft.Json/{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}"]["runtimeStoreManifestName"].ToString().Should().Be($"{manifestFileName1};{manifestFileName2}");
 
             // The end-to-end test of running the published app happens in the dotnet/cli repo.
             // See https://github.com/dotnet/cli/blob/358568b07f16749108dd33e7fea2f2c84ccf4563/test/dotnet-store.Tests/GivenDotnetStoresAndPublishesProjects.cs
@@ -173,14 +161,14 @@ namespace Microsoft.NET.Publish.Tests
                     targetFrameworkElement.SetValue(targetFramework);
                 });
 
-            string filterProjDir = _testAssetsManager.GetAndValidateTestProjectDirectory("StoreManifests");
+            string filterProjDir = _testAssetsManager.CopyTestAsset("StoreManifests").WithSource().Path;
             string manifestFile = Path.Combine(filterProjDir, "NewtonsoftFilterProfile.xml");
 
             // According to https://github.com/dotnet/sdk/issues/1362 publish should throw an error
             // since this scenario is not supported. Running the published app doesn't work currently.
             // This test should be updated when that bug is fixed.
 
-            PublishCommand publishCommand = new PublishCommand(simpleDependenciesAsset);
+            PublishCommand publishCommand = new(simpleDependenciesAsset);
             publishCommand
                 .Execute($"/p:RuntimeIdentifier={rid}", $"/p:TargetManifestFiles={manifestFile}")
                 .Should()
@@ -212,7 +200,7 @@ namespace Microsoft.NET.Publish.Tests
             var kitchenSinkAsset = _testAssetsManager
                 .CopyTestAsset("KitchenSink", identifier: $"{expectAppDocPublished}_{expectLibProjectDocPublished}")
                 .WithSource();
-            
+
             var publishCommand = new PublishCommand(kitchenSinkAsset, "TestApp");
             var publishArgs = properties.Split(';').Select(p => $"/p:{p}").ToArray();
             var publishResult = publishCommand.Execute(publishArgs);
@@ -289,9 +277,9 @@ namespace Microsoft.NET.Publish.Tests
 
         private static JObject ReadJson(string path)
         {
-            using (JsonTextReader jsonReader = new JsonTextReader(File.OpenText(path)))
+            using (JsonTextReader jsonReader = new(File.OpenText(path)))
             {
-                JsonSerializer serializer = new JsonSerializer();
+                JsonSerializer serializer = new();
                 return serializer.Deserialize<JObject>(jsonReader);
             }
         }

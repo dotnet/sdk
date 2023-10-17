@@ -1,14 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using System.Text.Json;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
@@ -167,7 +163,7 @@ namespace Microsoft.DotNet.ToolPackage
                 CacheRow cacheRow)
         {
             RestoredCommandIdentifier restoredCommandIdentifier =
-                new RestoredCommandIdentifier(
+                new(
                     packageId,
                     NuGetVersion.Parse(cacheRow.Version),
                     NuGetFramework.Parse(cacheRow.TargetFramework),
@@ -175,7 +171,7 @@ namespace Microsoft.DotNet.ToolPackage
                     new ToolCommandName(cacheRow.Name));
 
             RestoredCommand restoredCommand =
-                new RestoredCommand(
+                new(
                     new ToolCommandName(cacheRow.Name),
                     cacheRow.Runner,
                     new FilePath(cacheRow.PathToExecutable));

@@ -2,11 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using System.Collections.Immutable;
 
@@ -42,7 +37,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
     class CachingWorkloadResolver
     {
         private sealed record CachedState
-        {            
+        {
             public string DotnetRootPath { get; init; }
             public string SdkVersion { get; init; }
             public string GlobalJsonPath { get; init; }
@@ -100,7 +95,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
                         return null;
                 }
 
-                throw new InvalidOperationException("Unknown resolutionResult type: " + this.GetType());
+                throw new InvalidOperationException("Unknown resolutionResult type: " + GetType());
             }
         }
 
@@ -123,7 +118,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
         {
             if (sdkReferenceName.Equals("Microsoft.NET.SDK.WorkloadAutoImportPropsLocator", StringComparison.OrdinalIgnoreCase))
             {
-                List<string> autoImportSdkPaths = new List<string>();
+                List<string> autoImportSdkPaths = new();
                 foreach (var sdkPackInfo in workloadResolver.GetInstalledWorkloadPacksOfKind(WorkloadPackKind.Sdk))
                 {
                     string sdkPackSdkFolder = Path.Combine(sdkPackInfo.Path, "Sdk");
@@ -138,8 +133,8 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
             }
             else if (sdkReferenceName.Equals("Microsoft.NET.SDK.WorkloadManifestTargetsLocator", StringComparison.OrdinalIgnoreCase))
             {
-                List<string> workloadManifestPaths = new List<string>();
-                foreach (var manifestDirectory in manifestProvider.GetManifestDirectories())
+                List<string> workloadManifestPaths = new();
+                foreach (var manifestDirectory in manifestProvider.GetManifests().Select(m => m.ManifestDirectory))
                 {
                     var workloadManifestTargetPath = Path.Combine(manifestDirectory, "WorkloadManifest.targets");
                     if (File.Exists(workloadManifestTargetPath))
@@ -151,7 +146,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
             }
             else
             {
-                var packInfo = workloadResolver.TryGetPackInfo(new WorkloadPackId (sdkReferenceName));
+                var packInfo = workloadResolver.TryGetPackInfo(new WorkloadPackId(sdkReferenceName));
                 if (packInfo != null)
                 {
                     if (Directory.Exists(packInfo.Path))
@@ -168,7 +163,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
                                     { "Version", packInfo.Version }
                                 }));
 
-                        Dictionary<string, string> propertiesToAdd = new Dictionary<string, string>();
+                        Dictionary<string, string> propertiesToAdd = new();
                         return new EmptyResolutionResult(propertiesToAdd, itemsToAdd);
                     }
                 }

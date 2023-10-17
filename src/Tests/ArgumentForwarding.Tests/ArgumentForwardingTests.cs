@@ -1,21 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using Xunit;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using System.Diagnostics;
-using FluentAssertions;
 using Microsoft.DotNet.CommandFactory;
-using Microsoft.NET.TestFramework;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.Commands;
 
 namespace Microsoft.DotNet.Tests.ArgumentForwarding
 {
@@ -72,7 +59,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
 
             rawEvaluatedArgument.Length.Should().Be(escapedEvaluatedRawArgument.Length);
 
-            for (int i=0; i<rawEvaluatedArgument.Length; ++i)
+            for (int i = 0; i < rawEvaluatedArgument.Length; ++i)
             {
                 var rawArg = rawEvaluatedArgument[i];
                 var escapedArg = escapedEvaluatedRawArgument[i];
@@ -111,7 +98,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             {
                 rawEvaluatedArgument.Length.Should().Be(escapedEvaluatedRawArgument.Length);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 Console.WriteLine("Argument Lists differ in length.");
 
@@ -132,7 +119,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
                 {
                     rawArg.Should().Be(escapedArg);
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     Console.WriteLine($"Expected: {rawArg}");
                     Console.WriteLine($"Actual: {escapedArg}");
@@ -229,11 +216,11 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         private string[] ParseReflectorCmdOutput(string reflectorOutput)
         {
             var args = reflectorOutput.Split(new string[] { "," }, StringSplitOptions.None);
-            args[args.Length-1] = args[args.Length-1].TrimEnd('\r', '\n');
+            args[args.Length - 1] = args[args.Length - 1].TrimEnd('\r', '\n');
 
             // To properly pass args to cmd, quotes inside a parameter are doubled
             // Count them as a single quote for our comparison.
-            for (int i=0; i < args.Length; ++i)
+            for (int i = 0; i < args.Length; ++i)
             {
                 args[i] = args[i].Replace(@"""""", @"""");
             }

@@ -1,20 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
 using Microsoft.DotNet.Cli.CommandLineValidation;
 using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Common;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Msbuild.Tests.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.Remove.Reference.Tests
 {
@@ -79,7 +69,7 @@ Options:
 
             try
             {
-                string [] newArgs = new[] { "classlib", "-o", projDir.Path, "--no-restore" };
+                string[] newArgs = new[] { "classlib", "-o", projDir.Path, "--no-restore" };
                 new DotnetNewCommand(Log)
                     .WithVirtualHive()
                     .WithWorkingDirectory(projDir.Path)
@@ -125,7 +115,7 @@ Options:
             return ret;
         }
 
-        private ProjDir AddValidRef(TestSetup setup, ProjDir proj, params string [] frameworkArgs)
+        private ProjDir AddValidRef(TestSetup setup, ProjDir proj, params string[] frameworkArgs)
         {
             var ret = new ProjDir(setup.ValidRefDir);
             new AddReferenceCommand(Log)
@@ -152,7 +142,7 @@ Options:
         [InlineData("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
         {
-            List<string> args = new List<string>();
+            List<string> args = new();
             args.Add("remove");
             if (commandName != null)
             {

@@ -1,15 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.Channel;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
@@ -17,10 +10,10 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
     internal sealed class StorageService : BaseStorageService
     {
         private const string DefaultStorageFolderName = "TelemetryStorageService";
-        private readonly FixedSizeQueue<string> _deletedFilesQueue = new FixedSizeQueue<string>(10);
+        private readonly FixedSizeQueue<string> _deletedFilesQueue = new(10);
 
-        private readonly object _peekLockObj = new object();
-        private readonly object _storageFolderLock = new object();
+        private readonly object _peekLockObj = new();
+        private readonly object _storageFolderLock = new();
         private string _storageDirectoryPath;
         private string _storageDirectoryPathUsed;
         private long _storageCountFiles;

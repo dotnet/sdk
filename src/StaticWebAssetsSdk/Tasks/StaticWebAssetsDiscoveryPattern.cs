@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -33,7 +31,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public override int GetHashCode()
         {
 #if NET6_0_OR_GREATER
-                return HashCode.Combine(Name, Source, ContentRoot, BasePath, Pattern);
+            return HashCode.Combine(Name, Source, ContentRoot, BasePath, Pattern);
 #else
             int hashCode = 1513180540;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Name);
@@ -67,13 +65,14 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         internal static StaticWebAssetsDiscoveryPattern FromTaskItem(ITaskItem pattern)
         {
-            var result = new StaticWebAssetsDiscoveryPattern();
-
-            result.Name = pattern.ItemSpec;
-            result.Source = pattern.GetMetadata(nameof(Source));
-            result.BasePath = pattern.GetMetadata(nameof(BasePath));
-            result.ContentRoot = pattern.GetMetadata(nameof(ContentRoot));
-            result.Pattern = pattern.GetMetadata(nameof(Pattern));
+            var result = new StaticWebAssetsDiscoveryPattern
+            {
+                Name = pattern.ItemSpec,
+                Source = pattern.GetMetadata(nameof(Source)),
+                BasePath = pattern.GetMetadata(nameof(BasePath)),
+                ContentRoot = pattern.GetMetadata(nameof(ContentRoot)),
+                Pattern = pattern.GetMetadata(nameof(Pattern))
+            };
 
             return result;
         }

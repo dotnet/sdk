@@ -1,20 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using FluentAssertions;
-using FluentAssertions.Execution;
-
-using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.NET.TestFramework;
-
-using System;
 using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Text;
-
-using Xunit;
-using Xunit.Abstractions;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace ManifestReaderTests
 {
@@ -35,7 +23,7 @@ namespace ManifestReaderTests
         [Fact]
         public void ItCanDeserialize()
         {
-            using (FileStream fsSource = new FileStream(ManifestPath, FileMode.Open, FileAccess.Read))
+            using (FileStream fsSource = new(ManifestPath, FileMode.Open, FileAccess.Read))
             {
                 var result = WorkloadManifestReader.ReadWorkloadManifest("Sample", fsSource, ManifestPath);
                 result.Version.Should().Be("5.0.0-preview1");
@@ -210,7 +198,7 @@ namespace ManifestReaderTests
         public void WillNotLoadManifestWithNullAlias()
         {
             var manifestPath = GetSampleManifestPath("NullAliasError.json");
-            using FileStream fsSource = new FileStream(manifestPath, FileMode.Open, FileAccess.Read);
+            using FileStream fsSource = new(manifestPath, FileMode.Open, FileAccess.Read);
 
             var ex = Assert.Throws<WorkloadManifestFormatException>(() => WorkloadManifestReader.ReadWorkloadManifest("NullAliasError", fsSource, manifestPath));
             Assert.Contains("Expected string value at offset", ex.Message);

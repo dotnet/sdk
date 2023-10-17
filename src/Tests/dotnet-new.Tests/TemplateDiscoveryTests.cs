@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -22,14 +19,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Fact]
         public async Task CanRunDiscoveryTool()
         {
-            string home = CreateTemporaryFolder(folderName: "Home");
             string testDir = CreateTemporaryFolder();
-            string testTemplatesPpackagePath = PackTestNuGetPackage(_log);
+            string testTemplatesPackagePath = PackTestNuGetPackage(_log);
             using var packageManager = new PackageManager();
             string packagePath = await packageManager.GetNuGetPackage(
                 templatePackName: "Microsoft.Azure.WebJobs.ProjectTemplates",
-                downloadDirectory: Path.GetDirectoryName(testTemplatesPpackagePath))
-                .ConfigureAwait(false);
+                downloadDirectory: Path.GetDirectoryName(testTemplatesPackagePath));
 
             _templateDiscoveryTool.Run(
                 _log,

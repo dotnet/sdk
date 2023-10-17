@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -42,7 +40,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         protected override int ExecuteTool(string pathToTool, string responseFileCommands, string commandLineCommands)
         {
             int returnCode = base.ExecuteTool(pathToTool, responseFileCommands, commandLineCommands);
-            
+
             // returnCode 1 indicates that files changed during tar. In our case, it is likely being overwritten by another copy of the same file, so we can safely ignore this warning.
             if (IgnoreExitCode || returnCode == 1)
             {
@@ -136,7 +134,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
         private string GetExcludes()
         {
-            var excludes = String.Empty;
+            var excludes = string.Empty;
 
             if (ExcludePatterns != null)
             {
@@ -145,13 +143,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     excludes += $" --exclude {excludeTaskItem.ItemSpec}";
                 }
             }
-            
+
             return excludes;
         }
-        
+
         protected override void LogToolCommand(string message)
         {
-            base.LogToolCommand($"{base.GetWorkingDirectory()}> {message}");
+            base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
         }
     }
 }

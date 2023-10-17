@@ -3,11 +3,6 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.Cli.Build
 {
@@ -17,9 +12,9 @@ namespace Microsoft.DotNet.Cli.Build
         {
             JToken deps;
             using (var file = File.OpenText(depsFile))
-            using (JsonTextReader reader = new JsonTextReader(file))
+            using (JsonTextReader reader = new(file))
             {
-                deps = JObject.ReadFrom(reader);
+                deps = JToken.ReadFrom(reader);
             }
 
             string version = null;

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Xml.Linq;
-
 namespace Microsoft.NET.TestFramework.Utilities
 {
     public static class ProjectModification
@@ -11,7 +9,7 @@ namespace Microsoft.NET.TestFramework.Utilities
         {
             XNamespace ns = project.Root.Name.Namespace;
 
-            XElement target = new XElement(ns + "Target", new XAttribute("Name", "DisplayMessages"),
+            XElement target = new(ns + "Target", new XAttribute("Name", "DisplayMessages"),
                 new XAttribute("BeforeTargets", beforeTargets));
             project.Root.Add(target);
 

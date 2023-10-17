@@ -2,16 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.WebSockets;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -66,6 +60,13 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                     var capabilities = Encoding.UTF8.GetString(buffer.AsSpan(0, response.Value.Count));
 
+                    // error while fetching capabilities from WASM:
+                    if (capabilities.StartsWith("!"))
+                    {
+                        _reporter.Error($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
+                        return ImmutableArray<string>.Empty;
+                    }
+
                     // Capabilities are expressed a space-separated string.
                     // e.g. https://github.com/dotnet/runtime/blob/14343bdc281102bf6fffa1ecdd920221d46761bc/src/coreclr/System.Private.CoreLib/src/System/Reflection/Metadata/AssemblyExtensions.cs#L87
                     return capabilities.Split(' ').ToImmutableArray();
@@ -111,30 +112,46 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private async Task<bool> ReceiveApplyUpdateResult(BrowserRefreshServer browserRefresh, CancellationToken cancellationToken)
         {
-            var _receiveBuffer = new byte[1];
-            var result = await browserRefresh.ReceiveAsync(_receiveBuffer, cancellationToken);
-            if (result is null)
+            var buffer = new byte[1];
+
+            var result = await browserRefresh.ReceiveAsync(buffer, cancellationToken);
+            if (result is not { MessageType: WebSocketMessageType.Binary })
             {
                 // A null result indicates no clients are connected. No deltas could have been applied in this state.
                 _reporter.Verbose("Apply confirmation: No browser is connected");
                 return false;
             }
 
-            if (IsDeltaReceivedMessage(result.Value))
+            if (result is { Count: 1, EndOfMessage: true })
             {
-                // 1 indicates success.
-                return _receiveBuffer[0] == 1;
+                return buffer[0] == 1;
+            }
+
+            _reporter.Verbose("Browser failed to apply the change and reported error:");
+
+            buffer = new byte[1024];
+            var messageStream = new MemoryStream();
+
+            while (true)
+            {
+                result = await browserRefresh.ReceiveAsync(buffer, cancellationToken);
+                if (result is not { MessageType: WebSocketMessageType.Binary })
+                {
+                    _reporter.Verbose("Failed to receive error message");
+                    break;
+                }
+
+                messageStream.Write(buffer, 0, result.Value.Count);
+
+                if (result is { EndOfMessage: true })
+                {
+                    // message and stack trace are separated by '\0'
+                    _reporter.Verbose(Encoding.UTF8.GetString(messageStream.ToArray()).Replace("\0", Environment.NewLine));
+                    break;
+                }
             }
 
             return false;
-
-            bool IsDeltaReceivedMessage(ValueWebSocketReceiveResult result)
-            {
-                _reporter.Verbose($"Apply confirmation: Received {_receiveBuffer[0]} from browser in [Count: {result.Count}, MessageType: {result.MessageType}, EndOfMessage: {result.EndOfMessage}].");
-                return result.Count == 1 // Should have received 1 byte on the socket for the acknowledgement
-                    && result.MessageType is WebSocketMessageType.Binary
-                    && result.EndOfMessage;
-            }
         }
 
         public override void Dispose()
@@ -144,7 +161,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private readonly struct UpdatePayload
         {
-            public string Type => "BlazorHotReloadDeltav1";
+            public string Type => "BlazorHotReloadDeltav2";
             public string? SharedSecret { get; init; }
             public IEnumerable<UpdateDelta> Deltas { get; init; }
         }
@@ -161,7 +178,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private readonly struct BlazorRequestApplyUpdateCapabilities
         {
-            public string Type => "BlazorRequestApplyUpdateCapabilities";
+            public string Type => "BlazorRequestApplyUpdateCapabilities2";
         }
     }
 }

@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Globalization;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.ApplicationInsights.Channel;
 
 namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
@@ -40,7 +37,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
         /// <returns>Return transmission loaded from file; return null if the file is corrupted.</returns>
         internal static async Task<StorageTransmission> CreateFromStreamAsync(Stream stream, string fileName)
         {
-            StreamReader reader = new StreamReader(stream);
+            StreamReader reader = new(stream);
             Uri address = await ReadAddressAsync(reader).ConfigureAwait(false);
             string contentType = await ReadHeaderAsync(reader, "Content-Type").ConfigureAwait(false);
             string contentEncoding = await ReadHeaderAsync(reader, "Content-Encoding").ConfigureAwait(false);
@@ -53,7 +50,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
         /// </summary>
         internal static async Task SaveAsync(Transmission transmission, Stream stream)
         {
-            StreamWriter writer = new StreamWriter(stream);
+            StreamWriter writer = new(stream);
             try
             {
                 await writer.WriteLineAsync(transmission.EndpointAddress.ToString()).ConfigureAwait(false);
@@ -102,7 +99,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
                 throw new FormatException("Transmission address is expected.");
             }
 
-            Uri address = new Uri(addressLine);
+            Uri address = new(addressLine);
             return address;
         }
 

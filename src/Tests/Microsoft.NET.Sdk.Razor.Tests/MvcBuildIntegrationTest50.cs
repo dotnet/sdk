@@ -1,21 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class MvcBuildIntegrationTest50 : MvcBuildIntegrationTestLegacy
     {
-        public MvcBuildIntegrationTest50(ITestOutputHelper log) : base(log) {}
+        public MvcBuildIntegrationTest50(ITestOutputHelper log) : base(log) { }
 
         public override string TestProjectName => "SimpleMvc50";
         public override string TargetFramework => "net5.0";
@@ -25,7 +15,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
             var testAsset = "RazorMvcWithComponents";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset, overrideTfm: TargetFramework);
-                
+
             // Introducing a Razor semantic error
             var indexPage = Path.Combine(projectDirectory.Path, "Views", "Shared", "NavMenu.razor");
             File.WriteAllText(indexPage, "@{ // Unterminated code block");
@@ -62,7 +52,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // We need to ensure that we continue providing Razor binaries and symbols as files to be copied over.
             var testAsset = "RazorAppWithP2PReference";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset, overrideTfm: TargetFramework);
-            
+
             var build = new BuildCommand(projectDirectory, "AppWithP2PReference");
             build.Execute().Should().Pass();
 

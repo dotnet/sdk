@@ -1,12 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using FluentAssertions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Tasks
 {
@@ -28,8 +25,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 var task = new StaticWebAssetsGeneratePackagePropsFile
                 {
                     BuildEngine = buildEngine.Object,
-                    PropsFileImport="Microsoft.AspNetCore.StaticWebAssets.props",
-                    BuildTargetPath=file
+                    PropsFileImport = "Microsoft.AspNetCore.StaticWebAssets.props",
+                    BuildTargetPath = file
                 };
 
                 // Act
