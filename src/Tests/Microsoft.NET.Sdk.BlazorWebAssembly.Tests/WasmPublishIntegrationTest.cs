@@ -1081,7 +1081,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             AssertRIDPublishOuput(publishCommand, testInstance, hosted: true);
         }
 
-        [ConditionalFact()]
+        [ConditionalFact(Skip="https://github.com/dotnet/installer/issues/17453")]
         public void Publish_HostedApp_WithRidSpecifiedAsArgument_NoSelfContained_Works()
         {
             // Arrange
