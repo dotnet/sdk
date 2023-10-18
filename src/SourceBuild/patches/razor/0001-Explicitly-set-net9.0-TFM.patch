@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Wed, 18 Oct 2023 10:58:11 -0500
+Subject: [PATCH] Explicitly set net9.0 TFM
+
+https://github.com/dotnet/source-build/issues/3663
+---
+ Directory.Build.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index bf6754f23..d76f449be 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -66,7 +66,7 @@
+     -->
+     <When Condition="'$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product'">
+       <PropertyGroup>
+-        <DefaultNetCoreTargetFramework>$(NetCurrent)</DefaultNetCoreTargetFramework>
++        <DefaultNetCoreTargetFramework>net9.0</DefaultNetCoreTargetFramework>
+         <DefaultNetCoreTargetFrameworks>$(DefaultNetCoreTargetFramework)</DefaultNetCoreTargetFrameworks>
+       </PropertyGroup>
+     </When>
