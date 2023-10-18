@@ -8,7 +8,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         public PackIntegrationTest(ITestOutputHelper log) : base(log) {}
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Pack_NoBuild_Works_IncludesAssembly()
         {
             var testAsset = "RazorClassLibrary";

@@ -10,7 +10,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public WasmBuildIncrementalismTest(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_IsIncremental()
         {
             // Arrange
@@ -42,7 +42,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_GzipCompression_IsIncremental()
         {
             // Arrange
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_SatelliteAssembliesFileIsPreserved()
         {
             // Arrange
@@ -146,7 +146,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_SatelliteAssembliesFileIsCreated_IfNewFileIsAdded()
         {
             // Arrange
@@ -192,7 +192,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             kvp.Value.Should().ContainKey("blazorwasm.resources.wasm");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_SatelliteAssembliesFileIsDeleted_IfAllSatelliteFilesAreRemoved()
         {
             // Arrange

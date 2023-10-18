@@ -7,7 +7,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public BlazorMultitargetIntegrationTest(ITestOutputHelper log) : base(log) { }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void MultiTargetApp_LoadsTheCorrectSdkBasedOnTfm()
         {
             // Arrange
@@ -28,7 +28,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             browserDependencies.File("captured-references.txt").Should().NotContain("Microsoft.AspNetCore.Components.Server.dll");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void ReferencedMultiTargetApp_LoadsTheCorrectSdkBasedOnTfm()
         {
             // Arrange

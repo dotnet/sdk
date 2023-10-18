@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
     {
         public DesignTimeBuildIntegrationTest(ITestOutputHelper log) : base(log) {}
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void DesignTimeBuild_DoesNotRunRazorTargets()
         {
             var testAsset = "RazorSimpleMvc";

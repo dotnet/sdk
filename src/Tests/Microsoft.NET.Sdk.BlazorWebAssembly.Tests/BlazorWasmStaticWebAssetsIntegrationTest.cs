@@ -11,7 +11,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void StaticWebAssets_BuildMinimal_Works()
         {
             // Arrange
@@ -45,7 +45,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void StaticWebAssets_PublishMinimal_Works()
         {
             // Arrange
@@ -75,7 +75,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void StaticWebAssets_Build_Hosted_Works()
         {
             // Arrange
@@ -106,7 +106,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void StaticWebAssets_Publish_Hosted_Works()
         {
             // Arrange
@@ -137,7 +137,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void StaticWebAssets_Publish_DoesNotIncludeXmlDocumentationFiles_AsAssets()
         {
             // Arrange
@@ -218,7 +218,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void StaticWebAssets_BackCompatibilityPublish_Hosted_Works()
         {
             // Arrange

@@ -11,7 +11,7 @@ namespace Microsoft.NET.Publish.Tests
         {
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void It_publishes_as_framework_dependent_by_default()
         {
             var testAsset = _testAssetsManager
@@ -147,7 +147,7 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.8.1.47607")]
         [InlineData(null, null)]
         [InlineData(false, null)]
         [InlineData(true, null)]
