@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
@@ -74,7 +75,21 @@ namespace Microsoft.TemplateEngine.TestHelper
 
         public void Dispose()
         {
-            _foldersToCleanup.ForEach(f => Directory.Delete(f, true));
+            _foldersToCleanup.ForEach(f =>
+            {
+                if (Directory.Exists(f))
+                {
+                    try
+                    {
+                        Directory.Delete(f, true);
+                    }
+                    catch
+                    {
+                        Thread.Sleep(2000);
+                        Directory.Delete(f, true);
+                    }
+                }
+            });
         }
     }
 }
