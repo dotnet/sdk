@@ -71,12 +71,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                     // error while fetching capabilities from WASM:
                     if (capabilities.StartsWith("!"))
                     {
-                        _reporter.Warn($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
+                        _reporter.Verbose($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
                         shouldFallBackToDefaultCapabilities = true;
                     }
                     else if (capabilities.Length == 0)
                     {
-                        _reporter.Warn($"Unable to read WASM runtime capabilities");
+                        _reporter.Verbose($"Unable to read WASM runtime capabilities");
                         shouldFallBackToDefaultCapabilities = true;
                     }
 
