@@ -18,6 +18,6 @@ index 961660e5..c330813b 100644
      <BenchmarkDotNetAnnotationsVersion>0.13.5</BenchmarkDotNetAnnotationsVersion>
 -    <MicrosoftBuildLocatorVersion>1.5.5</MicrosoftBuildLocatorVersion>
 +    <MicrosoftBuildLocatorVersion>1.6.10</MicrosoftBuildLocatorVersion>
-     <MicrosoftVisua>17.4.16</MicrosoftVisualStudioCompositionVersion>
+     <MicrosoftVisualStudioCompositionVersion>17.4.16</MicrosoftVisualStudioCompositionVersion>
    </PropertyGroup>
  </Project>
