@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Wed, 18 Oct 2023 12:50:21 -0500
+Subject: [PATCH] Explicitly set TFM to net9.0
+
+https://github.com/dotnet/source-build/issues/3663
+---
+ perf/dotnet-format.Performance.csproj | 2 +-
+ src/dotnet-format.csproj              | 2 +-
+ tests/dotnet-format.UnitTests.csproj  | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/perf/dotnet-format.Performance.csproj b/perf/dotnet-format.Performance.csproj
+index 677b7b9a..3e1387d1 100644
+--- a/perf/dotnet-format.Performance.csproj
++++ b/perf/dotnet-format.Performance.csproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>$(NetCurrent)</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <OutputType>Exe</OutputType>
+     <Optimize>true</Optimize>
+     <Configuration>Release</Configuration>
+diff --git a/src/dotnet-format.csproj b/src/dotnet-format.csproj
+index 5549fb71..8a77d03f 100644
+--- a/src/dotnet-format.csproj
++++ b/src/dotnet-format.csproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>$(NetCurrent)</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <OutputType>Exe</OutputType>
+     <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
+     <ServerGarbageCollection>true</ServerGarbageCollection>
+diff --git a/tests/dotnet-format.UnitTests.csproj b/tests/dotnet-format.UnitTests.csproj
+index c4311a1a..5b1bcfb9 100644
+--- a/tests/dotnet-format.UnitTests.csproj
++++ b/tests/dotnet-format.UnitTests.csproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>$(NetCurrent)</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <RootNamespace>Microsoft.CodeAnalysis.Tools.Tests</RootNamespace>
+ 
+     <!-- Copy nuget assemblies to build directory so that Microsoft.CodeAnalysis.Features.* can be located when running tests. -->
