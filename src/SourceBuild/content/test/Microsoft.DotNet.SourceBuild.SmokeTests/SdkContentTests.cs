@@ -31,7 +31,8 @@ public class SdkContentTests : SdkTests
     /// This makes the baseline durable between releases.  This does mean however, entries
     /// in the baseline may appear identical if the diff is version specific.
     /// </Summary>
-    [SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
+    // https://github.com/dotnet/source-build/issues/3668
+    //[SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
     public void CompareMsftToSbFileList()
     {
         const string msftFileListingFileName = "msftSdkFiles.txt";
@@ -44,7 +45,8 @@ public class SdkContentTests : SdkTests
         BaselineHelper.CompareBaselineContents("MsftToSbSdkFiles.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
     }
 
-    [SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
+    // https://github.com/dotnet/source-build/issues/3668
+    //[SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
     public void CompareMsftToSbAssemblyVersions()
     {
         Assert.NotNull(Config.MsftSdkTarballPath);

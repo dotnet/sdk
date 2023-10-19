@@ -157,6 +157,9 @@ function BootstrapArtifacts {
 if [ "$installDotnet" == true ]; then
   echo "  Installing dotnet..."
   (source ./eng/common/tools.sh && InitializeDotNetCli true)
+
+  # TODO: Remove once runtime dependency is gone (https://github.com/dotnet/runtime/issues/93666)
+  bash .dotnet/dotnet-install.sh --install-dir "$SCRIPT_ROOT/.dotnet" --channel 8.0 --runtime dotnet
 fi
 
 # Read the eng/Versions.props to get the archives to download and download them
