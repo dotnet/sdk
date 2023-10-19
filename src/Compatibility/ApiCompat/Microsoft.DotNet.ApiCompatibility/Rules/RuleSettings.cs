@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         IEqualityComparer<ISymbol> SymbolEqualityComparer { get; }
 
         /// <summary>
-        /// The attribute data symbol filter.
+        /// The attribute data symbol filter. This filter is responsible for all filtering of the application of attributes, including visibility.
         /// </summary>
         ISymbolFilter AttributeDataSymbolFilter { get; }
 

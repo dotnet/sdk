@@ -28,6 +28,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context));
 
+        private static ISymbolFilter GetAccessibilityAndAttributeSymbolFiltersAsComposite(params string[] excludeAttributeFiles) =>
+            new CompositeSymbolFilter().Add(new AccessibilitySymbolFilter(false)).Add(new DocIdSymbolFilter(excludeAttributeFiles));
+
         public static TheoryData<string, string, CompatDifference[]> TypesCases => new()
         {
             // No change to type's attributes
@@ -1329,7 +1332,7 @@ new CompatDifference[] {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
-            differ.Settings.AttributeDataSymbolFilter = new DocIdSymbolFilter(new string[] { filePath });
+            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
@@ -1346,7 +1349,7 @@ new CompatDifference[] {
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: true));
-            differ.Settings.AttributeDataSymbolFilter = new DocIdSymbolFilter(new string[] { filePath });
+            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
@@ -1395,7 +1398,7 @@ namespace CompatTests
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
-            differ.Settings.AttributeDataSymbolFilter = new DocIdSymbolFilter(new string[] { filePath });
+            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
@@ -1447,7 +1450,7 @@ namespace CompatTests
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(ruleFactory, new ApiComparerSettings(strictMode: true));
-            differ.Settings.AttributeDataSymbolFilter = new DocIdSymbolFilter(new string[] { filePath });
+            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right).ToArray();
 
