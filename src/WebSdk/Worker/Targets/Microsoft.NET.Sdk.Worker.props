@@ -47,4 +47,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="../targets/Microsoft.NET.Sdk.Web.DefaultItems.props" />
 
+  <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" />
+
 </Project>
