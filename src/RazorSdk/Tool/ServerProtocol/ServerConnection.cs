@@ -281,40 +281,6 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
         }
 
-        private static string FindDotNetExecutable()
-        {
-            var expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
-            if (!string.IsNullOrEmpty(expectedPath))
-            {
-                return expectedPath;
-            }
-
-#if NET
-            expectedPath = System.Environment.ProcessPath;
-#else
-            expectedPath = Process.GetCurrentProcess().MainModule.FileName;
-#endif
-
-            if ("dotnet".Equals(Path.GetFileNameWithoutExtension(expectedPath), StringComparison.Ordinal))
-            {
-                return expectedPath;
-            }
-
-            // We were probably running from Visual Studio or Build Tools and found MSBuild instead of dotnet. Use the PATH...
-            var paths = Environment.GetEnvironmentVariable("PATH").Split(Path.PathSeparator);
-            var exeName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "dotnet.exe" : "dotnet";
-            foreach (string path in paths)
-            {
-                var dotnetPath = Path.Combine(path, exeName);
-                if (File.Exists(dotnetPath))
-                {
-                    return dotnetPath;
-                }
-            }
-
-            return exeName;
-        }
-
         // Internal for testing.
         internal static bool TryCreateServerCore(string clientDir, string pipeName, out int? processId, bool debug = false)
         {
@@ -323,7 +289,15 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             // The server should be in the same directory as the client
             var expectedCompilerPath = Path.Combine(clientDir, ServerName);
 
-            var expectedPath = FindDotNetExecutable();
+            var expectedPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+            if (string.IsNullOrEmpty(expectedPath))
+            {
+#if NET
+                expectedPath = System.Environment.ProcessPath;
+#else
+                expectedPath = Process.GetCurrentProcess().MainModule.FileName;
+#endif
+            }
 
             var argumentList = new string[]
             {
