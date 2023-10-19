@@ -1,0 +1,640 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 19 Oct 2023 08:33:01 -0500
+Subject: [PATCH] Explicitly use net9.0 TFM
+
+Backport: https://github.com/dotnet/source-build/issues/3663
+---
+ Directory.Build.props                         |  4 +--
+ buildtools/AssemblyCheck/AssemblyCheck.fsproj |  2 +-
+ .../FSharp.Compiler.Service_notshipped.fsproj |  2 +-
+ buildtools/fslex/fslex.fsproj                 |  2 +-
+ buildtools/fsyacc/fsyacc.fsproj               |  2 +-
+ eng/build.sh                                  |  6 ++--
+ .../EditorService/EditorService.fsproj        |  2 +-
+ src/Compiler/FSharp.Compiler.Service.fsproj   |  6 ++--
+ .../Microsoft.FSharp.Compiler.fsproj          |  2 +-
+ .../Microsoft.FSharp.Compiler.nuspec          | 28 +++++++++----------
+ src/fsc/fscProject/fsc.fsproj                 |  6 ++--
+ src/fsi/fsiProject/fsi.fsproj                 |  6 ++--
+ .../SelfContained_Trimming_Test.fsproj        |  6 ++--
+ ...taticLinkedFSharpCore_Trimming_Test.fsproj |  6 ++--
+ .../BasicProvider.DesignTime.fsproj           |  2 +-
+ .../BasicProvider.Tests.fsproj                |  2 +-
+ .../BasicProvider/BasicProvider.fsproj        |  2 +-
+ .../FSharp.Build.UnitTests.fsproj             |  4 +--
+ .../FSharp.Compiler.ComponentTests.fsproj     |  4 +--
+ ...ompiler.Private.Scripting.UnitTests.fsproj |  4 +--
+ .../FSharp.Compiler.Service.Tests.fsproj      |  4 +--
+ .../FSharp.Compiler.UnitTests.fsproj          |  4 +--
+ .../FSharp.Core.UnitTests.fsproj              |  4 +--
+ .../FSharp.Test.Utilities.fsproj              |  4 +--
+ .../MicroPerf/MicroPerf.fsproj                |  2 +-
+ .../TaskPerf/TaskPerf/TaskPerf.fsproj         |  2 +-
+ .../TaskPerfPreviousCompiler.fsproj           |  2 +-
+ .../HistoricalBenchmark.Runner.fsproj         |  2 +-
+ .../HistoricalBenchmark.fsproj                |  2 +-
+ .../FSharp.Compiler.Benchmarks.fsproj         |  2 +-
+ .../FCSSourceFiles/FCSSourceFiles.fsproj      |  2 +-
+ .../Fsharp.ProfilingStartpointProject.fsproj  |  2 +-
+ tests/fsharp/FSharpSuite.Tests.fsproj         |  4 +--
+ .../Sample_ConsoleApp_net7.fsproj             |  6 ++--
+ .../Sample_ConsoleApp_net7.fsproj             |  6 ++--
+ 35 files changed, 73 insertions(+), 73 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 879bd8941..161d115ad 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -30,8 +30,8 @@
+     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts/</ArtifactsDir>
+     <OutputPath>$(ArtifactsDir)/bin/$(MSBuildProjectName)/$(Configuration)/</OutputPath>
+     <IntermediateOutputPath>$(ArtifactsDir)obj/$(MSBuildProjectName)/$(Configuration)/</IntermediateOutputPath>
+-    <FsLexPath>$(ArtifactsDir)/bin/fslex/$(Configuration)/net8.0/fslex.dll</FsLexPath>
+-    <FsYaccPath>$(ArtifactsDir)/bin/fsyacc/$(Configuration)/net8.0/fsyacc.dll</FsYaccPath>
++    <FsLexPath>$(ArtifactsDir)/bin/fslex/$(Configuration)/net9.0/fslex.dll</FsLexPath>
++    <FsYaccPath>$(ArtifactsDir)/bin/fsyacc/$(Configuration)/net9.0/fsyacc.dll</FsYaccPath>
+   </PropertyGroup>
+ 
+   <Import Project="$(MSBuildThisFileDirectory)/eng/Versions.props" Condition="'$(DISABLE_ARCADE)' == 'true'"/>
+diff --git a/buildtools/AssemblyCheck/AssemblyCheck.fsproj b/buildtools/AssemblyCheck/AssemblyCheck.fsproj
+index 46ffb722c..9d391689d 100644
+--- a/buildtools/AssemblyCheck/AssemblyCheck.fsproj
++++ b/buildtools/AssemblyCheck/AssemblyCheck.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+     <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
+   </PropertyGroup>
+diff --git a/buildtools/checkpackages/FSharp.Compiler.Service_notshipped.fsproj b/buildtools/checkpackages/FSharp.Compiler.Service_notshipped.fsproj
+index 514b1f4dd..d3df3b688 100644
+--- a/buildtools/checkpackages/FSharp.Compiler.Service_notshipped.fsproj
++++ b/buildtools/checkpackages/FSharp.Compiler.Service_notshipped.fsproj
+@@ -3,7 +3,7 @@
+   <Import Project="$(MSBuildProjectDirectory)\..\..\eng\Versions.props" />
+  
+   <PropertyGroup>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+     <CachePath>$(MSBuildProjectDirectory)\..\..\artifacts\tmp\$([System.Guid]::NewGuid())</CachePath>
+     <OutputPath>$(CachePath)\bin</OutputPath>
+diff --git a/buildtools/fslex/fslex.fsproj b/buildtools/fslex/fslex.fsproj
+index 674dde7c7..8764e40e1 100644
+--- a/buildtools/fslex/fslex.fsproj
++++ b/buildtools/fslex/fslex.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+     <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
+     <RollForward Condition="'$(BUILDING_USING_DOTNET)' == 'true'">LatestMajor</RollForward>
+diff --git a/buildtools/fsyacc/fsyacc.fsproj b/buildtools/fsyacc/fsyacc.fsproj
+index fc072b7cf..4110186e5 100644
+--- a/buildtools/fsyacc/fsyacc.fsproj
++++ b/buildtools/fsyacc/fsyacc.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+     <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
+     <RollForward Condition="'$(BUILDING_USING_DOTNET)' == 'true'">LatestMajor</RollForward>
+diff --git a/eng/build.sh b/eng/build.sh
+index 3b992d6bf..3a4444081 100755
+--- a/eng/build.sh
++++ b/eng/build.sh
+@@ -264,8 +264,8 @@ function BuildSolution {
+       MSBuild "$repo_root/buildtools/buildtools.proj" /restore "$bltools" /p:Configuration=$bootstrap_config
+ 
+       mkdir -p "$bootstrap_dir"
+-      cp -pr $artifacts_dir/bin/fslex/$bootstrap_config/net8.0 $bootstrap_dir/fslex
+-      cp -pr $artifacts_dir/bin/fsyacc/$bootstrap_config/net8.0 $bootstrap_dir/fsyacc
++      cp -pr $artifacts_dir/bin/fslex/$bootstrap_config/net9.0 $bootstrap_dir/fslex
++      cp -pr $artifacts_dir/bin/fsyacc/$bootstrap_config/net9.0 $bootstrap_dir/fsyacc
+     fi
+     if [ ! -f "$bootstrap_dir/fsc.exe" ]; then
+       local bltools=""
+@@ -274,7 +274,7 @@ function BuildSolution {
+       fi
+       BuildMessage="Error building bootstrap"
+       MSBuild "$repo_root/Proto.sln" /restore "$bltools" /p:Configuration=$bootstrap_config
+-      cp -pr $artifacts_dir/bin/fsc/$bootstrap_config/net8.0 $bootstrap_dir/fsc
++      cp -pr $artifacts_dir/bin/fsc/$bootstrap_config/net9.0 $bootstrap_dir/fsc
+     fi
+   fi
+ 
+diff --git a/fcs-samples/EditorService/EditorService.fsproj b/fcs-samples/EditorService/EditorService.fsproj
+index e4103999f..fe08d0cc4 100644
+--- a/fcs-samples/EditorService/EditorService.fsproj
++++ b/fcs-samples/EditorService/EditorService.fsproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+   <Import Project="..\..\netfx.props" />
+   <PropertyGroup>
+-    <TargetFrameworks>$(FcsTargetNetFxFramework);net8.0</TargetFrameworks>
++    <TargetFrameworks>$(FcsTargetNetFxFramework);net9.0</TargetFrameworks>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+     <OutputType>Exe</OutputType>
+     <IsPackable>false</IsPackable>
+diff --git a/src/Compiler/FSharp.Compiler.Service.fsproj b/src/Compiler/FSharp.Compiler.Service.fsproj
+index 45ae22a3e..56a587c30 100644
+--- a/src/Compiler/FSharp.Compiler.Service.fsproj
++++ b/src/Compiler/FSharp.Compiler.Service.fsproj
+@@ -521,15 +521,15 @@
+   <ItemGroup Condition="'$(BUILDING_USING_DOTNET)' == 'true'">
+     <!-- We are setting TFM explicitly here, since we are only using fslexyacc's dlls in msbuild -->
+     <ProjectReference Include="$(RepoRoot)\buildtools\fslex\fslex.fsproj" ReferenceOutputAssembly="False">
+-      <SetTargetFramework>TargetFramework=net8.0</SetTargetFramework>
++      <SetTargetFramework>TargetFramework=net9.0</SetTargetFramework>
+       <ExcludeAssets>compile</ExcludeAssets>
+     </ProjectReference>
+     <ProjectReference Include="$(RepoRoot)\buildtools\fsyacc\fsyacc.fsproj" ReferenceOutputAssembly="False">
+-      <SetTargetFramework>TargetFramework=net8.0</SetTargetFramework>
++      <SetTargetFramework>TargetFramework=net9.0</SetTargetFramework>
+       <ExcludeAssets>compile</ExcludeAssets>
+     </ProjectReference>
+     <ProjectReference Include="$(RepoRoot)\buildtools\AssemblyCheck\AssemblyCheck.fsproj" ReferenceOutputAssembly="False">
+-      <SetTargetFramework>TargetFramework=net8.0</SetTargetFramework>
++      <SetTargetFramework>TargetFramework=net9.0</SetTargetFramework>
+       <ExcludeAssets>compile</ExcludeAssets>
+     </ProjectReference>
+   </ItemGroup>
+diff --git a/src/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.fsproj b/src/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.fsproj
+index f7560b707..68b02ce25 100644
+--- a/src/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.fsproj
++++ b/src/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.fsproj
+@@ -3,7 +3,7 @@
+   <PropertyGroup>
+     <PreRelease>true</PreRelease>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <NuspecFile>Microsoft.FSharp.Compiler.nuspec</NuspecFile>
+     <IsPackable>true</IsPackable>
+     <PackageDescription>.NET Core compatible version of the F# compiler fsc.exe.</PackageDescription>
+diff --git a/src/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.nuspec b/src/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.nuspec
+index ca36309d5..e567e478b 100644
+--- a/src/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.nuspec
++++ b/src/Microsoft.FSharp.Compiler/Microsoft.FSharp.Compiler.nuspec
+@@ -4,7 +4,7 @@
+         $CommonMetadataElements$
+         <language>en-US</language>
+         <dependencies>
+-            <group targetFramework=".net8.0" />
++            <group targetFramework=".net9.0" />
+         </dependencies>
+         <contentFiles>
+             <files include="any\any\default.win32manifest"                       buildAction="Content" copyToOutput="true" flatten="false" />
+@@ -26,16 +26,16 @@
+             this approach gives a very small deployment. Which is kind of necessary.
+         -->
+         <!-- assemblies -->
+-        <file src="fsc\ReleaseCompressed\net8.0\fsc.dll"                                                     target="lib\net8.0" />
+-        <file src="fsi\ReleaseCompressed\net8.0\fsi.dll"                                                     target="lib\net8.0" />
+-        <file src="FSharp.Core\ReleaseCompressed\netstandard2.0\FSharp.Core.dll"                             target="lib\net8.0" />
+-        <file src="FSharp.Core\ReleaseCompressed\netstandard2.0\FSharp.Core.xml"                             target="lib\net8.0" />
+-        <file src="FSharp.Compiler.Service\ReleaseCompressed\netstandard2.0\FSharp.Compiler.Service.dll"     target="lib\net8.0" />
+-        <file src="FSharp.Build\ReleaseCompressed\netstandard2.0\FSharp.Build.dll"                           target="lib\net8.0" />
++        <file src="fsc\ReleaseCompressed\net9.0\fsc.dll"                                                     target="lib\net9.0" />
++        <file src="fsi\ReleaseCompressed\net9.0\fsi.dll"                                                     target="lib\net9.0" />
++        <file src="FSharp.Core\ReleaseCompressed\netstandard2.0\FSharp.Core.dll"                             target="lib\net9.0" />
++        <file src="FSharp.Core\ReleaseCompressed\netstandard2.0\FSharp.Core.xml"                             target="lib\net9.0" />
++        <file src="FSharp.Compiler.Service\ReleaseCompressed\netstandard2.0\FSharp.Compiler.Service.dll"     target="lib\net9.0" />
++        <file src="FSharp.Build\ReleaseCompressed\netstandard2.0\FSharp.Build.dll"                           target="lib\net9.0" />
+         <file src="FSharp.DependencyManager.Nuget\ReleaseCompressed\netstandard2.0\FSharp.DependencyManager.Nuget.dll"
+-                                                                                                             target="lib\net8.0" />
++                                                                                                             target="lib\net9.0" />
+         <file src="FSharp.Compiler.Interactive.Settings\ReleaseCompressed\netstandard2.0\FSharp.Compiler.Interactive.Settings.dll"
+-                                                                                                             target="lib\net8.0" />
++                                                                                                             target="lib\net9.0" />
+         <!-- additional files -->
+         <file src="FSharp.Compiler.Service\ReleaseCompressed\netstandard2.0\default.win32manifest"           target="contentFiles\any\any" />
+         <file src="FSharp.Build\ReleaseCompressed\netstandard2.0\Microsoft.FSharp.Targets"                   target="contentFiles\any\any" />
+@@ -45,14 +45,14 @@
+         <file src="FSharp.Build\ReleaseCompressed\netstandard2.0\Microsoft.FSharp.Overrides.NetSdk.targets"  target="contentFiles\any\any" />
+ 
+         <!-- resources -->
+-        <file src="FSharp.Core\ReleaseCompressed\netstandard2.0\**\FSharp.Core.resources.dll"                target="lib\net8.0" />
++        <file src="FSharp.Core\ReleaseCompressed\netstandard2.0\**\FSharp.Core.resources.dll"                target="lib\net9.0" />
+         <file src="FSharp.Compiler.Service\ReleaseCompressed\netstandard2.0\**\FSharp.Compiler.Service.resources.dll"
+-                                                                                                             target="lib\net8.0" />
++                                                                                                             target="lib\net9.0" />
+         <file src="FSharp.Compiler.Interactive.Settings\ReleaseCompressed\netstandard2.0\**\FSharp.Compiler.Interactive.Settings.resources.dll"
+-                                                                                                             target="lib\net8.0" />
+-        <file src="FSharp.Build\ReleaseCompressed\netstandard2.0\**\FSharp.Build.resources.dll"              target="lib\net8.0" />
++                                                                                                             target="lib\net9.0" />
++        <file src="FSharp.Build\ReleaseCompressed\netstandard2.0\**\FSharp.Build.resources.dll"              target="lib\net9.0" />
+         <file src="FSharp.DependencyManager.Nuget\ReleaseCompressed\netstandard2.0\**\FSharp.DependencyManager.Nuget.resources.dll"
+-                                                                                                             target="lib\net8.0" />
++                                                                                                             target="lib\net9.0" />
+         <file src="$artifactsPackagesDir$Dependency\Shipping\FSharp.Core.$fSharpCorePreviewPackageVersion$*nupkg"
+                                                                                                              target="contentFiles\Shipping" />
+         <file src="$artifactsPackagesDir$Dependency\Release\FSharp.Core.$fSharpCorePackageVersion$*nupkg"    target="contentFiles\Release" />
+diff --git a/src/fsc/fscProject/fsc.fsproj b/src/fsc/fscProject/fsc.fsproj
+index 64c4651a7..985f1492b 100644
+--- a/src/fsc/fscProject/fsc.fsproj
++++ b/src/fsc/fscProject/fsc.fsproj
+@@ -3,15 +3,15 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup Condition="'$(BUILD_PROTO)' != 'true'">
+-    <TargetFrameworks Condition="'$(OS)' != 'Unix'">net472;net8.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net8.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' != 'Unix'">net472;net9.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net9.0</TargetFrameworks>
+     <PlatformTarget Condition="'$(TargetFramework)' == 'net472'">x86</PlatformTarget>
+     <Configurations>Debug;Release;Proto;ReleaseCompressed</Configurations>
+   </PropertyGroup>
+ 
+   <PropertyGroup Condition="'$(BUILD_PROTO)' == 'true'">
+     <TargetFrameworks Condition="'$(OS)' != 'Unix'">net472</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net8.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net9.0</TargetFrameworks>
+     <PlatformTarget Condition="'$(TargetFramework)' == 'net472'">x86</PlatformTarget>
+   </PropertyGroup>
+ 
+diff --git a/src/fsi/fsiProject/fsi.fsproj b/src/fsi/fsiProject/fsi.fsproj
+index dd17f8bd5..6bfa01c3e 100644
+--- a/src/fsi/fsiProject/fsi.fsproj
++++ b/src/fsi/fsiProject/fsi.fsproj
+@@ -3,15 +3,15 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup Condition="'$(BUILD_PROTO)' != 'true'">
+-    <TargetFrameworks Condition="'$(OS)' != 'Unix'">net472;net8.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net8.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' != 'Unix'">net472;net9.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net9.0</TargetFrameworks>
+     <PlatformTarget Condition="'$(TargetFramework)' == 'net472'">x86</PlatformTarget>
+     <Configurations>Debug;Release;Proto;ReleaseCompressed</Configurations>
+   </PropertyGroup>
+ 
+   <PropertyGroup Condition="'$(BUILD_PROTO)' == 'true'">
+     <TargetFrameworks Condition="'$(OS)' != 'Unix'">net472</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net8.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net9.0</TargetFrameworks>
+     <PlatformTarget Condition="'$(TargetFramework)' == 'net472'">x86</PlatformTarget>
+   </PropertyGroup>
+ 
+diff --git a/tests/AheadOfTime/Trimming/SelfContained_Trimming_Test/SelfContained_Trimming_Test.fsproj b/tests/AheadOfTime/Trimming/SelfContained_Trimming_Test/SelfContained_Trimming_Test.fsproj
+index cb02b7e0f..acd4e8f10 100644
+--- a/tests/AheadOfTime/Trimming/SelfContained_Trimming_Test/SelfContained_Trimming_Test.fsproj
++++ b/tests/AheadOfTime/Trimming/SelfContained_Trimming_Test/SelfContained_Trimming_Test.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFrameworks>net8.0</TargetFrameworks>
++    <TargetFrameworks>net9.0</TargetFrameworks>
+     <LangVersion>preview</LangVersion>
+     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+     <DotNetBuildOffline>true</DotNetBuildOffline>
+@@ -17,8 +17,8 @@
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+-    <DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../../artifacts/bin/fsc/Release/net8.0/fsc.dll</DotnetFscCompilerPath>
+-    <Fsc_DotNET_DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../../artifacts/bin/fsc/Release/net8.0/fsc.dll</Fsc_DotNET_DotnetFscCompilerPath>
++    <DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../../artifacts/bin/fsc/Release/net9.0/fsc.dll</DotnetFscCompilerPath>
++    <Fsc_DotNET_DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../../artifacts/bin/fsc/Release/net9.0/fsc.dll</Fsc_DotNET_DotnetFscCompilerPath>
+     <FSharpPreferNetFrameworkTools>False</FSharpPreferNetFrameworkTools>
+     <FSharpPrefer64BitTools>True</FSharpPrefer64BitTools>
+   </PropertyGroup>
+diff --git a/tests/AheadOfTime/Trimming/StaticLinkedFSharpCore_Trimming_Test/StaticLinkedFSharpCore_Trimming_Test.fsproj b/tests/AheadOfTime/Trimming/StaticLinkedFSharpCore_Trimming_Test/StaticLinkedFSharpCore_Trimming_Test.fsproj
+index d36faf2c0..2004fafbe 100644
+--- a/tests/AheadOfTime/Trimming/StaticLinkedFSharpCore_Trimming_Test/StaticLinkedFSharpCore_Trimming_Test.fsproj
++++ b/tests/AheadOfTime/Trimming/StaticLinkedFSharpCore_Trimming_Test/StaticLinkedFSharpCore_Trimming_Test.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFrameworks>net8.0</TargetFrameworks>
++    <TargetFrameworks>net9.0</TargetFrameworks>
+     <LangVersion>preview</LangVersion>
+     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+     <DotNetBuildOffline>true</DotNetBuildOffline>
+@@ -19,8 +19,8 @@
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+-    <DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../../artifacts/bin/fsc/Release/net8.0/fsc.dll</DotnetFscCompilerPath>
+-    <Fsc_DotNET_DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../../artifacts/bin/fsc/Release/net8.0/fsc.dll</Fsc_DotNET_DotnetFscCompilerPath>
++    <DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../../artifacts/bin/fsc/Release/net9.0/fsc.dll</DotnetFscCompilerPath>
++    <Fsc_DotNET_DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../../artifacts/bin/fsc/Release/net9.0/fsc.dll</Fsc_DotNET_DotnetFscCompilerPath>
+     <FSharpPreferNetFrameworkTools>False</FSharpPreferNetFrameworkTools>
+     <FSharpPrefer64BitTools>True</FSharpPrefer64BitTools>
+   </PropertyGroup>
+diff --git a/tests/EndToEndBuildTests/BasicProvider/BasicProvider.DesignTime/BasicProvider.DesignTime.fsproj b/tests/EndToEndBuildTests/BasicProvider/BasicProvider.DesignTime/BasicProvider.DesignTime.fsproj
+index b05e1882f..53c32b81b 100644
+--- a/tests/EndToEndBuildTests/BasicProvider/BasicProvider.DesignTime/BasicProvider.DesignTime.fsproj
++++ b/tests/EndToEndBuildTests/BasicProvider/BasicProvider.DesignTime/BasicProvider.DesignTime.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Library</OutputType>
+-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
++    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+     <FSharpToolsDirectory>typeproviders</FSharpToolsDirectory>
+     <DefineConstants>NO_GENERATIVE</DefineConstants>
+     <DefineConstants>IS_DESIGNTIME</DefineConstants>
+diff --git a/tests/EndToEndBuildTests/BasicProvider/BasicProvider.Tests/BasicProvider.Tests.fsproj b/tests/EndToEndBuildTests/BasicProvider/BasicProvider.Tests/BasicProvider.Tests.fsproj
+index 5da0cbb3b..981441310 100644
+--- a/tests/EndToEndBuildTests/BasicProvider/BasicProvider.Tests/BasicProvider.Tests.fsproj
++++ b/tests/EndToEndBuildTests/BasicProvider/BasicProvider.Tests/BasicProvider.Tests.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Library</OutputType>
+-    <TargetFramework Condition=" '$(TestTargetFramework)' == '' ">net8.0</TargetFramework>
++    <TargetFramework Condition=" '$(TestTargetFramework)' == '' ">net9.0</TargetFramework>
+     <TargetFramework Condition=" '$(TestTargetFramework)' != '' ">$(TestTargetFramework)</TargetFramework>
+     <IsPackable>false</IsPackable>
+     <DefineConstants>NO_GENERATIVE</DefineConstants>
+diff --git a/tests/EndToEndBuildTests/BasicProvider/BasicProvider/BasicProvider.fsproj b/tests/EndToEndBuildTests/BasicProvider/BasicProvider/BasicProvider.fsproj
+index 96006f066..24c2188c5 100644
+--- a/tests/EndToEndBuildTests/BasicProvider/BasicProvider/BasicProvider.fsproj
++++ b/tests/EndToEndBuildTests/BasicProvider/BasicProvider/BasicProvider.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Library</OutputType>
+-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
++    <TargetFrameworks>net9.0;net472</TargetFrameworks>
+     <FSharpToolsDirectory>typeproviders</FSharpToolsDirectory>
+     <FSharpCoreImplicitPackageVersion>$(FSharpCoreShippedPackageVersionValue)</FSharpCoreImplicitPackageVersion>
+     <PackagePath>typeproviders</PackagePath>
+diff --git a/tests/FSharp.Build.UnitTests/FSharp.Build.UnitTests.fsproj b/tests/FSharp.Build.UnitTests/FSharp.Build.UnitTests.fsproj
+index e3c796d0b..e4926cd6c 100644
+--- a/tests/FSharp.Build.UnitTests/FSharp.Build.UnitTests.fsproj
++++ b/tests/FSharp.Build.UnitTests/FSharp.Build.UnitTests.fsproj
+@@ -3,8 +3,8 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix'">net8.0</TargetFrameworks>
++    <TargetFrameworks>net472;net9.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix'">net9.0</TargetFrameworks>
+     <OutputType>Library</OutputType>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+     <UnitTestType>xunit</UnitTestType>
+diff --git a/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj b/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
+index aefeb44cc..1d07c4d06 100644
+--- a/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
++++ b/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
+@@ -3,8 +3,8 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net8.0</TargetFrameworks>
++    <TargetFrameworks>net472;net9.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net9.0</TargetFrameworks>
+     <OutputType>Library</OutputType>
+     <GenerateProgramFile>false</GenerateProgramFile>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+diff --git a/tests/FSharp.Compiler.Private.Scripting.UnitTests/FSharp.Compiler.Private.Scripting.UnitTests.fsproj b/tests/FSharp.Compiler.Private.Scripting.UnitTests/FSharp.Compiler.Private.Scripting.UnitTests.fsproj
+index cdfd467e5..2fdcffc90 100644
+--- a/tests/FSharp.Compiler.Private.Scripting.UnitTests/FSharp.Compiler.Private.Scripting.UnitTests.fsproj
++++ b/tests/FSharp.Compiler.Private.Scripting.UnitTests/FSharp.Compiler.Private.Scripting.UnitTests.fsproj
+@@ -2,8 +2,8 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix'">net8.0</TargetFrameworks>
++    <TargetFrameworks>net472;net9.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix'">net9.0</TargetFrameworks>
+     <OutputType>Library</OutputType>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+     <UnitTestType>xunit</UnitTestType>
+diff --git a/tests/FSharp.Compiler.Service.Tests/FSharp.Compiler.Service.Tests.fsproj b/tests/FSharp.Compiler.Service.Tests/FSharp.Compiler.Service.Tests.fsproj
+index 7cb2dfd22..1fa999721 100644
+--- a/tests/FSharp.Compiler.Service.Tests/FSharp.Compiler.Service.Tests.fsproj
++++ b/tests/FSharp.Compiler.Service.Tests/FSharp.Compiler.Service.Tests.fsproj
+@@ -3,8 +3,8 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net8.0</TargetFrameworks>
++    <TargetFrameworks>net472;net9.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net9.0</TargetFrameworks>
+     <!-- Workaround to get rid of:
+         error NU1505: Duplicate 'PackageDownload' items found.
+         Remove the duplicate items or use the Update functionality to ensure a consistent restore behavior.
+diff --git a/tests/FSharp.Compiler.UnitTests/FSharp.Compiler.UnitTests.fsproj b/tests/FSharp.Compiler.UnitTests/FSharp.Compiler.UnitTests.fsproj
+index 915332ac4..b0064bd9d 100644
+--- a/tests/FSharp.Compiler.UnitTests/FSharp.Compiler.UnitTests.fsproj
++++ b/tests/FSharp.Compiler.UnitTests/FSharp.Compiler.UnitTests.fsproj
+@@ -3,8 +3,8 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net8.0</TargetFrameworks>
++    <TargetFrameworks>net472;net9.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net9.0</TargetFrameworks>
+     <OutputType>Library</OutputType>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+     <DefineConstants>$(DefineConstants);ASSUME_PREVIEW_FSHARP_CORE</DefineConstants>
+diff --git a/tests/FSharp.Core.UnitTests/FSharp.Core.UnitTests.fsproj b/tests/FSharp.Core.UnitTests/FSharp.Core.UnitTests.fsproj
+index 4b6c5c534..1b20371c4 100644
+--- a/tests/FSharp.Core.UnitTests/FSharp.Core.UnitTests.fsproj
++++ b/tests/FSharp.Core.UnitTests/FSharp.Core.UnitTests.fsproj
+@@ -3,8 +3,8 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix'">net8.0</TargetFrameworks>
++    <TargetFrameworks>net9.0;net472</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix'">net9.0</TargetFrameworks>
+     <OutputType>Library</OutputType>
+ 
+     <AssemblyName>FSharp.Core.UnitTests</AssemblyName>
+diff --git a/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj b/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj
+index 03a4d4870..fbbda1930 100644
+--- a/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj
++++ b/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj
+@@ -1,8 +1,8 @@
+ ﻿<?xml version="1.0" encoding="utf-8"?>
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFrameworks Condition="'$(OS)' != 'Unix'">net472;net8.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net8.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' != 'Unix'">net472;net9.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix' or '$(BUILDING_USING_DOTNET)' == 'true'">net9.0</TargetFrameworks>
+     <RuntimeIdentifiers>win-x86;win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
+     <AssetTargetFallback>$(AssetTargetFallback);portable-net45+win8+wp8+wpa81</AssetTargetFallback>
+     <ReferenceVsAssemblies>true</ReferenceVsAssemblies>
+diff --git a/tests/benchmarks/CompiledCodeBenchmarks/MicroPerf/MicroPerf.fsproj b/tests/benchmarks/CompiledCodeBenchmarks/MicroPerf/MicroPerf.fsproj
+index 81866aa56..046bebf83 100644
+--- a/tests/benchmarks/CompiledCodeBenchmarks/MicroPerf/MicroPerf.fsproj
++++ b/tests/benchmarks/CompiledCodeBenchmarks/MicroPerf/MicroPerf.fsproj
+@@ -1,6 +1,6 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <OutputType>Exe</OutputType>
+     <!-- Workaround to get rid of:
+         error NU1505: Duplicate 'PackageDownload' items found.
+diff --git a/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/TaskPerf.fsproj b/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/TaskPerf.fsproj
+index 4d29d42c5..5c89a5fff 100644
+--- a/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/TaskPerf.fsproj
++++ b/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerf/TaskPerf.fsproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <OutputType>Exe</OutputType>
+ 	<!-- Workaround to get rid of:
+         error NU1505: Duplicate 'PackageDownload' items found.
+diff --git a/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerfPreviousCompiler/TaskPerfPreviousCompiler.fsproj b/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerfPreviousCompiler/TaskPerfPreviousCompiler.fsproj
+index b71c47ac8..66b708e7a 100644
+--- a/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerfPreviousCompiler/TaskPerfPreviousCompiler.fsproj
++++ b/tests/benchmarks/CompiledCodeBenchmarks/TaskPerf/TaskPerfPreviousCompiler/TaskPerfPreviousCompiler.fsproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <OutputType>Exe</OutputType>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+ 	<OtherFlags>$(OtherFlags) --define:ASYNC_PERF</OtherFlags>
+diff --git a/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.Runner/HistoricalBenchmark.Runner.fsproj b/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.Runner/HistoricalBenchmark.Runner.fsproj
+index 13add7032..4bbae272f 100644
+--- a/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.Runner/HistoricalBenchmark.Runner.fsproj
++++ b/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.Runner/HistoricalBenchmark.Runner.fsproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+     <PropertyGroup>
+-        <TargetFramework>net8.0</TargetFramework>
++        <TargetFramework>net9.0</TargetFramework>
+         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+         <RootNamespace>HistoricalBenchmark.Utilities</RootNamespace>
+     </PropertyGroup>
+diff --git a/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.fsproj b/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.fsproj
+index a477f61af..7b030bbd0 100644
+--- a/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.fsproj
++++ b/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+     <Configurations>Release</Configurations>
+     <!-- Workaround to get rid of:
+diff --git a/tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks/FSharp.Compiler.Benchmarks.fsproj b/tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks/FSharp.Compiler.Benchmarks.fsproj
+index a8c8ff31b..d5c54252f 100644
+--- a/tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks/FSharp.Compiler.Benchmarks.fsproj
++++ b/tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks/FSharp.Compiler.Benchmarks.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+     <!-- Workaround to get rid of:
+         error NU1505: Duplicate 'PackageDownload' items found.
+diff --git a/tests/benchmarks/FCSBenchmarks/FCSSourceFiles/FCSSourceFiles.fsproj b/tests/benchmarks/FCSBenchmarks/FCSSourceFiles/FCSSourceFiles.fsproj
+index 5f0d38af2..ef367627e 100644
+--- a/tests/benchmarks/FCSBenchmarks/FCSSourceFiles/FCSSourceFiles.fsproj
++++ b/tests/benchmarks/FCSBenchmarks/FCSSourceFiles/FCSSourceFiles.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/tests/benchmarks/Fsharp.ProfilingStartpointProject/Fsharp.ProfilingStartpointProject.fsproj b/tests/benchmarks/Fsharp.ProfilingStartpointProject/Fsharp.ProfilingStartpointProject.fsproj
+index 6cb9e4bd7..1ab60ffd4 100644
+--- a/tests/benchmarks/Fsharp.ProfilingStartpointProject/Fsharp.ProfilingStartpointProject.fsproj
++++ b/tests/benchmarks/Fsharp.ProfilingStartpointProject/Fsharp.ProfilingStartpointProject.fsproj
+@@ -2,7 +2,7 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+diff --git a/tests/fsharp/FSharpSuite.Tests.fsproj b/tests/fsharp/FSharpSuite.Tests.fsproj
+index b6d69d8ae..fff42ac08 100644
+--- a/tests/fsharp/FSharpSuite.Tests.fsproj
++++ b/tests/fsharp/FSharpSuite.Tests.fsproj
+@@ -2,8 +2,8 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>net472;net8.0</TargetFrameworks>
+-    <TargetFrameworks Condition="'$(OS)' == 'Unix'">net8.0</TargetFrameworks>
++    <TargetFrameworks>net472;net9.0</TargetFrameworks>
++    <TargetFrameworks Condition="'$(OS)' == 'Unix'">net9.0</TargetFrameworks>
+     <RuntimeIdentifiers>win-x86;win-x64</RuntimeIdentifiers>
+     <AssetTargetFallback>$(AssetTargetFallback);portable-net45+win8+wp8+wpa81</AssetTargetFallback>
+     <ReferenceVsAssemblies>true</ReferenceVsAssemblies>
+diff --git a/tests/projects/Sample_ConsoleApp_FileSystemTests/Sample_ConsoleApp_net7.fsproj b/tests/projects/Sample_ConsoleApp_FileSystemTests/Sample_ConsoleApp_net7.fsproj
+index 13d42aeb2..36be65589 100644
+--- a/tests/projects/Sample_ConsoleApp_FileSystemTests/Sample_ConsoleApp_net7.fsproj
++++ b/tests/projects/Sample_ConsoleApp_FileSystemTests/Sample_ConsoleApp_net7.fsproj
+@@ -2,13 +2,13 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+-    <DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../artifacts/bin/fsc/Debug/net8.0/fsc.dll</DotnetFscCompilerPath>
+-    <Fsc_DotNET_DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../artifacts/bin/fsc/Debug/net8.0/fsc.dll</Fsc_DotNET_DotnetFscCompilerPath>
++    <DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../artifacts/bin/fsc/Debug/net9.0/fsc.dll</DotnetFscCompilerPath>
++    <Fsc_DotNET_DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../artifacts/bin/fsc/Debug/net9.0/fsc.dll</Fsc_DotNET_DotnetFscCompilerPath>
+     <FSharpPreferNetFrameworkTools>False</FSharpPreferNetFrameworkTools>
+     <FSharpPrefer64BitTools>True</FSharpPrefer64BitTools>
+   </PropertyGroup>
+diff --git a/tests/projects/Sample_ConsoleApp_net7/Sample_ConsoleApp_net7.fsproj b/tests/projects/Sample_ConsoleApp_net7/Sample_ConsoleApp_net7.fsproj
+index bf06c1ce7..fe9ed811d 100644
+--- a/tests/projects/Sample_ConsoleApp_net7/Sample_ConsoleApp_net7.fsproj
++++ b/tests/projects/Sample_ConsoleApp_net7/Sample_ConsoleApp_net7.fsproj
+@@ -2,13 +2,13 @@
+ 
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+     <LangVersion>preview</LangVersion>
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+-    <DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../artifacts/bin/fsc/Debug/net8.0/fsc.dll</DotnetFscCompilerPath>
+-    <Fsc_DotNET_DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../artifacts/bin/fsc/Debug/net8.0/fsc.dll</Fsc_DotNET_DotnetFscCompilerPath>
++    <DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../artifacts/bin/fsc/Debug/net9.0/fsc.dll</DotnetFscCompilerPath>
++    <Fsc_DotNET_DotnetFscCompilerPath>$(MSBuildThisFileDirectory)../../../artifacts/bin/fsc/Debug/net9.0/fsc.dll</Fsc_DotNET_DotnetFscCompilerPath>
+     <FSharpPreferNetFrameworkTools>False</FSharpPreferNetFrameworkTools>
+     <FSharpPrefer64BitTools>True</FSharpPrefer64BitTools>
+   </PropertyGroup>

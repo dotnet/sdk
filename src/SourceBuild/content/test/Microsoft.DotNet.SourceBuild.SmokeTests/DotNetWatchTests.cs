@@ -13,7 +13,8 @@ public class DotNetWatchTests : SdkTests
 {
     public DotNetWatchTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [Fact]
+    // https://github.com/dotnet/source-build/issues/3668
+    //[Fact]
     public void WatchTests()
     {
         string projectDirectory = DotNetHelper.ExecuteNew(DotNetTemplate.Console.GetName(), nameof(DotNetWatchTests));
