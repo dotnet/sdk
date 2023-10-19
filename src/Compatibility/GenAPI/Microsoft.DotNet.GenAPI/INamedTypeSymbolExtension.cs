@@ -125,12 +125,9 @@ namespace Microsoft.DotNet.GenAPI
                 // Add a dummy field for each generic excluded field
                 foreach (IFieldSymbol genericField in genericTypedFields)
                 {
-                    ImmutableArray<AttributeData> genericFieldAttributes = genericField.GetAttributes()
-                        .ExcludeNonVisibleOutsideOfAssembly(attributeDataSymbolFilter);
-
                     yield return CreateDummyField(genericField.Type.ToDisplayString(),
                         NormalizeIdentifier(genericField.Name),
-                        FromAttributeData(genericFieldAttributes),
+                        FromAttributeData(genericField.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(attributeDataSymbolFilter)),
                         namedType.IsReadOnly);
                 }
 
