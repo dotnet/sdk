@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <MajorVersion>8</MajorVersion>
+    <MajorVersion>9</MajorVersion>
     <MinorVersion>0</MinorVersion>
     <!-- Build release-only package. -->
     <PreReleaseVersionLabel />
