@@ -3,7 +3,7 @@ From: Matt Thalman <mthalman@microsoft.com>
 Date: Wed, 18 Oct 2023 13:05:45 -0500
 Subject: [PATCH] Update Microsoft.Build.Locator to 1.6.10
 
-https://github.com/dotnet/sdk/issues/36219
+Backport: https://github.com/dotnet/sdk/issues/36219
 ---
  eng/Versions.props | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

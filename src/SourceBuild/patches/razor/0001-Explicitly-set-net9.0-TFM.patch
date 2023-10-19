@@ -3,7 +3,7 @@ From: Matt Thalman <mthalman@microsoft.com>
 Date: Wed, 18 Oct 2023 10:58:11 -0500
 Subject: [PATCH] Explicitly set net9.0 TFM
 
-https://github.com/dotnet/source-build/issues/3663
+Backport: https://github.com/dotnet/source-build/issues/3663
 ---
  Directory.Build.props | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)

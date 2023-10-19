@@ -3,7 +3,7 @@ From: Matt Thalman <mthalman@microsoft.com>
 Date: Wed, 18 Oct 2023 12:50:21 -0500
 Subject: [PATCH] Explicitly set TFM to net9.0
 
-https://github.com/dotnet/source-build/issues/3663
+Backport: https://github.com/dotnet/source-build/issues/3663
 ---
  perf/dotnet-format.Performance.csproj | 2 +-
  src/dotnet-format.csproj              | 2 +-
