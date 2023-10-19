@@ -96,41 +96,50 @@ namespace Microsoft.DotNet.GenAPI
         {
             bool resolveAssemblyReferences = context.AssemblyReferences?.Length > 0;
 
-            IAssemblySymbolLoader loader = new AssemblySymbolLoader(resolveAssemblyReferences, context.RespectInternals);
-
+            // Create, configure and execute the assembly loader.
+            AssemblySymbolLoader loader = new(resolveAssemblyReferences, context.RespectInternals);
             if (context.AssemblyReferences is not null)
             {
                 loader.AddReferenceSearchPaths(context.AssemblyReferences);
             }
+            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(context.Assemblies);
 
-            CompositeSymbolFilter compositeSymbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(new AccessibilitySymbolFilter(
-                    context.RespectInternals,
-                    includeEffectivelyPrivateSymbols: true,
-                    includeExplicitInterfaceImplementationSymbols: true));
+            string headerFileText = ReadHeaderFile(context.HeaderFile);
 
-            if (context.ExcludeAttributesFiles is not null)
-            {
-                compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeAttributesFiles));
-            }
+            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
+                context.RespectInternals,
+                includeEffectivelyPrivateSymbols: true,
+                includeExplicitInterfaceImplementationSymbols: true);
 
+            // Configure the symbol filter
+            CompositeSymbolFilter symbolFilter = new();
             if (context.ExcludeApiFiles is not null)
             {
-                compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeApiFiles));
+                symbolFilter.Add(new DocIdSymbolFilter(context.ExcludeApiFiles));
             }
+            symbolFilter.Add(new ImplicitSymbolFilter());
+            symbolFilter.Add(accessibilitySymbolFilter);
 
-            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(context.Assemblies);
+            // Configure the attribute data symbol filter
+            CompositeSymbolFilter attributeDataSymbolFilter = new();
+            if (context.ExcludeAttributesFiles is not null)
+            {
+                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeAttributesFiles));
+            }
+            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
+
+            // Invoke the CSharpFileBuilder for each directly loaded assembly.
             foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
             {
-                if (assemblySymbol == null)
+                if (assemblySymbol is null)
                     continue;
 
                 using TextWriter textWriter = GetTextWriter(context.OutputPath, assemblySymbol.Name);
-                textWriter.Write(ReadHeaderFile(context.HeaderFile));
+                textWriter.Write(headerFileText);
 
                 using CSharpFileBuilder fileBuilder = new(logger,
-                    compositeSymbolFilter,
+                    symbolFilter,
+                    attributeDataSymbolFilter,
                     textWriter,
                     context.ExceptionMessage,
                     context.IncludeAssemblyAttributes,
