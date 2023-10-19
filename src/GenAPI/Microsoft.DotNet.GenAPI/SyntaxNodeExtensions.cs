@@ -15,10 +15,10 @@ namespace Microsoft.DotNet.GenAPI
 
         public static SyntaxNode AddMemberAttributes(this SyntaxNode node,
             SyntaxGenerator syntaxGenerator,
-            ISymbolFilter symbolFilter,
-            ISymbol member)
+            ISymbol member,
+            ISymbolFilter attributeDataSymbolFilter)
         {
-            foreach (AttributeData attribute in member.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(symbolFilter))
+            foreach (AttributeData attribute in member.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(attributeDataSymbolFilter))
             {
                 // The C# compiler emits the DefaultMemberAttribute on any type containing an indexer.
                 // In C# it is an error to manually attribute a type with the DefaultMemberAttribute if the type also declares an indexer.
@@ -34,6 +34,7 @@ namespace Microsoft.DotNet.GenAPI
 
                 node = syntaxGenerator.AddAttributes(node, syntaxGenerator.Attribute(attribute));
             }
+
             return node;
         }
     }

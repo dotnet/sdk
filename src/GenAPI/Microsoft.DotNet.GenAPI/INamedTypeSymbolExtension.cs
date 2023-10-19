@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.GenAPI
         ///   "non-empty" means either unmanaged types like ints and enums, or reference types that are not the root.
         /// - A struct containing generic fields cannot have struct layout cycles.
         /// </summary>
-        public static IEnumerable<SyntaxNode> SynthesizeDummyFields(this INamedTypeSymbol namedType, ISymbolFilter symbolFilter)
+        public static IEnumerable<SyntaxNode> SynthesizeDummyFields(this INamedTypeSymbol namedType, ISymbolFilter symbolFilter, ISymbolFilter attributeDataSymbolFilter)
         {
             // Collect all excluded fields
             IEnumerable<IFieldSymbol> excludedFields = namedType.GetMembers()
@@ -125,7 +125,7 @@ namespace Microsoft.DotNet.GenAPI
                 {
                     yield return CreateDummyField(genericField.Type.ToDisplayString(),
                         NormalizeIdentifier(genericField.Name),
-                        FromAttributeData(genericField.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(symbolFilter)),
+                        FromAttributeData(genericField.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(attributeDataSymbolFilter)),
                         namedType.IsReadOnly);
                 }
 
@@ -204,7 +204,7 @@ namespace Microsoft.DotNet.GenAPI
             // records with a record constructor don't require a default constructor
             if (namedType.IsRecord && namedType.TryGetRecordConstructor(out _))
             {
-                yield break;                
+                yield break;
             }
 
             // Nothing to do if type already exposes constructor, or has an excluded implicit constructor (since it would match visibility)
