@@ -75,15 +75,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             IList<CompatDifference> differences)
         {
             // Filter out attributes that should be excluded based on the settings.
-            if (_settings.AttributeDataSymbolFilter is not null)
-            {
-                left = left.Where(attributeData => attributeData.AttributeClass is not null && _settings.AttributeDataSymbolFilter.Include(attributeData.AttributeClass)).ToImmutableArray();
-                right = right.Where(attributeData => attributeData.AttributeClass is not null && _settings.AttributeDataSymbolFilter.Include(attributeData.AttributeClass)).ToImmutableArray();
-            }
-
-            // See discussion in https://github.com/dotnet/sdk/pull/27774. ApiCompat intentionally considers non excluded attribute arguments.
-            left = left.ExcludeNonVisibleOutsideOfAssembly(_settings.SymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
-            right = right.ExcludeNonVisibleOutsideOfAssembly(_settings.SymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
+            // ApiCompat intentionally considers non excluded attribute arguments. See discussion in https://github.com/dotnet/sdk/pull/27774.
+            left = left.ExcludeNonVisibleOutsideOfAssembly(_settings.AttributeDataSymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
+            right = right.ExcludeNonVisibleOutsideOfAssembly(_settings.AttributeDataSymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
 
             // No attributes, nothing to do. Exit early.
             if (left.Length == 0 && right.Length == 0)

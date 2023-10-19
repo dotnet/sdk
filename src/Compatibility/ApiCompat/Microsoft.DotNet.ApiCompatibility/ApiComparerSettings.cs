@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         public IEqualityComparer<ISymbol> SymbolEqualityComparer { get; set; }
 
         /// <inheritdoc />
-        public ISymbolFilter? AttributeDataSymbolFilter { get; set; }
+        public ISymbolFilter AttributeDataSymbolFilter { get; set; }
 
         /// <inheritdoc />
         public IEqualityComparer<AttributeData> AttributeDataEqualityComparer { get; set; }
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         {
             SymbolFilter = symbolFilter ?? new AccessibilitySymbolFilter(includeInternalSymbols);
             SymbolEqualityComparer = symbolEqualityComparer ?? new Comparing.SymbolEqualityComparer();
-            AttributeDataSymbolFilter = attributeDataSymbolFilter;
+            AttributeDataSymbolFilter = attributeDataSymbolFilter ?? new CompositeSymbolFilter();
             AttributeDataEqualityComparer = attributeDataEqualityComparer ?? new AttributeDataEqualityComparer(SymbolEqualityComparer, new TypedConstantEqualityComparer(SymbolEqualityComparer));
             IncludeInternalSymbols = includeInternalSymbols;
             StrictMode = strictMode;

@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         /// <summary>
         /// The attribute data symbol filter.
         /// </summary>
-        ISymbolFilter? AttributeDataSymbolFilter { get; }
+        ISymbolFilter AttributeDataSymbolFilter { get; }
 
         /// <summary>
         /// The attribute data equality comparer.
