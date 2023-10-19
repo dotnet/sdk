@@ -99,7 +99,7 @@
       </trans-unit>
       <trans-unit id="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework">
         <source>NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.</source>
-        <target state="new">NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.</target>
+        <target state="translated">NETSDK1205: il pacchetto Microsoft.Net.Compilers.Toolset.Framework non deve essere impostato direttamente. Se necessario, impostare la proprietà 'BuildWithNetFrameworkHostedCompiler' su 'true'.</target>
         <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
       </trans-unit>
       <trans-unit id="CannotEmbedClsidMapIntoComhost">
@@ -154,7 +154,7 @@
       </trans-unit>
       <trans-unit id="CannotHaveSolutionLevelOutputPath">
         <source>NETSDK1194: The "--output" option isn't supported when building a solution. Specifying a solution-level output path results in all projects copying outputs to the same directory, which can lead to inconsistent builds.</source>
-        <target state="needs-review-translation">NETSDK1194: l'opzione "--output" non è supportata durante la compilazione di una soluzione. Se si specifica un percorso di output a livello di soluzione, tutti i progetti copiano gli output nella stessa directory, con possibili compilazioni incoerenti.</target>
+        <target state="translated">NETSDK1194: l'opzione "--output" non è supportata durante la compilazione di una soluzione. Se si specifica un percorso di output a livello di soluzione, tutti i progetti copiano gli output nella stessa directory, con possibili compilazioni incoerenti.</target>
         <note>{StrBegin="NETSDK1194: "}{Locked="--output"}</note>
       </trans-unit>
       <trans-unit id="CannotHaveSolutionLevelRuntimeIdentifier">
@@ -683,12 +683,12 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="PackageContainsIncorrectlyCasedLocale">
         <source>NETSDK1187: Package {0} {1} has a resource with the locale '{2}'. This locale has been normalized to the standard format '{3}' to prevent casing issues in the build. Consider notifying the package author about this casing issue.</source>
         <target state="translated">NETSDK1187: il pacchetto {0} {1} include una risorsa con le impostazioni locali '{2}'. Queste impostazioni locali sono state normalizzate nel formato standard '{3}' per evitare problemi di maiuscole e minuscole nella compilazione. È consigliabile informare l'autore del pacchetto in merito a questo problema di maiuscole e minuscole.</target>
-        <note>Error code is NETSDK1187. 0 is a package name, 1 is a package version, 2 is the incorrect locale string, and 3 is the correct locale string.</note>
+        <note>{StrBegin="NETSDK1187: "} 0 is a package name, 1 is a package version, 2 is the incorrect locale string, and 3 is the correct locale string.</note>
       </trans-unit>
       <trans-unit id="PackageContainsUnknownLocale">
         <source>NETSDK1188: Package {0} {1} has a resource with the locale '{2}'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.</source>
         <target state="translated">NETSDK1188: il pacchetto {0} {1} include una risorsa con le impostazioni locali '{2}'. Queste impostazioni locali non sono riconosciute da .NET. È consigliabile notificare all'autore del pacchetto che sembra usare impostazioni locali non valide.</target>
-        <note>Error code is NETSDK1188. 0 is a package name, 1 is a package version, and 2 is the incorrect locale string</note>
+        <note>{StrBegin="NETSDK1188: "} 0 is a package name, 1 is a package version, and 2 is the incorrect locale string</note>
       </trans-unit>
       <trans-unit id="PackageNotFound">
         <source>NETSDK1064: Package {0}, version {1} was not found. It might have been deleted since NuGet restore. Otherwise, NuGet restore might have only partially completed, which might have been due to maximum path length restrictions.</source>
@@ -817,7 +817,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="SelfContainedOptionShouldBeUsedWithRuntime">
         <source>NETSDK1179: One of '--self-contained' or '--no-self-contained' options are required when '--runtime' is used.</source>
-        <target state="needs-review-translation">NETSDK1179: quando si usa '--runtime' è necessaria una delle opzioni '--self-contained' o '--no-self-contained'.</target>
+        <target state="translated">NETSDK1179: quando si usa '--runtime' è necessaria una delle opzioni '--self-contained' o '--no-self-contained'.</target>
         <note>{StrBegin="NETSDK1179: "}{Locked="--self-contained"}{Locked="--no-self-contained"}{Locked="--runtime"}</note>
       </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
@@ -921,8 +921,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1050: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetFrameworkVersion">
-        <source>NETSDK1045: The current .NET SDK does not support targeting {0} {1}.  Either target {0} {2} or lower, or use a version of the .NET SDK that supports {0} {1}.</source>
-        <target state="translated">NETSDK1045: la versione corrente di .NET SDK non supporta {0} {1} come destinazione. Impostare come destinazione {0} {2} o una versione precedente oppure usare una versione di .NET SDK che supporta {0} {1}.</target>
+        <source>NETSDK1045: The current .NET SDK does not support targeting {0} {1}.  Either target {0} {2} or lower, or use a version of the .NET SDK that supports {0} {1}. Download the .NET SDK from https://aka.ms/dotnet/download</source>
+        <target state="translated">NETSDK1045: la versione corrente di .NET SDK non supporta {0} {1} come destinazione. Impostare come destinazione {0} {2} o una versione precedente oppure usare una versione di .NET SDK che supporta {0} {1}. Scarica .NET SDK da https://aka.ms/dotnet/download</target>
         <note>{StrBegin="NETSDK1045: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifier">
@@ -930,15 +930,25 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1139: l'identificatore di piattaforma di destinazione {0} non è stato riconosciuto.</target>
         <note>{StrBegin="NETSDK1139: "}</note>
       </trans-unit>
+      <trans-unit id="UnsupportedVisualStudioVersion">
+        <source>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</source>
+        <target state="translated">NETSDK1209: la versione corrente di Visual Studio non supporta la destinazione {0}{1}.  Impostare come destinazione {0} {2} o una versione precedente oppure usare una versione di Visual Studio {3} o più recente.</target>
+        <note>{StrBegin="NETSDK1209: "}</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled">
+        <source>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</source>
+        <target state="translated">NETSDK1208: l'identificatore della piattaforma di destinazione {0} non è stato riconosciuto. Questo perché MSBuildEnableWorkloadResolver è impostato su false, di conseguenza vengono disabilitati i carichi di lavoro di .NET SDK necessari per questo identificatore. Annullare l'impostazione di questa variabile di ambiente o della proprietà MSBuild per abilitare i carichi di lavoro.</target>
+        <note>{StrBegin="NETSDK1208: "}</note>
+      </trans-unit>
       <trans-unit id="UseWpfOrUseWindowsFormsRequiresWindowsDesktopFramework">
         <source>NETSDK1107: Microsoft.NET.Sdk.WindowsDesktop is required to build Windows desktop applications. 'UseWpf' and 'UseWindowsForms' are not supported by the current SDK.</source>
         <target state="translated">NETSDK1107: per compilare applicazioni desktop di Windows, è necessario Microsoft.NET.Sdk.WindowsDesktop. 'UseWpf' e 'UseWindowsForms' non sono supportati dall'SDK corrente.</target>
         <note>{StrBegin="NETSDK1107: "}</note>
       </trans-unit>
-      <trans-unit id="UsingPreviewSdk_Info">
+      <trans-unit id="UsingPreviewSdk">
         <source>NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</source>
         <target state="translated">NETSDK1057: si sta usando una versione in anteprima di .NET. Vedere https://aka.ms/dotnet-support-policy</target>
-        <note />
+        <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
@@ -982,7 +992,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="WorkloadIsEol">
         <source>NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
-        <target state="new">NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</target>
+        <target state="translated">NETSDK1202: il carico di lavoro '{0}' non è supportato e non riceverà gli aggiornamenti della sicurezza in futuro. Per altre informazioni sui criteri di supporto, vedere {1} .</target>
         <note>{StrBegin="NETSDK1202: "}</note>
       </trans-unit>
       <trans-unit id="WorkloadNotAvailable">

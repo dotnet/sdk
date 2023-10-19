@@ -115,11 +115,38 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CONTAINER1001: Failed to upload blob to {0}; received {1} with detail {2}..
+        ///   Looks up a localized string similar to CONTAINER1001: Failed to upload blob using {0}; received status code &apos;{1}&apos;..
         /// </summary>
         internal static string BlobUploadFailed {
             get {
                 return ResourceManager.GetString("BlobUploadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pushed container &apos;{0}&apos; to Docker daemon..
+        /// </summary>
+        internal static string ContainerBuilder_ImageUploadedToLocalDaemon {
+            get {
+                return ResourceManager.GetString("ContainerBuilder_ImageUploadedToLocalDaemon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pushed container &apos;{0}&apos; to registry &apos;{1}&apos;..
+        /// </summary>
+        internal static string ContainerBuilder_ImageUploadedToRegistry {
+            get {
+                return ResourceManager.GetString("ContainerBuilder_ImageUploadedToRegistry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Building image &apos;{0}&apos; with tags &apos;{1}&apos; on top of base image &apos;{2}&apos;..
+        /// </summary>
+        internal static string ContainerBuilder_StartBuildingImage {
+            get {
+                return ResourceManager.GetString("ContainerBuilder_StartBuildingImage", resourceCulture);
             }
         }
         
@@ -169,15 +196,6 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CONTAINER1010: Don&apos;t know how to pull images from local daemons at the moment..
-        /// </summary>
-        internal static string DontKnowHowToPullImages {
-            get {
-                return ResourceManager.GetString("DontKnowHowToPullImages", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to CONTAINER4006: Property &apos;{0}&apos; is empty or contains whitespace and will be ignored..
         /// </summary>
         internal static string EmptyOrWhitespacePropertyIgnored {
@@ -219,6 +237,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string ImageLoadFailed {
             get {
                 return ResourceManager.GetString("ImageLoadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER1010: Pulling images from local Docker daemon is not supported..
+        /// </summary>
+        internal static string ImagePullNotSupported {
+            get {
+                return ResourceManager.GetString("ImagePullNotSupported", resourceCulture);
             }
         }
         
@@ -331,20 +358,29 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CONTAINER1012: The local daemon is not available, but pushing to a local daemon was requested. Please start the daemon and try again..
+        ///   Looks up a localized string similar to CONTAINER1012: The local Docker daemon is not available, but pushing to a local Docker daemon was requested. Please start the daemon and try again..
         /// </summary>
-        internal static string LocalDaemondNotAvailable {
+        internal static string LocalDaemonNotAvailable {
             get {
-                return ResourceManager.GetString("LocalDaemondNotAvailable", resourceCulture);
+                return ResourceManager.GetString("LocalDaemonNotAvailable", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CONTAINER2006: Tried to get layer information but there is no layer node?.
+        ///   Looks up a localized string similar to Error while reading daemon config: {0}.
         /// </summary>
-        internal static string MissingLayerNode {
+        internal static string LocalDocker_FailedToGetConfig {
             get {
-                return ResourceManager.GetString("MissingLayerNode", resourceCulture);
+                return ResourceManager.GetString("LocalDocker_FailedToGetConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The daemon server reported errors: {0}.
+        /// </summary>
+        internal static string LocalDocker_LocalDaemonErrors {
+            get {
+                return ResourceManager.GetString("LocalDocker_LocalDaemonErrors", resourceCulture);
             }
         }
         
@@ -390,6 +426,87 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string PublishDirectoryDoesntExist {
             get {
                 return ResourceManager.GetString("PublishDirectoryDoesntExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploaded config to registry..
+        /// </summary>
+        internal static string Registry_ConfigUploaded {
+            get {
+                return ResourceManager.GetString("Registry_ConfigUploaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploading config to registry at blob &apos;{0}&apos;,.
+        /// </summary>
+        internal static string Registry_ConfigUploadStarted {
+            get {
+                return ResourceManager.GetString("Registry_ConfigUploadStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Layer &apos;{0}&apos; already exists..
+        /// </summary>
+        internal static string Registry_LayerExists {
+            get {
+                return ResourceManager.GetString("Registry_LayerExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Finished uploading layer &apos;{0}&apos; to &apos;{1}&apos;..
+        /// </summary>
+        internal static string Registry_LayerUploaded {
+            get {
+                return ResourceManager.GetString("Registry_LayerUploaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploading layer &apos;{0}&apos; to &apos;{1}&apos;..
+        /// </summary>
+        internal static string Registry_LayerUploadStarted {
+            get {
+                return ResourceManager.GetString("Registry_LayerUploadStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploaded manifest to &apos;{0}&apos;..
+        /// </summary>
+        internal static string Registry_ManifestUploaded {
+            get {
+                return ResourceManager.GetString("Registry_ManifestUploaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploading manifest to registry &apos;{0}&apos; as blob &apos;{1}&apos;..
+        /// </summary>
+        internal static string Registry_ManifestUploadStarted {
+            get {
+                return ResourceManager.GetString("Registry_ManifestUploadStarted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploaded tag &apos;{0}&apos; to &apos;{1}&apos;..
+        /// </summary>
+        internal static string Registry_TagUploaded {
+            get {
+                return ResourceManager.GetString("Registry_TagUploaded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Uploading tag &apos;{0}&apos; to &apos;{1}&apos;..
+        /// </summary>
+        internal static string Registry_TagUploadStarted {
+            get {
+                return ResourceManager.GetString("Registry_TagUploadStarted", resourceCulture);
             }
         }
         

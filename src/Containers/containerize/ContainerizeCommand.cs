@@ -6,6 +6,9 @@ using System.CommandLine.Parsing;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Text;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Console;
 using Microsoft.NET.Build.Containers;
 
 namespace containerize;
@@ -43,9 +46,9 @@ internal class ContainerizeCommand : RootCommand
                 IsRequired = false
             };
 
-    internal Option<string> ImageNameOption { get; } = new Option<string>(
-            name: "--imagename",
-            description: "The name of the output image that will be pushed to the registry.")
+    internal Option<string> RepositoryOption { get; } = new Option<string>(
+            name: "--repository",
+            description: "The name of the output container repository that will be pushed to the registry.")
             {
                 IsRequired = true
             };
@@ -168,13 +171,13 @@ internal class ContainerizeCommand : RootCommand
 
 
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
-    { 
+    {
         this.AddArgument(PublishDirectoryArgument);
         this.AddOption(BaseRegistryOption);
         this.AddOption(BaseImageNameOption);
         this.AddOption(BaseImageTagOption);
         this.AddOption(OutputRegistryOption);
-        this.AddOption(ImageNameOption);
+        this.AddOption(RepositoryOption);
         this.AddOption(ImageTagsOption);
         this.AddOption(WorkingDirectoryOption);
         this.AddOption(EntrypointOption);
@@ -194,7 +197,7 @@ internal class ContainerizeCommand : RootCommand
             string _baseName = context.ParseResult.GetValueForOption(BaseImageNameOption)!;
             string _baseTag = context.ParseResult.GetValueForOption(BaseImageTagOption)!;
             string? _outputReg = context.ParseResult.GetValueForOption(OutputRegistryOption);
-            string _name = context.ParseResult.GetValueForOption(ImageNameOption)!;
+            string _name = context.ParseResult.GetValueForOption(RepositoryOption)!;
             string[] _tags = context.ParseResult.GetValueForOption(ImageTagsOption)!;
             string _workingDir = context.ParseResult.GetValueForOption(WorkingDirectoryOption)!;
             string[] _entrypoint = context.ParseResult.GetValueForOption(EntrypointOption)!;
@@ -206,6 +209,12 @@ internal class ContainerizeCommand : RootCommand
             string _ridGraphPath = context.ParseResult.GetValueForOption(RidGraphPathOption)!;
             string _localContainerDaemon = context.ParseResult.GetValueForOption(LocalContainerDaemonOption)!;
             string? _containerUser = context.ParseResult.GetValueForOption(ContainerUserOption);
+
+            //setup basic logging
+            bool traceEnabled = Env.GetEnvironmentVariableAsBool("CONTAINERIZE_TRACE_LOGGING_ENABLED");
+            LogLevel verbosity = traceEnabled ? LogLevel.Trace : LogLevel.Information;
+            using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled).SetMinimumLevel(verbosity));
+
             context.ExitCode = await ContainerBuilder.ContainerizeAsync(
                 _publishDir,
                 _workingDir,
@@ -224,6 +233,7 @@ internal class ContainerizeCommand : RootCommand
                 _ridGraphPath,
                 _localContainerDaemon,
                 _containerUser,
+                loggerFactory,
                 context.GetCancellationToken()).ConfigureAwait(false);
         });
     }

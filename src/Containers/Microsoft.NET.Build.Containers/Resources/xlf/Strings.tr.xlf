@@ -28,9 +28,24 @@
         <note>{StrBegin="CONTAINER1011: "}</note>
       </trans-unit>
       <trans-unit id="BlobUploadFailed">
-        <source>CONTAINER1001: Failed to upload blob to {0}; received {1} with detail {2}.</source>
-        <target state="translated">CONTAINER1001: Blob, {0} konumuna yüklenemedi; {2} ayrıntısıyla {1} alındı.</target>
+        <source>CONTAINER1001: Failed to upload blob using {0}; received status code '{1}'.</source>
+        <target state="translated">CONTAINER1001: Blob, {0} kullanarak karşıya yüklenemedi; '{1}' durum kodu alındı.</target>
         <note>{StrBegin="CONTAINER1001: "}</note>
+      </trans-unit>
+      <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
+        <source>Pushed container '{0}' to Docker daemon.</source>
+        <target state="translated">'{0}' kapsayıcısı, Docker daemon'a gönderildi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ContainerBuilder_ImageUploadedToRegistry">
+        <source>Pushed container '{0}' to registry '{1}'.</source>
+        <target state="translated">'{0}' kapsayıcısı, '{1}' kayıt defterine gönderildi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ContainerBuilder_StartBuildingImage">
+        <source>Building image '{0}' with tags '{1}' on top of base image '{2}'.</source>
+        <target state="translated">'{1}' etiketli '{0}' resmi, '{2}' temel görüntüsünün üzerinde oluşturuluyor.</target>
+        <note />
       </trans-unit>
       <trans-unit id="CouldntDeserializeJsonToken">
         <source>CONTAINER1007: Could not deserialize token from JSON.</source>
@@ -57,11 +72,6 @@
         <target state="translated">CONTAINER3001: Docker işlemi oluşturulamadı.</target>
         <note>{StrBegin="CONTAINER3001: "}</note>
       </trans-unit>
-      <trans-unit id="DontKnowHowToPullImages">
-        <source>CONTAINER1010: Don't know how to pull images from local daemons at the moment.</source>
-        <target state="translated">CONTAINER1010: Yerel daemon'lardan görüntülerin nasıl çekileceği şu anda bilinmiyor.</target>
-        <note>{StrBegin="CONTAINER1010: "}</note>
-      </trans-unit>
       <trans-unit id="EmptyOrWhitespacePropertyIgnored">
         <source>CONTAINER4006: Property '{0}' is empty or contains whitespace and will be ignored.</source>
         <target state="translated">CONTAINER4006: '{0}' özelliği boş veya boşluk içeriyor ve yoksayılacak.</target>
@@ -87,6 +97,11 @@
         <target state="translated">CONTAINER1009: Görüntü yerel Docker daemon'a yüklenemedi. stdout: {0}</target>
         <note>{StrBegin="CONTAINER1009: "}</note>
       </trans-unit>
+      <trans-unit id="ImagePullNotSupported">
+        <source>CONTAINER1010: Pulling images from local Docker daemon is not supported.</source>
+        <target state="translated">CONTAINER1010: Yerel Docker daemon’ından görüntü çekme özelliği desteklenmiyor.</target>
+        <note>{StrBegin="CONTAINER1010: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidEnvVar">
         <source>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</source>
         <target state="translated">CONTAINER2015: {0}: '{1}' geçerli bir Ortam Değişkeni değildi. Görmezden geliniyor.</target>
@@ -94,12 +109,12 @@
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
         <source>CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</source>
-        <target state="new">CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</target>
+        <target state="translated">CONTAINER2005: Çıkarsanan '{0}' görüntü adı tamamen geçersiz karakterler içeriyor. Bir görüntü adında geçerli karakterler şunlardan oluşur: alfasayısal karakterler, -, /, veya _. Görüntü adı alfasayısal karakterle başlamalıdır.</target>
         <note>{StrBegin="CONTAINER2005: "}</note>
       </trans-unit>
       <trans-unit id="InvalidImageName_NonAlphanumericStartCharacter">
         <source>CONTAINER2005: The first character of the image name '{0}' must be a lowercase letter or a digit and all characters in the name must be an alphanumeric character, -, /, or _.</source>
-        <target state="new">CONTAINER2005: The first character of the image name '{0}' must be a lowercase letter or a digit and all characters in the name must be an alphanumeric character, -, /, or _.</target>
+        <target state="translated">CONTAINER2005: '{0}' görüntü adındaki ilk karakter bir küçük harf veya rakam olmalıdır ve addaki tüm karakterler şunlardan oluşmalıdır: alfasayısal karakter, -, /, veya _.</target>
         <note>{StrBegin="CONTAINER2005: "}</note>
       </trans-unit>
       <trans-unit id="InvalidPort_Number">
@@ -147,15 +162,20 @@
         <target state="translated">CONTAINER4005: '{0}' öğesi 'Value' meta verileri olmayan öğeler içeriyor ve yoksayılacak.</target>
         <note>{StrBegin="CONTAINER4005: "}</note>
       </trans-unit>
-      <trans-unit id="LocalDaemondNotAvailable">
-        <source>CONTAINER1012: The local daemon is not available, but pushing to a local daemon was requested. Please start the daemon and try again.</source>
-        <target state="translated">CONTAINER1012: Yerel daemon kullanılamıyor, ancak yerel bir daemon'a gönderme istendi. Lütfen daemon'ı başlatın ve yeniden deneyin.</target>
+      <trans-unit id="LocalDaemonNotAvailable">
+        <source>CONTAINER1012: The local Docker daemon is not available, but pushing to a local Docker daemon was requested. Please start the daemon and try again.</source>
+        <target state="translated">CONTAINER1012: Yerel Docker daemon’ı kullanılamıyor, ancak yerel bir Docker daemon'a gönderme istendi. Lütfen daemon’ı başlatın ve yeniden deneyin.</target>
         <note>{StrBegin="CONTAINER1012: "}</note>
       </trans-unit>
-      <trans-unit id="MissingLayerNode">
-        <source>CONTAINER2006: Tried to get layer information but there is no layer node?</source>
-        <target state="translated">CONTAINER2006: Katman bilgilerini almaya çalıştınız ancak katman düğümü yok mu?</target>
-        <note>{StrBegin="CONTAINER2006: "}</note>
+      <trans-unit id="LocalDocker_FailedToGetConfig">
+        <source>Error while reading daemon config: {0}</source>
+        <target state="translated">Daemon yapılandırması okunurken hata oluştu: {0}</target>
+        <note>{0} is the exception message that ends with period</note>
+      </trans-unit>
+      <trans-unit id="LocalDocker_LocalDaemonErrors">
+        <source>The daemon server reported errors: {0}</source>
+        <target state="translated">Daemon sunucusu hatalar bildirdi: {0}</target>
+        <note>{0} are the list of messages, each message starts with new line</note>
       </trans-unit>
       <trans-unit id="MissingLinkToRegistry">
         <source>CONTAINER2004: Unable to download layer with descriptor '{0}' from registry '{1}' because it does not exist.</source>
@@ -191,6 +211,51 @@
         <source>CONTAINER1005: Registry push failed.</source>
         <target state="translated">CONTAINER1005: Kayıt defteri gönderilemedi.</target>
         <note>{StrBegin="CONTAINER1005: "}</note>
+      </trans-unit>
+      <trans-unit id="Registry_ConfigUploadStarted">
+        <source>Uploading config to registry at blob '{0}',</source>
+        <target state="translated">Yapılandırma, blob '{0}' konumundaki kayıt defterine karşıya yükleniyor,</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Registry_ConfigUploaded">
+        <source>Uploaded config to registry.</source>
+        <target state="translated">Yapılandırma, kayıt defterine karşıya yüklendi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Registry_LayerExists">
+        <source>Layer '{0}' already exists.</source>
+        <target state="translated">'{0}' katmanı zaten var.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Registry_LayerUploadStarted">
+        <source>Uploading layer '{0}' to '{1}'.</source>
+        <target state="translated">'{0}' katmanı, '{1}' kayıt defterine karşıya yükleniyor.</target>
+        <note>{0} is the layer digest, {1} is the registry name</note>
+      </trans-unit>
+      <trans-unit id="Registry_LayerUploaded">
+        <source>Finished uploading layer '{0}' to '{1}'.</source>
+        <target state="translated">'{0}' katmanının, '{1}' kayıt defterine karşıya yüklenmesi tamamlandı.</target>
+        <note>{0} is the layer digest, {1} is the registry name</note>
+      </trans-unit>
+      <trans-unit id="Registry_ManifestUploadStarted">
+        <source>Uploading manifest to registry '{0}' as blob '{1}'.</source>
+        <target state="translated">Bildirim, '{0}' kayıt defterine '{1}' blob olarak karşıya yükleniyor.</target>
+        <note>{0} is the registry name</note>
+      </trans-unit>
+      <trans-unit id="Registry_ManifestUploaded">
+        <source>Uploaded manifest to '{0}'.</source>
+        <target state="translated">Bildirim, '{0}' kayıt defterine karşıya yüklendi.</target>
+        <note>{0} is the registry name</note>
+      </trans-unit>
+      <trans-unit id="Registry_TagUploadStarted">
+        <source>Uploading tag '{0}' to '{1}'.</source>
+        <target state="translated">'{0}' etiketi, '{1}' kayıt defterine karşıya yükleniyor.</target>
+        <note>{1} is the registry name</note>
+      </trans-unit>
+      <trans-unit id="Registry_TagUploaded">
+        <source>Uploaded tag '{0}' to '{1}'.</source>
+        <target state="translated">'{0}' etiketi, '{1}' konumuna karşıya yüklendi.</target>
+        <note>{1} is the registry name</note>
       </trans-unit>
       <trans-unit id="RequiredItemsContainsEmptyItems">
         <source>CONTAINER4003: Required '{0}' items contain empty items.</source>

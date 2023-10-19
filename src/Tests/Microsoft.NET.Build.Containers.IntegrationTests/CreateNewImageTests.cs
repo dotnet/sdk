@@ -37,7 +37,8 @@ public class CreateNewImageTests
 
         newProjectDir.Create();
 
-        new DotnetCommand(_testOutput, "new", "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -59,7 +60,7 @@ public class CreateNewImageTests
         task.OutputRegistry = "localhost:5010";
         task.LocalContainerDaemon = "Docker";
         task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-arm64", "publish");
-        task.ImageName = "dotnet/create-new-image-baseline";
+        task.Repository = "dotnet/create-new-image-baseline";
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
         task.ContainerRuntimeIdentifier = "linux-arm64";
@@ -82,7 +83,8 @@ public class CreateNewImageTests
 
         newProjectDir.Create();
 
-        new DotnetCommand(_testOutput, "new", "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -98,7 +100,7 @@ public class CreateNewImageTests
 
         pcp.FullyQualifiedBaseImageName = "mcr.microsoft.com/dotnet/runtime:7.0";
         pcp.ContainerRegistry = "localhost:5010";
-        pcp.ContainerImageName = "dotnet/testimage";
+        pcp.ContainerRepository = "dotnet/testimage";
         pcp.ContainerImageTags = new[] { "5.0", "latest" };
 
         Assert.True(pcp.Execute(), FormatBuildMessages(errors));
@@ -106,7 +108,7 @@ public class CreateNewImageTests
         Assert.Equal("dotnet/runtime", pcp.ParsedContainerImage);
         Assert.Equal("7.0", pcp.ParsedContainerTag);
 
-        Assert.Equal("dotnet/testimage", pcp.NewContainerImageName);
+        Assert.Equal("dotnet/testimage", pcp.NewContainerRepository);
         pcp.NewContainerTags.Should().BeEquivalentTo(new[] { "5.0", "latest" });
 
         CreateNewImage cni = new();
@@ -116,7 +118,7 @@ public class CreateNewImageTests
         cni.BaseRegistry = pcp.ParsedContainerRegistry;
         cni.BaseImageName = pcp.ParsedContainerImage;
         cni.BaseImageTag = pcp.ParsedContainerTag;
-        cni.ImageName = pcp.NewContainerImageName;
+        cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = "localhost:5010";
         cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework);
         cni.WorkingDirectory = "app/";
@@ -144,7 +146,8 @@ public class CreateNewImageTests
 
         newProjectDir.Create();
 
-        new DotnetCommand(_testOutput, "new", "console", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, "console", "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
@@ -162,7 +165,7 @@ public class CreateNewImageTests
 
         pcp.FullyQualifiedBaseImageName = "mcr.microsoft.com/dotnet/runtime:6.0";
         pcp.ContainerRegistry = "";
-        pcp.ContainerImageName = "dotnet/envvarvalidation";
+        pcp.ContainerRepository = "dotnet/envvarvalidation";
         pcp.ContainerImageTag = "latest";
 
         Dictionary<string, string> dict = new Dictionary<string, string>();
@@ -177,7 +180,7 @@ public class CreateNewImageTests
         Assert.Single(pcp.NewContainerEnvironmentVariables);
         Assert.Equal("Foo", pcp.NewContainerEnvironmentVariables[0].GetMetadata("Value"));
 
-        Assert.Equal("dotnet/envvarvalidation", pcp.NewContainerImageName);
+        Assert.Equal("dotnet/envvarvalidation", pcp.NewContainerRepository);
         Assert.Equal("latest", pcp.NewContainerTags[0]);
 
         CreateNewImage cni = new();
@@ -187,7 +190,7 @@ public class CreateNewImageTests
         cni.BaseRegistry = pcp.ParsedContainerRegistry;
         cni.BaseImageName = pcp.ParsedContainerImage;
         cni.BaseImageTag = pcp.ParsedContainerTag;
-        cni.ImageName = pcp.NewContainerImageName;
+        cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = pcp.NewContainerRegistry;
         cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework, "linux-x64");
         cni.WorkingDirectory = "/app";
@@ -200,7 +203,7 @@ public class CreateNewImageTests
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
 
-        new RunExeCommand(_testOutput, "docker", "run", "--rm", $"{pcp.NewContainerImageName}:latest")
+        new RunExeCommand(_testOutput, "docker", "run", "--rm", $"{pcp.NewContainerRepository}:latest")
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Foo");
