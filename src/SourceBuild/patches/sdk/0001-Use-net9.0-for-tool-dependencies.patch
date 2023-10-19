@@ -1,0 +1,50 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 19 Oct 2023 08:52:35 -0500
+Subject: [PATCH] Use net9.0 for tool dependencies
+
+Backport: https://github.com/dotnet/source-build/issues/3663
+---
+ src/Layout/redist/targets/GenerateLayout.targets | 8 ++++----
+ src/Layout/tool_fsharp/tool_fsc.csproj           | 2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/src/Layout/redist/targets/GenerateLayout.targets b/src/Layout/redist/targets/GenerateLayout.targets
+index eab01ef144..922b959531 100644
+--- a/src/Layout/redist/targets/GenerateLayout.targets
++++ b/src/Layout/redist/targets/GenerateLayout.targets
+@@ -112,9 +112,9 @@
+     </PropertyGroup>
+ 
+     <ItemGroup>
+-      <DotnetFormatDllFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.dll" />
+-      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.json" />
+-      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.config" />
++      <DotnetFormatDllFiles Include="$(Pkgdotnet-format)/tools/net9.0/any/**/*.dll" />
++      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net9.0/any/**/*.json" />
++      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net9.0/any/**/*.config" />
+     </ItemGroup>
+ 
+     <Error Condition="'@(DotnetFormatDllFiles)' == ''" Text="Something moved around in dotnet-format package, adjust code here accordingly. TFM change?" />
+@@ -178,7 +178,7 @@
+           BeforeTargets="Build">
+     <PropertyGroup>
+       <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' != 'true'" >netcoreapp3.1</TestCliNuGetDirectoryTargetFramework>
+-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net8.0</TestCliNuGetDirectoryTargetFramework>
++      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'" >net9.0</TestCliNuGetDirectoryTargetFramework>
+       <TestCliNuGetDirectory>$(NuGetPackageRoot)/microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
+     </PropertyGroup>
+     <ItemGroup>
+diff --git a/src/Layout/tool_fsharp/tool_fsc.csproj b/src/Layout/tool_fsharp/tool_fsc.csproj
+index adb50eed03..530c3a546b 100644
+--- a/src/Layout/tool_fsharp/tool_fsc.csproj
++++ b/src/Layout/tool_fsharp/tool_fsc.csproj
+@@ -20,7 +20,7 @@
+     </PropertyGroup>
+     <ItemGroup>
+         <ResolvedFileToPublish
+-          Include="$(PkgMicrosoft_FSharp_Compiler)/lib/net8.0/FSharp.Core.xml"
++          Include="$(PkgMicrosoft_FSharp_Compiler)/lib/net9.0/FSharp.Core.xml"
+           CopyToPublishDirectory="PreserveNewest"
+           DestinationSubPath="FSharp.Core.xml"
+           RelativePath="FSharp.Core.xml"

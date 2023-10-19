@@ -32,5 +32,6 @@
     -->
     <PrivateSourceBuiltArtifactsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Artifacts.8.0.100-rc.1.23410.1.centos.8-x64.tar.gz</PrivateSourceBuiltArtifactsUrl>
     <PrivateSourceBuiltSdkUrl_CentOS8Stream>https://dotnetcli.azureedge.net/source-built-artifacts/sdks/dotnet-sdk-8.0.100-rc.1.23410.1-centos.8-x64.tar.gz</PrivateSourceBuiltSdkUrl_CentOS8Stream>
+    <PrivateSourceBuiltPrebuiltsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Prebuilts.0.1.0-9.0.100-3.centos.8-x64.tar.gz</PrivateSourceBuiltPrebuiltsUrl>
   </PropertyGroup>
 </Project>

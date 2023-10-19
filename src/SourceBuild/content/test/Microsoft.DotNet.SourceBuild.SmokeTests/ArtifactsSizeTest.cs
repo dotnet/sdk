@@ -16,7 +16,7 @@ using Xunit.Abstractions;
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 [Trait("Category", "SdkContent")]
-public class ArtifactsSizeTest : SmokeTests
+public class ArtifactsSizeTest : SdkTests
 {
     private const int SizeThresholdPercentage = 25;
     private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"ArtifactsSizes/{Config.TargetRid}.txt");
@@ -41,7 +41,8 @@ public class ArtifactsSizeTest : SmokeTests
     }
 
 
-    [SkippableFact(Config.IncludeArtifactsSizeEnv, skipOnFalseEnv: true)]
+    // https://github.com/dotnet/source-build/issues/3668
+    //[SkippableFact(Config.IncludeArtifactsSizeEnv, skipOnFalseEnv: true)]
     public void CompareArtifactsToBaseline()
     {
         Utilities.ValidateNotNullOrWhiteSpace(Config.SourceBuiltArtifactsPath, Config.SourceBuiltArtifactsPathEnv);
@@ -64,7 +65,7 @@ public class ArtifactsSizeTest : SmokeTests
 
         try
         {
-            string actualFilePath = Path.Combine(DotNetHelper.LogsDirectory, $"UpdatedArtifactsSizes_{Config.TargetRid}.txt");
+            string actualFilePath = Path.Combine(LogsDirectory, $"UpdatedArtifactsSizes_{Config.TargetRid}.txt");
             File.WriteAllLines(actualFilePath, tarEntries.Select(entry => $"{entry.FilePath}: {entry.Bytes}"));
         }
         catch (IOException ex)
