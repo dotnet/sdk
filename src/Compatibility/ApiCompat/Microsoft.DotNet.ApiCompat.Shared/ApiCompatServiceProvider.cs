@@ -27,17 +27,11 @@ namespace Microsoft.DotNet.ApiCompat
             _compatibilityLogger = new Lazy<ISuppressibleLog>(() => logFactory(SuppressionEngine));
             _apiCompatRunner = new Lazy<IApiCompatRunner>(() =>
             {
-                CompositeSymbolFilter compositeSymbolFilter = new CompositeSymbolFilter()
-                    .Add(new AccessibilitySymbolFilter(respectInternals));
-
-                if (excludeAttributesFiles != null)
-                {
-                    compositeSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
-                }
-
                 SymbolEqualityComparer symbolEqualityComparer = new();
-                ApiComparerSettings apiComparerSettings = new(compositeSymbolFilter,
+                ApiComparerSettings apiComparerSettings = new(
+                    new AccessibilitySymbolFilter(respectInternals),
                     symbolEqualityComparer,
+                    excludeAttributesFiles != null ? new DocIdSymbolFilter(excludeAttributesFiles) : null,
                     new AttributeDataEqualityComparer(symbolEqualityComparer,
                         new TypedConstantEqualityComparer(symbolEqualityComparer)),
                     respectInternals);

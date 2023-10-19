@@ -22,6 +22,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         IEqualityComparer<ISymbol> SymbolEqualityComparer { get; }
 
         /// <summary>
+        /// The attribute data symbol filter.
+        /// </summary>
+        ISymbolFilter? AttributeDataSymbolFilter { get; }
+
+        /// <summary>
         /// The attribute data equality comparer.
         /// </summary>
         IEqualityComparer<AttributeData> AttributeDataEqualityComparer { get; }
