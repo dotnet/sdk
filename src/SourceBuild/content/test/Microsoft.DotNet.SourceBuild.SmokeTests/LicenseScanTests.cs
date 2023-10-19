@@ -136,7 +136,8 @@ public class LicenseScanTests : TestBase
         _targetRepo = new DirectoryInfo(Config.LicenseScanPath).Name;
     }
 
-    [SkippableFact(Config.LicenseScanPathEnv, skipOnNullOrWhiteSpaceEnv: true)]
+    // https://github.com/dotnet/source-build/issues/3668
+    //[SkippableFact(Config.LicenseScanPathEnv, skipOnNullOrWhiteSpaceEnv: true)]
     public void ScanForLicenses()
     {
         Assert.NotNull(Config.LicenseScanPath);
