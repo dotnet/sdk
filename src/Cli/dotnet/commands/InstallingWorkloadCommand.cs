@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             _downloadToCacheOption = parseResult.GetValue(InstallingWorkloadCommandParser.DownloadToCacheOption);
 
             _fromRollbackDefinition = parseResult.GetValue(InstallingWorkloadCommandParser.FromRollbackFileOption);
-            _fromHistorySpecified = !string.IsNullOrEmpty(parseResult.GetValue(InstallingWorkloadCommandParser.FromHistoryOption));
+            _fromHistorySpecified = parseResult.GetValue(InstallingWorkloadCommandParser.FromHistoryOption);
             _historyManifestOnlyOption = !string.IsNullOrEmpty(parseResult.GetValue(InstallingWorkloadCommandParser.HistoryManifestOnlyOption));
             _afterID = parseResult.GetValue(InstallingWorkloadCommandParser.AfterHistoryOption);
             _beforeID = parseResult.GetValue(InstallingWorkloadCommandParser.BeforeHistoryOption);
@@ -239,7 +239,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             Hidden = true
         };
 
-        public static readonly CliOption<string> FromHistoryOption = new("--from-history")
+        public static readonly CliOption<bool> FromHistoryOption = new("--from-history")
         {
             Description = Update.LocalizableStrings.FromHistoryOptionDescription,
             Hidden = true
