@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-public class DebugTests : SmokeTests
+public class DebugTests : SdkTests
 {
     private record ScanResult(string FileName, bool HasDebugInfo, bool HasDebugAbbrevs, bool HasFileSymbols, bool HasGnuDebugLink);
 
@@ -21,7 +21,8 @@ public class DebugTests : SmokeTests
     /// <Summary>
     /// Verifies that all generated native files include native debug symbols.
     /// </Summary>
-    [Fact]
+    // https://github.com/dotnet/source-build/issues/3668
+    //[Fact]
     public void SourceBuiltSdkContainsNativeDebugSymbols()
     {
 

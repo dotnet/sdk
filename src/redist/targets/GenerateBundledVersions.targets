@@ -106,7 +106,6 @@
 
       <_NET70RuntimePackVersion>7.0.$(VersionFeature70)</_NET70RuntimePackVersion>
       <_NET70TargetingPackVersion>7.0.$(VersionFeature70)</_NET70TargetingPackVersion>
-      <_NET70WebAssemblyPackVersion>7.0.$(VersionFeature70)</_NET70WebAssemblyPackVersion>
       <_WindowsDesktop70RuntimePackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70RuntimePackVersion>
       <_WindowsDesktop70TargetingPackVersion>7.0.$(VersionFeature70)</_WindowsDesktop70TargetingPackVersion>
       <_AspNet70RuntimePackVersion>7.0.$(VersionFeature70)</_AspNet70RuntimePackVersion>
@@ -335,15 +334,15 @@
         win-x64;
         " />
 
-      <Net80ILCompilerSupportedRids Include="@(Net70ILCompilerSupportedRids)" />
-
       <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
            https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
-      <ILCompilerSupportedRids Include="
-        @(Net80ILCompilerSupportedRids);
+      <Net80ILCompilerSupportedRids Include="
+        @(Net70ILCompilerSupportedRids);
         osx-x64;
         osx-arm64;
         " />
+
+      <ILCompilerSupportedRids Include="@(Net80ILCompilerSupportedRids)" />
 
       <NativeAOTRuntimePackRids Include="
           ios-arm64;
@@ -735,7 +734,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net7.0"
-                             WebAssemblySdkPackVersion="$(_NET70WebAssemblyPackVersion)" />
+                             WebAssemblySdkPackVersion="$(_NET80WebAssemblyPackVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net7.0"
@@ -829,7 +828,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net6.0"
-                             WebAssemblySdkPackVersion="$(_NET70WebAssemblyPackVersion)" />
+                             WebAssemblySdkPackVersion="$(_NET80WebAssemblyPackVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net6.0"

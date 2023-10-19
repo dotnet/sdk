@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 19 Oct 2023 08:29:45 -0500
+Subject: [PATCH] Explicitly use net9.0 TFM
+
+Backport: https://github.com/dotnet/source-build/issues/3663
+---
+ Directory.Build.targets                                         | 2 +-
+ .../Microsoft.TestPlatform.Build.csproj                         | 2 +-
+ .../Microsoft.TestPlatform.CLI.csproj                           | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/Directory.Build.targets b/Directory.Build.targets
+index b720568b..617ca4fc 100644
+--- a/Directory.Build.targets
++++ b/Directory.Build.targets
+@@ -6,7 +6,7 @@
+   <!-- Source build properties -->
+   <PropertyGroup Condition=" '$(DotNetBuildFromSource)' == 'true' ">
+     <!-- Force setting TargetFrameworks to net7.0 only if it was set -->
+-    <TargetFrameworks Condition=" '$(TargetFrameworks)' != '' ">$(NetCurrent)</TargetFrameworks>
++    <TargetFrameworks Condition=" '$(TargetFrameworks)' != '' ">net9.0</TargetFrameworks>
+     <!-- Force setting TargetFramework to net7.0 only if it was set -->
+     <TargetFramework Condition=" '$(TargetFramework)' != '' ">$(NetCurrent)</TargetFramework>
+   </PropertyGroup>
+diff --git a/src/Microsoft.TestPlatform.Build/Microsoft.TestPlatform.Build.csproj b/src/Microsoft.TestPlatform.Build/Microsoft.TestPlatform.Build.csproj
+index a93852ce..945b1ac2 100644
+--- a/src/Microsoft.TestPlatform.Build/Microsoft.TestPlatform.Build.csproj
++++ b/src/Microsoft.TestPlatform.Build/Microsoft.TestPlatform.Build.csproj
+@@ -12,7 +12,7 @@
+   <Choose>
+     <When Condition=" '$(DotNetBuildFromSource)' == 'true' ">
+       <PropertyGroup>
+-        <Tfm>$(NetCurrent)</Tfm>
++        <Tfm>net9.0</Tfm>
+       </PropertyGroup>
+     </When>
+     <Otherwise>
+diff --git a/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.csproj b/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.csproj
+index b8f6849b..b56b993c 100644
+--- a/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.csproj
++++ b/src/package/Microsoft.TestPlatform.CLI/Microsoft.TestPlatform.CLI.csproj
+@@ -31,7 +31,7 @@
+   <ItemGroup Label="NuGet">
+     <NuspecProperty Include="SrcPackageFolder=$(SrcPackageFolder)" />
+     <NuspecProperty Include="TesthostRuntimeconfig=$(RepoRoot)temp\testhost" />
+-    <NuspecProperty Include="SourceBuildTfm=$(NetCurrent)" />
++    <NuspecProperty Include="SourceBuildTfm=net9.0" />
+   </ItemGroup>
+ 
+   <PropertyGroup>
