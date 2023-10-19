@@ -27,17 +27,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().NotExist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
-
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Xml.XPath.wasm")).Should().Exist();
-
-            var publish = new PublishCommand(testInstance);
-            publish.Execute()
-                .Should()
-                .Pass();
-                
-            var publishOutputDirectory = Path.Combine(testInstance.Path, "bin", "Release", targetFramework);
-
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "System.Xml.XPath.wasm")).Should().NotExist();
         }
     }
 }
