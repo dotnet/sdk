@@ -14,7 +14,16 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-public class SourcelinkTests : SmokeTests
+/// <summary>
+/// Separate test collection for Sourcelink tests. This is needed due to intra-test parallelization,
+/// which can cause less CPU time to be allocated to other tests.
+/// This would make other tests run too long and fail due to timeouts.
+/// </summary>
+[CollectionDefinition(nameof(SourcelinkTestCollection), DisableParallelization = true)]
+public class SourcelinkTestCollection { }
+
+[Collection(nameof(SourcelinkTestCollection))]
+public class SourcelinkTests : SdkTests
 {
     private static string SourcelinkRoot { get; } = Path.Combine(Directory.GetCurrentDirectory(), nameof(SourcelinkTests));
 
@@ -23,27 +32,43 @@ public class SourcelinkTests : SmokeTests
     /// <summary>
     /// Verifies that all symbols have valid sourcelinks.
     /// </summary>
-    [Fact]
+    [SkippableFact(Config.SourceBuiltArtifactsPathEnv, skipOnNullOrWhiteSpaceEnv: true)]
     public void VerifySourcelinks()
     {
-        if (Directory.Exists(SourcelinkRoot))
+        try
+        {
+            if (Directory.Exists(SourcelinkRoot))
+            {
+                Directory.Delete(SourcelinkRoot, true);
+            }
+            Directory.CreateDirectory(SourcelinkRoot);
+
+            string symbolsRoot = Directory.CreateDirectory(Path.Combine(SourcelinkRoot, "symbols")).FullName;
+
+            // We are validating dotnet-symbols-all-*.tar.gz which contains all source-built symbols, including
+            // SDK-specific symbols that are also packaged in dotnet-symbols-sdk-*.tar.gz.
+            Utilities.ExtractTarball(
+                Utilities.GetFile(Path.GetDirectoryName(Config.SourceBuiltArtifactsPath), "dotnet-symbols-all-*.tar.gz"),
+                symbolsRoot,
+                OutputHelper);
+
+            IList<string> failedFiles = ValidateSymbols(symbolsRoot, InitializeSourcelinkTool());
+
+            if (failedFiles.Count > 0)
+            {
+                OutputHelper.WriteLine($"Sourcelink verification failed for the following files:");
+                foreach (string file in failedFiles)
+                {
+                    OutputHelper.WriteLine(file);
+                }
+            }
+
+            Assert.True(failedFiles.Count == 0);
+        }
+        finally
         {
             Directory.Delete(SourcelinkRoot, true);
         }
-        Directory.CreateDirectory(SourcelinkRoot);
-
-        IList<string> failedFiles = ValidateSymbols(ExtractSymbolsPackages(GetAllSymbolsPackages()), InitializeSourcelinkTool());
-
-        if (failedFiles.Count > 0)
-        {
-            OutputHelper.WriteLine($"Sourcelink verification failed for the following files:");
-            foreach (string file in failedFiles)
-            {
-                OutputHelper.WriteLine(file);
-            }
-        }
-
-        Assert.True(failedFiles.Count == 0);
     }
 
     /// <summary>
@@ -53,6 +78,8 @@ public class SourcelinkTests : SmokeTests
     /// <returns>Path to sourcelink tool binary.</returns>
     private string InitializeSourcelinkTool()
     {
+        Assert.NotNull(Config.SourceBuiltArtifactsPath);
+        
         const string SourcelinkToolPackageNamePattern = "dotnet-sourcelink*nupkg";
         const string SourcelinkToolBinaryFilename = "dotnet-sourcelink.dll";
 
@@ -63,38 +90,6 @@ public class SourcelinkTests : SmokeTests
         Utilities.ExtractNupkg(Utilities.GetFile(toolPackageDir, SourcelinkToolPackageNamePattern), extractedToolPath);
 
         return Utilities.GetFile(extractedToolPath, SourcelinkToolBinaryFilename);
-    }
-
-    private IEnumerable<string> GetAllSymbolsPackages()
-    {
-        /*
-            At the moment we validate sourcelinks from runtime symbols package.
-            The plan is to make symbols, from all repos, available in source-build artifacts.
-            Once that's available, this code will be modified to validate all available symbols.
-            Tracking issue: https://github.com/dotnet/source-build/issues/3612
-        */
-
-        // Runtime symbols package lives in the same directory as PSB artifacts.
-        // i.e. <repo-root>/artifacts/x64/Release/runtime/dotnet-runtime-symbols-fedora.36-x64-8.0.0-preview.7.23355.7.tar.gz
-        yield return Utilities.GetFile(Path.GetDirectoryName(Config.SourceBuiltArtifactsPath), "dotnet-runtime-symbols-*.tar.gz");
-    }
-
-    /// <summary>
-    /// Extracts symbols packages to subdirectories of the common symbols root directory.
-    /// </summary>
-    /// <returns>Path to common symbols root directory.</returns>
-    private string ExtractSymbolsPackages(IEnumerable<string> packages)
-    {
-        string symbolsRoot = Directory.CreateDirectory(Path.Combine(SourcelinkRoot, "symbols")).FullName;
-
-        foreach (string package in packages)
-        {
-            Assert.True(package.EndsWith(".tar.gz"), $"Package extension is not supported: {package}");
-            DirectoryInfo targetDirInfo = Directory.CreateDirectory(Path.Combine(symbolsRoot, Path.GetFileNameWithoutExtension(package)));
-            Utilities.ExtractTarball(package, targetDirInfo.FullName, OutputHelper);
-        }
-
-        return symbolsRoot;
     }
 
     private IList<string> ValidateSymbols(string path, string sourcelinkToolPath)
@@ -112,7 +107,7 @@ public class SourcelinkTests : SmokeTests
                 OutputHelper,
                 logOutput: false,
                 excludeInfo: true, // Exclude info messages, as there can be 1,000+ processes
-                millisecondTimeout: 5000,
+                millisecondTimeout: 60000,
                 configureCallback: (process) => DotNetHelper.ConfigureProcess(process, null));
 
             if (executeResult.Process.ExitCode != 0)

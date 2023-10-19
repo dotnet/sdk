@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// <see cref="WebScenarioTests"/> for related web scenarios.
 /// They are encapsulated in a separate testclass so that they can be run in parallel.
 /// </summary>
-public class BasicScenarioTests : SmokeTests
+public class BasicScenarioTests : SdkTests
 {
     public BasicScenarioTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 

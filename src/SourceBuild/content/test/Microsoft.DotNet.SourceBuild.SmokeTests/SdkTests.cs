@@ -7,16 +7,14 @@ using Xunit.Abstractions;
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 /// <summary>
-/// Shared base class for all smoke tests.
+/// Shared base class for all SDK-based smoke tests.
 /// </summary>
-public abstract class SmokeTests
+public abstract class SdkTests : TestBase
 {
     internal DotNetHelper DotNetHelper { get; }
-    internal ITestOutputHelper OutputHelper { get; }
 
-    protected SmokeTests(ITestOutputHelper outputHelper)
+    protected SdkTests(ITestOutputHelper outputHelper) : base(outputHelper)
     {
         DotNetHelper = new DotNetHelper(outputHelper);
-        OutputHelper = outputHelper;
     }
 }

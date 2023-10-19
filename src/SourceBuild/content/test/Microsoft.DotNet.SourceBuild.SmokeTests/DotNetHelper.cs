@@ -3,14 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -21,7 +19,6 @@ internal class DotNetHelper
     private static readonly object s_lockObj = new();
 
     public static string DotNetPath { get; } = Path.Combine(Config.DotNetDirectory, "dotnet");
-    public static string LogsDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), "logs");
     public static string PackagesDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), "packages");
     public static string ProjectsDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), $"projects-{DateTime.Now:yyyyMMddHHmmssffff}");
 
@@ -55,11 +52,6 @@ internal class DotNetHelper
             if (!Directory.Exists(PackagesDirectory))
             {
                 Directory.CreateDirectory(PackagesDirectory);
-            }
-
-            if (!Directory.Exists(LogsDirectory))
-            {
-                Directory.CreateDirectory(LogsDirectory);
             }
         }
     }
@@ -261,7 +253,7 @@ internal class DotNetHelper
             fileName += $"-{differentiator}";
         }
 
-        return $"/bl:{Path.Combine(LogsDirectory, $"{fileName}.binlog")}";
+        return $"/bl:{Path.Combine(TestBase.LogsDirectory, $"{fileName}.binlog")}";
     }
 
     private static bool DetermineIsMonoRuntime(string dotnetRoot)
