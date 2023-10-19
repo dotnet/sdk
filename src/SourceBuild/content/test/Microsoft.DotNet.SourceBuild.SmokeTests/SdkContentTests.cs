@@ -17,7 +17,7 @@ using Xunit.Abstractions;
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 [Trait("Category", "SdkContent")]
-public class SdkContentTests : SmokeTests
+public class SdkContentTests : SdkTests
 {
     private const string MsftSdkType = "msft";
     private const string SourceBuildSdkType = "sb";
@@ -31,7 +31,8 @@ public class SdkContentTests : SmokeTests
     /// This makes the baseline durable between releases.  This does mean however, entries
     /// in the baseline may appear identical if the diff is version specific.
     /// </Summary>
-    [SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
+    // https://github.com/dotnet/source-build/issues/3668
+    //[SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
     public void CompareMsftToSbFileList()
     {
         const string msftFileListingFileName = "msftSdkFiles.txt";
@@ -44,7 +45,8 @@ public class SdkContentTests : SmokeTests
         BaselineHelper.CompareBaselineContents("MsftToSbSdkFiles.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
     }
 
-    [SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
+    // https://github.com/dotnet/source-build/issues/3668
+    //[SkippableFact(new[] { Config.MsftSdkTarballPathEnv, Config.SdkTarballPathEnv }, skipOnNullOrWhiteSpaceEnv: true)]
     public void CompareMsftToSbAssemblyVersions()
     {
         Assert.NotNull(Config.MsftSdkTarballPath);
@@ -98,7 +100,7 @@ public class SdkContentTests : SmokeTests
             if (sbVersion is not null &&
                 msftVersion is not null &&
                 sbVersion >= msftVersion &&
-                IsFileExcluded(assemblyPath, assemblyVersionDiffFilters))
+                Utilities.IsFileExcluded(assemblyPath, assemblyVersionDiffFilters))
             {
                 sbSdkAssemblyVersions.Remove(assemblyPath);
                 msftSdkAssemblyVersions.Remove(assemblyPath);
@@ -182,7 +184,7 @@ public class SdkContentTests : SmokeTests
                 string relativePath = Path.GetRelativePath(sbSdkPath, file);
                 string normalizedPath = BaselineHelper.RemoveVersions(relativePath);
 
-                if (!IsFileExcluded(normalizedPath, exclusionFilters))
+                if (!Utilities.IsFileExcluded(normalizedPath, exclusionFilters))
                 {
                     sbSdkAssemblyVersions.Add(normalizedPath, GetVersion(assemblyName));
                 }
@@ -208,32 +210,13 @@ public class SdkContentTests : SmokeTests
     }
 
     private static IEnumerable<string> RemoveExclusions(IEnumerable<string> files, IEnumerable<string> exclusions) =>
-        files.Where(item => !IsFileExcluded(item, exclusions));
-
-    private static bool IsFileExcluded(string filePath, IEnumerable<string> exclusions) =>
-        exclusions.Any(p => FileSystemName.MatchesSimpleExpression(p, filePath));
+        files.Where(item => !Utilities.IsFileExcluded(item, exclusions));
 
     private static IEnumerable<string> GetSdkDiffExclusionFilters(string sdkType) =>
-        ParseExclusionsFile("SdkFileDiffExclusions.txt", sdkType);
+        Utilities.ParseExclusionsFile("SdkFileDiffExclusions.txt", sdkType);
 
     private static IEnumerable<string> GetSdkAssemblyVersionDiffExclusionFilters() =>
-        ParseExclusionsFile("SdkAssemblyVersionDiffExclusions.txt");
-
-    private static IEnumerable<string> ParseExclusionsFile(string exclusionsFileName, string? prefix = null)
-    {
-        string exclusionsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), exclusionsFileName);
-        int prefixSkip = prefix?.Length + 1 ?? 0;
-        return File.ReadAllLines(exclusionsFilePath)
-            // process only specific sdk exclusions if a prefix is provided
-            .Where(line => prefix is null || line.StartsWith(prefix + ","))
-            .Select(line =>
-            {
-                // Ignore comments
-                var index = line.IndexOf('#');
-                return index >= 0 ? line[prefixSkip..index].TrimEnd() : line[prefixSkip..];
-            })
-            .ToList();
-    }
+        Utilities.ParseExclusionsFile("SdkAssemblyVersionDiffExclusions.txt");
 
     private static string RemoveDiffMarkers(string source)
     {

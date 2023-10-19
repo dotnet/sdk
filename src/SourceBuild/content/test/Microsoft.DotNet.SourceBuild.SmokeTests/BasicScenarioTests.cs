@@ -15,12 +15,13 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 /// <see cref="WebScenarioTests"/> for related web scenarios.
 /// They are encapsulated in a separate testclass so that they can be run in parallel.
 /// </summary>
-public class BasicScenarioTests : SmokeTests
+public class BasicScenarioTests : SdkTests
 {
     public BasicScenarioTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [Theory]
-    [MemberData(nameof(GetScenarioObjects))]
+    // https://github.com/dotnet/source-build/issues/3668
+    // [Theory]
+    // [MemberData(nameof(GetScenarioObjects))]
     public void VerifyScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 
     public static IEnumerable<object[]> GetScenarioObjects() => GetScenarios().Select(scenario => new object[] { scenario });

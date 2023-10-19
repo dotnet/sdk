@@ -8,6 +8,10 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
+  <PropertyGroup>
+    <SkipErrorOnPrebuilts>true</SkipErrorOnPrebuilts>
+  </PropertyGroup>
+
   <Target Name="Build" DependsOnTargets="PrepareOutput;InitBuild">
     <Message Text="Build Environment: $(Platform) $(Configuration) $(TargetOS) $(TargetRid)" />
 
