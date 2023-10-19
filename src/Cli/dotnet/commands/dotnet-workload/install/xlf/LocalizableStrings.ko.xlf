@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="DeletingWorkloadManifest">
         <source>Uninstalling workload manifest {0} version {1}...</source>
-        <target state="new">Uninstalling workload manifest {0} version {1}...</target>
+        <target state="translated">워크로드 매니페스트 {0} 버전 {1} 제거 중...</target>
         <note />
       </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
@@ -229,7 +229,7 @@
       </trans-unit>
       <trans-unit id="SdkVersionOptionNotSupported">
         <source>The --sdk-version option is no longer supported for this command.</source>
-        <target state="new">The --sdk-version option is no longer supported for this command.</target>
+        <target state="translated">--sdk-version 옵션은 더 이상 이 명령의 지원을 받지 않습니다.</target>
         <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">

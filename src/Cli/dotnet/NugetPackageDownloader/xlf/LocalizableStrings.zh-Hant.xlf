@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
-        <target state="new">Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
+        <target state="translated">已啟用封裝來源對應，但在指定的封裝識別碼下找不到來源: {0}。如需詳細資料，請參閱位於 https://aka.ms/nuget-package-source-mapping 的封裝來源對應文件。</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
-        <target state="new">Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
+        <target state="translated">已啟用封裝來源對應，但在指定的封裝識別碼下沒有對應的來源: {0}。如需詳細資料，請參閱位於 https://aka.ms/nuget-package-source-mapping 的封裝來源對應文件。</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">

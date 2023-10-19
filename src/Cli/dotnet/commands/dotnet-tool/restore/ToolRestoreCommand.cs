@@ -92,7 +92,7 @@ namespace Microsoft.DotNet.Tools.Tool.Restore
 
             ToolRestoreResult[] toolRestoreResults =
                 packagesFromManifest
-                    .AsParallel()
+                    .AsEnumerable()
                     .Select(package => InstallPackages(package, configFile))
                     .ToArray();
 

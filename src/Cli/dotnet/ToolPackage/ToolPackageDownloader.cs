@@ -26,6 +26,7 @@ using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using NuGet.Configuration;
+using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Cli.ToolPackage
 {
@@ -85,8 +86,12 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     {
                         nugetLogger = new NuGetConsoleLogger();
                     }
-                    var versionString = versionRange?.OriginalString ?? "*";
-                    versionRange = VersionRange.Parse(versionString);
+
+                    if (versionRange == null)
+                    {
+                        var versionString = "*";
+                        versionRange = VersionRange.Parse(versionString);
+                    }
 
                     var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
