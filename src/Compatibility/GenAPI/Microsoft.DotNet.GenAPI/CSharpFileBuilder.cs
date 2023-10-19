@@ -256,7 +256,7 @@ namespace Microsoft.DotNet.GenAPI
                     SyntaxFactory.AttributeArgument(SyntaxFactory.IdentifierName($"\"{assembly.Identity.Version}\"")))
                     .WithTrailingTrivia(SyntaxFactory.LineFeed));
             }
-                
+
             // [assembly: System.Runtime.CompilerServices.ReferenceAssembly]
             if (attributes.All(attribute => attribute.AttributeClass?.ToDisplayString() != typeof(ReferenceAssemblyAttribute).FullName))
             {
