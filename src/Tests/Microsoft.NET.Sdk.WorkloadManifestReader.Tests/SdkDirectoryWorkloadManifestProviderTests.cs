@@ -1275,7 +1275,7 @@ Microsoft.Net.Workload.Emscripten.net7"
 
         private string CreateMockInstallState(string featureBand, string installStateContents)
         {
-            var installStateFolder = Path.Combine(_fakeDotnetRootDirectory!, "metadata", "workloads", "8.0.200", "InstallState");
+            var installStateFolder = Path.Combine(_fakeDotnetRootDirectory!, "metadata", "workloads", featureBand, "InstallState");
             Directory.CreateDirectory(installStateFolder);
 
             string installStatePath = Path.Combine(installStateFolder, "default.json");
