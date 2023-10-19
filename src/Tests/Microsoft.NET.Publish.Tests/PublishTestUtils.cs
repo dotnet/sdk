@@ -5,7 +5,7 @@ namespace Microsoft.NET.Publish.Tests
 {
     internal static class PublishTestUtils
     {
-#if NET8_0
+#if NET9_0
 
         public static IEnumerable<object[]> SupportedTfms { get; } = new List<object[]>
         {
@@ -14,6 +14,7 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net6.0" },
             new object[] { "net7.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
+            new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         // This list should contain all supported TFMs after net5.0
@@ -23,6 +24,7 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net6.0" },
             new object[] { "net7.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
+            new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         // This list should contain all supported TFMs after net6.0
@@ -31,13 +33,22 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { "net6.0" },
             new object[] { "net7.0" },
             new object[] { ToolsetInfo.CurrentTargetFramework },
+            new object[] { ToolsetInfo.NextTargetFramework },
         };
 
         // This list should contain all supported TFMs after net7.0
         public static IEnumerable<object[]> Net7Plus { get; } = new List<object[]>
         {
             new object[] { "net7.0" },
-            new object[] { ToolsetInfo.CurrentTargetFramework }
+            new object[] { ToolsetInfo.CurrentTargetFramework },
+            new object[] { ToolsetInfo.NextTargetFramework },
+        };
+
+        // This list should contain all supported TFMs after net8.0
+        public static IEnumerable<object[]> Net8Plus { get; } = new List<object[]>
+        {
+            new object[] { ToolsetInfo.CurrentTargetFramework },
+            new object[] { ToolsetInfo.NextTargetFramework },
         };
 #else
 #error If building for a newer TFM, please update the values above to include both the old and new TFMs.

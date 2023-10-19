@@ -147,6 +147,11 @@
         <target state="translated">Nie znaleziono wersji obciążenia {0}, która została określona w: {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotFound">
+        <source>Workload version {0} was not found.</source>
+        <target state="translated">Nie znaleziono wersji obciążenia {0}.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

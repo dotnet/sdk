@@ -12,16 +12,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public int UpdateAdvertisingManifestsCallCount = 0;
         public int CalculateManifestUpdatesCallCount = 0;
         public int GetManifestPackageDownloadsCallCount = 0;
-        private IEnumerable<(ManifestVersionUpdate manifestUpdate,
-            Dictionary<WorkloadId, WorkloadDefinition> Workloads)> _manifestUpdates;
-        private string _tempDirManifestPath;
+        private readonly IEnumerable<ManifestUpdateWithWorkloads> _manifestUpdates;
 
-        public MockWorkloadManifestUpdater(IEnumerable<(ManifestVersionUpdate manifestUpdate,
-            Dictionary<WorkloadId, WorkloadDefinition> Workloads)> manifestUpdates = null, string tempDirManifestPath = null)
+        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null)
         {
-            _manifestUpdates = manifestUpdates ?? new List<(ManifestVersionUpdate manifestUpdate,
-                Dictionary<WorkloadId, WorkloadDefinition> Workloads)>();
-            _tempDirManifestPath = tempDirManifestPath;
+            _manifestUpdates = manifestUpdates ?? new List<ManifestUpdateWithWorkloads>();
         }
 
         public Task UpdateAdvertisingManifestsAsync(bool includePreview, DirectoryPath? cachePath = null, IEnumerable<WorkloadManifestInfo> manifests = null)
@@ -30,9 +25,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return Task.CompletedTask;
         }
 
-        public IEnumerable<(
-            ManifestVersionUpdate manifestUpdate,
-            Dictionary<WorkloadId, WorkloadDefinition> Workloads)> CalculateManifestUpdates()
+        public IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates()
         {
             CalculateManifestUpdatesCallCount++;
             return _manifestUpdates;
@@ -54,11 +47,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> manifestRollbackContents = null)
         {
-            return _manifestUpdates.Select(t => t.manifestUpdate);
+            return _manifestUpdates.Select(t => t.ManifestUpdate);
         }
 
-        public Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync() => throw new System.NotImplementedException();
-        public IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads) => throw new System.NotImplementedException();
+        public Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync() => throw new NotImplementedException();
+        public IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads) => throw new NotImplementedException();
         public void DeleteUpdatableWorkloadsFile() { }
     }
 }

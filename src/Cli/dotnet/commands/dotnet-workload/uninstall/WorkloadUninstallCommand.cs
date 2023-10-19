@@ -16,37 +16,35 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
         private readonly IReadOnlyCollection<WorkloadId> _workloadIds;
         private readonly IWorkloadResolver _workloadResolver;
         private readonly IInstaller _workloadInstaller;
+        protected readonly IWorkloadResolverFactory _workloadResolverFactory;
+        private readonly string _dotnetPath;
         private readonly ReleaseVersion _sdkVersion;
+        private readonly string _userProfileDir;
+        
 
         public WorkloadUninstallCommand(
             ParseResult parseResult,
             IReporter reporter = null,
-            IWorkloadResolver workloadResolver = null,
-            INuGetPackageDownloader nugetPackageDownloader = null,
-            string dotnetDir = null,
-            string version = null,
-            string userProfileDir = null)
+            IWorkloadResolverFactory workloadResolverFactory = null,
+            INuGetPackageDownloader nugetPackageDownloader = null)
             : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
         {
             _workloadIds = parseResult.GetValue(WorkloadUninstallCommandParser.WorkloadIdArgument)
                 .Select(workloadId => new WorkloadId(workloadId)).ToList().AsReadOnly();
 
-            var creationParameters = new WorkloadResolverFactory.CreationParameters()
-            {
-                DotnetPath = dotnetDir,
-                UserProfileDir = userProfileDir,
-                GlobalJsonStartDir = null,
-                SdkVersionFromOption = parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption),
-                VersionForTesting = version,
-                CheckIfFeatureBandManifestExists = true,
-                WorkloadResolverForTesting = workloadResolver,
-                UseInstalledSdkVersionForResolver = true
-            };
+            _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
-            var creationResult = WorkloadResolverFactory.Create(creationParameters);
+            if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
+            {
+                throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            }
+
+            var creationResult = _workloadResolverFactory.Create();
             _workloadResolver = creationResult.WorkloadResolver;
 
+            _dotnetPath = creationResult.DotnetPath;
             _sdkVersion = creationResult.SdkVersion;
+            _userProfileDir = creationResult.UserProfileDir;
 
             var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
             _workloadInstaller = WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand, _workloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, creationResult.DotnetPath);
@@ -74,12 +72,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
                             throw new Exception(string.Format(LocalizableStrings.WorkloadNotInstalled, string.Join(" ", unrecognizedWorkloads)));
                         }
 
-                        foreach (var workloadId in _workloadIds)
-                        {
-                            Reporter.WriteLine(string.Format(LocalizableStrings.RemovingWorkloadInstallationRecord, workloadId));
-                            _workloadInstaller.GetWorkloadInstallationRecordRepository()
-                                .DeleteWorkloadInstallationRecord(workloadId, featureBand);
-                        }
+                        _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
                         _workloadInstaller.GarbageCollectInstalledWorkloadPacks();
 

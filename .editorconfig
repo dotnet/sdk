@@ -316,7 +316,7 @@ dotnet_diagnostic.CA1838.severity = warning
 # Use 'Environment.CurrentManagedThreadId'
 dotnet_diagnostic.CA1840.severity = warning
 # Consider calling ConfigureAwait on the awaited task
-dotnet_diagnostic.CA2007.severity = warning
+dotnet_diagnostic.CA2007.severity = none
 # Do not create tasks without passing a TaskScheduler
 dotnet_diagnostic.CA2008.severity = warning
 # Use ValueTasks correctly

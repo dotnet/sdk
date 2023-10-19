@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                }));
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options).ConfigureAwait(false);
+            await engine.Execute(options);
 
             ValidateInstantiatedProject(workingDir);
         }
@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                }));
 
             VerificationEngine engine = new(_logger);
-            await engine.Execute(options).ConfigureAwait(false);
+            await engine.Execute(options);
 
             ValidateInstantiatedProject(workingDir);
         }

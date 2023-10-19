@@ -147,6 +147,11 @@
         <target state="translated">Verze úlohy {0}, která byla zadána v {1}, nebyla nalezena.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotFound">
+        <source>Workload version {0} was not found.</source>
+        <target state="translated">{0} verze úlohy se nenašla.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

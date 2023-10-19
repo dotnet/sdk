@@ -7,6 +7,11 @@
         <target state="translated">{0} バージョン {1} のダウンロードに失敗しました。</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">パッケージ ソース マッピングが有効になっていますが、指定されたパッケージ ID {0} にソースが見つかりません。詳細については、https://aka.ms/nuget-package-source-mapping にあるパッケージ ソース マッピングのドキュメントを参照してください。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
         <source>Failed to load NuGet source {0}</source>
         <target state="translated">NuGet ソース {0} の読み込みに失敗しました</target>
@@ -15,6 +20,11 @@
       <trans-unit id="FailedToLoadNuGetSourceSourceIsNotValid">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
         <target state="translated">NuGet ソース {0} の読み込みに失敗しました: このソースが有効ではありません。今後の処理ではスキップされます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">パッケージ ソース マッピングが有効になっていますが、指定されたパッケージ ID {0} にソースがマッピングされていません。詳細については、https://aka.ms/nuget-package-source-mapping にあるパッケージ ソース マッピングのドキュメントを参照してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">

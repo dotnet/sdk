@@ -20,7 +20,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             Assert.False(WellKnownSearchFilters.MatchesAllCriteria(templateMatchInfo));
             Assert.False(WellKnownSearchFilters.MatchesAtLeastOneCriteria(templateMatchInfo));
             Assert.Empty(templateMatchInfo.GetInvalidParameterNames());
-            Assert.Equal(0, templateMatchInfo.GetValidTemplateParameters().Count);
+            Assert.Empty(templateMatchInfo.GetValidTemplateParameters());
         }
 
         [Fact(DisplayName = nameof(NameExactMatch_ReportsCorrectly))]

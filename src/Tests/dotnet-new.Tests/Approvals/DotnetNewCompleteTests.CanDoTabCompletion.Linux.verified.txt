@@ -1,7 +1,6 @@
 ﻿apicontroller
 blazor
 blazorwasm
-blazorwasm-empty
 buildprops
 buildtargets
 classlib

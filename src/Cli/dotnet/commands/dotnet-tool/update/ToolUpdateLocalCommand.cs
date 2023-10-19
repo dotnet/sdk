@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
@@ -17,7 +18,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly IToolManifestFinder _toolManifestFinder;
         private readonly IToolManifestEditor _toolManifestEditor;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
-        private readonly IToolPackageInstaller _toolPackageInstaller;
+        private readonly IToolPackageDownloader _toolPackageDownloader;
         private readonly ToolInstallLocalInstaller _toolLocalPackageInstaller;
         private readonly Lazy<ToolInstallLocalCommand> _toolInstallLocalCommand;
         private readonly IReporter _reporter;
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
         public ToolUpdateLocalCommand(
             ParseResult parseResult,
-            IToolPackageInstaller toolPackageInstaller = null,
+            IToolPackageDownloader toolPackageDownloader = null,
             IToolManifestFinder toolManifestFinder = null,
             IToolManifestEditor toolManifestEditor = null,
             ILocalToolsResolverCache localToolsResolverCache = null,
@@ -39,29 +40,30 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             _reporter = (reporter ?? Reporter.Output);
 
-            if (toolPackageInstaller == null)
+            if (toolPackageDownloader == null)
             {
                 (IToolPackageStore,
                     IToolPackageStoreQuery,
-                    IToolPackageInstaller installer) toolPackageStoresAndInstaller
-                        = ToolPackageFactory.CreateToolPackageStoresAndInstaller(
+                    IToolPackageDownloader downloader) toolPackageStoresAndDownloader
+                        = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
                             additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()));
-                _toolPackageInstaller = toolPackageStoresAndInstaller.installer;
+                _toolPackageDownloader = toolPackageStoresAndDownloader.downloader;
             }
             else
             {
-                _toolPackageInstaller = toolPackageInstaller;
+                _toolPackageDownloader = toolPackageDownloader;
             }
 
             _toolManifestFinder = toolManifestFinder ??
                                   new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
-            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageInstaller);
+
+            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader);
             _toolInstallLocalCommand = new Lazy<ToolInstallLocalCommand>(
                 () => new ToolInstallLocalCommand(
                     parseResult,
-                    _toolPackageInstaller,
+                    _toolPackageDownloader,
                     _toolManifestFinder,
                     _toolManifestEditor,
                     _localToolsResolverCache,
@@ -142,3 +144,4 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         }
     }
 }
+

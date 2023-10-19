@@ -3,6 +3,12 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.IO;
+using System.Linq;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -22,26 +28,34 @@ namespace Microsoft.DotNet.Cli
             Description = CommonStrings.WorkloadInfoDescription
         };
 
+        public static readonly CliOption<bool> VersionOption = new("--version")
+        {
+            Description = CommonStrings.WorkloadVersionDescription
+        };
+
         public static CliCommand GetCommand()
         {
             Command.Options.Add(InfoOption);
+            Command.Options.Add(VersionOption);
             return Command;
         }
 
-        internal static void ShowWorkloadsInfo(ParseResult parseResult = null, IWorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null)
+        internal static string GetWorkloadsVersion(WorkloadInfoHelper workloadInfoHelper = null)
         {
-            if (workloadInfoHelper != null)
-            {
-                workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
-            }
-            else
-            {
-                workloadInfoHelper ??= new WorkloadInfoHelper(false);
-            }
+            workloadInfoHelper ??= new WorkloadInfoHelper(false);
+
+            return workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
+        }
+
+        internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null)
+        {
+            workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
             IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
             InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
             reporter ??= Utils.Reporter.Output;
             string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
+
+            reporter.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
 
             if (installedWorkloads.Count == 0)
             {
@@ -59,7 +73,7 @@ namespace Microsoft.DotNet.Cli
                 const int align = 10;
                 const string separator = "   ";
 
-                reporter.WriteLine($" {'[' + workload.Key + ']'}");
+                reporter.WriteLine($" [{workload.Key}]");
 
                 reporter.Write($"{separator}{CommonStrings.WorkloadSourceColumn}:");
                 reporter.WriteLine($" {workload.Value,align}");
@@ -82,7 +96,13 @@ namespace Microsoft.DotNet.Cli
             if (parseResult.HasOption(InfoOption) && parseResult.RootSubCommandResult() == "workload")
             {
                 ShowWorkloadsInfo(parseResult);
-                Utils.Reporter.Output.WriteLine("");
+                Reporter.Output.WriteLine(string.Empty);
+                return 0;
+            }
+            else if (parseResult.HasOption(VersionOption) && parseResult.RootSubCommandResult() == "workload")
+            {
+                Reporter.Output.WriteLine(GetWorkloadsVersion());
+                Reporter.Output.WriteLine(string.Empty);
                 return 0;
             }
             return parseResult.HandleMissingCommand();
@@ -105,7 +125,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Validators.Add(commandResult =>
             {
-                if (commandResult.GetResult(InfoOption) is null && !commandResult.Children.Any(child => child is CommandResult))
+                if (commandResult.GetResult(InfoOption) is null && commandResult.GetResult(VersionOption) is null && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
                 {
                     commandResult.AddError(Tools.CommonLocalizableStrings.RequiredCommandNotPassed);
                 }

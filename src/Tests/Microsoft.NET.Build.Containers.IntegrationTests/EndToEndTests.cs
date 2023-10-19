@@ -209,12 +209,15 @@ public class EndToEndTests : IDisposable
         return publishDirectory;
     }
 
-    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/33858")]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task EndToEnd_NoAPI_Web(bool addPackageReference)
+
+    [DockerAvailableTheory()]
+    [InlineData("webapi", false)]
+    [InlineData("webapi", true)]
+    [InlineData("worker", false)]
+    [InlineData("worker", true)]
+    public async Task EndToEnd_NoAPI_ProjectType(string projectType, bool addPackageReference)
     {
-        DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, $"CreateNewImageTest_{addPackageReference}"));
+        DirectoryInfo newProjectDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, $"CreateNewImageTest_{projectType}_{addPackageReference}"));
         DirectoryInfo privateNuGetAssets = new(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
 
         if (newProjectDir.Exists)
@@ -230,7 +233,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Create();
         privateNuGetAssets.Create();
 
-        new DotnetNewCommand(_testOutput, "webapi", "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, projectType, "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
@@ -269,14 +272,14 @@ public class EndToEndTests : IDisposable
         }
 
         string imageName = NewImageName();
-        string imageTag = "1.0";
+        string imageTag = $"1.0-{projectType}-{addPackageReference}";
 
         // Build & publish the project
         CommandResult commandResult = new DotnetCommand(
             _testOutput,
             "publish",
-            "/p:publishprofile=DefaultContainer",
-            "/p:runtimeidentifier=linux-x64",
+            "/p:PublishProfile=DefaultContainer",
+            "/p:RuntimeIdentifier=linux-x64",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
@@ -301,53 +304,83 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
-        var containerName = "test-container-1";
+        var containerName = $"test-container-1-{projectType}-{addPackageReference}";
         CommandResult processResult = ContainerCli.RunCommand(
             _testOutput,
             "--rm",
             "--name",
             containerName,
-            "--publish",
-            "5017:8080",
+            "-P",
             "--detach",
             $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
         .Execute();
         processResult.Should().Pass();
         Assert.NotNull(processResult.StdOut);
-
         string appContainerId = processResult.StdOut.Trim();
 
         bool everSucceeded = false;
 
-        HttpClient client = new();
 
-        // Give the server a moment to catch up, but no more than necessary.
-        for (int retry = 0; retry < 10; retry++)
+
+        if (projectType == "webapi")
         {
-            try
+            var portCommand =
+            ContainerCli.PortCommand(_testOutput, containerName, 8080)
+                .Execute();
+            portCommand.Should().Pass();
+            var port = portCommand.StdOut.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
+            _testOutput.WriteLine($"Discovered port was '{port}'");
+            var tempUri = new Uri($"http://{port}", UriKind.Absolute);
+            var appUri = new UriBuilder(tempUri)
             {
-                var response = await client.GetAsync("http://localhost:5017/weatherforecast").ConfigureAwait(false);
-
-                if (response.IsSuccessStatusCode)
+                Host = "localhost"
+            }.Uri;
+            HttpClient client = new();
+            client.BaseAddress = appUri;
+            // Give the server a moment to catch up, but no more than necessary.
+            for (int retry = 0; retry < 10; retry++)
+            {
+                try
                 {
-                    everSucceeded = true;
-                    break;
+                    var response = await client.GetAsync($"weatherforecast").ConfigureAwait(false);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        everSucceeded = true;
+                        break;
+                    }
                 }
+                catch { }
+
+                await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             }
-            catch { }
+            ContainerCli.LogsCommand(_testOutput, appContainerId)
+            .Execute()
+            .Should().Pass();
+            Assert.True(everSucceeded, $"{appUri}weatherforecast never responded.");
 
-            await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+            ContainerCli.StopCommand(_testOutput, appContainerId)
+           .Execute()
+           .Should().Pass();
         }
+        else if (projectType == "worker")
+        {
+            // the worker template needs a second to start up and emit the logs we are looking for
+            await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+            var containerLogs =
+            ContainerCli.LogsCommand(_testOutput, appContainerId)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Worker running at");
 
-        ContainerCli.LogsCommand(_testOutput, appContainerId)
+            ContainerCli.StopCommand(_testOutput, appContainerId)
             .Execute()
             .Should().Pass();
-
-        Assert.True(everSucceeded, "http://localhost:5017/weatherforecast never responded.");
-
-        ContainerCli.StopCommand(_testOutput, appContainerId)
-            .Execute()
-            .Should().Pass();
+        }
+        else
+        {
+            throw new NotImplementedException("Unknown project type");
+        }
 
         newProjectDir.Delete(true);
         privateNuGetAssets.Delete(true);

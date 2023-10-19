@@ -72,6 +72,11 @@
         <target state="translated">インストール ソース</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionDescription">
+        <source>Display the currently installed workload version.</source>
+        <target state="translated">現在インストールされているワークロードのバージョンを表示します。</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -31,5 +31,6 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads) => throw new NotImplementedException();
         WorkloadResolver IWorkloadResolver.CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider) => throw new NotImplementedException();
         WorkloadManifest IWorkloadResolver.GetManifestFromWorkload(WorkloadId workloadId) => throw new NotImplementedException();
+        public IWorkloadManifestProvider GetWorkloadManifestProvider() => throw new NotImplementedException();
     }
 }

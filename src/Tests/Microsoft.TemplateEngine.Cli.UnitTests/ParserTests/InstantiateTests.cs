@@ -205,9 +205,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
         [Theory]
-#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(CanEvaluateTemplateToRunData))]
-#pragma warning restore CA1825 // Avoid zero-length array allocations.
         internal void CanEvaluateTemplateToRun(string command, string templateSet, string? defaultLanguage, string? expectedIdentitiesStr)
         {
             TemplateGroup templateGroup = TemplateGroup.FromTemplateList(
@@ -304,9 +302,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
         [Theory]
-#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(CanParseTemplateOptionsData))]
-#pragma warning restore CA1825 // Avoid zero-length array allocations.
         internal void CanParseTemplateOptions(string command, string parameterName, string parameterType, string? defaultValue, string? defaultIfNoOptionValue, string? expectedValue)
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -350,9 +346,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
         [Theory]
-#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(CanParseChoiceTemplateOptionsData))]
-#pragma warning restore CA1825 // Avoid zero-length array allocations.
         internal void CanParseChoiceTemplateOptions(string command, string parameterName, string parameterValues, string? defaultIfNoOptionValue, string? expectedValue)
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -396,9 +390,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
         [Theory]
-#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(CanParseMultiChoiceTemplateOptionsData))]
-#pragma warning restore CA1825 // Avoid zero-length array allocations.
         internal void CanParseMultiChoiceTemplateOptions(string command, string parameterName, string parameterValues, string? defaultIfNoOptionValue, string? expectedValue)
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -461,9 +453,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
         [Theory]
-#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(CanDetectParseErrorsTemplateOptionsData))]
-#pragma warning restore CA1825 // Avoid zero-length array allocations.
         internal void CanDetectParseErrorsTemplateOptions(
             string command,
             string parameterName,
@@ -507,9 +497,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
         [Theory]
-#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(CanDetectParseErrorsChoiceTemplateOptionsData))]
-#pragma warning restore CA1825 // Avoid zero-length array allocations.
         internal void CanDetectParseErrorsChoiceTemplateOptions(
               string command,
               string parameterName,

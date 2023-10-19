@@ -48,7 +48,7 @@ public class RegistryTests : IDisposable
             containerTag,
             "linux-x64",
             ridgraphfile,
-            cancellationToken: default).ConfigureAwait(false);
+            cancellationToken: default);
 
         Assert.NotNull(downloadedImage);
     }
