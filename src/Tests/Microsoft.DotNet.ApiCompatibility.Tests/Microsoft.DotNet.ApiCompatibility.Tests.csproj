@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Compile Include="..\Microsoft.DotNet.ApiSymbolExtensions.Tests\SymbolFactory.cs" />
+    <Compile Include="..\Microsoft.DotNet.ApiSymbolExtensions.Tests\TempDirectory.cs" />
   </ItemGroup>
 
   <ItemGroup>

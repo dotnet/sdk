@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -97,7 +98,7 @@ namespace Microsoft.DotNet.GenAPI
         ///   "non-empty" means either unmanaged types like ints and enums, or reference types that are not the root.
         /// - A struct containing generic fields cannot have struct layout cycles.
         /// </summary>
-        public static IEnumerable<SyntaxNode> SynthesizeDummyFields(this INamedTypeSymbol namedType, ISymbolFilter symbolFilter)
+        public static IEnumerable<SyntaxNode> SynthesizeDummyFields(this INamedTypeSymbol namedType, ISymbolFilter symbolFilter, ISymbolFilter? attributeDataSymbolFilter)
         {
             // Collect all excluded fields
             IEnumerable<IFieldSymbol> excludedFields = namedType.GetMembers()
@@ -124,9 +125,13 @@ namespace Microsoft.DotNet.GenAPI
                 // Add a dummy field for each generic excluded field
                 foreach (IFieldSymbol genericField in genericTypedFields)
                 {
+                    ImmutableArray<AttributeData> genericFieldAttributes = genericField.GetAttributes()
+                        .ExcludeWithFilter(attributeDataSymbolFilter)
+                        .ExcludeNonVisibleOutsideOfAssembly(symbolFilter);
+
                     yield return CreateDummyField(genericField.Type.ToDisplayString(),
                         NormalizeIdentifier(genericField.Name),
-                        FromAttributeData(genericField.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(symbolFilter)),
+                        FromAttributeData(genericFieldAttributes),
                         namedType.IsReadOnly);
                 }
 

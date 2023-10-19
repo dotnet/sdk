@@ -96,13 +96,15 @@ namespace Microsoft.DotNet.GenAPI
         {
             bool resolveAssemblyReferences = context.AssemblyReferences?.Length > 0;
 
-            IAssemblySymbolLoader loader = new AssemblySymbolLoader(resolveAssemblyReferences, context.RespectInternals);
-
+            // Create, configure and execute the assembly loader.
+            AssemblySymbolLoader loader = new(resolveAssemblyReferences, context.RespectInternals);
             if (context.AssemblyReferences is not null)
             {
                 loader.AddReferenceSearchPaths(context.AssemblyReferences);
             }
+            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(context.Assemblies);
 
+            // Configure the symbol filter
             CompositeSymbolFilter compositeSymbolFilter = new CompositeSymbolFilter()
                 .Add(new ImplicitSymbolFilter())
                 .Add(new AccessibilitySymbolFilter(
@@ -110,27 +112,25 @@ namespace Microsoft.DotNet.GenAPI
                     includeEffectivelyPrivateSymbols: true,
                     includeExplicitInterfaceImplementationSymbols: true));
 
-            if (context.ExcludeAttributesFiles is not null)
-            {
-                compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeAttributesFiles));
-            }
-
             if (context.ExcludeApiFiles is not null)
             {
                 compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeApiFiles));
             }
 
-            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(context.Assemblies);
+            string headerFileText = ReadHeaderFile(context.HeaderFile);
+
+            // Invoke the CSharpFileBuilder for each directly loaded assembly.
             foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
             {
-                if (assemblySymbol == null)
+                if (assemblySymbol is null)
                     continue;
 
                 using TextWriter textWriter = GetTextWriter(context.OutputPath, assemblySymbol.Name);
-                textWriter.Write(ReadHeaderFile(context.HeaderFile));
+                textWriter.Write(headerFileText);
 
                 using CSharpFileBuilder fileBuilder = new(logger,
                     compositeSymbolFilter,
+                    context.ExcludeAttributesFiles is not null ? new DocIdSymbolFilter(context.ExcludeAttributesFiles) : null,
                     textWriter,
                     context.ExceptionMessage,
                     context.IncludeAssemblyAttributes,

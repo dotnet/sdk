@@ -13,18 +13,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     public static class AttributeDataExtensions
     {
         /// <summary>
-        /// Determines if an <see cref="AttributeData"/> object is visible outside of the containing assembly.
-        /// By default also verifies the visibility of the attribute's arguments.
-        /// </summary>
-        public static bool IsVisibleOutsideOfAssembly(this AttributeData attributeData,
-            ISymbolFilter symbolFilter,
-            bool excludeWithTypeArgumentsNotVisibleOutsideOfAssembly = true) =>
-            attributeData.AttributeClass != null &&
-            symbolFilter.Include(attributeData.AttributeClass) &&
-            (!excludeWithTypeArgumentsNotVisibleOutsideOfAssembly ||
-             !HasTypeArgumentsNotVisibleOutsideOfAssembly(attributeData, symbolFilter));
-
-        /// <summary>
         /// Excludes <see cref="AttributeData"/> that is not visible outside of an assembly.
         /// </summary>
         public static ImmutableArray<AttributeData> ExcludeNonVisibleOutsideOfAssembly(this ImmutableArray<AttributeData> attributes,
@@ -33,13 +21,36 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             attributes.Where(attribute => attribute.IsVisibleOutsideOfAssembly(symbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly)).ToImmutableArray();
 
         /// <summary>
-        /// Checks if an <see cref="AttributeData"/> has <see cref="INamedTypeSymbol"/> arguments that point to a <see cref="Type"/> that isn't visible outside of the containing assembly.
+        /// Excludes <see cref="AttributeData"/> based on a passed in filter.
         /// </summary>
-        public static bool HasTypeArgumentsNotVisibleOutsideOfAssembly(this AttributeData attributeData, ISymbolFilter symbolFilter) =>
+        /// <returns></returns>
+        public static ImmutableArray<AttributeData> ExcludeWithFilter(this ImmutableArray<AttributeData> attributes, ISymbolFilter? symbolFilter)
+        {
+            if (symbolFilter is null)
+                return attributes;
+
+            return attributes
+                .Where(attributeData => attributeData.AttributeClass is not null && symbolFilter.Include(attributeData.AttributeClass))
+                .ToImmutableArray();
+        }
+
+        // Checks if an AttributeData has INamedTypeSymbol arguments that point to a type that
+        // isn't visible outside of the containing assembly.
+        private static bool HasTypeArgumentsNotVisibleOutsideOfAssembly(this AttributeData attributeData, ISymbolFilter symbolFilter) =>
             attributeData.NamedArguments.Select(namedArgument => namedArgument.Value)
                 .Concat(attributeData.ConstructorArguments)
                 .Any(typedConstant => typedConstant.Kind == TypedConstantKind.Type
                     && typedConstant.Value is INamedTypeSymbol namedTypeSymbol
                     && !symbolFilter.Include(namedTypeSymbol));
+
+        // Determines if an AttributeData object is visible outside of the containing assembly.
+        // By default also verifies the visibility of the attribute's arguments.
+        private static bool IsVisibleOutsideOfAssembly(this AttributeData attributeData,
+            ISymbolFilter symbolFilter,
+            bool excludeWithTypeArgumentsNotVisibleOutsideOfAssembly = true) =>
+            attributeData.AttributeClass != null &&
+            symbolFilter.Include(attributeData.AttributeClass) &&
+            (!excludeWithTypeArgumentsNotVisibleOutsideOfAssembly ||
+             !HasTypeArgumentsNotVisibleOutsideOfAssembly(attributeData, symbolFilter));
     }
 }

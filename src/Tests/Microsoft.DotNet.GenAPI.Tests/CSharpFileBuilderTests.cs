@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
+            ISymbolFilter assemblyDataSymbolFilter = null,
             [CallerMemberName] string assemblyName = "")
         {
             StringWriter stringWriter = new();
@@ -39,7 +40,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 .Add(new AccessibilitySymbolFilter(includeInternalSymbols,
                     includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols));
             IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(new ConsoleLog(MessageImportance.Low),
-                compositeFilter, stringWriter, null, false, MetadataReferences);
+                compositeFilter, assemblyDataSymbolFilter, stringWriter, null, false, MetadataReferences);
 
             using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
             AssemblySymbolLoader assemblySymbolLoader = new(resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
@@ -2734,6 +2735,51 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """,
                 expected: expected,
                 includeInternalSymbols: includeInternalSymbols);
+        }
+
+        [Fact]
+        public void TestAttributesExcludedWithFilter()
+        {
+            using TempDirectory root = new();
+            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
+            File.WriteAllText(filePath, "T:A.AnyTestAttribute");
+
+            RunTest(original: """
+                    namespace A
+                    {
+                        public partial class AnyTestAttribute : System.Attribute
+                        {
+                            public AnyTestAttribute(System.Type xType)
+                            {
+                                XType = xType;
+                            }
+
+                            public System.Type XType { get; set; }
+                        }
+
+                        [AnyTest(typeof(string))]
+                        [System.Obsolete]
+                        public class PublicClass { }
+                    }
+                    """,
+                expected: """
+                    namespace A
+                    {
+                        public partial class AnyTestAttribute : System.Attribute
+                        {
+                            public AnyTestAttribute(System.Type xType) { }
+
+                            public System.Type XType { get { throw null; } set { } }
+                        }
+
+                        [System.Obsolete]
+                        public partial class PublicClass
+                        {
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false,
+                assemblyDataSymbolFilter: new DocIdSymbolFilter(new string[] { filePath }));
         }
 
         [Fact]
