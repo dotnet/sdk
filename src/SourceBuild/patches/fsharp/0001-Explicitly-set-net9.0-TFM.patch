@@ -5,10 +5,12 @@ Subject: [PATCH] Explicitly use net9.0 TFM
 
 Backport: https://github.com/dotnet/source-build/issues/3663
 ---
+ Directory.Build.props                         |  4 +--
  buildtools/AssemblyCheck/AssemblyCheck.fsproj |  2 +-
  .../FSharp.Compiler.Service_notshipped.fsproj |  2 +-
  buildtools/fslex/fslex.fsproj                 |  2 +-
  buildtools/fsyacc/fsyacc.fsproj               |  2 +-
+ eng/build.sh                                  |  6 ++--
  .../EditorService/EditorService.fsproj        |  2 +-
  src/Compiler/FSharp.Compiler.Service.fsproj   |  6 ++--
  .../Microsoft.FSharp.Compiler.fsproj          |  2 +-
@@ -38,8 +40,23 @@ Backport: https://github.com/dotnet/source-build/issues/3663
  tests/fsharp/FSharpSuite.Tests.fsproj         |  4 +--
  .../Sample_ConsoleApp_net7.fsproj             |  6 ++--
  .../Sample_ConsoleApp_net7.fsproj             |  6 ++--
- 33 files changed, 68 insertions(+), 68 deletions(-)
+ 35 files changed, 73 insertions(+), 73 deletions(-)
 
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 879bd8941..161d115ad 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -30,8 +30,8 @@
+     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts/</ArtifactsDir>
+     <OutputPath>$(ArtifactsDir)/bin/$(MSBuildProjectName)/$(Configuration)/</OutputPath>
+     <IntermediateOutputPath>$(ArtifactsDir)obj/$(MSBuildProjectName)/$(Configuration)/</IntermediateOutputPath>
+-    <FsLexPath>$(ArtifactsDir)/bin/fslex/$(Configuration)/net8.0/fslex.dll</FsLexPath>
+-    <FsYaccPath>$(ArtifactsDir)/bin/fsyacc/$(Configuration)/net8.0/fsyacc.dll</FsYaccPath>
++    <FsLexPath>$(ArtifactsDir)/bin/fslex/$(Configuration)/net9.0/fslex.dll</FsLexPath>
++    <FsYaccPath>$(ArtifactsDir)/bin/fsyacc/$(Configuration)/net9.0/fsyacc.dll</FsYaccPath>
+   </PropertyGroup>
+ 
+   <Import Project="$(MSBuildThisFileDirectory)/eng/Versions.props" Condition="'$(DISABLE_ARCADE)' == 'true'"/>
 diff --git a/buildtools/AssemblyCheck/AssemblyCheck.fsproj b/buildtools/AssemblyCheck/AssemblyCheck.fsproj
 index 46ffb722c..9d391689d 100644
 --- a/buildtools/AssemblyCheck/AssemblyCheck.fsproj
@@ -92,6 +109,30 @@ index fc072b7cf..4110186e5 100644
      <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
      <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
      <RollForward Condition="'$(BUILDING_USING_DOTNET)' == 'true'">LatestMajor</RollForward>
+diff --git a/eng/build.sh b/eng/build.sh
+index 3b992d6bf..3a4444081 100755
+--- a/eng/build.sh
++++ b/eng/build.sh
+@@ -264,8 +264,8 @@ function BuildSolution {
+       MSBuild "$repo_root/buildtools/buildtools.proj" /restore "$bltools" /p:Configuration=$bootstrap_config
+ 
+       mkdir -p "$bootstrap_dir"
+-      cp -pr $artifacts_dir/bin/fslex/$bootstrap_config/net8.0 $bootstrap_dir/fslex
+-      cp -pr $artifacts_dir/bin/fsyacc/$bootstrap_config/net8.0 $bootstrap_dir/fsyacc
++      cp -pr $artifacts_dir/bin/fslex/$bootstrap_config/net9.0 $bootstrap_dir/fslex
++      cp -pr $artifacts_dir/bin/fsyacc/$bootstrap_config/net9.0 $bootstrap_dir/fsyacc
+     fi
+     if [ ! -f "$bootstrap_dir/fsc.exe" ]; then
+       local bltools=""
+@@ -274,7 +274,7 @@ function BuildSolution {
+       fi
+       BuildMessage="Error building bootstrap"
+       MSBuild "$repo_root/Proto.sln" /restore "$bltools" /p:Configuration=$bootstrap_config
+-      cp -pr $artifacts_dir/bin/fsc/$bootstrap_config/net8.0 $bootstrap_dir/fsc
++      cp -pr $artifacts_dir/bin/fsc/$bootstrap_config/net9.0 $bootstrap_dir/fsc
+     fi
+   fi
+ 
 diff --git a/fcs-samples/EditorService/EditorService.fsproj b/fcs-samples/EditorService/EditorService.fsproj
 index e4103999f..fe08d0cc4 100644
 --- a/fcs-samples/EditorService/EditorService.fsproj
