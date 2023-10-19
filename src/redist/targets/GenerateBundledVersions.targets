@@ -96,13 +96,13 @@
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
       
       <!-- TODO: Once .NET 8.0.X has released, update these version numbers to 8.0.$(VersionFeature80) -->
-      <_NET80RuntimePackVersion>8.0.0-preview.7.23375.6</_NET80RuntimePackVersion>
-      <_NET80TargetingPackVersion>8.0.0-preview.7.23375.6</_NET80TargetingPackVersion>
-      <_NET80WebAssemblyPackVersion>8.0.0-preview.7.23375.6</_NET80WebAssemblyPackVersion>
-      <_WindowsDesktop80RuntimePackVersion>8.0.0-preview.7.23376.1</_WindowsDesktop80RuntimePackVersion>
-      <_WindowsDesktop80TargetingPackVersion>8.0.0-preview.7.23376.1</_WindowsDesktop80TargetingPackVersion>
-      <_AspNet80RuntimePackVersion>8.0.0-preview.7.23375.9</_AspNet80RuntimePackVersion>
-      <_AspNet80TargetingPackVersion>8.0.0-preview.7.23375.9</_AspNet80TargetingPackVersion>
+      <_NET80RuntimePackVersion>8.0.0-rc.2.23479.6</_NET80RuntimePackVersion>
+      <_NET80TargetingPackVersion>8.0.0-rc.2.23479.6</_NET80TargetingPackVersion>
+      <_NET80WebAssemblyPackVersion>8.0.0-rc.2.23479.6</_NET80WebAssemblyPackVersion>
+      <_WindowsDesktop80RuntimePackVersion>8.0.0-rc.2.23479.10</_WindowsDesktop80RuntimePackVersion>
+      <_WindowsDesktop80TargetingPackVersion>8.0.0-rc.2.23479.10</_WindowsDesktop80TargetingPackVersion>
+      <_AspNet80RuntimePackVersion>8.0.0-rc.2.23480.2</_AspNet80RuntimePackVersion>
+      <_AspNet80TargetingPackVersion>8.0.0-rc.2.23480.2</_AspNet80TargetingPackVersion>
 
       <_NET70RuntimePackVersion>7.0.$(VersionFeature70)</_NET70RuntimePackVersion>
       <_NET70TargetingPackVersion>7.0.$(VersionFeature70)</_NET70TargetingPackVersion>
