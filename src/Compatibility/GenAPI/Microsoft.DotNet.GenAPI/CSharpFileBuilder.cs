@@ -277,7 +277,7 @@ namespace Microsoft.DotNet.GenAPI
 
         private SyntaxNode GenerateForwardedTypeAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
         {
-            foreach (INamedTypeSymbol symbol in assembly.GetForwardedTypes().Where(_attributeDataSymbolFilter.Include))
+            foreach (INamedTypeSymbol symbol in assembly.GetForwardedTypes().Where(_symbolFilter.Include))
             {
                 if (symbol.TypeKind != TypeKind.Error)
                 {
