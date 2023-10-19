@@ -92,7 +92,7 @@
             DiscoverSymbolsTarballs;
             ExtractSymbolsTarballs">
     <PropertyGroup>
-      <UnifiedSymbolsTarball>$(OutputPath)dotnet-symbols-$(MicrosoftSourceBuildIntermediateInstallerVersion)-$(TargetRid).tar.gz</UnifiedSymbolsTarball>
+      <UnifiedSymbolsTarball>$(OutputPath)dotnet-symbols-all-$(MicrosoftSourceBuildIntermediateInstallerVersion)-$(TargetRid).tar.gz</UnifiedSymbolsTarball>
     </PropertyGroup>
 
     <Exec Command="tar --numeric-owner -czf $(UnifiedSymbolsTarball) *"
@@ -106,13 +106,12 @@
           AfterTargets="Build"
           DependsOnTargets="RepackageSymbols">
     <ItemGroup>
-      <SdkTarballItem Include="$(OutputPath)dotnet-sdk-*$(TarBallExtension)"
-                      Exclude="$(OutputPath)dotnet-sdk-symbols-*$(TarBallExtension)" />
+      <SdkTarballItem Include="$(OutputPath)dotnet-sdk-*$(TarBallExtension)" />
     </ItemGroup>
 
     <PropertyGroup>
       <SdkSymbolsLayout>$(ArtifactsTmpDir)SdkSymbols</SdkSymbolsLayout>
-      <SdkSymbolsTarball>$(OutputPath)dotnet-sdk-symbols-$(MicrosoftSourceBuildIntermediateInstallerVersion)-$(TargetRid).tar.gz</SdkSymbolsTarball>
+      <SdkSymbolsTarball>$(OutputPath)dotnet-symbols-sdk-$(MicrosoftSourceBuildIntermediateInstallerVersion)-$(TargetRid).tar.gz</SdkSymbolsTarball>
       <SdkLayout>$(ArtifactsTmpDir)Sdk</SdkLayout>
       <SdkTarball>%(SdkTarballItem.Identity)</SdkTarball>
     </PropertyGroup>
@@ -183,8 +182,7 @@
 
   <Target Name="RunSmokeTest">
     <ItemGroup>
-      <SdkTarballItem Include="$(SourceBuiltTarBallPath)**/dotnet-sdk*$(TarBallExtension)"
-                      Exclude="$(SourceBuiltTarBallPath)**/dotnet-sdk-symbols*$(TarBallExtension)" />
+      <SdkTarballItem Include="$(SourceBuiltTarBallPath)**/dotnet-sdk*$(TarBallExtension)" />
       <SourceBuiltArtifactsItem Include="$(SourceBuiltTarBallPath)**/Private.SourceBuilt.Artifacts.*$(TarBallExtension)" />
     </ItemGroup>
 

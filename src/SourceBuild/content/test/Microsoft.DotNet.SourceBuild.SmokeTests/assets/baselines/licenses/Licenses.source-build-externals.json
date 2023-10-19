@@ -1,0 +1,12 @@
+{
+  "files": [
+    {
+      "path": "src/application-insights/LOGGING/ThirdPartyNotices.txt",
+      "detected_license_expression": "unknown AND apache-2.0 AND mit AND bsd-new"
+    },
+    {
+      "path": "src/application-insights/WEB/ThirdPartyNotices.txt",
+      "detected_license_expression": "bsd-new AND mit AND ms-pl AND apache-2.0 AND (cc-by-3.0-us AND cc-by-3.0 AND mit) AND ms-net-library AND ms-rl"
+    }
+  ]
+}
