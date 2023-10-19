@@ -229,16 +229,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
 
             var store = new ToolPackageStoreMock(new DirectoryPath(_toolsDirectory), _fileSystem);
-            var packageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
-                store,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter));
+
+            var packageDownloaderMock = new ToolPackageDownloaderMock(
+                    store: store,
+                    fileSystem: _fileSystem,
+                    _reporter
+                    );
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (store, store, packageInstallerMock),
+                (location, forwardArguments) => (store, store, packageDownloaderMock),
                 (_, _) => new ShellShimRepository(
                     new DirectoryPath(_shimsDirectory),
                     string.Empty,
@@ -274,3 +274,4 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
     }
 }
+

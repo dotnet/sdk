@@ -91,7 +91,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var publish = new PublishCommand(ProjectDirectory);
             publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            publish.ExecuteWithoutRestore("/bl", "/p:TargetFramework=net8.0").Should().Pass();
+            publish.ExecuteWithoutRestore("/bl", "/p:TargetFramework=net9.0").Should().Pass();
 
             var publishPath = publish.GetOutputDirectory(DefaultTfm).ToString();
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();

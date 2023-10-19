@@ -12,5 +12,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         IEnumerable<ReadableWorkloadManifest> GetManifests();
 
         string GetSdkFeatureBand();
+
+        Dictionary<string, WorkloadSet> GetAvailableWorkloadSets();
     }
 }

@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Tools.Run
                         //NOTE: MSBuild variables are not expanded like they are in VS
                         targetCommand.EnvironmentVariable(entry.Key, value);
                     }
-                    if (String.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
+                    if (string.IsNullOrEmpty(targetCommand.CommandArgs) && launchSettings.CommandLineArgs != null)
                     {
                         targetCommand.SetCommandArgs(launchSettings.CommandLineArgs);
                     }
@@ -194,7 +194,7 @@ namespace Microsoft.DotNet.Tools.Run
 
         private List<string> GetRestoreArguments()
         {
-            List<string> args = new List<string>()
+            List<string> args = new()
             {
                 "-nologo"
             };
@@ -253,7 +253,7 @@ namespace Microsoft.DotNet.Tools.Run
                 runArguments += " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(Args);
             }
 
-            CommandSpec commandSpec = new CommandSpec(runProgram, runArguments);
+            CommandSpec commandSpec = new(runProgram, runArguments);
 
             var command = CommandFactoryUsingResolver.Create(commandSpec)
                 .WorkingDirectory(runWorkingDirectory);

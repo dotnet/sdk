@@ -106,7 +106,7 @@ internal sealed class Registry
     public async Task<ImageBuilder> GetImageManifestAsync(string repositoryName, string reference, string runtimeIdentifier, string runtimeIdentifierGraphPath, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        HttpResponseMessage initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
 
         return initialManifestResponse.Content.Headers.ContentType?.MediaType switch
         {
@@ -159,7 +159,7 @@ internal sealed class Registry
             throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
         }
         PlatformSpecificManifest matchingManifest = ridManifestDict[bestManifestRid];
-        HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -185,7 +185,7 @@ internal sealed class Registry
 
     private static string? GetBestMatchingRid(RuntimeGraph runtimeGraph, string runtimeIdentifier, IEnumerable<string> availableRuntimeIdentifiers)
     {
-        HashSet<string> availableRids = new HashSet<string>(availableRuntimeIdentifiers, StringComparer.Ordinal);
+        HashSet<string> availableRids = new(availableRuntimeIdentifiers, StringComparer.Ordinal);
         foreach (var candidateRuntimeIdentifier in runtimeGraph.ExpandRuntime(runtimeIdentifier))
         {
             if (availableRids.Contains(candidateRuntimeIdentifier))
@@ -364,7 +364,10 @@ internal sealed class Registry
 
     }
 
-    public async Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
+    public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
+        => PushAsync(builtImage, source, destination, pushTags: true, cancellationToken);
+
+    private async Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, bool pushTags, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         Registry destinationRegistry = destination.RemoteRegistry!;
@@ -414,7 +417,7 @@ internal sealed class Registry
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream stringStream = new MemoryStream(Encoding.UTF8.GetBytes(builtImage.Config)))
+        using (MemoryStream stringStream = new(Encoding.UTF8.GetBytes(builtImage.Config)))
         {
             var configDigest = builtImage.ImageDigest;
             _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
@@ -422,18 +425,25 @@ internal sealed class Registry
             _logger.LogInformation(Strings.Registry_ConfigUploaded);
         }
 
-        //manifest upload
-        string manifestDigest = builtImage.Manifest.GetDigest();
-        _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, manifestDigest);
-        await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
-        _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
-
-        //tag upload
-        foreach (string tag in destination.Tags)
+        // Tags can refer to an image manifest or an image manifest list.
+        // In the first case, we push tags to the registry.
+        // In the second case, we push the manifest digest so the manifest list can refer to it.
+        if (pushTags)
         {
-            _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
-            await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
+            Debug.Assert(destination.Tags.Length > 0);
+            foreach (string tag in destination.Tags)
+            {
+                _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
+                await _registryAPI.Manifest.PutAsync(destination.Repository, tag, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+                _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
+            }
+        }
+        else
+        {
+            string manifestDigest = builtImage.Manifest.GetDigest();
+            _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, manifestDigest);
+            await _registryAPI.Manifest.PutAsync(destination.Repository, manifestDigest, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
+            _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
         }
     }
 }

@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.Tools.Tool.Install;
@@ -33,21 +34,19 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 feeds: GetMockFeedsForConfigFile(nugetConfigPath));
 
             try
-
             {
                 var nugetCacheLocation =
                     new DirectoryPath(testDirectory).WithSubDirectories(Path.GetRandomFileName());
 
-                IToolPackage toolPackage = installer.InstallPackageToExternalManagedLocation(
+                IToolPackage toolPackage = installer.InstallPackage(
                     packageId: TestPackageId,
+                    verbosity: TestVerbosity,
                     versionRange: VersionRange.Parse(TestPackageVersion),
                     packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
                     targetFramework: _testTargetframework);
 
                 var commands = toolPackage.Commands;
-                var expectedPackagesFolder = testMockBehaviorIsInSync ?
-                            NuGetGlobalPackagesFolder.GetLocation() :
-                            TestContext.Current.NuGetCachePath;
+                var expectedPackagesFolder = NuGetGlobalPackagesFolder.GetLocation();
                 commands[0].Executable.Value.Should().StartWith(expectedPackagesFolder);
 
                 fileSystem.File
@@ -77,31 +76,18 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 testDirectory: testDirectory,
                 feeds: GetMockFeedsForConfigFile(nugetConfigPath));
 
-            var nugetCacheLocation =
-                new DirectoryPath(testDirectory).WithSubDirectories(Path.GetRandomFileName());
-
-            IToolPackage toolPackage = installer.InstallPackageToExternalManagedLocation(
+            IToolPackage toolPackage = installer.InstallPackage(
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse("1.0.0-*"),
                 packageLocation: new PackageLocation(nugetConfig: nugetConfigPath),
                 targetFramework: _testTargetframework);
 
-            var expectedPackagesFolder = testMockBehaviorIsInSync ?
-                            NuGetGlobalPackagesFolder.GetLocation() :
-                            TestContext.Current.NuGetCachePath;
+            var expectedPackagesFolder = NuGetGlobalPackagesFolder.GetLocation();
 
             var commands = toolPackage.Commands;
             commands[0].Executable.Value.Should().StartWith(expectedPackagesFolder);
             toolPackage.Version.Should().Be(NuGetVersion.Parse(TestPackageVersion));
-        }
-
-        private static FilePath GetUniqueTempProjectPathEachTest(string testDirectory)
-        {
-            var tempProjectDirectory =
-                new DirectoryPath(testDirectory).WithSubDirectories(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.WithFile(Path.GetRandomFileName() + ".csproj");
-            return tempProjectPath;
         }
 
         private static List<MockFeed> GetMockFeedsForConfigFile(FilePath nugetConfig)
@@ -125,43 +111,36 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
         }
 
-        private (IToolPackageStore, IToolPackageInstaller, BufferedReporter, IFileSystem) Setup(
+        private (IToolPackageStore, IToolPackageDownloader, BufferedReporter, IFileSystem) Setup(
             bool useMock,
             string testDirectory,
-            List<MockFeed> feeds = null,
-            FilePath? tempProject = null,
-            DirectoryPath? offlineFeed = null)
+            List<MockFeed> feeds = null)
         {
             var root = new DirectoryPath(Path.Combine(Directory.GetCurrentDirectory(), Path.GetRandomFileName()));
             var reporter = new BufferedReporter();
 
             IFileSystem fileSystem;
             IToolPackageStore store;
-            IToolPackageInstaller installer;
+            IToolPackageDownloader downloader;
             if (useMock)
             {
                 fileSystem = new FileSystemMockBuilder().Build();
                 store = new ToolPackageStoreMock(root, fileSystem);
-                installer = new ToolPackageInstallerMock(
-                    fileSystem: fileSystem,
+                downloader = new ToolPackageDownloaderMock(
                     store: store,
-                    projectRestorer: new ProjectRestorerMock(
-                        fileSystem: fileSystem,
-                        reporter: reporter,
-                        feeds: feeds));
+                    fileSystem: fileSystem,
+                    reporter: reporter,
+                    feeds: feeds);
             }
             else
             {
                 fileSystem = new FileSystemWrapper();
                 store = new ToolPackageStoreAndQuery(root);
-                installer = new ToolPackageInstaller(
-                    store: store,
-                    projectRestorer: new Stage2ProjectRestorer(Log, reporter),
-                    tempProject: tempProject ?? GetUniqueTempProjectPathEachTest(testDirectory),
-                    offlineFeed: offlineFeed ?? new DirectoryPath("does not exist"));
+                var runtimeJsonPathForTests = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+                downloader = new ToolPackageDownloader(store, runtimeJsonPathForTests);
             }
 
-            return (store, installer, reporter, fileSystem);
+            return (store, downloader, reporter, fileSystem);
         }
 
         private FilePath WriteNugetConfigFileToPointToTheFeed(string testDirectory)
@@ -181,6 +160,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private static string GetTestLocalFeedPath() => Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestAssetLocalNugetFeed");
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
-        private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
+        private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
+        private static readonly PackageId TestPackageId = new("global.tool.console.demo");
     }
 }

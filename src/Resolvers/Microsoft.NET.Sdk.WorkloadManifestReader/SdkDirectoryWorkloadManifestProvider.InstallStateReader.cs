@@ -17,13 +17,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public partial class SdkDirectoryWorkloadManifestProvider
     {
-        class InstallState
+        public class InstallState
         {
             public string? WorkloadSetVersion { get; set; }
             public WorkloadSet? Manifests { get; set; }
         }
 
-        static class InstallStateReader
+        public static class InstallStateReader
         {
             public static InstallState ReadInstallState(string installStatePath)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 };
                 var reader = new Utf8JsonStreamReader(fileStream, readerOptions);
 #else
-                using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
+                using var textReader = new StreamReader(fileStream, Encoding.UTF8, true);
                 using var jsonReader = new JsonTextReader(textReader);
 
                 var reader = new Utf8JsonStreamReader(jsonReader);

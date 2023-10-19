@@ -18,13 +18,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
     internal class MSWebDeploymentAssembly : DynamicAssembly
     {
         public MSWebDeploymentAssembly(System.Version verToLoad) :
-            base(MSWebDeploymentAssembly.AssemblyName, verToLoad, "31bf3856ad364e35")
+            base(AssemblyName, verToLoad, "31bf3856ad364e35")
         {
         }
 
-        static public string AssemblyName { get { return "Microsoft.Web.Deployment"; } }
-        static public MSWebDeploymentAssembly DynamicAssembly { get; set; }
-        static public void SetVersion(System.Version version)
+        public static string AssemblyName { get { return "Microsoft.Web.Deployment"; } }
+        public static MSWebDeploymentAssembly DynamicAssembly { get; set; }
+        public static void SetVersion(System.Version version)
         {
             if (DynamicAssembly == null || DynamicAssembly.Version != version)
             {
@@ -39,14 +39,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <param name="name"></param>
         /// <param name="foundObject"></param>
         /// <returns></returns>
-        static public bool DeploymentTryGetValueForEach(dynamic deploymentCollection, string name, out dynamic foundObject)
+        public static bool DeploymentTryGetValueForEach(dynamic deploymentCollection, string name, out dynamic foundObject)
         {
             foundObject = null;
             if (deploymentCollection != null)
             {
                 foreach (dynamic item in deploymentCollection)
                 {
-                    if (string.Compare(name, item.Name.ToString(), System.StringComparison.OrdinalIgnoreCase) == 0)
+                    if (string.Compare(name, item.Name.ToString(), StringComparison.OrdinalIgnoreCase) == 0)
                     {
                         foundObject = item;
                         return true;
@@ -57,7 +57,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         }
 
 
-        static public bool DeploymentTryGetValueContains(dynamic deploymentCollection, string name, out dynamic foundObject)
+        public static bool DeploymentTryGetValueContains(dynamic deploymentCollection, string name, out dynamic foundObject)
         {
             foundObject = null;
             if (deploymentCollection != null)
@@ -78,14 +78,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
     internal class MSWebDelegationAssembly : DynamicAssembly
     {
         public MSWebDelegationAssembly(System.Version verToLoad) :
-            base(MSWebDelegationAssembly.AssemblyName, verToLoad, "31bf3856ad364e35")
+            base(AssemblyName, verToLoad, "31bf3856ad364e35")
         {
         }
 
-        static public string AssemblyName { get { return "Microsoft.Web.Delegation"; } }
+        public static string AssemblyName { get { return "Microsoft.Web.Delegation"; } }
 
-        static public MSWebDelegationAssembly DynamicAssembly { get; set; }
-        static public void SetVersion(System.Version version)
+        public static MSWebDelegationAssembly DynamicAssembly { get; set; }
+        public static void SetVersion(System.Version version)
         {
             if (DynamicAssembly == null || DynamicAssembly.Version != version)
             {
@@ -172,9 +172,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 object option = MSWebDeploymentAssembly.DynamicAssembly.CreateObject("Microsoft.Web.Deployment.DeploymentSyncOptions");
 #if NET472
                 System.Type deploymentCancelCallbackType = MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentCancelCallback");
-                object cancelCallbackDelegate = System.Delegate.CreateDelegate(deploymentCancelCallbackType, this, "CancelCallback");
+                object cancelCallbackDelegate = Delegate.CreateDelegate(deploymentCancelCallbackType, this, "CancelCallback");
 
-                MsDeploy.Utility.SetDynamicProperty(option, "CancelCallback", cancelCallbackDelegate);
+                Utility.SetDynamicProperty(option, "CancelCallback", cancelCallbackDelegate);
 
                 // dynamic doesn't work with delegate. it complain on explicit cast needed from object -> DelegateType :(
                 // _option.CancelCallback = cancelCallbackDelegate;
@@ -190,13 +190,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         {
             if (_highImportanceEventTypes == null)
             {
-                _highImportanceEventTypes = new System.Collections.Generic.Dictionary<string, Framework.MessageImportance>(System.StringComparer.InvariantCultureIgnoreCase); ;
+                _highImportanceEventTypes = new System.Collections.Generic.Dictionary<string, Framework.MessageImportance>(StringComparer.InvariantCultureIgnoreCase); ;
                 if (!string.IsNullOrEmpty(HighImportanceEventTypes))
                 {
                     string[] typeNames = HighImportanceEventTypes.Split(new char[] { ';' }); // follow msbuild convention
                     foreach (string typeName in typeNames)
                     {
-                        _highImportanceEventTypes.Add(typeName, Framework.MessageImportance.High);
+                        _highImportanceEventTypes.Add(typeName, MessageImportance.High);
                     }
                 }
             }
@@ -207,7 +207,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         {
             // throw new System.NotImplementedException();
             string msg = e.Message;
-            System.Diagnostics.Trace.WriteLine("MSDeploy TraceEvent Handler is called with " + msg);
+            Diagnostics.Trace.WriteLine("MSDeploy TraceEvent Handler is called with " + msg);
 #if NET472
             LogTrace(e, GetHighImportanceEventTypes());
 #endif
@@ -282,17 +282,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <summary>
         /// Encapsulate the things be done before invoke MSDeploy
         /// </summary>
-        abstract protected void BeforeSync();
+        protected abstract void BeforeSync();
 
         /// <summary>
         /// Encapsulate the approach to invoke the MSDeploy (same thread or in a seperate thread; ui or without ui)
         /// </summary>
-        abstract protected void StartSync();
+        protected abstract void StartSync();
 
         /// <summary>
         /// Encapsulate the approach to wait for the MSDeploy done
         /// </summary>
-        abstract protected void WaitForDone();
+        protected abstract void WaitForDone();
 
         /// <summary>
         /// Encapsulate how to report the Trace information
@@ -300,12 +300,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <param name="e"></param>
         // abstract protected void LogTrace(Deployment.DeploymentTraceEventArgs e);
 
-        abstract protected void LogTrace(dynamic e, System.Collections.Generic.IDictionary<string, Microsoft.Build.Framework.MessageImportance> customTypeLoging);
+        protected abstract void LogTrace(dynamic e, System.Collections.Generic.IDictionary<string, Microsoft.Build.Framework.MessageImportance> customTypeLoging);
 
         /// <summary>
         /// Encapsulate the things to be done after the deploy is done
         /// </summary>
-        abstract protected void AfterSync();
+        protected abstract void AfterSync();
 
         /// <summary>
         /// constructor
@@ -345,7 +345,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         {
         }
 
-        Collections.Specialized.HybridDictionary m_hybridDictionary = new System.Collections.Specialized.HybridDictionary(10);
+        Collections.Specialized.HybridDictionary m_hybridDictionary = new(10);
         #region IDictionary Members 
         // Delegate everything to m_hybridDictionary
 
@@ -450,7 +450,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
 
         // Utility function to log all public instance property to CustomerBuildEventArgs 
-        private static void AddAllPropertiesToCustomBuildWithPropertyEventArgs(CustomBuildWithPropertiesEventArgs cbpEventArg, System.Object obj)
+        private static void AddAllPropertiesToCustomBuildWithPropertyEventArgs(CustomBuildWithPropertiesEventArgs cbpEventArg, object obj)
         {
 #if NET472
             if (obj != null)
@@ -524,17 +524,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         {
             string strMsg = args.Message;
             string strEventType = "Trace";
-            Framework.MessageImportance messageImportance = Microsoft.Build.Framework.MessageImportance.Low;
+            Framework.MessageImportance messageImportance = MessageImportance.Low;
 
             System.Type argsT = args.GetType();
-            if (MsDeploy.Utility.IsType(argsT, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentFileSerializationEventArgs")) ||
-                MsDeploy.Utility.IsType(argsT, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentPackageSerializationEventArgs")) ||
-                MsDeploy.Utility.IsType(argsT, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentObjectChangedEventArgs")) ||
-                MsDeploy.Utility.IsType(argsT, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentSyncParameterEventArgs")))
+            if (Utility.IsType(argsT, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentFileSerializationEventArgs")) ||
+                Utility.IsType(argsT, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentPackageSerializationEventArgs")) ||
+                Utility.IsType(argsT, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentObjectChangedEventArgs")) ||
+                Utility.IsType(argsT, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentSyncParameterEventArgs")))
             {
                 //promote those message only for those event
                 strEventType = "Action";
-                messageImportance = Microsoft.Build.Framework.MessageImportance.High;
+                messageImportance = MessageImportance.High;
             }
             else if (customTypeLoging != null && customTypeLoging.ContainsKey(argsT.Name))
             {
@@ -544,15 +544,15 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
             if (!string.IsNullOrEmpty(strMsg))
             {
-                System.Diagnostics.TraceLevel level = (System.Diagnostics.TraceLevel)System.Enum.ToObject(typeof(System.Diagnostics.TraceLevel), args.EventLevel);
+                System.Diagnostics.TraceLevel level = (System.Diagnostics.TraceLevel)Enum.ToObject(typeof(System.Diagnostics.TraceLevel), args.EventLevel);
                 switch (level)
                 {
-                    case System.Diagnostics.TraceLevel.Off:
+                    case Diagnostics.TraceLevel.Off:
                         break;
-                    case System.Diagnostics.TraceLevel.Error:
+                    case Diagnostics.TraceLevel.Error:
                         _host.Log.LogError(strMsg);
                         break;
-                    case System.Diagnostics.TraceLevel.Warning:
+                    case Diagnostics.TraceLevel.Warning:
                         _host.Log.LogWarning(strMsg);
                         break;
                     default: // Is Warning is a Normal message
@@ -562,7 +562,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 }
             }
             // additionally we fire the Custom event for the detail information
-            CustomBuildWithPropertiesEventArgs customBuildWithPropertiesEventArg = new CustomBuildWithPropertiesEventArgs(args.Message, null, TaskName);
+            CustomBuildWithPropertiesEventArgs customBuildWithPropertiesEventArg = new(args.Message, null, TaskName);
 
             customBuildWithPropertiesEventArg.Add("TaskName", TaskName);
             customBuildWithPropertiesEventArg.Add("EventType", strEventType);
@@ -801,7 +801,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 if (!string.IsNullOrEmpty(value))
                 {
-                    _userAgent = MsDeploy.Utility.GetFullUserAgentString(value);
+                    _userAgent = Utility.GetFullUserAgentString(value);
                 }
             }
         }
@@ -843,7 +843,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
             try
             {
-                MsDeploy.Utility.SetupMSWebDeployDynamicAssemblies(MSDeployVersionsToTry, this);
+                Utility.SetupMSWebDeployDynamicAssemblies(MSDeployVersionsToTry, this);
             }
             catch (System.Exception exception)
             {
@@ -852,7 +852,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
 
             string errorMessage = null;
-            if (!MsDeploy.Utility.CheckMSDeploymentVersion(Log, out errorMessage))
+            if (!Utility.CheckMSDeploymentVersion(Log, out errorMessage))
                 return false;
 
             VSMSDeployObject src = null;
@@ -876,7 +876,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             else
             {
                 dest = VSMSDeployObjectFactory.CreateVSMSDeployObject(Destination[0]);
-                VSHostObject hostObj = new VSHostObject(HostObject as System.Collections.Generic.IEnumerable<Framework.ITaskItem>);
+                VSHostObject hostObj = new(HostObject as System.Collections.Generic.IEnumerable<Framework.ITaskItem>);
                 string username, password;
                 if (hostObj.ExtractCredentials(out username, out password))
                 {
@@ -921,14 +921,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 }
 
                 System.Type eType = e.GetType();
-                if (MsDeploy.Utility.IsType(eType, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentCanceledException")))
+                if (Utility.IsType(eType, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentCanceledException")))
                 {
-                    Log.LogMessageFromText(Resources.VSMSDEPLOY_Canceled, Microsoft.Build.Framework.MessageImportance.High);
+                    Log.LogMessageFromText(Resources.VSMSDEPLOY_Canceled, MessageImportance.High);
                 }
-                else if (MsDeploy.Utility.IsType(eType, MSWebDelegationAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentException"))
-                    || MsDeploy.Utility.IsType(eType, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentFatalException")))
+                else if (Utility.IsType(eType, MSWebDelegationAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentException"))
+                    || Utility.IsType(eType, MSWebDeploymentAssembly.DynamicAssembly.GetType("Microsoft.Web.Deployment.DeploymentFatalException")))
                 {
-                    MsDeploy.Utility.LogVsMsDeployException(Log, e);
+                    Utility.LogVsMsDeployException(Log, e);
                 }
                 else
                 {
@@ -990,7 +990,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             Collections.Generic.List<string> enableSkipDirectiveList = MSDeployUtility.ConvertStringIntoList(EnableSkipDirective);
             Collections.Generic.List<string> disableSkipDirectiveList = MSDeployUtility.ConvertStringIntoList(DisableSkipDirective);
 
-            VSHostObject hostObject = new VSHostObject(HostObject as System.Collections.Generic.IEnumerable<Framework.ITaskItem>);
+            VSHostObject hostObject = new(HostObject as System.Collections.Generic.IEnumerable<Framework.ITaskItem>);
             Framework.ITaskItem[] srcSkipItems, destSkipsItems;
 
             // Add FileSkip rules from Host Object
@@ -1006,7 +1006,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             if (!string.IsNullOrEmpty(DeploymentTraceLevel))
             {
                 Diagnostics.TraceLevel deploymentTraceEventLevel =
-                    (Diagnostics.TraceLevel)System.Enum.Parse(typeof(Diagnostics.TraceLevel), DeploymentTraceLevel, true);
+                    (Diagnostics.TraceLevel)Enum.Parse(typeof(Diagnostics.TraceLevel), DeploymentTraceLevel, true);
                 srcVsMsDeployobject.BaseOptions.TraceLevel = deploymentTraceEventLevel;
                 destVsMsDeployobject.BaseOptions.TraceLevel = deploymentTraceEventLevel;
             }
@@ -1067,9 +1067,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         {
             option.WhatIf = WhatIf;
             // Add the replace rules, we should consider doing the same thing for the skip rule
-            MsDeploy.Utility.AddReplaceRulesToOptions(option.Rules, ReplaceRuleItems);
-            MsDeploy.Utility.AddImportDeclareParametersFileOptions(option, ImportDeclareParametersItems);
-            MsDeploy.Utility.AddDeclareParametersToOptions(option, DeclareParameterItems, OptimisticParameterDefaultValue);
+            Utility.AddReplaceRulesToOptions(option.Rules, ReplaceRuleItems);
+            Utility.AddImportDeclareParametersFileOptions(option, ImportDeclareParametersItems);
+            Utility.AddDeclareParametersToOptions(option, DeclareParameterItems, OptimisticParameterDefaultValue);
 
             option.UseChecksum = UseChecksum;
             option.DoNotDelete = SkipExtraFilesOnServer;

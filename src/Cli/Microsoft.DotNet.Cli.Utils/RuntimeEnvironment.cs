@@ -17,8 +17,8 @@ namespace Microsoft.DotNet.Cli.Utils
 
     internal static class RuntimeEnvironment
     {
-        private static readonly Lazy<Platform> _platform = new Lazy<Platform>(DetermineOSPlatform);
-        private static readonly Lazy<DistroInfo> _distroInfo = new Lazy<DistroInfo>(LoadDistroInfo);
+        private static readonly Lazy<Platform> _platform = new(DetermineOSPlatform);
+        private static readonly Lazy<DistroInfo> _distroInfo = new(LoadDistroInfo);
 
         public static Platform OperatingSystemPlatform { get; } = GetOSPlatform();
         public static string OperatingSystemVersion { get; } = GetOSVersion();
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Cli.Utils
             // This is same as sysctl kern.version
             // FreeBSD 11.0-RELEASE-p1 FreeBSD 11.0-RELEASE-p1 #0 r306420: Thu Sep 29 01:43:23 UTC 2016     root@releng2.nyi.freebsd.org:/usr/obj/usr/src/sys/GENERIC
             // What we want is major release as minor releases should be compatible.
-            String version = RuntimeInformation.OSDescription;
+            string version = RuntimeInformation.OSDescription;
             try
             {
                 // second token up to first dot

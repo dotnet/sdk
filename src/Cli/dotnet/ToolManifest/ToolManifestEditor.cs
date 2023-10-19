@@ -165,8 +165,10 @@ namespace Microsoft.DotNet.ToolManifest
 
                         foreach (var toolJson in tools.EnumerateObject())
                         {
-                            var serializableLocalToolSinglePackage = new SerializableLocalToolSinglePackage();
-                            serializableLocalToolSinglePackage.PackageId = toolJson.Name;
+                            var serializableLocalToolSinglePackage = new SerializableLocalToolSinglePackage
+                            {
+                                PackageId = toolJson.Name
+                            };
                             if (toolJson.Value.TryGetStringValue(JsonPropertyVersion, out var versionJson))
                             {
                                 serializableLocalToolSinglePackage.Version = versionJson;
@@ -219,7 +221,7 @@ namespace Microsoft.DotNet.ToolManifest
             FilePath path,
             DirectoryPath correspondingDirectory)
         {
-            List<ToolManifestPackage> result = new List<ToolManifestPackage>();
+            List<ToolManifestPackage> result = new();
             var errors = new List<string>();
 
             ValidateVersion(deserializedManifest, errors);

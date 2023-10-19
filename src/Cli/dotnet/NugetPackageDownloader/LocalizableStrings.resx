@@ -138,4 +138,10 @@
   <data name="FailedToValidatePackageSigning" xml:space="preserve">
     <value>Failed to validate package signing.</value>
   </data>
+  <data name="FailedToFindSourceUnderPackageSourceMapping" xml:space="preserve">
+    <value>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</value>
+  </data>
+  <data name="FailedToMapSourceUnderPackageSourceMapping" xml:space="preserve">
+    <value>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</value>
+  </data>
 </root>

@@ -29,18 +29,20 @@ namespace ManifestReaderTests
                     Path.GetDirectoryName(filePath.manifest)!,
                     filePath.manifest,
                     "8.0.100",
+                    "33",
                     () => new FileStream(filePath.manifest, FileMode.Open, FileAccess.Read),
                     () => filePath.localizationCatalog != null ? new FileStream(filePath.localizationCatalog, FileMode.Open, FileAccess.Read) : null
                 );
             }
         }
 
-        public string GetSdkFeatureBand() => throw new NotImplementedException();
+        public string GetSdkFeatureBand() => "8.0.100";
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => throw new NotImplementedException();
     }
 
     internal class InMemoryFakeManifestProvider : IWorkloadManifestProvider, IEnumerable<(string id, string content)>
     {
-        readonly List<(string id, byte[] content)> _manifests = new List<(string, byte[])>();
+        readonly List<(string id, byte[] content)> _manifests = new();
 
         public void Add(string id, string content) => _manifests.Add((id, Encoding.UTF8.GetBytes(content)));
 
@@ -50,6 +52,7 @@ namespace ManifestReaderTests
                 $@"C:\fake\{m.id}",
                 $@"C:\fake\{m.id}\WorkloadManifest.json",
                 "8.0.100",
+                "34",
                 (Func<Stream>)(() => new MemoryStream(m.content)),
                 (Func<Stream?>)(() => null)
             ));
@@ -57,6 +60,7 @@ namespace ManifestReaderTests
         // these are just so the collection initializer works
         public IEnumerator<(string id, string content)> GetEnumerator() => throw new NotImplementedException();
         IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
-        public string GetSdkFeatureBand() => throw new NotImplementedException();
+        public string GetSdkFeatureBand() => "8.0.100";
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => throw new NotImplementedException();
     }
 }

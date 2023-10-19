@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.DotNet.Cli;
@@ -8,6 +9,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
 using NuGet.Versioning;
@@ -18,8 +20,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
     {
         private const string TestPackageVersion = "1.0.4";
         private const string TestPreviewPackageVersion = "2.0.1-preview1";
-        private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
+        private static readonly PackageId TestPackageId = new("global.tool.console.demo");
         private readonly NuGetPackageDownloader _installer;
+        private readonly NuGetPackageDownloader _toolInstaller;
 
         private readonly DirectoryPath _tempDirectory;
 
@@ -33,6 +36,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             _installer =
                 new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
                     restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals));
+            _toolInstaller =
+                new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
+                    restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals), isNuGetTool: true);
         }
 
         [Fact]
@@ -88,7 +94,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public async Task GivenNugetConfigInstallSucceeds()
         {
             FilePath nugetConfigPath = GenerateRandomNugetConfigFilePath();
-            FileSystemWrapper fileSystem = new FileSystemWrapper();
+            FileSystemWrapper fileSystem = new();
             WriteNugetConfigFileToPointToTheFeed(fileSystem, nugetConfigPath);
 
             string packagePath = await _installer.DownloadPackageAsync(
@@ -105,7 +111,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
 
             FilePath validNugetConfigPath = GenerateRandomNugetConfigFilePath();
-            FileSystemWrapper fileSystem = new FileSystemWrapper();
+            FileSystemWrapper fileSystem = new();
             WriteNugetConfigFileToPointToTheFeed(fileSystem, validNugetConfigPath);
 
             // "source" option will override everything like nuget.config just like "dotner restore --source ..."
@@ -124,7 +130,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             DirectoryPath directoryBelowNugetConfig = nugetConfigPath.GetDirectoryPath().WithSubDirectories("subDir");
             Directory.CreateDirectory(directoryBelowNugetConfig.Value);
 
-            FileSystemWrapper fileSystem = new FileSystemWrapper();
+            FileSystemWrapper fileSystem = new();
             WriteNugetConfigFileToPointToTheFeed(fileSystem, nugetConfigPath);
 
             string packagePath = await _installer.DownloadPackageAsync(
@@ -137,9 +143,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Fact]
         public async Task GivenNoPackageVersionItCanInstallLatestVersionOfPackage()
         {
+            NuGetVersion packageVersion = null;
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
-                packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+                packageVersion,
+                packageSourceLocation: new PackageSourceLocation(sourceFeedOverrides: new[] {GetTestLocalFeedPath()}));
             packagePath.Should().Contain("global.tool.console.demo.1.0.4.nupkg", "It can get the latest non preview version");
             File.Exists(packagePath).Should().BeTrue();
         }
@@ -156,6 +164,48 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }));
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
+        }
+
+        [Fact]
+        public async Task GivenNoPackageSourceMappingItShouldError()
+        {
+            string getTestLocalFeedPath = GetTestLocalFeedPath();
+            string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
+            Log.WriteLine(relativePath);
+            var dictionary = new Dictionary<string, IReadOnlyList<string>>
+            {
+                { "sourceA", new List<string>() { "a" } }
+            };
+            var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
+            var mockPackageSourceMapping = new PackageSourceMapping(patterns);
+
+            Func<Task> a = () => _toolInstaller.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
+                packageSourceMapping: mockPackageSourceMapping);
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
+        }
+
+        [Fact]
+        public async Task GivenPackageSourceMappingFeedNotFoundItShouldError()
+        {
+            string getTestLocalFeedPath = GetTestLocalFeedPath();
+            string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
+            Log.WriteLine(relativePath);
+            var dictionary = new Dictionary<string, IReadOnlyList<string>>
+            {
+                { "nonexistentfeed", new List<string>() { TestPackageId.ToString() } }
+            };
+            var patterns = new ReadOnlyDictionary<string, IReadOnlyList<string>>(dictionary);
+            var mockPackageSourceMapping = new PackageSourceMapping(patterns);
+
+            Func<Task> a = () => _toolInstaller.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[] { relativePath }),
+                packageSourceMapping: mockPackageSourceMapping);
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -176,8 +226,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [WindowsOnlyFact]
         public async Task GivenANonSignedSdkItShouldPrintMessageOnce()
         {
-            BufferedReporter bufferedReporter = new BufferedReporter();
-            NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(_tempDirectory, null,
+            BufferedReporter bufferedReporter = new();
+            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
                 new MockFirstPartyNuGetPackageSigningVerifier(),
                 _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
             await nuGetPackageDownloader.DownloadPackageAsync(
@@ -193,7 +243,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
-                    LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                    Cli.NuGetPackageDownloader.LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
             File.Exists(packagePath).Should().BeTrue();
         }
 
@@ -201,7 +251,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public async Task WhenCalledWithNotSignedPackageItShouldThrowWithCommandOutput()
         {
             string commandOutput = "COMMAND OUTPUT";
-            NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(_tempDirectory, null,
+            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
                 new MockFirstPartyNuGetPackageSigningVerifier(verifyResult: false, commandOutput: commandOutput),
                 _logger, restoreActionConfig: new RestoreActionConfig(NoCache: true), verifySignatures: true);
 
@@ -217,8 +267,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [UnixOnlyFact]
         public async Task GivenANonWindowsMachineItShouldPrintMessageOnce()
         {
-            BufferedReporter bufferedReporter = new BufferedReporter();
-            NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(_tempDirectory, null,
+            BufferedReporter bufferedReporter = new();
+            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
                 new MockFirstPartyNuGetPackageSigningVerifier(),
                 _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
             await nuGetPackageDownloader.DownloadPackageAsync(
@@ -234,7 +284,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
-                    LocalizableStrings.SkipNuGetpackageSigningValidationmacOSLinux);
+                    Cli.NuGetPackageDownloader.LocalizableStrings.SkipNuGetpackageSigningValidationmacOSLinux);
             File.Exists(packagePath).Should().BeTrue();
         }
 
@@ -254,7 +304,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         private string DownloadSamplePackage(PackageId packageId)
         {
-            NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(_tempDirectory, null,
+            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
                 new MockFirstPartyNuGetPackageSigningVerifier(),
                 _logger, restoreActionConfig: new RestoreActionConfig(NoCache: true));
 
@@ -349,7 +399,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     Path.GetRandomFileName() + " " + Path.GetRandomFileName());
 
             FilePath nugetConfigFullPath =
-                new FilePath(Path.GetFullPath(Path.Combine(tempPathForNugetConfigWithWhiteSpace, nugetConfigName)));
+                new(Path.GetFullPath(Path.Combine(tempPathForNugetConfigWithWhiteSpace, nugetConfigName)));
             return nugetConfigFullPath;
         }
 

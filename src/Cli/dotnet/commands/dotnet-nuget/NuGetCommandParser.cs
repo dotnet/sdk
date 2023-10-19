@@ -21,10 +21,11 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            var command = new DocumentedCommand("nuget", DocsLink);
-
-            // some subcommands are not defined here and just forwarded to NuGet app
-            command.TreatUnmatchedTokensAsErrors = false;
+            var command = new DocumentedCommand("nuget", DocsLink)
+            {
+                // some subcommands are not defined here and just forwarded to NuGet app
+                TreatUnmatchedTokensAsErrors = false
+            };
 
             command.Options.Add(new CliOption<bool>("--version"));
             command.Options.Add(new CliOption<string>("--verbosity", "-v"));
@@ -61,7 +62,7 @@ namespace Microsoft.DotNet.Cli
         {
             CliCommand localsCommand = new("locals");
 
-            CliArgument<string> foldersArgument = new CliArgument<string>("folders");
+            CliArgument<string> foldersArgument = new("folders");
             foldersArgument.AcceptOnlyFromAmong(new string[] { "all", "http-cache", "global-packages", "plugins-cache", "temp" });
 
             localsCommand.Arguments.Add(foldersArgument);
@@ -147,28 +148,30 @@ namespace Microsoft.DotNet.Cli
                 command.SetAction(NuGetCommand.Run);
             }
 
-            CliCommand AuthorCommand() => new CliCommand("author") {
+            CliCommand AuthorCommand() => new("author") {
                 new CliArgument<string>("NAME"),
                 new CliArgument<string>("PACKAGE"),
                 allowUntrustedRoot,
             };
 
-            CliCommand RepositoryCommand() => new CliCommand("repository") {
+            CliCommand RepositoryCommand() => new("repository") {
                 new CliArgument<string>("NAME"),
                 new CliArgument<string>("PACKAGE"),
                 allowUntrustedRoot,
                 owners
             };
 
-            CliCommand SourceCommand() => new CliCommand("source") {
+            CliCommand SourceCommand() => new("source") {
                 new CliArgument<string>("NAME"),
                 owners,
                 new CliOption<string>("--source-url"),
             };
 
             CliCommand CertificateCommand() {
-                CliOption<string> algorithm = new("--algorithm");
-                algorithm.DefaultValueFactory = (_argResult) => "SHA256";
+                CliOption<string> algorithm = new("--algorithm")
+                {
+                    DefaultValueFactory = (_argResult) => "SHA256"
+                };
                 algorithm.AcceptOnlyFromAmong("SHA256", "SHA384", "SHA512");
 
                 return new CliCommand("certificate") {
@@ -179,11 +182,11 @@ namespace Microsoft.DotNet.Cli
                 };
             };
 
-            CliCommand RemoveCommand() => new CliCommand("remove") {
+            CliCommand RemoveCommand() => new("remove") {
                 new CliArgument<string>("NAME"),
             };
 
-            CliCommand SyncCommand() => new CliCommand("sync") {
+            CliCommand SyncCommand() => new("sync") {
                 new CliArgument<string>("NAME"),
             };
 

@@ -88,9 +88,10 @@ namespace Microsoft.NET.TestFramework
             {
                 FullFrameworkMSBuildPath = null;
                 var logger = new StringTestLogger();
-                var command = new DotnetCommand(logger, "--version");
-
-                command.WorkingDirectory = TestContext.Current.TestExecutionDirectory;
+                var command = new DotnetCommand(logger, "--version")
+                {
+                    WorkingDirectory = TestContext.Current.TestExecutionDirectory
+                };
 
                 var result = command.Execute();
 
@@ -110,9 +111,10 @@ namespace Microsoft.NET.TestFramework
         private void InitMSBuildVersion()
         {
             var logger = new StringTestLogger();
-            var command = new MSBuildVersionCommand(logger);
-
-            command.WorkingDirectory = TestContext.Current.TestExecutionDirectory;
+            var command = new MSBuildVersionCommand(logger)
+            {
+                WorkingDirectory = TestContext.Current.TestExecutionDirectory
+            };
 
             var result = command.Execute();
 
@@ -190,7 +192,7 @@ namespace Microsoft.NET.TestFramework
 
             //  We set this environment variable for in-process tests, but we don't want it to flow to out of process tests
             //  (especially if we're trying to run on full Framework MSBuild)
-            environment[DotNet.Cli.Utils.Constants.MSBUILD_EXE_PATH] = "";
+            environment[Constants.MSBUILD_EXE_PATH] = "";
 
         }
 
@@ -207,7 +209,7 @@ namespace Microsoft.NET.TestFramework
 
         private SdkCommandSpec CreateCommand(params string[] args)
         {
-            SdkCommandSpec ret = new SdkCommandSpec();
+            SdkCommandSpec ret = new();
 
             //  Run tests on full framework MSBuild if environment variable is set pointing to it
             if (ShouldUseFullFrameworkMSBuild)
@@ -412,7 +414,7 @@ namespace Microsoft.NET.TestFramework
             return !File.Exists(extensionsImportAfterPath);
         }
 
-        private static readonly Lazy<string> _NewtonsoftJsonPackageVersion = new Lazy<string>(() =>
+        private static readonly Lazy<string> _NewtonsoftJsonPackageVersion = new(() =>
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
             return assembly.GetCustomAttributes(true).OfType<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "NewtonsoftJsonPackageVersion").Value;

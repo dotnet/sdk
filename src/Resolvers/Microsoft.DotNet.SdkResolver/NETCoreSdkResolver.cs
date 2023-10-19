@@ -21,10 +21,10 @@ namespace Microsoft.DotNet.DotNetSdkResolver
 
         // Caches of minimum versions, compatible SDKs are static to benefit multiple IDE evaluations.
         private static readonly ConcurrentDictionary<string, Version> s_minimumMSBuildVersions
-            = new ConcurrentDictionary<string, Version>();
+            = new();
 
         private static readonly ConcurrentDictionary<CompatibleSdkKey, CompatibleSdkValue> s_compatibleSdks
-            = new ConcurrentDictionary<CompatibleSdkKey, CompatibleSdkValue>();
+            = new();
 
         public NETCoreSdkResolver()
             : this(Environment.GetEnvironmentVariable, VSSettings.Ambient)
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.DotNetSdkResolver
                             continue;
                         }
 
-                        if (minimumSdkMajorVersion != 0 && Int32.TryParse(netcoreSdkVersion.Split('.')[0], out int sdkMajorVersion) && sdkMajorVersion < minimumSdkMajorVersion)
+                        if (minimumSdkMajorVersion != 0 && int.TryParse(netcoreSdkVersion.Split('.')[0], out int sdkMajorVersion) && sdkMajorVersion < minimumSdkMajorVersion)
                         {
                             continue;
                         }

@@ -72,6 +72,11 @@
         <target state="translated">Origem da Instalação</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionDescription">
+        <source>Display the currently installed workload version.</source>
+        <target state="translated">Exiba a versão da carga de trabalho atualmente instalada.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
