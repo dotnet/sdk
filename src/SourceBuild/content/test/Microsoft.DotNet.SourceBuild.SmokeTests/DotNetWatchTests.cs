@@ -9,7 +9,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-public class DotNetWatchTests : SmokeTests
+public class DotNetWatchTests : SdkTests
 {
     public DotNetWatchTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 

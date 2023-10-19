@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
         private void LogErrorOrWarning(bool isError, string message)
         {
-            if (FailOnMissingPDBs)
+            if (isError)
             {
                 Log.LogError(message);
             }
@@ -104,14 +104,15 @@ namespace Microsoft.DotNet.Build.Tasks
 
                     if (guid != string.Empty)
                     {
-                        if (!allPdbGuids.ContainsKey(guid))
+                        string debugId = GetDebugId(guid, file);
+                        if (!allPdbGuids.ContainsKey(debugId))
                         {
                             filesWithoutPDBs.Add(file.Substring(SdkLayoutPath.Length + 1));
                         }
                         else
                         {
                             // Copy matching pdb to symbols path, preserving sdk binary's hierarchy
-                            string sourcePath = (string)allPdbGuids[guid]!;
+                            string sourcePath = (string)allPdbGuids[debugId]!;
                             string destinationPath =
                                 file.Replace(SdkLayoutPath, SdkSymbolsLayoutPath)
                                     .Replace(Path.GetFileName(file), Path.GetFileName(sourcePath));
@@ -142,13 +143,21 @@ namespace Microsoft.DotNet.Build.Tasks
 
                 var id = new BlobContentId(metadataReader.DebugMetadataHeader.Id);
                 string guid = $"{id.Guid:N}";
-                if (!string.IsNullOrEmpty(guid) && !allPdbGuids.ContainsKey(guid))
+                string debugId = GetDebugId(guid, file);
+                if (!string.IsNullOrEmpty(guid) && !allPdbGuids.ContainsKey(debugId))
                 {
-                    allPdbGuids.Add(guid, file);
+                    allPdbGuids.Add(debugId, file);
                 }
             }
 
             return allPdbGuids;
         }
+
+        /// <summary>
+        /// Calculates a debug Id from debug guid and filename. We use this as a key
+        /// in PDB hashtable. Guid is not enough due to collisions in several PDBs.
+        /// </summary>
+        private string GetDebugId(string guid, string file) =>
+            $"{guid}.{Path.GetFileNameWithoutExtension(file)}".ToLower();
     }
 }
