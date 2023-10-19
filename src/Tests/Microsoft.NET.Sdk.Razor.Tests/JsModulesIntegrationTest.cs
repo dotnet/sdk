@@ -11,7 +11,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         {
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_NoOps_WhenJsModulesIsDisabled()
         {
             var testAsset = "RazorComponentApp";
@@ -29,7 +29,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "jsmodules", "jsmodules.build.manifest.json")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_GeneratesManifestWhenItFindsALibrary()
         {
             var testAsset = "RazorComponentApp";
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             file.Should().Contain("ComponentApp.lib.module.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_DiscoversJsModulesBasedOnPatterns()
         {
             var testAsset = "RazorComponentApp";
@@ -84,7 +84,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_PublishesBundleToTheRightLocation()
         {
             var testAsset = "RazorComponentApp";
@@ -111,7 +111,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_DoesNotPublishAnyFile_WhenThereAreNoJsModulesFiles()
         {
             var testAsset = "RazorComponentApp";
@@ -126,7 +126,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.modules.json")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Does_Nothing_WhenThereAreNoJsModulesFiles()
         {
             var testAsset = "RazorComponentApp";
@@ -142,7 +142,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             file.Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_JsModules_IsIncremental()
         {
             // Arrange
@@ -182,7 +182,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void BuildProjectWithReferences_IncorporatesInitializersFromClassLibraries()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -218,7 +218,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             file.Should().Contain("_content/ClassLibrary/ClassLibrary.lib.module.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void PublishProjectWithReferences_IncorporatesInitializersFromClassLibrariesAndPublishesAssetsToTheRightLocation()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -262,7 +262,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             file.Should().NotContain("_content/ClassLibrary/AnotherClassLib.lib.module.js");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void PublishProjectWithReferences_DifferentBuildAndPublish_LibraryInitializers()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
