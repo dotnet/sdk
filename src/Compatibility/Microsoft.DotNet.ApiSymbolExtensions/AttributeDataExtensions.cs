@@ -12,6 +12,16 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     /// </summary>
     public static class AttributeDataExtensions
     {
+        // Determines if an AttributeData object is visible outside of the containing assembly.
+        // By default also verifies the visibility of the attribute's arguments.
+        private static bool IsVisibleOutsideOfAssembly(this AttributeData attributeData,
+            ISymbolFilter symbolFilter,
+            bool excludeWithTypeArgumentsNotVisibleOutsideOfAssembly = true) =>
+            attributeData.AttributeClass != null &&
+            symbolFilter.Include(attributeData.AttributeClass) &&
+            (!excludeWithTypeArgumentsNotVisibleOutsideOfAssembly ||
+             !HasTypeArgumentsNotVisibleOutsideOfAssembly(attributeData, symbolFilter));
+
         /// <summary>
         /// Excludes <see cref="AttributeData"/> that is not visible outside of an assembly.
         /// </summary>
@@ -28,15 +38,5 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                 .Any(typedConstant => typedConstant.Kind == TypedConstantKind.Type
                     && typedConstant.Value is INamedTypeSymbol namedTypeSymbol
                     && !symbolFilter.Include(namedTypeSymbol));
-
-        // Determines if an AttributeData object is visible outside of the containing assembly.
-        // By default also verifies the visibility of the attribute's arguments.
-        private static bool IsVisibleOutsideOfAssembly(this AttributeData attributeData,
-            ISymbolFilter symbolFilter,
-            bool excludeWithTypeArgumentsNotVisibleOutsideOfAssembly = true) =>
-            attributeData.AttributeClass != null &&
-            symbolFilter.Include(attributeData.AttributeClass) &&
-            (!excludeWithTypeArgumentsNotVisibleOutsideOfAssembly ||
-             !HasTypeArgumentsNotVisibleOutsideOfAssembly(attributeData, symbolFilter));
     }
 }
