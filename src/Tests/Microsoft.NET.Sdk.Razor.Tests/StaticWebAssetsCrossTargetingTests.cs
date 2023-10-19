@@ -13,7 +13,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public StaticWebAssetsCrossTargetingTests(ITestOutputHelper log) : base(log, GenerateBaselines) { }
 
         // Build Standalone project
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_CrosstargetingTests_CanIncludeBrowserAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -59,7 +59,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(finalPath).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_CrosstargetingTests_CanIncludeBrowserAssets()
         {
             var testAsset = "RazorComponentAppMultitarget";

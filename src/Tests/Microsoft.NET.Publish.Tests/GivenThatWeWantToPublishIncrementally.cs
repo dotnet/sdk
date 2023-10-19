@@ -165,7 +165,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append("UserData.txt"), expectedNonSingleExeFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void It_cleans_for_mvc_projects()
         {
             // Create new mvc app from template
