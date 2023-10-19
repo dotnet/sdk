@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.GenAPI
         ///   "non-empty" means either unmanaged types like ints and enums, or reference types that are not the root.
         /// - A struct containing generic fields cannot have struct layout cycles.
         /// </summary>
-        public static IEnumerable<SyntaxNode> SynthesizeDummyFields(this INamedTypeSymbol namedType, ISymbolFilter symbolFilter, ISymbolFilter? attributeDataSymbolFilter)
+        public static IEnumerable<SyntaxNode> SynthesizeDummyFields(this INamedTypeSymbol namedType, ISymbolFilter symbolFilter, ISymbolFilter attributeDataSymbolFilter)
         {
             // Collect all excluded fields
             IEnumerable<IFieldSymbol> excludedFields = namedType.GetMembers()
@@ -126,8 +126,7 @@ namespace Microsoft.DotNet.GenAPI
                 foreach (IFieldSymbol genericField in genericTypedFields)
                 {
                     ImmutableArray<AttributeData> genericFieldAttributes = genericField.GetAttributes()
-                        .ExcludeWithFilter(attributeDataSymbolFilter)
-                        .ExcludeNonVisibleOutsideOfAssembly(symbolFilter);
+                        .ExcludeNonVisibleOutsideOfAssembly(attributeDataSymbolFilter);
 
                     yield return CreateDummyField(genericField.Type.ToDisplayString(),
                         NormalizeIdentifier(genericField.Name),

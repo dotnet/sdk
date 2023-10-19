@@ -30,17 +30,36 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
-            ISymbolFilter assemblyDataSymbolFilter = null,
+            string excludedAttributeFile = null,
             [CallerMemberName] string assemblyName = "")
         {
             StringWriter stringWriter = new();
 
-            CompositeSymbolFilter compositeFilter = new CompositeSymbolFilter()
+            // Configure symbol filters
+            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
+                includeInternalSymbols,
+                includeEffectivelyPrivateSymbols,
+                includeExplicitInterfaceImplementationSymbols);
+
+            CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()
                 .Add(new ImplicitSymbolFilter())
-                .Add(new AccessibilitySymbolFilter(includeInternalSymbols,
-                    includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols));
-            IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(new ConsoleLog(MessageImportance.Low),
-                compositeFilter, assemblyDataSymbolFilter, stringWriter, null, false, MetadataReferences);
+                .Add(accessibilitySymbolFilter);
+
+            CompositeSymbolFilter attributeDataSymbolFilter = new();
+            if (excludedAttributeFile is not null)
+            {
+                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(new string[] { excludedAttributeFile }));
+            }
+            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
+
+            IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
+                new ConsoleLog(MessageImportance.Low),
+                symbolFilter,
+                attributeDataSymbolFilter,
+                stringWriter,
+                null,
+                false,
+                MetadataReferences);
 
             using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
             AssemblySymbolLoader assemblySymbolLoader = new(resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
@@ -2779,7 +2798,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """,
                 includeInternalSymbols: false,
-                assemblyDataSymbolFilter: new DocIdSymbolFilter(new string[] { filePath }));
+                excludedAttributeFile: filePath);
         }
 
         [Fact]

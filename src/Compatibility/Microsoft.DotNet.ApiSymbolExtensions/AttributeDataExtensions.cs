@@ -20,20 +20,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             bool excludeWithTypeArgumentsNotVisibleOutsideOfAssembly = true) =>
             attributes.Where(attribute => attribute.IsVisibleOutsideOfAssembly(symbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly)).ToImmutableArray();
 
-        /// <summary>
-        /// Excludes <see cref="AttributeData"/> based on a passed in filter.
-        /// </summary>
-        /// <returns></returns>
-        public static ImmutableArray<AttributeData> ExcludeWithFilter(this ImmutableArray<AttributeData> attributes, ISymbolFilter? symbolFilter)
-        {
-            if (symbolFilter is null)
-                return attributes;
-
-            return attributes
-                .Where(attributeData => attributeData.AttributeClass is not null && symbolFilter.Include(attributeData.AttributeClass))
-                .ToImmutableArray();
-        }
-
         // Checks if an AttributeData has INamedTypeSymbol arguments that point to a type that
         // isn't visible outside of the containing assembly.
         private static bool HasTypeArgumentsNotVisibleOutsideOfAssembly(this AttributeData attributeData, ISymbolFilter symbolFilter) =>

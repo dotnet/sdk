@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.GenAPI
         private readonly ILog _logger;
         private readonly TextWriter _textWriter;
         private readonly ISymbolFilter _symbolFilter;
-        private readonly ISymbolFilter? _attributeDataSymbolFilter;
+        private readonly ISymbolFilter _attributeDataSymbolFilter;
         private readonly string? _exceptionMessage;
         private readonly bool _includeAssemblyAttributes;
         private readonly AdhocWorkspace _adhocWorkspace;
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.GenAPI
 
         public CSharpFileBuilder(ILog logger,
             ISymbolFilter symbolFilter,
-            ISymbolFilter? attributeDataSymbolFilter,
+            ISymbolFilter attributeDataSymbolFilter,
             TextWriter textWriter,
             string? exceptionMessage,
             bool includeAssemblyAttributes,
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.GenAPI
             {
                 SyntaxNode typeDeclaration = _syntaxGenerator
                     .DeclarationExt(typeMember, _symbolFilter)
-                    .AddMemberAttributes(_syntaxGenerator, typeMember, _symbolFilter, _attributeDataSymbolFilter);
+                    .AddMemberAttributes(_syntaxGenerator, typeMember, _attributeDataSymbolFilter);
 
                 typeDeclaration = Visit(typeDeclaration, typeMember);
 
@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.GenAPI
 
                 SyntaxNode memberDeclaration = _syntaxGenerator
                     .DeclarationExt(member, _symbolFilter)
-                    .AddMemberAttributes(_syntaxGenerator, member, _symbolFilter, _attributeDataSymbolFilter);
+                    .AddMemberAttributes(_syntaxGenerator, member, _attributeDataSymbolFilter);
 
                 if (member is INamedTypeSymbol nestedTypeSymbol)
                 {
@@ -240,9 +240,7 @@ namespace Microsoft.DotNet.GenAPI
         private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
         {
             // When assembly references aren't available, assembly attributes with foreign types won't be resolved.
-            ImmutableArray<AttributeData> attributes = assembly.GetAttributes()
-                .ExcludeWithFilter(_attributeDataSymbolFilter)
-                .ExcludeNonVisibleOutsideOfAssembly(_symbolFilter);
+            ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_attributeDataSymbolFilter);
 
             // Emit assembly attributes from the IAssemblySymbol
             List<SyntaxNode> attributeSyntaxNodes = attributes
@@ -279,15 +277,7 @@ namespace Microsoft.DotNet.GenAPI
 
         private SyntaxNode GenerateForwardedTypeAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
         {
-            ImmutableArray<INamedTypeSymbol> forwardedTypesNamespaceSymbols = assembly.GetForwardedTypes();
-
-            // Support filtering out type forward attributes.
-            if (_attributeDataSymbolFilter is not null)
-            {
-                forwardedTypesNamespaceSymbols = forwardedTypesNamespaceSymbols.Where(_attributeDataSymbolFilter.Include).ToImmutableArray();
-            }
-
-            foreach (INamedTypeSymbol symbol in forwardedTypesNamespaceSymbols)
+            foreach (INamedTypeSymbol symbol in assembly.GetForwardedTypes().Where(_attributeDataSymbolFilter.Include))
             {
                 if (symbol.TypeKind != TypeKind.Error)
                 {

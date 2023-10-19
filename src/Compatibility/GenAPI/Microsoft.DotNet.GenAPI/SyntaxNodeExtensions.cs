@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Editing;
@@ -17,14 +16,9 @@ namespace Microsoft.DotNet.GenAPI
         public static SyntaxNode AddMemberAttributes(this SyntaxNode node,
             SyntaxGenerator syntaxGenerator,
             ISymbol member,
-            ISymbolFilter symbolFilter,
-            ISymbolFilter? attributeDataSymbolFilter)
+            ISymbolFilter attributeDataSymbolFilter)
         {
-            ImmutableArray<AttributeData> memberAttributes = member.GetAttributes()
-                .ExcludeWithFilter(attributeDataSymbolFilter)
-                .ExcludeNonVisibleOutsideOfAssembly(symbolFilter);
-
-            foreach (AttributeData attribute in memberAttributes)
+            foreach (AttributeData attribute in member.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(attributeDataSymbolFilter))
             {
                 // The C# compiler emits the DefaultMemberAttribute on any type containing an indexer.
                 // In C# it is an error to manually attribute a type with the DefaultMemberAttribute if the type also declares an indexer.

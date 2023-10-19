@@ -104,20 +104,29 @@ namespace Microsoft.DotNet.GenAPI
             }
             IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(context.Assemblies);
 
-            // Configure the symbol filter
-            CompositeSymbolFilter compositeSymbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(new AccessibilitySymbolFilter(
-                    context.RespectInternals,
-                    includeEffectivelyPrivateSymbols: true,
-                    includeExplicitInterfaceImplementationSymbols: true));
+            string headerFileText = ReadHeaderFile(context.HeaderFile);
 
+            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
+                context.RespectInternals,
+                includeEffectivelyPrivateSymbols: true,
+                includeExplicitInterfaceImplementationSymbols: true);
+
+            // Configure the symbol filter
+            CompositeSymbolFilter symbolFilter = new();
             if (context.ExcludeApiFiles is not null)
             {
-                compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeApiFiles));
+                symbolFilter.Add(new DocIdSymbolFilter(context.ExcludeApiFiles));
             }
+            symbolFilter.Add(new ImplicitSymbolFilter());
+            symbolFilter.Add(accessibilitySymbolFilter);
 
-            string headerFileText = ReadHeaderFile(context.HeaderFile);
+            // Configure the attribute data symbol filter
+            CompositeSymbolFilter attributeDataSymbolFilter = new();
+            if (context.ExcludeAttributesFiles is not null)
+            {
+                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeAttributesFiles));
+            }
+            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
 
             // Invoke the CSharpFileBuilder for each directly loaded assembly.
             foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
@@ -129,8 +138,8 @@ namespace Microsoft.DotNet.GenAPI
                 textWriter.Write(headerFileText);
 
                 using CSharpFileBuilder fileBuilder = new(logger,
-                    compositeSymbolFilter,
-                    context.ExcludeAttributesFiles is not null ? new DocIdSymbolFilter(context.ExcludeAttributesFiles) : null,
+                    symbolFilter,
+                    attributeDataSymbolFilter,
                     textWriter,
                     context.ExceptionMessage,
                     context.IncludeAssemblyAttributes,
