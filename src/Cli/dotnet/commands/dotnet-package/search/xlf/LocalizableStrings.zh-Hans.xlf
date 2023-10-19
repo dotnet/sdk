@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CommandDescription">
+        <source>Searches a given source using the query string provided. If no sources are specified, all sources defined in NuGet.config are used.</source>
+        <target state="new">Searches a given source using the query string provided. If no sources are specified, all sources defined in NuGet.config are used.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExactMatchDescription">
+        <source>Return exact matches only as a search result.</source>
+        <target state="new">Return exact matches only as a search result.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InteractiveDescription">
+        <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
+        <target state="new">Allows the command to stop and wait for user input or action (for example to complete authentication).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PrereleaseDescription">
+        <source>Allow prelease packages to be shown.</source>
+        <target state="new">Allow prelease packages to be shown.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermArgumentName">
+        <source>SearchTerm</source>
+        <target state="new">SearchTerm</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SearchTermDescription">
+        <source>Specifies the search term to filter results. Use this argument to search for packages matching the provided query. Example: dotnet package search json.</source>
+        <target state="new">Specifies the search term to filter results. Use this argument to search for packages matching the provided query. Example: dotnet package search json.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipArgumentName">
+        <source>Skip</source>
+        <target state="new">Skip</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkipDescription">
+        <source>The number of results to skip, for pagination. The default is 0.</source>
+        <target state="new">The number of results to skip, for pagination. The default is 0.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceArgumentName">
+        <source>Source</source>
+        <target state="new">Source</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceDescription">
+        <source>The package source to search. You can pass multiple --source options to search multiple package sources.</source>
+        <target state="new">The package source to search. You can pass multiple --source options to search multiple package sources.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TakeArgumentName">
+        <source>Take</source>
+        <target state="new">Take</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TakeDescription">
+        <source>The number of results to return. The default value is 20.</source>
+        <target state="new">The number of results to return. The default value is 20.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
