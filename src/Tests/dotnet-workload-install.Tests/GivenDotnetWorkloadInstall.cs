@@ -169,10 +169,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // However, we can test a setup where no workloads are installed and --info is provided. 
 
             _reporter.Clear();
-            var mockWorkloadIds = new WorkloadId[] { new WorkloadId("xamarin-android"), new WorkloadId("xamarin-android-build") };
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var dotnetRoot = Path.Combine(testDirectory, "dotnet");
-            var installer = new MockPackWorkloadInstaller();
             var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android"});
 
@@ -207,18 +205,17 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 Parser.Instance.Parse(new string[] {"dotnet", "workload", "install", "xamarin-android"});
             var featureBand = new SdkFeatureBand(sdkVersion);
             var manifestsToUpdate =
-                new (ManifestVersionUpdate manifestUpdate, Dictionary<WorkloadId, WorkloadDefinition> Workloads)[]
+                new ManifestUpdateWithWorkloads[]
                     {
-                        (new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), featureBand.ToString(), new ManifestVersion("2.0.0"), featureBand.ToString()),
-                            null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), featureBand.ToString(), new ManifestVersion("2.0.0"), featureBand.ToString()), null),
                     };
             (_, var installManager, var installer, _, _, _) =
                 GetTestInstallers(parseResult, userLocal, sdkVersion, manifestUpdates: manifestsToUpdate, installedFeatureBand: sdkVersion);
 
             installManager.InstallWorkloads(new List<WorkloadId>(), false); // Don't actually do any installs, just update manifests
 
-            installer.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].manifestUpdate.ManifestId);
-            installer.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].manifestUpdate.NewVersion);
+            installer.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
+            installer.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
             installer.InstalledManifests[0].manifestUpdate.NewFeatureBand.Should().Be(new SdkFeatureBand(sdkVersion).ToString());
             installer.InstalledManifests[0].offlineCache.Should().Be(null);
         }
@@ -232,11 +229,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             var featureBand = new SdkFeatureBand(sdkVersion);
             var manifestsToUpdate =
-                new (ManifestVersionUpdate manifestUpdate, Dictionary<WorkloadId, WorkloadDefinition>
-                    Workloads)[]
+                new ManifestUpdateWithWorkloads[]
                     {
-                        (new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), featureBand.ToString(), new ManifestVersion("2.0.0"), featureBand.ToString()),
-                            null)
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), featureBand.ToString(), new ManifestVersion("2.0.0"), featureBand.ToString()), null)
                     };
             var cachePath = Path.Combine(_testAssetsManager.CreateTestDirectory(identifier: AppendForUserLocal("mockCache_", userLocal) + sdkVersion).Path,
                 "mockCachePath");
@@ -249,8 +244,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             installManager.Execute();
 
-            installer.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].manifestUpdate.ManifestId);
-            installer.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].manifestUpdate.NewVersion);
+            installer.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
+            installer.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
             installer.InstalledManifests[0].manifestUpdate.NewFeatureBand.Should().Be(new SdkFeatureBand(sdkVersion).ToString());
             installer.InstalledManifests[0].offlineCache.Should().Be(new DirectoryPath(cachePath));
         }
@@ -264,7 +259,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             var cachePath = Path.Combine(_testAssetsManager.CreateTestDirectory(identifier: AppendForUserLocal("mockCache_", userLocal) + sdkVersion).Path, "mockCachePath");
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", "xamarin-android", "--download-to-cache", cachePath });
-            (_, var installManager, var installer, _, var manifestUpdater, var packageDownloader) = GetTestInstallers(parseResult, userLocal, sdkVersion, tempDirManifestPath: _manifestPath, installedFeatureBand: sdkVersion);
+            (_, var installManager, _, _, var manifestUpdater, var packageDownloader) = GetTestInstallers(parseResult, userLocal, sdkVersion, tempDirManifestPath: _manifestPath, installedFeatureBand: sdkVersion);
 
             installManager.Execute();
 
@@ -457,7 +452,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 string sdkVersion,
                 [CallerMemberName] string testName = "",
                 string failingWorkload = null,
-                IEnumerable<(ManifestVersionUpdate manifestUpdate, Dictionary<WorkloadId, WorkloadDefinition> Workloads)> manifestUpdates = null,
+                IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null,
                 string tempDirManifestPath = null,
                 string installedFeatureBand = null)
         {
@@ -472,7 +467,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             };
             
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
-            var manifestUpdater = new MockWorkloadManifestUpdater(manifestUpdates, tempDirManifestPath);
+            var manifestUpdater = new MockWorkloadManifestUpdater(manifestUpdates);
             if (userLocal)
             {
                 WorkloadFileBasedInstall.SetUserLocal(dotnetRoot, sdkVersion);
@@ -593,13 +588,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var parseResult =
                Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", verbosityFlag, "xamarin-android" });
             var manifestsToUpdate =
-                new (ManifestVersionUpdate manifestUpdate, Dictionary<WorkloadId, WorkloadDefinition>
-                    Workloads)[]
+                new ManifestUpdateWithWorkloads[]
                     {
-                        (new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), sdkFeatureBand, new ManifestVersion("2.0.0"), sdkFeatureBand),
-                            null),
+                        new(new ManifestVersionUpdate(new ManifestId("mock-manifest"), new ManifestVersion("1.0.0"), sdkFeatureBand, new ManifestVersion("2.0.0"), sdkFeatureBand), null),
                     };
-            (_, var installManager, var installer, _, _, _) =
+            (_, var installManager, _, _, _, _) =
                 GetTestInstallers(parseResult, true, sdkFeatureBand, manifestUpdates: manifestsToUpdate);
 
             installManager.InstallWorkloads(new List<WorkloadId>(), false); // Don't actually do any installs, just update manifests
