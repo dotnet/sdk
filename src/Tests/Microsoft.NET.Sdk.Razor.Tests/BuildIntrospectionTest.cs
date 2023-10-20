@@ -7,7 +7,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
     {
         public BuildIntrospectionTest(ITestOutputHelper log) : base(log) {}
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void RazorSdk_AddsCshtmlFilesToUpToDateCheckInput()
         {
             var testAsset = "RazorSimpleMvc";
@@ -21,7 +21,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .And.HaveStdOutContaining($"UpToDateCheckInput: {Path.Combine("Views", "_ViewStart.cshtml")}");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void UpToDateReloadFileTypes_Default()
         {
             var testAsset = "RazorSimpleMvc";
@@ -34,7 +34,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .And.HaveStdOutContaining("UpToDateReloadFileTypes: ;.cs;.razor;.resx;.cshtml");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void UpToDateReloadFileTypes_WithRuntimeCompilation()
         {
             var testAsset = "RazorSimpleMvc";
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .And.HaveStdOutContaining("UpToDateReloadFileTypes: ;.cs;.razor;.resx;");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void UpToDateReloadFileTypes_WithwWorkAroundRemoved()
         {
             var testAsset = "RazorSimpleMvc";
@@ -69,7 +69,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .And.HaveStdOutContaining("UpToDateReloadFileTypes: ;.cs;.razor;.resx;.cshtml");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void UpToDateReloadFileTypes_WithRuntimeCompilationAndWorkaroundRemoved()
         {
             var testAsset = "RazorSimpleMvc";

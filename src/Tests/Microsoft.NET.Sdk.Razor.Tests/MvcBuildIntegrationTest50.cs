@@ -10,7 +10,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public override string TestProjectName => "SimpleMvc50";
         public override string TargetFramework => "net5.0";
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void BuildComponents_ErrorInGeneratedCode_ReportsMSBuildError_OnIncrementalBuild()
         {
             var testAsset = "RazorMvcWithComponents";
@@ -44,7 +44,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void IncrementalBuild_WithP2P_WorksWhenBuildProjectReferencesIsDisabled()
         {
             // Simulates building the same way VS does by setting BuildProjectReferences=false.

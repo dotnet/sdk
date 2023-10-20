@@ -9,7 +9,7 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        [RequiresMSBuildVersionTheory("17.8.1.47607")]
+        [Theory]
         [InlineData("WebApp", false)]
         [InlineData("WebApp", true)]
         [InlineData("WebApp", null)]
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.AspNetCore.Http.Generated");
         }
 
-        [RequiresMSBuildVersionTheory("17.8.1.47607")]
+        [Theory]
         [InlineData("WebApp", false)]
         [InlineData("WebApp", true)]
         [InlineData("WebApp", null)]
@@ -53,7 +53,7 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishAot()
         {
             var asset = _testAssetsManager
@@ -70,7 +70,7 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, expectEnabled: true, "Microsoft.AspNetCore.Http.Generated", "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishTrimmed()
         {
             var asset = _testAssetsManager

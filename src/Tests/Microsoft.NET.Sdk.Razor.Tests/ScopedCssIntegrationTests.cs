@@ -10,7 +10,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
     {
         public ScopedCssIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_NoOps_WhenScopedCssIsDisabled()
         {
             var testAsset = "RazorComponentApp";
@@ -27,7 +27,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "FetchData.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_NoOps_ForMvcApp_WhenScopedCssIsDisabled()
         {
             var testAsset = "RazorSimpleMvc";
@@ -44,7 +44,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Views", "Home", "About.cshtml.rz.scp.css")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void CanDisableDefaultDiscoveryConvention()
         {
             var testAsset = "RazorComponentApp";
@@ -96,7 +96,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_GeneratesTransformedFilesAndBundle_ForComponentsWithScopedCss()
         {
             var testAsset = "RazorComponentApp";
@@ -114,7 +114,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "FetchData.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_GeneratesTransformedFilesAndBundle_ForViewsWithScopedCss()
         {
             var testAsset = "RazorSimpleMvc";
@@ -132,7 +132,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Views", "Home", "About.cshtml.rz.scp.css")).Should().Exist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_ScopedCssFiles_ContainsUniqueScopesPerFile()
         {
             var testAsset = "RazorComponentApp";
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Assert.NotEqual(counterScopeId, indexScopeId);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_ScopedCssViews_ContainsUniqueScopesPerView()
         {
             var testAsset = "RazorSimpleMvc";
@@ -199,7 +199,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Assert.NotEqual(aboutScopeId, contactScopeId);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_WorksWhenViewsAndComponentsArePartOfTheSameProject_ContainsUniqueScopesPerFile()
         {
             var testAsset = "RazorMvcWithComponents";
@@ -230,7 +230,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Assert.NotEqual(indexScopeId, counterScopeId);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_PublishesBundleToTheRightLocation()
         {
             var testAsset = "RazorComponentApp";
@@ -247,7 +247,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_NoBuild_PublishesBundleToTheRightLocation()
         {
             var testAsset = "RazorComponentApp";
@@ -268,7 +268,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_DoesNotPublishAnyFile_WhenThereAreNoScopedCssFiles()
         {
             var testAsset = "RazorComponentApp";
@@ -285,7 +285,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "_framework", "scoped.styles.css")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_Publishes_IndividualScopedCssFiles_WhenNoBundlingIsEnabled()
         {
             var testAsset = "RazorComponentApp";
@@ -340,7 +340,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Assert.NotEqual(bundleThumbprint, newBundleThumbprint);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Does_Nothing_WhenThereAreNoScopedCssFiles()
         {
             var testAsset = "RazorComponentApp";
@@ -359,7 +359,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "_framework", "scoped.styles.css")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_ScopedCssTransformation_AndBundling_IsIncremental()
         {
             // Arrange
@@ -396,7 +396,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void BuildProjectWithReferences_CorrectlyBundlesScopedCssFiles()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -429,7 +429,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             appBundle.Should().Contain("_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void ScopedCss_IsBackwardsCompatible_WithPreviousVersions()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -472,7 +472,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             appBundle.Should().Contain("_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void ScopedCss_PublishIsBackwardsCompatible_WithPreviousVersions()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -516,7 +516,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         // This test verifies if the targets that VS calls to update scoped css works to update these files
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void RegeneratingScopedCss_ForProject()
         {
             // Arrange
@@ -545,7 +545,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         // Regression test for https://github.com/dotnet/aspnetcore/issues/37592
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void RegeneratingScopedCss_ForProjectWithReferences()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
