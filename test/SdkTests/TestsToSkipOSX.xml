@@ -1,0 +1,23 @@
+<Tests>
+  <SkippedTests>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAHelloWorldProject.It_publishes_self_contained_apps_to_the_publish_folder_and_the_app_should_run"
+            Skip="true"
+            Reason="SupportsTargetFramework crashes on Mac, probably fixed with https://github.com/dotnet/sdk/pull/29083"/>
+
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAFrameworkDependentApp.It_publishes_with_or_without_apphost"
+            Skip="true"
+            Reason="Test assumes test process architecture is the same as architecture under test"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_runs_a_rid_specific_app_with_conflicts_from_the_output_folder"
+          Skip="true"
+          Reason="Test assumes test process architecture is the same as architecture under test"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_runs_a_rid_specific_app_from_the_output_folder"
+          Skip="true"
+          Reason="Test assumes test process architecture is the same as architecture under test"/>
+
+    <Method Name="Microsoft.NET.Build.Tests.AppHostTests.It_builds_a_runnable_apphost_by_default"
+          Skip="true"
+          Reason="Test assumes test process architecture is the same as architecture under test"/>
+  </SkippedTests>
+</Tests>

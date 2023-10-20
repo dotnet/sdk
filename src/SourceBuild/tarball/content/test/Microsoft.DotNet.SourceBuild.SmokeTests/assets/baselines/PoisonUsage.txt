@@ -1,35 +1,17 @@
 <PrebuiltLeakReport>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/netcoreapp3.1/System.Text.Encoding.CodePages.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Roslyn/bincore/runtimes/win/lib/netcoreapp3.1/System.Text.Encoding.CodePages.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Roslyn/bincore/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Roslyn/bincore/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Roslyn/bincore/System.Text.Encoding.CodePages.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Roslyn/bincore/System.Text.Encoding.CodePages.dll">
+  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Sdks/Microsoft.DotNet.ILCompiler/tools/netstandard/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Collections.Immutable.dll">
+  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Sdks/Microsoft.DotNet.ILCompiler/tools/netstandard/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Collections.Immutable.dll">
@@ -38,40 +20,46 @@
   <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/Microsoft.Bcl.AsyncInterfaces.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/Microsoft.Extensions.DependencyInjection.Abstractions.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-sdk-x.y.z/sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/Microsoft.Extensions.DependencyInjection.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-toolset-internal-x.y.z/Roslyn/bincore/runtimes/win/lib/netcoreapp3.1/System.Text.Encoding.CodePages.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/Microsoft.NET.StringTools.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-toolset-internal-x.y.z/Roslyn/bincore/System.Collections.Immutable.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-toolset-internal-x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-toolset-internal-x.y.z/Roslyn/bincore/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/System.Configuration.ConfigurationManager.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-toolset-internal-x.y.z/Roslyn/bincore/System.Text.Encoding.CodePages.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-toolset-internal-x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Collections.Immutable.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/System.Reflection.MetadataLoadContext.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-toolset-internal-x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/System.Security.Permissions.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="dotnet-toolset-internal-x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/System.Text.Encoding.CodePages.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.Build.Framework.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/System.Text.Encodings.Web.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/System.Text.Json.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/net472/System.Threading.Tasks.Dataflow.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.Build.Framework.dll">
@@ -80,16 +68,7 @@
   <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.Build.Utilities.Core.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.Build.Utilities.Core.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.Extensions.DependencyInjection.Abstractions.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.Extensions.DependencyInjection.Abstractions.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.Extensions.DependencyInjection.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.Extensions.DependencyInjection.dll">
@@ -98,28 +77,79 @@
   <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.NET.StringTools.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.NET.StringTools.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Microsoft.Win32.SystemEvents.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/NuGet.Versioning.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Drawing.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Text.Encoding.CodePages.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Windows.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Configuration.ConfigurationManager.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Diagnostics.EventLog.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Drawing.Common.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Reflection.MetadataLoadContext.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Security.Cryptography.ProtectedData.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Security.Permissions.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Text.Encoding.CodePages.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Text.Encodings.Web.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Text.Json.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Threading.Tasks.Dataflow.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Arcade.Sdk.x.y.z/tools/netx.y/System.Windows.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/net472/Newtonsoft.Json.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/net472/System.Collections.Immutable.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/net472/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
@@ -128,22 +158,76 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/Microsoft.Bcl.AsyncInterfaces.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/Microsoft.Extensions.DependencyInjection.Abstractions.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Installers.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/Microsoft.Extensions.DependencyInjection.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.Build.Framework.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/Microsoft.NET.StringTools.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/Newtonsoft.Json.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.Commands.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.Configuration.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.Credentials.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.DependencyResolver.Core.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.Frameworks.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.LibraryModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.Packaging.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.ProjectModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.Protocol.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/NuGet.Versioning.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/System.Collections.Immutable.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/System.Configuration.ConfigurationManager.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/System.Reflection.Metadata.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/System.Security.Permissions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/System.Text.Encoding.CodePages.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/System.Text.Encodings.Web.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/net472/System.Text.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.Build.Framework.dll">
@@ -152,16 +236,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.Build.Utilities.Core.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.Build.Utilities.Core.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.Extensions.DependencyInjection.Abstractions.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.Extensions.DependencyInjection.Abstractions.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.Extensions.DependencyInjection.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.Extensions.DependencyInjection.dll">
@@ -170,10 +245,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.NET.StringTools.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.NET.StringTools.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Microsoft.Win32.SystemEvents.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
@@ -182,16 +254,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Commands.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Commands.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Configuration.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Configuration.dll">
@@ -200,16 +263,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Credentials.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Credentials.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.DependencyResolver.Core.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.DependencyResolver.Core.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
@@ -218,16 +272,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.LibraryModel.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.LibraryModel.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Packaging.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Packaging.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.ProjectModel.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.ProjectModel.dll">
@@ -236,40 +281,55 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Protocol.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Protocol.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Versioning.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Drawing.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Windows.Extensions.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Configuration.ConfigurationManager.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Diagnostics.EventLog.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Drawing.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Formats.Asn1.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Security.Cryptography.Pkcs.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Security.Cryptography.ProtectedData.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Text.Encodings.Web.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Security.Permissions.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Text.Encodings.Web.dll">
@@ -278,46 +338,55 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Text.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Text.Json.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Packaging.x.y.z/tools/netx.y/System.Windows.Extensions.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/net472/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/net472/NuGet.Common.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/NuGet.Common.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/net472/NuGet.Configuration.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/NuGet.Common.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/net472/NuGet.Frameworks.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/NuGet.Configuration.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/net472/NuGet.Packaging.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/NuGet.Configuration.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/net472/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/netx.y/NuGet.Common.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/NuGet.Packaging.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/netx.y/NuGet.Configuration.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/NuGet.Packaging.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/NuGet.Versioning.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/netx.y/NuGet.Packaging.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.Sdk.x.y.z/tools/netx.y/NuGet.Versioning.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/netx.y/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/cs/Microsoft.Deployment.DotNet.Releases.resources.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/netx.y/System.Formats.Asn1.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/netx.y/System.Security.Cryptography.Pkcs.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.Build.Tasks.TargetFramework.x.y.z/tools/netx.y/System.Security.Cryptography.ProtectedData.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/cs/Microsoft.Deployment.DotNet.Releases.resources.dll">
@@ -326,16 +395,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/cs/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/cs/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/de/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/de/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/de/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/de/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
@@ -344,16 +404,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/es/Microsoft.Deployment.DotNet.Releases.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/es/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/es/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/es/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/fr/Microsoft.Deployment.DotNet.Releases.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/fr/Microsoft.Deployment.DotNet.Releases.resources.dll">
@@ -362,16 +413,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/fr/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/fr/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/it/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/it/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/it/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/it/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
@@ -380,16 +422,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ja/Microsoft.Deployment.DotNet.Releases.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ja/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ja/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ja/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ko/Microsoft.Deployment.DotNet.Releases.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ko/Microsoft.Deployment.DotNet.Releases.resources.dll">
@@ -398,16 +431,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ko/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ko/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/Microsoft.Deployment.DotNet.Releases.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/Microsoft.Deployment.DotNet.Releases.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/Microsoft.NET.Sdk.WorkloadManifestReader.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/Microsoft.NET.Sdk.WorkloadManifestReader.dll">
@@ -416,16 +440,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/NuGet.Configuration.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/NuGet.Configuration.dll">
@@ -434,16 +449,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/NuGet.Packaging.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/NuGet.Packaging.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/NuGet.Versioning.dll">
@@ -452,16 +458,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/pl/Microsoft.Deployment.DotNet.Releases.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/pl/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/pl/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/pl/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/pt-BR/Microsoft.Deployment.DotNet.Releases.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/pt-BR/Microsoft.Deployment.DotNet.Releases.resources.dll">
@@ -470,16 +467,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/pt-BR/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/pt-BR/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ru/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ru/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ru/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/ru/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
@@ -488,28 +476,22 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Formats.Asn1.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Security.Cryptography.Pkcs.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Text.Encodings.Web.dll">
+  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Security.Cryptography.ProtectedData.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Text.Encodings.Web.dll">
@@ -518,16 +500,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Text.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/System.Text.Json.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/tr/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/tr/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/tr/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/tr/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
@@ -536,16 +509,7 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/zh-Hans/Microsoft.Deployment.DotNet.Releases.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/zh-Hans/Microsoft.Deployment.DotNet.Releases.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/zh-Hans/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/zh-Hans/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/zh-Hant/Microsoft.Deployment.DotNet.Releases.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/zh-Hant/Microsoft.Deployment.DotNet.Releases.resources.dll">
@@ -554,142 +518,10 @@
   <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/zh-Hant/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.Build.Tasks.Workloads.x.y.z/tools/netx.y/zh-Hant/Microsoft.NET.Sdk.WorkloadManifestReader.resources.dll">
+  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/net472/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/cs/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/cs/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/cs/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/cs/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/de/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/de/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/de/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/de/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/es/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/es/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/es/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/es/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/fr/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/fr/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/fr/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/fr/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/it/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/it/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/it/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/it/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ja/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ja/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ja/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ja/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ko/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ko/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ko/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ko/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/Microsoft.CodeAnalysis.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/Microsoft.CodeAnalysis.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/pl/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/pl/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/pl/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/pl/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/pt-BR/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/pt-BR/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/pt-BR/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/pt-BR/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ru/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ru/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ru/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/ru/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Text.Encoding.CodePages.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Text.Encoding.CodePages.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
+  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/net472/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
@@ -698,58 +530,136 @@
   <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.NuGetRepack.Tasks.x.y.z/tools/net472/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/System.Text.Encoding.CodePages.dll">
+  <File Path="Microsoft.DotNet.NuGetRepack.Tasks.x.y.z/tools/net472/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/System.Text.Encoding.CodePages.dll">
+  <File Path="Microsoft.DotNet.NuGetRepack.Tasks.x.y.z/tools/net472/System.IO.Packaging.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/tr/Microsoft.CodeAnalysis.CSharp.resources.dll">
+  <File Path="Microsoft.DotNet.NuGetRepack.Tasks.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/tr/Microsoft.CodeAnalysis.CSharp.resources.dll">
+  <File Path="Microsoft.DotNet.NuGetRepack.Tasks.x.y.z/tools/netx.y/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/tr/Microsoft.CodeAnalysis.resources.dll">
+  <File Path="Microsoft.DotNet.NuGetRepack.Tasks.x.y.z/tools/netx.y/System.IO.Packaging.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/tr/Microsoft.CodeAnalysis.resources.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/cs/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/cs/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/de/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/zh-Hans/Microsoft.CodeAnalysis.resources.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/de/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/zh-Hans/Microsoft.CodeAnalysis.resources.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/es/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/es/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/fr/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/zh-Hant/Microsoft.CodeAnalysis.resources.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/fr/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.GenFacades.x.y.z/tools/netx.y/zh-Hant/Microsoft.CodeAnalysis.resources.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/it/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/cs/Microsoft.CodeAnalysis.CSharp.resources.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/it/Microsoft.CodeAnalysis.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/ja/Microsoft.CodeAnalysis.CSharp.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/ja/Microsoft.CodeAnalysis.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/ko/Microsoft.CodeAnalysis.CSharp.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/ko/Microsoft.CodeAnalysis.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/Microsoft.CodeAnalysis.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/Newtonsoft.Json.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/NuGet.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/NuGet.Configuration.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/NuGet.Frameworks.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/NuGet.Packaging.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/NuGet.Versioning.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/pl/Microsoft.CodeAnalysis.CSharp.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/pl/Microsoft.CodeAnalysis.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/pt-BR/Microsoft.CodeAnalysis.CSharp.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/pt-BR/Microsoft.CodeAnalysis.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/ru/Microsoft.CodeAnalysis.CSharp.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/ru/Microsoft.CodeAnalysis.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/System.Collections.Immutable.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/System.Reflection.Metadata.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/System.Text.Encoding.CodePages.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/tr/Microsoft.CodeAnalysis.CSharp.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/tr/Microsoft.CodeAnalysis.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/zh-Hans/Microsoft.CodeAnalysis.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/net472/zh-Hant/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/cs/Microsoft.CodeAnalysis.CSharp.resources.dll">
@@ -758,16 +668,7 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/cs/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/cs/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/de/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/de/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/de/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/de/Microsoft.CodeAnalysis.resources.dll">
@@ -776,16 +677,7 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/es/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/es/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/es/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/es/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/fr/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/fr/Microsoft.CodeAnalysis.CSharp.resources.dll">
@@ -794,16 +686,7 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/fr/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/fr/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/it/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/it/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/it/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/it/Microsoft.CodeAnalysis.resources.dll">
@@ -812,16 +695,7 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ja/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ja/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ja/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ja/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ko/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ko/Microsoft.CodeAnalysis.CSharp.resources.dll">
@@ -830,16 +704,7 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ko/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ko/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/Microsoft.CodeAnalysis.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/Microsoft.CodeAnalysis.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
@@ -848,16 +713,7 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/NuGet.Common.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/NuGet.Configuration.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/NuGet.Configuration.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
@@ -866,16 +722,7 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/NuGet.Packaging.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/NuGet.Packaging.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/NuGet.Versioning.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/NuGet.Versioning.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/pl/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/pl/Microsoft.CodeAnalysis.CSharp.resources.dll">
@@ -884,16 +731,7 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/pl/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/pl/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/pt-BR/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/pt-BR/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/pt-BR/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/pt-BR/Microsoft.CodeAnalysis.resources.dll">
@@ -902,16 +740,10 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ru/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ru/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ru/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/ru/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Text.Encoding.CodePages.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Text.Encoding.CodePages.dll">
@@ -920,22 +752,16 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Formats.Asn1.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Security.Cryptography.Pkcs.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Text.Encoding.CodePages.dll">
+  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Security.Cryptography.ProtectedData.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/System.Text.Encoding.CodePages.dll">
@@ -944,16 +770,7 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/tr/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/tr/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/tr/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/tr/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/zh-Hans/Microsoft.CodeAnalysis.CSharp.resources.dll">
@@ -962,22 +779,58 @@
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/zh-Hans/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/zh-Hans/Microsoft.CodeAnalysis.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/zh-Hant/Microsoft.CodeAnalysis.CSharp.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/zh-Hant/Microsoft.CodeAnalysis.resources.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.PackageTesting.x.y.z/tools/netx.y/zh-Hant/Microsoft.CodeAnalysis.resources.dll">
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/Microsoft.Bcl.AsyncInterfaces.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/Microsoft.Extensions.DependencyModel.dll">
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/Microsoft.Extensions.DependencyModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/Newtonsoft.Json.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/NuGet.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/NuGet.Configuration.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/NuGet.DependencyResolver.Core.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/NuGet.Frameworks.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/NuGet.LibraryModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/NuGet.Packaging.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/NuGet.ProjectModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/NuGet.Protocol.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/NuGet.Versioning.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/System.Collections.Immutable.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/System.Reflection.Metadata.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/System.Text.Encodings.Web.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/net472/System.Text.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/Microsoft.Extensions.DependencyModel.dll">
@@ -986,16 +839,7 @@
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Configuration.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Configuration.dll">
@@ -1004,16 +848,7 @@
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.DependencyResolver.Core.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.DependencyResolver.Core.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.LibraryModel.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.LibraryModel.dll">
@@ -1022,16 +857,7 @@
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Packaging.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Packaging.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.ProjectModel.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.ProjectModel.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Protocol.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Protocol.dll">
@@ -1040,16 +866,7 @@
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/NuGet.Versioning.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Collections.Immutable.dll">
@@ -1058,16 +875,7 @@
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Text.Encodings.Web.dll">
+  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Security.Cryptography.ProtectedData.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Text.Encodings.Web.dll">
@@ -1076,10 +884,31 @@
   <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Text.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SharedFramework.Sdk.x.y.z/tools/netx.y/System.Text.Json.dll">
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/net472/Microsoft.ApplicationInsights.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/Microsoft.ApplicationInsights.dll">
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/net472/Newtonsoft.Json.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/net472/NuGet.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/net472/NuGet.Configuration.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/net472/NuGet.Frameworks.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/net472/NuGet.Packaging.Core.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/net472/NuGet.Packaging.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/net472/NuGet.Versioning.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/net472/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/Microsoft.ApplicationInsights.dll">
@@ -1088,16 +917,7 @@
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/Newtonsoft.Json.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Configuration.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Configuration.dll">
@@ -1106,16 +926,7 @@
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Frameworks.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Frameworks.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Packaging.Core.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Packaging.Core.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Packaging.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Packaging.dll">
@@ -1124,22 +935,37 @@
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/NuGet.Versioning.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/System.Security.Cryptography.ProtectedData.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/net472/Microsoft.ApplicationInsights.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/lib/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/net472/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/Microsoft.ApplicationInsights.dll">
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/net472/NuGet.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/net472/NuGet.Configuration.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/net472/NuGet.Frameworks.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/net472/NuGet.Packaging.Core.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/net472/NuGet.Packaging.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/net472/NuGet.Versioning.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/net472/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/Microsoft.ApplicationInsights.dll">
@@ -1148,16 +974,7 @@
   <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Configuration.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Configuration.dll">
@@ -1166,16 +983,7 @@
   <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Packaging.Core.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Packaging.Core.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Packaging.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Packaging.dll">
@@ -1184,22 +992,40 @@
   <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/NuGet.Versioning.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/System.Security.Cryptography.ProtectedData.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/net472/Newtonsoft.Json.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SignTool.x.y.z/tools/netx.y/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/net472/NuGet.Common.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/net472/NuGet.Configuration.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/net472/NuGet.DependencyResolver.Core.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/net472/NuGet.Frameworks.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/net472/NuGet.LibraryModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/net472/NuGet.Packaging.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/net472/NuGet.ProjectModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/net472/NuGet.Protocol.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/net472/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/Newtonsoft.Json.dll">
@@ -1208,16 +1034,7 @@
   <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Common.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Common.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Configuration.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Configuration.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.DependencyResolver.Core.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.DependencyResolver.Core.dll">
@@ -1226,16 +1043,7 @@
   <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Frameworks.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.LibraryModel.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.LibraryModel.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Packaging.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Packaging.dll">
@@ -1244,52 +1052,49 @@
   <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.ProjectModel.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.ProjectModel.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Protocol.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
   <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Protocol.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Versioning.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/NuGet.Versioning.dll">
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netcoreapp3.1/bincore/runtimes/win/lib/netcoreapp3.1/System.Text.Encoding.CodePages.dll">
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/System.Formats.Asn1.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netcoreapp3.1/bincore/runtimes/win/lib/netcoreapp3.1/System.Text.Encoding.CodePages.dll">
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/System.Security.Cryptography.Pkcs.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netcoreapp3.1/bincore/System.Collections.Immutable.dll">
+  <File Path="Microsoft.DotNet.SourceBuild.Tasks.x.y.z/tools/netx.y/System.Security.Cryptography.ProtectedData.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netcoreapp3.1/bincore/System.Collections.Immutable.dll">
+  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netx.y/bincore/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netcoreapp3.1/bincore/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netx.y/bincore/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netcoreapp3.1/bincore/System.Reflection.Metadata.dll">
+  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netx.y/bincore/System.Text.Encoding.CodePages.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netcoreapp3.1/bincore/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netx.y/bincore/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netcoreapp3.1/bincore/System.Runtime.CompilerServices.Unsafe.dll">
+  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netx.y/bincore/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netcoreapp3.1/bincore/System.Text.Encoding.CodePages.dll">
+  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netx.y/bincore/System.Text.Encoding.CodePages.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netcoreapp3.1/bincore/System.Text.Encoding.CodePages.dll">
+  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netx.y/bincore/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.NET.ILLink.Tasks.x.y.z/tools/net472/System.Collections.Immutable.dll">
+  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netx.y/bincore/System.Reflection.Metadata.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="Microsoft.Net.Compilers.Toolset.x.y.z/tasks/netx.y/bincore/System.Text.Encoding.CodePages.dll">
     <Type>AssemblyAttribute</Type>
   </File>
   <File Path="Microsoft.NET.ILLink.Tasks.x.y.z/tools/net472/System.Collections.Immutable.dll">
@@ -1298,43 +1103,10 @@
   <File Path="Microsoft.NET.ILLink.Tasks.x.y.z/tools/net472/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.NET.ILLink.Tasks.x.y.z/tools/net472/System.Reflection.Metadata.dll">
+  <File Path="runtime.banana-rid.Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Collections.Immutable.dll">
     <Type>AssemblyAttribute</Type>
   </File>
-  <File Path="Microsoft.NET.ILLink.Tasks.x.y.z/tools/net472/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NET.ILLink.Tasks.x.y.z/tools/net472/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NETCore.Compilers.x.y.z/tools/bincore/runtimes/win/lib/netcoreapp3.1/System.Text.Encoding.CodePages.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NETCore.Compilers.x.y.z/tools/bincore/runtimes/win/lib/netcoreapp3.1/System.Text.Encoding.CodePages.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NETCore.Compilers.x.y.z/tools/bincore/System.Collections.Immutable.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NETCore.Compilers.x.y.z/tools/bincore/System.Collections.Immutable.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NETCore.Compilers.x.y.z/tools/bincore/System.Reflection.Metadata.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NETCore.Compilers.x.y.z/tools/bincore/System.Reflection.Metadata.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NETCore.Compilers.x.y.z/tools/bincore/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NETCore.Compilers.x.y.z/tools/bincore/System.Runtime.CompilerServices.Unsafe.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NETCore.Compilers.x.y.z/tools/bincore/System.Text.Encoding.CodePages.dll">
-    <Type>AssemblyAttribute</Type>
-  </File>
-  <File Path="Microsoft.NETCore.Compilers.x.y.z/tools/bincore/System.Text.Encoding.CodePages.dll">
+  <File Path="runtime.banana-rid.Microsoft.DotNet.ILCompiler.x.y.z/tools/netstandard/System.Reflection.Metadata.dll">
     <Type>AssemblyAttribute</Type>
   </File>
 </PrebuiltLeakReport>

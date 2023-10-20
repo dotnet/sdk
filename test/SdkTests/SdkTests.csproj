@@ -46,10 +46,6 @@
   </ItemGroup>
 
   <Target Name="GetRuntimesToInstall">
-    <PropertyGroup>
-      <Supports1xRuntimes>true</Supports1xRuntimes>
-    </PropertyGroup>
-
     <ReadLinesFromFile File="/etc/os-release"
                        Condition="'$(OS)' != 'Windows_NT'">
       <Output TaskParameter="Lines" PropertyName="OsReleaseContents"/>
@@ -60,41 +56,13 @@
       <OsReleaseContents>Windows</OsReleaseContents>
     </PropertyGroup>
 
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Ubuntu%22'))">
-      <Supports1xRuntimes Condition="$(OsReleaseContents.Contains('VERSION_ID=%2218.04%22'))">false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=Fedora'))">
-      <Supports1xRuntimes>false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Debian'))">
-      <Supports1xRuntimes>false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22openSUSE%20Leap%22'))">
-      <Supports1xRuntimes>false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="$(OsReleaseContents.Contains('NAME=%22Alpine%20Linux%22'))">
-      <Supports1xRuntimes>false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <!-- RHEL 6 does not appear to have the os-release file -->
-    <PropertyGroup Condition="'$(OsReleaseContents)' == ''">
-      <Supports1xRuntimes>false</Supports1xRuntimes>
-    </PropertyGroup>
-
-    <ItemGroup Condition="'$(Supports1xRuntimes)' == 'true'">
-      <RuntimeVersionToInstall Include="1.0.5" />
-      <RuntimeVersionToInstall Include="1.1.2" />      
-    </ItemGroup>
     <ItemGroup>
       <RuntimeVersionToInstall Include="2.1.0" />
       <RuntimeVersionToInstall Include="2.2.5" />
       <RuntimeVersionToInstall Include="3.0.0" />
       <RuntimeVersionToInstall Include="3.1.0" />
       <RuntimeVersionToInstall Include="5.0.0" />
+      <RuntimeVersionToInstall Include="6.0.0" />
     </ItemGroup>
     
   </Target>
@@ -208,19 +176,18 @@
       <ToolRunPrefix>$(ToolRunPrefix)set DOTNET_INSTALLDIR=&amp;&amp; </ToolRunPrefix>
     </PropertyGroup>
     <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
-      <ToolRunPrefix>$(ToolRunPrefix)unset MSBuildSDKsPath &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_HOST_PATH &amp;&amp; </ToolRunPrefix>
-      <ToolRunPrefix>$(ToolRunPrefix)unset DOTNET_INSTALLDIR &amp;&amp; </ToolRunPrefix>
+      <ToolRunPrefix>$(ToolRunPrefix)unset MSBuildSDKsPath DOTNET_HOST_PATH DOTNET_INSTALLDIR &amp;&amp; </ToolRunPrefix>
     </PropertyGroup>
     
-    <Exec Command="$(ToolRunPrefix)dotnet new tool-manifest"
+    <Exec Command="$(ToolRunPrefix)$(RedistLayoutPath)dotnet new tool-manifest"
       WorkingDirectory="$(TestLocalToolFolder)"
-      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
+      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"
+      IgnoreStandardErrorWarningFormat="true" />
 
     <PropertyGroup>
       <SdkTestPackageVersion>$(MicrosoftNETSdkPackageVersion)</SdkTestPackageVersion>
       
-      <InstallToolCommand>dotnet tool install --local $(ToolCommandName)</InstallToolCommand>
+      <InstallToolCommand>$(RedistLayoutPath)dotnet tool install --local $(ToolCommandName)</InstallToolCommand>
       <InstallToolCommand>$(InstallToolCommand) --version $(SdkTestPackageVersion)</InstallToolCommand>
     </PropertyGroup>
     
@@ -261,6 +228,11 @@
     <PropertyGroup Condition=" $([MSBuild]::IsOSPlatform('Linux')) ">
       <!-- Add list of tests to skip on Linux -->
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipLinux.xml"</TestArgs>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" $([MSBuild]::IsOSPlatform('OSX')) ">
+      <!-- Add list of tests to skip on Linux Portable -->
+      <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipOSX.xml"</TestArgs>
     </PropertyGroup>
 
     <Exec Command="$(ToolRunPrefix)$(RedistLayoutPath)dotnet tool run $(ToolCommandName) -- $(TestArgs)"

@@ -9,13 +9,12 @@ parameters:
 
   # The following parameters aren't expected to be passed in rather they are used for encapsulation
   # -----------------------------------------------------------------------------------------------
-  centOS7Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-source-build-20210714125450-5d87b80
-  centOS8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-8-source-build-20211118190102-9355e7b
+  alpine317Container: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17-20230214152931-7f13c75
+  centOSStream8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8-20220809204800-17a4aab
   centOSStream9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9-20220107135047-4cd394c
-  debian9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-stretch-20211001171226-047508b
-  debian9Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-arm64v8-20220405201138-a251961
+  debian11Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-arm64v8-20220812185233-b286fae
   fedora38Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-20230609193134-47458d2
-  ubuntu1804Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-20210924170306-047508b
+  ubuntu2004Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-20220813234344-4c008dd
   poolInternalAmd64:
     name: NetCore1ESPool-Svc-Internal
     demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
@@ -37,43 +36,56 @@ jobs:
       excludeSdkContentTests: true
     installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
     matrix:
-      CentOS7-Online:
-        _BootstrapPrep: false
-        _Container: ${{ parameters.centOS7Container }}
+      CentOSStream8-Online:
+        _BootstrapPrep: true
+        _Container: ${{ parameters.centOSStream8Container }}
         _EnablePoison: false
         _ExcludeOmniSharpTests: true
         _RunOnline: true
+        _WithPreviousSDK: false
+      CentOSStream8-Offline:
+        _BootstrapPrep: true
+        _Container: ${{ parameters.centOSStream8Container }}
+        _EnablePoison: false
+        _ExcludeOmniSharpTests: true
+        _RunOnline: false
+        _WithPreviousSDK: false
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        CentOS7-Offline:
-          _BootstrapPrep: false
-          _Container: ${{ parameters.centOS7Container }}
+        Alpine317-Offline:
+          _BootstrapPrep: true
+          _Container: ${{ parameters.alpine317Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: true
           _RunOnline: false
-        CentOS8-Offline:
+          _WithPreviousSDK: false
+        CentOSStream8-WithPreviousSDK:
           _BootstrapPrep: false
-          _Container: ${{ parameters.centOS8Container }}
+          _Container: ${{ parameters.centOSStream8Container }}
           _EnablePoison: false
-          _ExcludeOmniSharpTests: false
+          _ExcludeOmniSharpTests: true
           _RunOnline: false
+          _WithPreviousSDK: true
         CentOSStream9-Offline:
-          _BootstrapPrep: false
+          _BootstrapPrep: true
           _Container: ${{ parameters.centOSStream9Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _RunOnline: false
+          _WithPreviousSDK: false
         Fedora38-Offline:
-          _BootstrapPrep: false
+          _BootstrapPrep: true
           _Container: ${{ parameters.fedora38Container }}
           _EnablePoison: true
           _ExcludeOmniSharpTests: false
           _RunOnline: false
-        Ubuntu1804-Offline:
-          _BootstrapPrep: false
-          _Container: ${{ parameters.ubuntu1804Container }}
+          _WithPreviousSDK: false
+        Ubuntu2004-Offline:
+          _BootstrapPrep: true
+          _Container: ${{ parameters.ubuntu2004Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _RunOnline: false
+          _WithPreviousSDK: false
     name: Build_Tarball_x64
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
@@ -91,12 +103,13 @@ jobs:
       dependsOn: ${{ parameters.dependsOn }}
       installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
       matrix:
-        Debian9-Offline:
+        Debian11-Offline:
           _BootstrapPrep: true
-          _Container: ${{ parameters.debian9Arm64Container }}
+          _Container: ${{ parameters.debian11Arm64Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _RunOnline: false
+          _WithPreviousSDK: false
       name: Build_Tarball_arm64
       pool: ${{ parameters.poolInternalArm64 }}
 
@@ -117,6 +130,7 @@ jobs:
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _RunOnline: false
+          _WithPreviousSDK: false
       name: Build_Tarball_x64_Using_Previous
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:

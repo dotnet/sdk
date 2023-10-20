@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Security.AccessControl;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -66,7 +67,10 @@ public class OmniSharpTests : SmokeTests
 
             Directory.CreateDirectory(OmniSharpDirectory);
             ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {omniSharpTarballFile} -C {OmniSharpDirectory}", OutputHelper);
-			ExecuteHelper.ExecuteProcessValidateExitCode("chmod", $"+x {OmniSharpDirectory}/run", OutputHelper);
+            ExecuteHelper.ExecuteProcessValidateExitCode("chmod", $"+x {OmniSharpDirectory}/run", OutputHelper);
+            
+			// Ensure the run script is executable (see https://github.com/OmniSharp/omnisharp-roslyn/issues/2547)
+            File.SetUnixFileMode($"{OmniSharpDirectory}/run", UnixFileMode.UserRead | UnixFileMode.UserExecute);
         }
     }
 }

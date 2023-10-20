@@ -50,7 +50,8 @@
       <SourceBuiltTarballName>$(OutputPath)$(SourceBuiltArtifactsTarballName).$(installerOutputPackageVersion).$(TargetRid).tar.gz</SourceBuiltTarballName>
     </PropertyGroup>
 
-    <Exec Command="tar --numeric-owner --exclude='$(SBRPIntermediateWildcard)' -czf $(SourceBuiltTarballName) *.nupkg *.props SourceBuildReferencePackages/" WorkingDirectory="$(SourceBuiltPackagesPath)" />
+    <Exec Command="tar --numeric-owner --exclude='Microsoft.SourceBuild.Intermediate.*.nupkg' -czf $(SourceBuiltTarballName) *.nupkg *.props SourceBuildReferencePackages/"
+          WorkingDirectory="$(SourceBuiltPackagesPath)" />
 
     <Message Importance="High" Text="Packaged source-built artifacts to $(SourceBuiltTarballName)" />
   </Target>

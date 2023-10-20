@@ -64,14 +64,13 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
                 string repoName = dependency.SourceBuildRepoName;
                 string safeRepoName = repoName.Replace("-", "").Replace(".", "");
                 string propsPath = Path.Combine(SourceBuildMetadataDir, $"{repoName.Replace(".", "-")}.props");
-                DerivedVersion derivedVersion = GetVersionInfo(dependency.Version, "0");
+                DerivedVersion derivedVersion = GetVersionInfo(safeRepoName, dependency.Version, "0");
                 var repoProps = new Dictionary<string, string>
                 {
                     ["GitCommitHash"] = dependency.Sha,
                     ["OfficialBuildId"] = derivedVersion.OfficialBuildId,
                     ["OutputPackageVersion"] = dependency.Version,
                     ["PreReleaseVersionLabel"] = derivedVersion.PreReleaseVersionLabel,
-                    ["IsStable"] = string.IsNullOrWhiteSpace(derivedVersion.PreReleaseVersionLabel) ? "true" : "false",
                 };
                 if (!string.IsNullOrEmpty(dependency.GitCommitCount))
                 {
@@ -92,17 +91,18 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
         /// Reverse a version in the Arcade style (https://github.com/dotnet/arcade/blob/fb92b14d8cd07cf44f8f7eefa8ac58d7ffd05f3f/src/Microsoft.DotNet.Arcade.Sdk/tools/Version.BeforeCommonTargets.targets#L18)
         /// back to an OfficialBuildId + ReleaseLabel which we can then supply to get the same resulting version number.
         /// </summary>
+        /// <param name="repoName">The source build name of the repo to get the version info for.</param>
         /// <param name="version">The complete version, e.g. 1.0.0-beta1-19720.5</param>
         /// <param name="commitCount">The current commit count of the repo.  This is used for some repos that do not use the standard versioning scheme.</param>
         /// <returns></returns>
-        private static DerivedVersion GetVersionInfo(string version, string commitCount)
+        private static DerivedVersion GetVersionInfo(string repoName, string version, string commitCount)
         {
             var nugetVersion = new NuGetVersion(version);
 
             if (!string.IsNullOrWhiteSpace(nugetVersion.Release))
             {
                 var releaseParts = nugetVersion.Release.Split('-', '.');
-                if (releaseParts.Length == 2)
+                if (repoName.Contains("nuget"))
                 {
                     // NuGet does this - arbitrary build IDs
                     return new DerivedVersion { OfficialBuildId = DateTime.Now.ToString("yyyyMMdd.1"), PreReleaseVersionLabel = releaseParts[0] };
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
                 else if (releaseParts.Length == 3)
                 {
                     // VSTest uses full dates for the first part of their preview build numbers
-                    if (DateTime.TryParseExact(releaseParts[1], "yyyyMMdd", new CultureInfo("en-US"), DateTimeStyles.AssumeLocal, out DateTime fullDate))
+                    if (repoName.Contains("vstest"))
                     {
                         return new DerivedVersion { OfficialBuildId = $"{releaseParts[1]}.{releaseParts[2]}", PreReleaseVersionLabel = releaseParts[0] };
                     }
@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
             else
             {
                 // finalized version number (x.y.z) - probably not our code
-                // VSTest, Application Insights, Newtonsoft.Json do this
+                // Application Insights, Newtonsoft.Json do this
                 return new DerivedVersion { OfficialBuildId = DateTime.Now.ToString("yyyyMMdd.1"), PreReleaseVersionLabel = string.Empty };
             }
 

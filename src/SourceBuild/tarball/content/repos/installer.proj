@@ -10,6 +10,10 @@
     <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-x64</OverrideTargetRid>
     <OSNameOverride>$(OverrideTargetRid.Substring(0, $(OverrideTargetRid.IndexOf("-"))))</OSNameOverride>
 
+    <!-- Determine target portable rid based on bootstrap SDK's portable rid -->
+    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
+    <PortableOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))</PortableOS>
+
     <RuntimeArg>--runtime-id $(OverrideTargetRid)</RuntimeArg>
     <RuntimeArg Condition="'$(TargetOS)' == 'Linux'">--runtime-id $(TargetRid)</RuntimeArg>
 
@@ -22,10 +26,11 @@
     -->
     <BuildCommandArgs>$(BuildCommandArgs) /p:NETCoreAppMaximumVersion=99.9</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:OSName=$(OSNameOverride)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PortableOSName=$(PortableOS)</BuildCommandArgs>
     <BuildCommandArgs Condition="'$(TargetOS)' == 'Linux'">$(BuildCommandArgs) /p:Rid=$(TargetRid)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:DOTNET_INSTALL_DIR=$(DotNetCliToolDir)</BuildCommandArgs>
 
-    <BuildCommandArgs Condition="'$(TargetOS)' == 'Linux'">$(BuildCommandArgs) /p:AspNetCoreInstallerRid=$(PortableRid)</BuildCommandArgs>
+    <BuildCommandArgs Condition="'$(TargetOS)' == 'Linux'">$(BuildCommandArgs) /p:AspNetCoreInstallerRid=$(TargetRid)</BuildCommandArgs>
     <!-- core-sdk always wants to build portable on OSX and FreeBSD -->
     <BuildCommandArgs Condition="'$(TargetOS)' == 'FreeBSD'">$(BuildCommandArgs) /p:CoreSetupRid=freebsd-x64 /p:PortableBuild=true</BuildCommandArgs>
     <BuildCommandArgs Condition="'$(TargetOS)' == 'OSX'">$(BuildCommandArgs) /p:CoreSetupRid=osx-x64</BuildCommandArgs>
@@ -55,15 +60,13 @@
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="aspnetcore" />
-    <RepositoryReference Include="clicommandlineparser" />
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="nuget-client" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="sdk" />
-    <RepositoryReference Include="templating" />
     <RepositoryReference Include="test-templates" />
     <RepositoryReference Include="vstest" />
     <RepositoryReference Include="xliff-tasks" />
@@ -86,6 +89,7 @@
       Unable to find package dotnet-ef.
       Unable to find package dotnet-sql-cache.
       Unable to find package dotnet-user-secrets.
+      Unable to find package dotnet-user-jwts.
       Unable to find package dotnet-watch.  -->
     <EnvironmentVariables Include="CLIBUILD_SKIP_BUNDLEDDOTNETTOOLS=true" />
   </ItemGroup>

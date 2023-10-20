@@ -85,11 +85,11 @@
       NewText="/p:RepoRoot=&quot;$repo_root/&quot;" />
   </Target>
 
-  <Target Name="AddCommonNoWarns"
+  <Target Name="AddNoWarns"
           BeforeTargets="Build"
           Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') OR EXISTS('$(ProjectDirectory)src/Directory.Build.props') "
           Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)AddCommonNoWarns.complete" >
+          Outputs="$(RepoCompletedSemaphorePath)AddNoWarns.complete" >
 
     <!-- Don't warn on warnings that can be generated in source-build
          but not necessarily in repo builds. 
@@ -104,7 +104,7 @@
       <OldText><![CDATA[</Project>]]></OldText>
       <NewText>
         <![CDATA[  <PropertyGroup>
-    <NoWarn>%24(NoWarn);NU5104;NU1603</NoWarn>
+    <NoWarn>%24(NoWarn);NU5104;NU1603;$(RepoNoWarns)</NoWarn>
   </PropertyGroup>
 </Project>]]>
       </NewText>
@@ -127,11 +127,11 @@
          See https://github.com/dotnet/source-build/issues/1914 for details. -->
     <PropertyGroup>
       <ArcadeSdkReplacementText>
-      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.Arcade.Sdk.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net6.0.*&apos; \) )
+      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.Arcade.Sdk.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net7.0.*&apos; \) )
       </ArcadeSdkReplacementText>
 
       <ArcadeLoggingReplacementText>
-      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.ArcadeLogging.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net6.0.*&apos; \) )
+      logger_path=&quot;%24toolset_dir&quot;/%24%28cd &quot;$toolset_dir&quot; &amp;&amp; find . -name Microsoft.DotNet.ArcadeLogging.dll \( -regex &apos;.*netcoreapp2.1.*&apos; -or -regex &apos;.*net7.0.*&apos; \) )
       </ArcadeLoggingReplacementText>
 
       <LoggerPathReplacementText>
@@ -346,45 +346,7 @@
       <Output TaskParameter="PackageInfoItems" ItemName="_PreviouslySourceBuiltPackageInfos" />
     </ReadNuGetPackageInfos>
 
-    <ItemGroup>
-      <_KnownOriginPackagePaths Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
-      <_KnownOriginPackagePaths Include="$(PrebuiltPackagesPath)*.nupkg" />
-      <_KnownOriginPackagePaths Include="$(ReferencePackagesDir)*.nupkg" />
-    </ItemGroup>
-
-    <GetSourceBuiltNupkgCacheConflicts SourceBuiltPackageInfos="@(_PreviouslySourceBuiltPackageInfos)"
-                                       PackageCacheDir="$(PackagesDir)"
-                                       KnownOriginPackagePaths="@(_KnownOriginPackagePaths)">
-      <Output TaskParameter="ConflictingPackageInfos" ItemName="ConflictingPackageInfos" />
-    </GetSourceBuiltNupkgCacheConflicts>
-
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CreateBuildOutputProps.complete" Overwrite="true" />
-  </Target>
-
-  <Target Name="CheckSourceBuiltNupkgConflictUsages"
-          DependsOnTargets="GetAllProjectDirectories"
-          AfterTargets="CreateBuildOutputProps"
-          Condition="'@(ConflictingPackageInfos)' != ''"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)CheckSourceBuiltNupkgConflictUsages.complete">
-    <PropertyGroup>
-      <_ReportDir>$(ConflictingPackageReportDir)before-$(RepositoryName)/</_ReportDir>
-      <_ReportDataFile>$(_ReportDir)usage.xml</_ReportDataFile>
-      <_ProjectAssetsJsonArchiveFile>$(_ReportDir)all-project-assets-json-files.zip</_ProjectAssetsJsonArchiveFile>
-    </PropertyGroup>
-
-    <WritePackageUsageData NuGetPackageInfos="@(ConflictingPackageInfos)"
-                           RootDir="$(ProjectDir)"
-                           DataFile="$(_ReportDataFile)"
-                           ProjectAssetsJsonArchiveFile="$(_ProjectAssetsJsonArchiveFile)" />
-
-    <WriteUsageReports DataFile="$(_ReportDataFile)"
-                       OutputDirectory="$(_ReportDir)" />
-
-    <Warning Text="Detected packages in the cache that should be source-built, but contents don't match. See $(_ReportDir) for usage details:" />
-    <Warning Text="%(ConflictingPackageInfos.PackageId)/%(ConflictingPackageInfos.PackageVersion) : %(ConflictingPackageInfos.WarningMessage)" />
-
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)CheckSourceBuiltNupkgConflictUsages.complete" Overwrite="true" />
   </Target>
 
   <Target Name="CreateCombinedRestoreSourceAndVersionProps"
@@ -414,6 +376,9 @@
           DependsOnTargets="BuildRepoReferences"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(RepoCompletedSemaphorePath)Build.complete">
+
+    <Exec Command="$(DotnetToolCommand) build-server shutdown" />
+
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(ProjectBuildReason)" />
     <Message Importance="High" Text="Running command:" />
     <Message Importance="High" Text="  $(BuildCommand) $(RepoApiArgs)" Condition="'$(BuildCommand)' != ''" />
@@ -658,12 +623,6 @@
     <Exec Command="chmod 755 git-clone-to-dir.sh"
       Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' "
       WorkingDirectory="$(ToolPackageExtractDir)%(_ToolPackage.Id)/tools/SourceBuild/" />
-
-    <ReplaceTextInFile
-      Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' "
-      InputFile="$(ToolPackageExtractDir)%(_ToolPackage.Id)/tools/SourceBuild/SourceBuildArcadeTools.targets"
-      OldText="%3CReadSourceBuildIntermediateNupkgDependencies"
-      NewText="%3CReadSourceBuildIntermediateNupkgDependencies Condition=&quot;'%24%28DotNetBuildOffline%29' != 'true'&quot;" />
 
     <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker
          dev turnaround for Preview 6 -->

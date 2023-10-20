@@ -15,6 +15,8 @@ namespace EndToEnd.Tests
 {
     public class ProjectBuildTests : TestBase
     {
+        private static readonly string currentTfm = "net7.0";
+
         [Fact]
         public void ItCanNewRestoreBuildRunCleanMSBuildProject()
         {
@@ -26,6 +28,13 @@ namespace EndToEnd.Tests
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
                 .Should().Pass();
+
+            string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
+            var project = XDocument.Load(projectPath);
+            var ns = project.Root.Name.Namespace;
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = currentTfm;
+            project.Save(projectPath);
 
             new RestoreCommand()
                 .WithWorkingDirectory(projectDirectory)
@@ -71,6 +80,8 @@ namespace EndToEnd.Tests
             var ns = project.Root.Name.Namespace;
 
             project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk.Web";
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = currentTfm;
 
             project.Save(projectPath);
 
@@ -85,13 +96,20 @@ namespace EndToEnd.Tests
                 .Should().Pass().And.HaveStdOutContaining("Hello, World!");
         }
 
-        [WindowsOnlyFact]
-        public void ItCanPublishArm64Winforms()
+        [WindowsOnlyTheory]
+        [InlineData("net5.0")]
+        [InlineData("current")]
+        public void ItCanPublishArm64Winforms(string TargetFramework)
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
+            string TargetFrameworkParameter = "";
 
-            string newArgs = "winforms --no-restore";
+            if (TargetFramework != "current")
+            {
+                TargetFrameworkParameter = $"-f {TargetFramework}";
+            }
+            string newArgs = $"winforms {TargetFrameworkParameter} --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
@@ -111,13 +129,21 @@ namespace EndToEnd.Tests
             selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
-        [WindowsOnlyFact]
-        public void ItCanPublishArm64Wpf()
+        [WindowsOnlyTheory]
+        [InlineData("net5.0")]
+        [InlineData("current")]
+        public void ItCanPublishArm64Wpf(string TargetFramework)
         {
             DirectoryInfo directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
+            string TargetFrameworkParameter = "";
 
-            string newArgs = "wpf --no-restore";
+            if (TargetFramework != "current")
+            {
+                TargetFrameworkParameter = $"-f {TargetFramework}";
+            }
+
+            string newArgs = $"wpf {TargetFrameworkParameter} --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(newArgs)
@@ -288,7 +314,7 @@ namespace EndToEnd.Tests
         [InlineData("razorclasslib")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework(string templateName, string language = "")
         {
-            string framework = DetectExpectedDefaultFramework();
+            string framework = DetectExpectedDefaultFramework(templateName);
             TestTemplateCreateAndBuild(templateName, selfContained: true, language: language, framework: framework);
         }
 
@@ -335,7 +361,7 @@ namespace EndToEnd.Tests
         [InlineData("winformscontrollib", "VB")]
         public void ItCanCreateAndBuildTemplatesWithDefaultFramework_Windows(string templateName, string language = "")
         {
-            string framework = DetectExpectedDefaultFramework();
+            string framework = DetectExpectedDefaultFramework(templateName);
             TestTemplateCreateAndBuild(templateName, selfContained: true, language: language, framework: $"{framework}-windows");
         }
 
@@ -360,16 +386,17 @@ namespace EndToEnd.Tests
             }
         }
 
-        private static string DetectExpectedDefaultFramework()
+        private static string DetectExpectedDefaultFramework(string template = "")
         {
             string dotnetFolder = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
 
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 6)
+            if (latestMajorVersion == 7)
             {
-                return "net6.0";
+                return $"net{latestMajorVersion}.0";
             }
+
             throw new Exception("Unsupported version of SDK");
         }
 

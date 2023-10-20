@@ -70,7 +70,7 @@ internal static class ExecuteHelper
 
         if (!process.HasExited)
         {
-            outputHelper.WriteLine($"Killing: {fileName} {args}");
+            outputHelper.WriteLine($"Process did not exit. Killing {fileName} {args} after waiting {millisecondTimeout} milliseconds.");
             process.Kill(true);
             process.WaitForExit();
         }

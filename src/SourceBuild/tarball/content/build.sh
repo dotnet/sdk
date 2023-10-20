@@ -9,6 +9,7 @@ usage() {
     echo "  --online                           build using online sources"
     echo "  --poison                           build with poisoning checks"
     echo "  --run-smoke-test                   don't build; run smoke tests"
+    echo "  --use-mono-runtime                 output uses the mono runtime"
     echo "  --with-packages <dir>              use the specified directory of previously-built packages"
     echo "  --with-sdk <dir>                   use the SDK in the specified directory for bootstrapping"
     echo "use -- to send the remaining arguments to MSBuild"
@@ -44,6 +45,9 @@ while :; do
             alternateTarget=true
             runningSmokeTests=true
             MSBUILD_ARGUMENTS+=( "/t:RunSmokeTest" )
+            ;;
+        --use-mono-runtime)
+            MSBUILD_ARGUMENTS+=( "/p:SourceBuildUseMonoRuntime=true" )
             ;;
         --with-packages)
             CUSTOM_PACKAGES_DIR="$(cd -P "$2" && pwd)"
@@ -170,7 +174,6 @@ fi
 echo "Found bootstrap SDK $SDK_VERSION, bootstrap Arcade $ARCADE_BOOTSTRAP_VERSION, bootstrap SourceLink $SOURCE_LINK_BOOTSTRAP_VERSION"
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 export NUGET_PACKAGES=$restoredPackagesDir/
 
 LogDateStamp=$(date +"%m%d%H%M%S")
@@ -179,6 +182,8 @@ if [ "$alternateTarget" == "true" ]; then
   "$CLI_ROOT/dotnet" $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll "$SCRIPT_ROOT/build.proj" /bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildTests_$LogDateStamp.binlog /fileLoggerParameters:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_$LogDateStamp.log /clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
 else
   $CLI_ROOT/dotnet $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll /bl:$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog /fileLoggerParameters:LogFile=$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log $SCRIPT_ROOT/tools-local/init-build.proj /t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
+  # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
+  $CLI_ROOT/dotnet build-server shutdown
 
   $CLI_ROOT/dotnet $CLI_ROOT/sdk/$SDK_VERSION/MSBuild.dll /bl:$SCRIPT_ROOT/artifacts/log/Debug/Build_$LogDateStamp.binlog /fileLoggerParameters:LogFile=$SCRIPT_ROOT/artifacts/logs/Build_$LogDateStamp.log $SCRIPT_ROOT/build.proj ${MSBUILD_ARGUMENTS[@]} "$@"
 fi

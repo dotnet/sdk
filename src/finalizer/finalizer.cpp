@@ -10,7 +10,7 @@ extern "C" HRESULT Initialize(int argc, wchar_t* argv[])
     // We're not going to do any clever parsing. This is intended to be called from
     // the standalone bundle only and there will only be a fixed set of parameters:
     // 1. The path of the log file, created by the bundle.
-    // 2. The full SDK version, e.g. 6.0.105 or 6.0.398-preview19
+    // 2. The full SDK version, e.g. 6.0.105 or 6.0.398-preview.19
     // 3. Target platform to search under the registry key to locate installed SDKs.
     if (4 != argc)
     {
@@ -86,7 +86,7 @@ extern "C" HRESULT DeleteWorkloadRecords(LPWSTR sczSdkFeatureBandVersion, LPWSTR
     DWORD cbValues = 0;
     BOOL bDeleteKey = FALSE;
 
-    hr = StrAllocConcatFormatted(&sczKeyName, L"SOFTWARE\\Microsoft\\dotnet\\InstalledWorkloads\\Standalone\\%ls", sczArchitecture);
+    hr = StrAllocFormatted(&sczKeyName, L"SOFTWARE\\Microsoft\\dotnet\\InstalledWorkloads\\Standalone\\%ls", sczArchitecture);
     ExitOnFailure(hr, "Failed to allocate string for workload records registry path.");
 
     hr = RegOpen(HKEY_LOCAL_MACHINE, sczKeyName, KEY_READ | KEY_WRITE, &hkWorkloadRecordsKey);
@@ -328,14 +328,56 @@ LExit:
     return hr;
 }
 
-extern "C" HRESULT ParseSdkVersion(LPWSTR sczSdkVersion, INT * piMajor, INT * piMinor, INT * piFeatureBand)
+extern "C" HRESULT ParseSdkVersion(LPWSTR sczSdkVersion, LPWSTR * ppwzSdkFeatureBandVersion)
 {
     HRESULT hr = S_OK;
     UINT cVersionParts = 0;
+    UINT cSemanticParts = 0;
+    UINT cPrereleaseParts = 0;
+    DWORD cchPatch = 0;
     LPWSTR* rgsczVersionParts = NULL;
+    LPWSTR* rgsczSemanticParts = NULL;
+    LPWSTR* rgsczPrereleaseParts = NULL;
+    LPWSTR sczPrereleaseLabel = NULL;
+    int iMajor = 0;
+    int iMinor = 0;
+    int iFeatureBand = 0;
     int iPatch = 0;
 
-    hr = StrSplitAllocArray(&rgsczVersionParts, &cVersionParts, sczSdkVersion, L".");
+    LogStringLine(REPORT_STANDARD, "Parsing SDK version: %ls", sczSdkVersion);
+
+    // Split the version to separate potential prerelease labels from the core version
+    hr = StrSplitAllocArray(&rgsczSemanticParts, &cSemanticParts, sczSdkVersion, L"-");
+    ExitOnFailure(hr, "Failed to split version.");
+
+    if (2 == cSemanticParts)
+    {
+        LogStringLine(REPORT_STANDARD, "Semantic version component: %ls", rgsczSemanticParts[1]);
+
+        hr = StrSplitAllocArray(&rgsczPrereleaseParts, &cPrereleaseParts, rgsczSemanticParts[1], L".");
+        ExitOnFailure(hr, "Failed to split prerelease labels.");
+
+        // SDK versions for CI/DEV builds map to pure feature band versions, e.g. 6.0.108-ci maps to 6.0.100.
+        if ((CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, rgsczPrereleaseParts[0], -1, L"dev", -1)) &&
+            (CSTR_EQUAL != ::CompareStringW(LOCALE_INVARIANT, 0, rgsczPrereleaseParts[0], -1, L"ci", -1)))
+        {
+            if (1 <= cPrereleaseParts)
+            {
+                hr = StrAllocFormatted(&sczPrereleaseLabel, L"%ls.%ls", rgsczPrereleaseParts[0], rgsczPrereleaseParts[1]);
+                ExitOnFailure(hr, "Failed to allocate string for prerelease label.");
+            }
+            else
+            {
+                hr = StrAllocFormatted(&sczPrereleaseLabel, L"%ls", rgsczPrereleaseParts[0]);
+                ExitOnFailure(hr, "Failed to allocate string for prerelease label.");
+            }
+
+            LogStringLine(REPORT_STANDARD, "Prerelease label: %ls", sczPrereleaseLabel);
+        }
+    }
+
+    // Split the core version
+    hr = StrSplitAllocArray(&rgsczVersionParts, &cVersionParts, rgsczSemanticParts[0], L".");
     ExitOnFailure(hr, "Failed to split version.");
 
     // We only care about the major.minor.patch values
@@ -346,15 +388,15 @@ extern "C" HRESULT ParseSdkVersion(LPWSTR sczSdkVersion, INT * piMajor, INT * pi
         ExitOnFailure(E_INVALIDARG, "Invalid SDK version: %ls %li", sczSdkVersion, cVersionParts);
     }
 
-    hr = StrStringToInt32(rgsczVersionParts[0], 0, piMajor);
+    hr = StrStringToInt32(rgsczVersionParts[0], 0, &iMajor);
     ExitOnFailure(hr, "Invalid major version.");
-    hr = StrStringToInt32(rgsczVersionParts[1], 0, piMinor);
+    hr = StrStringToInt32(rgsczVersionParts[1], 0, &iMinor);
     ExitOnFailure(hr, "Invalid minor version.");
 
     // If this is a valid SDK version the 'patch' should be a 3 digit field
     // containing the feature band and patch level, e.g. 100 or 207. We 
     // can discard any prerelease labels from the semantic version.
-    hr = StrStringToInt32(rgsczVersionParts[2], 3, &iPatch);
+    hr = StrStringToInt32(rgsczVersionParts[2], 0, &iPatch);
     ExitOnFailure(hr, "Invalid patch version.");
 
     if (100 > iPatch)
@@ -363,10 +405,26 @@ extern "C" HRESULT ParseSdkVersion(LPWSTR sczSdkVersion, INT * piMajor, INT * pi
         ExitOnFailure(hr, "Invalid SDK feature band and patch level.");
     }
 
-    *piFeatureBand = iPatch - (iPatch % 100);
+    iFeatureBand = iPatch - (iPatch % 100);
+
+    if (NULL == sczPrereleaseLabel)
+    {
+        hr = StrAllocFormatted(ppwzSdkFeatureBandVersion, L"%li.%li.%li", iMajor, iMinor, iFeatureBand);
+        ExitOnFailure(hr, "Failed to allocate string for SDK feature band version.");
+    }
+    else
+    {
+        hr = StrAllocFormatted(ppwzSdkFeatureBandVersion, L"%li.%li.%li-%ls", iMajor, iMinor, iFeatureBand, sczPrereleaseLabel);
+        ExitOnFailure(hr, "Failed to allocate string for SDK feature band version.");
+    }
+
+    LogStringLine(REPORT_STANDARD, "SDK feature band version: %ls", *ppwzSdkFeatureBandVersion);
 
 LExit:
     ReleaseStrArray(rgsczVersionParts, cVersionParts);
+    ReleaseStrArray(rgsczSemanticParts, cSemanticParts);
+    ReleaseStrArray(rgsczPrereleaseParts, cPrereleaseParts);
+    ReleaseStr(sczPrereleaseLabel);
     return hr;
 }
 
@@ -376,22 +434,15 @@ extern "C" HRESULT DetectSdk(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczArchitec
     HKEY hkInstalledSdkVersionsKey = NULL;
     LPWSTR sczInstalledSdkVersionsKeyName = NULL;
     LPWSTR sczSdkVersion = NULL;
+    LPWSTR sczInstalledFeatureBand = NULL;
     DWORD dwSdkVersionValueType = 0;
-    int iInstalledMajor = 0;
-    int iInstalledMinor = 0;
-    int iInstalledFeatureBand = 0;
-    int iExpectedMajor = 0;
-    int iExpectedMinor = 0;
-    int iExpectedFeatureBand = 0;
-
-    hr = ParseSdkVersion(sczSdkFeatureBandVersion, &iExpectedMajor, &iExpectedMinor, &iExpectedFeatureBand);
 
     LogStringLine(REPORT_STANDARD, "Detecting installed SDK versions for %ls", sczSdkFeatureBandVersion);
 
     // Scan the registry to see if any SDK matching the feature band we're trying to
     // clean up is still installed. All the installation keys reside in the 32-bit hive.   
-    hr = StrAllocConcatFormatted(&sczInstalledSdkVersionsKeyName, L"SOFTWARE\\WOW6432Node\\dotnet\\Setup\\InstalledVersions\\%ls\\sdk", sczArchitecture);
-    ExitOnFailure(hr, "Failed to allocate string for installed SDK versions.");
+    hr = StrAllocFormatted(&sczInstalledSdkVersionsKeyName, L"SOFTWARE\\WOW6432Node\\dotnet\\Setup\\InstalledVersions\\%ls\\sdk", sczArchitecture);
+    ExitOnFailure(hr, "Failed to allocate string for installed SDK versions key name.");
 
     LogStringLine(REPORT_STANDARD, "Scanning %ls", sczInstalledSdkVersionsKeyName);
 
@@ -420,13 +471,13 @@ extern "C" HRESULT DetectSdk(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczArchitec
 
         ExitOnFailure(hr, "Failed to read SDK version values from registry.");
 
-        hr = ParseSdkVersion(sczSdkVersion, &iInstalledMajor, &iInstalledMinor, &iInstalledFeatureBand);
+        hr = ParseSdkVersion(sczSdkVersion, &sczInstalledFeatureBand);
         ExitOnFailure(hr, "Failed to parse %ls", sczSdkVersion);
 
-        LogStringLine(REPORT_STANDARD, "SDK version detected: %ls, mapping to %li.%li.%li.", sczSdkVersion, iInstalledMajor, iInstalledMinor, iInstalledFeatureBand);
+        LogStringLine(REPORT_STANDARD, "SDK version detected: %ls, mapping to %ls.", sczSdkVersion, sczInstalledFeatureBand);
 
         // Bail out on the first match.
-        if ((iInstalledMajor == iExpectedMajor) && (iInstalledMinor == iExpectedMinor) && (iInstalledFeatureBand == iExpectedFeatureBand))
+        if (CSTR_EQUAL == ::CompareStringW(LOCALE_INVARIANT, 0, sczInstalledFeatureBand, -1, sczSdkFeatureBandVersion, -1))
         {
             *pbInstalled = TRUE;
             break;
@@ -437,6 +488,7 @@ LExit:
     ReleaseRegKey(hkInstalledSdkVersionsKey);
     ReleaseStr(sczInstalledSdkVersionsKeyName);
     ReleaseStr(sczSdkVersion);
+    ReleaseStr(sczInstalledFeatureBand);
     return hr;
 }
 
@@ -456,14 +508,11 @@ int wmain(int argc, wchar_t* argv[])
     ExitOnFailure(hr, "Failed to initialize.");
 
     // Convert the full SDK version to a feature band version
-    hr = ParseSdkVersion(argv[2], &iMajor, &iMinor, &iFeatureBand);
+    hr = ParseSdkVersion(argv[2], &sczFeatureBandVersion);
     ExitOnFailure(hr, "Failed to parse version, %ls.", argv[2]);
 
-    hr = StrAllocConcatFormatted(&sczFeatureBandVersion, L"%li.%li.%li", iMajor, iMinor, iFeatureBand);
-    ExitOnFailure(hr, "Failed to create feature band version.");
-
     // Create the dependent value, e.g., Microsoft.NET.Sdk,6.0.300,arm64
-    hr = StrAllocConcatFormatted(&sczDependent, L"Microsoft.NET.Sdk,%ls,%ls", sczFeatureBandVersion, argv[3]);
+    hr = StrAllocFormatted(&sczDependent, L"Microsoft.NET.Sdk,%ls,%ls", sczFeatureBandVersion, argv[3]);
     ExitOnFailure(hr, "Failed to create dependent.");
     LogStringLine(REPORT_STANDARD, "Setting target dependent to %ls.", sczDependent);
 

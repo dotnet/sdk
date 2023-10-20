@@ -2,7 +2,13 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
+    <LocalNuGetPackageCacheDirectory>$(BaseIntermediatePath)source-build-reference-package-cache</LocalNuGetPackageCacheDirectory>
+
+    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:MicrosoftNetCoreIlasmPackageRuntimeId=$(NETCoreSdkRuntimeIdentifier)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:LocalNuGetPackageCacheDirectory=$(LocalNuGetPackageCacheDirectory)</BuildCommandArgs>
+
+    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
 
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
@@ -15,6 +21,16 @@
   <ItemGroup>
     <UseSourceBuiltSdkOverride Include="@(ArcadeBootstrapSdkOverride)" />
   </ItemGroup>
+
+  <Target Name="AddLocalNuGetPackageCacheDirectory" BeforeTargets="Build">
+    <MakeDir Condition="'$(LocalNuGetPackageCacheDirectory)' != ''"
+             Directories="$(LocalNuGetPackageCacheDirectory)" />
+
+    <AddSourceToNuGetConfig
+      NuGetConfigFile="$(NuGetConfigFile)"
+      SourceName="source-build-reference-package-cache"
+      SourcePath="$(LocalNuGetPackageCacheDirectory)" />
+  </Target>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

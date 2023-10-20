@@ -49,7 +49,7 @@
   <String Id="FilesInUseCancelButton">Ann&amp;ulla</String>
   <String Id="FirstTimeWelcomeMessage">L'installazione è riuscita.
 
-I componenti seguenti sono stati installati in '[DOTNETHOME]'
+I componenti seguenti sono stati installati
     • .NET SDK [DOTNETSDKVERSION]
     • Runtime di .NET [DOTNETRUNTIMEVERSION]
     • Runtime di ASP.NET Core [ASPNETCOREVERSION]
@@ -61,7 +61,7 @@ Questo prodotto consente di raccogliere i dati sull'utilizzo
 Risorse
     • Documentazione di .NET https://aka.ms/dotnet-docs
     • Documentazione dell'SDK https://aka.ms/dotnet-sdk-docs
-    • Note sulla versione https://aka.ms/dotnet6-release-notes
+    • Note sulla versione https://aka.ms/dotnet7-release-notes
     • Esercitazioni https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
@@ -76,7 +76,10 @@ Risorse
   <String Id="InstallationNoteTitle">Nota sull'installazione</String>
   <String Id="InstallationNote">Durante il processo di installazione verrà eseguito un comando che migliorerà la velocità di ripristino del progetto e abiliterà l'accesso offline. Il completamento del comando richiederà un minuto.
   </String>
-  <String Id="VisualStudioWarning">Se si intende usare .NET 6.0 con Visual Studio, è richiesto Visual Studio 2022 17.0 o versione successiva. &lt;A HREF="https://aka.ms/dotnet6-release-notes"&gt;Altre informazioni&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Se si intende usare .NET 7.0 con Visual Studio, è richiesto Visual Studio 2022 17.4 o versione successiva. &lt;A HREF="https://aka.ms/dotnet7-release-notes"&gt;Altre informazioni&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">Facendo clic su Installa, si accettano le condizioni seguenti.</String>
+  <String Id="InstallPathx64x86">The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
+  <String Id="InstallPathARM64x86">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;</String>
+  <String Id="InstallPathARM64x64">The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;</String>
 </WixLocalization>

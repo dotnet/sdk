@@ -79,7 +79,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             "_._",
             "-.-",
             ".bowerrc",
-            ".editorconfig",
             ".gitignore",
             ".gitkeep",
             ".rels",
@@ -97,9 +96,11 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             ".csproj",
             ".css",
             ".db",
+            ".editorconfig",
             ".eot",
             ".fs",
             ".fsproj",
+            ".h",
             ".html",
             ".ico",
             ".js",
@@ -107,18 +108,26 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             ".map",
             ".md",
             ".nuspec",
+            ".otf",
             ".png",
             ".props",
+            ".proto",
+            ".proj",
             ".psmdcp",
+            ".pubxml",
+            ".razor",
             ".rtf",
             ".scss",
+            ".sln",
             ".svg",
             ".targets",
+            ".transform",
             ".ts",
             ".ttf",
             ".txt",
             ".vb",
             ".vbproj",
+            ".win32manifest",
             ".woff",
             ".woff2",
             ".xaml",
@@ -209,7 +218,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             // skip some common files that get copied verbatim from nupkgs - LICENSE, _._, etc as well as
             // file types that we never care about - text files, .gitconfig, etc.
             if (FileNamesToSkip.Any(f => Path.GetFileName(fileToCheck).ToLowerInvariant() == f.ToLowerInvariant()) ||
-                FileExtensionsToSkip.Any(e => Path.GetExtension(fileToCheck).ToLowerInvariant() == e.ToLowerInvariant()))
+                FileExtensionsToSkip.Any(e => Path.GetExtension(fileToCheck).ToLowerInvariant() == e.ToLowerInvariant()) ||
+                (new FileInfo(fileToCheck).Length == 0))
             {
                 return null;
             }

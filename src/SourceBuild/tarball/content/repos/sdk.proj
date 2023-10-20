@@ -7,6 +7,9 @@
     <BuildCommandArgs>$(BuildCommandArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PublishCompressedFilesPathPrefix=$(SourceBuiltToolsetDir)</BuildCommandArgs>
 
+    <!-- Just like mono, arm does not support NativeAot -->
+    <BuildCommandArgs Condition="'$(BuildArchitecture)' == 'arm'">$(BuildCommandArgs) /p:NativeAotSupported=false</BuildCommandArgs>
+
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
     <BuildCommandArgs>$(BuildCommandArgs) -v $(LogVerbosity)</BuildCommandArgs>
 
@@ -32,7 +35,7 @@
     <RepositoryReference Include="xliff-tasks" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="msbuild" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="nuget-client" />
     <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="vstest" />

@@ -24,6 +24,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
             string currentPoisonReport = File.ReadAllText(Config.PoisonReportPath);
             currentPoisonReport = RemoveHashes(currentPoisonReport);
             currentPoisonReport = BaselineHelper.RemoveRids(currentPoisonReport);
+            currentPoisonReport = BaselineHelper.RemoveRids(currentPoisonReport, true);
             currentPoisonReport = BaselineHelper.RemoveVersions(currentPoisonReport);
 
             BaselineHelper.CompareContents("PoisonUsage.txt", currentPoisonReport, OutputHelper, Config.WarnOnPoisonDiffs);

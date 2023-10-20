@@ -105,7 +105,7 @@ if [ "$buildBootstrap" == "true" ]; then
     echo "  Building bootstrap previously source-built in $workingDir"
 
     # Copy bootstrap project to working dir
-    cp $SCRIPT_ROOT/scripts/bootstrap/buildBootstrapPreviouslySB.csproj $workingDir
+    cp $SCRIPT_ROOT/eng/bootstrap/buildBootstrapPreviouslySB.csproj $workingDir
 
     # Copy NuGet.config from the installer repo to have the right feeds
     cp $SCRIPT_ROOT/src/installer/NuGet.config $workingDir
@@ -118,7 +118,7 @@ if [ "$buildBootstrap" == "true" ]; then
     fi
 
     # Run restore on project to initiate download of bootstrap packages
-    $DOTNET_SDK_PATH/dotnet restore $workingDir/buildBootstrapPreviouslySB.csproj /bl:artifacts/prep/bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/prep/bootstrap.log /p:ArchiveDir="$SCRIPT_ROOT/packages/archive/"
+    $DOTNET_SDK_PATH/dotnet restore $workingDir/buildBootstrapPreviouslySB.csproj /bl:artifacts/prep/bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/prep/bootstrap.log /p:ArchiveDir="$SCRIPT_ROOT/packages/archive/" /p:BootstrapOverrideVersionsProps="$SCRIPT_ROOT/eng/bootstrap/OverrideBootstrapVersions.props"
 
     # Remove working directory
     rm -rf $workingDir

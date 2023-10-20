@@ -7,15 +7,12 @@
     <!-- The arch flag (defaults to x64) overrides any value of TargetArchitecture that we might set -->
     <BuildCommandArgs>$(BuildCommandArgs) --arch $(Platform)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) --no-build-repo-tasks</BuildCommandArgs>
-    <BuildCommandArgs Condition="$(PortableRid.StartsWith('linux-musl'))">$(BuildCommandArgs) --os-name linux-musl</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:BuildNodeJs=false</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) --no-build-nodejs</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PublishCompressedFilesPathPrefix=$(SourceBuiltAspNetCoreRuntime)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PortableBuild=false /p:TargetRuntimeIdentifier=$(TargetRid)</BuildCommandArgs>
     <!-- Update to 1.0.0 version of reference assemblies which are built in SBRP instead of the preview.2 version
          included by Arcade -->
     <BuildCommandArgs>$(BuildCommandArgs) /p:MicrosoftNetFrameworkReferenceAssembliesVersion=1.0.0</BuildCommandArgs>
-    <!-- https://github.com/dotnet/sdk/pull/20136 has not flowed into our bootstrap SDK yet, which causes file-in-use issues in ASP.NET
-         due to an interaction with the RemoveSharedFrameworkDependencies task.  disable package validation until this is fixed.  -->
-    <BuildCommandArgs>$(BuildCommandArgs) /p:EnablePackageValidation=false</BuildCommandArgs>
     <BuildCommand>$(ProjectDirectory)\eng\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
@@ -25,6 +22,11 @@
 
     <GlobalJsonFile>$(ProjectDirectory)global.json</GlobalJsonFile>
     <NuGetConfigFile>$(ProjectDirectory)NuGet.config</NuGetConfigFile>
+
+    <!-- CS0618 - Caused from deprecated IOperation.Children in
+                  Microsoft.CodeAnalysis 4.3.0, but aspnetcore references version 4.2.0.
+                  Requires https://github.com/dotnet/source-build/issues/2482 -->
+    <RepoNoWarns>CS0618</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,7 +43,7 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn" />

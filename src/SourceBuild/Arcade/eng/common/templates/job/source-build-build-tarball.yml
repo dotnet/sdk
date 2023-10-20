@@ -102,6 +102,35 @@ jobs:
         TargetFolder: $(tarballDir)/packages/archive/
 
   - script: |
+      set -euo pipefail
+
+      sourceBuiltSDKUrl="https://dotnetcli.azureedge.net/source-built-artifacts/sdks/"
+      packageVersionsPath="$(Build.SourcesDirectory)/eng/Versions.props"
+      notFoundMessage="No source-built SDK found to download..."
+
+      echo "Looking for source-built SDK to download..."
+      archiveVersionLine=`grep -m 1 "<PrivateSourceBuiltSDKVersion>" "$packageVersionsPath" || :`
+      versionPattern="<PrivateSourceBuiltSDKVersion>(.*)</PrivateSourceBuiltSDKVersion>"
+
+      if [[ $archiveVersionLine =~ $versionPattern ]]; then
+        filename="dotnet-sdk-${BASH_REMATCH[1]}-centos.8-x64.tar.gz"
+        archiveUrl="${sourceBuiltSDKUrl}${filename}"
+        downloadDir=$(mktemp -d)
+        (cd $downloadDir && curl --retry 5 -O $archiveUrl)
+
+        mkdir $(tarballDir)/.dotnet
+        tar -xzf $downloadDir/$filename -C $(tarballDir)/.dotnet
+        rm -rf $downloadDir
+      else
+        echo "$notFoundMessage"
+        exit 1
+      fi
+
+      echo "##vso[task.setvariable variable=additionalBuildArgs]--with-sdk /tarball/.dotnet"
+    displayName: Setup Previously Source-Built SDK
+    condition: eq(variables._WithPreviousSDK, 'true')
+
+  - script: |
       set -x
 
       if [[ '${{ parameters.usePreviousArtifacts }}' != 'true' ]]; then

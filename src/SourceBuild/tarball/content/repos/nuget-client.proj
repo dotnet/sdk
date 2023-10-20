@@ -11,7 +11,7 @@
   <ItemGroup>
     <EnvironmentVariables Include="MS_PFX_PATH=$(NuGetKeyFilePath)" />
     <EnvironmentVariables Include="NUGET_PFX_PATH=$(NuGetKeyFilePath)" />
-    <RepositoryReference Include="source-build" />
+    <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="xdt" />
   </ItemGroup>

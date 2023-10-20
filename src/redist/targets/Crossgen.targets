@@ -1,7 +1,7 @@
 <Project>
-  <!-- Crossgen is currently not supported on the s390x architecture. -->
+  <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
   <Target Name="CrossgenLayout"
-          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x'"
+          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le'"
           DependsOnTargets="SetSdkBrandingInfo">
     
     <PropertyGroup>
@@ -11,7 +11,7 @@
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
       <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' != 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreSharedFrameworkx6460PackageVersion)</SharedFrameworkNameVersionPath>
+      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreTargetingPackx6470PackageVersion)</SharedFrameworkNameVersionPath>
     </PropertyGroup>
 
     <!-- Download the runtime package with the crossgen executable in it -->
@@ -29,7 +29,27 @@
       BuildInParallel="False"
       Projects="@(CrossGenDownloadPackageProject)">
     </MSBuild>
-    
+
+    <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
+         cross-genned. This tooling multi-targets, and we only want to cross-gen the .NET Core
+         targeted bits. Below, this propertygroup is used to verify that these paths exist as expected,
+         no that we do not silently miss cross-genning some bits. When a TFM for a tool is updated,
+         update its path explicitly. If all TFMs match, update DefaultToolTfm -->
+    <PropertyGroup>
+      <DefaultToolTfm>net7.0</DefaultToolTfm>
+
+      <NetSdkTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\$(DefaultToolTfm)\</NetSdkTools>
+      <BlazorWasmTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\$(DefaultToolTfm)\</BlazorWasmTools>
+      <NuGetPackTools>$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\</NuGetPackTools>
+      <RazorTasks>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\$(DefaultToolTfm)\</RazorTasks>
+      <WindowsDesktopTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\$(DefaultToolTfm)\</WindowsDesktopTools>
+      <ILLinkTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.ILLink.Tasks\tools\$(DefaultToolTfm)\</ILLinkTools>
+      <PublishTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\$(DefaultToolTfm)\</PublishTools>
+      <WebTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\$(DefaultToolTfm)\</WebTools>
+      <ProjectSystemTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\$(DefaultToolTfm)\</ProjectSystemTools>
+      <WorkerTools>$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Worker\tools\$(DefaultToolTfm)\</WorkerTools>
+    </PropertyGroup>
+
     <ItemGroup>
       <RoslynFiles Include="$(SdkOutputDirectory)Roslyn\bincore\**\*" />
 
@@ -49,16 +69,16 @@
       <RemainingFiles Remove="$(SdkOutputDirectory)**\Microsoft.TestPlatform.Extensions.EventLogCollector.dll" />
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk\tools\net6.0\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\net6.0\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\NuGet.Build.Tasks.Pack\CoreCLR\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tasks\net6.0\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\netcoreapp*\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.ILLink.Tasks\tools\net5.0\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Publish\tools\net6.0\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web\tools\net6.0\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\net6.0\**\*" />
-      <RemainingFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Worker\tools\net6.0\**\*" />
+      <RemainingFiles Include="$(NetSdkTools)**\*" />
+      <RemainingFiles Include="$(BlazorWasmTools)**\*" />
+      <RemainingFiles Include="$(NuGetPackTools)**\*" />
+      <RemainingFiles Include="$(RazorTasks)**\*" />
+      <RemainingFiles Include="$(WindowsDesktopTools)**\*" />
+      <RemainingFiles Include="$(ILLinkTools)**\*" />
+      <RemainingFiles Include="$(PublishTools)**\*" />
+      <RemainingFiles Include="$(WebTools)**\*" />
+      <RemainingFiles Include="$(ProjectSystemTools)**\*" />
+      <RemainingFiles Include="$(WorkerTools)**\*" />
 
       <!-- Don't try to CrossGen .NET Framework support assemblies for .NET Standard -->
       <RemainingFiles Remove="$(SdkOutputDirectory)Microsoft\Microsoft.NET.Build.Extensions\net*\**\*" />
@@ -120,6 +140,21 @@
       <CreateCrossgenSymbols Condition="'$(OSName)' == 'osx'">false</CreateCrossgenSymbols>
       <CreateCrossgenSymbols Condition="'$(OSName)' == 'freebsd'">false</CreateCrossgenSymbols>
     </PropertyGroup>
+
+    <Error Text="Potentially missed crossgen for '$(NetSdkTools)', directory does not exist" Condition= "!EXISTS('$(NetSdkTools)') "/>
+    <Error Text="Potentially missed crossgen for '$(BlazorWasmTools)', directory does not exist" Condition= "!EXISTS('$(BlazorWasmTools)') "/>
+    <Error Text="Potentially missed crossgen for '$(NuGetPackTools)', directory does not exist" Condition= "!EXISTS('$(NuGetPackTools)') "/>
+    <Error Text="Potentially missed crossgen for '$(RazorTasks)', directory does not exist" Condition= "!EXISTS('$(RazorTasks)') "/>
+    <Error Text="Potentially missed crossgen for '$(WindowsDesktopTools)', directory does not exist" Condition= "!EXISTS('$(WindowsDesktopTools)') AND '$(DotNetBuildFromSource)' != 'true'"/>
+    <Error Text="Potentially missed crossgen for '$(ILLinkTools)', directory does not exist" Condition= "!EXISTS('$(ILLinkTools)') "/>
+    <Error Text="Potentially missed crossgen for '$(PublishTools)', directory does not exist" Condition= "!EXISTS('$(PublishTools)') "/>
+    <Error Text="Potentially missed crossgen for '$(WebTools)', directory does not exist" Condition= "!EXISTS('$(WebTools)') "/>
+    <Error Text="Potentially missed crossgen for '$(ProjectSystemTools)', directory does not exist" Condition= "!EXISTS('$(ProjectSystemTools)') "/>
+    <Error Text="Potentially missed crossgen for '$(WorkerTools)', directory does not exist" Condition= "!EXISTS('$(WorkerTools)') "/>
+    <Error Text="Potentially missed crossgen for Roslyn, RoslynTargets is empty" Condition= "@(RoslynTargets) == ''"/>
+    <Error Text="Potentially missed crossgen for FSharp, FSharpTargets is empty" Condition= "@(FSharpTargets) == ''"/>
+    <Error Text="Potentially missed crossgen for Razor, RazorToolTargets is empty" Condition= "@(RazorToolTargets) == ''"/>
+    <Error Text="Potentially missed crossgen for other SDK files, RemainingTargets is empty" Condition= "@(RemainingTargets) == ''"/>
 
     <Crossgen
         SourceAssembly="%(RoslynTargets.FullPath)"

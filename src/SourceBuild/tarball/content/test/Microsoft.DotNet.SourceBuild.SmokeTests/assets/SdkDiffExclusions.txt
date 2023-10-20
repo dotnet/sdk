@@ -11,8 +11,10 @@
 #
 # We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
 
+msft,./sdk/x.y.z/TestHostNetFramework/?*   # Intentional - MSFT build includes test-host that targets netcoreapp3.1
 msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Publish/tools/net472/?*   # Intentional - source-build includes SDK Publishing package that target latest .NET TFM
 msft,./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/?*   # Intentional - explicitly excluded from source-build
+sb,./sdk/x.y.z/TestHost/?*   # Intentional - source-build includes test-host that targets latest .NET TFM
 
 # vstest localization is disabled in Linux builds - https://github.com/microsoft/vstest/issues/4305
 msft,./sdk/x.y.z/*?/Microsoft.CodeCoverage.IO.resources.dll
@@ -22,7 +24,6 @@ msft,./sdk/x.y.z/*?/Test.Utility.resources.dll
 msft,./sdk/x.y.z/*?/vstest.console.resources.dll
 msft,./sdk/x.y.z/Extensions/*?/Microsoft.TestPlatform.*?.resources.dll
 msft,./sdk/x.y.z/Extensions/*?/Microsoft.VisualStudio.TestPlatform.*?.resources.dll
-msft,./sdk/x.y.z/TestHost/*?/*?.resources.dll
 
 # nuget localization is not available for Linux builds - https://github.com/NuGet/Home/issues/12440
 msft,./sdk/x.y.z/*?/NuGet.*?.resources.dll

@@ -9,26 +9,29 @@
       <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX')) ">osx</HostOSName>
       <HostOSName Condition=" '$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD')) ">freebsd</HostOSName>
       <HostOSName Condition=" '$(HostOSName)' == '' AND '$(IsLinux)' == 'True' ">linux</HostOSName>
-      
+
+      <OSName Condition=" '$(OSName)' == '' AND $(Rid) != '' ">$(Rid.Substring(0, $(Rid.LastIndexOf('-'))))</OSName>
       <OSName Condition=" '$(OSName)' == '' ">$(HostOSName)</OSName>
 
-      <Rid Condition=" '$(Rid)' == '' ">$(OSName)-$(Architecture)</Rid>
+      <PortableOSName Condition=" '$(PortableOSName)' == '' ">$(OSName)</PortableOSName>
+
+      <Rid>$(OSName)-$(Architecture)</Rid>
+
+      <PortableRid>$(PortableOSName)-$(Architecture)</PortableRid>
     </PropertyGroup>
 
     <PropertyGroup>
       <IsDebianBaseDistro Condition=" $(HostRid.StartsWith('ubuntu')) OR $(HostRid.StartsWith('debian')) ">true</IsDebianBaseDistro>
       <IsRPMBasedDistro Condition=" $(HostRid.StartsWith('rhel')) AND '$(HostRid)' != 'rhel.6-x64' ">true</IsRPMBasedDistro>
+      <IsRPMBasedDistro Condition=" $(HostRid.StartsWith('centos')) ">true</IsRPMBasedDistro>
       <PublishNativeInstallers Condition=" '$(IslinuxPortable)' != 'true' AND '$(HostRid)' != 'rhel.6-x64' AND !$(Rid.StartsWith('linux-musl'))">true</PublishNativeInstallers>
       <PublishArchives Condition=" '$(IslinuxPortable)' == 'true' OR ('$(IsDebianBaseDistro)' != 'true' AND '$(IsRPMBasedDistro)' != 'true') ">true</PublishArchives>
     </PropertyGroup>
 
     <PropertyGroup>
-      <ProductMonikerRid Condition=" '$(Rid)' == 'ubuntu.16.04-x64' OR
-                                   '$(Rid)' == 'rhel.6-x64' OR
-                                   '$(Rid)' == 'linux-musl-x64' ">$(Rid)</ProductMonikerRid>
-      <ProductMonikerRid Condition=" '$(ProductMonikerRid)' == '' ">$(OSName)-$(Architecture)</ProductMonikerRid>
+      <ProductMonikerRid Condition=" '$(ProductMonikerRid)' == '' ">$(Rid)</ProductMonikerRid>
 
-      <PortableProductMonikerRid Condition=" '$(PortableProductMonikerRid)' == '' ">$(HostOSName)-$(Architecture)</PortableProductMonikerRid>
+      <PortableProductMonikerRid Condition=" '$(PortableProductMonikerRid)' == '' ">$(PortableRid)</PortableProductMonikerRid>
 
       <ArtifactNameSdk>dotnet-sdk-internal$(PgoTerm)</ArtifactNameSdk>
       <ArtifactNameCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)</ArtifactNameCombinedHostHostFxrFrameworkSdk>
