@@ -55,11 +55,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and
                             '$(HasRuntimeOutput)' == 'true' and
                             $([MSBuild]::IsOSPlatform(`Windows`)) and
-                            '$(RuntimeIdentifiers)' == '' and
                             '$(RuntimeIdentifier)' == ''">
     <_UsingDefaultRuntimeIdentifier>true</_UsingDefaultRuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x64'">win7-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == ''">win7-x86</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x64' and $([MSBuild]::AreFeaturesEnabled('17.10'))">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="('$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == '') and $([MSBuild]::AreFeaturesEnabled('17.10'))">win-x86</RuntimeIdentifier>
   </PropertyGroup>
 
   <!-- Breaking change in .NET 8: Some publish properties used to imply SelfContained or require it at the time of this PR to work. We decided to infer SelfContained still in these situations. -->
