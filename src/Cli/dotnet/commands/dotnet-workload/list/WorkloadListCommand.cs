@@ -1,12 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -15,6 +10,7 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Microsoft.TemplateEngine.Cli.Commands;
 using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 
 namespace Microsoft.DotNet.Workloads.Workload.List
@@ -27,7 +23,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         private readonly IWorkloadInfoHelper _workloadListHelper;
 
         public WorkloadListCommand(
-            ParseResult result,
+            ParseResult parseResult,
             IReporter reporter = null,
             IWorkloadInstallationRecordRepository workloadRecordRepo = null,
             string currentSdkVersion = null,
@@ -37,11 +33,12 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             INuGetPackageDownloader nugetPackageDownloader = null,
             IWorkloadManifestUpdater workloadManifestUpdater = null,
             IWorkloadResolver workloadResolver = null
-        ) : base(result, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
+        ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
         {
             _workloadListHelper = new WorkloadInfoHelper(
+                parseResult.HasOption(SharedOptions.InteractiveOption),
                 Verbosity,
-                result?.GetValueForOption(WorkloadListCommandParser.VersionOption) ?? null,
+                parseResult?.GetValue(WorkloadListCommandParser.VersionOption) ?? null,
                 VerifySignatures,
                 Reporter,
                 workloadRecordRepo,
@@ -51,9 +48,9 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 workloadResolver
             );
 
-            _machineReadableOption = result.GetValueForOption(WorkloadListCommandParser.MachineReadableOption);
+            _machineReadableOption = parseResult.GetValue(WorkloadListCommandParser.MachineReadableOption);
 
-            _includePreviews = result.GetValueForOption(WorkloadListCommandParser.IncludePreviewsOption);
+            _includePreviews = parseResult.GetValue(WorkloadListCommandParser.IncludePreviewsOption);
             string userProfileDir1 = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
             _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(Reporter,

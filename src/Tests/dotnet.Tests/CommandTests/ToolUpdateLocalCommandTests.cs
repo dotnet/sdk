@@ -1,13 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
@@ -17,10 +11,8 @@ using Microsoft.DotNet.Tools.Tool.Restore;
 using Microsoft.DotNet.Tools.Tool.Update;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.NET.TestFramework.Utilities;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using Xunit;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -41,7 +33,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly ToolUpdateLocalCommand _defaultToolUpdateLocalCommand;
         private readonly string _pathToPlacePackages;
         private readonly IToolPackageStore _toolPackageStore;
-        private readonly ToolPackageInstallerMock _toolPackageInstallerMock;
+        private readonly ToolPackageDownloaderMock _toolPackageDownloaderMock;
         private readonly NuGetVersion _packageOriginalVersionA;
         private readonly NuGetVersion _packageNewVersionA;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
@@ -78,16 +70,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     }
                 }
             };
-            _toolPackageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
-                _toolPackageStore,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter,
-                    new List<MockFeed>
-                    {
-                        _mockFeed
-                    }));
+
+            _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
+                store: _toolPackageStore,
+                fileSystem: _fileSystem,
+                reporter: _reporter,       
+                new List<MockFeed>
+                {
+                    _mockFeed
+                });
 
             _localToolsResolverCache
                 = new LocalToolsResolverCache(
@@ -105,7 +96,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _toolRestoreCommand = new ToolRestoreCommand(
                 _parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -114,7 +105,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _defaultToolUpdateLocalCommand = new ToolUpdateLocalCommand(
                 _parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
@@ -202,7 +193,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             ToolUpdateLocalCommand toolUpdateLocalCommand = new ToolUpdateLocalCommand(
                 parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
@@ -222,7 +213,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             ToolUpdateLocalCommand toolUpdateLocalCommand = new ToolUpdateLocalCommand(
                 parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
@@ -361,3 +352,4 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 }";
     }
 }
+

@@ -2,10 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.NET.Sdk.Localization;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
 using System.Runtime.Serialization;
@@ -98,6 +94,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             public JsonFormatException(string messageFormat, params object?[] args) : base(string.Format(messageFormat, args)) { }
             public JsonFormatException(string message) : base(message) { }
             public JsonFormatException(string message, Exception inner) : base(message, inner) { }
+#if NET8_0_OR_GREATER
+            [Obsolete(DiagnosticId = "SYSLIB0051")] // add this attribute to the serialization ctor
+#endif
             protected JsonFormatException(SerializationInfo info, StreamingContext context) : base(info, context) { }
         }
     }

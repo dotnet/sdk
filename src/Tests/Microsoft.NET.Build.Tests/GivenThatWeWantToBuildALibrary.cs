@@ -1,21 +1,8 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Linq;
-using FluentAssertions;
-using System.Xml.Linq;
 using System.Runtime.Versioning;
-using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System;
 using System.Runtime.CompilerServices;
-using Xunit.Abstractions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
 using Newtonsoft.Json.Linq;
 using NuGet.Versioning;
 
@@ -906,6 +893,50 @@ class Program
             else
             {
                 predefinedCulturesOnly.Value<string>().Should().Be(expectedPredefinedValue);
+            }
+        }
+
+        [Theory]
+        [InlineData("True")]
+        [InlineData("False")]
+        [InlineData(null)]
+        public void It_can_evaluate_metrics_support(string value)
+        {
+            var testProj = new TestProject()
+            {
+                Name = "CheckMetricsSupport",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+
+            if (value is not null)
+            {
+                testProj.AdditionalProperties["MetricsSupport"] = value;
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: value);
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            string runtimeConfigName = $"{testProj.Name}.runtimeconfig.json";
+            var outputDirectory = buildCommand.GetOutputDirectory(testProj.TargetFrameworks);
+            outputDirectory.Should().HaveFile(runtimeConfigName);
+
+            string runtimeConfigFile = Path.Combine(outputDirectory.FullName, runtimeConfigName);
+            string runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
+            JObject runtimeConfig = JObject.Parse(runtimeConfigContents);
+            JToken metricsSupport = runtimeConfig["runtimeOptions"]["configProperties"]["System.Diagnostics.Metrics.Meter.IsSupported"];
+
+            if (value is null)
+            {
+                metricsSupport.Should().BeNull();
+            }
+            else
+            {
+                metricsSupport.Value<string>().Should().Be(value);
             }
         }
 

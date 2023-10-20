@@ -17,11 +17,93 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsPublishable Condition="'$(IsPublishable)' == ''">true</IsPublishable>
   </PropertyGroup>
 
+  <!-- Trimming/AOT/publish* property configuration -->
+  <PropertyGroup>
+    <!-- PublishAot depends on PublishTrimmed. This must be set early enough for the KnownILLinkPack to be restored. -->
+    <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And '$(PublishAot)' == 'true'">true</PublishTrimmed>
+    <IsTrimmable Condition="'$(IsTrimmable)' == '' and '$(IsAotCompatible)' == 'true'">true</IsTrimmable>
+  </PropertyGroup>
+
   <ItemDefinitionGroup>
     <ResolvedFileToPublish>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </ResolvedFileToPublish>
   </ItemDefinitionGroup>
+
+  <Target Name="_ComputeToolPackInputsToProcessFrameworkReferences" BeforeTargets="ProcessFrameworkReferences">
+    <!-- Keep this in sync with the warnings produced for RequiresILLinkPack in ProcessFrameworkReferences.cs. 
+         Must be set late enough to see the inferred value of EnableSingleFileAnalyzer. -->
+    <PropertyGroup>
+      <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == '' And (
+          '$(PublishAot)' == 'true' Or
+          '$(IsAotCompatible)' == 'true' Or '$(EnableAotAnalyzer)' == 'true' Or
+          '$(PublishTrimmed)' == 'true' Or
+          '$(IsTrimmable)' == 'true' Or '$(EnableTrimAnalyzer)' == 'true' Or
+          '$(EnableSingleFileAnalyzer)' == 'true')">true</_RequiresILLinkPack>
+      <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == ''">false</_RequiresILLinkPack>
+    </PropertyGroup>
+
+
+    <!-- ProcessFrameworkReferences warns when the project settings introduce a dependency on a
+         tool pack that's not available for the target framework. For trimming, AOT, and single-file, the recommendation
+         is to multitarget the project to include a more recent TargetFramework. For correctly multitargeted
+         projects, the warning is usually just noise, so we silence it.
+
+         Correctly multitargeted projects include a TargetFramework that is compatible with the requested
+         functionality (trimming/AOT/single-file), and doesn't leave a "gap" where the incompatible TargetFramework's
+         assembly could be consumed from an app that uses the functionality. In other words, correctly multitargeted
+         projects should include at least one TFM that:
+         - supports the given functionality, and
+         - is no larger than the minimum non-EOL TargetFramework that supports this functionality.
+
+         The following logic determines whether the project is correctly multi-targeted based on its TargetFrameworks,
+         and silences the warning if it is. -->
+
+    <PropertyGroup>
+      <_FirstTargetFrameworkToSupportTrimming>net6.0</_FirstTargetFrameworkToSupportTrimming>
+      <_FirstTargetFrameworkToSupportAot>net7.0</_FirstTargetFrameworkToSupportAot>
+      <_FirstTargetFrameworkToSupportSingleFile>net6.0</_FirstTargetFrameworkToSupportSingleFile>
+      <!-- The min non-EOL TFM has already caught up with the first TFM to support trimming/singlefile. No need to compare against it. -->
+      <_MinNonEolTargetFrameworkForTrimming>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForTrimming>
+      <_MinNonEolTargetFrameworkForSingleFile>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForSingleFile>
+      <!-- Get the min non-EOL TFM that supports AOT. -->
+      <_MinNonEolTargetFrameworkForAot>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForAot>
+      <_MinNonEolTargetFrameworkForAot Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(_FirstTargetFrameworkToSupportAot)', '$(_MinimumNonEolSupportedNetCoreTargetFramework)'))">$(_FirstTargetFrameworkToSupportAot)</_MinNonEolTargetFrameworkForAot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFrameworks)" />
+      <_DecomposedTargetFramework Include="@(_TargetFramework)">
+        <SupportsTrimming>$([MSBuild]::IsTargetFrameworkCompatible('%(Identity)', '$(_FirstTargetFrameworkToSupportTrimming)'))</SupportsTrimming>
+        <SupportedByMinNonEolTargetFrameworkForTrimming>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForTrimming)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForTrimming>
+        <SupportsAot>$([MSBuild]::IsTargetFrameworkCompatible('%(Identity)', '$(_FirstTargetFrameworkToSupportAot)'))</SupportsAot>
+        <SupportedByMinNonEolTargetFrameworkForAot>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForAot)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForAot>
+        <SupportsSingleFile>$([MSBuild]::IsTargetFrameworkCompatible('%(Identity)', '$(_FirstTargetFrameworkToSupportSingleFile)'))</SupportsSingleFile>
+        <SupportedByMinNonEolTargetFrameworkForSingleFile>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForSingleFile)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForSingleFile>
+      </_DecomposedTargetFramework>
+
+      <_TargetFrameworkToSilenceIsTrimmableUnsupportedWarning
+        Include="@(_DecomposedTargetFramework)"
+        Condition="'%(SupportsTrimming)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForTrimming)' == 'true'" />
+      <_TargetFrameworkToSilenceIsAotCompatibleUnsupportedWarning
+        Include="@(_DecomposedTargetFramework->'%(Identity)')"
+        Condition="'%(SupportsAot)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForAot)' == 'true'" />
+      <_TargetFrameworkToSilenceEnableSingleFileAnalyzerUnsupportedWarning
+        Include="@(_DecomposedTargetFramework)"
+        Condition="'%(SupportsSingleFile)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForSingleFile)' == 'true'" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <!-- Don't warn if the library multitargets and includes TFM that's supported by trimming/AOT and is supported by the min non-EOL TFM that supports trimming/AOT. -->
+      <_SilenceIsTrimmableUnsupportedWarning Condition="'$(_SilenceIsTrimmableUnsupportedWarning)' == '' And
+                                                        @(_TargetFrameworkToSilenceIsTrimmableUnsupportedWarning->Count()) > 0">true</_SilenceIsTrimmableUnsupportedWarning>
+      <_SilenceIsAotCompatibleUnsupportedWarning Condition="'$(_SilenceIsAotCompatibleUnsupportedWarning)' == '' And 
+                                                            @(_TargetFrameworkToSilenceIsAotCompatibleUnsupportedWarning->Count()) > 0">true</_SilenceIsAotCompatibleUnsupportedWarning>
+      <_SilenceEnableSingleFileAnalyzerUnsupportedWarning Condition="'$(_SilenceEnableSingleFileAnalyzerUnsupportedWarning)' == '' And
+                                                          @(_TargetFrameworkToSilenceEnableSingleFileAnalyzerUnsupportedWarning->Count()) > 0">true</_SilenceEnableSingleFileAnalyzerUnsupportedWarning>
+    </PropertyGroup>
+
+  </Target>
 
   <!--
     ============================================================
@@ -118,18 +200,20 @@ Copyright (c) .NET Foundation. All rights reserved.
                             '$(EnableCompressionInSingleFile)' == 'true' And
                             '$(SelfContained)' != 'true'"
                  ResourceName="CompressionInSingleFileRequiresSelfContained" />
-    <NETSdkError Condition="'$(PublishAot)' == 'true' and '$(PublishAotSupported)' != 'true'"
-                ResourceName="AotNotSupported" />
 
     <NETSdkWarning Condition="'$(PublishProfileImported)' != 'true' and '$(PublishProfile)' != ''"
-                ResourceName="PublishProfileNotPresent" 
-                FormatArguments="$(PublishProfile)"/>    
-                               
-    <!-- Enable warning for trying to use PublishRelease or PackRelease with a solution if env-var is not set.-->
-    <NETSdkWarning Condition="'$(PublishRelease)' != '' and '$(SolutionExt)' == '.sln' and '$(DOTNET_CLI_ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS)' == ''"
-                   ResourceName="PReleaseRequiresEnvVarOnSln"
-                   FormatArguments="PublishRelease;DOTNET_CLI_ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS"
-    />
+                   ResourceName="PublishProfileNotPresent"
+                   FormatArguments="$(PublishProfile)"/>
+
+    <!-- Projects in a solution cannot have conflicting configurations. This checks if PublishRelease conflicted at runtime to avoid extra project evaluations.
+    SolutionExt is used to check if we are publishing a solution. Will be undefined if not.-->
+    <NETSdkError Condition="'$(_IsPublishing)' == 'true' and
+                            '$(DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE)' != 'true' and
+                            '$(DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS)' == 'true' and
+                            '$(SolutionExt)' == '.sln' and
+                            '$(_SolutionLevelPublishRelease)' != '$(PublishRelease)'"
+                 ResourceName="SolutionProjectConfigurationsConflict"
+                 FormatArguments="PublishRelease;$(ProjectName)"/>
 
     <PropertyGroup>
       <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
@@ -312,7 +396,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ResolveReadyToRunCompilers RuntimePacks="@(ResolvedRuntimePack)"
                                 Crossgen2Packs="@(ResolvedCrossgen2Pack)"
                                 TargetingPacks="@(ResolvedTargetingPack)"
-                                RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                                RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
                                 NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
                                 EmitSymbols="$(PublishReadyToRunEmitSymbols)"
                                 ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
@@ -370,6 +454,17 @@ Copyright (c) .NET Foundation. All rights reserved.
                             GeneratePublishDependencyFile;
                             GenerateSingleFileBundle">
   </Target>
+
+  <!--
+    ============================================================
+                                        ILLink
+
+    Initially an empty placeholder target. When trimming, this
+    will be redefined to invoke ILLink to perform IL trimming.
+    The placeholder exists to allow other targets to depend on it for ordering purposes.
+    ============================================================
+    -->
+  <Target Name="ILLink" />
 
   <PropertyGroup>
     <CopyBuildOutputToPublishDirectory Condition="'$(CopyBuildOutputToPublishDirectory)'==''">true</CopyBuildOutputToPublishDirectory>
@@ -896,11 +991,37 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
+  <Target Name="_GenerateSingleFileBundleInputCache">
+    <ItemGroup>
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(PublishedSingleFilePath)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(TraceSingleFileBundler)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(IncludeSymbolsInSingleFile)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(IncludeAllContentForSelfExtract)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(IncludeNativeLibrariesForSelfExtract)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(EnableCompressionInSingleFile)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(PublishedSingleFileName)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(RuntimeIdentifier)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(PublishDir)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(_TargetFrameworkVersionWithoutV)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="@(FilesToBundle)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_GenerateSingleFileBundlePropertyInputsCacheToHash)">
+      <Output TaskParameter="HashResult" PropertyName="_GenerateSingleFileBundlePropertyInputsCacheHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_GenerateSingleFileBundlePropertyInputsCacheHash)"
+      File="$(_GenerateSingleFileBundlePropertyInputsCache)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
+
   <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <Target Name="GenerateSingleFileBundle"
           Condition="'$(PublishSingleFile)' == 'true'"
-          DependsOnTargets="_ComputeFilesToBundle;PrepareForBundle"
-          Inputs="@(FilesToBundle)"
+          DependsOnTargets="_ComputeFilesToBundle;PrepareForBundle;_GenerateSingleFileBundleInputCache"
+          Inputs="@(FilesToBundle);$(_GenerateSingleFileBundlePropertyInputsCache)"
           Outputs="$(PublishedSingleFilePath)">
 
     <PropertyGroup>
@@ -934,6 +1055,50 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <Target Name="_ComputeIntermediateDepsFilePath">
+    <PropertyGroup>
+      <!-- IntermediateDepsFilePath is the location where the deps.json file is originally created -->
+      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' != ''">$(PublishDepsFilePath)</IntermediateDepsFilePath >
+      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' == ''">$(IntermediateOutputPath)$(ProjectDepsFileName)</IntermediateDepsFilePath >
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_GeneratePublishDependencyFileInputCache"
+          DependsOnTargets="_ComputeIntermediateDepsFilePath">
+    <ItemGroup>
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(PublishDepsFilePath)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(PublishSingleFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(MSBuildProjectFullPath)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(ProjectAssetsFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IntermediateDepsFilePath)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(TargetFramework)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(AssemblyName)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(TargetExt)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(Version)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeMainProjectInDepsFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(RuntimeIdentifier)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(MicrosoftNETPlatformLibrary)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(SelfContained)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeFileVersionsInDependencyFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(RuntimeIdentifierGraphPath)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeProjectsNotInAssetsFileInDepsFile)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_GeneratePublishDependencyFilePropertyInputsCacheToHash)">
+      <Output TaskParameter="HashResult" PropertyName="_GeneratePublishDependencyFilePropertyInputsCacheHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_GeneratePublishDependencyFilePropertyInputsCacheHash)"
+      File="$(_GeneratePublishDependencyFilePropertyInputsCache)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratePublishDependencyFilePropertyInputsCache)" />
+    </ItemGroup>
+  </Target>
+
   <!--
     ============================================================
     _GeneratePublishDependencyFile
@@ -942,25 +1107,27 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <Target Name="GeneratePublishDependencyFile"
           DependsOnTargets="_ComputeUseBuildDependencyFile;
+                            _ComputeIntermediateDepsFilePath;
                             _DefaultMicrosoftNETPlatformLibrary;
                             _HandlePackageFileConflicts;
                             _HandlePackageFileConflictsForPublish;
                             _ComputeReferenceAssemblies;
                             _ComputeUserRuntimeAssemblies;
                             ResolveRuntimePackAssets;
-                            _ComputePackageReferencePublish"
-          Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true' and '$(PublishAot)' != 'true'">
+                            _ComputePackageReferencePublish;
+                            _GeneratePublishDependencyFileInputCache"
+          Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true' and '$(PublishAot)' != 'true'"
+          Inputs="$(ProjectAssetsFile);$(ProjectAssetsCacheFile);$(MSBuildAllProjects);$(_GeneratePublishDependencyFilePropertyInputsCache)"
+          Outputs="$(IntermediateDepsFilePath)">
 
     <PropertyGroup>
-      <!-- IntermediateDepsFilePath is the location where the deps.json file is originally created
-           PublishDepsFilePath is the location where the deps.json resides when published
-           PublishDepsFilePath is empty (by default) for PublishSingleFile, since the deps.json file is embedde within the single-file bundle -->
-      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' != ''">$(PublishDepsFilePath)</IntermediateDepsFilePath >
-      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' == ''">$(IntermediateOutputPath)$(ProjectDepsFileName)</IntermediateDepsFilePath >
+      <!-- PublishDepsFilePath is the location where the deps.json resides when published
+           PublishDepsFilePath is empty (by default) for PublishSingleFile, since the deps.json file is embedded within the single-file bundle -->
       <PublishDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' And '$(PublishSingleFile)' != 'true'">$(PublishDir)$(ProjectDepsFileName)</PublishDepsFilePath>
       <_IsSingleFilePublish Condition="'$(PublishSingleFile)' == ''">false</_IsSingleFilePublish>
       <_IsSingleFilePublish Condition="'$(PublishSingleFile)' != ''">$(PublishSingleFile)</_IsSingleFilePublish>
     </PropertyGroup>
+
     <ItemGroup>
       <ResolvedCompileFileDefinitions Remove="@(_PublishConflictPackageFiles)" Condition="'%(_PublishConflictPackageFiles.ConflictItemType)' == 'Reference'" />
       <RuntimeTargetsCopyLocalItems Remove="@(_PublishConflictPackageFiles)" Condition="'%(_PublishConflictPackageFiles.ConflictItemType)' != 'Reference'" />
@@ -999,7 +1166,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       IsSelfContained="$(SelfContained)"
                       IsSingleFile="$(_IsSingleFilePublish)"
                       IncludeRuntimeFileVersions="$(IncludeFileVersionsInDependencyFile)"
-                      RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                      RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
                       IncludeProjectsNotInAssetsFile="$(IncludeProjectsNotInAssetsFileInDepsFile)"/>
 
     <ItemGroup>
@@ -1109,6 +1276,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="_CheckForLanguageAndPublishFeatureCombinationSupport"
+        Condition="$(IsPublishable) == 'true'"
         BeforeTargets="Publish;PrepareForPublish">
 
     <NETSdkError Condition="('$(Language)' == 'C++' and '$(_EnablePackageReferencesInVCProjects)' != 'true') and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'"

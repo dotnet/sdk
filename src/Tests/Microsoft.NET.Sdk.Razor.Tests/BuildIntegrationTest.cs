@@ -1,21 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -27,7 +13,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public void Build_SimpleMvc_UsingDotnetMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
             => Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully();
 
-        [FullMSBuildOnlyFactAttribute]
+        [FullMSBuildOnlyFactAttribute(Skip="https://github.com/dotnet/installer/issues/17453")]
         public void Build_SimpleMvc_UsingDesktopMSBuildAndWithoutBuildServer_CanBuildSuccessfully()
             => Build_SimpleMvc_WithoutBuildServer_CanBuildSuccessfully();
 
@@ -50,7 +36,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "SimpleMvc.Views.pdb")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_SimpleMvc_NoopsWithRazorCompileOnBuild_False()
         {
             var testAsset = "RazorSimpleMvc";
@@ -95,7 +81,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.dll")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithP2P_CopiesRazorAssembly()
         {
             var testAsset = "RazorAppWithP2PReference";
@@ -116,7 +102,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "ClassLibrary.Views.pdb")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_CompilationContextAndRefsDirectoryAreNotPreserved()
         {
             var testAsset = "RazorSimpleMvc";
@@ -140,7 +126,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new DirectoryInfo(Path.Combine(outputPath, "publish", "refs")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithPreserveCompilationReferencesEnabled_ProducesRefsDirectory()
         {
             var testAsset = "RazorSimpleMvc";
@@ -160,7 +146,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "refs", "mscorlib.dll")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_AddsApplicationPartAttributes()
         {
             var testAsset = "RazorSimpleMvc";
@@ -178,7 +164,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_DoesNotAddRelatedAssemblyPart_IfViewCompilationIsDisabled()
         {
             var testAsset = "RazorSimpleMvc";
@@ -194,7 +180,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "SimpleMvc.RazorTargetAssemblyInfo.cs")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithP2P_WorksWhenBuildProjectReferencesIsDisabled()
         {
             var testAsset = "RazorAppWithP2PReference";
@@ -230,7 +216,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             build.Execute("/p:BuildProjectReferences=false").Should().Pass();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithP2P_Referencing21Project_Works()
         {
             // Verifies building with different versions of Razor.Tasks works. Loosely modeled after the repro
@@ -261,7 +247,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "ClassLibraryMvc21.Views.dll")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithStartupObjectSpecified_Works()
         {
             var testAsset = "RazorSimpleMvc";

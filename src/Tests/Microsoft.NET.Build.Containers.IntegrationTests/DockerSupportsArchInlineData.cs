@@ -3,9 +3,6 @@
 
 using System.Reflection;
 using System.Text.Json;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
@@ -16,7 +13,7 @@ public class DockerSupportsArchInlineData : DataAttribute
     private static string[] LinuxPlatforms = GetSupportedLinuxPlatforms();
 
     // another optimization - daemons don't switch types easily or quickly, so this is as good as static
-    private static bool IsWindowsDaemon = GetIsWindowsDaemon();
+    private static bool IsWindowsDockerDaemon = GetIsWindowsDockerDaemon();
 
     private readonly string _arch;
     private readonly object[] _data;
@@ -44,7 +41,7 @@ public class DockerSupportsArchInlineData : DataAttribute
         }
         else
         {
-            if (IsWindowsDaemon && arch.StartsWith("windows", StringComparison.OrdinalIgnoreCase))
+            if (IsWindowsDockerDaemon && arch.StartsWith("windows", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -55,17 +52,31 @@ public class DockerSupportsArchInlineData : DataAttribute
 
     private static string[] GetSupportedLinuxPlatforms()
     {
-        var inspectResult = new RunExeCommand(NullLogger.Instance, "docker", "buildx", "inspect", "default").Execute();
-        inspectResult.Should().Pass();
-        var platformsLine = inspectResult.StdOut!.Split(Environment.NewLine).First(x => x.StartsWith("Platforms:", StringComparison.OrdinalIgnoreCase));
-        return platformsLine.Substring("Platforms: ".Length).Split(",", StringSplitOptions.TrimEntries);
+        if (ContainerCli.IsPodman)
+        {
+            var inspectResult = new RunExeCommand(NullLogger.Instance, "podman", "info").Execute();
+            inspectResult.Should().Pass();
+            var platformsLine = inspectResult.StdOut!.Split(Environment.NewLine).First(x => x.Contains("OsArch:", StringComparison.OrdinalIgnoreCase));
+            return new[] { platformsLine.Trim().Substring("OsArch: ".Length) };
+        }
+        else
+        {
+            var inspectResult = new RunExeCommand(NullLogger.Instance, "docker", "buildx", "inspect", "default").Execute();
+            inspectResult.Should().Pass();
+            var platformsLine = inspectResult.StdOut!.Split(Environment.NewLine).First(x => x.StartsWith("Platforms:", StringComparison.OrdinalIgnoreCase));
+            return platformsLine.Substring("Platforms: ".Length).Split(",", StringSplitOptions.TrimEntries);
+        }
     }
 
-    private static bool GetIsWindowsDaemon()
+    private static bool GetIsWindowsDockerDaemon()
     {
+        if (ContainerCli.IsPodman)
+        {
+            return false;
+        }
         // the config json has an OSType property that is either "linux" or "windows" -
         // we can't use this for linux arch detection because that isn't enough information.
-        var config = LocalDocker.GetConfig();
+        var config = DockerCli.GetDockerConfig();
         if (config.RootElement.TryGetProperty("OSType", out JsonElement osTypeProperty))
         {
             return osTypeProperty.GetString() == "windows";

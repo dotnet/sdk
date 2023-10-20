@@ -1,14 +1,8 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
 
 namespace ManifestReaderTests
 {
@@ -35,13 +29,15 @@ namespace ManifestReaderTests
                     Path.GetDirectoryName(filePath.manifest)!,
                     filePath.manifest,
                     "8.0.100",
+                    "33",
                     () => new FileStream(filePath.manifest, FileMode.Open, FileAccess.Read),
                     () => filePath.localizationCatalog != null ? new FileStream(filePath.localizationCatalog, FileMode.Open, FileAccess.Read) : null
                 );
             }
         }
 
-        public string GetSdkFeatureBand() => throw new NotImplementedException();
+        public string GetSdkFeatureBand() => "8.0.100";
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => throw new NotImplementedException();
     }
 
     internal class InMemoryFakeManifestProvider : IWorkloadManifestProvider, IEnumerable<(string id, string content)>
@@ -56,6 +52,7 @@ namespace ManifestReaderTests
                 $@"C:\fake\{m.id}",
                 $@"C:\fake\{m.id}\WorkloadManifest.json",
                 "8.0.100",
+                "34",
                 (Func<Stream>)(() => new MemoryStream(m.content)),
                 (Func<Stream?>)(() => null)
             ));
@@ -63,6 +60,7 @@ namespace ManifestReaderTests
         // these are just so the collection initializer works
         public IEnumerator<(string id, string content)> GetEnumerator() => throw new NotImplementedException();
         IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
-        public string GetSdkFeatureBand() => throw new NotImplementedException();
+        public string GetSdkFeatureBand() => "8.0.100";
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => throw new NotImplementedException();
     }
 }

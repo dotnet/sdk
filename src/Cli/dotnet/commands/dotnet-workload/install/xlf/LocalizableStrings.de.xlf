@@ -27,8 +27,13 @@
         <target state="translated">Es wird nach aktualisierten Workloadmanifesten gesucht.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadManifest">
+        <source>Uninstalling workload manifest {0} version {1}...</source>
+        <target state="translated">Das Workloadmanifest {0} Version {1} wird deinstalliert...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
-        <source>Uninstalling workload pack {0} version {1}…</source>
+        <source>Uninstalling workload pack {0} version {1}...</source>
         <target state="translated">Das Workloadpaket {0}, Version {1}, wird deinstalliert…</target>
         <note />
       </trans-unit>
@@ -43,8 +48,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DownloadingPackToCacheMessage">
-        <source>Downloading pack {0} version {1} to offline cache {2}…</source>
-        <target state="translated">Das Paket {0}, Version {1}, wird in den Offlinecache {2} heruntergeladen…</target>
+        <source>Downloading pack {0} version {1} to offline cache {2}...</source>
+        <target state="translated">Das Paket "{0}", Version {1}, wird in den Offlinecache "{2}" heruntergeladen...</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectedSingleManifest">
@@ -102,11 +107,6 @@
         <target state="translated">Hiermit wird die Vorabversion von Workloadmanifesten zugelassen.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IncompatibleManifests">
-        <source>The current SDK isn't compatible with workload manifests of SDK version {0}.</source>
-        <target state="translated">Das aktuelle SDK ist nicht mit den Workloadmanifesten der SDK-Version {0} kompatibel.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="translated">Workload(s) {0} wurde(n) erfolgreich installiert.</target>
@@ -118,7 +118,7 @@
         <note />
       </trans-unit>
       <trans-unit id="InstallingWorkloadManifest">
-        <source>Installing workload manifest {0} version {1}…</source>
+        <source>Installing workload manifest {0} version {1}...</source>
         <target state="translated">Das Workloadmanifest {0}, Version {1}, wird installiert…</target>
         <note />
       </trans-unit>
@@ -182,11 +182,6 @@
         <target state="translated">{0} wird entfernt </target>
         <note />
       </trans-unit>
-      <trans-unit id="NoManifestsExistForFeatureBand">
-        <source>No manifests exist for SDK version {0}.</source>
-        <target state="translated">Es sind keine Manifeste für die SDK-Version {0} vorhanden.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">Fehler beim Einrichten einer Vertrauensbeziehung mit dem übergeordneten Prozess ({0}).</target>
@@ -198,8 +193,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PendingReboot">
-        <source>The machine has a pending reboot. Installation will continue, but you may need to restart.</source>
-        <target state="translated">Für den Computer steht ein Neustart aus. Die Installation wird fortgesetzt, aber Sie müssen möglicherweise neu starten.</target>
+        <source>The machine has a pending reboot. The workload operation will continue, but you may need to restart.</source>
+        <target state="translated">Für den Computer steht ein Neustart aus. Der Workloadvorgang wird fortgesetzt, aber Sie müssen möglicherweise neu starten.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingPackageUrls">
@@ -231,6 +226,11 @@
         <source>Rolling back pack {0} installation...</source>
         <target state="translated">Für die Installation von {0} wird ein Rollback ausgeführt...</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SdkVersionOptionNotSupported">
+        <source>The --sdk-version option is no longer supported for this command.</source>
+        <target state="translated">Die Option "--sdk-version" wird für diesen Befehl nicht mehr unterstützt.</target>
+        <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">
         <source>Skip updating the workload manifests.</source>

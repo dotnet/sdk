@@ -1,12 +1,7 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-
-using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace ManifestReaderTests
 {
@@ -32,6 +27,8 @@ namespace ManifestReaderTests
 
         public SdkFeatureBand SdkFeatureBand { get; set; }
 
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
+
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
             {
                 foreach ((var id, var path, var featureBand) in _manifests)
@@ -41,6 +38,7 @@ namespace ManifestReaderTests
                         Path.GetDirectoryName(path),
                         path,
                         featureBand ?? SdkFeatureBand.ToString(),
+                        string.Empty,
                         () => File.OpenRead(path),
                         () => WorkloadManifestReader.TryOpenLocalizationCatalogForManifest(path)
                     );

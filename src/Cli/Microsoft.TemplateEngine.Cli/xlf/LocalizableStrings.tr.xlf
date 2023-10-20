@@ -258,6 +258,11 @@ Tüm diğer adları göstermek için 'dotnet {1} --show-aliases' komutunu bağı
         <target state="translated">Paket</target>
         <note />
       </trans-unit>
+      <trans-unit id="ColumnNamePackageNameAndOwners">
+        <source>Package Name / Owners</source>
+        <target state="translated">Paket Adı/Sahipleri</target>
+        <note>information about NuGet package: its name and owner</note>
+      </trans-unit>
       <trans-unit id="ColumnNamePrecedence">
         <source>Precedence</source>
         <target state="translated">Öncellik</target>
@@ -282,6 +287,11 @@ Tüm diğer adları göstermek için 'dotnet {1} --show-aliases' komutunu bağı
         <source>Downloads</source>
         <target state="translated">İndirilenler</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ColumnNameTrusted">
+        <source>Trusted</source>
+        <target state="translated">Güvenilir</target>
+        <note>information about NuGet package origin; if a package has PrefixReserved indicator </note>
       </trans-unit>
       <trans-unit id="ColumnNameType">
         <source>Type</source>
@@ -370,6 +380,106 @@ Tüm diğer adları göstermek için 'dotnet {1} --show-aliases' komutunu bağı
         <target state="translated">Bu şablonun oluşturulması mevcut dosyalarda değişiklikler yapar:</target>
         <note />
       </trans-unit>
+      <trans-unit id="DetailsCommand_Argument_PackageIdentifier">
+        <source>Package identifier</source>
+        <target state="translated">Paket tanımlayıcısı</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_NoNuGetSources">
+        <source>No NuGet sources are defined or enabled</source>
+        <target state="translated">Tanımlanmış veya etkinleştirilmiş NuGet kaynağı yok</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Option_Version">
+        <source>Specifies a concrete version for displaying details. If not specified the last is taken.</source>
+        <target state="translated">Ayrıntıları görüntülemek için somut bir sürüm belirtir. Belirtilmezse, sonuncu sürüm alınır.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Authors">
+        <source>Authors</source>
+        <target state="translated">Yazarlar</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Description">
+        <source>Details</source>
+        <target state="translated">Ayrıntılar</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Languages">
+        <source>Languages</source>
+        <target state="translated">Diller</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_License">
+        <source>License</source>
+        <target state="translated">Lisans</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_LicenseExpression">
+        <source>License Expression</source>
+        <target state="translated">Lisans İfadesi</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_LicenseMetadata">
+        <source>License Metadata</source>
+        <target state="translated">Lisans Meta Verileri</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_LicenseUrl">
+        <source>License Url</source>
+        <target state="translated">Lisans URL'si</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Owners">
+        <source>Owners</source>
+        <target state="translated">Sahipler</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_PrefixReserved">
+        <source>Reserved</source>
+        <target state="translated">Ayrılmış</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_RepoUrl">
+        <source>Repository Url</source>
+        <target state="translated">Depo URL'si</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_ShortNames">
+        <source>Short Names</source>
+        <target state="translated">Kısa Adlar</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_SourceFeed">
+        <source>Source Feed</source>
+        <target state="translated">Kaynak Akışı</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Tags">
+        <source>Tags</source>
+        <target state="translated">Etiketler</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Templates">
+        <source>Templates</source>
+        <target state="translated">Şablonlar</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Version">
+        <source>Package version</source>
+        <target state="translated">Paket sürümü</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_UnableToLoadResorce">
+        <source>Could not parse NuGet source '{0}', so it was discarded</source>
+        <target state="translated">'{0}' NuGet kaynağı ayrıştırılamadı, bu nedenle atıldı</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_UnableToLoadResorces">
+        <source>Failed to load NuGet sources configured for the folder {0}</source>
+        <target state="translated">{0} klasörü için yapılandırılan NuGet kaynakları yüklenemedi.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DisplaysHelp">
         <source>Displays help for this command.</source>
         <target state="translated">Bu komutla ilgili yardımı görüntüler.</target>
@@ -441,6 +551,25 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="Generic_ExamplesHeader">
         <source>Examples:</source>
         <target state="translated">Örnekler:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Generic_Info_NoMatchingTemplatePackage">
+        <source>
+      No template packages found matching: {0}.
+      
+      To list installed template packages, run:
+        dotnet new uninstall
+      To search for the template packages on NuGet.org, run:
+        dotnet new search --package {0}
+    </source>
+        <target state="translated">
+      Eşleşen şablon paketi bulunamadı: {0}.
+      
+      Yüklü şablon paketlerini listelemek için şu komutu çalıştırın:
+        dotnet new uninstall
+      NuGet.org üzerinde şablon paketlerini aramak için şu komutu çalıştırın:
+        dotnet new search --package {0}
+    </target>
         <note />
       </trans-unit>
       <trans-unit id="Generic_Info_NoMatchingTemplates">
@@ -696,6 +825,31 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Bu eylemi çalıştırmak istiyor musunuz [{0}(evet)|{1}(hayır)]?</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
+        <source>Post action argument '{0}' is mandatory, but not configured.</source>
+        <target state="translated">'{0}' eylem sonrası bağımsız değişkeni zorunlu, ancak yapılandırılmamış.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_MultipleJsonFiles">
+        <source>More than one file found that matches '{0}'.</source>
+        <target state="translated">'{0}' ile eşleşen birden fazla dosya bulundu.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_NoJsonFile">
+        <source>Unable to find the json file in the solution</source>
+        <target state="translated">Çözümde json dosyası bulunamıyor</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">
+        <source>Parent property path '{0}' could not be traversed.</source>
+        <target state="translated">Üst özellik '{0}' yolu geçirilemedi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Succeeded">
+        <source>Successfully modified {0}.</source>
+        <target state="translated">{0} başarıyla değiştirildi.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">
         <source>Failed to run the command: argument 'executable' is missing in post action configuration.</source>
         <target state="translated">Komut çalıştırılamadı: Gönderme eylemi yapılandırmasında 'executable' bağımsız değişkeni eksik.</target>
@@ -827,6 +981,16 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Yerleşik şablon paketini kullanmak için el ile yüklenen şablon paketini şu komutu kullanarak kaldırın:</target>
         <note>followed by command to uninstall package</note>
       </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Download_Error_VulnerablePackage">
+        <source>Failed to install {0}, due to detected vulnerabilities:</source>
+        <target state="translated">Algılanan güvenlik açıkları nedeniyle {0} yüklenemedi:</target>
+        <note>{0} - template package name.</note>
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Download_VulnerablePackage">
+        <source>Installed package has the following vulnerabilities:</source>
+        <target state="translated">Yüklü paket aşağıdaki güvenlik açıklarına sahip:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_Error_PackageForTemplateNotFound">
         <source>Could not find the template package containing template '{0}'</source>
         <target state="translated">'{0}' şablonunu içeren şablon paketi bulunamadı</target>
@@ -860,6 +1024,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="TemplatePackageCoordinator_Install_Error_SameInstallRequests">
         <source>The command is attempting to install the template package '{0}' twice, check the arguments and retry.</source>
         <target state="translated">Komut, '{0}' şablon paketini iki kere yüklemeye çalışıyor. Bağımsız değişkenleri kontrol edin ve yeniden deneyin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Install_Error_VulnerablePackageTip">
+        <source>In order to install this package, run:</source>
+        <target state="translated">Bu paketi yüklemek için şu komutu çalıştırın:</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_Install_Info_OverrideNotice">
@@ -917,6 +1086,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Kaldır Komutu:</target>
         <note />
       </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_UpdateCheck_Error_VulnerablePackage">
+        <source>The package {0} contains vulnerabilities:</source>
+        <target state="translated">{0} paketi güvenlik açıkları içeriyor:</target>
+        <note>{0} - template package name.</note>
+      </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_Update_Error_GenericError">
         <source>Failed to check update for {0}: {1}.</source>
         <target state="translated">{0} için güncelleştirmeler denetlenemedi: {1}.</target>
@@ -935,6 +1109,16 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="TemplatePackageCoordinator_Update_Error_PackageNotSupported">
         <source>Failed to check update for {0}: the package is not supported.</source>
         <target state="translated">{0} için güncelleştirmeler denetlenemedi: paket desteklenmiyor.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Update_Error_VulnerablePackage">
+        <source>The package {0} was not updated due to detected vulnerabilities:</source>
+        <target state="translated">{0} paketi algılanan güvenlik açıkları nedeniyle güncelleştirilmedi:</target>
+        <note>{0} - template package name.</note>
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Update_Error_VulnerablePackageTip">
+        <source>In order to update this package, run:</source>
+        <target state="translated">Bu paketi güncelleştirmek için şu komutu çalıştırın:</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_Update_Info_AllPackagesAreUpToDate">
@@ -971,6 +1155,26 @@ The header is followed by the list of parameters and their errors (might be seve
         <source>Failed to initialize NuGet credential service, details: {0}.</source>
         <target state="translated">NuGet kimlik bilgisi hizmeti başlatılamadı. Ayrıntılar: {0}.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_VulnerabilitySeverity_Critical">
+        <source>Critical</source>
+        <target state="translated">Kritik</target>
+        <note>represents nuget api severity of level 3.</note>
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_VulnerabilitySeverity_High">
+        <source>High</source>
+        <target state="translated">Yüksek</target>
+        <note>represents nuget api severity of level 2.</note>
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_VulnerabilitySeverity_Low">
+        <source>Low</source>
+        <target state="translated">Düşük</target>
+        <note>represents nuget api severity of level 0.</note>
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_VulnerabilitySeverity_Moderate">
+        <source>Moderate</source>
+        <target state="translated">Orta</target>
+        <note>represents nuget api severity of level 1.</note>
       </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled">
         <source>{0} is already installed.</source>

@@ -1,29 +1,22 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Publish.Tests
 {
+
+
+
     public class GivenThatWeWantToPublishAHelloWorldProject : SdkTest
     {
+        private const string PublishRelease = nameof(PublishRelease);
+        private const string PackRelease = nameof(PackRelease);
+
         public GivenThatWeWantToPublishAHelloWorldProject(ITestOutputHelper log) : base(log)
         {
         }
@@ -50,7 +43,7 @@ namespace Microsoft.NET.Publish.Tests
             publishResult.Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework);
-            var outputDirectory = publishDirectory.Parent;
+            var outputDirectory = new BuildCommand(helloWorldAsset).GetOutputDirectory(targetFramework);
 
             var filesPublished = new[] {
                 "HelloWorld.dll",
@@ -89,14 +82,14 @@ namespace Microsoft.NET.Publish.Tests
                 .WithTargetFramework(targetFramework);
 
             var publishCommand = new PublishCommand(helloWorldAsset);
-            var publishResult = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:CopyLocalLockFileAssemblies=true");
+            var publishResult = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true", "/p:CopyLocalLockFileAssemblies=true");
 
             publishResult.Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(
                 targetFramework: targetFramework,
                 runtimeIdentifier: rid);
-            var outputDirectory = publishDirectory.Parent;
+            var outputDirectory = new BuildCommand(helloWorldAsset).GetOutputDirectory(targetFramework, runtimeIdentifier: rid);
             var selfContainedExecutable = $"HelloWorld{Constants.ExeSuffix}";
 
             var filesPublished = new[] {
@@ -169,9 +162,6 @@ public static class Program
         }
 
         [Theory]
-        [InlineData("win-arm")]
-        [InlineData("win8-arm")]
-        [InlineData("win81-arm")]
         [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm")]
         [InlineData($"{ToolsetInfo.LatestWinRuntimeIdentifier}-arm64")]
         public void Publish_standalone_post_netcoreapp2_arm_app(string runtimeIdentifier)
@@ -428,29 +418,24 @@ public static class Program
             publishResult.Should().Fail();
         }
 
-        [Fact]
-        public void It_publishes_on_release_if_PublishRelease_property_set()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void It_publishes_on_release_if_PublishRelease_property_set(bool optedOut)
         {
             var helloWorldAsset = _testAssetsManager
-               .CopyTestAsset("HelloWorld", "PublishReleaseHelloWorld")
-               .WithSource()
-               .WithTargetFramework(ToolsetInfo.CurrentTargetFramework);
+               .CopyTestAsset("HelloWorld", $"{optedOut}")
+               .WithSource();
 
-            System.IO.File.WriteAllText(helloWorldAsset.Path + "/Directory.Build.props", "<Project><PropertyGroup><PublishRelease>true</PublishRelease></PropertyGroup></Project>");
+            File.WriteAllText(Path.Combine(helloWorldAsset.Path, "Directory.Build.props"), "<Project><PropertyGroup><PublishRelease>true</PublishRelease></PropertyGroup></Project>");
 
-            new BuildCommand(helloWorldAsset)
-           .Execute()
-           .Should()
-           .Pass();
+            new DotnetPublishCommand(Log, helloWorldAsset.TestRoot)
+                .WithEnvironmentVariable(EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE, optedOut.ToString())
+                .Execute()
+                .Should()
+                .Pass();
 
-            var publishCommand = new DotnetPublishCommand(Log, helloWorldAsset.TestRoot);
-
-            publishCommand
-            .Execute()
-            .Should()
-            .Pass();
-
-            var expectedAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
+            var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", optedOut ? "Debug" : "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
             Assert.True(File.Exists(expectedAssetPath));
         }
 
@@ -458,58 +443,42 @@ public static class Program
         public void It_respects_CLI_PublishRelease_over_project_PublishRelease_value()
         {
             var helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", "PublishReleaseHelloWorldCsProjRespect")
+                .CopyTestAsset("HelloWorld")
                 .WithSource()
-                .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
                     var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                    propertyGroup.Add(new XElement(ns + "PublishRelease", "true"));
+                    propertyGroup.Add(new XElement(ns + PublishRelease, "true"));
                 });
 
-            new BuildCommand(helloWorldAsset)
-           .Execute()
-           .Should()
-           .Pass();
+            new DotnetPublishCommand(Log, helloWorldAsset.TestRoot)
+                .Execute("-p:PublishRelease=false")
+                .Should()
+                .Pass();
 
-            var publishCommand = new DotnetPublishCommand(Log, helloWorldAsset.TestRoot);
-
-            publishCommand
-            .Execute("-p:PublishRelease=false")
-            .Should()
-            .Pass();
-
-            var expectedAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
+            var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
             Assert.True(File.Exists(expectedAssetPath));
-            var releaseAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
+            var releaseAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
             Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
         }
 
         [Fact]
         public void It_publishes_on_release_if_PublishRelease_property_set_in_sln()
         {
-            Environment.SetEnvironmentVariable(EnvironmentVariableNames.ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS, "true");
 
             var slnDir = _testAssetsManager
-               .CopyTestAsset("TestAppWithSlnUsingPublishRelease", "PublishReleaseSln")
+               .CopyTestAsset("TestAppWithSlnUsingPublishRelease")
                .WithSource()
                .Path;
 
-            new BuildCommand(Log, slnDir, "App.sln")
-               .Execute()
-               .Should()
-               .Pass();
-
-            var publishCommand = new DotnetCommand(Log)
+            new DotnetCommand(Log)
                 .WithWorkingDirectory(slnDir)
-                .Execute(@"dotnet", "publish")
+                .Execute("dotnet", "publish")
                 .Should()
                 .Pass();
 
-            Environment.SetEnvironmentVariable(EnvironmentVariableNames.ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS, null);
-
-            var expectedAssetPath = System.IO.Path.Combine(slnDir, "App", "bin", "Release", ToolsetInfo.CurrentTargetFramework, "publish", "App.dll");
+            var expectedAssetPath = Path.Combine(slnDir, "App", "bin", "Release", ToolsetInfo.CurrentTargetFramework, "publish", "App.dll");
             Assert.True(File.Exists(expectedAssetPath));
 
         }
@@ -517,52 +486,36 @@ public static class Program
         [Fact]
         public void It_passes_using_PublishRelease_with_conflicting_capitalization_but_same_values_across_solution_projects()
         {
-            Environment.SetEnvironmentVariable(EnvironmentVariableNames.ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS, "true");
-
             var slnDir = _testAssetsManager
-               .CopyTestAsset("TestAppWithSlnUsingPublishReleaseConflictingCasing", "PublishReleaseConflictSln")
+               .CopyTestAsset("TestAppWithSlnUsingPublishReleaseConflictingCasing")
                .WithSource()
                .Path;
 
-            new BuildCommand(Log, slnDir, "App.sln")
-               .Execute()
-               .Should()
-               .Pass();
-
-            var publishCommand = new DotnetCommand(Log)
+            new DotnetCommand(Log)
                 .WithWorkingDirectory(slnDir)
-                .Execute(@"dotnet", "publish")
+                .Execute("dotnet", "publish")
                 .Should()
                 .Pass();
 
-            Environment.SetEnvironmentVariable(EnvironmentVariableNames.ENABLE_PUBLISH_RELEASE_FOR_SOLUTIONS, null);
-
-            var expectedAssetPath = System.IO.Path.Combine(slnDir, "App", "bin", "Release", ToolsetInfo.CurrentTargetFramework, "publish", "App.dll");
+            var expectedAssetPath = Path.Combine(slnDir, "App", "bin", "Release", ToolsetInfo.CurrentTargetFramework, "publish", "App.dll");
             Assert.True(File.Exists(expectedAssetPath));
-
         }
 
-
         [Fact]
-        public void It_warns_if_PublishRelease_set_on_sln_but_env_var_not_used()
+        public void It_no_longer_warns_if_PublishRelease_set_on_sln_but_env_var_not_used()
         {
             var slnDir = _testAssetsManager
-               .CopyTestAsset("TestAppWithSlnUsingPublishRelease", "PublishReleaseSlnNoEnvVar")
+               .CopyTestAsset("TestAppWithSlnUsingPublishRelease")
                .WithSource()
                .Path;
 
-            new BuildCommand(Log, slnDir, "App.sln")
-               .Execute()
-               .Should()
-               .Pass();
-
-            var publishCommand = new DotnetCommand(Log)
+            new DotnetPublishCommand(Log)
                 .WithWorkingDirectory(slnDir)
-                .Execute(@"dotnet", "publish")
+                .Execute()
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("NETSDK1190");
+                .NotHaveStdOutContaining("NETSDK1190");
         }
 
         [Fact]
@@ -590,7 +543,7 @@ public static class Program
         public void It_publishes_on_release_if_PublishRelease_property_set_in_csproj()
         {
             var helloWorldAsset = _testAssetsManager
-               .CopyTestAsset("HelloWorld", "PublishReleaseHelloWorldCsProj")
+               .CopyTestAsset("HelloWorld")
                .WithSource()
                .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
                .WithProjectChanges(project =>
@@ -600,88 +553,13 @@ public static class Program
                    propertyGroup.Add(new XElement(ns + "PublishRelease", "true"));
                });
 
-            new BuildCommand(helloWorldAsset)
-           .Execute()
-           .Should()
-           .Pass();
-
-            var publishCommand = new DotnetPublishCommand(Log, helloWorldAsset.TestRoot);
-
-            publishCommand
+            new DotnetPublishCommand(Log, helloWorldAsset.TestRoot)
             .Execute()
             .Should()
             .Pass();
 
-            var expectedAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
+            var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
             Assert.True(File.Exists(expectedAssetPath));
-        }
-
-        [Fact]
-        public void PublishRelease_overrides_Configuration_Debug_on_proj()
-        {
-            var helloWorldAsset = _testAssetsManager
-               .CopyTestAsset("HelloWorld", "PublishReleaseHelloWorldCsProjConfigOverride")
-               .WithSource()
-               .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
-               .WithProjectChanges(project =>
-               {
-                   var ns = project.Root.Name.Namespace;
-                   var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                   propertyGroup.Add(new XElement(ns + "PublishRelease", "true"));
-                   propertyGroup.Add(new XElement(ns + "Configuration", "Debug"));
-               });
-
-            new BuildCommand(helloWorldAsset)
-           .Execute()
-           .Should()
-           .Pass();
-
-            var publishCommand = new DotnetPublishCommand(Log, helloWorldAsset.TestRoot);
-
-            publishCommand
-            .Execute()
-            .Should()
-            .Pass();
-
-            var expectedAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
-            Assert.True(File.Exists(expectedAssetPath));
-            var releaseAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
-            Assert.True(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
-        }
-
-        [Fact]
-        public void PublishRelease_does_not_override_custom_Configuration_on_proj_and_logs()
-        {
-            var helloWorldAsset = _testAssetsManager
-               .CopyTestAsset("HelloWorld", "PublishReleaseHelloWorldCsProjConfigOverrideCustom")
-               .WithSource()
-               .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
-               .WithProjectChanges(project =>
-               {
-                   var ns = project.Root.Name.Namespace;
-                   var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                   propertyGroup.Add(new XElement(ns + "PublishRelease", "true"));
-                   propertyGroup.Add(new XElement(ns + "Configuration", "CUSTOM"));
-               });
-
-            new BuildCommand(helloWorldAsset)
-           .Execute()
-           .Should()
-           .Pass();
-
-            var publishCommand = new DotnetPublishCommand(Log, helloWorldAsset.TestRoot);
-
-            publishCommand
-            .Execute()
-            .Should()
-            .Pass()
-            .And
-            .HaveStdOutContaining(helloWorldAsset.Path) // match the logged string without being specific to localization
-            .And
-            .HaveStdOutContaining("PublishRelease");
-
-            var releaseAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
-            Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.       
         }
 
         [Theory]
@@ -694,10 +572,11 @@ public static class Program
         [InlineData("/property:Configuration=Debug")]
         public void PublishRelease_does_not_override_Configuration_property_across_formats(string configOpt)
         {
+            string tfm = "net7.0";
             var helloWorldAsset = _testAssetsManager
                .CopyTestAsset("HelloWorld", identifier: configOpt)
                .WithSource()
-               .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
+               .WithTargetFramework(tfm)
                .WithProjectChanges(project =>
                {
                    var ns = project.Root.Name.Namespace;
@@ -706,15 +585,16 @@ public static class Program
                });
 
             new DotnetPublishCommand(Log, helloWorldAsset.TestRoot)
-               .Execute(configOpt)
-               .Should()
-               .Pass().And.NotHaveStdErr();
+                .Execute(configOpt)
+                .Should()
+                .Pass().And.NotHaveStdErr();
 
-            var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
+            var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Debug", tfm, "HelloWorld.dll");
             Assert.True(File.Exists(expectedAssetPath));
-            var releaseAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
+            var releaseAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", tfm, "HelloWorld.dll");
             Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
         }
+
 
         [Theory]
         [InlineData("")]
@@ -738,61 +618,56 @@ public static class Program
                 .Should()
                 .Pass();
 
-            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: tfm);
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, configuration: "Release", targetFramework: tfm);
 
             Assert.Equal("", properties["SelfContained"]);
             Assert.Equal("", properties["PublishAot"]);
         }
 
-        [Fact]
-        public void PublishRelease_does_not_override_Configuration_option()
+        [Theory]
+        [InlineData("net7.0")]
+        [InlineData("net8.0")]
+        public void It_publishes_with_Release_by_default_in_net_8_but_not_net_7(string tfm)
         {
-            var helloWorldAsset = _testAssetsManager
-               .CopyTestAsset("HelloWorld", "PublishReleaseHelloWorldCsProjConfigOptionOverride")
-               .WithSource()
-               .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
-               .WithProjectChanges(project =>
-               {
-                   var ns = project.Root.Name.Namespace;
-                   var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                   propertyGroup.Add(new XElement(ns + "PublishRelease", "true"));
-               });
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = tfm
+            };
+            testProject.RecordProperties("Configuration");
+            testProject.RecordProperties("DebugSymbols"); // If Configuration is set too late, it doesn't actually do anything. Check this too.
 
-            new BuildCommand(helloWorldAsset)
-           .Execute()
-           .Should()
-           .Pass();
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-            var publishCommand = new DotnetPublishCommand(Log, helloWorldAsset.TestRoot);
+            new DotnetPublishCommand(Log)
+                .WithWorkingDirectory(Path.Combine(testAsset.TestRoot, testProject.Name))
+                .Execute()
+                .Should()
+                .Pass();
 
-            publishCommand
-            .Execute("--configuration", "Debug")
-            .Should()
-            .Pass();
-
-            var expectedAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
-            Assert.True(File.Exists(expectedAssetPath));
-            var releaseAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "HelloWorld.dll");
-            Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.
+            var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: tfm, configuration: tfm == "net7.0" ? "Debug" : "Release");
+            var finalConfiguration = properties["Configuration"];
+            var finalDebugSymbols = properties["DebugSymbols"];
+            Assert.Equal((tfm == "net7.0" ? "Debug" : "Release"), finalConfiguration);
+            Assert.Equal((tfm == "net7.0" ? "true" : "false"), finalDebugSymbols);
         }
 
-        [Theory]
-        [InlineData("Debug")]
-        [InlineData("Custom")]
-        public void PublishRelease_interacts_similarly_with_PublishProfile_Configuration(string config)
+        [Fact]
+        public void PublishRelease_interacts_similarly_with_PublishProfile_Configuration()
         {
+            var config = "Debug";
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var rid = EnvironmentInfo.GetCompatibleRid(tfm);
 
             var helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", $"PublishReleaseHelloWorldCsProjPublishProfile{config}")
+                .CopyTestAsset("HelloWorld")
                 .WithSource()
                 .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
                 .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
                     var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
-                    propertyGroup.Add(new XElement(ns + "PublishRelease", "true"));
+                    propertyGroup.Add(new XElement(ns + PublishRelease, "true"));
                 });
 
             var publishProfilesDirectory = Path.Combine(helloWorldAsset.Path, "Properties", "PublishProfiles");
@@ -807,27 +682,14 @@ public static class Program
             </Project>
             ");
 
-            new BuildCommand(helloWorldAsset)
-           .Execute()
-           .Should()
-           .Pass();
-
             var publishCommand = new DotnetPublishCommand(Log, helloWorldAsset.Path);
 
             CommandResult publishOutput = publishCommand
             .Execute("/p:PublishProfile=test");
 
             publishOutput.Should().Pass();
-            var releaseAssetPath = System.IO.Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, rid, "HelloWorld.dll");
-            if (config == "Debug")
-            {
-                Assert.True(File.Exists(releaseAssetPath)); // We ignore Debug configuration and override it, IF its custom though, we dont use publishrelease.
-            }
-            else
-            {
-                Assert.False(File.Exists(releaseAssetPath)); // build will produce a debug asset, need to make sure this doesn't exist either.       
-                publishOutput.Should().HaveStdOutContaining("PublishRelease");
-            }
+            var releaseAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release", ToolsetInfo.CurrentTargetFramework, rid, "HelloWorld.dll");
+            Assert.True(File.Exists(releaseAssetPath)); // We ignore Debug configuration and override it
         }
 
         [Fact]
@@ -1004,7 +866,7 @@ public static class Program
   <PropertyGroup>
     <RuntimeIdentifier>{rid}</RuntimeIdentifier>
     {(selfContained.HasValue ? $"<SelfContained>{selfContained}</SelfContained>" : "")}
-    {((!(selfContained ?? true) && useAppHost.HasValue) ? $"<UseAppHost>{useAppHost}</UseAppHost>" : "")}
+    {((!(selfContained ?? false) && useAppHost.HasValue) ? $"<UseAppHost>{useAppHost}</UseAppHost>" : "")}
   </PropertyGroup>
 </Project>
 ");
@@ -1024,7 +886,7 @@ public static class Program
                 $"{testProject.Name}.runtimeconfig.json",
             });
 
-            if (selfContained ?? true)
+            if (selfContained ?? false)
             {
                 output.Should().HaveFiles(new[] {
                     $"{FileConstants.DynamicLibPrefix}hostfxr{FileConstants.DynamicLibSuffix}",
@@ -1039,7 +901,7 @@ public static class Program
                 });
             }
 
-            if ((selfContained ?? true) || (useAppHost ?? true))
+            if ((selfContained ?? false) || (useAppHost ?? true))
             {
                 output.Should().HaveFile($"{testProject.Name}{Constants.ExeSuffix}");
             }
@@ -1158,7 +1020,7 @@ public static class Program
             }
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.8.1.47607")]
         [InlineData("invalidProfile", true)]
         [InlineData("invalidProfile.pubxml", true)]
         [InlineData("..\\Properties\\PublishProfiles\\invalidProfile.pubxml", true)]
@@ -1224,7 +1086,7 @@ public static class Program
             var testProject = new TestProject()
             {
                 Name = "PublishImplicitRid",
-                TargetFrameworks = $"net472;{ToolsetInfo.CurrentTargetFramework}",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
             testProject.AdditionalProperties.Add("IsPublishable", "false");
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: executeOptionsAndProperties);

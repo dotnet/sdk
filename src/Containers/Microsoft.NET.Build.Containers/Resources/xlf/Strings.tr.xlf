@@ -12,10 +12,35 @@
         <target state="translated">CONTAINER2008: {0} ve {1} sağlandı, ancak yalnızca birine veya diğerine izin verilir.</target>
         <note>{StrBegin="CONTAINER2008: "}</note>
       </trans-unit>
+      <trans-unit id="AppCommandArgsSetNoAppCommand">
+        <source>CONTAINER2025: ContainerAppCommandArgs are provided without specifying a ContainerAppCommand.</source>
+        <target state="translated">CONTAINER2025: ContainerAppCommandArgs bir ContainerAppCommand komutu belirtilmeden sağlanır.</target>
+        <note>{StrBegin="CONTAINER2025: "}</note>
+      </trans-unit>
+      <trans-unit id="AppCommandSetNotUsed">
+        <source>CONTAINER2026: ContainerAppCommand and ContainerAppCommandArgs must be empty when ContainerAppCommandInstruction is '{0}'.</source>
+        <target state="translated">CONTAINER2026: ContainerAppCommandInstruction '{0}' olduğunda ContainerAppCommand ve ContainerAppCommandArgs komutları boş olmalıdır.</target>
+        <note>{StrBegin="CONTAINER2026: "}</note>
+      </trans-unit>
+      <trans-unit id="ArchiveRegistry_PushInfo">
+        <source>local archive at '{0}'</source>
+        <target state="translated">'{0}' konumundaki yerel arşiv</target>
+        <note>{0} is the path to the file written</note>
+      </trans-unit>
+      <trans-unit id="BaseEntrypointOverwritten">
+        <source>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</source>
+        <target state="translated">CONTAINER2022: Temel görüntünün, uygulamayı başlatmak için üzerine yazılacak bir giriş noktası var. İsteniyorsa ContainerAppCommandInstruction komutunu 'Entrypoint' olarak ayarlayın. Temel görüntü giriş noktasını korumak için ContainerAppCommandInstruction komutunu 'DefaultArgs' olarak ayarlayın.</target>
+        <note>{StrBegin="CONTAINER2022: "}</note>
+      </trans-unit>
       <trans-unit id="BaseImageNameParsingFailed">
         <source>CONTAINER2009: Could not parse {0}: {1}</source>
         <target state="translated">CONTAINER2009: {0} ayrıştırılamadı: {1}</target>
         <note>{StrBegin="CONTAINER2009: "}</note>
+      </trans-unit>
+      <trans-unit id="BaseImageNameRegistryFallback">
+        <source>CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</source>
+        <target state="translated">CONTAINER2020: {0} kayıt defteri belirtmiyor ve Docker Hub’dan çekilecek. Lütfen adı görüntü kayıt defterine önek olarak ekleyin, örneğin: '{1}/&lt;image&gt;'.</target>
+        <note>{StrBegin="CONTAINER2020: "}</note>
       </trans-unit>
       <trans-unit id="BaseImageNameWithSpaces">
         <source>CONTAINER2013: {0} had spaces in it, replacing with dashes.</source>
@@ -33,13 +58,13 @@
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
-        <source>Pushed container '{0}' to Docker daemon.</source>
-        <target state="translated">'{0}' kapsayıcısı, Docker daemon'a gönderildi.</target>
+        <source>Pushed image '{0}' to {1}.</source>
+        <target state="translated">'{0}' görüntüsü {1} konumuna gönderildi.</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToRegistry">
-        <source>Pushed container '{0}' to registry '{1}'.</source>
-        <target state="translated">'{0}' kapsayıcısı, '{1}' kayıt defterine gönderildi.</target>
+        <source>Pushed image '{0}' to registry '{1}'.</source>
+        <target state="translated">'{0}' görüntüsü '{1}' kayıt defterine gönderildi.</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImage">
@@ -57,6 +82,11 @@
         <target state="translated">CONTAINER2012: '{0}' kayıt defteri tanınamadı.</target>
         <note>{StrBegin="CONTAINER2012: "}</note>
       </trans-unit>
+      <trans-unit id="DockerCli_PushInfo">
+        <source>local registry via '{0}'</source>
+        <target state="translated">'{0}' aracılığıyla yerel kayıt defteri</target>
+        <note>{0} is the command used</note>
+      </trans-unit>
       <trans-unit id="DockerInfoFailed">
         <source>CONTAINER3002: Failed to get docker info({0})\n{1}\n{2}</source>
         <target state="translated">CONTAINER3002: Docker bilgileri alınamadı ({0})\n{1}\n{2}</target>
@@ -67,10 +97,10 @@
         <target state="translated">CONTAINER3002: Docker bilgileri alınamadı: {0}</target>
         <note>{StrBegin="CONTAINER3002: "}</note>
       </trans-unit>
-      <trans-unit id="DockerProcessCreationFailed">
-        <source>CONTAINER3001: Failed creating docker process.</source>
-        <target state="translated">CONTAINER3001: Docker işlemi oluşturulamadı.</target>
-        <note>{StrBegin="CONTAINER3001: "}</note>
+      <trans-unit id="ContainerRuntimeProcessCreationFailed">
+        <source>CONTAINER3001: Failed creating {0} process.</source>
+        <target state="translated">CONTAINER3001: {0} işlemi oluşturulamadı.</target>
+        <note>CONTAINER3001: {0} is the name of the command we failed to run, usually 'docker' or 'podman'.</note>
       </trans-unit>
       <trans-unit id="EmptyOrWhitespacePropertyIgnored">
         <source>CONTAINER4006: Property '{0}' is empty or contains whitespace and will be ignored.</source>
@@ -81,6 +111,31 @@
         <source>CONTAINER4004: Items '{0}' contain empty item(s) which will be ignored.</source>
         <target state="translated">CONTAINER4004: '{0}' öğeleri yoksayılacak boş öğeler içeriyor.</target>
         <note>{StrBegin="CONTAINER4004: "}</note>
+      </trans-unit>
+      <trans-unit id="EntrypointAndAppCommandArgsSetNoAppCommandInstruction">
+        <source>CONTAINER2023: A ContainerEntrypoint and ContainerAppCommandArgs are provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</source>
+        <target state="translated">CONTAINER2023: ContainerEntrypoint ve ContainerAppCommandArgs sağlandı. Uygulamanın nasıl başlatılacağını yapılandırmak için ContainerAppInstruction komutu ayarlanmalıdır. Geçerli yönergeler {0}.</target>
+        <note>{StrBegin="CONTAINER2023: "}</note>
+      </trans-unit>
+      <trans-unit id="EntrypointSetNoAppCommandInstruction">
+        <source>CONTAINER2027: A ContainerEntrypoint is provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</source>
+        <target state="translated">CONTAINER2027: ContainerEntrypoint sağlandı. Uygulamanın nasıl başlatılacağını yapılandırmak için ContainerAppInstruction komutu ayarlanmalıdır. Geçerli yönergeler {0}.</target>
+        <note>{StrBegin="CONTAINER2027: "}</note>
+      </trans-unit>
+      <trans-unit id="EntrypointArgsSetNoEntrypoint">
+        <source>CONTAINER2024: ContainerEntrypointArgs are provided without specifying a ContainerEntrypoint.</source>
+        <target state="translated">CONTAINER2024: ContainerEntrypointArgs bir ContainerEntrypoint belirtilmeden sağlanır.</target>
+        <note>{StrBegin="CONTAINER2024: "}</note>
+      </trans-unit>
+      <trans-unit id="EntrypointArgsSetPreferAppCommandArgs">
+        <source>CONTAINER2029: ContainerEntrypointArgsSet are provided. Change to use ContainerAppCommandArgs for arguments that must always be set, or ContainerDefaultArgs for arguments that can be overridden when the container is created.</source>
+        <target state="translated">CONTAINER2029: ContainerEntrypointArgsSet sağlandı. Her zaman ayarlanması gereken bağımsız değişkenler için ContainerAppCommandArgs komutu veya kapsayıcı oluşturulduğunda geçersiz kılınabilen bağımsız değişkenler için ContainerDefaultArgs komutu kullanılacak şekilde değiştirin.</target>
+        <note>{StrBegin="CONTAINER2029: "}</note>
+      </trans-unit>
+      <trans-unit id="EntrypointConflictAppCommand">
+        <source>CONTAINER2028: ContainerEntrypoint can not be combined with ContainerAppCommandInstruction '{0}'.</source>
+        <target state="translated">CONTAINER2028: ContainerEntrypoint komutu ContainerAppCommandInstruction '{0}' ile birleştirilemez.</target>
+        <note>{StrBegin="CONTAINER2028: "}</note>
       </trans-unit>
       <trans-unit id="FailedRetrievingCredentials">
         <source>CONTAINER1008: Failed retrieving credentials for "{0}": {1}</source>
@@ -93,13 +148,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
-        <source>CONTAINER1009: Failed to load image to local Docker daemon. stdout: {0}</source>
-        <target state="translated">CONTAINER1009: Görüntü yerel Docker daemon'a yüklenemedi. stdout: {0}</target>
+        <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
+        <target state="translated">CONTAINER1009: Görüntü yerel kayıt defterinden yüklenemedi. stdout: {0}</target>
         <note>{StrBegin="CONTAINER1009: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
-        <source>CONTAINER1010: Pulling images from local Docker daemon is not supported.</source>
-        <target state="translated">CONTAINER1010: Yerel Docker daemon’ından görüntü çekme özelliği desteklenmiyor.</target>
+        <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
+        <target state="translated">CONTAINER1010: Yerel kayıt defterinden görüntü çekme desteklenmiyor.</target>
         <note>{StrBegin="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
@@ -162,9 +217,9 @@
         <target state="translated">CONTAINER4005: '{0}' öğesi 'Value' meta verileri olmayan öğeler içeriyor ve yoksayılacak.</target>
         <note>{StrBegin="CONTAINER4005: "}</note>
       </trans-unit>
-      <trans-unit id="LocalDaemonNotAvailable">
-        <source>CONTAINER1012: The local Docker daemon is not available, but pushing to a local Docker daemon was requested. Please start the daemon and try again.</source>
-        <target state="translated">CONTAINER1012: Yerel Docker daemon’ı kullanılamıyor, ancak yerel bir Docker daemon'a gönderme istendi. Lütfen daemon’ı başlatın ve yeniden deneyin.</target>
+      <trans-unit id="LocalRegistryNotAvailable">
+        <source>CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</source>
+        <target state="translated">CONTAINER1012: Yerel kayıt defteri kullanılamıyor, ancak yerel kayıt defterine gönderim isteniyor.</target>
         <note>{StrBegin="CONTAINER1012: "}</note>
       </trans-unit>
       <trans-unit id="LocalDocker_FailedToGetConfig">
@@ -202,14 +257,24 @@
         <target state="translated">CONTAINER2011: {0} '{1}' yok</target>
         <note>{StrBegin="CONTAINER2011: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryOperationFailed">
+        <source>CONTAINER1017: Unable to communicate with the registry '{0}'.</source>
+        <target state="translated">CONTAINER1017: '{0}' kayıt defteriyle iletişim kurulamıyor.</target>
+        <note>{StrBegin="CONTAINER1017:" }</note>
+      </trans-unit>
       <trans-unit id="RegistryOutputPushFailed">
         <source>CONTAINER1013: Failed to push to the output registry: {0}</source>
         <target state="translated">CONTAINER1013: Çıkış kayıt defterine gönderilemedi: {0}</target>
         <note>{StrBegin="CONTAINER1013: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryPullFailed">
+        <source>CONTAINER1014: Manifest pull failed.</source>
+        <target state="translated">CONTAINER1014: Bildirim çekme başarısız oldu.</target>
+        <note>{StrBegin="CONTAINER1014: "}</note>
+      </trans-unit>
       <trans-unit id="RegistryPushFailed">
-        <source>CONTAINER1005: Registry push failed.</source>
-        <target state="translated">CONTAINER1005: Kayıt defteri gönderilemedi.</target>
+        <source>CONTAINER1005: Registry push failed; received status code '{0}'.</source>
+        <target state="translated">CONTAINER1005: Kayıt defteri gönderilemedi; '{0}' durum kodu alındı.</target>
         <note>{StrBegin="CONTAINER1005: "}</note>
       </trans-unit>
       <trans-unit id="Registry_ConfigUploadStarted">
@@ -257,6 +322,11 @@
         <target state="translated">'{0}' etiketi, '{1}' konumuna karşıya yüklendi.</target>
         <note>{1} is the registry name</note>
       </trans-unit>
+      <trans-unit id="RepositoryNotFound">
+        <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</source>
+        <target state="translated">CONTAINER1015: '{2}' kayıt defterindeki '{1}' etiketinde bulunan '{0}' deposuna erişilemiyor. Lütfen bu ad ve etiketin kayıt defterinde mevcut olduğunu onaylayın.</target>
+        <note>{StrBegin="CONTAINER1015: "}</note>
+      </trans-unit>
       <trans-unit id="RequiredItemsContainsEmptyItems">
         <source>CONTAINER4003: Required '{0}' items contain empty items.</source>
         <target state="translated">CONTAINER4003: Gerekli '{0}' öğeleri boş öğeler içeriyor.</target>
@@ -277,9 +347,19 @@
         <target state="translated">CONTAINER1006: Çok fazla yeniden deneme, durduruluyor.</target>
         <note>{StrBegin="CONTAINER1006: "}</note>
       </trans-unit>
-      <trans-unit id="UnknownDaemonType">
-        <source>CONTAINER2002: Unknown local container daemon type '{0}'. Valid local container daemon types are {1}.</source>
-        <target state="translated">CONTAINER2002: Bilinmeyen yerel kapsayıcı daemon türü ('{0}'). Geçerli yerel kapsayıcı daemon türleri {1}.</target>
+      <trans-unit id="UnableToAccessRepository">
+        <source>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</source>
+        <target state="translated">CONTAINER1016: '{1}' kayıt defterindeki '{0}' deposuna erişilemedi. Lütfen kimlik bilgilerinizin doğru olduğunu ve bu depoya ve kayıt defterine erişiminiz olduğunu onaylayın.</target>
+        <note>{StrBegin="CONTAINER1016:" }</note>
+      </trans-unit>
+      <trans-unit id="UnknownAppCommandInstruction">
+        <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
+        <target state="translated">CONTAINER2021: AppCommandInstruction '{0}' bilinmiyor. Geçerli yönergeler {1}.</target>
+        <note>{StrBegin="CONTAINER2021: "}</note>
+      </trans-unit>
+      <trans-unit id="UnknownLocalRegistryType">
+        <source>CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</source>
+        <target state="translated">CONTAINER2002: '{0}' yerel kayıt defteri türü bilinmiyor. Geçerli yerel kayıt defteri türleri {1}.</target>
         <note>{StrBegin="CONTAINER2002: "}</note>
       </trans-unit>
       <trans-unit id="UnknownMediaType">

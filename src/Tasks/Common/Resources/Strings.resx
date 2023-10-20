@@ -431,7 +431,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1082: "}</comment>
   </data>
   <data name="RuntimeIdentifierNotRecognized" xml:space="preserve">
-    <value>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized.</value>
+    <value>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized. See https://aka.ms/netsdk1083 for more information.</value>
     <comment>{StrBegin="NETSDK1083: "}</comment>
   </data>
   <data name="NoAppHostAvailable" xml:space="preserve">
@@ -621,7 +621,7 @@ The following are names of parameters or literal values and should not be transl
     <comment>{StrBegin="NETSDK1128: "}</comment>
   </data>
   <data name="PublishUnsupportedWithoutTargetFramework" xml:space="preserve">
-    <value>NETSDK1129: The 'Publish' target is not supported without specifying a target framework. The current project targets multiple frameworks, you must specify the framework for the published application.</value>
+    <value>NETSDK1129: The 'Publish' target is not supported without specifying a target framework. The current project targets multiple frameworks, you must specify one of the following frameworks in order to publish: {0}</value>
     <comment>{StrBegin="NETSDK1129: "}</comment>
   </data>
   <data name="WinMDReferenceNotSupportedOnTargetFramework" xml:space="preserve">
@@ -832,14 +832,6 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1181: Error getting pack version: Pack '{0}' was not present in workload manifests.</value>
     <comment>{StrBegin="NETSDK1181: "}</comment>
   </data>
-  <data name="Net6NotCompatibleWithDev16" xml:space="preserve">
-    <value>NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</value>
-    <comment>{StrBegin="NETSDK1182: "}</comment>
-  </data>
-  <data name="AotNoValidRuntimePackageError" xml:space="preserve">
-    <value>NETSDK1183: Unable to optimize assemblies for ahead-of-time compilation: a valid runtime package was not found. Either set the PublishAot property to false, or use a supported runtime identifier when publishing. When targeting .NET 7 or higher, make sure to restore packages with the PublishAot property set to true.</value>
-    <comment>{StrBegin="NETSDK1183: "}</comment>
-  </data>
   <data name="TargetingPackNotRestored_TransitiveDisabled" xml:space="preserve">
     <value>NETSDK1184: The Targeting Pack for FrameworkReference '{0}' was not available. This may be because DisableTransitiveFrameworkReferenceDownloads was set to true.</value>
     <comment>{StrBegin="NETSDK1184: "}</comment>
@@ -864,17 +856,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1189: Prefer32Bit is not supported and has no effect for netcoreapp target.</value>
     <comment>{StrBegin="NETSDK1189: "}</comment>
   </data>
-  <data name="PReleaseRequiresEnvVarOnSln" xml:space="preserve">
-    <value>NETSDK1190: To use '{0}' in solution projects, you must set the environment variable '{1}' (to true). This will increase the time to complete the operation.</value>
-    <comment>{StrBegin="NETSDK1190: "}</comment>
-  </data>
   <data name="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed" xml:space="preserve">
     <value>NETSDK1191: A runtime identifier for the property '{0}' couldn't be inferred. Specify a rid explicitly.</value>
     <comment>{StrBegin="NETSDK1191: "}</comment>
-  </data>
-  <data name="Net7NotCompatibleWithDev173" xml:space="preserve">
-    <value>NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</value>
-    <comment>{StrBegin="NETSDK1192: "}</comment>
   </data>
   <data name="PublishSelfContainedMustBeBool" xml:space="preserve">
     <value>NETSDK1193: If PublishSelfContained is set, it must be either true or false. The value given was '{0}'.</value>
@@ -884,21 +868,58 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1194: The "--output" option isn't supported when building a solution. Specifying a solution-level output path results in all projects copying outputs to the same directory, which can lead to inconsistent builds.</value>
     <comment>{StrBegin="NETSDK1194: "}{Locked="--output"}</comment>
   </data>
+  <data name="ILLinkNoValidRuntimePackageError" xml:space="preserve">
+    <value>NETSDK1195: Trimming, or code compatibility analysis for trimming, single-file deployment, or ahead-of-time compilation is not supported for the target framework. For more information, see https://aka.ms/netsdk1195</value>
+    <comment>{StrBegin="NETSDK1195: "}</comment>
+  </data>
   <data name="AotNotSupported" xml:space="preserve">
     <value>NETSDK1196: The SDK does not support ahead-of-time compilation. Set the PublishAot property to false.</value>
     <comment>{StrBegin="NETSDK1196: "}</comment>
+  </data>
+  <data name="SolutionProjectConfigurationsConflict" xml:space="preserve">
+    <value>NETSDK1197: Multiple solution project(s) contain conflicting '{0}' values; ensure the values match. Consider using a Directory.build.props file to set the property for all projects. Conflicting projects:
+{1}</value>
+  <comment>{StrBegin="NETSDK1197: "}</comment>
   </data>
   <data name="PublishProfileNotPresent" xml:space="preserve">
     <value>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</value>
     <comment>{StrBegin="NETSDK1198: "}</comment>
   </data>
+  <data name="ArtifactsPathCannotBeSetInProject" xml:space="preserve">
+    <value>NETSDK1199: The ArtifactsPath and UseArtifactsOutput properties cannot be set in a project file, due to MSBuild ordering constraints. They must be set in a Directory.Build.props file or from the command line. See https://aka.ms/netsdk1199 for more information.</value>
+    <comment>{StrBegin="NETSDK1199: "}</comment>
+  </data>
+  <data name="UseArtifactsOutputRequiresDirectoryBuildProps" xml:space="preserve">
+    <value>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</value>
+    <comment>{StrBegin="NETSDK1200: "}</comment>
+  </data>
+  <data name="RuntimeIdentifierWillNoLongerImplySelfContained" xml:space="preserve">
+    <value>NETSDK1201: For projects targeting .NET 8.0 and higher, specifying a RuntimeIdentifier will no longer produce a self contained app by default. To continue building self-contained apps, set the SelfContained property to true or use the --self-contained argument.</value>
+    <comment>{StrBegin="NETSDK1201: "}</comment>
+  </data>
   <data name="WorkloadIsEol" xml:space="preserve">
     <value>NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</value>
     <comment>{StrBegin="NETSDK1202: "}</comment>
   </data>
+  <data name="AotUnsupportedTargetRuntimeIdentifier" xml:space="preserve">
+    <value>NETSDK1203: Ahead-of-time compilation is not supported for the target runtime identifier '{0}'.</value>
+    <comment>{StrBegin="NETSDK1203: "}</comment>
+  </data>
+  <data name="AotUnsupportedHostRuntimeIdentifier" xml:space="preserve">
+    <value>NETSDK1204: Ahead-of-time compilation is not supported on the current platform '{0}'.</value>
+    <comment>{StrBegin="NETSDK1204: "}</comment>
+  </data>
   <data name="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework" xml:space="preserve">
     <value>NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.</value>
     <comment>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</comment>
+  </data>
+  <data name="NonPortableRuntimeIdentifierDetected" xml:space="preserve">
+    <value>NETSDK1206: Found version-specific or distribution-specific runtime identifier(s): {0}. Affected libraries: {1}. In .NET 8.0 and higher, assets for version-specific and distribution-specific runtime identifiers will not be found by default. See https://aka.ms/dotnet/rid-usage for details.</value>
+    <comment>{StrBegin="NETSDK1206: "}</comment>
+  </data>
+  <data name="AotUnsupportedTargetFramework" xml:space="preserve">
+    <value>NETSDK1207: Ahead-of-time compilation is not supported for the target framework.</value>
+    <comment>{StrBegin="NETSDK1207: "}</comment>
   </data>
   <data name="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled" xml:space="preserve">
     <value>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</value>
@@ -908,5 +929,24 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</value>
     <comment>{StrBegin="NETSDK1209: "}</comment>
   </data>
-  <!-- The latest message added is UnsupportedVisualStudioVersion. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="IsAotCompatibleUnsupported" xml:space="preserve">
+    <value>NETSDK1210: IsAotCompatible and EnableAotAnalyzer are not supported for the target framework. Consider multi-targeting to a supported framework to enable ahead-of-time compilation analysis, and set IsAotCompatible only for the supported frameworks. For example:
+&lt;IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsAotCompatible&gt;</value>
+    <comment>{StrBegin="NETSDK1210: "}</comment>
+  </data>
+  <data name="EnableSingleFileAnalyzerUnsupported" xml:space="preserve">
+    <value>NETSDK1211: EnableSingleFileAnalyzer is not supported for the target framework. Consider multi-targeting to a supported framework to enable single-file analysis, and set EnableSingleFileAnalyzer only for the supported frameworks. For example:
+&lt;EnableSingleFileAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/EnableSingleFileAnalyzer&gt;</value>
+    <comment>{StrBegin="NETSDK1211: "}</comment>
+  </data>
+  <data name="IsTrimmableUnsupported" xml:space="preserve">
+    <value>NETSDK1212: IsTrimmable and EnableTrimAnalyzer are not supported for the target framework. Consider multi-targeting to a supported framework to enable trimming, and set IsTrimmable only for the supported frameworks. For example:
+&lt;IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsTrimmable&gt;</value>
+    <comment>{StrBegin="NETSDK1212: "}</comment>
+  </data>
+  <data name="Net8NotCompatibleWithDev177" xml:space="preserve">
+    <value>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</value>
+    <comment>{StrBegin="NETSDK1213: "}</comment>
+  </data>
+  <!-- The latest message added is Net8NotCompatibleWithDev177. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

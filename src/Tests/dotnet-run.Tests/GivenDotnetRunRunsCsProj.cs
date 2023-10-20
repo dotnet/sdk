@@ -1,20 +1,8 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.TemplateEngine.Utils;
-using Xunit;
-using Xunit.Abstractions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
@@ -431,6 +419,86 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.Should().Pass()
                 .And.NotHaveStdOutContaining(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
+
+            cmd.StdErr.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ItSetsTheDotnetLaunchProfileEnvironmentVariableToDefaultLaunchProfileName()
+        {
+            var testAppName = "AppThatOutputsDotnetLaunchProfile";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+            var cmd = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute();
+
+            cmd.Should().Pass()
+                .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<First>>>");
+
+            cmd.StdErr.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ItSetsTheDotnetLaunchProfileEnvironmentVariableToSuppliedLaunchProfileName()
+        {
+            var testAppName = "AppThatOutputsDotnetLaunchProfile";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+            var cmd = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--launch-profile", "Second");
+
+            cmd.Should().Pass()
+                .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<Second>>>");
+
+            cmd.StdErr.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ItSetsTheDotnetLaunchProfileEnvironmentVariableToEmptyWhenInvalidProfileSpecified()
+        {
+            var testAppName = "AppThatOutputsDotnetLaunchProfile";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+            var cmd = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--launch-profile", "DoesNotExist");
+
+            cmd.Should().Pass()
+                .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<>>>");
+
+            cmd.StdErr.Should().Contain("DoesNotExist");
+        }
+
+        [Fact]
+        public void ItSetsTheDotnetLaunchProfileEnvironmentVariableToEmptyWhenNoLaunchProfileSwitchIsUsed()
+        {
+            var testAppName = "AppThatOutputsDotnetLaunchProfile";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                            .WithSource();
+
+            var testProjectDirectory = testInstance.Path;
+            var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+            var cmd = new DotnetCommand(Log, "run")
+                .WithWorkingDirectory(testProjectDirectory)
+                .Execute("--no-launch-profile");
+
+            cmd.Should().Pass()
+                .And.HaveStdOutContaining("DOTNET_LAUNCH_PROFILE=<<<>>>");
 
             cmd.StdErr.Should().BeEmpty();
         }

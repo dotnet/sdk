@@ -2,9 +2,24 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="it" original="../CommonLocalizableStrings.resx">
     <body>
+      <trans-unit id="ArchArgumentName">
+        <source>ARCH</source>
+        <target state="translated">ARCH</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ArchitectureOptionDescription">
         <source>The target architecture.</source>
         <target state="translated">Architettura di destinazione.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathArgumentName">
+        <source>ARTIFACTS_DIR</source>
+        <target state="translated">ARTIFACTS_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathOptionDescription">
+        <source>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</source>
+        <target state="translated">Percorso degli artefatti. Tutto l'output del progetto, inclusi l'output di compilazione, pubblicazione e pacchetto, verrà inserito nelle sottocartelle nel percorso specificato.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotResolveRuntimeIdentifier">
@@ -42,9 +57,9 @@
         <target state="translated">Non è stato trovato alcun progetto in `{0}`.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CustomConfigurationDisablesPublishAndPackReleaseProperties">
-        <source>A custom configuration was detected in the project '{0}', so the property '{1}' will not take effect.</source>
-        <target state="translated">È stata rilevata una configurazione personalizzata nel progetto '{0}', quindi la proprietà '{1}' non avrà effetto.</target>
+      <trans-unit id="DidYouMean">
+        <source>Did you mean the following command?</source>
+        <target state="translated">Si intendeva il comando seguente?</target>
         <note />
       </trans-unit>
       <trans-unit id="DisableBuildServersOptionDescription">
@@ -115,9 +130,19 @@ export PATH="$PATH:{0}"
         <target state="translated">Pubblicare l'applicazione come applicazione dipendente dal framework. Per eseguire l'applicazione, è necessario installare un runtime .NET compatibile nel computer di destinazione.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MSBuildAdditionalOptionTitle">
+        <source>.NET Cli Options:</source>
+        <target state="translated">Opzioni dell'interfaccia della riga di comando di .NET:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MoreThanOneProjectInDirectory">
         <source>Found more than one project in `{0}`. Specify which one to use.</source>
         <target state="translated">Sono stati trovati più progetti in `{0}`. Specificare quello da usare.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OSArgumentName">
+        <source>OS</source>
+        <target state="translated">Sistema operativo</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatingSystemOptionDescription">
@@ -192,9 +217,9 @@ export PATH="$PATH:{0}"
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'true' if a runtime identifier is specified.</source>
-        <target state="translated">Pubblica il runtime .NET con l'applicazione in modo che non sia necessario installarlo nel computer di destinazione.
-L'impostazione predefinita è 'true' se si specifica un identificatore di runtime.</target>
+The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
+        <target state="translated">Pubblicare il runtime .NET con l'applicazione in modo che non sia necessario installare il runtime nel computer di destinazione.
+Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o una versione inferiore, il valore predefinito è 'true' se viene specificato un identificatore di runtime.</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution">
@@ -202,11 +227,9 @@ L'impostazione predefinita è 'true' se si specifica un identificatore di runtim
         <target state="translated">Soluzione</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionExecutableConfigurationMismatchError">
-        <source>Multiple executable projects in the solution contain conflicting '{0}' values. Ensure the values match. Consider using a Directory.build.props file to set all project configurations. Conflicting projects:
-{1}.</source>
-        <target state="translated">Più progetti eseguibili nella soluzione contengono valori '{0}' in conflitto. Verificare che i valori corrispondano. Prova a usare un file Directory.build.props per impostare tutte le configurazioni del progetto. Progetti in conflitto:
-{1}.</target>
+      <trans-unit id="SolutionArgumentMisplaced">
+        <source>Solution argument '{0}' is misplaced.</source>
+        <target state="translated">L'argomento della soluzione '{0}' non è posizionato in modo corretto.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFile">
@@ -252,6 +275,11 @@ L'impostazione predefinita è 'true' se si specifica un identificatore di runtim
       <trans-unit id="Delete">
         <source>Delete</source>
         <target state="translated">Elimina</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProject">
+        <source>Solution {0} already contains project {1} in solution folder {2}.</source>
+        <target state="translated">La soluzione {0} contiene già {1} di progetto nella cartella della soluzione {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

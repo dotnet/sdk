@@ -1,6 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
@@ -20,9 +19,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             RootCommand = GetRootCommand(parentCommand);
 
             Name = parseResult.GetValueForOptionOrNull(SharedOptions.NameOption);
-            IsForceFlagSpecified = parseResult.GetValueForOption(SharedOptions.ForceOption);
-            IsDryRun = parseResult.GetValueForOption(SharedOptions.DryRunOption);
-            NoUpdateCheck = parseResult.GetValueForOption(SharedOptions.NoUpdateCheckOption);
+            IsForceFlagSpecified = parseResult.GetValue(SharedOptions.ForceOption);
+            IsDryRun = parseResult.GetValue(SharedOptions.DryRunOption);
+            NoUpdateCheck = parseResult.GetValue(SharedOptions.NoUpdateCheckOption);
 
             if (command.LanguageOption != null)
             {
@@ -38,12 +37,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
             if (command.AllowScriptsOption != null)
             {
-                AllowScripts = parseResult.GetValueForOption(command.AllowScriptsOption);
+                AllowScripts = parseResult.GetValue(command.AllowScriptsOption);
             }
 
             foreach (var opt in command.TemplateOptions)
             {
-                if (parseResult.FindResultFor(opt.Value.Option) is { } result)
+                if (parseResult.GetResult(opt.Value.Option) is { } result)
                 {
                     _templateOptions[opt.Key] = result;
                 }
@@ -73,7 +72,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             get
             {
-                return _templateOptions.Select(o => (o.Key, GetValueForOption(o.Key, o.Value)))
+                return _templateOptions.Select(o => (o.Key, GetValue(o.Key, o.Value)))
                     .Where(kvp => kvp.Item2 != null)
                     .ToDictionary(kvp => kvp.Key, kvp => kvp.Item2);
             }
@@ -81,7 +80,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public ParseResult ParseResult { get; }
 
-        public Command Command => _command;
+        public CliCommand Command => _command;
 
         public NewCommand RootCommand { get; }
 
@@ -98,15 +97,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             return false;
         }
 
-        private string? GetValueForOption(string parameterName, OptionResult optionResult)
+        private string? GetValue(string parameterName, OptionResult optionResult)
         {
             //if default value is used, no need to return it - it will be populated in template engine edge instead.
-            if (optionResult.IsImplicit)
+            if (optionResult.Implicit)
             {
                 return null;
             }
 
-            var optionValue = optionResult.GetValueOrDefault();
+            var optionValue = optionResult.GetValueOrDefault<object>();
             if (optionValue == null)
             {
                 return null;
@@ -130,10 +129,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 return newCommand;
             }
-            Command? currentCommand = command;
+            CliCommand? currentCommand = command;
             while (currentCommand != null && currentCommand is not NewCommand)
             {
-                currentCommand = currentCommand.Parents.OfType<Command>().SingleOrDefault();
+                currentCommand = currentCommand.Parents.OfType<CliCommand>().SingleOrDefault();
             }
             return currentCommand as NewCommand ?? throw new Exception($"Command structure is not correct: {nameof(NewCommand)} is not found.");
         }

@@ -133,6 +133,10 @@
     <value>CONTAINER2013: {0} had spaces in it, replacing with dashes.</value>
     <comment>{StrBegin="CONTAINER2013: "}</comment>
   </data>
+  <data name="BaseImageNameRegistryFallback" xml:space="preserve">
+    <value>CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</value>
+    <comment>{StrBegin="CONTAINER2020: "}</comment>
+  </data>
   <data name="BaseImageNotFound" xml:space="preserve">
     <value>CONTAINER1011: Couldn't find matching base image for {0} that matches RuntimeIdentifier {1}.</value>
     <comment>{StrBegin="CONTAINER1011: "}</comment>
@@ -157,12 +161,12 @@
     <value>CONTAINER3002: Failed to get docker info: {0}</value>
     <comment>{StrBegin="CONTAINER3002: "}</comment>
   </data>
-  <data name="DockerProcessCreationFailed" xml:space="preserve">
-    <value>CONTAINER3001: Failed creating docker process.</value>
-    <comment>{StrBegin="CONTAINER3001: "}</comment>
+  <data name="ContainerRuntimeProcessCreationFailed" xml:space="preserve">
+    <value>CONTAINER3001: Failed creating {0} process.</value>
+    <comment>CONTAINER3001: {0} is the name of the command we failed to run, usually 'docker' or 'podman'.</comment>
   </data>
   <data name="ImagePullNotSupported" xml:space="preserve">
-    <value>CONTAINER1010: Pulling images from local Docker daemon is not supported.</value>
+    <value>CONTAINER1010: Pulling images from local registry is not supported.</value>
     <comment>{StrBegin="CONTAINER1010: "}</comment>
   </data>
   <data name="EmptyOrWhitespacePropertyIgnored" xml:space="preserve">
@@ -181,7 +185,7 @@
     <value>No host object detected.</value>
   </data>
   <data name="ImageLoadFailed" xml:space="preserve">
-    <value>CONTAINER1009: Failed to load image to local Docker daemon. stdout: {0}</value>
+    <value>CONTAINER1009: Failed to load image from local registry. stdout: {0}</value>
     <comment>{StrBegin="CONTAINER1009: "}</comment>
   </data>
   <data name="InvalidEnvVar" xml:space="preserve">
@@ -228,8 +232,8 @@
     <value>CONTAINER4005: Item '{0}' contains items without metadata 'Value', and they will be ignored.</value>
     <comment>{StrBegin="CONTAINER4005: "}</comment>
   </data>
-  <data name="LocalDaemonNotAvailable" xml:space="preserve">
-    <value>CONTAINER1012: The local Docker daemon is not available, but pushing to a local Docker daemon was requested. Please start the daemon and try again.</value>
+  <data name="LocalRegistryNotAvailable" xml:space="preserve">
+    <value>CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</value>
     <comment>{StrBegin="CONTAINER1012: "}</comment>
   </data>
   <data name="MissingLinkToRegistry" xml:space="preserve">
@@ -256,7 +260,7 @@
     <comment>{StrBegin="CONTAINER1013: "}</comment>
   </data>
   <data name="RegistryPushFailed" xml:space="preserve">
-    <value>CONTAINER1005: Registry push failed.</value>
+    <value>CONTAINER1005: Registry push failed; received status code '{0}'.</value>
     <comment>{StrBegin="CONTAINER1005: "}</comment>
   </data>
   <data name="RequiredItemsContainsEmptyItems" xml:space="preserve">
@@ -275,8 +279,8 @@
     <value>CONTAINER1006: Too many retries, stopping.</value>
     <comment>{StrBegin="CONTAINER1006: "}</comment>
   </data>
-  <data name="UnknownDaemonType" xml:space="preserve">
-    <value>CONTAINER2002: Unknown local container daemon type '{0}'. Valid local container daemon types are {1}.</value>
+  <data name="UnknownLocalRegistryType" xml:space="preserve">
+    <value>CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</value>
     <comment>{StrBegin="CONTAINER2002: "}</comment>
   </data>
   <data name="UnknownMediaType" xml:space="preserve">
@@ -287,15 +291,51 @@
     <value>CONTAINER2001: Unrecognized mediaType '{0}'.</value>
     <comment>{StrBegin="CONTAINER2001: "}</comment>
   </data>
+  <data name="UnknownAppCommandInstruction" xml:space="preserve">
+    <value>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</value>
+    <comment>{StrBegin="CONTAINER2021: "}</comment>
+  </data>
+  <data name="BaseEntrypointOverwritten" xml:space="preserve">
+    <value>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</value>
+    <comment>{StrBegin="CONTAINER2022: "}</comment>
+  </data>
+  <data name="EntrypointAndAppCommandArgsSetNoAppCommandInstruction" xml:space="preserve">
+    <value>CONTAINER2023: A ContainerEntrypoint and ContainerAppCommandArgs are provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</value>
+    <comment>{StrBegin="CONTAINER2023: "}</comment>
+  </data>
+  <data name="EntrypointArgsSetNoEntrypoint" xml:space="preserve">
+    <value>CONTAINER2024: ContainerEntrypointArgs are provided without specifying a ContainerEntrypoint.</value>
+    <comment>{StrBegin="CONTAINER2024: "}</comment>
+  </data>
+  <data name="AppCommandArgsSetNoAppCommand" xml:space="preserve">
+    <value>CONTAINER2025: ContainerAppCommandArgs are provided without specifying a ContainerAppCommand.</value>
+    <comment>{StrBegin="CONTAINER2025: "}</comment>
+  </data>
+  <data name="AppCommandSetNotUsed" xml:space="preserve">
+    <value>CONTAINER2026: ContainerAppCommand and ContainerAppCommandArgs must be empty when ContainerAppCommandInstruction is '{0}'.</value>
+    <comment>{StrBegin="CONTAINER2026: "}</comment>
+  </data>
+  <data name="EntrypointSetNoAppCommandInstruction" xml:space="preserve">
+    <value>CONTAINER2027: A ContainerEntrypoint is provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</value>
+    <comment>{StrBegin="CONTAINER2027: "}</comment>
+  </data>
+  <data name="EntrypointConflictAppCommand" xml:space="preserve">
+    <value>CONTAINER2028: ContainerEntrypoint can not be combined with ContainerAppCommandInstruction '{0}'.</value>
+    <comment>{StrBegin="CONTAINER2028: "}</comment>
+  </data>
+  <data name="EntrypointArgsSetPreferAppCommandArgs" xml:space="preserve">
+    <value>CONTAINER2029: ContainerEntrypointArgsSet are provided. Change to use ContainerAppCommandArgs for arguments that must always be set, or ContainerDefaultArgs for arguments that can be overridden when the container is created.</value>
+    <comment>{StrBegin="CONTAINER2029: "}</comment>
+  </data>
   <data name="_Test" xml:space="preserve">
     <value>CONTAINER0000: Value for unit test {0}</value>
     <comment>Used only for unit tests</comment>
   </data>
   <data name="ContainerBuilder_ImageUploadedToLocalDaemon" xml:space="preserve">
-    <value>Pushed container '{0}' to Docker daemon.</value>
+    <value>Pushed image '{0}' to {1}.</value>
   </data>
   <data name="ContainerBuilder_ImageUploadedToRegistry" xml:space="preserve">
-    <value>Pushed container '{0}' to registry '{1}'.</value>
+    <value>Pushed image '{0}' to registry '{1}'.</value>
   </data>
   <data name="ContainerBuilder_StartBuildingImage" xml:space="preserve">
     <value>Building image '{0}' with tags '{1}' on top of base image '{2}'.</value>
@@ -341,8 +381,32 @@
     <value>Uploading tag '{0}' to '{1}'.</value>
     <comment>{1} is the registry name</comment>
   </data>
+  <data name="RegistryPullFailed" xml:space="preserve">
+    <value>CONTAINER1014: Manifest pull failed.</value>
+    <comment>{StrBegin="CONTAINER1014: "}</comment>
+  </data>
+  <data name="RegistryOperationFailed" xml:space="preserve">
+    <value>CONTAINER1017: Unable to communicate with the registry '{0}'.</value>
+    <comment>{StrBegin="CONTAINER1017:" }</comment>
+  </data>
+  <data name="RepositoryNotFound" xml:space="preserve">
+    <value>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</value>
+    <comment>{StrBegin="CONTAINER1015: "}</comment>
+  </data>
+  <data name="UnableToAccessRepository" xml:space="preserve">
+    <value>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</value>
+    <comment>{StrBegin="CONTAINER1016:" }</comment>
+  </data>
   <data name="InvalidImageName_EntireNameIsInvalidCharacters" xml:space="preserve">
     <value>CONTAINER2005: The inferred image name '{0}' contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character.</value>
     <comment>{StrBegin="CONTAINER2005: "}</comment>
+  </data>
+  <data name="ArchiveRegistry_PushInfo" xml:space="preserve">
+    <value>local archive at '{0}'</value>
+    <comment>{0} is the path to the file written</comment>
+  </data>
+  <data name="DockerCli_PushInfo" xml:space="preserve">
+    <value>local registry via '{0}'</value>
+    <comment>{0} is the command used</comment>
   </data>
 </root>

@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
+#nullable enable
+
 using System.Text.Json;
 
 namespace Microsoft.DotNet.Tools.Run.LaunchSettings
@@ -12,9 +13,11 @@ namespace Microsoft.DotNet.Tools.Run.LaunchSettings
 
         public string CommandName => CommandNameValue;
 
-        public LaunchSettingsApplyResult TryGetLaunchSettings(JsonElement model)
+        public LaunchSettingsApplyResult TryGetLaunchSettings(string? launchProfileName, JsonElement model)
         {
             var config = new ProjectLaunchSettingsModel();
+            config.LaunchProfileName = launchProfileName;
+
             foreach (var property in model.EnumerateObject())
             {
                 if (string.Equals(property.Name, nameof(ProjectLaunchSettingsModel.CommandLineArgs), StringComparison.OrdinalIgnoreCase))
@@ -108,7 +111,7 @@ namespace Microsoft.DotNet.Tools.Run.LaunchSettings
             }
         }
 
-        private static bool TryGetStringValue(JsonElement element, out string value)
+        private static bool TryGetStringValue(JsonElement element, out string? value)
         {
             switch (element.ValueKind)
             {

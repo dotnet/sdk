@@ -25,8 +25,10 @@ function InitializeCustomSDKToolset {
   InstallDotNetSharedFramework "3.1.0"
   InstallDotNetSharedFramework "5.0.0"
   InstallDotNetSharedFramework "6.0.0"
+  InstallDotNetSharedFramework "7.0.0"
 
   CreateBuildEnvScripts
+  CreateVSShortcut
   InstallNuget
 }
 
@@ -82,6 +84,41 @@ function killdotnet {
   Out-File -FilePath $scriptPath -InputObject $scriptContents -Encoding ASCII
 }
 
+function CreateVSShortcut()
+{
+  # https://github.com/microsoft/vswhere/wiki/Installing
+  $installerPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer"
+  if(-Not (Test-Path -Path $installerPath))
+  {
+    return
+  }
+
+  $versionFilePath = Join-Path $RepoRoot 'src\Layout\redist\minimumMSBuildVersion'
+  # Gets the first digit (ex. 17) and appends '.0' to it.
+  $vsMajorVersion = "$(((Get-Content $versionFilePath).Split('.'))[0]).0"
+  $devenvPath = (& "$installerPath\vswhere.exe" -all -prerelease -latest -version $vsMajorVersion -find Common7\IDE\devenv.exe) | Select-Object -First 1
+  if(-Not $devenvPath)
+  {
+    return
+  }
+
+  $scriptPath = Join-Path $ArtifactsDir 'sdk-build-env.ps1'
+  $slnPath = Join-Path $RepoRoot 'sdk.sln'
+  $commandToLaunch = "& '$scriptPath'; & '$devenvPath' '$slnPath'"
+  $powershellPath = '%SystemRoot%\system32\WindowsPowerShell\v1.0\powershell.exe'
+  $shortcutPath = Join-Path $ArtifactsDir 'VS with sdk.sln.lnk'
+
+  # https://stackoverflow.com/a/9701907/294804
+  # https://learn.microsoft.com/en-us/troubleshoot/windows-client/admin-development/create-desktop-shortcut-with-wsh
+  $wsShell = New-Object -ComObject WScript.Shell
+  $shortcut = $wsShell.CreateShortcut($shortcutPath)
+  $shortcut.TargetPath = $powershellPath
+  $shortcut.Arguments = "-WindowStyle Hidden -Command ""$commandToLaunch"""
+  $shortcut.IconLocation = $devenvPath
+  $shortcut.WindowStyle = 7 # Minimized
+  $shortcut.Save()
+}
+
 function InstallDotNetSharedFramework([string]$version) {
   $dotnetRoot = $env:DOTNET_INSTALL_DIR
   $fxDir = Join-Path $dotnetRoot "shared\Microsoft.NETCore.App\$version"
@@ -96,4 +133,39 @@ function InstallDotNetSharedFramework([string]$version) {
   }
 }
 
+# Let's clear out the stage-zero folders that map to the current runtime to keep stage 2 clean
+function CleanOutStage0ToolsetsAndRuntimes {
+  $GlobalJson = Get-Content -Raw -Path (Join-Path $RepoRoot 'global.json') | ConvertFrom-Json
+  $dotnetSdkVersion = $GlobalJson.tools.dotnet
+  $dotnetRoot = $env:DOTNET_INSTALL_DIR
+  $versionPath = Join-Path $dotnetRoot '.version'
+  $aspnetRuntimePath = [IO.Path]::Combine( $dotnetRoot, 'shared' ,'Microsoft.AspNetCore.App')
+  $coreRuntimePath = [IO.Path]::Combine( $dotnetRoot, 'shared' ,'Microsoft.NETCore.App')
+  $wdRuntimePath = [IO.Path]::Combine( $dotnetRoot, 'shared', 'Microsoft.WindowsDesktop.App')
+  $sdkPath = Join-Path $dotnetRoot 'sdk'
+  $majorVersion = $dotnetSdkVersion.Substring(0,1)
+
+  if (Test-Path($versionPath)) {
+    $lastInstalledSDK = Get-Content -Raw -Path ($versionPath)
+    if ($lastInstalledSDK -ne $dotnetSdkVersion)
+    {
+      $dotnetSdkVersion | Out-File -FilePath $versionPath -NoNewline
+      Remove-Item (Join-Path $aspnetRuntimePath "$majorVersion.*") -Recurse
+      Remove-Item (Join-Path $coreRuntimePath "$majorVersion.*") -Recurse
+      Remove-Item (Join-Path $wdRuntimePath "$majorVersion.*") -Recurse
+      Remove-Item (Join-Path $sdkPath "$majorVersion.*") -Recurse
+      Remove-Item (Join-Path $dotnetRoot "packs") -Recurse
+      Remove-Item (Join-Path $dotnetRoot "sdk-manifests") -Recurse
+      Remove-Item (Join-Path $dotnetRoot "templates") -Recurse
+      throw "Installed a new SDK, deleting existing shared frameworks and sdk folders. Please rerun build"
+    }
+  }
+  else
+  {
+    $dotnetSdkVersion | Out-File -FilePath $versionPath -NoNewline
+  }
+}
+
 InitializeCustomSDKToolset
+
+CleanOutStage0ToolsetsAndRuntimes

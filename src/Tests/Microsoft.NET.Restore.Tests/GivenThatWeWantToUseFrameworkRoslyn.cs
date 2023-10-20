@@ -1,15 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Runtime.InteropServices;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-using Xunit;
-using Xunit.Abstractions;
-
 namespace Microsoft.NET.Restore.Tests
 {
     public class GivenThatWeWantToUseFrameworkRoslyn : SdkTest
@@ -18,7 +9,7 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/32737")]
+        [Fact]
         public void It_restores_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
         {
             const string testProjectName = "NetCoreApp";

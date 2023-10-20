@@ -1,17 +1,9 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using FluentAssertions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Utilities;
 using Moq;
-using Xunit;
-using Xunit.Abstractions;
 using static Microsoft.DotNet.Configurer.UnitTests.GivenADotnetFirstTimeUseConfigurerWithStateSetup.ActionCalledTime;
 
 namespace Microsoft.DotNet.Configurer.UnitTests
@@ -19,8 +11,6 @@ namespace Microsoft.DotNet.Configurer.UnitTests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenADotnetFirstTimeUseConfigurerWithStateSetup
     {
-        private const string CliFallbackFolderPath = "some path";
-
         private MockBasicSentinel _firstTimeUseNoticeSentinelMock;
         private MockBasicSentinel _aspNetCertificateSentinelMock;
         private Mock<IAspNetCoreCertificateGenerator> _aspNetCoreCertificateGeneratorMock;
@@ -29,13 +19,9 @@ namespace Microsoft.DotNet.Configurer.UnitTests
         private Mock<IEnvironmentPath> _pathAdderMock;
         private Mock<IEnvironmentProvider> _environmentProvider;
 
-        private readonly ITestOutputHelper _output;
-
         public GivenADotnetFirstTimeUseConfigurerWithStateSetup(ITestOutputHelper output)
         {
             ResetObjectState();
-
-            _output = output;
         }
 
         private void ResetObjectState()
@@ -98,6 +84,9 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _environmentProvider
                 .Setup(p => p.GetEnvironmentVariableAsBool("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", It.IsAny<bool>()))
                 .Returns(true);
+            _environmentProvider
+                .Setup(p => p.GetEnvironmentVariableAsBool("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", It.IsAny<bool>()))
+                .Returns(false);
             _pathAdderMock.Setup(p => p.AddPackageExecutablePathToUserPath()).Verifiable();
             // box a bool so it will be captured by reference in closure
             object generateAspNetCoreDevelopmentCertificateCalled = false;
@@ -113,7 +102,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 = new FirstRunExperienceAction(
                     () => _reporterMock.Lines.Contains(string.Format(
                     Configurer.LocalizableStrings.FirstTimeMessageWelcome,
-                    DotnetFirstTimeUseConfigurer.DeriveDotnetVersionFromProductVersion(Product.Version),
+                    DotnetFirstTimeUseConfigurer.ParseDotNetVersion(Product.Version),
                     Product.Version))
                             && _reporterMock.Lines.Contains(LocalizableStrings.FirstTimeMessageMoreInformation),
                     "printFirstTimeWelcomeMessage");
@@ -223,6 +212,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                 _environmentProviderObject.GetEnvironmentVariableAsBool("DOTNET_ADD_GLOBAL_TOOLS_TO_PATH", defaultValue: true);
             bool nologo =
                 _environmentProviderObject.GetEnvironmentVariableAsBool("DOTNET_NOLOGO", defaultValue: false);
+            bool skipWorkloadIntegrityCheck =
+                _environmentProviderObject.GetEnvironmentVariableAsBool("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", defaultValue: false);
 
             IAspNetCertificateSentinel aspNetCertificateSentinel;
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel;
@@ -248,13 +239,13 @@ namespace Microsoft.DotNet.Configurer.UnitTests
                  toolPathSentinel: toolPathSentinel,
                  dotnetFirstRunConfiguration: new DotnetFirstRunConfiguration
                  (
-                     generateAspNetCertificate: generateAspNetCertificate,
-                     telemetryOptout: telemetryOptout,
-                     addGlobalToolsToPath: addGlobalToolsToPath,
-                     nologo: nologo
+                    generateAspNetCertificate: generateAspNetCertificate,
+                    telemetryOptout: telemetryOptout,
+                    addGlobalToolsToPath: addGlobalToolsToPath,
+                    nologo: nologo,
+                    skipWorkloadIntegrityCheck: skipWorkloadIntegrityCheck
                  ),
                  reporter: _reporterMock,
-                 cliFallbackFolderPath: CliFallbackFolderPath,
                  pathAdder: _pathAdderMock.Object);
 
             configurer.Configure();

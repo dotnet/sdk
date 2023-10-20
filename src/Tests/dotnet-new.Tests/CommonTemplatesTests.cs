@@ -1,19 +1,13 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.New;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
-using Xunit.Abstractions;
 using TestLoggerFactory = Microsoft.NET.TestFramework.TestLoggerFactory;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
@@ -35,15 +29,22 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("global.json file", "globaljson", null)]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200" })]
         [InlineData("global.json file", "globaljson", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
+        [InlineData("global.json file", "global.json", null)]
+        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "6.0.200" })]
+        [InlineData("global.json file", "global.json", new[] { "--sdk-version", "6.0.200", "--roll-forward", "major" })]
         [InlineData("NuGet Config", "nugetconfig", null)]
+        [InlineData("NuGet Config", "nuget.config", null)]
         [InlineData("dotnet gitignore file", "gitignore", null)]
+        [InlineData("dotnet gitignore file", ".gitignore", null)]
         [InlineData("Solution File", "sln", null)]
         [InlineData("Solution File", "solution", null)]
         [InlineData("Dotnet local tool manifest file", "tool-manifest", null)]
         [InlineData("Web Config", "webconfig", null)]
         [InlineData("EditorConfig file", "editorconfig", null)]
         [InlineData("EditorConfig file", "editorconfig", new[] { "--empty" })]
-        [InlineData("MSBuild Directory.Build.props file", "buildprops", new[] { "--inherit" })]
+        [InlineData("EditorConfig file", ".editorconfig", null)]
+        [InlineData("EditorConfig file", ".editorconfig", new[] { "--empty" })]
+        [InlineData("MSBuild Directory.Build.props file", "buildprops", new[] { "--inherit", "--use-artifacts" })]
         [InlineData("MSBuild Directory.Build.targets file", "buildtargets", new[] { "--inherit" })]
         public async void AllCommonItemsCreate(string expectedTemplateName, string templateShortName, string[]? args)
         {
@@ -158,6 +159,66 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Directory.Delete(workingDir, true);
         }
 
+        [Theory]
+        [InlineData(new object[] { "console", "C#" })]
+        [InlineData(new object[] { "console", "VB" })]
+        public async void AotVariants(string name, string language)
+        {
+            // "net8.0";
+            string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+
+            string workingDir = CreateTemporaryFolder(folderName: $"{name}-{language}");
+            string outputDir = "MyProject";
+            string projName = name;
+
+            List<string> args = new() { "-o", outputDir };
+            // VB build would fail for name 'console' (root namespace would conflict with BCL namespace)
+            if (language.Equals("VB") == true && name.Equals("console"))
+            {
+                projName = "vb-console";
+                args.Add("-n");
+                args.Add(projName);
+            }
+            args.Add("--aot");
+
+            // Do not bother restoring. This would need to restore the AOT compiler.
+            // We would need a nuget.config for that and it's a waste of time anyway.
+            args.Add("--no-restore");
+
+            string extension = language == "VB" ? "vbproj" : "csproj";
+
+            string projectDir = Path.Combine(workingDir, outputDir);
+            string finalProjectName = Path.Combine(projectDir, $"{projName}.{extension}");
+
+            Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
+            TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
+
+            TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
+            {
+                TemplateSpecificArgs = args,
+                SnapshotsDirectory = "Approvals",
+                OutputDirectory = workingDir,
+                SettingsDirectory = _fixture.HomeDirectory,
+                VerifyCommandOutput = true,
+                DoNotPrependTemplateNameToScenarioName = false,
+                DoNotAppendTemplateArgsToScenarioName = true,
+                ScenarioName = language.Replace('#', 's').ToLower(),
+                VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
+                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+            }
+            .WithCustomEnvironment(environmentUnderTest)
+            .WithCustomScrubbers(
+                ScrubbersDefinition.Empty
+                    .AddScrubber(sb => sb.Replace($"<TargetFramework>{currentDefaultFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
+                    .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
+            );
+
+            VerificationEngine engine = new VerificationEngine(_logger);
+            await engine.Execute(options).ConfigureAwait(false);
+
+            Directory.Delete(workingDir, true);
+        }
+
         #region Project templates language features tests
 
         /// <summary>
@@ -169,8 +230,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             var templatesToTest = new[]
             {
-                new { Template = consoleTemplateShortname,  Frameworks = new[] { null, "net6.0", "net7.0" } },
-                new { Template = "classlib", Frameworks = new[] { null, "net6.0", "net7.0", "netstandard2.0", "netstandard2.1" } }
+                new { Template = consoleTemplateShortname,  Frameworks = new[] { null, "net6.0", "net7.0", "net8.0" } },
+                new { Template = "classlib", Frameworks = new[] { null, "net6.0", "net7.0", "net8.0", "netstandard2.0", "netstandard2.1" } }
             };
 
             //features: top-level statements; nullables; implicit usings; filescoped namespaces
@@ -179,9 +240,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             //C# 12 is not supported yet - https://github.com/dotnet/sdk/issues/29195
             string?[] supportedLanguageVersions = { null, "ISO-2", "2", "3", "4", "5", "6", "7", "7.1", "7.2", "7.3", "8.0", "9.0", "10.0", "11.0", "11", /*"12",*/ "latest", "latestMajor", "default", "preview" };
 
-            string?[] nullableSupportedInFrameworkByDefault = { null, "net6.0", "net7.0", "netstandard2.1" };
-            string?[] implicitUsingsSupportedInFramework = { null, "net6.0", "net7.0" };
-            string?[] fileScopedNamespacesSupportedFrameworkByDefault = { null, "net6.0", "net7.0" };
+            string?[] nullableSupportedInFrameworkByDefault = { null, "net6.0", "net7.0", "net8.0", "netstandard2.1" };
+            string?[] implicitUsingsSupportedInFramework = { null, "net6.0", "net7.0", "net8.0" };
+            string?[] fileScopedNamespacesSupportedFrameworkByDefault = { null, "net6.0", "net7.0", "net8.0" };
 
             string?[] nullableSupportedLanguages = { "8.0", "9.0", "10.0", "11.0", "11", /*"12",*/ "latest", "latestMajor", "default", "preview" };
             string?[] topLevelStatementSupportedLanguages = { null, "9.0", "10.0", "11", "11.0", /*"12",*/ "latest", "latestMajor", "default", "preview" };
@@ -259,9 +320,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         [Theory]
         //creates all possible combinations for supported templates, language versions and frameworks
-#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(FeaturesSupport_Data))]
-#pragma warning restore CA1825 // Avoid zero-length array allocations.
         public async void FeaturesSupport(
             string name,
             bool buildPass,

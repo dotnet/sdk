@@ -2,9 +2,24 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../CommonLocalizableStrings.resx">
     <body>
+      <trans-unit id="ArchArgumentName">
+        <source>ARCH</source>
+        <target state="translated">ARCH</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ArchitectureOptionDescription">
         <source>The target architecture.</source>
         <target state="translated">Cílová architektura</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathArgumentName">
+        <source>ARTIFACTS_DIR</source>
+        <target state="translated">ARTIFACTS_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactsPathOptionDescription">
+        <source>The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.</source>
+        <target state="translated">Cesta k artefaktům. Veškerý výstup z projektu, včetně výstupu sestavení, publikování a balíčku, se přesune do podsložek v zadané cestě.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotResolveRuntimeIdentifier">
@@ -42,9 +57,9 @@
         <target state="translated">V {0} se nenašel žádný projekt.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CustomConfigurationDisablesPublishAndPackReleaseProperties">
-        <source>A custom configuration was detected in the project '{0}', so the property '{1}' will not take effect.</source>
-        <target state="translated">U projektu {0} byla zjištěna vlastní konfigurace, takže vlastnost {1} se neprojeví.</target>
+      <trans-unit id="DidYouMean">
+        <source>Did you mean the following command?</source>
+        <target state="translated">Měli jste na mysli následující příkaz?</target>
         <note />
       </trans-unit>
       <trans-unit id="DisableBuildServersOptionDescription">
@@ -115,9 +130,19 @@ export PATH="$PATH:{0}"
         <target state="translated">Publikujte svoji aplikaci jako aplikaci závislou na architektuře. Aby bylo možné vaši aplikaci spustit, musí být na cílovém počítači nainstalovaný kompatibilní modul runtime .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="MSBuildAdditionalOptionTitle">
+        <source>.NET Cli Options:</source>
+        <target state="translated">Možnosti rozhraní příkazového řádku .NET:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MoreThanOneProjectInDirectory">
         <source>Found more than one project in `{0}`. Specify which one to use.</source>
         <target state="translated">V {0} se našlo několik projektů. Vyberte, který z nich chcete použít.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OSArgumentName">
+        <source>OS</source>
+        <target state="translated">Operační systém</target>
         <note />
       </trans-unit>
       <trans-unit id="OperatingSystemOptionDescription">
@@ -192,9 +217,9 @@ export PATH="$PATH:{0}"
       </trans-unit>
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'true' if a runtime identifier is specified.</source>
+The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
         <target state="translated">Publikujte se svou aplikací modul runtime pro .NET, aby ho nebylo nutné instalovat na cílovém počítači.
-Pokud se zadá identifikátor modulu runtime, výchozí hodnota je true.</target>
+Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zadán identifikátor modulu runtime, výchozí hodnota je true.</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution">
@@ -202,11 +227,9 @@ Pokud se zadá identifikátor modulu runtime, výchozí hodnota je true.</target
         <target state="translated">Řešení</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionExecutableConfigurationMismatchError">
-        <source>Multiple executable projects in the solution contain conflicting '{0}' values. Ensure the values match. Consider using a Directory.build.props file to set all project configurations. Conflicting projects:
-{1}.</source>
-        <target state="translated">Několik spustitelných projektů v řešení obsahuje konfliktní hodnoty {0}. Ujistěte se, že se hodnoty shodují. Zvažte použití souboru Directory.build.props k nastavení všech konfigurací projektu. Konfliktní projekty:
-{1}.</target>
+      <trans-unit id="SolutionArgumentMisplaced">
+        <source>Solution argument '{0}' is misplaced.</source>
+        <target state="translated">Argument řešení „{0}“ je chybně umístěný.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionFile">
@@ -252,6 +275,11 @@ Pokud se zadá identifikátor modulu runtime, výchozí hodnota je true.</target
       <trans-unit id="Delete">
         <source>Delete</source>
         <target state="translated">Odstranit</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProject">
+        <source>Solution {0} already contains project {1} in solution folder {2}.</source>
+        <target state="translated">Řešení {0} již obsahuje projekt {1} ve složce řešení {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

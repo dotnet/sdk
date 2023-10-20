@@ -1,14 +1,10 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.DotNetSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver;
 using Microsoft.DotNet.Cli;
@@ -32,6 +28,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         public override int Priority => 5000;
 
         private readonly Func<string, string> _getEnvironmentVariable;
+        private readonly Func<string> _getCurrentProcessPath;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
 
         private static CachingWorkloadResolver _staticWorkloadResolver = new CachingWorkloadResolver();
@@ -39,14 +36,15 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private bool _shouldLog = false;
 
         public DotNetMSBuildSdkResolver() 
-            : this(Environment.GetEnvironmentVariable, VSSettings.Ambient)
+            : this(Environment.GetEnvironmentVariable, null, VSSettings.Ambient)
         {
         }
 
         // Test constructor
-        public DotNetMSBuildSdkResolver(Func<string, string> getEnvironmentVariable, VSSettings vsSettings)
+        public DotNetMSBuildSdkResolver(Func<string, string> getEnvironmentVariable, Func<string> getCurrentProcessPath, VSSettings vsSettings)
         {
             _getEnvironmentVariable = getEnvironmentVariable;
+            _getCurrentProcessPath = getCurrentProcessPath;
             _netCoreSdkResolver = new NETCoreSdkResolver(getEnvironmentVariable, vsSettings);
 
             if (_getEnvironmentVariable(EnvironmentVariableNames.DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG) is string val &&
@@ -115,7 +113,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
             if (msbuildSdksDir == null)
             {
-                dotnetRoot = EnvironmentProvider.GetDotnetExeDirectory(_getEnvironmentVariable, logger != null ? logger.LogMessage : null);
+                dotnetRoot = EnvironmentProvider.GetDotnetExeDirectory(_getEnvironmentVariable, _getCurrentProcessPath, logger != null ? logger.LogMessage : null);
                 logger?.LogMessage($"\tDotnet root: {dotnetRoot}");
 
                 logger?.LogString("Resolving .NET Core SDK directory");

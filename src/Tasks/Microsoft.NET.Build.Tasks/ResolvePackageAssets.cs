@@ -1,14 +1,8 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
-using System.Xml.Linq;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -1520,7 +1514,8 @@ namespace Microsoft.NET.Build.Tasks
                         log.LibraryId == package.Name &&
                         log.TargetGraphs.Any(tg =>
                         {
-                            var parsedTargetGraph = NuGetFramework.Parse(tg);
+                            var parts = tg.Split(LockFile.DirectorySeparatorChar);
+                            var parsedTargetGraph = NuGetFramework.Parse(parts[0]);
                             var alias = _lockFile.PackageSpec.TargetFrameworks
                                 .FirstOrDefault(tf => tf.FrameworkName == parsedTargetGraph)
                                 ?.TargetAlias ?? tg;
@@ -1875,7 +1870,7 @@ namespace Microsoft.NET.Build.Tasks
                         {
                             //  Libraries explicitly marked as exclude from publish should be excluded from
                             //  publish even if there are other transitive dependencies to them
-                            if (publishPackageExclusions.Contains(library.Name))
+                            if (excludeFromPublishPackageIds.Contains(library.Name))
                             {
                                 publishPackageExclusions.Add(library.Name);
                             }

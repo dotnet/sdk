@@ -1,15 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System.IO;
-using System.Threading.Tasks;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -37,7 +27,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "AppWithP2PReference.dll")).AssemblyShould().HaveAttribute("Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_ProjectWithoutMvcReferencingDependencies_DoesNotGenerateAttribute()
         {
             var testAsset = "RazorSimpleMvc";
@@ -55,7 +45,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         // Regression test for https://github.com/dotnet/aspnetcore/issues/11315
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void BuildIncrementalism_CausingRecompilation_WhenApplicationPartAttributeIsGenerated()
         {
             var testAsset = "RazorAppWithP2PReference";

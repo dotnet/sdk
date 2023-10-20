@@ -12,7 +12,8 @@
                                 )
                           )">true</_IsSDKContainerAllowedVersion>
     <_ContainerIsTargetingNet8TFM>false</_ContainerIsTargetingNet8TFM>
-    <_ContainerIsTargetingNet8TFM Condition="$([MSBuild]::IsTargetFrameworkCompatible($(TargetFramework), 'net8.0'))">true</_ContainerIsTargetingNet8TFM>
+    <_ContainerIsTargetingNet8TFM Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), '8.0'))">true</_ContainerIsTargetingNet8TFM>
+    <_ContainerIsSelfContained Condition="'$(SelfContained)' == 'true' or '$(PublishSelfContained)' == 'true'">true</_ContainerIsSelfContained>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +33,8 @@
   <Target Name="_ComputeContainerBaseImageTag" Returns="$(_ContainerBaseImageTag)">
     <ComputeDotnetBaseImageTag
       SdkVersion="$(NetCoreSdkVersion)"
-      TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV).0">
+      TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV).0"
+      ContainerFamily="$(ContainerFamily)">
         <Output TaskParameter="ComputedBaseImageTag" PropertyName="_ContainerBaseImageTag" />
     </ComputeDotnetBaseImageTag>
   </Target>
@@ -41,13 +43,11 @@
     Returns="$(ContainerBaseImage)"
     DependsOnTargets="_ComputeContainerBaseImageTag">
     <PropertyGroup>
-      <!-- Reference data about this project -->
-      <_IsSelfContained Condition="'$(SelfContained)' == 'true' or '$(PublishSelfContained)' == 'true'">true</_IsSelfContained>
       <_IsAspNet Condition="@(FrameworkReference->Count()) > 0 and @(FrameworkReference->AnyHaveMetadataValue('Identity', 'Microsoft.AspnetCore.App'))">true</_IsAspNet>
 
       <!-- Compute private defaults -->
       <_ContainerBaseRegistry>mcr.microsoft.com</_ContainerBaseRegistry>
-      <_ContainerBaseImageName Condition="'$(_IsSelfContained)' == 'true'">dotnet/runtime-deps</_ContainerBaseImageName>
+      <_ContainerBaseImageName Condition="'$(_ContainerIsSelfContained)' == 'true'">dotnet/runtime-deps</_ContainerBaseImageName>
       <_ContainerBaseImageName Condition="'$(_ContainerBaseImageName)' == '' and '$(_IsAspNet)' == 'true'">dotnet/aspnet</_ContainerBaseImageName>
       <_ContainerBaseImageName Condition="'$(_ContainerBaseImageName)' == ''">dotnet/runtime</_ContainerBaseImageName>
 
@@ -74,11 +74,11 @@
 
     <!-- Container Defaults -->
     <PropertyGroup>
-      <!-- An empty ContainerRegistry implies pushing to the local daemon, putting this here for documentation purposes -->
+      <!-- An empty ContainerRegistry implies pushing to the local registry, putting this here for documentation purposes -->
       <!-- <ContainerRegistry></ContainerRegistry> -->
 
-      <!-- Set which local container daemon to use. We only explicitly support Docker (or things that mimic Docker APIs and binary names) at the moment. -->
-      <LocalContainerDaemon Condition="'$(LocalContainerDaemon)' == ''">Docker</LocalContainerDaemon>
+      <!-- An empty LocalRegistry implies detecting the local registry. LocalRegistry can be set explicity to Docker/Podman. -->
+      <!-- <LocalRegistry></LocalRegistry> -->
 
       <!-- Compatibility: previous versions used ImageName, but the proper term is Repository. Keep using that if explicitly set. -->
       <ContainerRepository Condition="'$(ContainerImageName)' != ''">$(ContainerImageName)</ContainerRepository>
@@ -86,7 +86,7 @@
       <ContainerRepository Condition="'$(ContainerRepository)' == ''">$(AssemblyName)</ContainerRepository>
 
       <!-- Only default a tag name if no tag names at all are provided -->
-      <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">$(Version)</ContainerImageTag>
+      <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">latest</ContainerImageTag>
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
 
       <!-- The Container RID should default to the RID used for the entire build (to ensure things run on the platform they are built for), but the user knows best and so should be able to set it explicitly.
@@ -101,19 +101,17 @@
       <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows) ">C:\app</ContainerWorkingDirectory>
     </PropertyGroup>
 
-    <ItemGroup Label="Entrypoint Assignment">
-      <!-- For non-apphosts, we need to invoke `dotnet` `app` as separate args -->
-      <ContainerEntrypoint Condition="'$(ContainerEntrypoint)' == '' and '$(UseAppHost)' != 'true'" Include="dotnet;$(TargetFileName)" />
-      <!-- For apphosts, we need to invoke `app` as a single arg -->
-      <ContainerEntrypoint Condition="'$(ContainerEntrypoint)' == '' and '$(UseAppHost)' == 'true' and !$(_ContainerIsTargetingWindows)" Include="$(ContainerWorkingDirectory)/$(AssemblyName)$(_NativeExecutableExtension)" />
-      <ContainerEntrypoint Condition="'$(ContainerEntrypoint)' == '' and '$(UseAppHost)' == 'true' and $(_ContainerIsTargetingWindows)" Include="$(AssemblyName)$(_NativeExecutableExtension)" />
+    <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
+      <!-- For self-contained, invoke the native executable as a single arg -->
+      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == '' and '$(_ContainerIsSelfContained)' == 'true' and !$(_ContainerIsTargetingWindows)" Include="$(ContainerWorkingDirectory)/$(AssemblyName)$(_NativeExecutableExtension)" />
+      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == '' and '$(_ContainerIsSelfContained)' == 'true' and $(_ContainerIsTargetingWindows)" Include="$(AssemblyName)$(_NativeExecutableExtension)" />
+      <!-- For non self-contained, invoke `dotnet` `app.dll` as separate args -->
+      <ContainerAppCommand Condition="'$(ContainerAppCommand)' == ''" Include="dotnet;$(TargetFileName)" />
     </ItemGroup>
 
     <!-- We only set a default user when the base image is Microsoft-authored, and we're targeting a version of those images that supports a nonroot user -->
     <PropertyGroup Label="ContainerUser Assignment" Condition="$(_ContainerIsUsingMicrosoftDefaultImages) and $(_ContainerIsTargetingNet8TFM) and '$(ContainerUser)' == ''">
       <ContainerUser Condition="$(_ContainerIsTargetingWindows)">ContainerUser</ContainerUser>
-      <!-- For Linux, the MS images have an 'app' user set to user id 64198 but some container runtimes work better with user ids instead of names, so we defer to that -->
-      <ContainerUser Condition="!$(_ContainerIsTargetingWindows)">64198</ContainerUser>
     </PropertyGroup>
 
     <ParseContainerProperties FullyQualifiedBaseImageName="$(ContainerBaseImage)"
@@ -190,7 +188,10 @@
     </PublishContainerDependsOn>
   </PropertyGroup>
 
-  <Target Name="PublishContainer" DependsOnTargets="$(PublishContainerDependsOn)">
+  <!-- TODO: change this comparison to include $(EnableSdkContainerSupport) == true when console apps Import the Publish SDK -->
+  <Target Name="PublishContainer"
+    DependsOnTargets="$(PublishContainerDependsOn)"
+    Condition="'$(IsPublishable)' == 'true'">
 
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
@@ -204,14 +205,19 @@
                     BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
-                    LocalContainerDaemon="$(LocalContainerDaemon)"
+                    LocalRegistry="$(LocalRegistry)"
                     OutputRegistry="$(ContainerRegistry)"
+                    ArchiveOutputPath="$(ContainerArchiveOutputPath)"
                     Repository="$(ContainerRepository)"
                     ImageTags="@(ContainerImageTags)"
                     PublishDirectory="$(PublishDir)"
                     WorkingDirectory="$(ContainerWorkingDirectory)"
                     Entrypoint="@(ContainerEntrypoint)"
                     EntrypointArgs="@(ContainerEntrypointArgs)"
+                    AppCommand="@(ContainerAppCommand)"
+                    AppCommandArgs="@(ContainerAppCommandArgs)"
+                    AppCommandInstruction="$(ContainerAppCommandInstruction)"
+                    DefaultArgs="@(ContainerDefaultArgs)"
                     Labels="@(ContainerLabel)"
                     ExposedPorts="@(ContainerPort)"
                     ContainerEnvironmentVariables="@(ContainerEnvironmentVariables)"
@@ -221,6 +227,8 @@
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
+      <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
+      <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
     </CreateNewImage>
   </Target>
 </Project>

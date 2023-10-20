@@ -258,6 +258,11 @@ Uruchom polecenie "dotnet {1}--show-aliases" bez argumentów, aby wyświetlić w
         <target state="translated">Pakiet</target>
         <note />
       </trans-unit>
+      <trans-unit id="ColumnNamePackageNameAndOwners">
+        <source>Package Name / Owners</source>
+        <target state="translated">Nazwa/właściciele pakietu</target>
+        <note>information about NuGet package: its name and owner</note>
+      </trans-unit>
       <trans-unit id="ColumnNamePrecedence">
         <source>Precedence</source>
         <target state="translated">Pierwszeństwo</target>
@@ -282,6 +287,11 @@ Uruchom polecenie "dotnet {1}--show-aliases" bez argumentów, aby wyświetlić w
         <source>Downloads</source>
         <target state="translated">Pliki do pobrania</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ColumnNameTrusted">
+        <source>Trusted</source>
+        <target state="translated">Zaufany</target>
+        <note>information about NuGet package origin; if a package has PrefixReserved indicator </note>
       </trans-unit>
       <trans-unit id="ColumnNameType">
         <source>Type</source>
@@ -370,6 +380,106 @@ Uruchom polecenie "dotnet {1}--show-aliases" bez argumentów, aby wyświetlić w
         <target state="translated">Utworzenie tego szablonu spowoduje wprowadzenie zmian w istniejących plikach:</target>
         <note />
       </trans-unit>
+      <trans-unit id="DetailsCommand_Argument_PackageIdentifier">
+        <source>Package identifier</source>
+        <target state="translated">Identyfikator pakietu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_NoNuGetSources">
+        <source>No NuGet sources are defined or enabled</source>
+        <target state="translated">Nie zdefiniowano źródeł NuGet ani nie włączono ich</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Option_Version">
+        <source>Specifies a concrete version for displaying details. If not specified the last is taken.</source>
+        <target state="translated">Określa konkretną wersję do wyświetlania szczegółów. Jeśli nie zostanie określony, ostatnia operacja zostanie wykonana.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Authors">
+        <source>Authors</source>
+        <target state="translated">Autorzy</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Description">
+        <source>Details</source>
+        <target state="translated">Szczegóły</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Languages">
+        <source>Languages</source>
+        <target state="translated">Języki</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_License">
+        <source>License</source>
+        <target state="translated">Licencja</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_LicenseExpression">
+        <source>License Expression</source>
+        <target state="translated">Wyrażenie licencji</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_LicenseMetadata">
+        <source>License Metadata</source>
+        <target state="translated">Metadane licencji</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_LicenseUrl">
+        <source>License Url</source>
+        <target state="translated">Adres URL licencji</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Owners">
+        <source>Owners</source>
+        <target state="translated">Właściciele</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_PrefixReserved">
+        <source>Reserved</source>
+        <target state="translated">Zarezerwowano</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_RepoUrl">
+        <source>Repository Url</source>
+        <target state="translated">Adres URL repozytorium</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_ShortNames">
+        <source>Short Names</source>
+        <target state="translated">Krótkie imiona i nazwiska</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_SourceFeed">
+        <source>Source Feed</source>
+        <target state="translated">Kanał informacyjny źródła</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Tags">
+        <source>Tags</source>
+        <target state="translated">Tagi</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Templates">
+        <source>Templates</source>
+        <target state="translated">Szablony</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_Property_Version">
+        <source>Package version</source>
+        <target state="translated">Wersja pakietu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_UnableToLoadResorce">
+        <source>Could not parse NuGet source '{0}', so it was discarded</source>
+        <target state="translated">Nie można przeanalizować źródła NuGet „{0}”, więc zostało odrzucone</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DetailsCommand_UnableToLoadResorces">
+        <source>Failed to load NuGet sources configured for the folder {0}</source>
+        <target state="translated">Nie można załadować źródeł pakietu NuGet skonfigurowanych dla folderu {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DisplaysHelp">
         <source>Displays help for this command.</source>
         <target state="translated">Wyświetla pomoc dotyczącą tego polecenia.</target>
@@ -441,6 +551,25 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="Generic_ExamplesHeader">
         <source>Examples:</source>
         <target state="translated">Przykłady:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Generic_Info_NoMatchingTemplatePackage">
+        <source>
+      No template packages found matching: {0}.
+      
+      To list installed template packages, run:
+        dotnet new uninstall
+      To search for the template packages on NuGet.org, run:
+        dotnet new search --package {0}
+    </source>
+        <target state="translated">
+      Nie znaleziono pakietów szablonów pasujących do: {0}.
+      
+      Aby wyświetlić listę zainstalowanych pakietów szablonów, uruchom polecenie:
+ dotnet new uninstall
+      Aby wyszukać pakiety szablonów na NuGet.org, uruchom polecenie:
+        dotnet new search --package {0}
+    </target>
         <note />
       </trans-unit>
       <trans-unit id="Generic_Info_NoMatchingTemplates">
@@ -696,6 +825,31 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Chcesz uruchomić tę akcję [{0}(tak)|{1}(nie)]?</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ArgumentNotConfigured">
+        <source>Post action argument '{0}' is mandatory, but not configured.</source>
+        <target state="translated">Argument po wystąpieniu akcji „{0}” jest obowiązkowy, ale nie jest skonfigurowany.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_MultipleJsonFiles">
+        <source>More than one file found that matches '{0}'.</source>
+        <target state="translated">Znaleziono więcej niż jeden plik pasujący do „{0}”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_NoJsonFile">
+        <source>Unable to find the json file in the solution</source>
+        <target state="translated">Nie można odnaleźć pliku JSON w rozwiązaniu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_ParentPropertyPathInvalid">
+        <source>Parent property path '{0}' could not be traversed.</source>
+        <target state="translated">Nie można przejść przez ścieżkę właściwości nadrzędnej „{0}”.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Succeeded">
+        <source>Successfully modified {0}.</source>
+        <target state="translated">Pomyślnie zmodyfikowano {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PostAction_ProcessStartProcessor_Error_ConfigMissingExecutable">
         <source>Failed to run the command: argument 'executable' is missing in post action configuration.</source>
         <target state="translated">Nie można uruchomić polecenia: brak argumentu "executable" w konfiguracji akcji post.</target>
@@ -827,6 +981,16 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Aby użyć wbudowanego pakietu szablonów, odinstaluj ręcznie zainstalowany pakiet szablonów przy użyciu:</target>
         <note>followed by command to uninstall package</note>
       </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Download_Error_VulnerablePackage">
+        <source>Failed to install {0}, due to detected vulnerabilities:</source>
+        <target state="translated">Nie można zainstalować programu {0} z powodu wykrytych luk w zabezpieczeniach:</target>
+        <note>{0} - template package name.</note>
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Download_VulnerablePackage">
+        <source>Installed package has the following vulnerabilities:</source>
+        <target state="translated">Zainstalowany pakiet ma następujące luki w zabezpieczeniach:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_Error_PackageForTemplateNotFound">
         <source>Could not find the template package containing template '{0}'</source>
         <target state="translated">Nie można znaleźć pakietu szablonów zawierającego szablon "{0}"</target>
@@ -860,6 +1024,11 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="TemplatePackageCoordinator_Install_Error_SameInstallRequests">
         <source>The command is attempting to install the template package '{0}' twice, check the arguments and retry.</source>
         <target state="translated">Polecenie próbuje zainstalować pakiet szablonów "{0}" dwa razy. Sprawdź argumenty i ponów próbę.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Install_Error_VulnerablePackageTip">
+        <source>In order to install this package, run:</source>
+        <target state="translated">Aby zainstalować ten pakiet, uruchom następujące polecenie:</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_Install_Info_OverrideNotice">
@@ -917,6 +1086,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">Polecenie odinstalowania:</target>
         <note />
       </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_UpdateCheck_Error_VulnerablePackage">
+        <source>The package {0} contains vulnerabilities:</source>
+        <target state="translated">Pakiet {0} zawiera luki w zabezpieczeniach:</target>
+        <note>{0} - template package name.</note>
+      </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_Update_Error_GenericError">
         <source>Failed to check update for {0}: {1}.</source>
         <target state="translated">Nie można sprawdzić aktualizacji dla {0}: {1}.</target>
@@ -935,6 +1109,16 @@ The header is followed by the list of parameters and their errors (might be seve
       <trans-unit id="TemplatePackageCoordinator_Update_Error_PackageNotSupported">
         <source>Failed to check update for {0}: the package is not supported.</source>
         <target state="translated">Nie można sprawdzić aktualizacji dla pakietu {0}: pakiet nie jest obsługiwany.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Update_Error_VulnerablePackage">
+        <source>The package {0} was not updated due to detected vulnerabilities:</source>
+        <target state="translated">Pakiet {0} nie został zaktualizowany z powodu wykrytych luk w zabezpieczeniach:</target>
+        <note>{0} - template package name.</note>
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_Update_Error_VulnerablePackageTip">
+        <source>In order to update this package, run:</source>
+        <target state="translated">Aby zaktualizować ten pakiet, uruchom polecenie:</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_Update_Info_AllPackagesAreUpToDate">
@@ -971,6 +1155,26 @@ The header is followed by the list of parameters and their errors (might be seve
         <source>Failed to initialize NuGet credential service, details: {0}.</source>
         <target state="translated">Nie można zainicjować usługi poświadczeń NuGet — szczegóły: {0}.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_VulnerabilitySeverity_Critical">
+        <source>Critical</source>
+        <target state="translated">Krytyczny</target>
+        <note>represents nuget api severity of level 3.</note>
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_VulnerabilitySeverity_High">
+        <source>High</source>
+        <target state="translated">Wysoki</target>
+        <note>represents nuget api severity of level 2.</note>
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_VulnerabilitySeverity_Low">
+        <source>Low</source>
+        <target state="translated">Niski</target>
+        <note>represents nuget api severity of level 0.</note>
+      </trans-unit>
+      <trans-unit id="TemplatePackageCoordinator_VulnerabilitySeverity_Moderate">
+        <source>Moderate</source>
+        <target state="translated">Średni</target>
+        <note>represents nuget api severity of level 1.</note>
       </trans-unit>
       <trans-unit id="TemplatePackageCoordinator_lnstall_Error_AlreadyInstalled">
         <source>{0} is already installed.</source>

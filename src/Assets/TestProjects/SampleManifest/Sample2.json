@@ -1,5 +1,5 @@
 {
-    "version": "5.0.0-preview1",
+    "version": "1.0.0",
     "workloads": {
         "xamarin-android": {
             "description": "Create, build and run Android apps",
@@ -58,7 +58,7 @@
             "version": "8.4.0"
         },
         "Xamarin.Android.Runtime": {
-            "kind": "framework",
+            "kind": "library",
             "version": "8.4.7.4"
         },
         "Xamarin.Android.BuildTools": {

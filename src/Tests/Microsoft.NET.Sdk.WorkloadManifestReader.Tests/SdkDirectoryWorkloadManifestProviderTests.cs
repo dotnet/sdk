@@ -1,21 +1,11 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.NET.Sdk.Localization;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.NET.TestFramework;
-
-using Xunit;
-using Xunit.Abstractions;
 
 namespace ManifestReaderTests
 {
@@ -39,6 +29,48 @@ namespace ManifestReaderTests
             _manifestRoot = Path.Combine(_fakeDotnetRootDirectory, "sdk-manifests");
             _manifestVersionBandDirectory = Path.Combine(_manifestRoot, featureBand);
             Directory.CreateDirectory(_manifestVersionBandDirectory);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ItShouldReturnTheWorkloadVersion(bool useWorkloadSet)
+        {
+            Initialize();
+
+            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
+            CreateMockManifest(_manifestRoot, "8.0.200", "android", "33.0.2-rc.1", true);
+            CreateMockManifest(_manifestRoot, "8.0.200-rc.2", "maui", "15.0.1-rc.456", true);
+
+            if (useWorkloadSet)
+            {
+                CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.200", @"
+                    {
+                    ""ios"": ""11.0.2/8.0.100"",
+                    ""android"": ""33.0.2-rc.1/8.0.200"",
+                    ""maui"": ""15.0.1-rc.456/8.0.200-rc.2"",
+                    }
+                ");
+            }
+
+            var sdkDirectoryWorkloadManifestProvider
+                = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null);
+
+            if (useWorkloadSet)
+            {
+                sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion().Should().Be("8.0.200");
+            }
+            else
+            {
+                string[] manifests = sdkDirectoryWorkloadManifestProvider.GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}.{m.ManifestVersion}").ToArray();
+                manifests.Length.Should().Be(1);
+                manifests.Should().Contain("android.8.0.200.33.0.2-rc.1");
+                sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion().Should().Be("8.0.200-manifests.4ba11739");
+            }
+
+            Directory.Delete(Path.Combine(_manifestRoot, "8.0.100"), recursive: true);
+            Directory.Delete(Path.Combine(_manifestRoot, "8.0.200"), recursive: true);
+            Directory.Delete(Path.Combine(_manifestRoot, "8.0.200-rc.2"), recursive: true);
         }
 
         [Fact]
@@ -258,6 +290,7 @@ namespace ManifestReaderTests
             CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.1", true);
             CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
             CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.1", true);
+            CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.2", true);
 
             CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.201", """
     {
@@ -1242,7 +1275,7 @@ Microsoft.Net.Workload.Emscripten.net7"
 
         private string CreateMockInstallState(string featureBand, string installStateContents)
         {
-            var installStateFolder = Path.Combine(_fakeDotnetRootDirectory!, "metadata", "workloads", "8.0.200", "InstallState");
+            var installStateFolder = Path.Combine(_fakeDotnetRootDirectory!, "metadata", "workloads", featureBand, "InstallState");
             Directory.CreateDirectory(installStateFolder);
 
             string installStatePath = Path.Combine(installStateFolder, "default.json");

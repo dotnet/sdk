@@ -1,17 +1,11 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Resources;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Xunit;
-using System.Linq;
-using System.Xml.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
@@ -37,15 +31,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             1101,
             1108,
             1180,
-            1195,
-            1197,
-            1199,
-            1200,
-            1201,
-            1203,
-            1204,
-            1206,
-            1207
+            1182,
+            1183,
+            1190,
+            1192
         };
 
         //ILLink lives in other repos and violated the _info requirement for no error code

@@ -19,17 +19,12 @@ public static class ContainerHelpers
 
     internal const string HostObjectPass = "SDK_CONTAINER_REGISTRY_PWORD";
 
+    internal const string DockerRegistryAlias = "docker.io";
+    
     /// <summary>
     /// Matches an environment variable name - must start with a letter or underscore, and can only contain letters, numbers, and underscores.
     /// </summary>
     private static Regex envVarRegex = new Regex(@"^[a-zA-Z_]{1,}[a-zA-Z0-9_]*$");
-
-    /// <summary>
-    /// DefaultRegistry is the canonical representation of something that lives in the local docker daemon. It's used as the inferred registry for repositories
-    /// that have no registry component.
-    /// See <see href="https://github.com/distribution/distribution/blob/78b9c98c5c31c30d74f9acb7d96f98552f2cf78f/reference/normalize.go">normalize.go</see>.
-    /// </summary>
-    internal const string DefaultRegistry = "docker.io";
 
     /// <summary>
     /// The enum contains possible error reasons during port parsing using <see cref="TryParsePort(string, out Port?, out ParsePortError?)"/> or <see cref="TryParsePort(string?, string?, out Port?, out ParsePortError?)"/>.
@@ -187,7 +182,8 @@ public static class ContainerHelpers
                                                             [NotNullWhen(true)] out string? containerRegistry,
                                                             [NotNullWhen(true)] out string? containerName,
                                                             out string? containerTag, // tag is always optional - we can't guarantee anything here
-                                                            out string? containerDigest // digest is always optional - we can't guarantee anything here
+                                                            out string? containerDigest, // digest is always optional - we can't guarantee anything here
+                                                            out bool isRegistrySpecified
                                                             )
     {
 
@@ -199,6 +195,7 @@ public static class ContainerHelpers
             containerName = null;
             containerTag = null;
             containerDigest = null;
+            isRegistrySpecified = false;
             return false;
         }
 
@@ -219,20 +216,22 @@ public static class ContainerHelpers
 
             // safely discover the registry
             var registryPortion = nameMatch.Groups[1];
-            if (registryPortion.Success)
-            {
-                containerRegistry = registryPortion.Value;
-            }
-            else
-            {
-                // intent of this is that if we have a 'bare' image name (like library/ruby for example)
-                // then DefaultRegistry is used as the registry.
-                containerRegistry = DefaultRegistry;
-            }
+            isRegistrySpecified = registryPortion.Success;
+            containerRegistry = isRegistrySpecified ? registryPortion.Value
+                                                    : DockerRegistryAlias;
 
             // direct access to the name portion is safe because the regex matched
             var imageNamePortion = nameMatch.Groups[2];
             containerName = imageNamePortion.Value;
+
+            if (containerRegistry == DockerRegistryAlias)
+            {
+                // Add the 'library/' prefix to expand short names like 'ubuntu' to 'library/ubuntu'.
+                if (!containerName.Contains("/"))
+                {
+                    containerName = $"library/{containerName}";
+                }
+            }
         }
         else
         {
@@ -240,6 +239,7 @@ public static class ContainerHelpers
             containerName = null;
             containerTag = null;
             containerDigest = null;
+            isRegistrySpecified = false;
             return false;
         }
 

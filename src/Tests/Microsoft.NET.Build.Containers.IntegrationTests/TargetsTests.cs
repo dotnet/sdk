@@ -2,26 +2,24 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using static Microsoft.NET.Build.Containers.KnownStrings.Properties;
-using FluentAssertions;
 using Microsoft.Build.Execution;
-using Xunit;
 using Microsoft.NET.Build.Containers.IntegrationTests;
-using Microsoft.NET.Build.Containers.UnitTests;
-using System.Linq;
 
 namespace Microsoft.NET.Build.Containers.Targets.IntegrationTests;
 
 public class TargetsTests
 {
-    [InlineData(true, "/app/foo.exe")]
-    [InlineData(false, "dotnet", "/app/foo.dll")]
+    [InlineData("SelfContained", true, "/app/foo.exe")]
+    [InlineData("SelfContained", false, "dotnet", "/app/foo.dll")]
+    [InlineData("PublishSelfContained", true, "/app/foo.exe")]
+    [InlineData("PublishSelfContained", false, "dotnet", "/app/foo.dll")]
     [Theory]
-    public void CanSetEntrypointArgsToUseAppHost(bool useAppHost, params string[] entrypointArgs)
+    public void CanDeferEntrypoint(string selfContainedPropertyName, bool selfContainedPropertyValue, params string[] entrypointArgs)
     {
         var (project, _, d) = ProjectInitializer.InitProject(new()
         {
-            [UseAppHost] = useAppHost.ToString()
-        }, projectName: $"{nameof(CanSetEntrypointArgsToUseAppHost)}_{useAppHost}_{String.Join("_", entrypointArgs)}");
+            [selfContainedPropertyName] = selfContainedPropertyValue.ToString()
+        }, projectName: $"{nameof(CanDeferEntrypoint)}_{selfContainedPropertyName}_{selfContainedPropertyValue}_{String.Join("_", entrypointArgs)}");
         using var _ = d;
         Assert.True(project.Build(ComputeContainerConfig));
         var computedEntrypointArgs = project.GetItems(ContainerEntrypoint).Select(i => i.EvaluatedInclude).ToArray();
@@ -166,6 +164,8 @@ public class TargetsTests
     [InlineData("6.0.100-preview.1", "v6.0", "6.0")]
     [InlineData("8.0.100-dev", "v8.0", "8.0-preview")]
     [InlineData("8.0.100-ci", "v8.0", "8.0-preview")]
+    [InlineData("8.0.100-rtm.23502.3", "v8.0", "8.0")]
+    [InlineData("8.0.100-servicing.23502.3", "v8.0", "8.0")]
     [InlineData("8.0.100-alpha.12345", "v8.0", "8.0-preview")]
     [InlineData("9.0.100-alpha.12345", "v9.0", "9.0-preview")]
     [Theory]
@@ -185,11 +185,11 @@ public class TargetsTests
         computedTag.Should().Be(expectedTag);
     }
 
-    [InlineData("v8.0", "linux-x64", "64198")]
+    [InlineData("v8.0", "linux-x64", null)]
     [InlineData("v8.0", "win-x64", "ContainerUser")]
     [InlineData("v7.0", "linux-x64", null)]
     [InlineData("v7.0", "win-x64", null)]
-    [InlineData("v9.0", "linux-x64", "64198")]
+    [InlineData("v9.0", "linux-x64", null)]
     [InlineData("v9.0", "win-x64", "ContainerUser")]
     [Theory]
     public void CanComputeContainerUser(string tfm, string rid, string expectedUser)
@@ -225,5 +225,27 @@ public class TargetsTests
         instance.Build(new[]{ComputeContainerConfig}, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
         var computedRid = instance.GetProperty(KnownStrings.Properties.ContainerRuntimeIdentifier)?.EvaluatedValue;
         computedRid.Should().Be(expectedRid);
+    }
+
+    [InlineData("8.0.100", "v7.0", "", "7.0")]
+    [InlineData("8.0.100-preview.2", "v8.0", "", "8.0.0-preview.2")]
+    [InlineData("8.0.100-preview.2", "v8.0", "jammy", "8.0.0-preview.2-jammy")]
+    [InlineData("8.0.100-preview.2", "v8.0", "jammy-chiseled", "8.0.0-preview.2-jammy-chiseled")]
+    [InlineData("8.0.100-rc.2", "v8.0", "jammy-chiseled", "8.0.0-rc.2-jammy-chiseled")]
+    [InlineData("8.0.100", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled")]
+    [Theory]
+    public void CanTakeContainerBaseFamilyIntoAccount(string sdkVersion, string tfmMajMin, string containerFamily, string expectedTag)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = sdkVersion,
+            ["TargetFrameworkVersion"] = tfmMajMin,
+            [KnownStrings.Properties.ContainerFamily] = containerFamily,
+        }, projectName: $"{nameof(CanTakeContainerBaseFamilyIntoAccount)}_{sdkVersion}_{tfmMajMin}_{containerFamily}_{expectedTag}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[]{ _ComputeContainerBaseImageTag }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(KnownStrings.Properties._ContainerBaseImageTag)?.EvaluatedValue;
+        computedBaseImageTag.Should().Be(expectedTag);
     }
 }

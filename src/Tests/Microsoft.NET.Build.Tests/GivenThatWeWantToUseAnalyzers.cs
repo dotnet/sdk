@@ -1,19 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System.IO;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Linq;
-using FluentAssertions;
-using System.Xml.Linq;
-using System.Collections.Generic;
-using System;
-using Xunit.Abstractions;
-using System.Runtime.InteropServices;
-using Microsoft.NET.TestFramework.ProjectConstruction;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -21,6 +7,128 @@ namespace Microsoft.NET.Build.Tests
     {
         public GivenThatWeWantToUseAnalyzers(ITestOutputHelper log) : base(log)
         {
+        }
+
+        [RequiresMSBuildVersionTheory("17.8.1.47607")]
+        [InlineData("WebApp", false)]
+        [InlineData("WebApp", true)]
+        [InlineData("WebApp", null)]
+        public void It_resolves_requestdelegategenerator_correctly(string testAssetName, bool? isEnabled)
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    if (isEnabled != null)
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("EnableRequestDelegateGenerator", isEnabled)));
+                    }
+                });
+
+            VerifyRequestDelegateGeneratorIsUsed(asset, isEnabled);
+            VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.AspNetCore.Http.Generated");
+        }
+
+        [RequiresMSBuildVersionTheory("17.8.1.47607")]
+        [InlineData("WebApp", false)]
+        [InlineData("WebApp", true)]
+        [InlineData("WebApp", null)]
+        public void It_resolves_configbindinggenerator_correctly(string testAssetName, bool? isEnabled)
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    if (isEnabled != null)
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("EnableConfigurationBindingGenerator", isEnabled)));
+                    }
+                });
+
+            VerifyConfigBindingGeneratorIsUsed(asset, isEnabled);
+            VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
+        }
+
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishAot()
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset("WebApp")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("PublishAot", "true")));
+                });
+
+            VerifyRequestDelegateGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyConfigBindingGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyInterceptorsFeatureProperties(asset, expectEnabled: true, "Microsoft.AspNetCore.Http.Generated", "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
+        }
+
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishTrimmed()
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset("WebApp")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Add(new XElement(ns + "PropertyGroup", new XElement("PublishTrimmed", "true")));
+                });
+
+            VerifyRequestDelegateGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyConfigBindingGeneratorIsUsed(asset, expectEnabled: true);
+            VerifyInterceptorsFeatureProperties(asset, expectEnabled: true, "Microsoft.AspNetCore.Http.Generated", "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
+        }
+
+        private void VerifyGeneratorIsUsed(TestAsset asset, bool? expectEnabled, string generatorName)
+        {
+            var command = new GetValuesCommand(
+                Log,
+                asset.Path,
+                ToolsetInfo.CurrentTargetFramework,
+                "Analyzer",
+                GetValuesCommand.ValueType.Item);
+
+            command
+                .WithWorkingDirectory(asset.Path)
+                .Execute()
+                .Should().Pass();
+
+            var analyzers = command.GetValues();
+
+            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(generatorName)));
+        }
+
+        private void VerifyRequestDelegateGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
+            => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll");
+
+        private void VerifyConfigBindingGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
+            => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll");
+
+        private void VerifyInterceptorsFeatureProperties(TestAsset asset, bool? expectEnabled, params string[] expectedNamespaces)
+        {
+            var command = new GetValuesCommand(
+                Log,
+                asset.Path,
+                ToolsetInfo.CurrentTargetFramework,
+                "InterceptorsPreviewNamespaces",
+                GetValuesCommand.ValueType.Property);
+
+            command
+                .WithWorkingDirectory(asset.Path)
+                .Execute()
+                .Should().Pass();
+
+            var namespaces = command.GetValues();
+
+            Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
         }
 
         [Theory]
@@ -54,7 +162,7 @@ namespace Microsoft.NET.Build.Tests
 
             command
                 .WithWorkingDirectory(asset.Path)
-                .Execute("/bl")
+                .Execute()
                 .Should().Pass();
 
             var analyzers = command.GetValues();
@@ -73,7 +181,8 @@ namespace Microsoft.NET.Build.Tests
                                 ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.LibraryImportGenerator.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.JavaScript.JSImportGenerator.dll"),
-                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.SourceGeneration.dll")
+                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.SourceGeneration.dll"),
+                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.ComInterfaceGenerator.dll")
                             }
                         );
                     break;

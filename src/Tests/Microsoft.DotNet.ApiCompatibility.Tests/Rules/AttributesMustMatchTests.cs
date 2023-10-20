@@ -1,12 +1,10 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiCompatibility.Tests;
-using Xunit;
+using Microsoft.DotNet.ApiSymbolExtensions.Tests;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
@@ -27,6 +25,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
          * - Type
          * - Member
          */
+
+        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context));
+
+        private static ISymbolFilter GetAccessibilityAndAttributeSymbolFiltersAsComposite(params string[] excludeAttributeFiles) =>
+            new CompositeSymbolFilter().Add(new AccessibilitySymbolFilter(false)).Add(new DocIdSymbolFilter(excludeAttributeFiles));
 
         public static TheoryData<string, string, CompatDifference[]> TypesCases => new()
         {
@@ -1326,10 +1329,10 @@ new CompatDifference[] {
             using TempDirectory root = new();
             string filePath = Path.Combine(root.DirPath, "exclusions.txt");
             File.Create(filePath).Dispose();
-            TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context, new[] { filePath }));
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
+            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
@@ -1343,10 +1346,10 @@ new CompatDifference[] {
             using TempDirectory root = new();
             string filePath = Path.Combine(root.DirPath, "exclusions.txt");
             File.Create(filePath).Dispose();
-            TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context, new[] { filePath }));
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory, new ApiComparerSettings(strictMode: true));
+            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
@@ -1359,7 +1362,6 @@ new CompatDifference[] {
             using TempDirectory root = new();
             string filePath = Path.Combine(root.DirPath, "exclusions.txt");
             File.WriteAllText(filePath, "T:System.SerializableAttribute");
-            TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context, new[] { filePath }));
             string leftSyntax = @"
 namespace CompatTests
 {
@@ -1396,10 +1398,64 @@ namespace CompatTests
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer differ = new(s_ruleFactory);
+            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
 
             IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right);
 
             Assert.Empty(actual);
+        }
+
+        [Fact]
+        public void AttributesExcludedButMembersValidated()
+        {
+            using TempDirectory root = new();
+            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
+            File.WriteAllText(filePath, "T:CompatTests.FooAttribute");
+            TestRuleFactory ruleFactory = new(
+                (settings, context) => new AttributesMustMatch(settings, context),
+                (settings, context) => new MembersMustExist(settings, context));
+            string leftSyntax = @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  public class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+  }
+  [Foo(""S"", A = true, B = 3)]
+  public class First {}
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+  using System;
+  
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  public class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+    public bool A;
+    public int B;
+    public string X;
+  }
+  [Foo(""T"", A = false, B = 4)]
+  public class First {}
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(ruleFactory, new ApiComparerSettings(strictMode: true));
+            differ.Settings.AttributeDataSymbolFilter = GetAccessibilityAndAttributeSymbolFiltersAsComposite(filePath);
+
+            IEnumerable<CompatDifference> actual = differ.GetDifferences(left, right).ToArray();
+
+            Assert.Equal(new[]
+            {
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Added, "F:CompatTests.FooAttribute.X"),
+            }, actual);
         }
     }
 }

@@ -147,6 +147,11 @@
         <target state="translated">{1} içinde belirtilen iş yükü sürümü {0} bulunamadı.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotFound">
+        <source>Workload version {0} was not found.</source>
+        <target state="translated">İş yükü sürümü {0} bulunamadı.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

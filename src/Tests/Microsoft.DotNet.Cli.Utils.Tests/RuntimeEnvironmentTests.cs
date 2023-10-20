@@ -1,11 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
-using System.Runtime.InteropServices;
-using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
@@ -52,10 +46,19 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         {
             Assert.Equal(Platform.Linux, RuntimeEnvironment.OperatingSystemPlatform);
 
-            // ensure OperatingSystem and OperatingSystemVersion are aligned with the current RID
-            Assert.StartsWith(
-                $"{RuntimeEnvironment.OperatingSystem.ToLowerInvariant()}.{RuntimeEnvironment.OperatingSystemVersion}",
-                RuntimeInformation.RuntimeIdentifier);
+            var osRelease = File.ReadAllLines("/etc/os-release");
+            string id = osRelease
+                .First(line => line.StartsWith("ID=", StringComparison.OrdinalIgnoreCase))
+                .Substring("ID=".Length)
+                .Trim('\"', '\'')
+                .ToLowerInvariant();
+            Assert.Equal(id, RuntimeEnvironment.OperatingSystem.ToLowerInvariant());
+            
+            string version = osRelease
+                .First(line => line.StartsWith("VERSION_ID=", StringComparison.OrdinalIgnoreCase))
+                .Substring("VERSION_ID=".Length)
+                .Trim('\"', '\'');
+            Assert.Equal(version, RuntimeEnvironment.OperatingSystemVersion);
         }
     }
 }

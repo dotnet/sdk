@@ -2,15 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Resources;
 using Microsoft.NET.Build.Containers.UnitTests;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
@@ -43,7 +38,7 @@ public class EndToEndTests : IDisposable
         _loggerFactory.Dispose();
     }
 
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithRegistryPushAndPull));
@@ -51,11 +46,11 @@ public class EndToEndTests : IDisposable
 
         // Build the image
 
-        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry), logger);
+        Registry registry = new Registry(DockerRegistryManager.LocalRegistry, logger);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
-            DockerRegistryManager.BaseImage,
-            DockerRegistryManager.Net6ImageTag,
+            DockerRegistryManager.RuntimeBaseImage,
+            DockerRegistryManager.Net8PreviewImageTag,
             "linux-x64",
             ToolsetUtils.GetRuntimeGraphFilePath(),
             cancellationToken: default).ConfigureAwait(false);
@@ -66,40 +61,43 @@ public class EndToEndTests : IDisposable
 
         imageBuilder.AddLayer(l);
 
-        imageBuilder.SetEntryPoint(new[] { "/app/MinimalTestApp" });
+        imageBuilder.SetEntrypointAndCmd(new[] { "/app/MinimalTestApp" }, Array.Empty<string>());
 
         BuiltImage builtImage = imageBuilder.Build();
 
         // Push the image back to the local registry
-        var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net6ImageTag);
-        var destinationReference = new ImageReference(registry, NewImageName(), "latest");
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net8PreviewImageTag);
+        var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { "latest", "1.0" });
 
         await registry.PushAsync(builtImage, sourceReference, destinationReference, cancellationToken: default).ConfigureAwait(false);
 
-        // pull it back locally
-        new RunExeCommand(_testOutput, "docker", "pull", $"{DockerRegistryManager.LocalRegistry}/{NewImageName()}:latest")
-            .Execute()
-            .Should().Pass();
+        foreach (string tag in destinationReference.Tags)
+        {
+            // pull it back locally
+            ContainerCli.PullCommand(_testOutput, $"{DockerRegistryManager.LocalRegistry}/{NewImageName()}:{tag}")
+                .Execute()
+                .Should().Pass();
 
-        // Run the image
-        new RunExeCommand(_testOutput, "docker", "run", "--rm", "--tty", $"{DockerRegistryManager.LocalRegistry}/{NewImageName()}:latest")
-            .Execute()
-            .Should().Pass();
+            // Run the image
+            ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{DockerRegistryManager.LocalRegistry}/{NewImageName()}:{tag}")
+                .Execute()
+                .Should().Pass();
+        }
     }
 
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public async Task ApiEndToEndWithLocalLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithLocalLoad));
-        string publishDirectory = BuildLocalApp();
+        string publishDirectory = BuildLocalApp(tfm: "net8.0");
 
         // Build the image
 
-        Registry registry = new Registry(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.LocalRegistry), logger);
+        Registry registry = new Registry(DockerRegistryManager.LocalRegistry, logger);
 
         ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
-            DockerRegistryManager.BaseImage,
-            DockerRegistryManager.Net6ImageTag,
+            DockerRegistryManager.RuntimeBaseImage,
+            DockerRegistryManager.Net8PreviewImageTag,
             "linux-x64",
             ToolsetUtils.GetRuntimeGraphFilePath(),
             cancellationToken: default).ConfigureAwait(false);
@@ -109,20 +107,73 @@ public class EndToEndTests : IDisposable
 
         imageBuilder.AddLayer(l);
 
-        imageBuilder.SetEntryPoint(new[] { "/app/MinimalTestApp" });
+        imageBuilder.SetEntrypointAndCmd(new[] { "/app/MinimalTestApp" }, Array.Empty<string>());
 
         BuiltImage builtImage = imageBuilder.Build();
 
-        // Load the image into the local Docker daemon
-        var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net6ImageTag);
-        var destinationReference = new ImageReference(registry, NewImageName(), "latest");
+        // Load the image into the local registry
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net7ImageTag);
+        var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { "latest", "1.0" });
 
-        await new LocalDocker(logger).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new DockerCli(_loggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
-        new RunExeCommand(_testOutput, "docker", "run", "--rm", "--tty", $"{NewImageName()}:latest")
+        foreach (string tag in destinationReference.Tags)
+        {
+            ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{NewImageName()}:{tag}")
+                .Execute()
+                .Should().Pass();
+        }
+    }
+
+    [DockerAvailableFact]
+    public async Task ApiEndToEndWithArchiveWritingAndLoad()
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithArchiveWritingAndLoad));
+        string publishDirectory = BuildLocalApp(tfm: "net8.0");
+
+        // Build the image
+
+        Registry registry = new Registry(DockerRegistryManager.LocalRegistry, logger);
+
+        ImageBuilder imageBuilder = await registry.GetImageManifestAsync(
+            DockerRegistryManager.RuntimeBaseImage,
+            DockerRegistryManager.Net8PreviewImageTag,
+            "linux-x64",
+            ToolsetUtils.GetRuntimeGraphFilePath(),
+            cancellationToken: default).ConfigureAwait(false);
+        Assert.NotNull(imageBuilder);
+
+        Layer l = Layer.FromDirectory(publishDirectory, "/app", false);
+
+        imageBuilder.AddLayer(l);
+
+        imageBuilder.SetEntrypointAndCmd(new[] { "/app/MinimalTestApp" }, Array.Empty<string>());
+
+        BuiltImage builtImage = imageBuilder.Build();
+
+        // Write the image to disk
+        var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
+            nameof(ApiEndToEndWithArchiveWritingAndLoad), "app.tar.gz");
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net7ImageTag);
+        var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archiveFile), NewImageName(), new[] { "latest", "1.0" });
+
+        await destinationReference.LocalRegistry!.LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+
+        Assert.True(File.Exists(archiveFile), $"File.Exists({archiveFile})");
+
+        // Load the archive
+        ContainerCli.LoadCommand(_testOutput, "--input", archiveFile)
             .Execute()
             .Should().Pass();
+
+        // Run the image
+        foreach (string tag in destinationReference.Tags)
+        {
+            ContainerCli.RunCommand(_testOutput, "--rm", "--tty", $"{NewImageName()}:{tag}")
+                .Execute()
+                .Should().Pass();
+        }
     }
 
     private string BuildLocalApp([CallerMemberName] string testName = "TestName", string tfm = ToolsetInfo.CurrentTargetFramework, string rid = "linux-x64")
@@ -137,26 +188,36 @@ public class EndToEndTests : IDisposable
         Directory.CreateDirectory(workingDirectory);
 
         new DotnetNewCommand(_testOutput, "console", "-f", tfm, "-o", "MinimalTestApp")
-            .WithVirtualHive()        
+            .WithVirtualHive()
             .WithWorkingDirectory(workingDirectory)
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", tfm, "-c", "Debug")
-            .WithWorkingDirectory(workingDirectory)
-            .Execute()
+        var publishCommand =
+            new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", tfm, "-c", "Debug")
+                .WithWorkingDirectory(workingDirectory);
+
+        if (tfm == ToolsetInfo.CurrentTargetFramework)
+        {
+            publishCommand.Arguments.AddRange(new[] { "-p", $"RuntimeFrameworkVersion=8.0.0-preview.3.23174.8" });
+        }
+
+        publishCommand.Execute()
             .Should().Pass();
 
         string publishDirectory = Path.Join(workingDirectory, "MinimalTestApp", "bin", "Debug", tfm, rid, "publish");
         return publishDirectory;
     }
 
-    [DockerDaemonAvailableTheory]
-    [InlineData(false)]
-    [InlineData(true)]
-    public async Task EndToEnd_NoAPI_Web(bool addPackageReference)
+
+    [DockerAvailableTheory()]
+    [InlineData("webapi", false)]
+    [InlineData("webapi", true)]
+    [InlineData("worker", false)]
+    [InlineData("worker", true)]
+    public async Task EndToEnd_NoAPI_ProjectType(string projectType, bool addPackageReference)
     {
-        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, $"CreateNewImageTest_{addPackageReference}"));
+        DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, $"CreateNewImageTest_{projectType}_{addPackageReference}"));
         DirectoryInfo privateNuGetAssets = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "ContainerNuGet"));
 
         if (newProjectDir.Exists)
@@ -172,8 +233,8 @@ public class EndToEndTests : IDisposable
         newProjectDir.Create();
         privateNuGetAssets.Create();
 
-        new DotnetNewCommand(_testOutput, "webapi", "-f", ToolsetInfo.CurrentTargetFramework)
-            .WithVirtualHive()  
+        new DotnetNewCommand(_testOutput, projectType, "-f", ToolsetInfo.CurrentTargetFramework)
+            .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             // do not pollute the primary/global NuGet package store with the private package(s)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
@@ -211,19 +272,19 @@ public class EndToEndTests : IDisposable
         }
 
         string imageName = NewImageName();
-        string imageTag = "1.0";
+        string imageTag = $"1.0-{projectType}-{addPackageReference}";
 
         // Build & publish the project
         CommandResult commandResult = new DotnetCommand(
             _testOutput,
             "publish",
-            "/p:publishprofile=DefaultContainer",
-            "/p:runtimeidentifier=linux-x64",
-            "/bl",
-            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageDefault}",
+            "/p:PublishProfile=DefaultContainer",
+            "/p:RuntimeIdentifier=linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
-            $"/p:ContainerImageTag={imageTag}")
+            $"/p:ContainerImageTag={imageTag}",
+            $"/p:RuntimeFrameworkVersion=8.0.0-preview.3.23174.8")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
@@ -239,65 +300,93 @@ public class EndToEndTests : IDisposable
             commandResult.Should().NotHaveStdOutContaining("warning");
         }
 
-        new RunExeCommand(_testOutput, "docker", "pull", $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
+        ContainerCli.PullCommand(_testOutput, $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
             .Execute()
             .Should().Pass();
 
-        var containerName = "test-container-1";
-        CommandResult processResult = new RunExeCommand(
+        var containerName = $"test-container-1-{projectType}-{addPackageReference}";
+        CommandResult processResult = ContainerCli.RunCommand(
             _testOutput,
-            "docker",
-            "run",
             "--rm",
             "--name",
             containerName,
-            "--publish",
-            "5017:80",
+            "-P",
             "--detach",
             $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
         .Execute();
         processResult.Should().Pass();
         Assert.NotNull(processResult.StdOut);
-
         string appContainerId = processResult.StdOut.Trim();
 
         bool everSucceeded = false;
 
-        HttpClient client = new();
 
-        // Give the server a moment to catch up, but no more than necessary.
-        for (int retry = 0; retry < 10; retry++)
+
+        if (projectType == "webapi")
         {
-            try
+            var portCommand =
+            ContainerCli.PortCommand(_testOutput, containerName, 8080)
+                .Execute();
+            portCommand.Should().Pass();
+            var port = portCommand.StdOut.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
+            _testOutput.WriteLine($"Discovered port was '{port}'");
+            var tempUri = new Uri($"http://{port}", UriKind.Absolute);
+            var appUri = new UriBuilder(tempUri)
             {
-                var response = await client.GetAsync("http://localhost:5017/weatherforecast").ConfigureAwait(false);
-
-                if (response.IsSuccessStatusCode)
+                Host = "localhost"
+            }.Uri;
+            HttpClient client = new();
+            client.BaseAddress = appUri;
+            // Give the server a moment to catch up, but no more than necessary.
+            for (int retry = 0; retry < 10; retry++)
+            {
+                try
                 {
-                    everSucceeded = true;
-                    break;
+                    var response = await client.GetAsync($"weatherforecast").ConfigureAwait(false);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        everSucceeded = true;
+                        break;
+                    }
                 }
+                catch { }
+
+                await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             }
-            catch { }
+            ContainerCli.LogsCommand(_testOutput, appContainerId)
+            .Execute()
+            .Should().Pass();
+            Assert.True(everSucceeded, $"{appUri}weatherforecast never responded.");
 
-            await Task.Delay(TimeSpan.FromSeconds(1)).ConfigureAwait(false);
+            ContainerCli.StopCommand(_testOutput, appContainerId)
+           .Execute()
+           .Should().Pass();
         }
+        else if (projectType == "worker")
+        {
+            // the worker template needs a second to start up and emit the logs we are looking for
+            await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
+            var containerLogs =
+            ContainerCli.LogsCommand(_testOutput, appContainerId)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Worker running at");
 
-        new RunExeCommand(_testOutput, "docker", "logs", appContainerId)
+            ContainerCli.StopCommand(_testOutput, appContainerId)
             .Execute()
             .Should().Pass();
-
-        Assert.True(everSucceeded, "http://localhost:5017/weatherforecast never responded.");
-
-        new RunExeCommand(_testOutput, "docker", "stop", appContainerId)
-            .Execute()
-            .Should().Pass();
+        }
+        else
+        {
+            throw new NotImplementedException("Unknown project type");
+        }
 
         newProjectDir.Delete(true);
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerDaemonAvailableFact]
+    [DockerAvailableFact]
     public void EndToEnd_NoAPI_Console()
     {
         DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, "CreateNewImageTest"));
@@ -350,25 +439,23 @@ public class EndToEndTests : IDisposable
             "publish",
             "/t:PublishContainer",
             "/p:runtimeidentifier=linux-x64",
-            "/bl",
-            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageDefault}",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
+            $"/p:RuntimeFrameworkVersion=8.0.0-preview.3.23174.8",
             $"/p:ContainerImageTag={imageTag}")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
-        new RunExeCommand(_testOutput, "docker", "pull", $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
+        ContainerCli.PullCommand(_testOutput, $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
             .Execute()
             .Should().Pass();
 
         var containerName = "test-container-2";
-        CommandResult processResult = new RunExeCommand(
+        CommandResult processResult = ContainerCli.RunCommand(
             _testOutput,
-            "docker",
-            "run",
             "--rm",
             "--name",
             containerName,
@@ -382,46 +469,44 @@ public class EndToEndTests : IDisposable
 
     [DockerSupportsArchInlineData("linux/arm/v7", "linux-arm", "/app")]
     [DockerSupportsArchInlineData("linux/arm64/v8", "linux-arm64", "/app")]
-    [DockerSupportsArchInlineData("linux/386", "linux-x86", "/app", Skip="There's no apphost for linux-x86 so we can't execute self-contained, and there's no .NET runtime base image for linux-x86 so we can't execute framework-dependent.")]
+    [DockerSupportsArchInlineData("linux/386", "linux-x86", "/app", Skip = "There's no apphost for linux-x86 so we can't execute self-contained, and there's no .NET runtime base image for linux-x86 so we can't execute framework-dependent.")]
     [DockerSupportsArchInlineData("windows/amd64", "win-x64", "C:\\app")]
     [DockerSupportsArchInlineData("linux/amd64", "linux-x64", "/app")]
-    [DockerDaemonAvailableTheory]
+    [DockerAvailableTheory]
     public async Task CanPackageForAllSupportedContainerRIDs(string dockerPlatform, string rid, string workingDir)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanPackageForAllSupportedContainerRIDs));
         string publishDirectory = BuildLocalApp(tfm: ToolsetInfo.CurrentTargetFramework, rid: rid);
 
         // Build the image
-        Registry registry = new(ContainerHelpers.TryExpandRegistryToUri(DockerRegistryManager.BaseImageSource), logger);
-
+        Registry registry = new(DockerRegistryManager.BaseImageSource, logger);
+        var isWin = rid.StartsWith("win");
         ImageBuilder? imageBuilder = await registry.GetImageManifestAsync(
-            DockerRegistryManager.BaseImage,
-            DockerRegistryManager.Net7ImageTag,
+            DockerRegistryManager.RuntimeBaseImage,
+            isWin ? DockerRegistryManager.Net8PreviewWindowsSpecificImageTag : DockerRegistryManager.Net8PreviewImageTag,
             rid,
             ToolsetUtils.GetRuntimeGraphFilePath(),
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "/app", false);
+        Layer l = Layer.FromDirectory(publishDirectory, isWin ? "C:\\app" : "/app", isWin);
 
         imageBuilder.AddLayer(l);
         imageBuilder.SetWorkingDirectory(workingDir);
 
         string[] entryPoint = DecideEntrypoint(rid, "MinimalTestApp", workingDir);
-        imageBuilder.SetEntryPoint(entryPoint);
+        imageBuilder.SetEntrypointAndCmd(entryPoint, Array.Empty<string>());
 
         BuiltImage builtImage = imageBuilder.Build();
 
-        // Load the image into the local Docker daemon
-        var sourceReference = new ImageReference(registry, DockerRegistryManager.BaseImage, DockerRegistryManager.Net7ImageTag);
-        var destinationReference = new ImageReference(registry, NewImageName(), rid);
-        await new LocalDocker(logger).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        // Load the image into the local registry
+        var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net7ImageTag);
+        var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { rid });
+        await new DockerCli(_loggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
-        new RunExeCommand(
+        ContainerCli.RunCommand(
             _testOutput,
-            "docker",
-            "run",
             "--rm",
             "--tty",
             "--platform",

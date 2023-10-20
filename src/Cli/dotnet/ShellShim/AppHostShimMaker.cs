@@ -1,9 +1,6 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.HostModel;
@@ -43,15 +40,16 @@ namespace Microsoft.DotNet.ShellShim
             string entryPointFullPath = Path.GetFullPath(entryPoint.Value);
             var appBinaryFilePath = Path.GetRelativePath(Path.GetDirectoryName(appHostDestinationFilePath), entryPointFullPath);
 
-
             if (ResourceUpdater.IsSupportedOS())
             {
-                var windowsGraphicalUserInterfaceBit = PEUtils.GetWindowsGraphicalUserInterfaceBit(entryPointFullPath);
+                bool windowsGraphicalUserInterface = OperatingSystem.IsWindows()
+                    && PEUtils.GetWindowsGraphicalUserInterfaceBit(entryPointFullPath) == WindowsGUISubsystem;
                 HostWriter.CreateAppHost(appHostSourceFilePath: appHostSourcePath,
                                          appHostDestinationFilePath: appHostDestinationFilePath,
                                          appBinaryFilePath: appBinaryFilePath,
-                                         windowsGraphicalUserInterface: (windowsGraphicalUserInterfaceBit == WindowsGUISubsystem),
-                                         assemblyToCopyResourcesFrom: entryPointFullPath);
+                                         windowsGraphicalUserInterface: windowsGraphicalUserInterface,
+                                         assemblyToCopyResourcesFrom: entryPointFullPath,
+                                         enableMacOSCodeSign: OperatingSystem.IsMacOS());
             }
             else
             {

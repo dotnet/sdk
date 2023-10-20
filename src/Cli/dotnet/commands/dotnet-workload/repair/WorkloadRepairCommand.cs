@@ -1,22 +1,14 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using System.IO;
-using System.Linq;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using NuGet.Common;
 
 namespace Microsoft.DotNet.Workloads.Workload.Repair
 {
@@ -24,49 +16,43 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
     {
         private readonly PackageSourceLocation _packageSourceLocation;
         private readonly IInstaller _workloadInstaller;
+        protected readonly IWorkloadResolverFactory _workloadResolverFactory;
         private IWorkloadResolver _workloadResolver;
         private readonly ReleaseVersion _sdkVersion;
         private readonly string _dotnetPath;
+        private readonly string _userProfileDir;
 
         public WorkloadRepairCommand(
             ParseResult parseResult,
             IReporter reporter = null,
-            IWorkloadResolver workloadResolver = null,
+            IWorkloadResolverFactory workloadResolverFactory = null,
             IInstaller workloadInstaller = null,
-            INuGetPackageDownloader nugetPackageDownloader = null,
-            string dotnetDir = null,
-            string tempDirPath = null,
-            string version = null,
-            string userProfileDir = null)
+            INuGetPackageDownloader nugetPackageDownloader = null)
             : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
         {
-            var configOption = parseResult.GetValueForOption(WorkloadRepairCommandParser.ConfigOption);
-            var sourceOption = parseResult.GetValueForOption(WorkloadRepairCommandParser.SourceOption);
+            var configOption = parseResult.GetValue(WorkloadRepairCommandParser.ConfigOption);
+            var sourceOption = parseResult.GetValue(WorkloadRepairCommandParser.SourceOption);
             _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
                 new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
 
-            var creationParameters = new WorkloadResolverFactory.CreationParameters()
-            {
-                DotnetPath = dotnetDir,
-                UserProfileDir = userProfileDir,
-                GlobalJsonStartDir = null,
-                SdkVersionFromOption = parseResult.GetValueForOption(WorkloadRepairCommandParser.VersionOption),
-                VersionForTesting = version,
-                CheckIfFeatureBandManifestExists = true,
-                WorkloadResolverForTesting = workloadResolver,
-                UseInstalledSdkVersionForResolver = false
-            };
+            _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
-            var creationResult = WorkloadResolverFactory.Create(creationParameters);
+            if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadRepairCommandParser.VersionOption)))
+            {
+                throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            }
+
+            var creationResult = _workloadResolverFactory.Create();
 
             _dotnetPath = creationResult.DotnetPath;
             _sdkVersion = creationResult.SdkVersion;
+            _userProfileDir = creationResult.UserProfileDir;
             var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
             _workloadResolver = creationResult.WorkloadResolver;
 
             _workloadInstaller = workloadInstaller ??
                                  WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand,
-                                     _workloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, dotnetDir, TempDirectoryPath,
+                                     _workloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
                                      _packageSourceLocation, _parseResult.ToRestoreActionConfig());
         }
 
@@ -88,7 +74,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
 
                 ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
 
-                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity);
+                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(LocalizableStrings.RepairSucceeded, string.Join(" ", workloadIds)));

@@ -1,26 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.ProjectConstruction;
-
-using FluentAssertions;
-using Xunit;
-
-using Xunit.Abstractions;
-using System.Text.RegularExpressions;
-using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Reflection.Metadata;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
@@ -156,6 +135,28 @@ namespace Microsoft.NET.Build.Tests
                     .And
                     .HaveStdOutContaining(expectedProgramOutput);
             }
+        }
+
+        [Theory]
+        [InlineData("false", false)]
+        [InlineData("true", true)]
+        [InlineData("", false)]
+        public void It_includes_platform_in_output_path_if_requested(string appendPlatformValue, bool shouldIncludePlatform)
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("DesktopMinusRid")
+                .WithSource()
+                .WithProjectChanges(project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    var propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    propertyGroup.Add(new XElement(ns + "AppendPlatformToOutputPath", appendPlatformValue));
+                });
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory("net46", platform: shouldIncludePlatform ? "AnyCPU" : "");
+            outputDirectory.GetFiles("DesktopMinusRid.exe").Length.Should().Be(1);
         }
 
         [WindowsOnlyTheory]

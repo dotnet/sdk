@@ -1,18 +1,7 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.NET.TestFramework.Utilities;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
@@ -20,17 +9,17 @@ namespace Microsoft.NET.Sdk.Razor.Tests
     {
         public PublishIntegrationTest(ITestOutputHelper log) : base(log) {}
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_RazorCompileOnPublish_IsDefault()
         {
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(Log, projectDirectory.TestRoot);
+            var publish = new PublishCommand(projectDirectory);
             publish.Execute().Should().Pass();
 
-            var outputPath = Path.Combine(projectDirectory.Path, "bin", "Debug", DefaultTfm);
-            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = new BuildCommand(projectDirectory).GetOutputDirectory().FullName;
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").FullName;
 
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.dll")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.pdb")).Should().Exist();
@@ -73,7 +62,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new DirectoryInfo(Path.Combine(publishOutputPath, "Views")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_NoopsWith_RazorCompileOnPublishFalse()
         {
             var testAsset = "RazorSimpleMvc";
@@ -81,7 +70,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             Directory.Delete(Path.Combine(projectDirectory.Path, "Views"), recursive: true);
 
-            var publish = new PublishCommand(Log, projectDirectory.TestRoot);
+            var publish = new PublishCommand(projectDirectory);
             publish.Execute("/p:RazorCompileOnPublish=false").Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -91,13 +80,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(publishOutputPath, "SimpleMvc.pdb")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_IncludeCshtmlAndRefAssemblies_CopiesFiles()
         {
             var testAsset = "RazorSimpleMvc";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(Log, projectDirectory.TestRoot);
+            var publish = new PublishCommand(projectDirectory);
             publish.Execute("/p:CopyRazorGenerateFilesToPublishDirectory=true", "/p:CopyRefAssembliesToPublishDirectory=true").Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -111,7 +100,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new DirectoryInfo(Path.Combine(publishOutputPath, "Views")).Should().NotBeEmpty();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_WithPreserveCompilationReferencesSetInProjectFile_CopiesRefs()
         {
             var testAsset = "RazorSimpleMvc";
@@ -125,7 +114,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
 
 
-            var publish = new PublishCommand(Log, projectDirectory.TestRoot);
+            var publish = new PublishCommand(projectDirectory);
             publish.Execute().Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -137,13 +126,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(publishOutputPath, "refs", "mscorlib.dll")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_WithP2P_AndRazorCompileOnBuild_CopiesRazorAssembly()
         {
             var testAsset = "RazorAppWithP2PReference";
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
-            var publish = new PublishCommand(Log, Path.Combine(projectDirectory.TestRoot, "AppWithP2PReference"));
+            var publish = new PublishCommand(projectDirectory, "AppWithP2PReference");
             publish.Execute().Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -159,7 +148,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new DirectoryInfo(Path.Combine(publishOutputPath, "Views")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_WithP2P_WorksWhenBuildProjectReferencesIsDisabled()
         {
             // Simulates publishing the same way VS does by setting BuildProjectReferences=false.
@@ -190,7 +179,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(outputPath, "AnotherClassLib.dll")).Should().Exist();
 
             // dotnet msbuild /t:Publish /p:BuildProjectReferences=false
-            var publish = new PublishCommand(Log, Path.Combine(projectDirectory.TestRoot, "AppWithP2PReference"));
+            var publish = new PublishCommand(projectDirectory, "AppWithP2PReference");
             publish.Execute("/p:BuildProjectReferences=false", "/p:ErrorOnDuplicatePublishOutputFiles=false").Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -205,7 +194,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(publishOutputPath, "AnotherClassLib.pdb")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_WithNoBuild_CopiesAlreadyCompiledViews()
         {
             var testAsset = "RazorSimpleMvc";
@@ -222,7 +211,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var assemblyVersion = AssemblyName.GetAssemblyName(assemblyPath).Version;
 
             // Publish should copy dlls from OutputPath
-            var publish = new PublishCommand(Log, projectDirectory.TestRoot);
+            var publish = new PublishCommand(projectDirectory);
             publish.Execute("/p:NoBuild=true").Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();

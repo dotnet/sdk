@@ -1,11 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Microsoft.TemplateEngine.TestHelper;
-using Xunit.Abstractions;
+using SharedTestOutputHelper = Microsoft.TemplateEngine.TestHelper.SharedTestOutputHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -29,7 +25,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         protected ITestOutputHelper Log { get; private set; }
 
-        public void Dispose() => Directory.Delete(HomeDirectory, true);
+        public void Dispose()
+        {
+            Directory.Delete(HomeDirectory, true);
+            GC.SuppressFinalize(this);
+        }
 
         public void InstallPackage(string packageName, string? workingDirectory = null, string? nugetSource = null)
         {
@@ -70,6 +70,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             new DotnetNewCommand(Log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates60Path)
                 .WithCustomHive(HomeDirectory)
                 .WithDebug()
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
+
+            new DotnetNewCommand(Log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates70Path)
+                .WithCustomHive(HomeDirectory)
                 .Execute()
                 .Should()
                 .ExitWith(0)

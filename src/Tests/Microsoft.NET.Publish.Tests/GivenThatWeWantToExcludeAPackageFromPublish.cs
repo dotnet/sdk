@@ -1,16 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System.IO;
-using System.Runtime.InteropServices;
-using Microsoft.NET.TestFramework;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using System.Xml.Linq;
-using Xunit.Abstractions;
-using System.Collections.Generic;
-using Microsoft.NET.TestFramework.ProjectConstruction;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Publish.Tests
 {
@@ -209,6 +198,38 @@ namespace Microsoft.NET.Publish.Tests
             var publishCommand = new PublishCommand(testAsset);
 
             publishCommand.Execute().Should().Pass();
+        }
+
+        [Fact]
+        public void TransitivePackageReferenceAndPublishFalse()
+        {
+            var testLibraryProject = new TestProject()
+            {
+                Name = "TestLibrary",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testLibraryProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+
+            var testProject = new TestProject()
+            {
+                Name = "TestApp",
+                IsExe = true,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion(), publish: "false"));
+
+            testProject.ReferencedProjects.Add(testLibraryProject);
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand.Execute().Should().Pass();
+            var publishDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
+
+            publishDirectory.Should().NotHaveFile("Newtonsoft.Json.dll");
         }
 
         [Fact]

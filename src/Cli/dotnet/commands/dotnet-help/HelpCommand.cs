@@ -1,11 +1,8 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.Diagnostics;
-using System.IO;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -26,7 +23,7 @@ namespace Microsoft.DotNet.Tools.Help
 
             result.ShowHelpOrErrorIfAppropriate();
 
-            if (!string.IsNullOrEmpty(result.GetValueForArgument(HelpCommandParser.Argument)))
+            if (!string.IsNullOrEmpty(result.GetValue(HelpCommandParser.Argument)))
             {
                 return new HelpCommand(result).Execute();
             }
@@ -88,7 +85,7 @@ namespace Microsoft.DotNet.Tools.Help
         public int Execute()
         {
             if (TryGetDocsLink(
-                _parseResult.GetValueForArgument(HelpCommandParser.Argument),
+                _parseResult.GetValue(HelpCommandParser.Argument),
                 out var docsLink) &&
                 !string.IsNullOrEmpty(docsLink))
             {
@@ -102,7 +99,7 @@ namespace Microsoft.DotNet.Tools.Help
                 Reporter.Error.WriteLine(
                     string.Format(
                         LocalizableStrings.CommandDoesNotExist,
-                        _parseResult.GetValueForArgument(HelpCommandParser.Argument)).Red());
+                        _parseResult.GetValue(HelpCommandParser.Argument)).Red());
                 Reporter.Output.WriteLine(HelpUsageText.UsageText);
                 return 1;
             }

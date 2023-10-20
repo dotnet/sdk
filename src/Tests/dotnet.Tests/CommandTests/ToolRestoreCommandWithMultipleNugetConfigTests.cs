@@ -1,12 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using FluentAssertions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
@@ -15,10 +10,8 @@ using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.Tools.Tool.Restore;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.NET.TestFramework.Utilities;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using Xunit;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -26,7 +19,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
     public class ToolRestoreCommandWithMultipleNugetConfigTests
     {
         private readonly IFileSystem _fileSystem;
-        private ToolPackageInstallerMock _toolPackageInstallerMock;
+        private ToolPackageDownloaderMock _toolPackageDownloaderMock;
         private readonly ParseResult _parseResult;
         private readonly BufferedReporter _reporter;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
@@ -76,44 +69,42 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _nugetConfigUnderSubDir = Path.Combine(subDir, "nuget.config");
             _fileSystem.File.CreateEmptyFile(_nugetConfigUnderSubDir);
 
-            _toolPackageInstallerMock = new ToolPackageInstallerMock(
-                _fileSystem,
+            _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
                 toolPackageStoreMock,
-                new ProjectRestorerMock(
-                    _fileSystem,
-                    _reporter,
-                    new List<MockFeed>
+                _fileSystem,
+                _reporter,
+                new List<MockFeed>
+                {
+                    new MockFeed
                     {
-                        new MockFeed
+                        Type = MockFeedType.FeedFromLookUpNugetConfig,
+                        Uri = _nugetConfigUnderTestRoot,
+                        Packages = new List<MockFeedPackage>
                         {
-                            Type = MockFeedType.FeedFromLookUpNugetConfig,
-                            Uri = _nugetConfigUnderTestRoot,
-                            Packages = new List<MockFeedPackage>
+                            new MockFeedPackage
                             {
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageIdA.ToString(),
-                                    Version = _packageVersionA.ToNormalizedString(),
-                                    ToolCommandName = _toolCommandNameA.ToString()
-                                },
-                            }
-                        },
-
-                        new MockFeed
-                        {
-                            Type = MockFeedType.FeedFromLookUpNugetConfig,
-                            Uri = _nugetConfigUnderSubDir,
-                            Packages = new List<MockFeedPackage>
-                            {
-                                new MockFeedPackage
-                                {
-                                    PackageId = _packageIdB.ToString(),
-                                    Version = _packageVersionB.ToNormalizedString(),
-                                    ToolCommandName = _toolCommandNameB.ToString()
-                                },
-                            }
+                                PackageId = _packageIdA.ToString(),
+                                Version = _packageVersionA.ToNormalizedString(),
+                                ToolCommandName = _toolCommandNameA.ToString()
+                            },
                         }
-                    }));
+                    },
+
+                    new MockFeed
+                    {
+                        Type = MockFeedType.FeedFromLookUpNugetConfig,
+                        Uri = _nugetConfigUnderSubDir,
+                        Packages = new List<MockFeedPackage>
+                        {
+                            new MockFeedPackage
+                            {
+                                PackageId = _packageIdB.ToString(),
+                                Version = _packageVersionB.ToNormalizedString(),
+                                ToolCommandName = _toolCommandNameB.ToString()
+                            },
+                        }
+                    }
+                });
         }
 
         [Fact]
@@ -131,7 +122,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
-                _toolPackageInstallerMock,
+                _toolPackageDownloaderMock,
                 manifestFinder,
                 _localToolsResolverCache,
                 _fileSystem,
@@ -177,7 +168,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 return _toReturn;
             }
 
-            public FilePath FindFirst()
+            public FilePath FindFirst(bool createManifestFileOption = false)
             {
                 throw new NotImplementedException();
             }
@@ -189,3 +180,4 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
     }
 }
+

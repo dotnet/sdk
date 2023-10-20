@@ -1,17 +1,9 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.Linq;
 using System.Text.Json;
-using System.Xml.Linq;
-using FluentAssertions;
-using Microsoft.AspNetCore.Razor.Tasks;
-using Microsoft.NET.TestFramework.Assertions;
-using Microsoft.NET.TestFramework.Commands;
-using Xunit;
-using Xunit.Abstractions;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.NET.Sdk.WebAssembly;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
@@ -19,7 +11,16 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public WasmBuildIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
 
-        [Fact]
+        private static string customIcuFilename = "icudt_custom.dat";
+        private static string fullIcuFilename = "icudt.dat";
+        private static string hybridIcuFilename = "icudt_hybrid.dat";
+        private static string[] icuShardFilenames = new string[] {
+            "icudt_EFIGS.dat",
+            "icudt_CJK.dat",
+            "icudt_no_CJK.dat"
+        };
+
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void BuildMinimal_Works()
         {
             // Arrange
@@ -37,13 +38,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.timezones.blat")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm-minimal.dll")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm.gz")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm-minimal.wasm")).Should().Exist();
         }
 
-        [Theory]
+        [RequiresMSBuildVersionTheory("17.8.1.47607")]
         [InlineData("blazor")]
         [InlineData("blazor spaces")]
         public void Build_Works(string identifier)
@@ -60,20 +60,20 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.dll.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.dll.gz")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm.gz")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm.gz")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm.gz")).Should().Exist();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.pdb")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.dll")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_Works_WithLibraryUsingHintPath()
         {
             // Arrange
@@ -86,45 +86,45 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     var reference = document
                         .Descendants()
-                        .Single(e => 
-                            e.Name == "ProjectReference" && 
+                        .Single(e =>
+                            e.Name == "ProjectReference" &&
                             e.Attribute("Include").Value == @"..\razorclasslibrary\RazorClassLibrary.csproj");
 
                     reference.Name = "Reference";
                     reference.Add(new XElement(
                         "HintPath",
-                        Path.Combine("..", "razorclasslibrary", "bin", "Debug", DefaultTfm, "RazorClassLibrary.dll")));
+                        Path.Combine("..", "razorclasslibrary", "bin", "Debug", ToolsetInfo.CurrentTargetFramework, "RazorClassLibrary.dll")));
                 }
             });
 
             var buildLibraryCommand = new BuildCommand(testInstance, "razorclasslibrary");
             buildLibraryCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildLibraryCommand.Execute("/bl")
+            buildLibraryCommand.Execute()
                 .Should().Pass();
 
             var buildCommand = new BuildCommand(testInstance, "blazorwasm");
             buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute("/bl")
+            buildCommand.Execute()
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.dll.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.dll.gz")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm.gz")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm.gz")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm.gz")).Should().Exist();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.pdb")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.dll")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_InRelease_Works()
         {
             // Arrange
@@ -139,20 +139,20 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.dll.gz")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.dll")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.dll.gz")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm.gz")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.Text.Json.wasm.gz")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "System.wasm.gz")).Should().Exist();
 
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.pdb")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.pdb")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.dll")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange
@@ -165,7 +165,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var buildCommand = new BuildCommand(testInstance, "blazorwasm");
             buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute("/bl")
+            buildCommand.Execute()
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -173,13 +173,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.wasm");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
 
             var assemblies = bootJsonData.resources.assembly;
-            assemblies.Should().ContainKey("blazorwasm.dll");
-            assemblies.Should().ContainKey("RazorClassLibrary.dll");
-            assemblies.Should().ContainKey("System.Text.Json.dll");
+            assemblies.Should().ContainKey("blazorwasm.wasm");
+            assemblies.Should().ContainKey("RazorClassLibrary.wasm");
+            assemblies.Should().ContainKey("System.Text.Json.wasm");
 
             var pdb = bootJsonData.resources.pdb;
             pdb.Should().ContainKey("blazorwasm.pdb");
@@ -187,11 +186,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             bootJsonData.resources.satelliteResources.Should().BeNull();
 
-            bootJsonData.config.Should().Contain("appsettings.json");
-            bootJsonData.config.Should().Contain("appsettings.development.json");
+            bootJsonData.config.Should().Contain("../appsettings.json");
+            bootJsonData.config.Should().Contain("../appsettings.development.json");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_InRelease_ProducesBootJsonDataWithExpectedContent()
         {
             // Arrange
@@ -204,7 +203,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var buildCommand = new BuildCommand(testInstance, "blazorwasm");
             buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute("/p:Configuration=Release", "/bl")
+            buildCommand.Execute("/p:Configuration=Release")
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm, "Release").ToString();
@@ -212,13 +211,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.wasm");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
 
             var assemblies = bootJsonData.resources.assembly;
-            assemblies.Should().ContainKey("blazorwasm.dll");
-            assemblies.Should().ContainKey("RazorClassLibrary.dll");
-            assemblies.Should().ContainKey("System.Text.Json.dll");
+            assemblies.Should().ContainKey("blazorwasm.wasm");
+            assemblies.Should().ContainKey("RazorClassLibrary.wasm");
+            assemblies.Should().ContainKey("System.Text.Json.wasm");
 
             var pdb = bootJsonData.resources.pdb;
             pdb.Should().ContainKey("blazorwasm.pdb");
@@ -227,7 +225,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.resources.satelliteResources.Should().BeNull();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithBlazorEnableTimeZoneSupportDisabled_DoesNotCopyTimeZoneInfo()
         {
             // Arrange
@@ -252,15 +250,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.wasm");
-            runtime.Should().NotContainKey("dotnet.timezones.blat");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.runtime.Should().BeNull();
 
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.timezones.blat")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
         {
             // Arrange
@@ -284,22 +281,20 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.Invariant);
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.wasm");
-            runtime.Should().ContainKey("dotnet.timezones.blat");
+            bootJsonData.globalizationMode.Should().Be("invariant");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
 
-            runtime.Should().NotContainKey("icudt.dat");
-            runtime.Should().NotContainKey("icudt_EFIGS.dat");
+            bootJsonData.resources.icu.Should().BeNull();
 
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_CJK.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Publish_WithInvariantGlobalizationEnabled_DoesNotCopyGlobalizationData()
         {
             // Arrange
@@ -316,7 +311,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var publishCommand = new PublishCommand(testInstance, "blazorhosted");
             publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/bl")
+            publishCommand.Execute()
                 .Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -324,22 +319,106 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.Invariant);
-            var runtime = bootJsonData.resources.runtime;
-            runtime.Should().ContainKey("dotnet.wasm");
-            runtime.Should().ContainKey("dotnet.timezones.blat");
+            bootJsonData.globalizationMode.Should().Be("invariant");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
 
-            runtime.Should().NotContainKey("icudt.dat");
-            runtime.Should().NotContainKey("icudt_EFIGS.dat");
+            bootJsonData.resources.icu.Should().BeNull();
 
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt_CJK.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat")).Should().NotExist();
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        public void Build_WithBlazorWebAssemblyLoadCustomGlobalizationData_SetsGlobalizationMode()
+        {
+            // Arrange
+            var testAppName = "BlazorWasmMinimal";
+            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+
+            testInstance.WithProjectChanges((project) =>
+            {
+                var ns = project.Root.Name.Namespace;
+                var itemGroup = new XElement(ns + "PropertyGroup");
+                itemGroup.Add(new XElement("BlazorIcuDataFileName", customIcuFilename));
+                project.Root.Add(itemGroup);
+            });
+
+            var buildCommand = new BuildCommand(testInstance);
+            buildCommand.Execute()
+                .Should().Pass();
+
+            var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
+
+            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonData = ReadBootJsonData(bootJsonPath);
+
+            bootJsonData.globalizationMode.Should().Be("custom");
+
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.icu.Should().ContainKey(customIcuFilename);
+            bootJsonData.resources.icu.Should().NotContainKey(fullIcuFilename);
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
+            }
+
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", customIcuFilename)).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
+        }
+
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        public void Publish_WithBlazorWebAssemblyLoadCustomGlobalizationData_SetsGlobalizationMode()
+        {
+            var testAppName = "BlazorHosted";
+            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+
+            testInstance.WithProjectChanges((project) =>
+            {
+                var ns = project.Root.Name.Namespace;
+                var itemGroup = new XElement(ns + "PropertyGroup");
+                itemGroup.Add(new XElement("BlazorIcuDataFileName", customIcuFilename));
+                project.Root.Add(itemGroup);
+            });
+
+            var publishCommand = new PublishCommand(testInstance, "blazorhosted");
+            publishCommand.WithWorkingDirectory(testInstance.TestRoot);
+            publishCommand.Execute()
+                .Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
+
+            var bootJsonPath = Path.Combine(publishDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonData = ReadBootJsonData(bootJsonPath);
+
+            bootJsonData.globalizationMode.Should().Be("custom");
+
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.icu.Should().ContainKey(customIcuFilename);
+            bootJsonData.resources.icu.Should().NotContainKey(fullIcuFilename);
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
+            }
+
+            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", customIcuFilename)).Should().Exist();
+            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
+        }
+
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithBlazorWebAssemblyLoadAllGlobalizationData_SetsICUDataMode()
         {
             // Arrange
@@ -363,23 +442,27 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.All);
-            var runtime = bootJsonData.resources.runtime;
+            bootJsonData.globalizationMode.Should().Be("all");
 
-            runtime.Should().ContainKey("dotnet.wasm");
-            runtime.Should().ContainKey("dotnet.timezones.blat");
-            runtime.Should().ContainKey("icudt.dat");
-            runtime.Should().ContainKey("icudt_EFIGS.dat");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.icu.Should().ContainKey(fullIcuFilename);
+            bootJsonData.resources.icu.Should().NotContainKey(hybridIcuFilename);
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
+            }
 
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt.dat")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_CJK.dat")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat")).Should().Exist();
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", hybridIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
         }
 
-        [Fact]
-        public void Publish_WithBlazorWebAssemblyLoadAllGlobalizationData_SetsICUDataMode()
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        public void Publish_WithBlazorWebAssemblyLoadAllGlobalizationData_SetsGlobalizationMode()
         {
             // Arrange
             var testAppName = "BlazorHosted";
@@ -395,7 +478,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var publishCommand = new PublishCommand(testInstance, "blazorhosted");
             publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute("/bl")
+            publishCommand.Execute()
                 .Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -403,22 +486,26 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootJsonPath = Path.Combine(publishDirectory, "wwwroot", "_framework", "blazor.boot.json");
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
-            bootJsonData.icuDataMode.Should().Be(ICUDataMode.All);
-            var runtime = bootJsonData.resources.runtime;
+            bootJsonData.globalizationMode.Should().Be("all");
 
-            runtime.Should().ContainKey("dotnet.wasm");
-            runtime.Should().ContainKey("dotnet.timezones.blat");
-            runtime.Should().ContainKey("icudt.dat");
-            runtime.Should().ContainKey("icudt_EFIGS.dat");
+            bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
+            bootJsonData.resources.icu.Should().ContainKey(fullIcuFilename);
+            bootJsonData.resources.icu.Should().NotContainKey(hybridIcuFilename);
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                bootJsonData.resources.icu.Should().NotContainKey(shardFilename);
+            }
 
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "dotnet.wasm")).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt.dat")).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt_CJK.dat")).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt_EFIGS.dat")).Should().Exist();
-            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "icudt_no_CJK.dat")).Should().Exist();
+            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", fullIcuFilename)).Should().Exist();
+            new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", hybridIcuFilename)).Should().NotExist();
+            foreach (var shardFilename in icuShardFilenames)
+            {
+                new FileInfo(Path.Combine(publishDirectory, "wwwroot", "_framework", shardFilename)).Should().NotExist();
+            }
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_Hosted_Works()
         {
             // Arrange
@@ -427,14 +514,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var buildCommand = new BuildCommand(testInstance, "blazorhosted");
             buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute("/bl").Should().Pass();
+            buildCommand.Execute().Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
 
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "_bin", "blazorwasm.dll")).Should().NotExist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "_bin", "blazorwasm.wasm")).Should().NotExist();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_SatelliteAssembliesAreCopiedToBuildOutput()
         {
             // Arrange
@@ -460,7 +547,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var buildCommand = new BuildCommand(ProjectDirectory, "blazorwasm");
             buildCommand.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            buildCommand.Execute("/bl").Should().Pass();
+            buildCommand.Execute().Should().Pass();
 
             var outputPath = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
             var intermediateOutputPath = buildCommand.GetIntermediateDirectory(DefaultTfm).ToString();
@@ -481,17 +568,18 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
 
 
-            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "blazorwasm.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "Microsoft.CodeAnalysis.CSharp.dll")).Should().Exist();
-            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "fr", "Microsoft.CodeAnalysis.CSharp.resources.dll")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "Microsoft.CodeAnalysis.CSharp.wasm")).Should().Exist();
+            new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "fr", "Microsoft.CodeAnalysis.CSharp.resources.wasm")).Should().Exist();
 
             var bootJsonPath = new FileInfo(Path.Combine(outputPath, "wwwroot", "_framework", "blazor.boot.json"));
-            bootJsonPath.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.dll\"");
-            bootJsonPath.Should().Contain("\"fr\\/Microsoft.CodeAnalysis.CSharp.resources.dll\"");
+            bootJsonPath.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.wasm\"");
+            bootJsonPath.Should().Contain("\"fr\"");
+            bootJsonPath.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithCustomOutputPath_Works()
         {
             var testAppName = "BlazorWasmWithLibrary";
@@ -513,7 +601,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             buildCommand.Execute().Should().Pass();
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithTransitiveReference_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.
@@ -533,7 +621,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     var ns = project.Root.Name.Namespace;
                     // <ItemGroup>
-                    //  <Reference Include="classlibrarywithsatelliteassemblies" HintPath="$Path\classlibrarywithsatelliteassemblies.dll" />
+                    //  <Reference Include="classlibrarywithsatelliteassemblies" HintPath="$Path\classlibrarywithsatelliteassemblies.wasm" />
                     // </ItemGroup>
                     var itemGroup = new XElement(ns + "ItemGroup",
                         new XElement(ns + "Reference",
@@ -544,7 +632,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 }
             });
 
-            // Ensure a compile time reference exists between the project and the assembly added as a reference. This is required for 
+            // Ensure a compile time reference exists between the project and the assembly added as a reference. This is required for
             // the assembly to be resolved by the "app" as part of RAR
             File.WriteAllText(Path.Combine(testInstance.Path, "razorclasslibrary", "TestReference.cs"),
 @"
@@ -558,15 +646,11 @@ public class TestReference
 
             // Assert
             var outputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
-            var fileInWwwroot = new FileInfo(Path.Combine(outputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.dll"));
+            var fileInWwwroot = new FileInfo(Path.Combine(outputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm"));
             fileInWwwroot.Should().Exist();
-
-            // Make sure it's a the correct copy.
-            fileInWwwroot.Length.Should().Be(referenceAssemblyPath.Length);
-            Assert.Equal(File.ReadAllBytes(referenceAssemblyPath.FullName), File.ReadAllBytes(fileInWwwroot.FullName));
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
         public void Build_WithReference_Works()
         {
             // Regression test for https://github.com/dotnet/aspnetcore/issues/37574.
@@ -586,7 +670,7 @@ public class TestReference
                 {
                     var ns = project.Root.Name.Namespace;
                     // <ItemGroup>
-                    //  <Reference Include="classlibrarywithsatelliteassemblies" HintPath="$Path\classlibrarywithsatelliteassemblies.dll" />
+                    //  <Reference Include="classlibrarywithsatelliteassemblies" HintPath="$Path\classlibrarywithsatelliteassemblies.wasm" />
                     // </ItemGroup>
                     var itemGroup = new XElement(ns + "ItemGroup",
                         new XElement(ns + "Reference",
@@ -597,7 +681,7 @@ public class TestReference
                 }
             });
 
-            // Ensure a compile time reference exists between the project and the assembly added as a reference. This is required for 
+            // Ensure a compile time reference exists between the project and the assembly added as a reference. This is required for
             // the assembly to be resolved by the "app" as part of RAR
             File.WriteAllText(Path.Combine(testInstance.Path, "blazorwasm", "TestReference.cs"),
 @"
@@ -611,12 +695,76 @@ public class TestReference
 
             // Assert
             var outputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
-            var fileInWwwroot = new FileInfo(Path.Combine(outputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.dll"));
+            var fileInWwwroot = new FileInfo(Path.Combine(outputDirectory, "wwwroot", "_framework", "classlibrarywithsatelliteassemblies.wasm"));
             fileInWwwroot.Should().Exist();
+        }
 
-            // Make sure it's a the correct copy.
-            fileInWwwroot.Length.Should().Be(referenceAssemblyPath.Length);
-            Assert.Equal(File.ReadAllBytes(referenceAssemblyPath.FullName), File.ReadAllBytes(fileInWwwroot.FullName));
+        [RequiresMSBuildVersionTheory("17.8.1.47607")]
+        [InlineData(true)]
+        [InlineData(false)]
+        [InlineData(null)]
+        public void Build_WithStartupMemoryCache(bool? value)
+            => BuildWasmMinimalAndValidateBootConfig(new[] { ("BlazorWebAssemblyStartupMemoryCache", value?.ToString()) }, b => b.startupMemoryCache.Should().Be(value));
+
+        [RequiresMSBuildVersionTheory("17.8.1.47607")]
+        [InlineData(true)]
+        [InlineData(false)]
+        [InlineData(null)]
+        public void Build_WithJiterpreter(bool? value)
+            => BuildWasmMinimalAndValidateBootConfig(new[] { ("BlazorWebAssemblyJiterpreter", value?.ToString()) }, b =>
+            {
+                if (value != null)
+                {
+                    b.runtimeOptions.Should().NotBeNull();
+                    b.runtimeOptions.Length.Should().Be(3);
+                }
+                else
+                {
+                    b.runtimeOptions.Should().BeNull();
+                }
+            });
+
+        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        public void Build_WithJiterpreter_Advanced()
+            => BuildWasmMinimalAndValidateBootConfig(new[] { ("BlazorWebAssemblyJiterpreter", "true"), ("BlazorWebAssemblyRuntimeOptions", "--no-jiterpreter-interp-entry-enabled") }, b =>
+            {
+                b.runtimeOptions.Should().NotBeNull();
+                b.runtimeOptions.Length.Should().Be(3);
+                b.runtimeOptions.Should().Contain("--no-jiterpreter-interp-entry-enabled");
+                b.runtimeOptions.Should().NotContain("--jiterpreter-interp-entry-enabled");
+                b.runtimeOptions.Should().Contain("--jiterpreter-traces-enabled");
+                b.runtimeOptions.Should().Contain("--jiterpreter-jit-call-enabled");
+            });
+
+        private void BuildWasmMinimalAndValidateBootConfig((string name, string value)[] properties, Action<BootJsonData> validateBootConfig)
+        {
+            var testAppName = "BlazorWasmMinimal";
+            var testInstance = CreateAspNetSdkTestAsset(testAppName, identifier: String.Join("-", properties.Select(p => p.name + p.value ?? "null")));
+
+            foreach (var property in properties)
+            {
+                if (property.value != null)
+                {
+                    testInstance.WithProjectChanges((project) =>
+                    {
+                        var ns = project.Root.Name.Namespace;
+                        var itemGroup = new XElement(ns + "PropertyGroup");
+                        itemGroup.Add(new XElement(property.name, property.value));
+                        project.Root.Add(itemGroup);
+                    });
+                }
+            }
+
+            var buildCommand = new BuildCommand(testInstance);
+            buildCommand.Execute()
+                .Should().Pass();
+
+            var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
+
+            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonData = ReadBootJsonData(bootJsonPath);
+
+            validateBootConfig(bootJsonData);
         }
 
         private static BootJsonData ReadBootJsonData(string path)

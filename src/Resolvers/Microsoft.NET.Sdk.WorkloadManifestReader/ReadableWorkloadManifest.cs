@@ -1,13 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -21,17 +13,20 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public string ManifestFeatureBand { get; }
 
+        public string ManifestVersion { get; }
+
         readonly Func<Stream> _openManifestStreamFunc;
 
 
         readonly Func<Stream?> _openLocalizationStream;
 
-        public ReadableWorkloadManifest(string manifestId, string manifestDirectory, string manifestPath, string manifestFeatureBand, Func<Stream> openManifestStreamFunc, Func<Stream?> openLocalizationStream)
+        public ReadableWorkloadManifest(string manifestId, string manifestDirectory, string manifestPath, string manifestFeatureBand, string manifestVersion, Func<Stream> openManifestStreamFunc, Func<Stream?> openLocalizationStream)
         {
             ManifestId = manifestId;
             ManifestPath = manifestPath;
             ManifestDirectory = manifestDirectory;
             ManifestFeatureBand = manifestFeatureBand;
+            ManifestVersion = manifestVersion;
             _openManifestStreamFunc = openManifestStreamFunc;
             _openLocalizationStream = openLocalizationStream;
         }

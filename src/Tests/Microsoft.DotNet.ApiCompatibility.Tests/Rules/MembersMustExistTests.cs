@@ -1,12 +1,9 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.ApiCompatibility.Abstractions;
 using Microsoft.DotNet.ApiCompatibility.Tests;
-using Xunit;
+using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 {
@@ -385,7 +382,7 @@ namespace CompatTests
 "};
             ApiComparer differ = new(s_ruleFactory);
             ElementContainer<IAssemblySymbol> left = new(SymbolFactory.GetAssemblyFromSyntax(leftSyntax), new MetadataInformation(string.Empty, "ref"));
-            IReadOnlyList<ElementContainer<IAssemblySymbol>> right = SymbolFactory.GetElementContainersFromSyntaxes(rightSyntaxes);
+            IReadOnlyList<ElementContainer<IAssemblySymbol>> right = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(rightSyntaxes);
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
@@ -426,7 +423,7 @@ namespace CompatTests
             ElementContainer<IAssemblySymbol> left = new(SymbolFactory.GetAssemblyFromSyntax(leftSyntax),
                 new MetadataInformation(string.Empty, "ref"));
             string[] rightSyntaxes = new[] { leftSyntax, leftSyntax, leftSyntax, leftSyntax };
-            IReadOnlyList<ElementContainer<IAssemblySymbol>> right = SymbolFactory.GetElementContainersFromSyntaxes(rightSyntaxes);
+            IReadOnlyList<ElementContainer<IAssemblySymbol>> right = SymbolFactoryExtensions.GetElementContainersFromSyntaxes(rightSyntaxes);
             ApiComparer differ = new(s_ruleFactory);
 
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
@@ -499,6 +496,91 @@ namespace CompatTests
             IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
 
             Assert.Empty(differences);
+        }
+
+        [Fact]
+        public void ThisExtensionMethodModifierRemovalFlagged()
+        {
+            string leftSyntax = @"
+namespace CompatTests
+{
+  public static class First
+  {
+    public static void F(this string s) {}
+  }
+}
+";
+            string rightSyntax = @"
+namespace CompatTests
+{
+  public static class First
+  {
+    public static void F(string s) {}
+  }
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+
+            Assert.Equal(new[]
+            {
+                // The call to GetDocumentationCommentId doesn't return a string that includes the "this" keyword.
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.F(System.String)")
+            }, differences);
+        }
+
+        [Fact]
+        public void MemberTypesChangeFlagged()
+        {
+            string leftSyntax = @"
+using System;
+
+namespace CompatTests
+{
+  public class First
+  {
+    public string S;
+    public bool Prop { get; set; }
+    public string M() => null;
+    public delegate void SampleEventHandler(object sender, EventArgs e);
+    public event SampleEventHandler E;
+  }
+}
+";
+            string rightSyntax = @"
+using System;
+
+namespace CompatTests
+{
+  public class First
+  {
+    public delegate void SampleEventHandler(object sender, EventArgs e);
+
+    public int S;
+    public string Prop { get; set; }
+    public bool M() => false;
+    public delegate void SampleEventHandler1(object sender, EventArgs e);
+    public event SampleEventHandler1 E;
+  }
+}
+";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
+            ApiComparer differ = new(s_ruleFactory);
+
+            IEnumerable<CompatDifference> differences = differ.GetDifferences(left, right);
+
+            Assert.Equal(new[]
+            {
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "F:CompatTests.First.S"),
+                // CompatTests.First.Prop.set isn't reported as the return types match: 'void'.
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.get_Prop"),
+                CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.MemberMustExist, string.Empty, DifferenceType.Removed, "M:CompatTests.First.M")
+                // CompatTests.First.E_add and CompatTests.First.E_remove aren't reported as the symbol's DisplayString doesn't include the parameter type.
+            }, differences);
         }
     }
 }

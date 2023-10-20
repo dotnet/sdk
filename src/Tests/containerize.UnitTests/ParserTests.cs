@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.NET.Build.Containers;
-using Xunit;
 
 namespace containerize.UnitTests;
 
@@ -18,19 +16,19 @@ public class ParserTests
         List<string> baseArgs = new()
         {
             publishDir.FullName,
-            command.BaseRegistryOption.Aliases.First(),
+            command.BaseRegistryOption.Name,
             "MyBaseRegistry",
-            command.BaseImageNameOption.Aliases.First(),
+            command.BaseImageNameOption.Name,
             "MyBaseImageName",
-            command.RepositoryOption.Aliases.First(),
+            command.RepositoryOption.Name,
             "MyImageName",
-            command.WorkingDirectoryOption.Aliases.First(),
+            command.WorkingDirectoryOption.Name,
             "MyWorkingDirectory",
-            command.EntrypointOption.Aliases.First(),
+            command.EntrypointOption.Name,
             "MyEntryPoint"
         };
 
-        baseArgs.Add(command.LabelsOption.Aliases.First());
+        baseArgs.Add(command.LabelsOption.Name);
         baseArgs.Add("NoValue=");
         baseArgs.Add("Valid2=Val2");
         baseArgs.Add("Valid3=Val 3");
@@ -41,7 +39,7 @@ public class ParserTests
 
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
 
-        Dictionary<string, string>? labels = parseResult.GetValueForOption(command.LabelsOption);
+        Dictionary<string, string>? labels = parseResult.GetValue(command.LabelsOption);
 
         Assert.NotNull(labels);
         Assert.Equal(6, labels.Count);
@@ -61,25 +59,25 @@ public class ParserTests
         List<string> baseArgs = new()
         {
             publishDir.FullName,
-            command.BaseRegistryOption.Aliases.First(),
+            command.BaseRegistryOption.Name,
             "MyBaseRegistry",
-            command.BaseImageNameOption.Aliases.First(),
+            command.BaseImageNameOption.Name,
             "MyBaseImageName",
-            command.RepositoryOption.Aliases.First(),
+            command.RepositoryOption.Name,
             "MyImageName",
-            command.WorkingDirectoryOption.Aliases.First(),
+            command.WorkingDirectoryOption.Name,
             "MyWorkingDirectory",
-            command.EntrypointOption.Aliases.First(),
+            command.EntrypointOption.Name,
             "MyEntryPoint"
         };
 
-        baseArgs.Add(command.LabelsOption.Aliases.First());
+        baseArgs.Add(command.LabelsOption.Name);
         baseArgs.Add("NoValue=");
         baseArgs.Add("Valid2=Val2");
 
         ParseResult parseResult = command.Parse(string.Join(" ", baseArgs));
 
-        Dictionary<string, string>? labels = parseResult.GetValueForOption(command.LabelsOption);
+        Dictionary<string, string>? labels = parseResult.GetValue(command.LabelsOption);
 
         Assert.NotNull(labels);
         Assert.Equal(2, labels.Count);
@@ -97,19 +95,19 @@ public class ParserTests
         List<string> baseArgs = new()
         {
             publishDir.FullName,
-            command.BaseRegistryOption.Aliases.First(),
+            command.BaseRegistryOption.Name,
             "MyBaseRegistry",
-            command.BaseImageNameOption.Aliases.First(),
+            command.BaseImageNameOption.Name,
             "MyBaseImageName",
-            command.RepositoryOption.Aliases.First(),
+            command.RepositoryOption.Name,
             "MyImageName",
-            command.WorkingDirectoryOption.Aliases.First(),
+            command.WorkingDirectoryOption.Name,
             "MyWorkingDirectory",
-            command.EntrypointOption.Aliases.First(),
+            command.EntrypointOption.Name,
             "MyEntryPoint"
         };
 
-        baseArgs.Add(command.LabelsOption.Aliases.First());
+        baseArgs.Add(command.LabelsOption.Name);
         foreach (var label in labelStr)
         {
             baseArgs.Add(label);
@@ -129,19 +127,19 @@ public class ParserTests
         List<string> baseArgs = new()
         {
             publishDir.FullName,
-            command.BaseRegistryOption.Aliases.First(),
+            command.BaseRegistryOption.Name,
             "MyBaseRegistry",
-            command.BaseImageNameOption.Aliases.First(),
+            command.BaseImageNameOption.Name,
             "MyBaseImageName",
-            command.RepositoryOption.Aliases.First(),
+            command.RepositoryOption.Name,
             "MyImageName",
-            command.WorkingDirectoryOption.Aliases.First(),
+            command.WorkingDirectoryOption.Name,
             "MyWorkingDirectory",
-            command.EntrypointOption.Aliases.First(),
+            command.EntrypointOption.Name,
             "MyEntryPoint"
         };
 
-        baseArgs.Add(command.EnvVarsOption.Aliases.First());
+        baseArgs.Add(command.EnvVarsOption.Name);
         baseArgs.Add("NoValue=");
         baseArgs.Add("Valid2=Val2");
         baseArgs.Add("Valid3=Val 3");
@@ -153,7 +151,7 @@ public class ParserTests
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
         Assert.Empty(parseResult.Errors);
 
-        Dictionary<string, string>? envVars = parseResult.GetValueForOption(command.EnvVarsOption);
+        Dictionary<string, string>? envVars = parseResult.GetValue(command.EnvVarsOption);
 
         Assert.NotNull(envVars);
         Assert.Equal(6, envVars.Count);
@@ -173,19 +171,19 @@ public class ParserTests
         List<string> baseArgs = new()
         {
             publishDir.FullName,
-            command.BaseRegistryOption.Aliases.First(),
+            command.BaseRegistryOption.Name,
             "MyBaseRegistry",
-            command.BaseImageNameOption.Aliases.First(),
+            command.BaseImageNameOption.Name,
             "MyBaseImageName",
-            command.RepositoryOption.Aliases.First(),
+            command.RepositoryOption.Name,
             "MyImageName",
-            command.WorkingDirectoryOption.Aliases.First(),
+            command.WorkingDirectoryOption.Name,
             "MyWorkingDirectory",
-            command.EntrypointOption.Aliases.First(),
+            command.EntrypointOption.Name,
             "MyEntryPoint"
         };
 
-        baseArgs.Add(command.PortsOption.Aliases.First());
+        baseArgs.Add(command.PortsOption.Name);
         baseArgs.Add("1500");
         baseArgs.Add("1501/udp");
         baseArgs.Add("1501/tcp");
@@ -195,7 +193,7 @@ public class ParserTests
         ParseResult parseResult = command.Parse(baseArgs.ToArray());
         Assert.Empty(parseResult.Errors);
 
-        Port[]? ports = parseResult.GetValueForOption(command.PortsOption);
+        Port[]? ports = parseResult.GetValue(command.PortsOption);
 
         Assert.NotNull(ports);
         Assert.Equal(4, ports.Length);
@@ -218,19 +216,19 @@ public class ParserTests
         List<string> baseArgs = new()
         {
             publishDir.FullName,
-            command.BaseRegistryOption.Aliases.First(),
+            command.BaseRegistryOption.Name,
             "MyBaseRegistry",
-            command.BaseImageNameOption.Aliases.First(),
+            command.BaseImageNameOption.Name,
             "MyBaseImageName",
-            command.RepositoryOption.Aliases.First(),
+            command.RepositoryOption.Name,
             "MyImageName",
-            command.WorkingDirectoryOption.Aliases.First(),
+            command.WorkingDirectoryOption.Name,
             "MyWorkingDirectory",
-            command.EntrypointOption.Aliases.First(),
+            command.EntrypointOption.Name,
             "MyEntryPoint"
         };
 
-        baseArgs.Add(command.PortsOption.Aliases.First());
+        baseArgs.Add(command.PortsOption.Name);
         baseArgs.Add(portStr);
 
         ParseResult parseResult = command.Parse(baseArgs.ToArray());

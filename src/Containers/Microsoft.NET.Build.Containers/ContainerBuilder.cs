@@ -15,7 +15,11 @@ public static class ContainerBuilder
         string baseImageName,
         string baseImageTag,
         string[] entrypoint,
-        string[]? entrypointArgs,
+        string[] entrypointArgs,
+        string[] defaultArgs,
+        string[] appCommand,
+        string[] appCommandArgs,
+        string appCommandInstruction,
         string imageName,
         string[] imageTags,
         string? outputRegistry,
@@ -24,8 +28,9 @@ public static class ContainerBuilder
         Dictionary<string, string> envVars,
         string containerRuntimeIdentifier,
         string ridGraphPath,
-        string localContainerDaemon,
+        string localRegistry,
         string? containerUser,
+        string? archiveOutputPath,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -37,23 +42,45 @@ public static class ContainerBuilder
         ILogger logger = loggerFactory.CreateLogger("Containerize");
         logger.LogTrace("Trace logging: enabled.");
 
-        bool isDaemonPull = string.IsNullOrEmpty(baseRegistry);
-        Registry? sourceRegistry = isDaemonPull ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(baseRegistry), logger);
-        ImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag);
+        bool isLocalPull = string.IsNullOrEmpty(baseRegistry);
+        Registry? sourceRegistry = isLocalPull ? null : new Registry(baseRegistry, logger);
+        SourceImageReference sourceImageReference = new(sourceRegistry, baseImageName, baseImageTag);
 
-        bool isDaemonPush = string.IsNullOrEmpty(outputRegistry);
-        Registry? destinationRegistry = isDaemonPush ? null : new Registry(ContainerHelpers.TryExpandRegistryToUri(outputRegistry!), logger);
-        IEnumerable<ImageReference> destinationImageReferences = imageTags.Select(t => new ImageReference(destinationRegistry, imageName, t));
+        DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
+            imageName,
+            imageTags,
+            loggerFactory,
+            archiveOutputPath,
+            outputRegistry,
+            localRegistry);
 
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
         {
-            imageBuilder = await registry.GetImageManifestAsync(
-                baseImageName,
-                baseImageTag,
-                containerRuntimeIdentifier,
-                ridGraphPath,
-                cancellationToken).ConfigureAwait(false);
+            try
+            {
+                imageBuilder = await registry.GetImageManifestAsync(
+                    baseImageName,
+                    baseImageTag,
+                    containerRuntimeIdentifier,
+                    ridGraphPath,
+                    cancellationToken).ConfigureAwait(false);
+            }
+            catch (RepositoryNotFoundException)
+            {
+                logger.LogError(Resource.FormatString(nameof(Strings.RepositoryNotFound), baseImageName, baseImageTag, registry.RegistryName));
+                return 1;
+            }
+            catch (UnableToAccessRepositoryException)
+            {
+                logger.LogError(Resource.FormatString(nameof(Strings.UnableToAccessRepository), baseImageName, registry.RegistryName));
+                return 1;
+            }
+            catch (ContainerHttpException e)
+            {
+                logger.LogError(e.Message);
+                return 1;
+            }
         }
         else
         {
@@ -61,7 +88,7 @@ public static class ContainerBuilder
         }
         if (imageBuilder is null)
         {
-            Console.WriteLine(Resource.GetString(nameof(Strings.BaseImageNotFound)), sourceImageReference.RepositoryAndTag, containerRuntimeIdentifier);
+            Console.WriteLine(Resource.GetString(nameof(Strings.BaseImageNotFound)), sourceImageReference, containerRuntimeIdentifier);
             return 1;
         }
         logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
@@ -70,7 +97,32 @@ public static class ContainerBuilder
         Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(workingDir);
-        imageBuilder.SetEntryPoint(entrypoint, entrypointArgs);
+
+        bool hasErrors = false;
+        (string[] imageEntrypoint, string[] imageCmd) = ImageBuilder.DetermineEntrypointAndCmd(entrypoint, entrypointArgs, defaultArgs, appCommand, appCommandArgs, appCommandInstruction,
+            baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint(),
+            logWarning: s =>
+            {
+                logger.LogWarning(Resource.GetString(nameof(s)));
+            },
+            logError: (s, a) =>
+            {
+                hasErrors = true;
+                if (a is null)
+                {
+                    logger.LogError(Resource.GetString(nameof(s)));
+                }
+                else
+                {
+                    logger.LogError(Resource.FormatString(nameof(s), a));
+                }
+            });
+        if (hasErrors)
+        {
+            return 1;
+        }
+        imageBuilder.SetEntrypointAndCmd(imageEntrypoint, imageCmd);
+
         foreach (KeyValuePair<string, string> label in labels)
         {
             // labels are validated by System.CommandLine API
@@ -85,66 +137,88 @@ public static class ContainerBuilder
             // ports are validated by System.CommandLine API
             imageBuilder.ExposePort(number, type);
         }
-        if (containerUser is { } user)
+        if (containerUser is { Length: > 0 } user)
         {
             imageBuilder.SetUser(user);
         }
         BuiltImage builtImage = imageBuilder.Build();
         cancellationToken.ThrowIfCancellationRequested();
 
-        foreach (ImageReference destinationImageReference in destinationImageReferences)
+        int exitCode;
+        switch (destinationImageReference.Kind)
         {
-            if (isDaemonPush)
-            {
-                LocalDocker localDaemon = GetLocalDaemon(localContainerDaemon, logger);
-                if (!(await localDaemon.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
-                {
-                    Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.LocalDaemonNotAvailable)));
-                    return 7;
-                }
-
-                try
-                {
-                    await localDaemon.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-                    logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference.RepositoryAndTag);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.RegistryOutputPushFailed), ex.Message));
-                    return 1;
-                }
-            }
-            else
-            {
-                try
-                {
-                    if (destinationImageReference.Registry is not null)
-                    {
-                        await (destinationImageReference.Registry.PushAsync(
-                            builtImage,
-                            sourceImageReference,
-                            destinationImageReference,
-                            cancellationToken)).ConfigureAwait(false);
-                        logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToRegistry, destinationImageReference.RepositoryAndTag, destinationImageReference.Registry.RegistryName);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(DiagnosticMessage.ErrorFromResourceWithCode(nameof(Strings.RegistryOutputPushFailed), e.Message));
-                    return 1;
-                }
-            }
+            case DestinationImageReferenceKind.LocalRegistry:
+                exitCode = await PushToLocalRegistryAsync(
+                    logger,
+                    builtImage,
+                    sourceImageReference,
+                    destinationImageReference,
+                    cancellationToken).ConfigureAwait(false);
+                break;
+            case DestinationImageReferenceKind.RemoteRegistry:
+                exitCode = await PushToRemoteRegistryAsync(
+                    logger,
+                    builtImage,
+                    sourceImageReference,
+                    destinationImageReference,
+                    cancellationToken).ConfigureAwait(false);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
+
+        return exitCode;
+    }
+
+    private static async Task<int> PushToLocalRegistryAsync(ILogger logger, BuiltImage builtImage, SourceImageReference sourceImageReference,
+        DestinationImageReference destinationImageReference,
+        CancellationToken cancellationToken)
+    {
+        ILocalRegistry containerRegistry = destinationImageReference.LocalRegistry!;
+        if (!(await containerRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
+        {
+            logger.LogError(Resource.FormatString(nameof(Strings.LocalRegistryNotAvailable)));
+            return 7;
+        }
+
+        try
+        {
+            await containerRegistry.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, containerRegistry);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(Resource.FormatString(nameof(Strings.RegistryOutputPushFailed), ex.Message));
+            return 1;
+        }
+
         return 0;
     }
 
-    private static LocalDocker GetLocalDaemon(string localDaemonType, ILogger logger)
+    private static async Task<int> PushToRemoteRegistryAsync(ILogger logger, BuiltImage builtImage, SourceImageReference sourceImageReference,
+        DestinationImageReference destinationImageReference,
+        CancellationToken cancellationToken)
     {
-        LocalDocker daemon = localDaemonType switch
+        try
         {
-            KnownDaemonTypes.Docker => new LocalDocker(logger),
-            _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnknownDaemonType), localDaemonType, String.Join(",", KnownDaemonTypes.SupportedLocalDaemonTypes)), nameof(localDaemonType))
-        };
-        return daemon;
+            await (destinationImageReference.RemoteRegistry!.PushAsync(
+                builtImage,
+                sourceImageReference,
+                destinationImageReference,
+                cancellationToken)).ConfigureAwait(false);
+            logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToRegistry, destinationImageReference, destinationImageReference.RemoteRegistry.RegistryName);
+        }
+        catch (UnableToAccessRepositoryException)
+        {
+            logger.LogError(Resource.FormatString(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName));
+            return 1;
+        }
+        catch (Exception e)
+        {
+            logger.LogError(Resource.FormatString(nameof(Strings.RegistryOutputPushFailed), e.Message));
+            return 1;
+        }
+
+        return 0;
     }
 }

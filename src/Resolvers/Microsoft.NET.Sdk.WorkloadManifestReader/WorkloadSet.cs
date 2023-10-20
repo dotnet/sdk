@@ -2,11 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 //
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
@@ -26,6 +21,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         //  TODO: Generate version from hash of manifest versions if not otherwise set
         public string? Version { get; set; }
+
+        //  Indicates that a workload set is a baseline workload set that was installed with the .NET SDK.
+        //  It should not be subject to normal garbage collection unless the SDK that installed it is removed
+        public bool IsBaselineWorkloadSet { get; set; }
 
         public static WorkloadSet FromManifests(IEnumerable<WorkloadManifestInfo> manifests)
         {

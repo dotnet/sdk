@@ -7,6 +7,11 @@
         <target state="translated">Échec du téléchargement de {0}, version {1} .</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">Le mappage de source de package est activé, mais aucune source n’a été trouvée sous l’ID de package spécifié : {0}. Pour plus d’informations, consultez la documentation relative au mappage de source de package sur https://aka.ms/nuget-package-source-mapping.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
         <source>Failed to load NuGet source {0}</source>
         <target state="translated">Échec du chargement de la source DeNget {0}</target>
@@ -15,6 +20,11 @@
       <trans-unit id="FailedToLoadNuGetSourceSourceIsNotValid">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
         <target state="translated">Échec du chargement de la source NuGet {0} : la source n’est pas valide. Il sera ignoré en cours de traitement.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">Le mappage de source de package est activé, mais aucune source n’est mappée sous l’ID de package spécifié : {0}. Pour plus d’informations, consultez la documentation relative au mappage de source de package sur https://aka.ms/nuget-package-source-mapping.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">

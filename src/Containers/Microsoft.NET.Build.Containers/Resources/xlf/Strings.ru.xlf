@@ -12,10 +12,35 @@
         <target state="translated">CONTAINER2008: {0} и {1} предоставлены, но разрешен только один из них.</target>
         <note>{StrBegin="CONTAINER2008: "}</note>
       </trans-unit>
+      <trans-unit id="AppCommandArgsSetNoAppCommand">
+        <source>CONTAINER2025: ContainerAppCommandArgs are provided without specifying a ContainerAppCommand.</source>
+        <target state="translated">CONTAINER2025: ContainerAppCommandArgs предоставлены без указания ContainerAppCommand.</target>
+        <note>{StrBegin="CONTAINER2025: "}</note>
+      </trans-unit>
+      <trans-unit id="AppCommandSetNotUsed">
+        <source>CONTAINER2026: ContainerAppCommand and ContainerAppCommandArgs must be empty when ContainerAppCommandInstruction is '{0}'.</source>
+        <target state="translated">CONTAINER2026: ContainerAppCommand и ContainerAppCommandArgs должны быть пустыми, если ContainerAppCommandInstruction — "{0}".</target>
+        <note>{StrBegin="CONTAINER2026: "}</note>
+      </trans-unit>
+      <trans-unit id="ArchiveRegistry_PushInfo">
+        <source>local archive at '{0}'</source>
+        <target state="translated">локальное архивирование в "{0}"</target>
+        <note>{0} is the path to the file written</note>
+      </trans-unit>
+      <trans-unit id="BaseEntrypointOverwritten">
+        <source>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</source>
+        <target state="translated">CONTAINER2022: базовый образ содержит точку входа, которая будет перезаписана для запуска приложения. При необходимости настройте для ContainerAppCommandInstruction значение "Entrypoint". Чтобы сохранить точку входа базового образа, настройте для ContainerAppCommandInstruction значение "DefaultArgs".</target>
+        <note>{StrBegin="CONTAINER2022: "}</note>
+      </trans-unit>
       <trans-unit id="BaseImageNameParsingFailed">
         <source>CONTAINER2009: Could not parse {0}: {1}</source>
         <target state="translated">CONTAINER2009: не удалось проанализировать {0}: {1}</target>
         <note>{StrBegin="CONTAINER2009: "}</note>
+      </trans-unit>
+      <trans-unit id="BaseImageNameRegistryFallback">
+        <source>CONTAINER2020: {0} does not specify a registry and will be pulled from Docker Hub. Please prefix the name with the image registry, for example: '{1}/&lt;image&gt;'.</source>
+        <target state="translated">CONTAINER2020: {0} не указывает реестр и будет извлечен из Docker Hub. Добавьте для имени префикс в виде реестра образов, например: "{1}/&lt;image&gt;".</target>
+        <note>{StrBegin="CONTAINER2020: "}</note>
       </trans-unit>
       <trans-unit id="BaseImageNameWithSpaces">
         <source>CONTAINER2013: {0} had spaces in it, replacing with dashes.</source>
@@ -33,13 +58,13 @@
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
-        <source>Pushed container '{0}' to Docker daemon.</source>
-        <target state="translated">Принудительно отправлен контейнер "{0}" в управляющую программу Docker.</target>
+        <source>Pushed image '{0}' to {1}.</source>
+        <target state="translated">Изображение "{0}" отправлено в {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToRegistry">
-        <source>Pushed container '{0}' to registry '{1}'.</source>
-        <target state="translated">Принудительно отправлен контейнер "{0}" в реестр "{1}".</target>
+        <source>Pushed image '{0}' to registry '{1}'.</source>
+        <target state="translated">Изображение "{0}" отправлено в реестр "{1}".</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImage">
@@ -57,6 +82,11 @@
         <target state="translated">CONTAINER2012: не удалось распознать реестр "{0}".</target>
         <note>{StrBegin="CONTAINER2012: "}</note>
       </trans-unit>
+      <trans-unit id="DockerCli_PushInfo">
+        <source>local registry via '{0}'</source>
+        <target state="translated">локальный реестр через "{0}"</target>
+        <note>{0} is the command used</note>
+      </trans-unit>
       <trans-unit id="DockerInfoFailed">
         <source>CONTAINER3002: Failed to get docker info({0})\n{1}\n{2}</source>
         <target state="translated">CONTAINER3002: не удалось получить сведения Docker({0})\n{1}\n{2}</target>
@@ -67,10 +97,10 @@
         <target state="translated">CONTAINER3002: не удалось получить сведения Docker: {0}</target>
         <note>{StrBegin="CONTAINER3002: "}</note>
       </trans-unit>
-      <trans-unit id="DockerProcessCreationFailed">
-        <source>CONTAINER3001: Failed creating docker process.</source>
-        <target state="translated">CONTAINER3001: не удалось создать процесс Docker.</target>
-        <note>{StrBegin="CONTAINER3001: "}</note>
+      <trans-unit id="ContainerRuntimeProcessCreationFailed">
+        <source>CONTAINER3001: Failed creating {0} process.</source>
+        <target state="translated">CONTAINER3001: не удалось создать процесс {0}.</target>
+        <note>CONTAINER3001: {0} is the name of the command we failed to run, usually 'docker' or 'podman'.</note>
       </trans-unit>
       <trans-unit id="EmptyOrWhitespacePropertyIgnored">
         <source>CONTAINER4006: Property '{0}' is empty or contains whitespace and will be ignored.</source>
@@ -81,6 +111,31 @@
         <source>CONTAINER4004: Items '{0}' contain empty item(s) which will be ignored.</source>
         <target state="translated">CONTAINER4004: элементы "{0}" содержат пустые элементы, которые будут пропущены.</target>
         <note>{StrBegin="CONTAINER4004: "}</note>
+      </trans-unit>
+      <trans-unit id="EntrypointAndAppCommandArgsSetNoAppCommandInstruction">
+        <source>CONTAINER2023: A ContainerEntrypoint and ContainerAppCommandArgs are provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</source>
+        <target state="translated">CONTAINER2023: предоставлены ContainerEntrypoint и ContainerAppCommandArgs. Чтобы настроить способ запуска приложения, необходимо настроить ContainerAppInstruction. Допустимые инструкции: {0}.</target>
+        <note>{StrBegin="CONTAINER2023: "}</note>
+      </trans-unit>
+      <trans-unit id="EntrypointSetNoAppCommandInstruction">
+        <source>CONTAINER2027: A ContainerEntrypoint is provided. ContainerAppInstruction must be set to configure how the application is started. Valid instructions are {0}.</source>
+        <target state="translated">CONTAINER2027: предоставлен ContainerEntrypoint. Чтобы настроить способ запуска приложения, необходимо настроить ContainerAppInstruction. Допустимые инструкции: {0}.</target>
+        <note>{StrBegin="CONTAINER2027: "}</note>
+      </trans-unit>
+      <trans-unit id="EntrypointArgsSetNoEntrypoint">
+        <source>CONTAINER2024: ContainerEntrypointArgs are provided without specifying a ContainerEntrypoint.</source>
+        <target state="translated">CONTAINER2024: ContainerEntrypointArgs предоставлены без указания ContainerEntrypoint.</target>
+        <note>{StrBegin="CONTAINER2024: "}</note>
+      </trans-unit>
+      <trans-unit id="EntrypointArgsSetPreferAppCommandArgs">
+        <source>CONTAINER2029: ContainerEntrypointArgsSet are provided. Change to use ContainerAppCommandArgs for arguments that must always be set, or ContainerDefaultArgs for arguments that can be overridden when the container is created.</source>
+        <target state="translated">CONTAINER2029: предоставлен параметр ContainerEntrypointArgsSet. Измените, чтобы использовать ContainerAppCommandArgs для аргументов, которые всегда должны быть настроены, или ContainerDefaultArgs для аргументов, которые можно переопределить при создании контейнера.</target>
+        <note>{StrBegin="CONTAINER2029: "}</note>
+      </trans-unit>
+      <trans-unit id="EntrypointConflictAppCommand">
+        <source>CONTAINER2028: ContainerEntrypoint can not be combined with ContainerAppCommandInstruction '{0}'.</source>
+        <target state="translated">CONTAINER2028: ContainerEntrypoint невозможно объединить с ContainerAppCommandInstruction "{0}".</target>
+        <note>{StrBegin="CONTAINER2028: "}</note>
       </trans-unit>
       <trans-unit id="FailedRetrievingCredentials">
         <source>CONTAINER1008: Failed retrieving credentials for "{0}": {1}</source>
@@ -93,13 +148,13 @@
         <note />
       </trans-unit>
       <trans-unit id="ImageLoadFailed">
-        <source>CONTAINER1009: Failed to load image to local Docker daemon. stdout: {0}</source>
-        <target state="translated">CONTAINER1009: не удалось загрузить образ в локальную управляющую программу Docker. StdOut:{0}</target>
+        <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
+        <target state="translated">CONTAINER1009: не удалось загрузить образ из локального реестра. stdout: {0}</target>
         <note>{StrBegin="CONTAINER1009: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
-        <source>CONTAINER1010: Pulling images from local Docker daemon is not supported.</source>
-        <target state="translated">CONTAINER1010: извлечение образов из локальной управляющей программы Docker не поддерживается.</target>
+        <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
+        <target state="translated">CONTAINER1010: извлечение образов из локального реестра не поддерживается.</target>
         <note>{StrBegin="CONTAINER1010: "}</note>
       </trans-unit>
       <trans-unit id="InvalidEnvVar">
@@ -162,9 +217,9 @@
         <target state="translated">CONTAINER4005: элемент "{0}" содержит элементы без метаданных "Value", и они будут пропущены.</target>
         <note>{StrBegin="CONTAINER4005: "}</note>
       </trans-unit>
-      <trans-unit id="LocalDaemonNotAvailable">
-        <source>CONTAINER1012: The local Docker daemon is not available, but pushing to a local Docker daemon was requested. Please start the daemon and try again.</source>
-        <target state="translated">CONTAINER1012: локальная управляющая программа Docker недоступна, но запрошена отправка в локальную управляющую программу Docker. Запустите управляющую программу и повторите попытку.</target>
+      <trans-unit id="LocalRegistryNotAvailable">
+        <source>CONTAINER1012: The local registry is not available, but pushing to a local registry was requested.</source>
+        <target state="translated">CONTAINER1012: локальный реестр недоступен, но была запрошена отправка в локальный реестр.</target>
         <note>{StrBegin="CONTAINER1012: "}</note>
       </trans-unit>
       <trans-unit id="LocalDocker_FailedToGetConfig">
@@ -202,14 +257,24 @@
         <target state="translated">CONTAINER2011: {0} "{1}" не существует</target>
         <note>{StrBegin="CONTAINER2011: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryOperationFailed">
+        <source>CONTAINER1017: Unable to communicate with the registry '{0}'.</source>
+        <target state="translated">CONTAINER1017: не удается связаться с реестром "{0}".</target>
+        <note>{StrBegin="CONTAINER1017:" }</note>
+      </trans-unit>
       <trans-unit id="RegistryOutputPushFailed">
         <source>CONTAINER1013: Failed to push to the output registry: {0}</source>
         <target state="translated">CONTAINER1013: не удалось отправить в выходной реестр: {0}</target>
         <note>{StrBegin="CONTAINER1013: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryPullFailed">
+        <source>CONTAINER1014: Manifest pull failed.</source>
+        <target state="translated">CONTAINER1014: сбой вытягивания манифеста.</target>
+        <note>{StrBegin="CONTAINER1014: "}</note>
+      </trans-unit>
       <trans-unit id="RegistryPushFailed">
-        <source>CONTAINER1005: Registry push failed.</source>
-        <target state="translated">CONTAINER1005: сбой передачи реестра.</target>
+        <source>CONTAINER1005: Registry push failed; received status code '{0}'.</source>
+        <target state="translated">CONTAINER1005: сбой отправки реестра, получен код состояния "{0}".</target>
         <note>{StrBegin="CONTAINER1005: "}</note>
       </trans-unit>
       <trans-unit id="Registry_ConfigUploadStarted">
@@ -257,6 +322,11 @@
         <target state="translated">Отправлен тег "{0}" в "{1}".</target>
         <note>{1} is the registry name</note>
       </trans-unit>
+      <trans-unit id="RepositoryNotFound">
+        <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</source>
+        <target state="translated">CONTAINER1015: не удается получить доступ к репозиторию "{0}" тега "{1}" в реестре "{2}". Подтвердите, что это имя и тег присутствуют в реестре.</target>
+        <note>{StrBegin="CONTAINER1015: "}</note>
+      </trans-unit>
       <trans-unit id="RequiredItemsContainsEmptyItems">
         <source>CONTAINER4003: Required '{0}' items contain empty items.</source>
         <target state="translated">CONTAINER4003: необходимые "{0}" содержат пустые элементы.</target>
@@ -277,9 +347,19 @@
         <target state="translated">CONTAINER1006: слишком много повторных попыток, остановка.</target>
         <note>{StrBegin="CONTAINER1006: "}</note>
       </trans-unit>
-      <trans-unit id="UnknownDaemonType">
-        <source>CONTAINER2002: Unknown local container daemon type '{0}'. Valid local container daemon types are {1}.</source>
-        <target state="translated">CONTAINER2002: неизвестный тип управляющей программы локального контейнера "{0}". Допустимыми типами управляющих программ локального контейнера являются {1}.</target>
+      <trans-unit id="UnableToAccessRepository">
+        <source>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</source>
+        <target state="translated">CONTAINER1016: не удается получить доступ к репозиторию "{0}" в реестре "{1}". Убедитесь, что ваши учетные данные верны и что у вас есть доступ к этому репозиторию и реестру.</target>
+        <note>{StrBegin="CONTAINER1016:" }</note>
+      </trans-unit>
+      <trans-unit id="UnknownAppCommandInstruction">
+        <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>
+        <target state="translated">CONTAINER2021: неизвестный элемент AppCommandInstruction "{0}". Допустимые инструкции: {1}.</target>
+        <note>{StrBegin="CONTAINER2021: "}</note>
+      </trans-unit>
+      <trans-unit id="UnknownLocalRegistryType">
+        <source>CONTAINER2002: Unknown local registry type '{0}'. Valid local container registry types are {1}.</source>
+        <target state="translated">CONTAINER2002: неизвестный тип локального реестра "{0}". Допустимыми типами реестра локального контейнера являются {1}.</target>
         <note>{StrBegin="CONTAINER2002: "}</note>
       </trans-unit>
       <trans-unit id="UnknownMediaType">

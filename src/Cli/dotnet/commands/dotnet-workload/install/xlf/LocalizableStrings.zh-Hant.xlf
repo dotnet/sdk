@@ -27,9 +27,14 @@
         <target state="translated">正在檢查更新的工作負載資訊清單。</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeletingWorkloadManifest">
+        <source>Uninstalling workload manifest {0} version {1}...</source>
+        <target state="translated">正解除安裝工作負載資訊清單 {0} 版本 {1}...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DeletingWorkloadPack">
-        <source>Uninstalling workload pack {0} version {1}…</source>
-        <target state="translated">正在解除安裝工作負載套件 {0} 版本 {1}…</target>
+        <source>Uninstalling workload pack {0} version {1}...</source>
+        <target state="translated">正在解除安裝工作負載套件 {0} 版本 {1}...</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -43,8 +48,8 @@
         <note />
       </trans-unit>
       <trans-unit id="DownloadingPackToCacheMessage">
-        <source>Downloading pack {0} version {1} to offline cache {2}…</source>
-        <target state="translated">正在將套件 {0} 版本 {1} 下載到離線快取 {2}…</target>
+        <source>Downloading pack {0} version {1} to offline cache {2}...</source>
+        <target state="translated">正在將套件 {0} 版本 {1} 下載到離線快取 {2}...</target>
         <note />
       </trans-unit>
       <trans-unit id="ExpectedSingleManifest">
@@ -102,11 +107,6 @@
         <target state="translated">允許發行前階段工作負載資訊清單。</target>
         <note />
       </trans-unit>
-      <trans-unit id="IncompatibleManifests">
-        <source>The current SDK isn't compatible with workload manifests of SDK version {0}.</source>
-        <target state="translated">目前的 SDK 與 SDK 版本 {0} 的工作負載資訊清單不相容。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="translated">已成功安裝工作負載 (s) {0}。</target>
@@ -118,8 +118,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InstallingWorkloadManifest">
-        <source>Installing workload manifest {0} version {1}…</source>
-        <target state="translated">正在安裝工作負載資訊清單 {0} 版本 {1}…</target>
+        <source>Installing workload manifest {0} version {1}...</source>
+        <target state="translated">正在安裝工作負載資訊清單 {0} 版本 {1}...</target>
         <note />
       </trans-unit>
       <trans-unit id="InsufficientPrivilegeToStartServer">
@@ -182,11 +182,6 @@
         <target state="translated">正在移除 {0} </target>
         <note />
       </trans-unit>
-      <trans-unit id="NoManifestsExistForFeatureBand">
-        <source>No manifests exist for SDK version {0}.</source>
-        <target state="translated">沒有 SDK 版本 {0} 的資訊清單。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">無法與父處理序 ({0}) 建立信任關係。</target>
@@ -198,8 +193,8 @@
         <note />
       </trans-unit>
       <trans-unit id="PendingReboot">
-        <source>The machine has a pending reboot. Installation will continue, but you may need to restart.</source>
-        <target state="translated">機器有擱置中的重新開機。安裝將繼續，但您可能需要重新開機。</target>
+        <source>The machine has a pending reboot. The workload operation will continue, but you may need to restart.</source>
+        <target state="translated">機器有擱置中的重新開機。工作負載作業將繼續，但您可能需要重新開機。</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingPackageUrls">
@@ -231,6 +226,11 @@
         <source>Rolling back pack {0} installation...</source>
         <target state="translated">正在回復套件 {0} 安裝...</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SdkVersionOptionNotSupported">
+        <source>The --sdk-version option is no longer supported for this command.</source>
+        <target state="translated">此命令已不再支援 --sdk-version 選項。</target>
+        <note>{Locked="--sdk-version"}</note>
       </trans-unit>
       <trans-unit id="SkipManifestUpdateOptionDescription">
         <source>Skip updating the workload manifests.</source>
