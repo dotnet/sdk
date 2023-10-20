@@ -569,11 +569,12 @@
     <ResolveAssemblyReference AssemblyFiles="@(AssembliesToResolve)" Silent="$(ResolveAssemblyReferencesSilent)" AssemblyInformationCacheOutputPath="$(RedistLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" SearchPaths="{RawFileName}" WarnOrErrorOnTargetArchitectureMismatch="$(ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch)" />
   </Target>
 
-  <!-- Replace duplicate files with hard links so that when the same files from a runtime pack
-       and the corresponding shared frameworks are included in a distro package their data is shared instead of duplicated. -->
-  <Target Name="ReplaceDuplicateFilesWithHardLinks" DependsOnTargets="LayoutBundledComponents"
-                                                    Condition="'$(BundleRuntimePacks)' == 'true' and  !$([MSBuild]::IsOSPlatform('WINDOWS'))">
-    <ReplaceDuplicateFilesWithHardLinks Directory="$(RedistLayoutPath)" />
+  <!-- Replace files from the runtime packs with symbolic links to the corresponding shared framework files (and hostfxr) to reduce the size of the runtime pack directories. -->
+  <Target Name="ReplaceBundledRuntimePackFilesWithSymbolicLinks" DependsOnTargets="LayoutBundledComponents"
+                                                                 Condition="'$(BundleRuntimePacks)' == 'true' and  !$([MSBuild]::IsOSPlatform('WINDOWS'))">
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistLayoutPath)/shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistLayoutPath)/host/fxr/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistLayoutPath)/packs/Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistLayoutPath)/shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
   </Target>
 
   <Target Name="GenerateLayout"
@@ -593,7 +594,7 @@
                             CrossgenLayout;
                             LayoutAppHostTemplate;
                             GeneratePrecomputedRarCache;
-                            ReplaceDuplicateFilesWithHardLinks"
+                            ReplaceBundledRuntimePackFilesWithSymbolicLinks"
           BeforeTargets="AfterBuild">
 
   </Target>

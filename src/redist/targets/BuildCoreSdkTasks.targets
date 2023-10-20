@@ -40,6 +40,6 @@
   <UsingTask TaskName="CollatePackageDownloads" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GenerateSdkRuntimeIdentifierChain" AssemblyFile="$(CoreSdkTaskDll)"/>
   <UsingTask TaskName="GetDependencyInfo" AssemblyFile="$(CoreSdkTaskDll)"/>
-  <UsingTask TaskName="ReplaceDuplicateFilesWithHardLinks" AssemblyFile="$(CoreSdkTaskDll)"/>
+  <UsingTask TaskName="ReplaceFilesWithSymbolicLinks" AssemblyFile="$(CoreSdkTaskDll)"/>
 
 </Project>
