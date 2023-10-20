@@ -74,9 +74,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             ImmutableArray<AttributeData> right,
             IList<CompatDifference> differences)
         {
-            // See discussion in https://github.com/dotnet/sdk/pull/27774. ApiCompat intentionally considers non excluded attribute arguments.
-            left = left.ExcludeNonVisibleOutsideOfAssembly(_settings.SymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
-            right = right.ExcludeNonVisibleOutsideOfAssembly(_settings.SymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
+            // Filter out attributes that should be excluded based on the settings.
+            // ApiCompat intentionally considers non excluded attribute arguments. See discussion in https://github.com/dotnet/sdk/pull/27774.
+            left = left.ExcludeNonVisibleOutsideOfAssembly(_settings.AttributeDataSymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
+            right = right.ExcludeNonVisibleOutsideOfAssembly(_settings.AttributeDataSymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
 
             // No attributes, nothing to do. Exit early.
             if (left.Length == 0 && right.Length == 0)
