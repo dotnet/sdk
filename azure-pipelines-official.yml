@@ -121,9 +121,6 @@ stages:
     - name: Codeql.TSAEnabled
       value: true
     steps:
-      - task: UseDotNet@2
-        inputs:
-          useGlobalJson: true
       - task: CodeQL3000Init@0
         displayName: CodeQL Initialize
       - script: eng\common\cibuild.cmd
