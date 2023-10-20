@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using ITemplate template = new RunnableProjectConfig(environment, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, default).ConfigureAwait(false);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, default);
             IEnumerable<IFileChange2> changes = result.FileChanges.Cast<IFileChange2>();
 
             Assert.Equal(2, result.FileChanges.Count);
@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             using ITemplate template = new RunnableProjectConfig(environment, generator, templateConfigFile);
             ParameterSetData parameters = new(template);
 
-            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, default).ConfigureAwait(false);
+            ICreationEffects result = await (generator as IGenerator).GetCreationEffectsAsync(environment, template, parameters, targetDir, default);
             IEnumerable<IFileChange2> changes = result.FileChanges.Cast<IFileChange2>();
 
             Assert.Equal(2, result.FileChanges.Count);
@@ -289,7 +289,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 fileRenames: new Dictionary<string, string>(),
                 symbolBasedFileRenames: symbolBasedRenames);
 
-            Assert.Equal(1, allChanges.Count);
+            Assert.Single(allChanges);
             Assert.Equal("Replace1Value_file.txt", allChanges["Replace1_file.txt"]);
         }
 

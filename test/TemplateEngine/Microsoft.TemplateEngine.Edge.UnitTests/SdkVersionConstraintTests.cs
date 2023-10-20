@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             //Workaround needed
             //A.CallTo(() => sdkInfoProvider.GetVersionAsync(A<CancellationToken>._)).Returns(Task.Run(() => sdkVersion));
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default).ConfigureAwait(false);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
             Assert.Equal(allowed ? TemplateConstraintResult.Status.Allowed : TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
         }
 
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         [InlineData("4.5.3", false)]
         [InlineData("4.5.0", true)]
         [InlineData("4.4.0-dev", true)]
-        public void Evaluate_SingleVersionRange(string sdkVersion, bool allowed)
+        public async Task Evaluate_SingleVersionRange(string sdkVersion, bool allowed)
         {
             var config = new
             {
@@ -87,7 +87,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             //Workaround needed
             //A.CallTo(() => sdkInfoProvider.GetVersionAsync(A<CancellationToken>._)).Returns(t);
 
-            var evaluateResult = constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default).Result;
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
             Assert.Equal(allowed ? TemplateConstraintResult.Status.Allowed : TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
         }
 
@@ -118,7 +118,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(settings);
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default).ConfigureAwait(false);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
             Assert.Equal(TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
             Assert.StartsWith(
                 hasAlternativeInstalled

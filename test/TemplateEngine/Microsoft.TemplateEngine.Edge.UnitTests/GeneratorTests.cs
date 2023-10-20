@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IReadOnlyList<ITemplateMatchInfo> foundTemplates = await templatePackagesManager.GetTemplatesAsync(
                 matchFilter: WellKnownSearchFilters.MatchesAllCriteria,
                 filters: new[] { WellKnownSearchFilters.NameFilter("test-template") },
-                cancellationToken: default).ConfigureAwait(false);
+                cancellationToken: default);
             ITemplateMatchInfo template = Assert.Single(foundTemplates);
 
             string output = TestUtils.CreateTemporaryFolder();
@@ -49,7 +49,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 outputPath: output,
                 inputParameters: new Dictionary<string, string?>(),
                 forceCreation: true,
-                dryRun: true).ConfigureAwait(false);
+                dryRun: true);
 
             Assert.Equal(CreationResultStatus.Success, dryRunResult.Status);
             Assert.Equal((ICreationEffects)CustomGenerator.CreationEffects.Instance, dryRunResult.CreationEffects);
@@ -61,7 +61,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 outputPath: output,
                 inputParameters: new Dictionary<string, string?>(),
                 forceCreation: true,
-                dryRun: false).ConfigureAwait(false);
+                dryRun: false);
 
             Assert.Equal(CreationResultStatus.Success, runResult.Status);
             Assert.Equal(CustomGenerator.SimpleCreationResult.Instance, runResult.CreationResult);

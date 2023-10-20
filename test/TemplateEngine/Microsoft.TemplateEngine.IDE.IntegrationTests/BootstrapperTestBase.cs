@@ -54,7 +54,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 installRequests.Add(new InstallRequest(Path.GetFullPath(path)));
             }
 
-            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests).ConfigureAwait(false);
+            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests);
             if (installationResults.Any(result => !result.Success))
             {
                 throw new Exception($"Failed to install templates: {string.Join(";", installationResults.Select(result => $"path: {result.InstallRequest.PackageIdentifier}, details:{result.ErrorMessage}"))}");
@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 installRequests.Add(new InstallRequest(Path.GetFullPath(template)));
             }
 
-            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests).ConfigureAwait(false);
+            IReadOnlyList<InstallResult> installationResults = await bootstrapper.InstallTemplatePackagesAsync(installRequests);
             if (installationResults.Any(result => !result.Success))
             {
                 throw new Exception($"Failed to install templates: {string.Join(";", installationResults.Select(result => $"path: {result.InstallRequest.PackageIdentifier}, details:{result.ErrorMessage}"))}");

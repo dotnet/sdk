@@ -25,7 +25,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
             string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
-            packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates").ConfigureAwait(false);
+            packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates");
 
             new DotnetCommand(
                 _log,
@@ -210,7 +210,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             Assert.True(File.Exists(cacheV2Path));
             Assert.True(File.Exists(nonTemplatePackagesList));
 
-            packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates").ConfigureAwait(false);
+            packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates");
 
             File.Move(packageLocation, Path.Combine(Path.GetDirectoryName(packageLocation)!, "Microsoft.Azure.WebJobs.ProjectTemplates##1.0.0.nupkg"));
 

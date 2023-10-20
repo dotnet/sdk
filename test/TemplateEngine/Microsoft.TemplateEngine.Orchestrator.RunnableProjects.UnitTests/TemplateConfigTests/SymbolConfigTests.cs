@@ -783,7 +783,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             Assert.NotNull(paramSymbol);
             IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
-            Assert.Equal(1, configuredValueFormNames.Count);
+            Assert.Single(configuredValueFormNames);
             Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
         }
 
