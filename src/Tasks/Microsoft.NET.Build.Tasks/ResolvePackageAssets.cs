@@ -1564,7 +1564,8 @@ namespace Microsoft.NET.Build.Tasks
                                 }
                                 else
                                 {
-                                    _task.Log.LogMessage(Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
+                                    var formatStringWithoutCode = Strings.PackageContainsIncorrectlyCasedLocale.Substring(Strings.PackageContainsIncorrectlyCasedLocale.IndexOf(' '));
+                                    _task.Log.LogMessage(formatStringWithoutCode, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
                                 }
                             }
                             locale = normalizedLocale;
@@ -1575,9 +1576,11 @@ namespace Microsoft.NET.Build.Tasks
                             if (tfm.Version.Major >= 7)
                             {
                                 _task.Log.LogWarning(Strings.PackageContainsUnknownLocale, package.Name, package.Version.ToNormalizedString(), cnf.InvalidCultureName);
-                            } else
+                            }
+                            else
                             {
-                                _task.Log.LogMessage(Strings.PackageContainsUnknownLocale, package.Name, package.Version.ToNormalizedString(), cnf.InvalidCultureName);
+                                var formatStringWithoutCode = Strings.PackageContainsUnknownLocale.Substring(Strings.PackageContainsIncorrectlyCasedLocale.IndexOf(' '));
+                                _task.Log.LogMessage(formatStringWithoutCode, package.Name, package.Version.ToNormalizedString(), cnf.InvalidCultureName);
                             }
 
                             // We could potentially strip this unknown locale at this point, but we do not.
