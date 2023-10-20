@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.100-alpha.1.23519.4">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.100-alpha.1.23519.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8cb292c0127b16124cf3d4c49695e128f3e38e34</Sha>
+      <Sha>3d607b89c71855078fa46f924139e0a55393fbcf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.100-alpha.1.23519.4">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.100-alpha.1.23519.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8cb292c0127b16124cf3d4c49695e128f3e38e34</Sha>
+      <Sha>3d607b89c71855078fa46f924139e0a55393fbcf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.100-alpha.1.23519.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.100-alpha.1.23519.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8cb292c0127b16124cf3d4c49695e128f3e38e34</Sha>
+      <Sha>3d607b89c71855078fa46f924139e0a55393fbcf</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.0-alpha.1.23519.4">
