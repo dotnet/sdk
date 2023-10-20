@@ -6,6 +6,7 @@
     <RepoApiImplemented>false</RepoApiImplemented>
     <DependencyVersionInputRepoApiImplemented>true</DependencyVersionInputRepoApiImplemented>
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+    <RepoNoWarns>CS9057</RepoNoWarns>
   </PropertyGroup>
 
   <ItemGroup>
