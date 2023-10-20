@@ -12,11 +12,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
     /// </summary>
     public static class AttributeDataExtensions
     {
-        /// <summary>
-        /// Determines if an <see cref="AttributeData"/> object is visible outside of the containing assembly.
-        /// By default also verifies the visibility of the attribute's arguments.
-        /// </summary>
-        public static bool IsVisibleOutsideOfAssembly(this AttributeData attributeData,
+        // Determines if an AttributeData object is visible outside of the containing assembly.
+        // By default also verifies the visibility of the attribute's arguments.
+        private static bool IsVisibleOutsideOfAssembly(this AttributeData attributeData,
             ISymbolFilter symbolFilter,
             bool excludeWithTypeArgumentsNotVisibleOutsideOfAssembly = true) =>
             attributeData.AttributeClass != null &&
@@ -32,10 +30,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             bool excludeWithTypeArgumentsNotVisibleOutsideOfAssembly = true) =>
             attributes.Where(attribute => attribute.IsVisibleOutsideOfAssembly(symbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly)).ToImmutableArray();
 
-        /// <summary>
-        /// Checks if an <see cref="AttributeData"/> has <see cref="INamedTypeSymbol"/> arguments that point to a <see cref="Type"/> that isn't visible outside of the containing assembly.
-        /// </summary>
-        public static bool HasTypeArgumentsNotVisibleOutsideOfAssembly(this AttributeData attributeData, ISymbolFilter symbolFilter) =>
+        // Checks if an AttributeData has INamedTypeSymbol arguments that point to a type that
+        // isn't visible outside of the containing assembly.
+        private static bool HasTypeArgumentsNotVisibleOutsideOfAssembly(this AttributeData attributeData, ISymbolFilter symbolFilter) =>
             attributeData.NamedArguments.Select(namedArgument => namedArgument.Value)
                 .Concat(attributeData.ConstructorArguments)
                 .Any(typedConstant => typedConstant.Kind == TypedConstantKind.Type
