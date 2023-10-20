@@ -20,6 +20,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <UseMonoRuntime>true</UseMonoRuntime>
     
     <SelfContained>true</SelfContained>
+    <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
 
     <_WasmSdkImportsMicrosoftNETSdkPublish Condition="'$(UsingMicrosoftNETSdkPublish)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkPublish>
     <_WasmSdkImportsMicrosoftNETSdkStaticWebAssets Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkStaticWebAssets>
