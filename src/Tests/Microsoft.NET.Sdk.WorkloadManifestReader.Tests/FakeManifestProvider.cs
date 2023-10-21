@@ -29,6 +29,7 @@ namespace ManifestReaderTests
                     Path.GetDirectoryName(filePath.manifest)!,
                     filePath.manifest,
                     "8.0.100",
+                    "33",
                     () => new FileStream(filePath.manifest, FileMode.Open, FileAccess.Read),
                     () => filePath.localizationCatalog != null ? new FileStream(filePath.localizationCatalog, FileMode.Open, FileAccess.Read) : null
                 );
@@ -51,6 +52,7 @@ namespace ManifestReaderTests
                 $@"C:\fake\{m.id}",
                 $@"C:\fake\{m.id}\WorkloadManifest.json",
                 "8.0.100",
+                "34",
                 (Func<Stream>)(() => new MemoryStream(m.content)),
                 (Func<Stream?>)(() => null)
             ));

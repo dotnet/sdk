@@ -18,14 +18,18 @@ using NuGet.Frameworks;
 using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Restore.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
+using Microsoft.DotNet.Cli.ToolPackage;
+using System.Reflection;
+using System.Text.Json;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolRestoreCommandTests
+    public class ToolRestoreCommandTests: SdkTest
     {
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
         private readonly ToolPackageDownloaderMock _toolPackageDownloaderMock;
+        private readonly ToolPackageDownloader _toolPackageDownloader;
         private readonly ParseResult _parseResult;
         private readonly BufferedReporter _reporter;
         private readonly string _temporaryDirectory;
@@ -47,7 +51,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private int _installCalledCount = 0;
 
-        public ToolRestoreCommandTests()
+        public ToolRestoreCommandTests(ITestOutputHelper log): base(log)
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
             _packageVersionWithCommandNameCollisionWithA = NuGetVersion.Parse("1.0.9");
@@ -61,6 +65,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ToolPackageStoreMock toolPackageStoreMock =
                 new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
+
+            _toolPackageDownloader = new ToolPackageDownloader(toolPackageStoreMock);
 
             _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
                 _toolPackageStore,
@@ -300,6 +306,126 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     l.Contains(
                         string.Format(LocalizableStrings.CommandsMismatch,
                             "\"different-command-nameA\" \"different-command-nameB\"", _packageIdA, "\"a\"")));
+        }
+
+        [Fact]
+        public void ItRestoresMultipleTools()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+
+            string configContents = """
+                {
+                  "version": 1,
+                  "isRoot": true,
+                  "tools": {
+                    "cake.tool": {
+                      "version": "2.3.0",
+                      "commands": [
+                        "dotnet-cake"
+                      ]
+                    },
+                    "powershell": {
+                      "version": "7.3.7",
+                      "commands": [
+                        "pwsh"
+                      ]
+                    },
+                    "api-tools": {
+                      "version": "1.3.5",
+                      "commands": [
+                        "api-tools"
+                      ]
+                    },
+                    "dotnet-ef": {
+                      "version": "8.0.0-rc.1.23419.6",
+                      "commands": [
+                        "dotnet-ef"
+                      ]
+                    }
+                  }
+                }
+                """;
+
+            File.WriteAllText(Path.Combine(testDir, "dotnet-tools.json"), configContents);
+
+            string CliHome = Path.Combine(testDir, ".home");
+            Directory.CreateDirectory(CliHome);
+
+            var toolRestoreCommand = new DotnetCommand(Log, "tool", "restore")
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", CliHome)
+                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
+                .WithWorkingDirectory(testDir);
+
+            toolRestoreCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            //  Delete tool resolver cache and then run command again.  NuGet packages will still be downloaded to packages folder, making it more likely to hit concurrency issues
+            //  in the tool code
+            Directory.Delete(CliHome, true);
+
+            toolRestoreCommand
+                .Execute()
+                .Should()
+                .Pass();
+        }
+
+        private class CacheRow
+        {
+            public string Version { get; set; }
+            public string TargetFramework { get; set; }
+            public string RuntimeIdentifier { get; set; }
+            public string Name { get; set; }
+            public string Runner { get; set; }
+            public string PathToExecutable { get; set; }
+        }
+
+        [Fact]
+        public void ItRestoresCorrectToolVersion()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+
+            string configContents = """
+                {
+                  "version": 1,
+                  "isRoot": true,
+                  "tools": {
+                    "dotnet-ef": {
+                      "version": "8.0.0-rc.1.23419.6",
+                      "commands": [
+                        "dotnet-ef"
+                      ]
+                    }
+                  }
+                }
+                """;
+
+            File.WriteAllText(Path.Combine(testDir, "dotnet-tools.json"), configContents);
+
+            string CliHome = Path.Combine(testDir, ".home");
+            Directory.CreateDirectory(CliHome);
+
+            var toolRestoreCommand = new DotnetCommand(Log, "tool", "restore")
+                .WithEnvironmentVariable("DOTNET_CLI_HOME", CliHome)
+                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
+                .WithWorkingDirectory(testDir);
+
+            toolRestoreCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var cacheFilePath = Path.Combine(CliHome, ".dotnet", "toolResolverCache", "1", "dotnet-ef");
+
+            string json = File.ReadAllText(cacheFilePath);
+
+            var rows = JsonSerializer.Deserialize<List<CacheRow>>(json);
+
+            rows.Count.Should().Be(1);
+
+            rows[0].Name.Should().Be("dotnet-ef");
+            rows[0].Version.Should().Be("8.0.0-rc.1.23419.6");
         }
 
         [Fact]

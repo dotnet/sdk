@@ -21,6 +21,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string homeDir = CreateTemporaryFolder();
             CommandResult commandResult = new DotnetCommand(_log, "complete", $"new --debug:custom-hive {homeDir} ").Execute();
 
+            // need to run twice to avoid https://github.com/dotnet/templating/pull/7103
+            commandResult = new DotnetCommand(_log, "complete", $"new --debug:custom-hive {homeDir} ").Execute();
+
             commandResult
                 .Should()
                 .ExitWith(0)

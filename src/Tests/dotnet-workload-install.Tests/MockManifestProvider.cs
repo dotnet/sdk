@@ -38,6 +38,7 @@ namespace ManifestReaderTests
                         Path.GetDirectoryName(path),
                         path,
                         featureBand ?? SdkFeatureBand.ToString(),
+                        string.Empty,
                         () => File.OpenRead(path),
                         () => WorkloadManifestReader.TryOpenLocalizationCatalogForManifest(path)
                     );

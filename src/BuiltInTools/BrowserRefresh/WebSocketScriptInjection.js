@@ -47,7 +47,8 @@ setTimeout(async function () {
         'BlazorHotReloadDeltav1': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas, false),
         'BlazorHotReloadDeltav2': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas, true),
         'HotReloadDiagnosticsv1': () => displayDiagnostics(payload.diagnostics),
-        'BlazorRequestApplyUpdateCapabilities': getBlazorWasmApplyUpdateCapabilities,
+        'BlazorRequestApplyUpdateCapabilities': () => getBlazorWasmApplyUpdateCapabilities(false),
+        'BlazorRequestApplyUpdateCapabilities2': () => getBlazorWasmApplyUpdateCapabilities(true),
         'AspNetCoreHotReloadApplied': () => aspnetCoreHotReloadApplied()
       };
 
@@ -94,12 +95,19 @@ setTimeout(async function () {
       .forEach(e => updateCssElement(e));
   }
 
-  function getBlazorWasmApplyUpdateCapabilities() {
+  function getBlazorWasmApplyUpdateCapabilities(sendErrorToClient) {
     let applyUpdateCapabilities;
     try {
       applyUpdateCapabilities = window.Blazor._internal.getApplyUpdateCapabilities();
-    } catch {
-      applyUpdateCapabilities = '';
+    } catch (error) {
+      const message = error.message || '<unknown error>'
+      let messageAndStack = error.stack || message
+      if (!messageAndStack.includes(message))
+      {
+         messageAndStack = message + "\n" + messageAndStack;
+      }
+
+      applyUpdateCapabilities = sendErrorToClient ? "!" + messageAndStack : '';
     }
     connection.send(applyUpdateCapabilities);
   }
@@ -290,8 +298,11 @@ setTimeout(async function () {
 
       webSocket.addEventListener('open', onOpen);
       webSocket.addEventListener('close', onClose);
-      webSocket.addEventListener('close', () => window.Blazor?.removeEventListener('enhancedload', notifyHotReloadApplied));
-      window.Blazor?.addEventListener('enhancedload', notifyHotReloadApplied);
+      if (window.Blazor?.removeEventListener && window.Blazor?.addEventListener)
+      {
+        webSocket.addEventListener('close', () => window.Blazor?.removeEventListener('enhancedload', notifyHotReloadApplied));
+        window.Blazor?.addEventListener('enhancedload', notifyHotReloadApplied);
+      }
     });
   }
 }, 500);
