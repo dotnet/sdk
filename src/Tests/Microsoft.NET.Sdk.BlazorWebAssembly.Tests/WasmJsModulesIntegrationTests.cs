@@ -12,7 +12,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
             // Arrange
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void JSModules_ManifestIncludesModuleTargetPaths()
         {
             // Arrange
@@ -79,7 +79,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorhosted.modules.json")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
             // Arrange
@@ -119,7 +119,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void JsModules_CanHaveDifferentBuildAndPublishModules()
         {
             // Arrange
@@ -181,7 +181,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void JsModules_CanCustomizeBlazorInitialization()
         {
             // Arrange
@@ -245,7 +245,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void JsModules_Hosted_CanCustomizeBlazorInitialization()
         {
             // Arrange

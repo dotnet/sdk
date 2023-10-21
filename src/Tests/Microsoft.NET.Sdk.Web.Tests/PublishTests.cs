@@ -11,7 +11,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
         {
         }
 
-        [RequiresMSBuildVersionTheory("17.8.1.47607")]
+        [Theory]
         [MemberData(nameof(SupportedTfms))]
         public void TrimmingOptions_Are_Defaulted_Correctly_On_Trimmed_Apps(string targetFramework)
         {
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
                     .Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void TrimMode_Defaulted_Correctly_On_Trimmed_Apps_Pre_Net8()
         {
             var projectName = "HelloWorld";
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             buildProperties["TrimMode"].Should().Be("partial");
         }
 
-        [RequiresMSBuildVersionTheory("17.8.1.47607")]
+        [Theory]
         [MemberData(nameof(SupportedTfms))]
         public void TrimmingOptions_Are_Defaulted_Correctly_On_Aot_Apps(string targetFramework)
         {

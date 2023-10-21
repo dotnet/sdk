@@ -7,7 +7,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public WasmCompressionTests(ITestOutputHelper log) : base(log) { }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             Assert.NotEqual(blazorBootJsonCompressedThumbPrint, newBlazorBootJsonCompressedThumbPrint);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_WithoutLinkerAndCompression_UpdatesFilesWhenSourcesChange()
         {
             // Arrange
@@ -82,7 +82,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             Assert.NotEqual(mainAppCompressedDllThumbPrint, newMainAppCompressedDllThumbPrint);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_WithLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -114,7 +114,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_WithoutLinkerAndCompression_IsIncremental()
         {
             // Arrange
@@ -146,7 +146,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_CompressesAllFrameworkFiles()
         {
             // Arrange

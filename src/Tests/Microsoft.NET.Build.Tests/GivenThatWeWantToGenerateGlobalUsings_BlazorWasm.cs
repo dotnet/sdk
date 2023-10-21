@@ -7,7 +7,7 @@ namespace Microsoft.NET.Build.Tests
     {
         public GivenThatWeWantToGenerateGlobalUsings_BlazorWasm(ITestOutputHelper log) : base(log) { }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [RequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_generates_blazorwasm_usings_and_builds_successfully()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
