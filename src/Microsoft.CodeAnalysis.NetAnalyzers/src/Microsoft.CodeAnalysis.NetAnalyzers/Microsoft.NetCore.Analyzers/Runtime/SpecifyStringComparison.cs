@@ -102,7 +102,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // plus as additional StringComparison parameter. Default StringComparison may or may not match user's intent,
                 // but it is recommended to explicitly specify it for clarity and readability:
                 // https://learn.microsoft.com/dotnet/standard/base-types/best-practices-strings#recommendations-for-string-usage
-                IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType.GetMembers(targetMethod.Name).OfType<IMethodSymbol>();
+                IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType
+                    .GetMembers(targetMethod.Name).OfType<IMethodSymbol>()
+                    .Where(method => method.DeclaredAccessibility >= targetMethod.DeclaredAccessibility);
+
                 if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
                 {
                     var correctOverload = methodsWithSameNameAsTargetMethod
