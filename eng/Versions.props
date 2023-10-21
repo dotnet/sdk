@@ -207,8 +207,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Workloads from dotnet/emsdk -->
-    <MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportPackageVersion>8.0.0-rc.2.23455.4</MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportPackageVersion>
-    <EmscriptenWorkloadManifestVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportPackageVersion)</EmscriptenWorkloadManifestVersion>
+    <MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion>8.0.0</MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion>
+    <EmscriptenWorkloadManifestVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest80100PackageVersion)</EmscriptenWorkloadManifestVersion>
     <!-- emsdk workload prerelease version band must match the emsdk feature band -->
     <EmscriptenWorkloadFeatureBand>8.0.100$([System.Text.RegularExpressions.Regex]::Match($(EmscriptenWorkloadManifestVersion), `-[A-z]*[\.]*\d*`))</EmscriptenWorkloadFeatureBand>
     <!-- Workloads from dotnet/runtime use MicrosoftNETCoreAppRefPackageVersion because it has a stable name that does not include the full feature band -->
