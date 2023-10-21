@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.DotNet.Workloads.Workload.Search;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
@@ -33,7 +34,8 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Clear();
             var parseResult = Parser.Instance.Parse("dotnet workload search");
             var workloadResolver = new MockWorkloadResolver(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
-            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolver, "6.0.100");
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
+            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
             command.Execute();
 
             _reporter.Lines.Count.Should().Be(4, because: "Output should have header and no values.");
@@ -45,7 +47,8 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Clear();
             var parseResult = Parser.Instance.Parse("dotnet workload search");
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
-            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolver, "6.0.100");
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
+            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
             command.Execute();
 
             var output = string.Join(" ", _reporter.Lines);
@@ -65,7 +68,8 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Clear();
             var parseResult = Parser.Instance.Parse("dotnet workload search -v d");
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
-            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolver, "6.0.100");
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
+            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
             command.Execute();
 
             var output = string.Join(" ", _reporter.Lines);
@@ -85,7 +89,8 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Clear();
             var parseResult = Parser.Instance.Parse("dotnet workload search mock");
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
-            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolver, "6.0.100");
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
+            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
             command.Execute();
 
             var output = string.Join(" ", _reporter.Lines);
@@ -106,7 +111,8 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Clear();
             var parseResult = Parser.Instance.Parse("dotnet workload search");
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
-            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolver, "6.0.100");
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
+            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
             command.Execute();
 
             _reporter.Lines[3].Should().Contain("fake-workload-1");
@@ -122,7 +128,8 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Clear();
             var parseResult = Parser.Instance.Parse("dotnet workload search description");
             var workloadResolver = new MockWorkloadResolver(_availableWorkloads);
-            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolver, "6.0.100");
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetPath: null, "6.0.100", workloadResolver);
+            var command = new WorkloadSearchCommand(parseResult, _reporter, workloadResolverFactory);
             command.Execute();
 
             _reporter.Lines.Count.Should().Be(5);

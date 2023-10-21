@@ -72,6 +72,11 @@
         <target state="translated">Zdroj instalace</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionDescription">
+        <source>Display the currently installed workload version.</source>
+        <target state="translated">Zobrazí aktuálně nainstalovanou verzi úlohy.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

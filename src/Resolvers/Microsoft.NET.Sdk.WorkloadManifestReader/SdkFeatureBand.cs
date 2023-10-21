@@ -47,7 +47,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public override int GetHashCode()
         {
-            return ToString().GetHashCode();
+            return _featureBand.GetHashCode();
         }
 
         public override string ToString()

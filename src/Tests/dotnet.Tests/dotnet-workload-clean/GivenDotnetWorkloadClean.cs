@@ -9,6 +9,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Clean;
+using System.Text.Json;
 
 namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 {
@@ -112,8 +113,9 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             sdkBand ??= _sdkFeatureVersion;
 
             var installParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", _installingWorkload });
-            var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolver: workloadResolver, nugetPackageDownloader: nugetDownloader,
-                workloadManifestUpdater: _manifestUpdater, userProfileDir: userProfileDir, version: sdkBand, dotnetDir: dotnetRoot, tempDirPath: testDirectory, installedFeatureBand: sdkBand);
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, sdkBand, workloadResolver, userProfileDir);
+            var installCommand = new WorkloadInstallCommand(installParseResult, reporter: _reporter, workloadResolverFactory: workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
+                workloadManifestUpdater: _manifestUpdater, tempDirPath: testDirectory);
 
             installCommand.Execute();
         }
@@ -126,8 +128,8 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private WorkloadCleanCommand MakeWorkloadCleanCommand(ParseResult parseResult, WorkloadResolver workloadResolver, string userProfileDir, string dotnetRoot)
         {
-            return new WorkloadCleanCommand(parseResult, reporter: _reporter, workloadResolver: workloadResolver, userProfileDir: userProfileDir,
-                version: _sdkFeatureVersion, dotnetDir: dotnetRoot);
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, _sdkFeatureVersion, workloadResolver, userProfileDir);
+            return new WorkloadCleanCommand(parseResult, reporter: _reporter, workloadResolverFactory: workloadResolverFactory);
         }
 
         private WorkloadCleanCommand GenerateWorkloadCleanAllCommand(WorkloadResolver workloadResolver, string userProfileDir, string dotnetRoot)
@@ -141,8 +143,10 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
             sdkBand ??= _sdkFeatureVersion;
 
             var packRecordPath = Path.Combine(installRoot, "metadata", "workloads", "InstalledPacks", "v1", "Test.Pack.A", "1.0.0", sdkBand);
+            var packPath = Path.Combine(installRoot, "packs", "Test.Pack.A", "1.0.0");
             Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath));
-            File.WriteAllText(packRecordPath, string.Empty);
+            var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(new(new WorkloadPackId("Test.Pack.A"), "1.0.0", WorkloadPackKind.Sdk, packPath, "Test.Pack.A"));
+            File.WriteAllText(packRecordPath, packRecordContents);
             return packRecordPath;
         }
 
@@ -161,11 +165,11 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private void AssertExtraneousPacksAreRemoved(string extraPackPath, string extraPackRecordPath, bool entirePackRootPathShouldRemain = false)
         {
-            File.Exists(extraPackRecordPath).Should().BeFalse();
+            new FileInfo(extraPackRecordPath).Should().NotExist();
             if (!entirePackRootPathShouldRemain)
             {
-                Directory.Exists(Path.GetDirectoryName(Path.GetDirectoryName(extraPackRecordPath))).Should().BeFalse();
-                Directory.Exists(extraPackPath).Should().BeFalse();
+                new DirectoryInfo(Path.GetDirectoryName(Path.GetDirectoryName(extraPackRecordPath))).Should().NotExist();
+                new DirectoryInfo(extraPackPath).Should().NotExist();
             }
         }
 

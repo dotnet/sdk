@@ -147,6 +147,11 @@
         <target state="translated">Не найдена версия рабочей нагрузки {0}, указанная в {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotFound">
+        <source>Workload version {0} was not found.</source>
+        <target state="translated">Версия рабочей нагрузки {0} не найдена.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

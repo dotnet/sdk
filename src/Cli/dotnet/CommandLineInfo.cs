@@ -19,8 +19,9 @@ namespace Microsoft.DotNet.Cli
             DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
             var commitSha = versionFile.CommitSha ?? "N/A";
             Reporter.Output.WriteLine($"{LocalizableStrings.DotNetSdkInfoLabel}");
-            Reporter.Output.WriteLine($" Version:   {Product.Version}");
-            Reporter.Output.WriteLine($" Commit:    {commitSha}");
+            Reporter.Output.WriteLine($" Version:           {Product.Version}");
+            Reporter.Output.WriteLine($" Commit:            {commitSha}");
+            Reporter.Output.WriteLine($" Workload version:  {WorkloadCommandParser.GetWorkloadsVersion()}");
             Reporter.Output.WriteLine();
             Reporter.Output.WriteLine($"{LocalizableStrings.DotNetRuntimeInfoLabel}");
             Reporter.Output.WriteLine($" OS Name:     {RuntimeEnvironment.OperatingSystem}");
@@ -29,7 +30,6 @@ namespace Microsoft.DotNet.Cli
             Reporter.Output.WriteLine($" RID:         {GetDisplayRid(versionFile)}");
             Reporter.Output.WriteLine($" Base Path:   {AppContext.BaseDirectory}");
             PrintWorkloadsInfo();
-
         }
 
         private static void PrintWorkloadsInfo()

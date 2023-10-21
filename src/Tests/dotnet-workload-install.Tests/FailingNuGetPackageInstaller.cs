@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
@@ -20,7 +21,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
-            DirectoryPath? downloadFolder = null)
+            bool includeUnlisted = false,
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null)
         {
             var mockPackagePath = Path.Combine(MockPackageDir, $"{packageId}.{packageVersion}.nupkg");
             File.WriteAllText(mockPackagePath, string.Empty);
@@ -35,7 +38,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         }
 
         public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => throw new NotImplementedException();
-
+        public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
         public Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation = null,

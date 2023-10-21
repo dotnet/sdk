@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Cli.ToolPackage;
+using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
-using System.Runtime.CompilerServices;
-using Microsoft.DotNet.ToolPackage;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -22,30 +22,23 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             var source = GetTestLocalFeedPath();
 
-            var (store, storeQuery, installer, uninstaller, reporter, fileSystem) = Setup(
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
                 useMock: testMockBehaviorIsInSync,
                 feeds: GetMockFeedsForSource(source),
                 identifier: testMockBehaviorIsInSync.ToString());
 
-            var package = installer.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
+            var package = downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
                 packageId: TestPackageId,
+                verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
-                targetFramework: _testTargetframework);
+                targetFramework: _testTargetframework,
+                isGlobalTool: true);
 
             package.PackagedShims.Should().ContainSingle(f => f.Value.Contains("demo.exe") || f.Value.Contains("demo"));
 
             uninstaller.Uninstall(package.PackageDirectory);
 
             storeQuery.EnumeratePackages().Should().BeEmpty();
-        }
-
-        private static FilePath GetUniqueTempProjectPathEachTest()
-        {
-            var tempProjectDirectory =
-                new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.WithFile(Path.GetRandomFileName() + ".csproj");
-            return tempProjectPath;
         }
 
         private static List<MockFeed> GetMockFeedsForSource(string source)
@@ -69,14 +62,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
         }
 
-        private (IToolPackageStore, IToolPackageStoreQuery, IToolPackageInstaller, IToolPackageUninstaller, BufferedReporter, IFileSystem
-            ) Setup(
-                bool useMock,
-                List<MockFeed> feeds = null,
-                FilePath? tempProject = null,
-                DirectoryPath? offlineFeed = null,
-                [CallerMemberName] string testName = "",
-                string identifier = null)
+        private (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownloader, IToolPackageUninstaller, BufferedReporter, IFileSystem
+        ) Setup(
+            bool useMock,
+            List<MockFeed> feeds = null,
+            [CallerMemberName] string testName = "",
+            string identifier = null)
         {
             var root = new DirectoryPath(_testAssetsManager.CreateTestDirectory(testName, identifier).Path);
             var reporter = new BufferedReporter();
@@ -84,7 +75,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             IFileSystem fileSystem;
             IToolPackageStore store;
             IToolPackageStoreQuery storeQuery;
-            IToolPackageInstaller installer;
+            IToolPackageDownloader downloader;
             IToolPackageUninstaller uninstaller;
             if (useMock)
             {
@@ -97,14 +88,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 var toolPackageStoreMock = new ToolPackageStoreMock(root, fileSystem);
                 store = toolPackageStoreMock;
                 storeQuery = toolPackageStoreMock;
-                installer = new ToolPackageInstallerMock(
-                    fileSystem: fileSystem,
+
+                downloader = new ToolPackageDownloaderMock(
                     store: toolPackageStoreMock,
-                    projectRestorer: new ProjectRestorerMock(
-                        fileSystem: fileSystem,
-                        reporter: reporter,
-                        feeds: feeds),
-                     packagedShimsMap: packagedShimsMap);
+                    fileSystem: fileSystem,
+                    reporter: reporter,
+                    feeds: feeds,
+                    packagedShimsMap: packagedShimsMap);
                 uninstaller = new ToolPackageUninstallerMock(fileSystem, toolPackageStoreMock);
             }
             else
@@ -113,17 +103,14 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 var toolPackageStore = new ToolPackageStoreAndQuery(root);
                 store = toolPackageStore;
                 storeQuery = toolPackageStore;
-                installer = new ToolPackageInstaller(
-                    store: store,
-                    projectRestorer: new Stage2ProjectRestorer(Log, reporter),
-                    tempProject: tempProject ?? GetUniqueTempProjectPathEachTest(),
-                    offlineFeed: offlineFeed ?? new DirectoryPath("does not exist"));
+                var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath);
                 uninstaller = new ToolPackageUninstaller(store);
             }
 
             store.Root.Value.Should().Be(Path.GetFullPath(root.Value));
 
-            return (store, storeQuery, installer, uninstaller, reporter, fileSystem);
+            return (store, storeQuery, downloader, uninstaller, reporter, fileSystem);
         }
 
         private static string GetTestLocalFeedPath() =>
@@ -132,7 +119,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo.with.shim");
-
+        private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
         public ToolPackageUninstallerTests(ITestOutputHelper log) : base(log)
         {
         }

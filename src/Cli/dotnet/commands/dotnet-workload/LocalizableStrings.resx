@@ -160,4 +160,7 @@
     <value>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</value>
     <comment>{Locked="dotnet workload update"}</comment>
   </data>
+  <data name="WorkloadVersionDescription" xml:space="preserve">
+    <value>Display the currently installed workload version.</value>
+  </data>
 </root>

@@ -33,6 +33,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     workloadManifestDirectory,
                     workloadManifestPath,
                     _sdkVersionBand,
+                    string.Empty, // The version here isn't used.
                     () => File.OpenRead(workloadManifestPath),
                     () => WorkloadManifestReader.TryOpenLocalizationCatalogForManifest(workloadManifestPath)
                 );
@@ -51,5 +52,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         }
 
         public string GetSdkFeatureBand() => _sdkVersionBand;
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
     }
 }
