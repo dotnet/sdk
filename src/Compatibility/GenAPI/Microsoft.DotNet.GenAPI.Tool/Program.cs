@@ -115,13 +115,13 @@ namespace Microsoft.DotNet.GenAPI.Tool
 
         private static string[] ParseAssemblyArgument(ArgumentResult argumentResult)
         {
-            List<string> args = new();
+            List<string> args = [];
             foreach (var token in argumentResult.Tokens)
             {
                 args.AddRange(token.Value.Split(','));
             }
 
-            return args.ToArray();
+            return [.. args];
         }
     }
 }

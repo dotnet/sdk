@@ -59,6 +59,7 @@ namespace Microsoft.DotNet.GenAPI.Task
         /// </summary>
         public bool IncludeAssemblyAttributes { get; set; }
 
+        /// <inheritdoc />
         protected override void ExecuteCore()
         {
             GenAPIApp.Run(new MSBuildLog(Log),

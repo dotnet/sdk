@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.GenAPI
             return true;
         }
 
-        // Examines the a method to determine if it could be an implicit default constructor that can be removed from source and impliicitly provided by the compiler.
+        // Examines the a method to determine if it could be an implicit default constructor that can be removed from source and implicitly provided by the compiler.
         public static bool IsImplicitDefaultConstructor(this IMethodSymbol method, ISymbolFilter symbolFilter)
         {
             // ensure this is a parameterless constructor

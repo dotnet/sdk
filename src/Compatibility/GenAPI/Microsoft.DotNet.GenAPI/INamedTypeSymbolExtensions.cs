@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
@@ -209,7 +208,7 @@ namespace Microsoft.DotNet.GenAPI
 
             ConstructorDeclarationSyntax constructor = SyntaxFactory.ConstructorDeclaration(
                 new SyntaxList<AttributeListSyntax>(),
-                SyntaxFactory.TokenList(new[] { SyntaxFactory.Token(visibility) }),
+                SyntaxFactory.TokenList([ SyntaxFactory.Token(visibility) ]),
                 SyntaxFactory.Identifier(namedType.ToDisplayString()),
                 SyntaxFactory.ParameterList(),
                 default!,

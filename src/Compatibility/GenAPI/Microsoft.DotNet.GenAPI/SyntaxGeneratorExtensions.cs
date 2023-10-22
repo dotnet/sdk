@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.GenAPI
             INamedTypeSymbol type,
             ISymbolFilter symbolFilter)
         {
-            List<BaseTypeSyntax> baseTypes = new();
+            List<BaseTypeSyntax> baseTypes = [];
 
             if (type.TypeKind == TypeKind.Class && type.BaseType != null && symbolFilter.Include(type.BaseType))
             {
@@ -142,6 +142,7 @@ namespace Microsoft.DotNet.GenAPI
             baseTypes.AddRange(type.Interfaces
                 .Where(i => symbolFilter.Include(i) && !i.HasInaccessibleTypeArgument(symbolFilter))
                 .Select(i => SyntaxFactory.SimpleBaseType((TypeSyntax)syntaxGenerator.TypeExpression(i))));
+
             return baseTypes.Count > 0 ?
                 SyntaxFactory.BaseList(SyntaxFactory.SeparatedList(baseTypes)) :
                 null;

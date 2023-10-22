@@ -9,26 +9,17 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
     /// <summary>
     /// Object that represents a mapping between two <see cref="ISymbol"/> objects.
     /// </summary>
-    public class MemberMapper : ElementMapper<ISymbol>, IMemberMapper
+    /// <param name="ruleRunner">The <see cref="IRuleRunner"/> that compares the member mapper elements.</param>
+    /// <param name="settings">The <see cref="IMapperSettings"/> used to compare the member mapper elements.</param>
+    /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
+    /// <param name="containingType">The containing <see cref="ITypeMapper"/>.</param>
+    public class MemberMapper(IRuleRunner ruleRunner,
+        IMapperSettings settings,
+        int rightSetSize,
+        ITypeMapper containingType) : ElementMapper<ISymbol>(ruleRunner, settings, rightSetSize), IMemberMapper
     {
         /// <inheritdoc />
-        public ITypeMapper ContainingType { get; }
-
-        /// <summary>
-        /// Instantiates a member mapper.
-        /// </summary>
-        /// <param name="ruleRunner">The <see cref="IRuleRunner"/> that compares the member mapper elements.</param>
-        /// <param name="settings">The <see cref="IMapperSettings"/> used to compare the member mapper elements.</param>
-        /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
-        /// <param name="containingType">The containing <see cref="ITypeMapper"/>.</param>
-        public MemberMapper(IRuleRunner ruleRunner,
-            IMapperSettings settings,
-            int rightSetSize,
-            ITypeMapper containingType)
-            : base(ruleRunner, settings, rightSetSize)
-        {
-            ContainingType = containingType;
-        }
+        public ITypeMapper ContainingType { get; } = containingType;
 
         // If we got to this point it means that ContainingType.Left is not null.
         // Because of that we can only check ContainingType.Right.

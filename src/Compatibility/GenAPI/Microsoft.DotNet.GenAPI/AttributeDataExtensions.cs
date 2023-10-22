@@ -8,6 +8,23 @@ namespace Microsoft.DotNet.GenAPI
 {
     internal static class AttributeDataExtensions
     {
+        private static readonly HashSet<string> s_reservedTypes = new(StringComparer.Ordinal)
+        {
+            "DynamicAttribute",
+            "IsReadOnlyAttribute",
+            "IsUnmanagedAttribute",
+            "IsByRefLikeAttribute",
+            "TupleElementNamesAttribute",
+            "NullableAttribute",
+            "NullableContextAttribute",
+            "NullablePublicOnlyAttribute",
+            "NativeIntegerAttribute",
+            "ExtensionAttribute",
+            "RequiredMemberAttribute",
+            "ScopedRefAttribute",
+            "RefSafetyRulesAttribute"
+        };
+
         public static bool IsObsoleteWithUsageTreatedAsCompilationError(this AttributeData attribute)
         {
             INamedTypeSymbol? attributeClass = attribute.AttributeClass;
@@ -34,23 +51,6 @@ namespace Microsoft.DotNet.GenAPI
         public static bool IsDefaultMemberAttribute(this AttributeData attribute) =>
              attribute.AttributeClass?.ToDisplayString() == typeof(DefaultMemberAttribute).FullName;
 
-        private static readonly HashSet<string> _reservedTypes = new(StringComparer.Ordinal)
-        {
-            "DynamicAttribute",
-            "IsReadOnlyAttribute",
-            "IsUnmanagedAttribute",
-            "IsByRefLikeAttribute",
-            "TupleElementNamesAttribute",
-            "NullableAttribute",
-            "NullableContextAttribute",
-            "NullablePublicOnlyAttribute",
-            "NativeIntegerAttribute",
-            "ExtensionAttribute",
-            "RequiredMemberAttribute",
-            "ScopedRefAttribute",
-            "RefSafetyRulesAttribute"
-        };
-
         // Determines if an attribute is a reserved attribute class -- these are attributes that may
         // only be applied by the compiler and are an error to be applied by the user in source.
         // See https://github.com/dotnet/roslyn/blob/b8f6dd56f1a0860fcd822bc1e70bec56dc1e97ea/src/Compilers/CSharp/Portable/Symbols/Symbol.cs#L1421
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.GenAPI
         {
             INamedTypeSymbol? attributeClass = attribute.AttributeClass;
 
-            return attributeClass != null && _reservedTypes.Contains(attributeClass.Name) &&
+            return attributeClass != null && s_reservedTypes.Contains(attributeClass.Name) &&
                 attributeClass.ContainingNamespace.ToDisplayString().Equals("System.Runtime.CompilerServices", StringComparison.Ordinal);
         }
     }
