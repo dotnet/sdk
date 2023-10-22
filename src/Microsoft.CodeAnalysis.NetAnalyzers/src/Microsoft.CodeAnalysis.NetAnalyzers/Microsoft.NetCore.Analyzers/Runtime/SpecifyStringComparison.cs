@@ -102,9 +102,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // plus as additional StringComparison parameter. Default StringComparison may or may not match user's intent,
                 // but it is recommended to explicitly specify it for clarity and readability:
                 // https://learn.microsoft.com/dotnet/standard/base-types/best-practices-strings#recommendations-for-string-usage
-                IEnumerable<IMethodSymbol> methodsWithSameNameAsTargetMethod = targetMethod.ContainingType
-                    .GetMembers(targetMethod.Name).OfType<IMethodSymbol>()
-                    .Where(method => method.DeclaredAccessibility >= targetMethod.DeclaredAccessibility);
+                var methodsWithSameNameAsTargetMethod =
+                    GetAccessibleMethodsWithSameNameAsTargetMethod(invocationExpression, targetMethod);
 
                 if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
                 {
@@ -210,6 +209,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static ParameterInfo GetParameterInfo(INamedTypeSymbol type, bool isArray = false, int arrayRank = 0, bool isParams = false)
         {
             return ParameterInfo.GetParameterInfo(type, isArray, arrayRank, isParams);
+        }
+
+        private static IEnumerable<IMethodSymbol> GetAccessibleMethodsWithSameNameAsTargetMethod(
+            IInvocationOperation invocationExpression,
+            IMethodSymbol targetMethod)
+        {
+            var invocationStart = invocationExpression.Syntax.GetLocation().SourceSpan.Start;
+
+            var methodsWithSameNameAsTargetMethod =
+                invocationExpression.SemanticModel?
+                    .LookupSymbols(
+                        invocationStart,
+                        targetMethod.ContainingType,
+                        targetMethod.Name)
+                    .OfType<IMethodSymbol>()
+                    .Where(method => method.IsStatic == targetMethod.IsStatic) ?? Enumerable.Empty<IMethodSymbol>();
+
+            var immutableHashSetBuilder = ImmutableHashSet.CreateBuilder<IMethodSymbol>(SymbolEqualityComparer.Default);
+            immutableHashSetBuilder.AddRange(methodsWithSameNameAsTargetMethod);
+
+            if (!targetMethod.IsStatic)
+            {
+                var protectedMethodsWithSameNameAsTargetMethod =
+                    targetMethod.ContainingType
+                        .GetMembers(targetMethod.Name)
+                        .OfType<IMethodSymbol>()
+                        .Where(method => method.DeclaredAccessibility == Accessibility.Protected &&
+                            method.IsStatic == targetMethod.IsStatic);
+
+                immutableHashSetBuilder.AddRange(protectedMethodsWithSameNameAsTargetMethod);
+            }
+
+            return immutableHashSetBuilder.ToImmutableHashSet();
         }
     }
 }
