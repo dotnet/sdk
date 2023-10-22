@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.GenAPI.Task
 
         protected override void ExecuteCore()
         {
-            GenAPIApp.Run(new MSBuildLog(Log), new GenAPIApp.Context(
+            GenAPIApp.Run(new MSBuildLog(Log),
                 Assemblies!,
                 AssemblyReferences,
                 OutputPath,
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.GenAPI.Task
                 ExcludeAttributesFiles,
                 RespectInternals,
                 IncludeAssemblyAttributes
-            ));
+            );
         }
     }
 }
