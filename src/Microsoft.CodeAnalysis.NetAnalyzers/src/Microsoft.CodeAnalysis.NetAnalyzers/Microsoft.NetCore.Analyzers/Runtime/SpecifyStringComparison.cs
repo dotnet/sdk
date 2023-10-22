@@ -229,17 +229,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             var immutableHashSetBuilder = ImmutableHashSet.CreateBuilder<IMethodSymbol>(SymbolEqualityComparer.Default);
             immutableHashSetBuilder.AddRange(methodsWithSameNameAsTargetMethod);
 
-            if (!targetMethod.IsStatic)
-            {
-                var protectedMethodsWithSameNameAsTargetMethod =
-                    targetMethod.ContainingType
-                        .GetMembers(targetMethod.Name)
-                        .OfType<IMethodSymbol>()
-                        .Where(method => method.DeclaredAccessibility == Accessibility.Protected &&
-                            method.IsStatic == targetMethod.IsStatic);
+            var protectedMethodsWithSameNameAsTargetMethod =
+                targetMethod.ContainingType
+                    .GetMembers(targetMethod.Name)
+                    .OfType<IMethodSymbol>()
+                    .Where(method => method.DeclaredAccessibility == Accessibility.Protected &&
+                        method.IsStatic == targetMethod.IsStatic);
 
-                immutableHashSetBuilder.AddRange(protectedMethodsWithSameNameAsTargetMethod);
-            }
+            immutableHashSetBuilder.AddRange(protectedMethodsWithSameNameAsTargetMethod);
 
             return immutableHashSetBuilder.ToImmutableHashSet();
         }
