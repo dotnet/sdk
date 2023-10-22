@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
             ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
             _localToolDownloadDir = new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings));
-            
+
             _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
             _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RuntimeIdentifierGraph.json");
         }
@@ -72,7 +72,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             VerbosityOptions verbosity = VerbosityOptions.normal,
             VersionRange versionRange = null,
             string targetFramework = null,
-            bool isGlobalTool = false
+            bool isGlobalTool = false,
+            RestoreActionConfig restoreActionConfig = null
             )
         {
             var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
@@ -95,7 +96,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
-                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true);
+
+                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, isNuGetTool: true, restoreActionConfig: restoreActionConfig);
 
                     var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
 
@@ -106,7 +108,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     }
                     NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
-                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
+                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value : Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
 
                     if (isGlobalTool)
                     {
@@ -129,7 +131,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     {
                         DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
                     }
-                    else if(isGlobalTool)
+                    else if (isGlobalTool)
                     {
                         throw new ToolPackageException(
                             string.Format(
@@ -137,7 +139,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                                 packageId,
                                 packageVersion.ToNormalizedString()));
                     }
-                                       
+
                     CreateAssetFile(packageId, packageVersion, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
 
                     DirectoryPath toolReturnPackageDirectory;
@@ -310,9 +312,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             var managedCriteria = new List<SelectionCriteria>(1);
             // Use major.minor version of currently running version of .NET
             NuGetFramework currentTargetFramework;
-            if(targetFramework != null)
+            if (targetFramework != null)
             {
-                currentTargetFramework = NuGetFramework.Parse(targetFramework); 
+                currentTargetFramework = NuGetFramework.Parse(targetFramework);
             }
             else
             {
