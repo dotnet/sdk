@@ -11,11 +11,9 @@ using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
 namespace Microsoft.DotNet.GenAPI
 {
-    internal static class INamedTypeSymbolExtension
+    internal static class INamedTypeSymbolExtensions
     {
-        /// <summary>
-        /// Checks if any of the type's members is a property with an indexer.
-        /// </summary>
+        // Checks if any of the type's members is a property with an indexer.
         public static bool HasIndexer(this INamedTypeSymbol type) =>
             type.GetMembers().Any(member => member is IPropertySymbol propertySymbol && propertySymbol.IsIndexer);
 
@@ -90,13 +88,11 @@ namespace Microsoft.DotNet.GenAPI
             return declaration;
         }
 
-        /// <summary>
-        /// SynthesizeDummyFields yields private fields for the namedType, because they can be part of the API contract.
-        /// - A struct containing a field that is a reference type cannot be used as a reference.
-        /// - A struct containing nonempty fields needs to be fully initialized. (See "definite assignment" rules)
-        ///   "non-empty" means either unmanaged types like ints and enums, or reference types that are not the root.
-        /// - A struct containing generic fields cannot have struct layout cycles.
-        /// </summary>
+        // SynthesizeDummyFields yields private fields for the namedType, because they can be part of the API contract.
+        // - A struct containing a field that is a reference type cannot be used as a reference.
+        // - A struct containing nonempty fields needs to be fully initialized. (See "definite assignment" rules)
+        //   "non-empty" means either unmanaged types like ints and enums, or reference types that are not the root.
+        // - A struct containing generic fields cannot have struct layout cycles.
         public static IEnumerable<SyntaxNode> SynthesizeDummyFields(this INamedTypeSymbol namedType, ISymbolFilter symbolFilter, ISymbolFilter attributeDataSymbolFilter)
         {
             // Collect all excluded fields
@@ -148,10 +144,7 @@ namespace Microsoft.DotNet.GenAPI
             }
         }
 
-        /// <summary>
-        /// Check that the named type is fully bound in all its type arguments.
-        /// </summary>
-        /// <returns></returns>
+        // Check that the named type is fully bound in all its type arguments.
         public static bool IsBoundGenericType(this INamedTypeSymbol namedType)
         {
             foreach (ITypeSymbol arg in namedType.TypeArguments)
@@ -170,29 +163,16 @@ namespace Microsoft.DotNet.GenAPI
             return true;
         }
 
-        /// <summary>
-        /// If the named type is a generic and not already unbound construct an unbound generic type.
-        /// Unbound types are required for typeof expressions.
-        /// </summary>
-        /// <param name="namedType">type to consider</param>
-        /// <returns>Unbound generic type if necessary, otherwise the original named type.</returns>
+        // If the named type is a generic and not already unbound construct an unbound generic type.
+        // Unbound types are required for typeof expressions.
         public static INamedTypeSymbol MakeUnboundIfGeneric(this INamedTypeSymbol namedType) =>
             namedType.IsGenericType && !namedType.IsUnboundGenericType ? namedType.ConstructUnboundGenericType() : namedType;
 
-        /// <summary>
-        /// Detects if a generic type contains inaccessible type arguments.
-        /// </summary>
-        /// <param name="namedType">A loaded named type symbol <see cref="INamedTypeSymbol"/>.</param>
-        /// <param name="symbolFilter">Assembly symbol filter <see cref="ISymbolFilter"/>.</param>
-        /// <returns>Boolean</returns>
+        // Detects if a generic type contains inaccessible type arguments.
         public static bool HasInaccessibleTypeArgument(this INamedTypeSymbol namedType, ISymbolFilter symbolFilter)
             => namedType.IsGenericType && namedType.TypeArguments.Any(a => a.DeclaredAccessibility != Accessibility.NotApplicable && !symbolFilter.Include(a));
 
-        /// <summary>
-        /// Synthesize an internal default constructor for the type where all constructors are filtered.
-        /// </summary>
-        /// <param name="namedType">A loaded named type symbol <see cref="INamedTypeSymbol"/>.</param>
-        /// <param name="symbolFilter">Assembly symbol filter <see cref="ISymbolFilter"/>.</param>
+        // Synthesize an internal default constructor for the type where all constructors are filtered.
         public static IEnumerable<SyntaxNode> TryGetInternalDefaultConstructor(this INamedTypeSymbol namedType, ISymbolFilter symbolFilter)
         {
             // only non-static classes can have a default constructor that differs in visibility
@@ -245,21 +225,13 @@ namespace Microsoft.DotNet.GenAPI
             yield return constructor;
         }
 
-        /// <summary>
-        /// Synthesize a base class initializer. 
-        /// </summary>
-        /// <param name="baseTypeConstructor">Represents a base class constructor <see cref="IMethodSymbol"/>.</param>
-        /// <returns>Returns the syntax node <see cref="ConstructorInitializerSyntax"/>.</returns>
+        // Synthesize a base class initializer. 
         public static ConstructorInitializerSyntax GenerateBaseConstructorInitializer(this IMethodSymbol baseTypeConstructor)
         {
             return SyntaxFactory.ConstructorInitializer(SyntaxKind.BaseConstructorInitializer, baseTypeConstructor.CreateDefaultArgumentList());
         }
 
-        /// <summary>
-        /// Create an argument list to call a base method with default parameter values that satisfy the signature.
-        /// </summary>
-        /// <param name="method">Method to satisfy the signature.</param>
-        /// <returns>ArgumentListSyntax that satisfies the method.</returns>
+        // Create an argument list to call a base method with default parameter values that satisfy the signature.
         public static ArgumentListSyntax CreateDefaultArgumentList(this IMethodSymbol method)
         {
             var argumentList = SyntaxFactory.ArgumentList();
@@ -278,14 +250,10 @@ namespace Microsoft.DotNet.GenAPI
             return argumentList;
         }
 
-        /// <summary>
-        /// Locates constructor generated by the compiler for `record Foo(...)` syntax
-        /// </summary>
-        /// <param name="type">Record type to examine</param>
-        /// <param name="recordConstructor">If the type is a record and the compiler generated constructor is found it will be returned, otherwise null.
-        /// The compiler will not generate a constructor in the case where the user defined it themself without using an argument list
-        /// in the record declaration, or if the record has no parameters</param>
-        /// <returns>True If the type is a record and the compiler generated constructor is found</returns>
+        // Locates constructor generated by the compiler for `record Foo(...)` syntax
+        // If the type is a record and the compiler generated constructor is found it will be returned, otherwise null.
+        // The compiler will not generate a constructor in the case where the user defined it themself without using an argument list
+        // in the record declaration, or if the record has no parameters.
         public static bool TryGetRecordConstructor(this INamedTypeSymbol type, [NotNullWhen(true)] out IMethodSymbol? recordConstructor)
         {
             if (!type.IsRecord)

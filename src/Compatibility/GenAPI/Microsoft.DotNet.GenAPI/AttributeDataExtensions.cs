@@ -51,13 +51,9 @@ namespace Microsoft.DotNet.GenAPI
             "RefSafetyRulesAttribute"
         };
 
-        /// <summary>
-        /// Determines if an attribute is a reserved attribute class -- these are attributes that may
-        /// only be applied by the compiler and are an error to be applied by the user in source.
-        /// See https://github.com/dotnet/roslyn/blob/b8f6dd56f1a0860fcd822bc1e70bec56dc1e97ea/src/Compilers/CSharp/Portable/Symbols/Symbol.cs#L1421
-        /// </summary>
-        /// <param name="attribute">The attribute to check</param>
-        /// <returns>True if the attribute type is reserved.</returns>
+        // Determines if an attribute is a reserved attribute class -- these are attributes that may
+        // only be applied by the compiler and are an error to be applied by the user in source.
+        // See https://github.com/dotnet/roslyn/blob/b8f6dd56f1a0860fcd822bc1e70bec56dc1e97ea/src/Compilers/CSharp/Portable/Symbols/Symbol.cs#L1421
         public static bool IsReserved(this AttributeData attribute)
         {
             INamedTypeSymbol? attributeClass = attribute.AttributeClass;

@@ -32,37 +32,37 @@ namespace Microsoft.DotNet.GenAPI
             bool respectInternals,
             bool includeAssemblyAttributes)
         {
-            bool resolveAssemblyReferences = context.AssemblyReferences?.Length > 0;
+            bool resolveAssemblyReferences = assemblyReferences?.Length > 0;
 
             // Create, configure and execute the assembly loader.
-            AssemblySymbolLoader loader = new(resolveAssemblyReferences, context.RespectInternals);
-            if (context.AssemblyReferences is not null)
+            AssemblySymbolLoader loader = new(resolveAssemblyReferences, respectInternals);
+            if (assemblyReferences is not null)
             {
-                loader.AddReferenceSearchPaths(context.AssemblyReferences);
+                loader.AddReferenceSearchPaths(assemblyReferences);
             }
-            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(context.Assemblies);
+            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(assemblies);
 
-            string headerFileText = ReadHeaderFile(context.HeaderFile);
+            string headerFileText = ReadHeaderFile(headerFile);
 
             AccessibilitySymbolFilter accessibilitySymbolFilter = new(
-                context.RespectInternals,
+                respectInternals,
                 includeEffectivelyPrivateSymbols: true,
                 includeExplicitInterfaceImplementationSymbols: true);
 
             // Configure the symbol filter
             CompositeSymbolFilter symbolFilter = new();
-            if (context.ExcludeApiFiles is not null)
+            if (excludeApiFiles is not null)
             {
-                symbolFilter.Add(new DocIdSymbolFilter(context.ExcludeApiFiles));
+                symbolFilter.Add(new DocIdSymbolFilter(excludeApiFiles));
             }
             symbolFilter.Add(new ImplicitSymbolFilter());
             symbolFilter.Add(accessibilitySymbolFilter);
 
             // Configure the attribute data symbol filter
             CompositeSymbolFilter attributeDataSymbolFilter = new();
-            if (context.ExcludeAttributesFiles is not null)
+            if (excludeAttributesFiles is not null)
             {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeAttributesFiles));
+                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
             }
             attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
 
@@ -72,15 +72,15 @@ namespace Microsoft.DotNet.GenAPI
                 if (assemblySymbol is null)
                     continue;
 
-                using TextWriter textWriter = GetTextWriter(context.OutputPath, assemblySymbol.Name);
+                using TextWriter textWriter = GetTextWriter(outputPath, assemblySymbol.Name);
                 textWriter.Write(headerFileText);
 
                 using CSharpFileBuilder fileBuilder = new(logger,
                     symbolFilter,
                     attributeDataSymbolFilter,
                     textWriter,
-                    context.ExceptionMessage,
-                    context.IncludeAssemblyAttributes,
+                    exceptionMessage,
+                    includeAssemblyAttributes,
                     loader.MetadataReferences);
 
                 fileBuilder.WriteAssembly(assemblySymbol);
