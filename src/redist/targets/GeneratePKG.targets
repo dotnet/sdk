@@ -95,7 +95,8 @@
           <ReplacementString Condition="'$(Architecture)' == 'x64'" >x86_64</ReplacementString>
         </DistributionTemplateReplacement>
         <DistributionTemplateReplacement Include="{minOsVersion}">
-          <ReplacementString>10.13</ReplacementString>
+          <!-- keep in sync with SetOSTargetMinVersions in the root Directory.Build.props in dotnet/runtime -->
+          <ReplacementString>10.15</ReplacementString>
           <ReplacementString Condition="'$(Architecture)' == 'arm64'" >11.0</ReplacementString>
         </DistributionTemplateReplacement>
         <DistributionTemplateReplacement Include="{x64EmulationPkgInstallDirectory}">
