@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
+            bool includeUnlisted = false,
             DirectoryPath? downloadFolder = null,
             PackageSourceMapping packageSourceMapping = null)
         {

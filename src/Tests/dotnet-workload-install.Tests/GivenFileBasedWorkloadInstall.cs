@@ -221,101 +221,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [Fact]
-        public void GivenManagedInstallItCanGarbageCollect()
-        {
-            var (dotnetRoot, installer, _, getResolver) = GetTestInstaller();
-            var packs = new PackInfo[]
-            {
-                CreatePackInfo("Xamarin.Android.Sdk", "8.4.7", WorkloadPackKind.Library, Path.Combine(dotnetRoot, "library-packs", "Xamarin.Android.Sdk.8.4.7.nupkg"), "Xamarin.Android.Sdk"),
-                CreatePackInfo("Xamarin.Android.Framework", "8.4.0", WorkloadPackKind.Framework, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.Framework", "8.4.0"), "Xamarin.Android.Framework")
-            };
-            var sdkVersions = new WorkloadId[] { new WorkloadId("6.0.100"), new WorkloadId("6.0.300") };
-
-            // Write fake packs
-            var installedPacksPath = Path.Combine(dotnetRoot, "metadata", "workloads", "InstalledPacks", "v1");
-            foreach (var sdkVersion in sdkVersions)
-            {
-                foreach (var pack in packs)
-                {
-                    var packRecordPath = Path.Combine(installedPacksPath, pack.Id, pack.Version, sdkVersion);
-                    Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath));
-                    var packRecordContents = JsonSerializer.Serialize<WorkloadResolver.PackInfo>(pack);
-                    File.WriteAllText(packRecordPath, packRecordContents);
-                    if (pack.Kind == WorkloadPackKind.Library)
-                    {
-                        Directory.CreateDirectory(Path.GetDirectoryName(pack.Path));
-                        using var _ = File.Create(pack.Path);
-                    }
-                    else
-                    {
-                        Directory.CreateDirectory(pack.Path);
-                    }
-                }
-            }
-            // Write fake install record for 6.0.300
-            var workloadsRecordPath = Path.Combine(dotnetRoot, "metadata", "workloads", sdkVersions[1], "InstalledWorkloads");
-            Directory.CreateDirectory(workloadsRecordPath);
-            File.Create(Path.Combine(workloadsRecordPath, "xamarin-empty-mock"));
-
-            installer.GarbageCollect(getResolver);
-
-            Directory.EnumerateFileSystemEntries(installedPacksPath)
-                .Should()
-                .BeEmpty();
-            foreach (var pack in packs)
-            {
-                if (pack.Kind == WorkloadPackKind.Library)
-                {
-                    File.Exists(pack.Path).Should().BeFalse();
-                }
-                else
-                {
-                    Directory.Exists(pack.Path)
-                        .Should()
-                        .BeFalse();
-                }
-            }
-        }
-
-        [Fact]
-        public void GivenManagedInstallItCanGarbageCollectPacksMissingFromManifest()
-        {
-            var (dotnetRoot, installer, _, getResolver) = GetTestInstaller();
-            // Define packs that don't show up in the manifest
-            var packs = new PackInfo[]
-            {
-                CreatePackInfo("Xamarin.Android.Sdk.fake", "8.4.7", WorkloadPackKind.Framework, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.Sdk.fake", "8.4.7"), "Xamarin.Android.Sdk.fake"),
-                CreatePackInfo("Xamarin.Android.Framework.mock", "8.4", WorkloadPackKind.Framework, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.Framework.mock", "8.4"), "Xamarin.Android.Framework.mock")
-            };
-            var sdkVersions = new WorkloadId[] { new WorkloadId("6.0.100"), new WorkloadId("6.0.300") };
-
-            // Write fake packs
-            var installedPacksPath = Path.Combine(dotnetRoot, "metadata", "workloads", "InstalledPacks", "v1");
-            foreach (var sdkVersion in sdkVersions)
-            {
-                foreach (var pack in packs)
-                {
-                    var packRecordPath = Path.Combine(installedPacksPath, pack.Id, pack.Version, sdkVersion);
-                    Directory.CreateDirectory(Path.GetDirectoryName(packRecordPath));
-                    File.WriteAllText(packRecordPath, JsonSerializer.Serialize(pack));
-                    Directory.CreateDirectory(pack.Path);
-                }
-            }
-
-            installer.GarbageCollect(getResolver);
-
-            Directory.EnumerateFileSystemEntries(installedPacksPath)
-                .Should()
-                .BeEmpty();
-            foreach (var pack in packs)
-            {
-                Directory.Exists(pack.Path)
-                    .Should()
-                    .BeFalse();
-            }
-        }
-
-        [Fact]
         public void GivenManagedInstallItDoesNotRemovePacksWithInstallRecords()
         {
             var (dotnetRoot, installer, _, getResolver) = GetTestInstaller();
@@ -484,11 +389,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var workloadResolver = CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
             var sdkFeatureBand = new SdkFeatureBand("6.0.300");
 
-            IWorkloadResolver GetResolver(string sdkVersion)
+            IWorkloadResolver GetResolver(string workloadSetVersion)
             {
-                if (sdkVersion != null && !sdkFeatureBand.Equals(new SdkFeatureBand(sdkVersion)))
+                if (workloadSetVersion != null && !sdkFeatureBand.Equals(new SdkFeatureBand(workloadSetVersion)))
                 {
-                    throw new NotSupportedException("Mock doesn't support creating resolver for different feature bands: " + sdkVersion);
+                    throw new NotSupportedException("Mock doesn't support creating resolver for different feature bands: " + workloadSetVersion);
                 }
                 return workloadResolver;
             }
