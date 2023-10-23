@@ -229,8 +229,10 @@ namespace Microsoft.DotNet.GenAPI
                 catch (InvalidOperationException e)
                 {
                     // re-throw the InvalidOperationException with the symbol that caused it.
-                    throw new InvalidOperationException($"Adding member {member.ToDisplayString()} to the " +
-                        $"named type {namedTypeNode} failed with an exception {e.Message}");
+                    throw new InvalidOperationException(string.Format(Resources.AddMemberThrowsException,
+                        member.ToDisplayString(),
+                        namedTypeNode,
+                        e.Message));
                 }
             }
 
@@ -291,7 +293,7 @@ namespace Microsoft.DotNet.GenAPI
                 else
                 {
                     _logger.LogWarning(string.Format(
-                        "Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.",
+                        Resources.ResolveTypeForwardFailed,
                         symbol.ToDisplayString(),
                         $"{symbol.ContainingAssembly.Name}.dll"));
                 }
