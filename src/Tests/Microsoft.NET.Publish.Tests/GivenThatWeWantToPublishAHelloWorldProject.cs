@@ -1020,7 +1020,7 @@ public static class Program
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.8.1.47607")]
+        [Theory]
         [InlineData("invalidProfile", true)]
         [InlineData("invalidProfile.pubxml", true)]
         [InlineData("..\\Properties\\PublishProfiles\\invalidProfile.pubxml", true)]

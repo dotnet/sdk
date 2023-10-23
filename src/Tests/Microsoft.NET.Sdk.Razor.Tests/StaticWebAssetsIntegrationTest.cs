@@ -10,7 +10,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public StaticWebAssetsIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
 
         // Build Standalone project
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_GeneratesJsonManifestAndCopiesItToOutputFolder()
         {
             var expectedManifest = LoadBuildManifest();
@@ -39,7 +39,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_DoesNotUpdateManifest_WhenHasNotChanged()
         {
             var testAsset = "RazorComponentApp";
@@ -85,7 +85,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             secondFinalFile.LastWriteTimeUtc.Should().Be(originalFile.LastWriteTimeUtc);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_UpdatesManifest_WhenFilesChange()
         {
             var testAsset = "RazorComponentApp";
@@ -154,7 +154,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         // Project with references
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void BuildProjectWithReferences_GeneratesJsonManifestAndCopiesItToOutputFolder()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -185,7 +185,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void BuildProjectWithReferences_WorksWithStaticWebAssetsV1ClassLibraries()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -240,7 +240,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void PublishProjectWithReferences_WorksWithStaticWebAssetsV1ClassLibraries()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -303,7 +303,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         // Build no dependencies
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void BuildProjectWithReferences_NoDependencies_GeneratesJsonManifestAndCopiesItToOutputFolder()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -362,7 +362,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         // Rebuild
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Rebuild_RegeneratesJsonManifestAndCopiesItToOutputFolder()
         {
             var testAsset = "RazorComponentApp";
@@ -421,7 +421,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         // Publish
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorComponentApp";
@@ -455,7 +455,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_PublishSingleFile_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -493,7 +493,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_NoBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -560,7 +560,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_DeployOnBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -595,7 +595,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void PublishProjectWithReferences_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -636,7 +636,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void PublishProjectWithReferences_PublishSingleFile_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -672,7 +672,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void PublishProjectWithReferences_NoBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -738,7 +738,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void PublishProjectWithReferences_AppendTargetFrameworkToOutputPathFalse_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -780,7 +780,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void BuildProjectWithReferences_DeployOnBuild_GeneratesPublishJsonManifestAndCopiesPublishAssets()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -819,7 +819,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         // Pack
 
         // Clean
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Clean_RemovesManifestFrom_BuildAndIntermediateOutput()
         {
             var expectedManifest = LoadBuildManifest();
@@ -854,7 +854,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(finalPath).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_Fails_WhenConflictingAssetsFoundBetweenAStaticWebAssetAndAFileInTheWebRootFolder()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -867,7 +867,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             build.Execute().Should().Fail();
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_FailsWhenStaticWebAssetsHaveConflictingPaths()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -894,7 +894,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         // If you modify this test, make sure you also modify the test below this one to assert that things are not included as content.
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_IncludesStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -924,7 +924,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_NoAssets_DoesNothing()
         {
             var testAsset = "PackageLibraryNoStaticAssets";
@@ -952,7 +952,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_NoAssets_Multitargeting_DoesNothing()
         {
             var testAsset = "PackageLibraryNoStaticAssets";
@@ -987,7 +987,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_Incremental_IncludesStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1023,7 +1023,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_StaticWebAssets_WithoutFileExtension_AreCorrectlyPacked()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1056,7 +1056,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_StaticWebAssets_GeneratePackageOnBuild_PacksStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1088,7 +1088,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_StaticWebAssets_GeneratePackageOnBuild_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1119,7 +1119,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_MultipleTargetFrameworks_Works()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1160,7 +1160,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_MultipleTargetFrameworks_NoBuild_IncludesStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1205,7 +1205,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_MultipleTargetFrameworks_NoBuild_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1248,7 +1248,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_MultipleTargetFrameworks_GeneratePackageOnBuild_IncludesStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1289,7 +1289,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_MultipleTargetFrameworks_GeneratePackageOnBuild_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -1328,7 +1328,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1398,7 +1398,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1467,7 +1467,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_NoBuild_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1543,7 +1543,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_NoBuild_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1618,7 +1618,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_GeneratePackageOnBuild_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1688,7 +1688,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_BeforeNet60_MultipleTargetFrameworks_GeneratePackageOnBuild_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1757,7 +1757,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_Net50_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1825,7 +1825,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_Net50_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1892,7 +1892,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_Net50_NoBuild_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -1966,7 +1966,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_Net50_NoBuild_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -2039,7 +2039,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_Net50_GeneratePackageOnBuild_WithScopedCss_IncludesAssetsAndProjectBundle()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -2107,7 +2107,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_Net50_GeneratePackageOnBuild_WithScopedCss_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -2174,7 +2174,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_MultipleTargetFrameworks_WithScopedCssAndJsModules_IncludesAssetsAndProjectBundle()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -2251,7 +2251,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_Incremental_MultipleTargetFrameworks_WithScopedCssAndJsModules_IncludesAssetsAndProjectBundle()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -2330,7 +2330,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_MultipleTargetFrameworks_WithScopedCssAndJsModules_DoesNotIncludeApplicationBundleNorModulesManifest()
         {
             var testAsset = "PackageLibraryTransitiveDependency";
@@ -2398,7 +2398,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_MultipleTargetFrameworks_DoesNotIncludeAssetsAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -2437,7 +2437,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_DoesNotInclude_TransitiveBundleOrScopedCssAsStaticWebAsset()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -2463,7 +2463,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_DoesNotIncludeStaticWebAssetsAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -2495,7 +2495,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_NoBuild_IncludesStaticWebAssets()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -2526,7 +2526,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_NoBuild_DoesNotIncludeFilesAsContent()
         {
             var testAsset = "PackageLibraryDirectDependency";
@@ -2556,7 +2556,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_DoesNotIncludeAnyCustomPropsFiles_WhenNoStaticAssetsAreAvailable()
         {
             var testAsset = "RazorComponentLibrary";
@@ -2580,7 +2580,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 });
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Pack_Incremental_DoesNotRegenerateCacheAndPropsFiles()
         {
             var testAsset = "PackageLibraryTransitiveDependency";

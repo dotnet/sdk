@@ -12,7 +12,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     {
         public WasmPwaManifestTests(ITestOutputHelper log) : base(log) { }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_ServiceWorkerAssetsManifest_Works()
         {
             // Arrange
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                assetsManifestPath: "service-worker-assets.js");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Build_HostedAppWithServiceWorker_Works()
         {
             // Arrange
@@ -75,7 +75,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             entries.Should().Contain(e => expectedExtensions.Contains(Path.GetExtension(e)));
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void PublishWithPWA_ProducesAssets()
         {
             // Arrange
@@ -103,7 +103,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert.FileContainsLine(result, serviceWorkerFile, "// This is the production service worker");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void PublishHostedWithPWA_ProducesAssets()
         {
             // Arrange
@@ -131,7 +131,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert.FileContainsLine(result, serviceWorkerFile, "// This is the production service worker");
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_UpdatesServiceWorkerVersionHash_WhenSourcesChange()
         {
             // Arrange
@@ -171,7 +171,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             updatedCapture.Should().NotBe(capture);
         }
 
-        [RequiresMSBuildVersionFact("17.8.1.47607")]
+        [Fact]
         public void Publish_DeterministicAcrossBuilds_WhenNoSourcesChange()
         {
             // Arrange
