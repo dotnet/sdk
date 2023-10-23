@@ -23,12 +23,6 @@
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="NuGet.Protocol" />
     <PackageReference Include="NuGet.Versioning" />
-
-    <!-- Bump the transitive dependencies which are brought in by "Microsoft.CodeAnalysis.Analyzer.Testing".
-         Using the referenced versions is undesirable as it brings in the entire .NET Standard 1.x dependency graph. -->
-    <PackageReference Include="Microsoft.VisualBasic" />
-    <PackageReference Include="NETStandard.Library" />
-    <PackageReference Include="Microsoft.VisualStudio.Composition" />
   </ItemGroup>
 
   <ItemGroup>

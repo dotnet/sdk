@@ -33,6 +33,7 @@
     <!-- roslyn-sdk -->
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <!-- runtime -->
+    <MicrosoftBclAsyncInterfacesVersion>8.0.0-rtm.23517.16</MicrosoftBclAsyncInterfacesVersion>
     <MicrosoftExtensionsFileSystemGlobbingVersion>8.0.0-rtm.23517.16</MicrosoftExtensionsFileSystemGlobbingVersion>
     <MicrosoftExtensionsLoggingVersion>8.0.0-rtm.23517.16</MicrosoftExtensionsLoggingVersion>
     <!-- symreader -->

@@ -45,10 +45,6 @@
 
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.CommandLine.Rendering" />
-
-    <!-- Bump the transitive DiaSymReader/1.4.0 dependency which is brought in by the ".Features" packages.
-         Using that verion is undesirable as it brings in the entire .NET Standard 1.x dependency graph. -->
-    <PackageReference Include="Microsoft.DiaSymReader" />
   </ItemGroup>
 
   <ItemGroup>
