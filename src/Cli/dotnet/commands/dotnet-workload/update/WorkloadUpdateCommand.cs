@@ -13,6 +13,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
+using static Microsoft.DotNet.Workloads.Workload.Install.WorkloadManifestUpdater;
 
 namespace Microsoft.DotNet.Workloads.Workload.Update
 {
@@ -55,16 +56,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             recorder.HistoryRecord.CommandName = "update";
 
             bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-            var rollbackFileContents = usedRollback ? WorkloadManifestUpdater.ParseRollbackDefinitionFile(_fromRollbackDefinition, _sdkFeatureBand) : null;
+            var rollbackFileContents = usedRollback ? _workloadManifestUpdater.ParseRollbackDefinitionFile(_fromRollbackDefinition, _sdkFeatureBand) : null;
             if (usedRollback)
             {
                 var rollbackContents = new Dictionary<string, string>();
                 recorder.HistoryRecord.WorkloadArguments = new List<string>();
-                foreach (var (id, version, featureBand) in rollbackFileContents)
+                foreach ((ManifestId id, ManifestVersionWithBand ManifestWithBand) content in rollbackFileContents)
                 {
+                    var id = content.Item1;
+                    var versionWithBand = content.Item2;
                     var idString = id.ToString();
                     recorder.HistoryRecord.WorkloadArguments.Add(idString);
-                    rollbackContents[idString] = $"{version}/{featureBand}";
+                    rollbackContents[idString] = $"{versionWithBand.Version}/{versionWithBand.Band}";
                 }
 
                 recorder.HistoryRecord.RollbackFileContents = rollbackContents;
@@ -138,7 +141,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             return _workloadInstaller.ExitCode;
         }
 
-        public void UpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> rollbackFileContents = null, IEnumerable<WorkloadId> workloadIds = null)
+        public void UpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null, IEnumerable<(ManifestId id, ManifestVersionWithBand versionWithBand)> rollbackFileContents = null, IEnumerable<WorkloadId> workloadIds = null)
         {
             Reporter.WriteLine();
 
@@ -159,11 +162,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
         }
 
-        private IEnumerable<ManifestVersionUpdate> CalculateManifestUpdates(IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> rollbackFileContents)
+        private IEnumerable<ManifestVersionUpdate> CalculateManifestUpdates(IEnumerable<(ManifestId id, ManifestVersionWithBand versionWithBand)> rollbackFileContents)
         {
             if (string.IsNullOrWhiteSpace(_fromRollbackDefinition))
             {
-                return _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate);
+                return _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
             else if (_fromHistorySpecified)
             {
@@ -204,8 +207,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     var currentVersionInformation = _workloadManifestUpdater.GetInstalledManifestVersion(manifestId);
                     versionUpdates.Add(new ManifestVersionUpdate(
                         manifestId,
-                        currentVersionInformation.manifestVersion,
-                        currentVersionInformation.sdkFeatureBand.ToString(),
+                        currentVersionInformation.Version,
+                        currentVersionInformation.Band.ToString(),
                         new ManifestVersion(m.Value.Split('/')[0]),
                         m.Value.Split('/')[1]));
                 }

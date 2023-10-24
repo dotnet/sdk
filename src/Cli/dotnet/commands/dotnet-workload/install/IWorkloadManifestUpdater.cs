@@ -3,6 +3,7 @@
 
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using static Microsoft.DotNet.Workloads.Workload.Install.WorkloadManifestUpdater;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -15,7 +16,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates();
 
         IEnumerable<ManifestVersionUpdate>
-            CalculateManifestRollbacks(string rollbackDefinitionFilePath, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> manifestRollbackContents);
+            CalculateManifestRollbacks(string rollbackDefinitionFilePath, IEnumerable<(ManifestId id, ManifestVersionWithBand versionWithBand)> manifestRollbackContents);
 
         Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand);
 
@@ -23,7 +24,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         void DeleteUpdatableWorkloadsFile();
 
-        (ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand) GetInstalledManifestVersion(ManifestId manifestId);
+        public ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId);
+
+        IEnumerable<(ManifestId id, ManifestVersionWithBand ManifestWithBand)> ParseRollbackDefinitionFile(string rollbackDefinitionFilePath, SdkFeatureBand featureBand);
     }
 
     internal record ManifestUpdateWithWorkloads(ManifestVersionUpdate ManifestUpdate, WorkloadCollection Workloads);

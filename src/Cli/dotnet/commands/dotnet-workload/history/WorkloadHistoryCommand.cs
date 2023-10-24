@@ -32,19 +32,7 @@ namespace Microsoft.DotNet.Workloads.Workload.History
             string userProfileDir = null
         ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
         {
-            var creationParameters = new WorkloadResolverFactory.CreationParameters()
-            {
-                DotnetPath = dotnetDir,
-                UserProfileDir = userProfileDir,
-                GlobalJsonStartDir = null,
-                SdkVersionFromOption = parseResult.SafelyGetValueForOption(InstallingWorkloadCommandParser.VersionOption),
-                VersionForTesting = version,
-                CheckIfFeatureBandManifestExists = !(parseResult.SafelyGetValueForOption(InstallingWorkloadCommandParser.PrintDownloadLinkOnlyOption)),
-                WorkloadResolverForTesting = workloadResolver,
-                UseInstalledSdkVersionForResolver = true
-            };
-
-            var creationResult = WorkloadResolverFactory.Create(creationParameters);
+            var creationResult = new WorkloadResolverFactory().Create();
 
             _dotnetPath = creationResult.DotnetPath;
             userProfileDir = creationResult.UserProfileDir;

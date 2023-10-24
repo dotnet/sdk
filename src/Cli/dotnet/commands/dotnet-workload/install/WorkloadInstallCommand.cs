@@ -11,6 +11,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
+using static Microsoft.DotNet.Workloads.Workload.Install.WorkloadManifestUpdater;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
@@ -75,14 +76,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             try
             {
-                var manifestRollbacks = usedRollback ? WorkloadManifestUpdater.ParseRollbackDefinitionFile(_fromRollbackDefinition, _sdkFeatureBand) : null;
+                var manifestRollbacks = usedRollback ? _workloadManifestUpdater.ParseRollbackDefinitionFile(_fromRollbackDefinition, _sdkFeatureBand) : null;
 
                 if (usedRollback)
                 {
                     var rollbackContents = new Dictionary<string, string>();
-                    foreach (var (id, version, featureBand) in manifestRollbacks)
+                    foreach (var rollback in manifestRollbacks)
                     {
-                        rollbackContents[id.ToString()] = $"{version}/{featureBand}";
+                        rollbackContents[rollback.id.ToString()] = $"{rollback.ManifestWithBand.Version}/{rollback.ManifestWithBand.Band}";
                     }
 
                     recorder.HistoryRecord.RollbackFileContents = rollbackContents;
@@ -166,7 +167,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             bool skipManifestUpdate = false,
             bool includePreviews = false,
             DirectoryPath? offlineCache = null,
-            IEnumerable<(ManifestId, ManifestVersion, SdkFeatureBand)> rollbackContents = null)
+            IEnumerable<(ManifestId, ManifestVersionWithBand)> rollbackContents = null)
         {
             Reporter.WriteLine();
 

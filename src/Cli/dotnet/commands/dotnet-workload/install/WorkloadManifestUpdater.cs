@@ -193,16 +193,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> manifestRollbackContents = null)
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, IEnumerable<(ManifestId id, ManifestVersionWithBand versionWithBand)> manifestRollbackContents = null)
         {
             var currentManifestIds = GetInstalledManifestIds();
             manifestRollbackContents ??= ParseRollbackDefinitionFile(rollbackDefinitionFilePath, _sdkFeatureBand);
 
-            var unrecognizedManifestIds = manifestRollbackContents.Where(rollbackManifest => !currentManifestIds.Contains(rollbackManifest.Id));
+            var unrecognizedManifestIds = manifestRollbackContents.Where(rollbackManifest => !currentManifestIds.Contains(rollbackManifest.id));
             if (unrecognizedManifestIds.Any())
             {
                 _reporter.WriteLine(string.Format(LocalizableStrings.RollbackDefinitionContainsExtraneousManifestIds, rollbackDefinitionFilePath, string.Join(" ", unrecognizedManifestIds)).Yellow());
-                manifestRollbackContents = manifestRollbackContents.Where(rollbackManifest => currentManifestIds.Contains(rollbackManifest.Id));
+                manifestRollbackContents = manifestRollbackContents.Where(rollbackManifest => currentManifestIds.Contains(rollbackManifest.id));
             }
 
             var manifestUpdates = manifestRollbackContents.Select(manifest =>
@@ -419,7 +419,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        internal static IEnumerable<(ManifestId id, ManifestVersionWithBand ManifestWithBand)> ParseRollbackDefinitionFile(string rollbackDefinitionFilePath, SdkFeatureBand featureBand)
+        public IEnumerable<(ManifestId id, ManifestVersionWithBand ManifestWithBand)> ParseRollbackDefinitionFile(string rollbackDefinitionFilePath, SdkFeatureBand featureBand)
         {
             string fileContent;
 
@@ -453,6 +453,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private string GetAdvertisingManifestPath(SdkFeatureBand featureBand, ManifestId manifestId) => Path.Combine(_userProfileDir, "sdk-advertising", featureBand.ToString(), manifestId.ToString());
 
-        private record ManifestVersionWithBand(ManifestVersion Version, SdkFeatureBand Band);
+        internal record ManifestVersionWithBand(ManifestVersion Version, SdkFeatureBand Band);
     }
 }

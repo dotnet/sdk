@@ -4,6 +4,7 @@
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using static Microsoft.DotNet.Workloads.Workload.Install.WorkloadManifestUpdater;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -31,11 +32,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return _manifestUpdates;
         }
 
-        public (ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand) GetInstalledManifestVersion(ManifestId manifestId)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand)
         {
             GetManifestPackageDownloadsCallCount++;
@@ -45,9 +41,19 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
-        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> manifestRollbackContents = null)
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, IEnumerable<(ManifestId id, ManifestVersionWithBand versionWithBand)> manifestRollbackContents)
         {
             return _manifestUpdates.Select(t => t.ManifestUpdate);
+        }
+
+        public ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public IEnumerable<(ManifestId id, ManifestVersionWithBand ManifestWithBand)> ParseRollbackDefinitionFile(string rollbackDefinitionFilePath, SdkFeatureBand featureBand)
+        {
+            throw new NotImplementedException();
         }
 
         public Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync() => throw new NotImplementedException();
