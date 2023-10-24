@@ -245,7 +245,7 @@
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.IsTrimmable_warns_when_expected_for_not_correctly_multitargeted_libraries
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.IsTrimmable_warns_when_expected_for_not_correctly_multitargeted_libraries"
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
