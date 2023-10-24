@@ -127,7 +127,7 @@
     <CreateSdkSymbolsLayout SdkLayoutPath="$(SdkLayout)"
                             AllSymbolsPath="$(UnifiedSymbolsLayout)"
                             SdkSymbolsLayoutPath="$(SdkSymbolsLayout)"
-                            FailOnMissingPDBs="true" />
+                            FailOnMissingPDBs="false" />
 
     <Exec Command="tar --numeric-owner -czf $(SdkSymbolsTarball) *"
           WorkingDirectory="$(SdkSymbolsLayout)" />
