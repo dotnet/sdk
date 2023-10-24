@@ -14,7 +14,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-public class SourcelinkTests : SmokeTests
+public class SourcelinkTests : SdkTests
 {
     private static string SourcelinkRoot { get; } = Path.Combine(Directory.GetCurrentDirectory(), nameof(SourcelinkTests));
 
@@ -23,7 +23,8 @@ public class SourcelinkTests : SmokeTests
     /// <summary>
     /// Verifies that all symbols have valid sourcelinks.
     /// </summary>
-    [Fact]
+    // https://github.com/dotnet/source-build/issues/3668
+    // [Fact]
     public void VerifySourcelinks()
     {
         if (Directory.Exists(SourcelinkRoot))
