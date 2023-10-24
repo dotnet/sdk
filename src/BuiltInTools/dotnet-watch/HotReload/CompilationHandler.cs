@@ -170,32 +170,45 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
+            // Diagnostics include:
+            // 1) rude edits
+            // 2) emit diagnostics
+            // 3) semantic diagnostics related to updated code
             var (updates, hotReloadDiagnostics) = await _hotReloadService.EmitSolutionUpdateAsync(updatedSolution, cancellationToken);
-            // hotReloadDiagnostics currently includes semantic Warnings and Errors for types being updated. We want to limit rude edits to the class
-            // of unrecoverable errors that a user cannot fix and requires an app rebuild.
-            var rudeEdits = hotReloadDiagnostics.RemoveAll(d => d.Severity == DiagnosticSeverity.Warning || !d.Descriptor.Id.StartsWith("ENC", StringComparison.Ordinal));
 
-            if (rudeEdits.IsEmpty && updates.IsEmpty)
+            // report warnings:
+            foreach (var diagnostic in hotReloadDiagnostics)
             {
-                var compilationErrors = GetCompilationErrors(updatedSolution, cancellationToken);
-                if (compilationErrors.IsEmpty)
+                if (diagnostic.Severity == DiagnosticSeverity.Warning)
                 {
-                    _reporter.Output("No hot reload changes to apply.");
+                    _reporter.Warn(CSharpDiagnosticFormatter.Instance.Format(diagnostic));
                 }
+            }
 
-                // report or clear diagnostics in the browser UI
-                if (context.BrowserRefreshServer != null)
-                {
-                    _reporter.Verbose($"Updating diagnostics in the browser.");
-                    if (compilationErrors.IsEmpty)
-                    {
-                        await context.BrowserRefreshServer.SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
-                    }
-                    else
-                    {
-                        await context.BrowserRefreshServer.SendJsonSerlialized(new HotReloadDiagnostics { Diagnostics = compilationErrors }, cancellationToken);
-                    }
-                }
+            // Check rude edits first. If there are any, the compilation doesn't proceed so semantic errors are not reported.
+            var rudeEdits = hotReloadDiagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error && d.Descriptor.Id.StartsWith("ENC", StringComparison.Ordinal))
+                .Select(d => CSharpDiagnosticFormatter.Instance.Format(d))
+                .ToList();
+
+            if (rudeEdits is not [])
+            {
+                await ReportErrors(context, rudeEdits, "a rude edit", "rude edits", cancellationToken);
+
+                HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.CompilationHandler);
+
+                // Return false to display rude edit dialog.
+                return false;
+            }
+
+            var errors = hotReloadDiagnostics
+                .Where(d => d.Severity == DiagnosticSeverity.Error)
+                .Select(d => CSharpDiagnosticFormatter.Instance.Format(d))
+                .ToList();
+
+            if (errors is not [])
+            {
+                await ReportErrors(context, errors, "a compilation error", "compilation errors", cancellationToken);
 
                 HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.CompilationHandler);
 
@@ -204,17 +217,21 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return true;
             }
 
-            if (!rudeEdits.IsEmpty)
+            if (updates.IsEmpty)
             {
-                // Rude edit.
-                _reporter.Output("Unable to apply hot reload because of a rude edit.");
-                foreach (var diagnostic in hotReloadDiagnostics)
+                _reporter.Output("No hot reload changes to apply.");
+
+                // report or clear diagnostics in the browser UI
+                if (context.BrowserRefreshServer != null)
                 {
-                    _reporter.Verbose(CSharpDiagnosticFormatter.Instance.Format(diagnostic));
+                    _reporter.Verbose($"Updating diagnostics in the browser.");
+                    await context.BrowserRefreshServer.SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
                 }
 
                 HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.CompilationHandler);
-                return false;
+
+                // Return true so that the watcher continues to keep the current hot reload session alive.
+                return true;
             }
 
             _currentSolution = updatedSolution;
@@ -237,6 +254,22 @@ namespace Microsoft.DotNet.Watcher.Tools
             return applyStatus;
         }
 
+        private async Task ReportErrors(DotNetWatchContext context, IReadOnlyList<string> errors, string reasonSingular, string reasonPlural, CancellationToken cancellationToken)
+        {
+            _reporter.Output($"Unable to apply hot reload because of {(errors.Count > 1 ? reasonPlural : reasonSingular)}:");
+
+            foreach (var error in errors)
+            {
+                _reporter.Error(error);
+            }
+
+            if (context.BrowserRefreshServer != null)
+            {
+                _reporter.Verbose($"Updating diagnostics in the browser.");
+                await context.BrowserRefreshServer.SendJsonSerlialized(new HotReloadDiagnostics { Diagnostics = errors }, cancellationToken);
+            }
+        }
+
         private readonly struct HotReloadDiagnostics
         {
             public string Type => "HotReloadDiagnosticsv1";
@@ -247,43 +280,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly struct AspNetCoreHotReloadApplied
         {
             public string Type => "AspNetCoreHotReloadApplied";
-        }
-
-        private ImmutableArray<string> GetCompilationErrors(Solution solution, CancellationToken cancellationToken)
-        {
-            var @lock = new object();
-            var builder = ImmutableArray<string>.Empty;
-            Parallel.ForEach(solution.Projects, project =>
-            {
-                if (!project.TryGetCompilation(out var compilation))
-                {
-                    return;
-                }
-
-                var compilationDiagnostics = compilation.GetDiagnostics(cancellationToken);
-                if (compilationDiagnostics.IsEmpty)
-                {
-                    return;
-                }
-
-                var projectDiagnostics = ImmutableArray<string>.Empty;
-                foreach (var item in compilationDiagnostics)
-                {
-                    if (item.Severity == DiagnosticSeverity.Error)
-                    {
-                        var diagnostic = CSharpDiagnosticFormatter.Instance.Format(item);
-                        _reporter.Output("\x1B[40m\x1B[31m" + diagnostic);
-                        projectDiagnostics = projectDiagnostics.Add(diagnostic);
-                    }
-                }
-
-                lock (@lock)
-                {
-                    builder = builder.AddRange(projectDiagnostics);
-                }
-            });
-
-            return builder;
         }
 
         private async ValueTask<bool> EnsureSessionStartedAsync()

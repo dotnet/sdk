@@ -180,22 +180,27 @@ namespace Microsoft.DotNet.Watcher
                             {
                                 _reporter.Output($"Files changed: {string.Join(", ", fileItems.Select(f => GetRelativeFilePath(f.FilePath)))}");
                             }
+
                             var start = Stopwatch.GetTimestamp();
                             if (await hotReload.TryHandleFileChange(context, fileItems, combinedCancellationSource.Token))
                             {
                                 var totalTime = TimeSpan.FromTicks(Stopwatch.GetTimestamp() - start);
                                 _reporter.Verbose($"Hot reload change handled in {totalTime.TotalMilliseconds}ms.", emoji: "🔥");
                             }
+                            else if (_rudeEditDialog is null)
+                            {
+                                _reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
+
+                                // restart:
+                                break;
+                            }
+                            else if (await _rudeEditDialog.EvaluateAsync(combinedCancellationSource.Token) == RudeEditAction.Continue)
+                            {
+                                _reporter.Output("Update code to remove any rude edits or press Ctrl+R to keep the changes and restart the app.");
+                            }
                             else
                             {
-                                if (_rudeEditDialog is not null)
-                                {
-                                    await _rudeEditDialog.EvaluateAsync(combinedCancellationSource.Token);
-                                }
-                                else
-                                {
-                                    _reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
-                                }
+                                // restart:
                                 break;
                             }
                         }

@@ -2,16 +2,30 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Diagnostics;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
+    internal enum RudeEditAction
+    {
+        /// <summary>
+        /// Restarts the app.
+        /// </summary>
+        Restart,
+
+        /// <summary>
+        /// Continue the session. The user may update the code to remove rude edits.
+        /// </summary>
+        Continue,
+    }
+
     internal sealed class RudeEditDialog
     {
         private readonly IReporter _reporter;
         private readonly IRequester _requester;
         private readonly IConsole _console;
-        private bool? _restartImmediatelySessionPreference; // Session preference
+        private RudeEditAction? _preferredAction;
 
         public RudeEditDialog(IReporter reporter, IRequester requester, IConsole console)
         {
@@ -24,58 +38,45 @@ namespace Microsoft.DotNet.Watcher.Tools
             if (alwaysRestart == "1" || string.Equals(alwaysRestart, "true", StringComparison.OrdinalIgnoreCase))
             {
                 _reporter.Verbose($"DOTNET_WATCH_RESTART_ON_RUDE_EDIT = '{alwaysRestart}'. Restarting without prompt.");
-                _restartImmediatelySessionPreference = true;
+                _preferredAction = RudeEditAction.Restart;
             }
         }
 
-        public async Task EvaluateAsync(CancellationToken cancellationToken)
+        /// <summary>
+        /// Returns true to restart the app.
+        /// </summary>
+        public async Task<RudeEditAction> EvaluateAsync(CancellationToken cancellationToken)
         {
-            if (_restartImmediatelySessionPreference.HasValue)
+            if (_preferredAction.HasValue)
             {
-                await GetRudeEditResult(_restartImmediatelySessionPreference.Value, cancellationToken);
-                return;
+                return _preferredAction.Value;
             }
 
             var key = await _requester.GetKeyAsync(
                 "Do you want to restart your app - Yes (y) / No (n) / Always (a) / Never (v)?",
-                KeyPressed,
+                validateInput: key => key is ConsoleKey.Y or ConsoleKey.N or ConsoleKey.A or ConsoleKey.V,
                 cancellationToken);
 
             switch (key)
             {
                 case ConsoleKey.Escape:
                 case ConsoleKey.Y:
-                    await GetRudeEditResult(restartImmediately: true, cancellationToken);
-                    return;
+                    return RudeEditAction.Restart;
+
                 case ConsoleKey.N:
-                    await GetRudeEditResult(restartImmediately: false, cancellationToken);
-                    return;
+                    return RudeEditAction.Continue;
+
                 case ConsoleKey.A:
-                    _restartImmediatelySessionPreference = true;
-                    await GetRudeEditResult(restartImmediately: true, cancellationToken);
-                    return;
+                    _preferredAction = RudeEditAction.Restart;
+                    return RudeEditAction.Restart;
+
                 case ConsoleKey.V:
-                    _restartImmediatelySessionPreference = false;
-                    await GetRudeEditResult(restartImmediately: false, cancellationToken);
-                    return;
+                    _preferredAction = RudeEditAction.Continue;
+                    return RudeEditAction.Continue;
+
+                default:
+                    throw new UnreachableException();
             }
-
-            static bool KeyPressed(ConsoleKey key)
-            {
-                return key is ConsoleKey.Y or ConsoleKey.N or ConsoleKey.A or ConsoleKey.V;
-            }
-        }
-
-        private Task GetRudeEditResult(bool restartImmediately, CancellationToken cancellationToken)
-        {
-            if (restartImmediately)
-            {
-                return Task.CompletedTask;
-            }
-
-            _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", emoji: "🔥");
-
-            return Task.Delay(-1, cancellationToken);
         }
     }
 }
