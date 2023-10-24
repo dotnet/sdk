@@ -18,6 +18,13 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 {
     public class MSBuildWorkspaceLoaderTests
     {
+        // Microsoft.CodeAnalysis.CSharp.ErrorCode
+        private const string ERR_NameNotInContext = "CS0103";
+        private const string ERR_NoEntryPoint = "CS5001";
+
+        // Microsoft.CodeAnalysis.VisualBasic.ERRID
+        private const string ERR_UndefinedType1 = "BC30002";
+
         private static string ProjectsPath => TestProjectsPathHelper.GetProjectsDirectory();
 
         protected ITestOutputHelper TestOutputHelper { get; set; }
@@ -30,27 +37,29 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [MSBuildTheory(typeof(WindowsOnly))]
         [InlineData("winforms")]
         [InlineData("winformslib")]
-        // Skip="https://github.com/dotnet/format/issues/1402"
-        // [InlineData("wpf")]
-        // [InlineData("wpfusercontrollib")]
-        // [InlineData("wpflib")]
-        // [InlineData("wpfcustomcontrollib")]
-        public async Task CSharpTemplateProject_WindowsOnly_LoadWithNoDiagnostics(string templateName, string ignoredDiagnostics = "")
+        [InlineData("wpf")]
+        [InlineData("wpfusercontrollib")]
+        [InlineData("wpflib")]
+        [InlineData("wpfcustomcontrollib")]
+        public async Task CSharpTemplateProject_WindowsOnly_LoadWithNoDiagnostics(string templateName)
         {
-            await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.CSharp, ignoredDiagnostics.Split(";", StringSplitOptions.TrimEntries));
+            var ignoredDiagnostics = templateName switch
+            {
+                "wpf" => new string[] { ERR_NoEntryPoint, ERR_NameNotInContext },
+                "wpfusercontrollib" => new string[] { ERR_NameNotInContext },
+                _ => Array.Empty<string>(),
+            };
+
+            await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.CSharp, ignoredDiagnostics);
         }
 
         [MSBuildTheory]
         [InlineData("web")]
-        [InlineData("grpc", "CS8981")]
+        [InlineData("grpc")]
         [InlineData("webapi")]
         [InlineData("razor")]
-        [InlineData("mvc", "CS8602")]
-        [InlineData("angular")]
-        [InlineData("react")]
-        // Skip="https://github.com/dotnet/format/issues/1402"
-        // [InlineData("reactredux")]
-        [InlineData("blazorserver")]
+        [InlineData("mvc")]
+        [InlineData("blazor")]
         [InlineData("blazorwasm")]
         [InlineData("classlib")]
         [InlineData("console")]
@@ -59,20 +68,31 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         [InlineData("razorclasslib")]
         [InlineData("worker")]
         [InlineData("xunit")]
-        public async Task CSharpTemplateProject_LoadWithNoDiagnostics(string templateName, string ignoredDiagnostics = "")
+        public async Task CSharpTemplateProject_LoadWithNoDiagnostics(string templateName)
         {
-            await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.CSharp, ignoredDiagnostics.Split(";", StringSplitOptions.TrimEntries));
+            var ignoredDiagnostics = templateName switch
+            {
+                _ => Array.Empty<string>(),
+            };
+
+            await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.CSharp, ignoredDiagnostics);
         }
 
         [MSBuildTheory]
-        [InlineData("classlib", "BC30002")]
-        [InlineData("console", "BC30002")]
-        [InlineData("mstest", "BC30002")]
-        [InlineData("nunit", "BC30002")]
-        [InlineData("xunit", "BC30002")]
-        public async Task VisualBasicTemplateProject_LoadWithNoDiagnostics(string templateName, string ignoredDiagnostics)
+        [InlineData("classlib")]
+        [InlineData("console")]
+        [InlineData("mstest")]
+        [InlineData("nunit")]
+        [InlineData("xunit")]
+        public async Task VisualBasicTemplateProject_LoadWithNoDiagnostics(string templateName)
         {
-            await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.VisualBasic, ignoredDiagnostics.Split(";", StringSplitOptions.TrimEntries));
+            var ignoredDiagnostics = (templateName, isWindows: OperatingSystem.IsWindows()) switch
+            {
+                (_, isWindows: false) => new string[] { ERR_UndefinedType1 },
+                _ => Array.Empty<string>(),
+            };
+
+            await AssertTemplateProjectLoadsCleanlyAsync(templateName, LanguageNames.VisualBasic, ignoredDiagnostics);
         }
 
         private async Task AssertTemplateProjectLoadsCleanlyAsync(string templateName, string languageName, string[] ignoredDiagnostics = null)

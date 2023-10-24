@@ -32,6 +32,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// Applies formatting and returns a formatted <see cref="Solution"/>
         /// </summary>
         public async Task<Solution> FormatAsync(
+            Workspace workspace,
             Solution solution,
             ImmutableArray<DocumentId> formattableDocuments,
             FormatOptions formatOptions,

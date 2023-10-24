@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.CommandLine;
-using System.CommandLine.Parsing;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Commands;
 
@@ -12,7 +11,7 @@ namespace Microsoft.CodeAnalysis.Tools
         private static async Task<int> Main(string[] args)
         {
             var rootCommand = RootFormatCommand.GetCommand();
-            return await rootCommand.InvokeAsync(args);
+            return await rootCommand.Parse(args).InvokeAsync(CancellationToken.None);
         }
     }
 }

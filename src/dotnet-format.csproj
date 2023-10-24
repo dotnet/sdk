@@ -1,29 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <LangVersion>10.0</LangVersion>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <Nullable>Enable</Nullable>
-
     <NoWarn>$(NoWarn);8002</NoWarn>
-    <PackageIcon>Icon.png</PackageIcon>
-    <PackageIconFullPath>$(MSBuildThisFileDirectory)Resources\icon.png</PackageIconFullPath>
-
     <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
-
-    <!-- Copy nuget assemblies to build directory. -->
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-
-    <!-- Always run on the latest runtime installed. -->
-    <RuntimeFrameworkVersion Condition=" '$(DotnetBuildFromSource)' != 'true' ">7.0.0-preview.2.22114.1</RuntimeFrameworkVersion>
     <RollForward>LatestMajor</RollForward>
 
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
+    <PackageIcon>Icon.png</PackageIcon>
+    <PackageIconFullPath>$(MSBuildThisFileDirectory)Resources\icon.png</PackageIconFullPath>
+
+    <!-- Copy nuget assemblies to build directory. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
     <!--
       These identifiers are for generating the shim'd core executables for signing. Not all options
@@ -33,36 +26,28 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.CommandLine" />
-    <PackageReference Include="System.CommandLine.Rendering" />
-
     <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Build.Locator" />
 
     <PackageReference Include="Microsoft.CodeAnalysis" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features " />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
 
     <!-- Included with Microsoft.CodeAnalysis.dll for Razor support -->
     <PackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler" ExcludeAssets="compile" />
 
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <!-- Loaded dynamically -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Features" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" />
+
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
 
-    <!--
-      Explicit System.Text.Json package reference is required for source-build to pick up the live package.
-      Avoids picking up an old version via transitive dependency from Microsoft.Build or Microsoft.CodeAnalysis.Workspaces.MSBuild.
-    -->
-    <PackageReference Include="System.Text.Json"  Condition=" '$(DotnetBuildFromSource)' == 'true'" />
+    <PackageReference Include="System.CommandLine" />
+    <PackageReference Include="System.CommandLine.Rendering" />
   </ItemGroup>
 
   <ItemGroup>

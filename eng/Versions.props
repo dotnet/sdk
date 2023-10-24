@@ -1,35 +1,49 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-    <MajorVersion>7</MajorVersion>
-    <MinorVersion>4</MinorVersion>
+    <MajorVersion>8</MajorVersion>
+    <MinorVersion>0</MinorVersion>
     <!-- Build release-only package. -->
-    <PreReleaseVersionLabel>
-    </PreReleaseVersionLabel>
+    <PreReleaseVersionLabel />
     <!--
       Because this is a global tool Arcade is unable to generate prerelease versioned packages
       due to the shim executable containing a hardcoded path which includes the release version.
     -->
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <MicrosoftBuildVersion>17.3.0-preview-22302-02</MicrosoftBuildVersion>
-    <MicrosoftCodeAnalysisAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisAnalyzersVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>7.0.0-rc.1.22426.10</MicrosoftExtensionsDependencyInjectionVersion>
-    <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>4.7.0-3.23517.17</MicrosoftNetCompilersToolsetPackageVersion>
-    <!-- Dependencies from https://github.com/dotnet/command-line-api -->
-    <SystemCommandLineVersion>2.0.0-beta4.22504.1</SystemCommandLineVersion>
-    <SystemCommandLineRenderingVersion>0.4.0-alpha.22504.1</SystemCommandLineRenderingVersion>
-    <!-- Dependencies from https://github.com/dotnet/runtime -->
-    <SystemTextJsonVersion>6.0.8</SystemTextJsonVersion>
-  </PropertyGroup>
-  <!--
-    Other Dependency versions
-  -->
-  <PropertyGroup>
     <DiscoverEditorConfigFiles>true</DiscoverEditorConfigFiles>
     <!-- MSBuildTheory test discovery fails from ./test.sh without this set. -->
     <UseVSTestRunner>true</UseVSTestRunner>
+    <!-- Prohibit the usage of .NET Standard 1.x dependencies. -->
+    <FlagNetStandard1XDependencies>true</FlagNetStandard1XDependencies>
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
+    <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- command-line-api -->
+    <SystemCommandLineVersion>2.0.0-beta4.23307.1</SystemCommandLineVersion>
+    <SystemCommandLineRenderingVersion>0.4.0-alpha.23307.1</SystemCommandLineRenderingVersion>
+    <!-- corefx -->
+    <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
+    <!-- msbuild -->
+    <MicrosoftBuildVersion>17.3.2</MicrosoftBuildVersion>
+    <!-- netstandard -->
+    <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
+    <!-- nuget -->
+    <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
+    <NuGetVersion>6.8.0-rc.122</NuGetVersion>
+    <!-- roslyn -->
+    <MicrosoftCodeAnalysisVersion>4.8.0-3.23518.7</MicrosoftCodeAnalysisVersion>
+    <!-- roslyn-sdk -->
+    <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalyzerTestingVersion>
+    <!-- runtime -->
+    <MicrosoftBclAsyncInterfacesVersion>8.0.0</MicrosoftBclAsyncInterfacesVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>8.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsLoggingVersion>8.0.0</MicrosoftExtensionsLoggingVersion>
+    <!-- symreader -->
+    <MicrosoftDiaSymReaderVersion>2.0.0</MicrosoftDiaSymReaderVersion>
+    <!-- external -->
+    <BenchmarkDotNetVersion>0.13.5</BenchmarkDotNetVersion>
+    <BenchmarkDotNetAnnotationsVersion>0.13.5</BenchmarkDotNetAnnotationsVersion>
+    <MicrosoftBuildLocatorVersion>1.6.10</MicrosoftBuildLocatorVersion>
+    <MicrosoftVisualStudioCompositionVersion>17.4.16</MicrosoftVisualStudioCompositionVersion>
   </PropertyGroup>
 </Project>

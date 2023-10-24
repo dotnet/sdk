@@ -1,33 +1,35 @@
 <Project>
-  <!-- <Import Project="eng\Versions.props" /> -->
 
   <PropertyGroup>
-    <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
-    <NuGetVersion>6.7.0-preview.2.44</NuGetVersion>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <!-- Using multiple feeds isn't supported by Maestro: https://github.com/dotnet/arcade/issues/14155. -->
+    <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.12.1" />
-    <PackageVersion Include="BenchmarkDotNet" Version="0.12.1" />
+    <PackageVersion Include="BenchmarkDotNet.Annotations" Version="$(BenchmarkDotNetAnnotationsVersion)" />
+    <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetVersion)" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftBclAsyncInterfacesVersion)" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
-    <PackageVersion Include="Microsoft.Build.Locator" Version="1.4.1" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)"/>
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="1.1.2-beta1.22216.1" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="$(MicrosoftCodeAnalysisAnalyzersVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsDependencyInjectionVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalyzerTestingVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler" Version="$(MicrosoftCodeAnalysisVersion)" />
+    <PackageVersion Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />
+    <PackageVersion Include="Microsoft.VisualBasic" Version="$(MicrosoftVisualBasicVersion)" />
+    <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="$(MicrosoftVisualStudioCompositionVersion)" />
+    <PackageVersion Include="NETStandard.Library" Version="$(NETStandardLibraryVersion)" />
     <PackageVersion Include="NuGet.Common" Version="$(NuGetVersion)" />
     <PackageVersion Include="NuGet.Configuration" Version="$(NuGetVersion)" />
     <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetVersion)" />
@@ -36,6 +38,6 @@
     <PackageVersion Include="NuGet.Versioning" Version="$(NuGetVersion)" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <PackageVersion Include="System.CommandLine.Rendering" Version="$(SystemCommandLineRenderingVersion)" />
-    <PackageVersion Include="System.Text.Json" Version="$(SystemTextJsonVersion)" />
   </ItemGroup>
+
 </Project>

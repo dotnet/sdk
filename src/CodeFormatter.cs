@@ -79,7 +79,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var formattedFiles = new List<FormattedFile>(fileCount);
             var formattedSolution = await RunCodeFormattersAsync(
-                solution, formatableFiles, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+                workspace, solution, formatableFiles, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
 
             var formatterRanMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS - determineFilesMS;
             logger.LogTrace(Resources.Complete_in_0_ms, formatterRanMS);
@@ -144,6 +144,7 @@ namespace Microsoft.CodeAnalysis.Tools
         }
 
         private static async Task<Solution> RunCodeFormattersAsync(
+            Workspace workspace,
             Solution solution,
             ImmutableArray<DocumentId> formattableDocuments,
             FormatOptions formatOptions,
@@ -161,7 +162,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     continue;
                 }
 
-                formattedSolution = await s_codeFormatters[index].FormatAsync(formattedSolution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+                formattedSolution = await s_codeFormatters[index].FormatAsync(workspace, formattedSolution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
             }
 
             return formattedSolution;

@@ -1,4 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project>
-  <!-- Empty props files to stop test projects from inheriting the root props file. -->
+
+  <!-- This is an empty Directory.Build.props file to prevent projects which reside
+       under this directory to use any of the repository local settings. -->
+  <PropertyGroup>
+    <ImportDirectoryPackagesProps>false</ImportDirectoryPackagesProps>
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+  </PropertyGroup>
+
 </Project>

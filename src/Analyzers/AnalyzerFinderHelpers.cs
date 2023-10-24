@@ -1,38 +1,64 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
 
 using Microsoft.CodeAnalysis.CodeFixes;
-using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.CodeAnalysis.Tools.Analyzers
 {
     internal static class AnalyzerFinderHelpers
     {
-        public static AnalyzersAndFixers LoadAnalyzersAndFixers(IEnumerable<Assembly> assemblies)
+        public static ImmutableArray<CodeFixProvider> LoadFixers(IEnumerable<Assembly> assemblies, string language)
         {
-            var types = assemblies
-                .SelectMany(assembly => assembly.GetTypes()
-                .Where(type => !type.GetTypeInfo().IsInterface &&
-                            !type.GetTypeInfo().IsAbstract &&
-                            !type.GetTypeInfo().ContainsGenericParameters));
 
-            var codeFixProviders = types
+            return assemblies
+                .SelectMany(GetConcreteTypes)
                 .Where(t => typeof(CodeFixProvider).IsAssignableFrom(t))
-                .Select(type => type.TryCreateInstance<CodeFixProvider>(out var instance) ? instance : null)
+                .Where(t => IsExportedForLanguage(t, language))
+                .Select(CreateInstanceOfCodeFix)
                 .OfType<CodeFixProvider>()
                 .ToImmutableArray();
+        }
 
-            var diagnosticAnalyzers = types
-                .Where(t => typeof(DiagnosticAnalyzer).IsAssignableFrom(t))
-                .Select(type => type.TryCreateInstance<DiagnosticAnalyzer>(out var instance) ? instance : null)
-                .OfType<DiagnosticAnalyzer>()
-                .ToImmutableArray();
+        private static bool IsExportedForLanguage(Type codeFixProvider, string language)
+        {
+            var exportAttribute = codeFixProvider.GetCustomAttribute<ExportCodeFixProviderAttribute>(inherit: false);
+            return exportAttribute is not null && exportAttribute.Languages.Contains(language);
+        }
 
-            return new AnalyzersAndFixers(diagnosticAnalyzers, codeFixProviders);
+        private static CodeFixProvider? CreateInstanceOfCodeFix(Type codeFixProvider)
+        {
+            try
+            {
+                return (CodeFixProvider?)Activator.CreateInstance(codeFixProvider);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static IEnumerable<Type> GetConcreteTypes(Assembly assembly)
+        {
+            try
+            {
+                var concreteTypes = assembly
+                    .GetTypes()
+                    .Where(type => !type.GetTypeInfo().IsInterface
+                        && !type.GetTypeInfo().IsAbstract
+                        && !type.GetTypeInfo().ContainsGenericParameters);
+
+                // Realize the collection to ensure exceptions are caught
+                return concreteTypes.ToList();
+            }
+            catch
+            {
+                return Type.EmptyTypes;
+            }
         }
     }
 }

@@ -1,8 +1,5 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.Collections.Generic;
-using System.CommandLine;
-using System.CommandLine.Parsing;
 using Microsoft.CodeAnalysis.Tools.Commands;
 using Xunit;
 
@@ -58,18 +55,18 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             Assert.Equal(0, result.Errors.Count);
             Assert.Equal(0, result.UnmatchedTokens.Count);
             Assert.Equal(0, result.UnmatchedTokens.Count);
-            result.GetValueForOption<bool>("--no-restore");
-            Assert.Collection(result.GetValueForOption<IEnumerable<string>>("--include"),
+            result.GetValue(FormatCommandCommon.NoRestoreOption);
+            Assert.Collection(result.GetValue(FormatCommandCommon.IncludeOption),
                 i0 => Assert.Equal("include1", i0),
                 i1 => Assert.Equal("include2", i1));
-            Assert.Collection(result.GetValueForOption<IEnumerable<string>>("--exclude"),
+            Assert.Collection(result.GetValue(FormatCommandCommon.ExcludeOption),
                 i0 => Assert.Equal("exclude1", i0),
                 i1 => Assert.Equal("exclude2", i1));
-            Assert.True(result.GetValueForOption<bool>("--verify-no-changes"));
-            Assert.Equal("binary-log-path", result.GetValueForOption<string>("--binarylog"));
-            Assert.Equal("report", result.GetValueForOption<string>("--report"));
-            Assert.Equal("detailed", result.GetValueForOption<string>("--verbosity"));
-            Assert.True(result.GetValueForOption<bool>("--include-generated"));
+            Assert.True(result.GetValue(FormatCommandCommon.VerifyNoChanges));
+            Assert.Equal("binary-log-path", result.GetValue(FormatCommandCommon.BinarylogOption));
+            Assert.Equal("report", result.GetValue(FormatCommandCommon.ReportOption));
+            Assert.Equal("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
+            Assert.True(result.GetValue(FormatCommandCommon.IncludeGeneratedOption));
         }
 
         [Fact]
@@ -83,7 +80,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.GetValueForArgument<string>(FormatCommandCommon.SlnOrProjectArgument));
+            Assert.Equal("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
         }
 
         [Fact]
@@ -97,8 +94,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.GetValueForArgument<string>(FormatCommandCommon.SlnOrProjectArgument));
-            Assert.Equal("detailed", result.GetValueForOption<string>("--verbosity"));
+            Assert.Equal("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
+            Assert.Equal("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
         }
 
         [Fact]
@@ -112,8 +109,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.Equal("workspaceValue", result.GetValueForArgument<string>(FormatCommandCommon.SlnOrProjectArgument));
-            Assert.Equal("detailed", result.GetValueForOption<string>("--verbosity"));
+            Assert.Equal("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
+            Assert.Equal("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
         }
 
         [Fact]
@@ -179,7 +176,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.True(result.WasOptionUsed("--binarylog"));
+            Assert.NotNull(result.GetResult(FormatCommandCommon.BinarylogOption));
         }
 
         [Fact]
@@ -193,7 +190,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
 
             // Assert
             Assert.Equal(0, result.Errors.Count);
-            Assert.True(result.WasOptionUsed("--binarylog"));
+            Assert.NotNull(result.GetResult(FormatCommandCommon.BinarylogOption));
         }
 
         [Fact]

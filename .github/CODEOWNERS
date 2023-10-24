@@ -1,0 +1,4 @@
+# Automatically request reviews when a pull request changes any owned files
+# More information: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+eng/SourceBuild* @dotnet/source-build-internal

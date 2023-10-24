@@ -56,7 +56,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var text = SourceText.From(testCode, Encoding.UTF8);
             TestState.Sources.Add(text);
 
-            var solution = await GetSolutionAsync(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray(), EditorConfig);
+            var (workspace, solution) = await GetSolutionAsync(TestState.Sources.ToArray(), TestState.AdditionalFiles.ToArray(), TestState.AdditionalReferences.ToArray(), EditorConfig);
             var project = solution.Projects.Single();
             var document = project.Documents.Single();
 
@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             var pathsToFormat = GetOnlyFileToFormat(solution);
 
             var formattedFiles = new List<FormattedFile>();
-            await Formatter.FormatAsync(solution, pathsToFormat, formatOptions, new TestLogger(), formattedFiles, default);
+            await Formatter.FormatAsync(workspace, solution, pathsToFormat, formatOptions, new TestLogger(), formattedFiles, default);
 
             return formattedFiles;
         }

@@ -23,56 +23,64 @@ jobs:
         _repoName: "dotnet/format"
         _targetSolution: "format.sln"
         _branchName: "main"
-        _sha: "c4dcd04da63379e0c4e7c0bd2fa3ef0fcf44a6c1"
-#      roslyn:
-#        _repo: "https://github.com/dotnet/roslyn"
-#        _repoName: "dotnet/roslyn"
-#        _targetSolution: "Compilers.sln"
-#        _branchName: "main"
-#        _sha: "e9ed046c159bfc5caf33b875ab6928a73c5601f3"
+        _sha: "452f6263277533da0af2b557003256d98fbecc27"
+        _useParentSdk: 0
+      roslyn:
+        _repo: "https://github.com/dotnet/roslyn"
+        _repoName: "dotnet/roslyn"
+        _targetSolution: "Compilers.sln"
+        _branchName: "main"
+        _sha: "d080175cabfe297ebf079af099279b61913bcc28"
+        _useParentSdk: 0
       sdk:
         _repo: "https://github.com/dotnet/sdk"
         _repoName: "dotnet/sdk"
         _targetSolution: "sdk.sln"
-        _branchName: "master"
-        _sha: "1404c8ebdfb5d7590fb7335e5cb5a2267de125c5"
-#      project-system:
-#        _repo: "https://github.com/dotnet/project-system"
-#        _repoName: "dotnet/project-system"
-#        _targetSolution: "ProjectSystem.sln"
-#        _branchName: "main"
-#        _sha: "33c2c7d21f18e06731b59e9b2b5788d535768e59"
-#      msbuild:
-#        _repo: "https://github.com/dotnet/msbuild"
-#        _repoName: "dotnet/msbuild"
-#        _targetSolution: "MSBuild.sln"
-#        _branchName: "main"
-#        _sha: "0be0490bd1261ff4a6ad64267879b36a63a33faf"
+        _branchName: "main"
+        _sha: "be25db95c376bffd508a023399ddd34392fe6458"
+        _useParentSdk: 0
+      project-system:
+        _repo: "https://github.com/dotnet/project-system"
+        _repoName: "dotnet/project-system"
+        _targetSolution: "ProjectSystem.sln"
+        _branchName: "main"
+        _sha: "e660d54d6b3198751bd0502fe270e1657f32a913"
+        _useParentSdk: 1
+      msbuild:
+        _repo: "https://github.com/dotnet/msbuild"
+        _repoName: "dotnet/msbuild"
+        _targetSolution: "MSBuild.sln"
+        _branchName: "main"
+        _sha: "3c910ba83fc9dbd8e12f50dddc8c381404f928c4"
+        _useParentSdk: 0
       aspnetcore:
         _repo: "https://github.com/dotnet/aspnetcore"
         _repoName: "dotnet/aspnetcore"
         _targetSolution: "AspNetCore.sln"
         _branchName: "main"
-        _sha: "67f3befad2180b766ba3a1ad0eb1f37232a29b16"
+        _sha: "94f1088552518b7b0f5695c12194b7081d98d191"
+        _useParentSdk: 0
       efcore:
         _repo: "https://github.com/dotnet/efcore"
         _repoName: "dotnet/efcore"
         _targetSolution: "All.sln"
         _branchName: "main"
-        _sha: "717ee2c6e6a2bfc40a200e2adb66c6ed4180962b"
-#      ef6:
-#        _repo: "https://github.com/dotnet/ef6"
-#        _repoName: "dotnet/ef6"
-#        _targetSolution: "EntityFramework.sln"
-#        _branchName: "main"
-#        _sha: "df31fde50966a117180459313024d95c0a004162"
+        _sha: "0ee3ac8de9349f7f9571ed1e50dbb65f9fee3734"
+        _useParentSdk: 0
+      razor-tooling:
+        _repo: "https://github.com/dotnet/razor"
+        _repoName: "dotnet/razor"
+        _targetSolution: "Razor.sln"
+        _branchName: "main"
+        _sha: "a7f2e33efb28ccdf9b32f1ae45731891f9dfe755"
+        _useParentSdk: 0
   timeoutInMinutes: 60
   steps:
-    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'prepare'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -useParentSdk $(_useParentSdk) -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare'
       displayName: Prepare $(_repoName) for formatting
 
-    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-workspace'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -useParentSdk $(_useParentSdk) -testPath '$(Agent.TempDirectory)\temp' -stage 'format-workspace'
       displayName: Run dotnet-format on $(_repoName) $(_targetSolution)
 
-    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -testPath '$(Build.SourcesDirectory)\temp' -stage 'format-folder'
+    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -useParentSdk $(_useParentSdk) -testPath '$(Agent.TempDirectory)\temp' -stage 'format-folder'
       displayName: Run dotnet-format on $(_repoName) repo folder

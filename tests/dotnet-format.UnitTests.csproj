@@ -1,48 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <LangVersion>10.0</LangVersion>
-    <IsPackable>false</IsPackable>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
     <RootNamespace>Microsoft.CodeAnalysis.Tools.Tests</RootNamespace>
 
     <!-- Copy nuget assemblies to build directory so that Microsoft.CodeAnalysis.Features.* can be located when running tests. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
-    <!-- Always run on the latest runtime installed. -->
-    <RuntimeFrameworkVersion>7.0.0-preview.2.22114.1</RuntimeFrameworkVersion>
     <RollForward>LatestMajor</RollForward>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);binaries\**;projects\**</DefaultExcludesInProjectFolder>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="binaries\**" />
-    <Compile Remove="projects\**" />
-    <EmbeddedResource Remove="binaries\**" />
-    <EmbeddedResource Remove="projects\**" />
-    <None Remove="binaries\**" />
-    <None Remove="projects\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Features" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" />
-
-    <PackageReference Include="Microsoft.Build.Locator" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzer.Testing" />
 
-    <!--
-      The package "Microsoft.CodeAnalysis.Analyzer.Testing" brings in v5.3 of these NuGet dependencies. In order to
-      test against the same verion of NuGet as our configured SDK, we must set the version to be the same.
-     -->
+    <!-- The package "Microsoft.CodeAnalysis.Analyzer.Testing" brings in v5.3 of these NuGet dependencies. In order to
+         test against the same verion of NuGet as our configured SDK, we must set the version to be the same. -->
     <PackageReference Include="NuGet.Common" />
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Frameworks" />
@@ -54,5 +28,20 @@
   <ItemGroup>
     <ProjectReference Include="..\src\dotnet-format.csproj" />
   </ItemGroup>
+
+  <!-- Tests depend on the NetCurrent reference assemblies -->
+  <Target Name="AddRuntimeConfigurationOptionForNetCurrent" BeforeTargets="GenerateBuildRuntimeConfigurationFiles" DependsOnTargets="ResolveFrameworkReferences">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption
+        Include="ReferenceAssemblies.NetCurrent.TargetingPackVersion"
+        Value="@(ResolvedTargetingPack-&gt;WithMetadataValue('Identity', 'Microsoft.NETCore.App')-&gt;WithMetadataValue('TargetFramework', '$(NetCurrent)')-&gt;Metadata('NuGetPackageVersion'))" />
+      <RuntimeHostConfigurationOption
+        Include="ReferenceAssemblies.NetCurrent.TargetFramework"
+        Value="$(NetCurrent)" />
+      <RuntimeHostConfigurationOption
+        Include="ReferenceAssemblies.NetCurrent.NuGetConfigPath"
+        Value="$(RepoRoot)NuGet.config" />
+    </ItemGroup>
+  </Target>
 
 </Project>

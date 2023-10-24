@@ -12,25 +12,27 @@ variables:
 # Branches that trigger a build on commit
 trigger:
 - main
+- release/*
+- internal/release/*
 
 stages:
 - stage: build
   displayName: Build and Test
   pool:
-    name: VSEngSS-MicroBuild2022-1ES
-    demands:
-    - cmd
+    name: NetCore1ESPool-Svc-Internal
+    demands: ImageOverride -equals windows.vs2022preview.amd64
 
   jobs:
   - job: OfficialBuild
     displayName: Official Build
 
     steps:
-    - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@1
+    - task: ms-vseng.MicroBuildTasks.30666190-6959-11e5-9f96-f56098202fef.MicroBuildSigningPlugin@3
       displayName: Install Signing Plugin
       inputs:
         signType: $(SignType)
         esrpSigning: true
+        feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
       condition: and(succeeded(), ne(variables['SignType'], ''))
 
     - script: eng\common\CIBuild.cmd
@@ -104,10 +106,6 @@ stages:
 
   - job: codeql
     displayName: CodeQL
-    pool:
-      name: VSEngSS-MicroBuild2022-1ES
-      demands:
-      - cmd
     variables:
       # CG is handled in the primary CI pipeline
     - name: skipComponentGovernanceDetection
@@ -121,9 +119,6 @@ stages:
     - name: Codeql.TSAEnabled
       value: true
     steps:
-      - task: UseDotNet@2
-        inputs:
-          useGlobalJson: true
       - task: CodeQL3000Init@0
         displayName: CodeQL Initialize
       - script: eng\common\cibuild.cmd
@@ -133,12 +128,16 @@ stages:
         displayName: Windows Build
       - task: CodeQL3000Finalize@0
         displayName: CodeQL Finalize
+
+  - template: /eng/common/templates/jobs/source-build.yml
+
   # Publish to Build Asset Registry
   - template: /eng/common/templates/job/publish-build-assets.yml
     parameters:
       publishUsingPipelines: true
       dependsOn:
         - OfficialBuild
+        - Source_Build_Managed
       pool:
         vmImage: windows-2019
 

@@ -24,13 +24,9 @@ jobs:
         _configuration: Debug
       Release:
         _configuration: Release
-  timeoutInMinutes: 12
+  timeoutInMinutes: 30
   steps:
-    - task: UseDotNet@2
-      inputs:
-        packageType: 'sdk'
-        useGlobalJson: true
-    - script: eng\common\cibuild.cmd -configuration $(_configuration) -prepareMachine /p:TestTimeout=360000
+    - script: eng\common\cibuild.cmd -msbuildEngine dotnet -configuration $(_configuration) -prepareMachine /p:TestTimeout=360000
       displayName: Build and Test
     - task: PublishTestResults@2
       inputs:
@@ -66,7 +62,7 @@ jobs:
         _configuration: Debug
       Release:
         _configuration: Release
-  timeoutInMinutes: 12
+  timeoutInMinutes: 30
   steps:
     - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=240000
       displayName: Build and Test
@@ -106,7 +102,7 @@ jobs:
         _configuration: Debug
       Release:
         _configuration: Release
-  timeoutInMinutes: 12
+  timeoutInMinutes: 30
   steps:
     - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=360000
       displayName: Build and Test
@@ -136,7 +132,7 @@ jobs:
 - job: Formatting_Check
   pool:
     vmImage: 'ubuntu-latest'
-  timeoutInMinutes: 5
+  timeoutInMinutes: 10
   steps:
     - script: ./restore.sh && echo "##vso[task.setvariable variable=PATH]$(Build.SourcesDirectory)/.dotnet:${PATH}" && echo "##vso[task.setvariable variable=DOTNET_ROOT]$(Build.SourcesDirectory)/.dotnet"
       displayName: Restore dependencies
@@ -149,3 +145,5 @@ jobs:
         ArtifactName: 'Formatting Check'
       continueOnError: true
       condition: not(succeeded())
+      
+- template: /eng/common/templates/jobs/source-build.yml

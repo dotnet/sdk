@@ -1,7 +1,13 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Xunit;
 
@@ -11,6 +17,20 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 
     public class LoadAnalyzersAndFixersTests
     {
+        private static AnalyzersAndFixers GetAnalyzersAndFixers(IEnumerable<Assembly> assemblies, string language)
+        {
+            var analyzers = assemblies
+                .SelectMany(assembly => assembly.GetTypes())
+                .Where(type => typeof(DiagnosticAnalyzer).IsAssignableFrom(type))
+                .Where(type => type.GetCustomAttribute<DiagnosticAnalyzerAttribute>(inherit: false) is { } attribute && attribute.Languages.Contains(language))
+                .Select(type => (DiagnosticAnalyzer)Activator.CreateInstance(type))
+                .OfType<DiagnosticAnalyzer>()
+                .ToImmutableArray();
+
+            var codeFixes = AnalyzerFinderHelpers.LoadFixers(assemblies, language);
+            return new AnalyzersAndFixers(analyzers, codeFixes);
+        }
+
         [Fact]
         public static async Task TestSingleAnalyzerAndFixerAsync()
         {
@@ -21,7 +41,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                     GenerateCodeFix("CodeFixProvider1", "DiagnosticAnalyzerId"))
             };
 
-            var (analyzers, fixers) = AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
+            var (analyzers, fixers) = GetAnalyzersAndFixers(assemblies, LanguageNames.CSharp);
             var analyzer = Assert.Single(analyzers);
             var fixer = Assert.Single(fixers);
             var analyzerDiagnosticDescriptor = Assert.Single(analyzer.SupportedDiagnostics);
@@ -41,7 +61,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                     GenerateCodeFix("CodeFixProvider2", "DiagnosticAnalyzerId2"))
             };
 
-            var (analyzers, fixers) = AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
+            var (analyzers, fixers) = GetAnalyzersAndFixers(assemblies, LanguageNames.CSharp);
             Assert.Equal(2, analyzers.Length);
             Assert.Equal(2, fixers.Length);
         }
@@ -58,7 +78,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
                     GenerateAnalyzerCode("DiagnosticAnalyzer2", "DiagnosticAnalyzerId2"),
                     GenerateCodeFix("CodeFixProvider2", "DiagnosticAnalyzerId2")),
             };
-            var (analyzers, fixers) = AnalyzerFinderHelpers.LoadAnalyzersAndFixers(assemblies);
+            var (analyzers, fixers) = GetAnalyzersAndFixers(assemblies, LanguageNames.CSharp);
             Assert.Equal(2, analyzers.Length);
             Assert.Equal(2, fixers.Length);
         }
