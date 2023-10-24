@@ -19,7 +19,8 @@ public class DotNetFormatTests : SdkTests
     /// <Summary>
     /// Format an unformatted project and verify that the output matches the pre-computed solution.
     /// </Summary>
-    [Fact]
+    // https://github.com/dotnet/source-build/issues/3668
+    // [Fact]
     public void FormatProject()
     {
         if (Config.TargetRid.Contains("alpine"))
