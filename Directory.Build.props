@@ -10,4 +10,9 @@
     <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
   </PropertyGroup>
 
+  <!-- TODO: Remove when Arcades updates NetCurrent to net9.0. -->
+  <PropertyGroup>
+    <NetCurrent>net9.0</NetCurrent>
+  </PropertyGroup>
+
 </Project>
