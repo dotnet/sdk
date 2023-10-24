@@ -35,6 +35,9 @@
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
 
+    <!-- Included with Microsoft.CodeAnalysis.dll for Razor support -->
+    <PackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler" ExcludeAssets="compile" />
+
     <!-- Loaded dynamically -->
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.Features" />
@@ -45,10 +48,6 @@
 
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="System.CommandLine.Rendering" />
-
-    <!-- Bump the transitive DiaSymReader/1.4.0 dependency which is brought in by the ".Features" packages.
-         Using that verion is undesirable as it brings in the entire .NET Standard 1.x dependency graph. -->
-    <PackageReference Include="Microsoft.DiaSymReader" />
   </ItemGroup>
 
   <ItemGroup>
