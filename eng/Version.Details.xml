@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0-rtm.23517.16">
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>6f7af556d2761b0c93299cb88c61e4b747d6176a</Sha>
+      <Sha>488a8a3521610422e8fbe22d5cc66127f3dce3dc</Sha>
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis" Version="4.8.0-3.23518.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
@@ -29,14 +29,18 @@
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-rtm.23517.16">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>6f7af556d2761b0c93299cb88c61e4b747d6176a</Sha>
-      <SourceBuild RepoName="runtime" />
+      <Sha>488a8a3521610422e8fbe22d5cc66127f3dce3dc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0-rtm.23517.16">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>6f7af556d2761b0c93299cb88c61e4b747d6176a</Sha>
+      <Sha>488a8a3521610422e8fbe22d5cc66127f3dce3dc</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.0-rtm.23523.12">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>488a8a3521610422e8fbe22d5cc66127f3dce3dc</Sha>
+      <SourceBuild RepoName="runtime" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.430701">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
