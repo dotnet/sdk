@@ -14,7 +14,7 @@
     <VersionPrefix>8.0.100</VersionPrefix>
     <WorkloadsFeatureBand>8.0.100</WorkloadsFeatureBand>
     <!-- Enable to remove prerelease label. -->
-    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
+    <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
     <!-- Calculate prerelease label -->
     <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' != 'true'">rtm</PreReleaseVersionLabel>
