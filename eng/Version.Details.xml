@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0-rtm.23517.16">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>6f7af556d2761b0c93299cb88c61e4b747d6176a</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis" Version="4.9.0-1.23520.1">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>4414e2ffe333e304e7d9b2122f88242a23ab25a6</Sha>
