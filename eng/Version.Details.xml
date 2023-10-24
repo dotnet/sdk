@@ -6,7 +6,7 @@
       <Sha>b84d413cd378c07abc6f726dd386c1c3ba3e9e0b</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.100-rtm.23524.3">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.100-rtm.23524.4">
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>b84d413cd378c07abc6f726dd386c1c3ba3e9e0b</Sha>
     </Dependency>
