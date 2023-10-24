@@ -26,10 +26,6 @@ jobs:
         _configuration: Release
   timeoutInMinutes: 30
   steps:
-    - task: UseDotNet@2
-      inputs:
-        packageType: 'sdk'
-        useGlobalJson: true
     - script: eng\common\cibuild.cmd -msbuildEngine dotnet -configuration $(_configuration) -prepareMachine /p:TestTimeout=360000
       displayName: Build and Test
     - task: PublishTestResults@2

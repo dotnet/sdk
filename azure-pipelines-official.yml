@@ -12,14 +12,15 @@ variables:
 # Branches that trigger a build on commit
 trigger:
 - main
+- release/*
+- internal/release/*
 
 stages:
 - stage: build
   displayName: Build and Test
   pool:
-    name: VSEngSS-MicroBuild2022-1ES
-    demands:
-    - cmd
+    name: NetCore1ESPool-Svc-Internal
+    demands: ImageOverride -equals windows.vs2022preview.amd64
 
   jobs:
   - job: OfficialBuild
@@ -31,6 +32,7 @@ stages:
       inputs:
         signType: $(SignType)
         esrpSigning: true
+        feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
       condition: and(succeeded(), ne(variables['SignType'], ''))
 
     - script: eng\common\CIBuild.cmd
@@ -104,10 +106,6 @@ stages:
 
   - job: codeql
     displayName: CodeQL
-    pool:
-      name: VSEngSS-MicroBuild2022-1ES
-      demands:
-      - cmd
     variables:
       # CG is handled in the primary CI pipeline
     - name: skipComponentGovernanceDetection
@@ -121,9 +119,6 @@ stages:
     - name: Codeql.TSAEnabled
       value: true
     steps:
-      - task: UseDotNet@2
-        inputs:
-          useGlobalJson: true
       - task: CodeQL3000Init@0
         displayName: CodeQL Initialize
       - script: eng\common\cibuild.cmd
@@ -150,6 +145,8 @@ stages:
   - template: eng\common\templates\post-build\post-build.yml
     parameters:
       publishingInfraVersion: 3
+      # Signing validation doesn't currently work with .NET 8 RTM SDK.
+      enableSigningValidation: false
       # Symbol validation is not entirely reliable as of yet, so should be turned off until
       # https://github.com/dotnet/arcade/issues/2871 is resolved.
       enableSymbolValidation: false
