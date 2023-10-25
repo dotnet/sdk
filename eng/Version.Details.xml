@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0-rc.2.23476.7">
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>0b25e38ad32a69cd83ae246104b32449203cc71c</Sha>
+      <Sha>17ea9ab3f662320d4ac62d3a2b783b5054ad80bf</Sha>
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis" Version="4.8.0-3.23518.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
@@ -29,17 +29,17 @@
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-rc.2.23476.7">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>0b25e38ad32a69cd83ae246104b32449203cc71c</Sha>
+      <Sha>17ea9ab3f662320d4ac62d3a2b783b5054ad80bf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0-rc.2.23476.7">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>0b25e38ad32a69cd83ae246104b32449203cc71c</Sha>
+      <Sha>17ea9ab3f662320d4ac62d3a2b783b5054ad80bf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.0-rc.2.23476.7">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.0-rtm.23525.7">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>0b25e38ad32a69cd83ae246104b32449203cc71c</Sha>
+      <Sha>17ea9ab3f662320d4ac62d3a2b783b5054ad80bf</Sha>
       <SourceBuild RepoName="runtime" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.430701">
