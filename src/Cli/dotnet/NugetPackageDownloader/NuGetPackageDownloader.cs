@@ -161,7 +161,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false)
         {
-            (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion, packageSourceLocation, includePreview);
+            (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion, packageSourceLocation, includePreview).ConfigureAwait(false);
             
             SourceRepository repository = GetSourceRepository(source);
             if (repository.PackageSource.IsLocal)
