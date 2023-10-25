@@ -1,1 +1,14 @@
-<PrebuiltLeakReport />
+<PrebuiltLeakReport>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z-banana-rid.tar.gz/sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Bcl.AsyncInterfaces.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z.nupkg/tools/netx.y/any/Microsoft.Bcl.AsyncInterfaces.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/Microsoft.TestPlatform.CLI.x.y.z/contentFiles/any/netx.y/Microsoft.Extensions.DependencyModel.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/Microsoft.TestPlatform.CLI.x.y.z/contentFiles/any/netx.y/Microsoft.Extensions.FileSystemGlobbing.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+</PrebuiltLeakReport>
