@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.GenAPI
     internal static class IMethodSymbolExtensions
     {
         // Compare the equality of two method signatures for the purpose of emitting a "new"
-        // keyword on a method's return type. This is *not* meant to be complete implementation,
+        // keyword on a method's return type. This is *not* meant to be a complete implementation,
         // but rather a heuristic to check that one method may hide another.
         public static bool SignatureEquals(this IMethodSymbol? method, IMethodSymbol? otherMethod)
         {
