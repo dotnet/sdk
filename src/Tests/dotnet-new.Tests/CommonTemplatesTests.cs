@@ -164,8 +164,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData(new object[] { "console", "VB" })]
         public async void AotVariants(string name, string language)
         {
-            // templates have not be updated to 9 yet "net8.0";
-            // string currentDefaultFramework = "net8.0";
+            // template framework needs to be hardcoded here during the major version transition.
             string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{language}");
