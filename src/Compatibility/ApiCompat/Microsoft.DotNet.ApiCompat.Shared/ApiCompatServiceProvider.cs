@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.ApiCompat
         private readonly Lazy<ISuppressibleLog> _compatibilityLogger;
         private readonly Lazy<IApiCompatRunner> _apiCompatRunner;
 
-        internal ApiCompatServiceProvider(Func<ISuppressionEngine, ISuppressibleLog> logFactory,
+        public ApiCompatServiceProvider(Func<ISuppressionEngine, ISuppressibleLog> logFactory,
             Func<ISuppressionEngine> suppressionEngineFactory,
             Func<ISuppressibleLog, IRuleFactory> ruleFactory,
             bool respectInternals,
@@ -27,17 +27,22 @@ namespace Microsoft.DotNet.ApiCompat
             _compatibilityLogger = new Lazy<ISuppressibleLog>(() => logFactory(SuppressionEngine));
             _apiCompatRunner = new Lazy<IApiCompatRunner>(() =>
             {
-                CompositeSymbolFilter compositeSymbolFilter = new CompositeSymbolFilter()
-                    .Add(new AccessibilitySymbolFilter(respectInternals));
+                AccessibilitySymbolFilter accessibilitySymbolFilter = new(respectInternals);
+                SymbolEqualityComparer symbolEqualityComparer = new();
 
-                if (excludeAttributesFiles != null)
+                // The attribute data symbol filter is a composite that contains both the accessibility
+                // symbol filter and the doc id symbol filter.
+                CompositeSymbolFilter attributeDataSymbolFilter = new CompositeSymbolFilter()
+                    .Add(accessibilitySymbolFilter);
+                if (excludeAttributesFiles is not null)
                 {
-                    compositeSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
+                    attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
                 }
 
-                SymbolEqualityComparer symbolEqualityComparer = new();
-                ApiComparerSettings apiComparerSettings = new(compositeSymbolFilter,
+                ApiComparerSettings apiComparerSettings = new(
+                    accessibilitySymbolFilter,
                     symbolEqualityComparer,
+                    attributeDataSymbolFilter,
                     new AttributeDataEqualityComparer(symbolEqualityComparer,
                         new TypedConstantEqualityComparer(symbolEqualityComparer)),
                     respectInternals);

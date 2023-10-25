@@ -18,122 +18,69 @@ namespace Microsoft.DotNet.GenAPI
     /// </summary>
     public static class GenAPIApp
     {
-        public readonly struct Context
-        {
-            public Context(
-                string[] assemblies,
-                string[]? assemblyReferences,
-                string? outputPath,
-                string? headerFile,
-                string? exceptionMessage,
-                string[]? excludeApiFiles,
-                string[]? excludeAttributesFiles,
-                bool respectInternals,
-                bool includeAssemblyAttributes)
-            {
-                Assemblies = assemblies;
-                AssemblyReferences = assemblyReferences;
-                OutputPath = outputPath;
-                HeaderFile = headerFile;
-                ExceptionMessage = exceptionMessage;
-                ExcludeApiFiles = excludeApiFiles;
-                ExcludeAttributesFiles = excludeAttributesFiles;
-                RespectInternals = respectInternals;
-                IncludeAssemblyAttributes = includeAssemblyAttributes;
-            }
-
-            /// <summary>
-            /// The path to one or more assemblies or directories with assemblies.
-            /// </summary>
-            public string[] Assemblies { get; }
-
-            /// <summary>
-            /// Paths to assembly references or their underlying directories for a specific target framework in the package.
-            /// </summary>
-            public string[]? AssemblyReferences { get; }
-
-            /// <summary>
-            /// Output path. Default is the console. Can specify an existing directory as well and
-            /// then a file will be created for each assembly with the matching name of the assembly.
-            /// </summary>
-            public string? OutputPath { get; }
-
-            /// <summary>
-            /// Specify a file with an alternate header content to prepend to output.
-            /// </summary>
-            public string? HeaderFile { get; }
-
-            /// <summary>
-            /// Method bodies should throw PlatformNotSupportedException.
-            /// </summary>
-            public string? ExceptionMessage { get; }
-
-            /// <summary>
-            /// The path to one or more api exclusion files with types in DocId format.
-            /// </summary>
-            public string[]? ExcludeApiFiles { get; }
-
-            /// <summary>
-            /// The path to one or more attribute exclusion files with types in DocId format.
-            /// </summary>
-            public string[]? ExcludeAttributesFiles { get; }
-
-            /// <summary>
-            /// If true, includes both internal and public API.
-            /// </summary>
-            public bool RespectInternals { get; }
-
-            /// <summary>
-            /// Includes assembly attributes which are values that provide information about an assembly.
-            /// </summary>
-            public bool IncludeAssemblyAttributes { get; }
-        }
-
         /// <summary>
         /// Initialize and run Roslyn-based GenAPI tool.
         /// </summary>
-        public static void Run(ILog logger, Context context)
+        public static void Run(ILog logger,
+            string[] assemblies,
+            string[]? assemblyReferences,
+            string? outputPath,
+            string? headerFile,
+            string? exceptionMessage,
+            string[]? excludeApiFiles,
+            string[]? excludeAttributesFiles,
+            bool respectInternals,
+            bool includeAssemblyAttributes)
         {
-            bool resolveAssemblyReferences = context.AssemblyReferences?.Length > 0;
+            bool resolveAssemblyReferences = assemblyReferences?.Length > 0;
 
-            IAssemblySymbolLoader loader = new AssemblySymbolLoader(resolveAssemblyReferences, context.RespectInternals);
-
-            if (context.AssemblyReferences is not null)
+            // Create, configure and execute the assembly loader.
+            AssemblySymbolLoader loader = new(resolveAssemblyReferences, respectInternals);
+            if (assemblyReferences is not null)
             {
-                loader.AddReferenceSearchPaths(context.AssemblyReferences);
+                loader.AddReferenceSearchPaths(assemblyReferences);
             }
+            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(assemblies);
 
-            CompositeSymbolFilter compositeSymbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(new AccessibilitySymbolFilter(
-                    context.RespectInternals,
-                    includeEffectivelyPrivateSymbols: true,
-                    includeExplicitInterfaceImplementationSymbols: true));
+            string headerFileText = ReadHeaderFile(headerFile);
 
-            if (context.ExcludeAttributesFiles is not null)
+            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
+                respectInternals,
+                includeEffectivelyPrivateSymbols: true,
+                includeExplicitInterfaceImplementationSymbols: true);
+
+            // Configure the symbol filter
+            CompositeSymbolFilter symbolFilter = new();
+            if (excludeApiFiles is not null)
             {
-                compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeAttributesFiles));
+                symbolFilter.Add(new DocIdSymbolFilter(excludeApiFiles));
             }
+            symbolFilter.Add(new ImplicitSymbolFilter());
+            symbolFilter.Add(accessibilitySymbolFilter);
 
-            if (context.ExcludeApiFiles is not null)
+            // Configure the attribute data symbol filter
+            CompositeSymbolFilter attributeDataSymbolFilter = new();
+            if (excludeAttributesFiles is not null)
             {
-                compositeSymbolFilter.Add(new DocIdSymbolFilter(context.ExcludeApiFiles));
+                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
             }
+            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
 
-            IReadOnlyList<IAssemblySymbol?> assemblySymbols = loader.LoadAssemblies(context.Assemblies);
+            // Invoke the CSharpFileBuilder for each directly loaded assembly.
             foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
             {
-                if (assemblySymbol == null)
+                if (assemblySymbol is null)
                     continue;
 
-                using TextWriter textWriter = GetTextWriter(context.OutputPath, assemblySymbol.Name);
-                textWriter.Write(ReadHeaderFile(context.HeaderFile));
+                using TextWriter textWriter = GetTextWriter(outputPath, assemblySymbol.Name);
+                textWriter.Write(headerFileText);
 
                 using CSharpFileBuilder fileBuilder = new(logger,
-                    compositeSymbolFilter,
+                    symbolFilter,
+                    attributeDataSymbolFilter,
                     textWriter,
-                    context.ExceptionMessage,
-                    context.IncludeAssemblyAttributes,
+                    exceptionMessage,
+                    includeAssemblyAttributes,
                     loader.MetadataReferences);
 
                 fileBuilder.WriteAssembly(assemblySymbol);
@@ -156,13 +103,7 @@ namespace Microsoft.DotNet.GenAPI
             }
         }
 
-        /// <summary>
-        /// Creates a TextWriter capable to write into Console or cs file.
-        /// </summary>
-        /// <param name="outputDirPath">Path to a directory where file with `assemblyName`.cs filename needs to be created.
-        ///     If Null - output to Console.Out.</param>
-        /// <param name="assemblyName">Name of an assembly. if outputDirPath is not a Null - represents a file name.</param>
-        /// <returns></returns>
+        // Creates a TextWriter capable of writing into Console or a cs file.
         private static TextWriter GetTextWriter(string? outputDirPath, string assemblyName)
         {
             if (outputDirPath is null)
@@ -179,11 +120,7 @@ namespace Microsoft.DotNet.GenAPI
             return File.CreateText(outputDirPath);
         }
 
-        /// <summary>
-        /// Read the header file if specified, or use default one.
-        /// </summary>
-        /// <param name="headerFile">File with an alternate header content to prepend to output</param>
-        /// <returns></returns>
+        // Read the header file if specified, or use default one.
         private static string ReadHeaderFile(string? headerFile)
         {
             const string defaultFileHeader = """

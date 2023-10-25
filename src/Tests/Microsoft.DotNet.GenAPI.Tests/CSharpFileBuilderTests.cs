@@ -30,16 +30,36 @@ namespace Microsoft.DotNet.GenAPI.Tests
             bool includeEffectivelyPrivateSymbols = true,
             bool includeExplicitInterfaceImplementationSymbols = true,
             bool allowUnsafe = false,
+            string excludedAttributeFile = null,
             [CallerMemberName] string assemblyName = "")
         {
             StringWriter stringWriter = new();
 
-            CompositeSymbolFilter compositeFilter = new CompositeSymbolFilter()
+            // Configure symbol filters
+            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
+                includeInternalSymbols,
+                includeEffectivelyPrivateSymbols,
+                includeExplicitInterfaceImplementationSymbols);
+
+            CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()
                 .Add(new ImplicitSymbolFilter())
-                .Add(new AccessibilitySymbolFilter(includeInternalSymbols,
-                    includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols));
-            IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(new ConsoleLog(MessageImportance.Low),
-                compositeFilter, stringWriter, null, false, MetadataReferences);
+                .Add(accessibilitySymbolFilter);
+
+            CompositeSymbolFilter attributeDataSymbolFilter = new();
+            if (excludedAttributeFile is not null)
+            {
+                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(new string[] { excludedAttributeFile }));
+            }
+            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
+
+            IAssemblySymbolWriter csharpFileBuilder = new CSharpFileBuilder(
+                new ConsoleLog(MessageImportance.Low),
+                symbolFilter,
+                attributeDataSymbolFilter,
+                stringWriter,
+                null,
+                false,
+                MetadataReferences);
 
             using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(original, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
             AssemblySymbolLoader assemblySymbolLoader = new(resolveAssemblyReferences: true, includeInternalSymbols: includeInternalSymbols);
@@ -2734,6 +2754,51 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     """,
                 expected: expected,
                 includeInternalSymbols: includeInternalSymbols);
+        }
+
+        [Fact]
+        public void TestAttributesExcludedWithFilter()
+        {
+            using TempDirectory root = new();
+            string filePath = Path.Combine(root.DirPath, "exclusions.txt");
+            File.WriteAllText(filePath, "T:A.AnyTestAttribute");
+
+            RunTest(original: """
+                    namespace A
+                    {
+                        public partial class AnyTestAttribute : System.Attribute
+                        {
+                            public AnyTestAttribute(System.Type xType)
+                            {
+                                XType = xType;
+                            }
+
+                            public System.Type XType { get; set; }
+                        }
+
+                        [AnyTest(typeof(string))]
+                        [System.Obsolete]
+                        public class PublicClass { }
+                    }
+                    """,
+                expected: """
+                    namespace A
+                    {
+                        public partial class AnyTestAttribute : System.Attribute
+                        {
+                            public AnyTestAttribute(System.Type xType) { }
+
+                            public System.Type XType { get { throw null; } set { } }
+                        }
+
+                        [System.Obsolete]
+                        public partial class PublicClass
+                        {
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false,
+                excludedAttributeFile: filePath);
         }
 
         [Fact]

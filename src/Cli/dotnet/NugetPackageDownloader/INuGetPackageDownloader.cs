@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
+            bool includeUnlisted = false,
             DirectoryPath? downloadFolder = null,
             PackageSourceMapping packageSourceMapping = null);
 

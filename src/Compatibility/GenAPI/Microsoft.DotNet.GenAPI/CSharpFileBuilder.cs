@@ -27,6 +27,7 @@ namespace Microsoft.DotNet.GenAPI
         private readonly ILog _logger;
         private readonly TextWriter _textWriter;
         private readonly ISymbolFilter _symbolFilter;
+        private readonly ISymbolFilter _attributeDataSymbolFilter;
         private readonly string? _exceptionMessage;
         private readonly bool _includeAssemblyAttributes;
         private readonly AdhocWorkspace _adhocWorkspace;
@@ -35,6 +36,7 @@ namespace Microsoft.DotNet.GenAPI
 
         public CSharpFileBuilder(ILog logger,
             ISymbolFilter symbolFilter,
+            ISymbolFilter attributeDataSymbolFilter,
             TextWriter textWriter,
             string? exceptionMessage,
             bool includeAssemblyAttributes,
@@ -43,6 +45,7 @@ namespace Microsoft.DotNet.GenAPI
             _logger = logger;
             _textWriter = textWriter;
             _symbolFilter = symbolFilter;
+            _attributeDataSymbolFilter = attributeDataSymbolFilter;
             _exceptionMessage = exceptionMessage;
             _includeAssemblyAttributes = includeAssemblyAttributes;
             _adhocWorkspace = new AdhocWorkspace();
@@ -61,7 +64,7 @@ namespace Microsoft.DotNet.GenAPI
             project = project.AddMetadataReferences(_metadataReferences);
 
             IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_symbolFilter.Include);
-            List<SyntaxNode> namespaceSyntaxNodes = new();
+            List<SyntaxNode> namespaceSyntaxNodes = [];
 
             foreach (INamespaceSymbol namespaceSymbol in namespaceSymbols.Order())
             {
@@ -107,8 +110,9 @@ namespace Microsoft.DotNet.GenAPI
 
             foreach (INamedTypeSymbol typeMember in typeMembers.Order())
             {
-                SyntaxNode typeDeclaration = _syntaxGenerator.DeclarationExt(typeMember, _symbolFilter)
-                    .AddMemberAttributes(_syntaxGenerator, _symbolFilter, typeMember);
+                SyntaxNode typeDeclaration = _syntaxGenerator
+                    .DeclarationExt(typeMember, _symbolFilter)
+                    .AddMemberAttributes(_syntaxGenerator, typeMember, _attributeDataSymbolFilter);
 
                 typeDeclaration = Visit(typeDeclaration, typeMember);
 
@@ -171,7 +175,7 @@ namespace Microsoft.DotNet.GenAPI
             // If it's a value type
             if (namedType.TypeKind == TypeKind.Struct)
             {
-                namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.SynthesizeDummyFields(_symbolFilter));
+                namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.SynthesizeDummyFields(_symbolFilter, _attributeDataSymbolFilter));
             }
 
             namedTypeNode = _syntaxGenerator.AddMembers(namedTypeNode, namedType.TryGetInternalDefaultConstructor(_symbolFilter));
@@ -203,8 +207,9 @@ namespace Microsoft.DotNet.GenAPI
                     continue;
                 }
 
-                SyntaxNode memberDeclaration = _syntaxGenerator.DeclarationExt(member, _symbolFilter)
-                    .AddMemberAttributes(_syntaxGenerator, _symbolFilter, member);
+                SyntaxNode memberDeclaration = _syntaxGenerator
+                    .DeclarationExt(member, _symbolFilter)
+                    .AddMemberAttributes(_syntaxGenerator, member, _attributeDataSymbolFilter);
 
                 if (member is INamedTypeSymbol nestedTypeSymbol)
                 {
@@ -224,8 +229,10 @@ namespace Microsoft.DotNet.GenAPI
                 catch (InvalidOperationException e)
                 {
                     // re-throw the InvalidOperationException with the symbol that caused it.
-                    throw new InvalidOperationException($"Adding member {member.ToDisplayString()} to the " +
-                        $"named type {namedTypeNode} failed with an exception {e.Message}");
+                    throw new InvalidOperationException(string.Format(Resources.AddMemberThrowsException,
+                        member.ToDisplayString(),
+                        namedTypeNode,
+                        e.Message));
                 }
             }
 
@@ -235,7 +242,7 @@ namespace Microsoft.DotNet.GenAPI
         private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
         {
             // When assembly references aren't available, assembly attributes with foreign types won't be resolved.
-            ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_symbolFilter);
+            ImmutableArray<AttributeData> attributes = assembly.GetAttributes().ExcludeNonVisibleOutsideOfAssembly(_attributeDataSymbolFilter);
 
             // Emit assembly attributes from the IAssemblySymbol
             List<SyntaxNode> attributeSyntaxNodes = attributes
@@ -286,7 +293,7 @@ namespace Microsoft.DotNet.GenAPI
                 else
                 {
                     _logger.LogWarning(string.Format(
-                        "Could not resolve type '{0}' in containing assembly '{1}' via type forward. Make sure that the assembly is provided as a reference and contains the type.",
+                        Resources.ResolveTypeForwardFailed,
                         symbol.ToDisplayString(),
                         $"{symbol.ContainingAssembly.Name}.dll"));
                 }
