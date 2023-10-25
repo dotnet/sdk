@@ -49,6 +49,7 @@ index ------------
  ./sdk-manifests/
  ./sdk-manifests/x.y.z/
 -./sdk-manifests/x.y.z/
+-./sdk-manifests/x.y.z/
  ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/
  ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/x.y.z/
  ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/x.y.z/WorkloadManifest.json

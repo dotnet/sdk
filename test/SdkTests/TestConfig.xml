@@ -245,6 +245,14 @@
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.IsTrimmable_warns_when_expected_for_not_correctly_multitargeted_libraries"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp.EnableSingleFile_warns_when_expected_for_not_correctly_multitargeted_libraries"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_can_use_latest_with_unsupported_target_framework"
             Skip="true"
             Issue=""

@@ -28,8 +28,9 @@ src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/wix/eula.rtf
 # aspnetcore
 #
 
-# Line 1 is a generic statement about license applicability that is being detected as "unknown"
+# A generic statement about license applicability that is being detected as "unknown"
 src/aspnetcore/src/Components/THIRD-PARTY-NOTICES.txt|unknown
+src/aspnetcore/THIRD-PARTY-NOTICES.txt|unknown
 
 # Windows installer files that have a reference to a URL for license
 src/aspnetcore/src/Installers/Windows/**/*.wxl|unknown-license-reference
