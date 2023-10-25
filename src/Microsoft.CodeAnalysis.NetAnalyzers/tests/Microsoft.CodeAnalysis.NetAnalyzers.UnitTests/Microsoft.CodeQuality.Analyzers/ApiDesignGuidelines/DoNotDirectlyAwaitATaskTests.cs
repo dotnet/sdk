@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
-using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
+using Microsoft.CodeAnalysis.CSharp;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskFixer>;
@@ -174,7 +174,7 @@ public class C
             {
                 ReferenceAssemblies = ReferenceAssemblies.Default.AddPackages(
                     ImmutableArray.Create(new PackageIdentity("Microsoft.Bcl.AsyncInterfaces", "5.0.0"))),
-                LanguageVersion = CSharpLanguageVersion.CSharp8,
+                LanguageVersion = LanguageVersion.CSharp8,
                 TestCode = code,
                 FixedCode = fixedCode,
             }.RunAsync();
@@ -740,6 +740,87 @@ public class C
 ";
 
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
+        }
+
+        [Fact, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CsharpAwaitIAsyncEnumerable_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+public class C
+{
+	public async Task Test(IAsyncEnumerable<int> enumerable)
+	{
+		await foreach(var i in [|enumerable|])
+		{
+		}
+	}
+}",
+                FixedCode = @"
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+public class C
+{
+	public async Task Test(IAsyncEnumerable<int> enumerable)
+	{
+		await foreach(var i in enumerable.ConfigureAwait(false))
+		{
+		}
+	}
+}",
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        [InlineData("true")]
+        [InlineData("false")]
+        public Task CsharpAwaitIAsyncEnumerable_NoDiagnosticAsync(string continueOnCapturedContext)
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @$"
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+public class C
+{{
+	public async Task Test(IAsyncEnumerable<int> enumerable)
+	{{
+		await foreach(var i in enumerable.ConfigureAwait({continueOnCapturedContext}))
+		{{
+		}}
+	}}
+}}",
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CsharpForEachEnumerable_NoDiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+public class C
+{
+	public void Test(IEnumerable<int> enumerable)
+	{
+		foreach(var i in enumerable)
+		{
+		}
+	}
+}",
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync();
         }
     }
 }
