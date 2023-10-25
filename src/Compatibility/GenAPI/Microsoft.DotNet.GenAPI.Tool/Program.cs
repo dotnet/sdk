@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
 
             rootCommand.SetAction((ParseResult parseResult) =>
             {
-                GenAPIApp.Run(new ConsoleLog(MessageImportance.Normal), new GenAPIApp.Context(
+                GenAPIApp.Run(new ConsoleLog(MessageImportance.Normal),
                     parseResult.GetValue(assembliesOption)!,
                     parseResult.GetValue(assemblyReferencesOption),
                     parseResult.GetValue(outputPathOption),
@@ -107,7 +107,7 @@ namespace Microsoft.DotNet.GenAPI.Tool
                     parseResult.GetValue(excludeAttributesFilesOption),
                     parseResult.GetValue(respectInternalsOption),
                     parseResult.GetValue(includeAssemblyAttributesOption)
-                ));
+                );
             });
 
             return rootCommand.Parse(args).Invoke();
@@ -115,13 +115,13 @@ namespace Microsoft.DotNet.GenAPI.Tool
 
         private static string[] ParseAssemblyArgument(ArgumentResult argumentResult)
         {
-            List<string> args = new();
+            List<string> args = [];
             foreach (var token in argumentResult.Tokens)
             {
                 args.AddRange(token.Value.Split(','));
             }
 
-            return args.ToArray();
+            return [.. args];
         }
     }
 }

@@ -6,46 +6,27 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
     /// <summary>
     /// Work item for the api compat runner
     /// </summary>
-    public readonly struct ApiCompatRunnerWorkItem : IEquatable<ApiCompatRunnerWorkItem>
+    /// <remarks>
+    /// Creates a work item with a single left set, options and a single right set.
+    /// </remarks>
+    public readonly struct ApiCompatRunnerWorkItem(IReadOnlyList<MetadataInformation> left,
+        ApiCompatRunnerOptions options,
+        IReadOnlyList<MetadataInformation> right) : IEquatable<ApiCompatRunnerWorkItem>
     {
         /// <summary>
         /// The metadata information of the left assemblies to compare with the rights.
         /// </summary>
-        public readonly IReadOnlyList<MetadataInformation> Left;
+        public readonly IReadOnlyList<MetadataInformation> Left = left;
 
         /// <summary>
         /// The api compat options to configure the comparison checks.
         /// </summary>
-        public readonly ApiCompatRunnerOptions Options;
+        public readonly ApiCompatRunnerOptions Options = options;
 
         /// <summary>
         /// The metadata information of the right assemblies that are compared against the lefts.
         /// </summary>
-        public IList<IReadOnlyList<MetadataInformation>> Right { get; }
-
-        /// <summary>
-        /// Creates a work item with a single left set, options and multiple right sets.
-        /// </summary>
-        public ApiCompatRunnerWorkItem(IReadOnlyList<MetadataInformation> left,
-            ApiCompatRunnerOptions options,
-            List<IReadOnlyList<MetadataInformation>> right)
-        {
-            Left = left;
-            Options = options;
-            Right = right;
-        }
-
-        /// <summary>
-        /// Creates a work item with a single left set, options and a single right set.
-        /// </summary>
-        public ApiCompatRunnerWorkItem(IReadOnlyList<MetadataInformation> left,
-            ApiCompatRunnerOptions options,
-            IReadOnlyList<MetadataInformation> right)
-        {
-            Left = left;
-            Options = options;
-            Right = new List<IReadOnlyList<MetadataInformation>>(new IReadOnlyList<MetadataInformation>[] { right });
-        }
+        public IList<IReadOnlyList<MetadataInformation>> Right { get; } = new List<IReadOnlyList<MetadataInformation>>(new IReadOnlyList<MetadataInformation>[] { right });
 
         /// <summary>
         /// Creates a work item with a single left, options and a single right.

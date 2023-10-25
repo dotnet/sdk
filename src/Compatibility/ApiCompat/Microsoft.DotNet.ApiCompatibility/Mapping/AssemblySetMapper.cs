@@ -9,23 +9,17 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
     /// <summary>
     /// Object that represents a mapping between two lists of <see cref="IAssemblySymbol"/>.
     /// </summary>
-    public class AssemblySetMapper : ElementMapper<IEnumerable<ElementContainer<IAssemblySymbol>>>, IAssemblySetMapper
+    /// <param name="ruleRunner">The <see cref="IRuleRunner"/> that compares the assembly set mapper elements.</param>
+    /// <param name="settings">The <see cref="IMapperSettings"/> used to compare the assembly set mapper elements.</param>
+    /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
+    public class AssemblySetMapper(IRuleRunner ruleRunner,
+        IMapperSettings settings,
+        int rightSetSize) : ElementMapper<IEnumerable<ElementContainer<IAssemblySymbol>>>(ruleRunner, settings, rightSetSize), IAssemblySetMapper
     {
         private Dictionary<IAssemblySymbol, IAssemblyMapper>? _assemblies;
 
         /// <inheritdoc />
         public int AssemblyCount => _assemblies != null ? _assemblies.Count : 0;
-
-        /// <summary>
-        /// Instantiates an assembly set mapper.
-        /// </summary>
-        /// <param name="ruleRunner">The <see cref="IRuleRunner"/> that compares the assembly set mapper elements.</param>
-        /// <param name="settings">The <see cref="IMapperSettings"/> used to compare the assembly set mapper elements.</param>
-        /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
-        public AssemblySetMapper(IRuleRunner ruleRunner,
-            IMapperSettings settings,
-            int rightSetSize)
-            : base(ruleRunner, settings, rightSetSize) { }
 
         /// <inheritdoc />
         public IEnumerable<IAssemblyMapper> GetAssemblies()
