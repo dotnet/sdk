@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
     /// <param name="settings">The <see cref="IMapperSettings"/> used to compare the type mapper elements.</param>
     /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
     /// <param name="containingNamespace">The containing <see cref="INamespaceMapper"/>.</param>
-    /// <param name="containingType">The containing <see cref="ITypeMapper"/>. Null, if the type doesn't have a containing type.</param>
+    /// <param name="containingType">The containing <see cref="ITypeMapper"/>. <see langword="null" />, if the type doesn't have a containing type.</param>
     public class TypeMapper(IRuleRunner ruleRunner,
         IMapperSettings settings,
         int rightSetSize,
