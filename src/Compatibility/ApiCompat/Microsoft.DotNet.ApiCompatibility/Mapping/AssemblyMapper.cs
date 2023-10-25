@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
     /// <param name="ruleRunner">The <see cref="IRuleRunner"/> that compares the assembly mapper elements.</param>
     /// <param name="settings">The <see cref="IMapperSettings"/> used to compare the assembly mapper elements.</param>
     /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
-    /// <param name="containingAssemblySet">The containing <see cref="IAssemblySetMapper"/>. Null, if the assembly isn't part of a set.</param>
+    /// <param name="containingAssemblySet">The containing <see cref="IAssemblySetMapper"/>. <see langword="null" />, if the assembly isn't part of a set.</param>
     public class AssemblyMapper(IRuleRunner ruleRunner,
         IMapperSettings settings,
         int rightSetSize,
