@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.GenAPI
             }
         }
 
-        // Creates a TextWriter capable to write into Console or cs file.
+        // Creates a TextWriter capable of writing into Console or a cs file.
         private static TextWriter GetTextWriter(string? outputDirPath, string assemblyName)
         {
             if (outputDirPath is null)
