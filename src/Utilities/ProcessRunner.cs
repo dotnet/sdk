@@ -74,6 +74,7 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
             Action<Process>? onProcessStartHandler = null,
             CancellationToken cancellationToken = default)
         {
+            var redirectInitiatedLock = new object();
             var redirectInitiated = new ManualResetEventSlim();
 
             var errorLines = new List<string>();
@@ -110,9 +111,17 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
                         // WaitForExit will only wait for the process to finish redirecting its output/error if we call
                         // BeginOutputReadLine/BeginErrorReadLine prior to calling WaitForExit. If we do not wait for these
                         // methods to be called, its possible to return before we get any data from the process.
-                        redirectInitiated.Wait(cancellationToken);
-                        redirectInitiated.Dispose();
-                        redirectInitiated = null;
+                        lock (redirectInitiatedLock)
+                        {
+                            if (redirectInitiated != null)
+                            {
+                                redirectInitiated.Wait();
+
+                                // Since we got the lock, we are responsible for disposing
+                                redirectInitiated.Dispose();
+                                redirectInitiated = null;
+                            }
+                        }
 
                         process.WaitForExit();
                         var result = new ProcessResult(
@@ -126,6 +135,16 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
 
             _ = cancellationToken.Register(() =>
                 {
+                    lock (redirectInitiatedLock)
+                    {
+                        if (redirectInitiated != null)
+                        {
+                            // Since we got the lock, we are responsible for disposing
+                            redirectInitiated.Dispose();
+                            redirectInitiated = null;
+                        }
+                    }
+
                     if (tcs.TrySetCanceled())
                     {
                         // If the underlying process is still running, we should kill it
