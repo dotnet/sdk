@@ -155,6 +155,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
                     }
                     File.Delete(p.ItemSpec);
                     File.Move(poisonedPackagePath, p.ItemSpec);
+                    Directory.Delete(packageTempPath, true);
                 }
             }
 

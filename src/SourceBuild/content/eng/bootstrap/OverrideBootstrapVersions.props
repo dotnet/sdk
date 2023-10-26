@@ -1,11 +1,23 @@
 <Project>
   <PropertyGroup>
-     <!-- 7.0.0 produced improperly versioned runtime assets because the OfficialBuildId
-          was not set correctly.  This is the actual shipping version that it should have been -->
-     <NonshippingRuntimeVersionFor700>7.0.4-servicing.23107.6</NonshippingRuntimeVersionFor700>
+    <!-- 7.0.0 produced improperly versioned runtime assets because the OfficialBuildId
+         was not set correctly.  This is the actual shipping version that it should have been -->
+    <NonshippingRuntimeVersionFor700>7.0.4-servicing.23107.6</NonshippingRuntimeVersionFor700>
+    
+    <MicrosoftNETCoreTestHostVersion>$(NonshippingRuntimeVersionFor700)</MicrosoftNETCoreTestHostVersion>
 
-     <MicrosoftNETHostModelVersion>$(NonshippingRuntimeVersionFor700)</MicrosoftNETHostModelVersion>
-     <MicrosoftNETCoreTestHostVersion>$(NonshippingRuntimeVersionFor700)</MicrosoftNETCoreTestHostVersion>
-     <RuntimeLinuxX64MicrosoftNETCoreTestHostVersion>$(NonshippingRuntimeVersionFor700)</RuntimeLinuxX64MicrosoftNETCoreTestHostVersion>
+    <Msft80RC2RuntimeVersion>8.0.0-rc.2.23479.6</Msft80RC2RuntimeVersion>
+    <MicrosoftNETCoreAppCrossgen2Version>$(Msft80RC2RuntimeVersion)</MicrosoftNETCoreAppCrossgen2Version>
+    <MicrosoftNETCoreAppHostPackageVersion>$(Msft80RC2RuntimeVersion)</MicrosoftNETCoreAppHostPackageVersion>
+    <MicrosoftNETCoreAppRuntimeVersion>$(Msft80RC2RuntimeVersion)</MicrosoftNETCoreAppRuntimeVersion>
+    <MicrosoftNETILLinkTasksVersion>$(Msft80RC2RuntimeVersion)</MicrosoftNETILLinkTasksVersion>
+    <MicrosoftDotNetILCompilerVersion>$(Msft80RC2RuntimeVersion)</MicrosoftDotNetILCompilerVersion>
+    <MicrosoftNETCoreDotNetAppHostVersion>$(Msft80RC2RuntimeVersion)</MicrosoftNETCoreDotNetAppHostVersion>
+    <MicrosoftNETCoreDotNetHostVersion>$(Msft80RC2RuntimeVersion)</MicrosoftNETCoreDotNetHostVersion>
+    <MicrosoftNETCoreDotNetHostPolicyVersion>$(Msft80RC2RuntimeVersion)</MicrosoftNETCoreDotNetHostPolicyVersion>
+    <MicrosoftNETCoreDotNetHostResolverVersion>$(Msft80RC2RuntimeVersion)</MicrosoftNETCoreDotNetHostResolverVersion>
+    <MicrosoftNETCoreILAsmVersion>$(Msft80RC2RuntimeVersion)</MicrosoftNETCoreILAsmVersion>
+    <MicrosoftNETCoreILDAsmVersion>$(Msft80RC2RuntimeVersion)</MicrosoftNETCoreILDAsmVersion>
+    <RuntimeNativeSystemIOPortsVersion>$(Msft80RC2RuntimeVersion)</RuntimeNativeSystemIOPortsVersion>
   </PropertyGroup>
 </Project>
