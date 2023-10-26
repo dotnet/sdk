@@ -74,6 +74,8 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
             Action<Process>? onProcessStartHandler = null,
             CancellationToken cancellationToken = default)
         {
+            var redirectInitiated = new ManualResetEventSlim();
+
             var errorLines = new List<string>();
             var outputLines = new List<string>();
             var process = new Process();
@@ -105,6 +107,13 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
                     // than enter right back into the Process type and start a wait which isn't guaranteed to be safe.
                     Task.Run(() =>
                     {
+                        // WaitForExit will only wait for the process to finish redirecting its output/error if we call
+                        // BeginOutputReadLine/BeginErrorReadLine prior to calling WaitForExit. If we do not wait for these
+                        // methods to be called, its possible to return before we get any data from the process.
+                        redirectInitiated.Wait(cancellationToken);
+                        redirectInitiated.Dispose();
+                        redirectInitiated = null;
+
                         process.WaitForExit();
                         var result = new ProcessResult(
                             process,
@@ -151,6 +160,8 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
             {
                 process.BeginErrorReadLine();
             }
+
+            redirectInitiated.Set();
 
             return new ProcessInfo(process, processStartInfo, tcs.Task);
         }
