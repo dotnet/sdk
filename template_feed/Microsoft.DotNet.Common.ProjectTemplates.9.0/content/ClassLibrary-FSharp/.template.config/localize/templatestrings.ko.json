@@ -5,7 +5,7 @@
   "symbols/TargetFrameworkOverride/description": "대상 프레임워크를 재정의합니다",
   "symbols/TargetFrameworkOverride/displayName": "대상 프레임워크 재정의",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net9.0/description": "대상 net9.0",
   "symbols/Framework/choices/net9.0/displayName": ".NET 9.0",
   "symbols/Framework/choices/netstandard2.1/description": "대상 netstandard 2.1",
   "symbols/Framework/choices/netstandard2.1/displayName": ".NET Standard 2.1",

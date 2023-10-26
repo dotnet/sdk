@@ -5,7 +5,7 @@
   "symbols/TargetFrameworkOverride/description": "Ignora il framework di destinazione",
   "symbols/TargetFrameworkOverride/displayName": "Override del framework di destinazione",
   "symbols/Framework/description": "Il framework di destinazione per il progetto.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net9.0/description": "Destinazione net9.0",
   "symbols/Framework/choices/net9.0/displayName": ".NET 9.0",
   "symbols/Framework/displayName": "Framework",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",

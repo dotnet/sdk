@@ -5,7 +5,7 @@
   "symbols/TargetFrameworkOverride/description": "Überschreibt das Zielframework",
   "symbols/TargetFrameworkOverride/displayName": "Zielframeworküberschreibung",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net9.0/description": "Ziel net9.0",
   "symbols/Framework/choices/net9.0/displayName": ".NET 9.0",
   "symbols/Framework/choices/netstandard2.1/description": "Auf „netstandard2.1“ abzielen",
   "symbols/Framework/choices/netstandard2.1/displayName": ".NET Standard 2.1",
