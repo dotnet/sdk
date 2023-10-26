@@ -28,8 +28,9 @@ src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/wix/eula.rtf
 # aspnetcore
 #
 
-# Line 1 is a generic statement about license applicability that is being detected as "unknown"
+# A generic statement about license applicability that is being detected as "unknown"
 src/aspnetcore/src/Components/THIRD-PARTY-NOTICES.txt|unknown
+src/aspnetcore/THIRD-PARTY-NOTICES.txt|unknown
 
 # Windows installer files that have a reference to a URL for license
 src/aspnetcore/src/Installers/Windows/**/*.wxl|unknown-license-reference
@@ -167,7 +168,7 @@ src/runtime/src/installer/pkg/THIRD-PARTY-NOTICES.TXT
 
 # False positive
 src/runtime/src/libraries/System.ComponentModel.TypeConverter/src/System/ComponentModel/LicFileLicenseProvider.cs|proprietary-license
-src/runtime/src/libraries/System.Configuration.ConfigurationManager/tests/Mono/LongValidatorTest.cs|json
+src/runtime/src/libraries/System.Configuration.ConfigurationManager/tests/Mono/LongValidatorTest.cs|embedthis-extension
 src/runtime/src/libraries/System.Net.Sockets/tests/FunctionalTests/Connect.cs|other-permissive
 src/runtime/src/libraries/System.Net.Sockets/tests/FunctionalTests/UdpClientTest.cs|other-permissive
 src/runtime/src/libraries/System.Net.Sockets/tests/FunctionalTests/SendReceive/SendReceive.cs|other-permissive
@@ -226,10 +227,11 @@ src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library.ref/2.1.0/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.codeanalysis.collections/4.2.0-1.22102.8/ThirdPartyNotices.rtf|json
 src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.netcore.*/1.*/ThirdPartyNotices.txt|unknown
+src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/8.0.*/IntellisenseFiles/*/1033/System.Security.Permissions.xml|unknown-license-reference
 
 # Contains references to licenses which are not applicable to the source
 src/source-build-reference-packages/src/packageSourceGenerator/PackageSourceGeneratorTask/RewriteNuspec.cs|unknown-license-reference,ms-net-library-2018-11
-src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/8.0.0-preview-20230918.1/IntellisenseFiles/windowsdesktop/1033/PresentationCore.xml|proprietary-license
+src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/8.0.*/IntellisenseFiles/windowsdesktop/1033/PresentationCore.xml|proprietary-license
 
 #
 # sourcelink

@@ -73,6 +73,7 @@ public class LicenseScanTests : TestBase
         "lgpl-2.0-plus", // https://opensource.org/license/lgpl-2-0/
         "lgpl-2.1", // https://opensource.org/license/lgpl-2-1/
         "lgpl-2.1-plus", // https://opensource.org/license/lgpl-2-1/
+        "lzma-sdk-9.22", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/lzma-sdk-9.22.LICENSE
         "mit", // https://opensource.org/license/mit/
         "mit-addition", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/mit-addition.LICENSE
         "ms-patent-promise", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/ms-patent-promise.LICENSE
@@ -142,17 +143,16 @@ public class LicenseScanTests : TestBase
     {
         Assert.NotNull(Config.LicenseScanPath);
 
-        string OriginalScancodeResultsPath = Path.Combine(LogsDirectory, "scancode-results-original.json");
-        string FilteredScancodeResultsPath = Path.Combine(LogsDirectory, "scancode-results-filtered.json");
+        string scancodeResultsPath = Path.Combine(LogsDirectory, "scancode-results.json");
 
         // Scancode Doc: https://scancode-toolkit.readthedocs.io/en/latest/index.html
         string ignoreOptions = string.Join(" ", s_ignoredFilePatterns.Select(pattern => $"--ignore {pattern}"));
         ExecuteHelper.ExecuteProcessValidateExitCode(
             "scancode",
-            $"--license --strip-root --only-findings {ignoreOptions} --json-pp {OriginalScancodeResultsPath} {Config.LicenseScanPath}",
+            $"--license --strip-root --only-findings {ignoreOptions} --json-pp {scancodeResultsPath} {Config.LicenseScanPath}",
             OutputHelper);
 
-        JsonDocument doc = JsonDocument.Parse(File.ReadAllText(OriginalScancodeResultsPath));
+        JsonDocument doc = JsonDocument.Parse(File.ReadAllText(scancodeResultsPath));
         ScancodeResults? scancodeResults = doc.Deserialize<ScancodeResults>();
         Assert.NotNull(scancodeResults);
 
@@ -163,7 +163,6 @@ public class LicenseScanTests : TestBase
             WriteIndented = true
         };
         string json = JsonSerializer.Serialize(scancodeResults, options);
-        File.WriteAllText(FilteredScancodeResultsPath, json);
 
         string baselineName = $"Licenses.{_targetRepo}.json";
 
