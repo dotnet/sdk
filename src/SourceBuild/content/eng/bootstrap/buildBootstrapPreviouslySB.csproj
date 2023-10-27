@@ -49,6 +49,7 @@
     <ExcludedPackage Include="runtime.linux-musl-arm64.runtime.native.System.IO.Ports" />
 
     <PackageDownload Include="Microsoft.NET.ILLink.Tasks" Version="[$(MicrosoftNETILLinkTasksVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Ref" Version="[$(MicrosoftNETCoreAppRefVersion)]" />
   </ItemGroup>
 
   <Target Name="GetPackagesToDownload"
