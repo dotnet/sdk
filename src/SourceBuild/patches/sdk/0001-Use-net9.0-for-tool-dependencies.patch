@@ -13,19 +13,6 @@ diff --git a/src/Layout/redist/targets/GenerateLayout.targets b/src/Layout/redis
 index eab01ef144..922b959531 100644
 --- a/src/Layout/redist/targets/GenerateLayout.targets
 +++ b/src/Layout/redist/targets/GenerateLayout.targets
-@@ -112,9 +112,9 @@
-     </PropertyGroup>
- 
-     <ItemGroup>
--      <DotnetFormatDllFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.dll" />
--      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.json" />
--      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.config" />
-+      <DotnetFormatDllFiles Include="$(Pkgdotnet-format)/tools/net9.0/any/**/*.dll" />
-+      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net9.0/any/**/*.json" />
-+      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net9.0/any/**/*.config" />
-     </ItemGroup>
- 
-     <Error Condition="'@(DotnetFormatDllFiles)' == ''" Text="Something moved around in dotnet-format package, adjust code here accordingly. TFM change?" />
 @@ -178,7 +178,7 @@
            BeforeTargets="Build">
      <PropertyGroup>
