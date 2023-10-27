@@ -74,8 +74,6 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
             additionalRemotes,
             ReadmeTemplatePath,
             TpnTemplatePath,
-            generateCodeowners: false,
-            discardPatches: true,
             _cancellationToken.Token);
         return true;
     }
@@ -84,6 +82,7 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
 
     private IServiceProvider CreateServiceProvider() => new ServiceCollection()
         .AddLogging(b => b.AddConsole().AddFilter(l => l >= LogLevel.Information))
-        .AddVmrManagers("git", VmrPath, TmpPath, null, null)
+        .AddTransient<GitFileManagerFactory>()
+        .AddVmrManagers(sp => sp.GetRequiredService<GitFileManagerFactory>(), "git", VmrPath, TmpPath, null, null)
         .BuildServiceProvider();
 }
