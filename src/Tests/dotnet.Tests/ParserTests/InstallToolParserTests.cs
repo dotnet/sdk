@@ -121,6 +121,15 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [Fact]
+        public void InstallToolParserCanParseNoHttpCacheOption()
+        {
+            var result =
+                Parser.Instance.Parse(@"dotnet tool install -g console.test.app --no-http-cache");
+
+            result.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()).Should().ContainSingle("--no-http-cache");
+        }
+
+        [Fact]
         public void InstallToolParserCanParseIgnoreFailedSourcesOption()
         {
             var result =

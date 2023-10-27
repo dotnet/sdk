@@ -8,31 +8,24 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// <summary>
     /// Implements the logic of filtering out symbols based on a provided accessibility level (i.e. public / internal).
     /// </summary>
-    public class AccessibilitySymbolFilter : ISymbolFilter
+    public class AccessibilitySymbolFilter(bool includeInternalSymbols,
+        bool includeEffectivelyPrivateSymbols = false,
+        bool includeExplicitInterfaceImplementationSymbols = false) : ISymbolFilter
     {
         /// <summary>
         /// Include internal API.
         /// </summary>
-        public bool IncludeInternalSymbols { get; }
+        public bool IncludeInternalSymbols { get; } = includeInternalSymbols;
 
         /// <summary>
         /// Include effectively private API.
         /// </summary>
-        public bool IncludeEffectivelyPrivateSymbols { get; }
+        public bool IncludeEffectivelyPrivateSymbols { get; } = includeEffectivelyPrivateSymbols;
 
         /// <summary>
         /// Include explicit interface implementation API.
         /// </summary>
-        public bool IncludeExplicitInterfaceImplementationSymbols { get; }
-
-        public AccessibilitySymbolFilter(bool includeInternalSymbols,
-            bool includeEffectivelyPrivateSymbols = false,
-            bool includeExplicitInterfaceImplementationSymbols = false)
-        {
-            IncludeInternalSymbols = includeInternalSymbols;
-            IncludeEffectivelyPrivateSymbols = includeEffectivelyPrivateSymbols;
-            IncludeExplicitInterfaceImplementationSymbols = includeExplicitInterfaceImplementationSymbols;
-        }
+        public bool IncludeExplicitInterfaceImplementationSymbols { get; } = includeExplicitInterfaceImplementationSymbols;
 
         /// <inheritdoc />
         public bool Include(ISymbol symbol) =>

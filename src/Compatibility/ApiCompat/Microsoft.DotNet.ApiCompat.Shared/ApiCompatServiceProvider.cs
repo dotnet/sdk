@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.ApiCompat
         private readonly Lazy<ISuppressibleLog> _compatibilityLogger;
         private readonly Lazy<IApiCompatRunner> _apiCompatRunner;
 
-        internal ApiCompatServiceProvider(Func<ISuppressionEngine, ISuppressibleLog> logFactory,
+        public ApiCompatServiceProvider(Func<ISuppressionEngine, ISuppressibleLog> logFactory,
             Func<ISuppressionEngine> suppressionEngineFactory,
             Func<ISuppressibleLog, IRuleFactory> ruleFactory,
             bool respectInternals,

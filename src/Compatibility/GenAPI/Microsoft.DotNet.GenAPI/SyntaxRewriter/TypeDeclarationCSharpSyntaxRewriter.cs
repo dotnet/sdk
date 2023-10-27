@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
             return VisitCommonTypeDeclaration(rs);
         }
 
-        /// Removes the specified base type from a Class/struct/interface node.
+        // Removes the specified base type from a Class/struct/interface node.
         private static T? RemoveBaseType<T>(T? node, string typeName) where T : TypeDeclarationSyntax =>
             RemoveBaseType(node, x => string.Equals(x.ToString(), typeName, StringComparison.OrdinalIgnoreCase));
 

@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.ApiCompatibility
     /// </summary>
     public class DifferenceVisitor : IDifferenceVisitor
     {
-        private readonly HashSet<CompatDifference> _compatDifferences = new();
+        private readonly HashSet<CompatDifference> _compatDifferences = [];
 
         /// <inheritdoc />
         public IEnumerable<CompatDifference> CompatDifferences => _compatDifferences;

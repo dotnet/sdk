@@ -273,8 +273,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         private class AttributeGroup
         {
             public readonly AttributeData Representative;
-            public readonly List<AttributeData> Attributes = new();
-            public readonly List<bool> Seen = new();
+            public readonly List<AttributeData> Attributes = [];
+            public readonly List<bool> Seen = [];
 
             public AttributeGroup(AttributeData attributeData)
             {
@@ -294,7 +294,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             // _set holds a set of attribute groups, each represented by an attribute class.
             // We use a List instead of a HashSet because in practice, the number of attributes
             // on a declaration is going to be extremely small (on the order of 1-3).
-            private readonly List<AttributeGroup> _set = new();
+            private readonly List<AttributeGroup> _set = [];
             private readonly IEqualityComparer<ISymbol> _symbolEqualityComparer;
 
             public AttributeSet(IEqualityComparer<ISymbol> symbolEqualityComparer,
