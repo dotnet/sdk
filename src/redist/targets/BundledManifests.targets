@@ -15,8 +15,10 @@
     <BundledManifests Include="Microsoft.NET.Workload.Emscripten.Current" FeatureBand="$(EmscriptenWorkloadFeatureBand)" Version="$(EmscriptenWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Emscripten.net6" FeatureBand="$(EmscriptenWorkloadFeatureBand)" Version="$(EmscriptenWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Emscripten.net7" FeatureBand="$(EmscriptenWorkloadFeatureBand)" Version="$(EmscriptenWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Emscripten.net8" FeatureBand="$(EmscriptenWorkloadFeatureBand)" Version="$(EmscriptenWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net6" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net7" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net8" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
   </ItemGroup>
 
   <!-- Calculate NuGet package IDs for bundled manifests -->
