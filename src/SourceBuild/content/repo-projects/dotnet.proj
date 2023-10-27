@@ -49,6 +49,10 @@
 
     <!-- Package source-build artifacts -->
     <RepositoryReference Include="package-source-build" />
+
+    <!-- Testing. -->
+    <RepositoryReference Include="scenario-tests" />
+
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
