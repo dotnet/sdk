@@ -221,16 +221,20 @@ namespace Microsoft.NET.TestFramework
         {
             string directory = AppContext.BaseDirectory;
 
-            while (directory != null && !Directory.Exists(Path.Combine(directory, ".git")))
+            while (directory is not null)
             {
+                var gitPath = Path.Combine(directory, ".git");
+                if (Directory.Exists(gitPath) || File.Exists(gitPath))
+                {
+                    // Found the repo root, which should either have a .git folder or, if the repo
+                    // is part of a Git worktree, a .git file.
+                    return directory;
+                }
+
                 directory = Directory.GetParent(directory)?.FullName;
             }
 
-            if (directory == null)
-            {
-                return null;
-            }
-            return directory;
+            return null;
         }
         private static string FindOrCreateFolderInTree(string relativePath, string startPath)
         {

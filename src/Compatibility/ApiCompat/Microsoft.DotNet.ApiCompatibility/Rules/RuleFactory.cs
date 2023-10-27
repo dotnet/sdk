@@ -8,27 +8,16 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     /// <summary>
     /// The default rule factory that returns all available rules with the given input settings.
     /// </summary>
-    public class RuleFactory : IRuleFactory
+    public class RuleFactory(ISuppressibleLog log,
+        bool enableRuleAttributesMustMatch = false,
+        bool enableRuleCannotChangeParameterName = false) : IRuleFactory
     {
-        private readonly ISuppressibleLog _log;
-        private readonly bool _enableRuleAttributesMustMatch;
-        private readonly bool _enableRuleCannotChangeParameterName;
-
-        public RuleFactory(ISuppressibleLog log,
-            bool enableRuleAttributesMustMatch = false,
-            bool enableRuleCannotChangeParameterName = false)
-        {
-            _log = log;
-            _enableRuleAttributesMustMatch = enableRuleAttributesMustMatch;
-            _enableRuleCannotChangeParameterName = enableRuleCannotChangeParameterName;
-        }
-
         /// <inheritdoc />
         public IRule[] CreateRules(IRuleSettings settings, IRuleRegistrationContext context)
         {
             List<IRule> rules = new()
             {
-                new AssemblyIdentityMustMatch(_log, settings, context),
+                new AssemblyIdentityMustMatch(log, settings, context),
                 new CannotAddAbstractMember(settings, context),
                 new CannotAddMemberToInterface(settings, context),
                 new CannotAddOrRemoveVirtualKeyword(settings, context),
@@ -39,12 +28,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 new CannotChangeVisibility(settings, context)
             };
 
-            if (_enableRuleAttributesMustMatch)
+            if (enableRuleAttributesMustMatch)
             {
                 rules.Add(new AttributesMustMatch(settings, context));
             }
 
-            if (_enableRuleCannotChangeParameterName)
+            if (enableRuleCannotChangeParameterName)
             {
                 rules.Add(new CannotChangeParameterName(settings, context));
             }

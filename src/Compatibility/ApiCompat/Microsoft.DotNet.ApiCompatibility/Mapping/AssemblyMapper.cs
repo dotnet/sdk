@@ -11,32 +11,23 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
     /// This also holds a list of <see cref="INamespaceMapper"/> to represent the mapping of namespaces in between
     /// <see cref="IElementMapper{T}.Left"/> and <see cref="IElementMapper{T}.Right"/>.
     /// </summary>
-    public class AssemblyMapper : ElementMapper<ElementContainer<IAssemblySymbol>>, IAssemblyMapper
+    /// <param name="ruleRunner">The <see cref="IRuleRunner"/> that compares the assembly mapper elements.</param>
+    /// <param name="settings">The <see cref="IMapperSettings"/> used to compare the assembly mapper elements.</param>
+    /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
+    /// <param name="containingAssemblySet">The containing <see cref="IAssemblySetMapper"/>. <see langword="null" />, if the assembly isn't part of a set.</param>
+    public class AssemblyMapper(IRuleRunner ruleRunner,
+        IMapperSettings settings,
+        int rightSetSize,
+        IAssemblySetMapper? containingAssemblySet = null) : ElementMapper<ElementContainer<IAssemblySymbol>>(ruleRunner, settings, rightSetSize), IAssemblyMapper
     {
         private Dictionary<INamespaceSymbol, INamespaceMapper>? _namespaces;
-        private readonly List<CompatDifference> _assemblyLoadErrors = new();
+        private readonly List<CompatDifference> _assemblyLoadErrors = [];
 
         /// <inheritdoc />
-        public IAssemblySetMapper? ContainingAssemblySet { get; }
+        public IAssemblySetMapper? ContainingAssemblySet { get; } = containingAssemblySet;
 
         /// <inheritdoc />
         public IEnumerable<CompatDifference> AssemblyLoadErrors => _assemblyLoadErrors;
-
-        /// <summary>
-        /// Instantiates an assembly mapper.
-        /// </summary>
-        /// <param name="ruleRunner">The <see cref="IRuleRunner"/> that compares the assembly mapper elements.</param>
-        /// <param name="settings">The <see cref="IMapperSettings"/> used to compare the assembly mapper elements.</param>
-        /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
-        /// <param name="containingAssemblySet">The containing <see cref="IAssemblySetMapper"/>. Null, if the assembly isn't part of a set.</param>
-        public AssemblyMapper(IRuleRunner ruleRunner,
-            IMapperSettings settings,
-            int rightSetSize,
-            IAssemblySetMapper? containingAssemblySet = null)
-            : base(ruleRunner, settings, rightSetSize)
-        {
-            ContainingAssemblySet = containingAssemblySet;
-        }
 
         /// <inheritdoc />
         public IEnumerable<INamespaceMapper> GetNamespaces()
@@ -124,7 +115,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
                         {
                             if (!typeForwards.TryGetValue(symbol.ContainingNamespace, out List<INamedTypeSymbol>? types))
                             {
-                                types = new List<INamedTypeSymbol>();
+                                types = [];
                                 typeForwards.Add(symbol.ContainingNamespace, types);
                             }
 

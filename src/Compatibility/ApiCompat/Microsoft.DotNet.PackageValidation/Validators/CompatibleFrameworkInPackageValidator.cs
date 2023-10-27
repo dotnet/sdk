@@ -13,18 +13,9 @@ namespace Microsoft.DotNet.PackageValidation.Validators
     /// <summary>
     /// Validates the api surface between compatible frameworks.
     /// </summary>
-    public class CompatibleFrameworkInPackageValidator : IPackageValidator
+    public class CompatibleFrameworkInPackageValidator(ISuppressibleLog log,
+        IApiCompatRunner apiCompatRunner) : IPackageValidator
     {
-        private readonly ISuppressibleLog _log;
-        private readonly IApiCompatRunner _apiCompatRunner;
-
-        public CompatibleFrameworkInPackageValidator(ISuppressibleLog log,
-            IApiCompatRunner apiCompatRunner)
-        {
-            _log = log;
-            _apiCompatRunner = apiCompatRunner;
-        }
-
         /// <summary>
         /// Validates that the compatible frameworks have compatible surface area.
         /// </summary>
@@ -70,7 +61,7 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                 IList<ContentItem>? compatibleFrameworkAsset = contentItemCollection.FindBestItemGroup(managedCriteria, patternSet)?.Items;
                 if (compatibleFrameworkAsset != null)
                 {
-                    _apiCompatRunner.QueueApiCompatFromContentItem(_log,
+                    apiCompatRunner.QueueApiCompatFromContentItem(log,
                         new ReadOnlyCollection<ContentItem>(compatibleFrameworkAsset),
                         compileTimeAsset,
                         apiCompatOptions,
@@ -79,7 +70,9 @@ namespace Microsoft.DotNet.PackageValidation.Validators
             }
 
             if (options.ExecuteApiCompatWorkItems)
-                _apiCompatRunner.ExecuteWorkItems();
+            {
+                apiCompatRunner.ExecuteWorkItems();
+            }
         }
     }
 }

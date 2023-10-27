@@ -75,13 +75,13 @@ namespace Microsoft.DotNet.ApiCompatibility
         public IEnumerable<CompatDifference> GetDifferences(IEnumerable<IAssemblySymbol> left,
             IEnumerable<IAssemblySymbol> right)
         {
-            List<ElementContainer<IAssemblySymbol>> transformedLeft = new();
+            List<ElementContainer<IAssemblySymbol>> transformedLeft = [];
             foreach (IAssemblySymbol assemblySymbol in left)
             {
                 transformedLeft.Add(new ElementContainer<IAssemblySymbol>(assemblySymbol, MetadataInformation.DefaultLeft));
             }
 
-            List<ElementContainer<IAssemblySymbol>> transformedRight = new();
+            List<ElementContainer<IAssemblySymbol>> transformedRight = [];
             foreach (IAssemblySymbol assemblySymbol in right)
             {
                 transformedRight.Add(new ElementContainer<IAssemblySymbol>(assemblySymbol, MetadataInformation.DefaultRight));
@@ -125,14 +125,12 @@ namespace Microsoft.DotNet.ApiCompatibility
             return SortCompatDifferencesByInputMetadata(visitor.CompatDifferences.ToLookup(c => c.Left, t => t), left);
         }
 
-        /// <summary>
-        /// Sort the compat differences by the order of the passed in metadata.
-        /// </summary>
-        private static IEnumerable<CompatDifference> SortCompatDifferencesByInputMetadata(ILookup<MetadataInformation, CompatDifference> compatDifferencesLookup,
+        // Sort the compat differences by the order of the passed in metadata.
+        private static List<CompatDifference> SortCompatDifferencesByInputMetadata(ILookup<MetadataInformation, CompatDifference> compatDifferencesLookup,
             IEnumerable<ElementContainer<IAssemblySymbol>> inputMetadata)
         {
-            HashSet<MetadataInformation> processedMetadata = new();
-            List<CompatDifference> sortedCompatDifferences = new();
+            HashSet<MetadataInformation> processedMetadata = [];
+            List<CompatDifference> sortedCompatDifferences = [];
 
             foreach (ElementContainer<IAssemblySymbol> elementContainer in inputMetadata)
             {

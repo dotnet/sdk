@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         /// <summary>
         /// List on inner filters.
         /// </summary>
-        public List<ISymbolFilter> Filters { get; } = new();
+        public List<ISymbolFilter> Filters { get; } = [];
 
         /// <summary>
         /// Determines whether the <see cref="ISymbol"/> should be included.

@@ -74,9 +74,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             ImmutableArray<AttributeData> right,
             IList<CompatDifference> differences)
         {
-            // See discussion in https://github.com/dotnet/sdk/pull/27774. ApiCompat intentionally considers non excluded attribute arguments.
-            left = left.ExcludeNonVisibleOutsideOfAssembly(_settings.SymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
-            right = right.ExcludeNonVisibleOutsideOfAssembly(_settings.SymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
+            // Filter out attributes that should be excluded based on the settings.
+            // ApiCompat intentionally considers non excluded attribute arguments. See discussion in https://github.com/dotnet/sdk/pull/27774.
+            left = left.ExcludeNonVisibleOutsideOfAssembly(_settings.AttributeDataSymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
+            right = right.ExcludeNonVisibleOutsideOfAssembly(_settings.AttributeDataSymbolFilter, excludeWithTypeArgumentsNotVisibleOutsideOfAssembly: false);
 
             // No attributes, nothing to do. Exit early.
             if (left.Length == 0 && right.Length == 0)
@@ -272,8 +273,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         private class AttributeGroup
         {
             public readonly AttributeData Representative;
-            public readonly List<AttributeData> Attributes = new();
-            public readonly List<bool> Seen = new();
+            public readonly List<AttributeData> Attributes = [];
+            public readonly List<bool> Seen = [];
 
             public AttributeGroup(AttributeData attributeData)
             {
@@ -293,7 +294,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             // _set holds a set of attribute groups, each represented by an attribute class.
             // We use a List instead of a HashSet because in practice, the number of attributes
             // on a declaration is going to be extremely small (on the order of 1-3).
-            private readonly List<AttributeGroup> _set = new();
+            private readonly List<AttributeGroup> _set = [];
             private readonly IEqualityComparer<ISymbol> _symbolEqualityComparer;
 
             public AttributeSet(IEqualityComparer<ISymbol> symbolEqualityComparer,

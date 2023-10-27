@@ -27,10 +27,11 @@ jobs:
         agentOs: Ubuntu_22_04_TemplateEngine
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            vmImage: 'ubuntu-22.04'
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals build.ubuntu.2204.amd64.open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals 1es-ubuntu-2204
+            demands: ImageOverride -equals build.ubuntu.2204.amd64
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           helixTargetQueue: 'ubuntu.2204.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-helix-amd64'
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
