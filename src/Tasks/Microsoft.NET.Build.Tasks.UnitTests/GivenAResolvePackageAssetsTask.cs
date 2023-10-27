@@ -21,12 +21,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             byte[] oldHash;
             try
             {
-                 oldHash = task.HashSettings();
+                oldHash = task.HashSettings();
             }
             catch (ArgumentNullException)
             {
                 Assert.True(
-                    false, 
+                    false,
                     "HashSettings is likely not correctly handling null value of one or more optional task parameters");
 
                 throw; // unreachable
@@ -161,7 +161,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var invalidContextWarnings = engine.Warnings.Where(msg => msg.Code == "NETSDK1188");
             invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
 
-            var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1188");
+            var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1188" && msg.Importance == MessageImportance.Low);
             invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
 
         }
@@ -184,7 +184,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var invalidContextWarnings = engine.Warnings.Where(msg => msg.Code == "NETSDK1187");
             invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
 
-            var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1187");
+            var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1187" && msg.Importance == MessageImportance.Low);
             invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
         }
 
