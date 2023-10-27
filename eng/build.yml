@@ -272,6 +272,7 @@ jobs:
                 -configuration $(_BuildConfig)
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+                $(_InternalRuntimeDownloadArgs)
           displayName: Run AoT Tests in Helix
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -304,6 +305,7 @@ jobs:
                 --projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+                $(_InternalRuntimeDownloadArgs)
           displayName: Run AoT Tests in Helix
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
