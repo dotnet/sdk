@@ -63,7 +63,7 @@
     <ItemGroup>
       <!-- Don't try to validate signing for workload manifests that will be signed as part of post-build signing -->
       <BundledManifestsToValidateSigning Include="@(BundledManifests)"
-        Exclude="Microsoft.NET.Workload.Mono.ToolChain.Current;Microsoft.NET.Workload.Mono.ToolChain.net6;Microsoft.NET.Workload.Mono.ToolChain.net7;Microsoft.NET.Workload.Emscripten.Current;Microsoft.NET.Workload.Emscripten.net6;Microsoft.NET.Workload.Emscripten.net7">
+        Exclude="Microsoft.NET.Workload.Mono.ToolChain.Current;Microsoft.NET.Workload.Mono.ToolChain.net6;Microsoft.NET.Workload.Mono.ToolChain.net7;Microsoft.NET.Workload.Mono.ToolChain.net8;Microsoft.NET.Workload.Emscripten.Current;Microsoft.NET.Workload.Emscripten.net6;Microsoft.NET.Workload.Emscripten.net7;Microsoft.NET.Workload.Emscripten.net8">
         <RestoredMsiPathInNupkg>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</RestoredMsiPathInNupkg>
       </BundledManifestsToValidateSigning>
       
