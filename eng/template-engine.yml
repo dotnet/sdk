@@ -27,7 +27,8 @@ jobs:
         agentOs: Ubuntu_22_04_TemplateEngine
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            vmImage: 'ubuntu-22.04'
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals build.ubuntu.2204.amd64.open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: $(DncEngInternalBuildPool)
             demands: ImageOverride -equals build.ubuntu.2204.amd64
