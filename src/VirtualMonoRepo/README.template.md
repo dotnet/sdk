@@ -98,7 +98,7 @@ In case you don't want to / cannot prepare your environment per the requirements
     ```
 
     This builds the entire .NET SDK from source.
-    The resulting SDK is placed at `artifacts/x64/Release/dotnet-sdk-8.0.100-your-RID.tar.gz`.
+    The resulting SDK is placed at `artifacts/x64/Release/dotnet-sdk-9.0.100-your-RID.tar.gz`.
 
     Currently, the `--online` flag is required to allow NuGet restore from online sources during the build.
     This is useful for testing unsupported releases that don't yet build without downloading pre-built binaries from the internet.
@@ -109,7 +109,7 @@ In case you don't want to / cannot prepare your environment per the requirements
 
     ```bash
     mkdir -p $HOME/dotnet
-    tar zxf artifacts/[your-arch]/Release/dotnet-sdk-8.0.100-[your-RID].tar.gz -C $HOME/dotnet
+    tar zxf artifacts/[your-arch]/Release/dotnet-sdk-9.0.100-[your-RID].tar.gz -C $HOME/dotnet
     ln -s $HOME/dotnet/dotnet /usr/bin/dotnet
     ```
     
@@ -129,7 +129,7 @@ docker run --rm -it -v vmr:/vmr -w /vmr mcr.microsoft.com/dotnet-buildtools/prer
 git clone https://github.com/dotnet/dotnet .
 ./prep.sh && ./build.sh --online
 mkdir -p $HOME/.dotnet
-tar -zxf artifacts/x64/Release/dotnet-sdk-8.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet
+tar -zxf artifacts/x64/Release/dotnet-sdk-9.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet
 ln -s $HOME/.dotnet/dotnet /usr/bin/dotnet
 ```
 
