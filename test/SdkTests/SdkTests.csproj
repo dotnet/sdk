@@ -64,7 +64,7 @@
       <RuntimeVersionToInstall Include="5.0.0" />
       <RuntimeVersionToInstall Include="6.0.0" />
       <RuntimeVersionToInstall Include="7.0.0" />
-      <RuntimeVersionToInstall Include="8.0.0-rc.1.23419.4" />
+      <RuntimeVersionToInstall Include="8.0.0-rc.2.23479.6" />
     </ItemGroup>
     
   </Target>
@@ -239,7 +239,7 @@
 
     <Exec Command="$(ToolRunPrefix)$(RedistLayoutPath)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
           WorkingDirectory="$(TestLocalToolFolder)"
-          EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME);DOTNET_ROLL_FORWARD=LatestMajor;DOTNET_ROLL_FORWARD_TO_PRERELEASE=1"/>
+          EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
   </Target>
   
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

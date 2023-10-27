@@ -63,7 +63,7 @@ namespace EndToEnd.Tests
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
-        [Fact(Skip ="The current aspnet runtime is built against an 8.0 core runtime")]
+        [Fact]
         public void ItCanRunAnAppUsingTheWebSdk()
         {
             var directory = TestAssets.CreateTestDirectory();
