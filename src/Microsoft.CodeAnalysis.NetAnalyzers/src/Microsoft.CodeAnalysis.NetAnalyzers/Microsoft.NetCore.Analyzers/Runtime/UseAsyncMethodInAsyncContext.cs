@@ -137,7 +137,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         }
                         else
                         {
-                            InspectAndReportBlockingMemberAccess(context, ((IPropertyReferenceOperation)context.Operation).Property, syncBlockingSymbols, SymbolKind.Property);
+                            var propertyReferenceOperation = (IPropertyReferenceOperation)context.Operation;
+                            if (propertyReferenceOperation.Parent is not INameOfOperation)
+                            {
+                                InspectAndReportBlockingMemberAccess(context, propertyReferenceOperation.Property, syncBlockingSymbols, SymbolKind.Property);
+                            }
                         }
                     }
                 }, OperationKind.Invocation, OperationKind.PropertyReference);
