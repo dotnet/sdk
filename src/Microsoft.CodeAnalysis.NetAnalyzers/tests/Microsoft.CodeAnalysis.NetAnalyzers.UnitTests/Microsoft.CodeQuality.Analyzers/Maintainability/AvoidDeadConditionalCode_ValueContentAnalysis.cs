@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using Xunit;
 using CSharpLanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
@@ -3376,6 +3377,72 @@ class C
     }
 }",
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
+            }.RunAsync();
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(6983, "https://github.com/dotnet/roslyn-analyzers/issues/6983")]
+        public Task DebugAssert_NoDiagnostic()
+        {
+            const string code = """
+                                using System.Diagnostics;
+                                
+                                public static class MyClass
+                                {
+                                    internal const int MyConstant = 16;
+                                
+                                    public static void MyMethod()
+                                    {
+                                        Debug.Assert(MyConstant == 16);
+                                    }
+                                }
+                                """;
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(6983, "https://github.com/dotnet/roslyn-analyzers/issues/6983")]
+        public Task DebugAssertWithMessage_NoDiagnostic()
+        {
+            const string code = """
+                                using System.Diagnostics;
+                                
+                                public static class MyClass
+                                {
+                                    internal const int MyConstant = 16;
+                                
+                                    public static void MyMethod()
+                                    {
+                                        Debug.Assert(MyConstant == 16, "MyConstant is not 16");
+                                    }
+                                }
+                                """;
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Trait(Traits.DataflowAnalysis, Traits.Dataflow.ValueContentAnalysis)]
+        [Fact, WorkItem(6983, "https://github.com/dotnet/roslyn-analyzers/issues/6983")]
+        public Task AsMethodArgument_Diagnostic()
+        {
+            const string code = """
+                                using System.Diagnostics;
+
+                                public static class MyClass
+                                {
+                                    internal const int MyConstant = 16;
+                                
+                                    public static void MyMethod()
+                                    {
+                                        Test({|#0:MyConstant == 16|});
+                                    }
+                                    
+                                    private static void Test(bool b) => throw null;
+                                }
+                                """;
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                ExpectedDiagnostics = { new DiagnosticResult(AvoidDeadConditionalCode.AlwaysTrueFalseOrNullRule).WithLocation(0).WithArguments("MyConstant == 16", "true") }
             }.RunAsync();
         }
     }
