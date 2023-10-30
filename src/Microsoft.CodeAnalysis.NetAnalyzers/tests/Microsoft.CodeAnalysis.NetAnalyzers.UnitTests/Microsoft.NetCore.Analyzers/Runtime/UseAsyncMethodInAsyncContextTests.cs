@@ -1322,6 +1322,27 @@ class Test {
             }.RunAsync();
         }
 
+        [Theory]
+        [InlineData("Task<object>.Result")]
+        [InlineData("ValueTask<object>.Result")]
+        [WorkItem(6993, "https://github.com/dotnet/roslyn-analyzers/issues/6993")]
+        public Task WhenUsingNameOf_NoDiagnostic(string taskExpression)
+        {
+            var code = $$"""
+                       using System.Threading.Tasks;
+
+                       class Test
+                       {
+                           public async Task<string> Foo()
+                           {
+                               await Task.CompletedTask;
+                               return nameof({{taskExpression}});
+                           }
+                       }
+                       """;
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
         private static async Task CreateCSTestAndRunAsync(string testCS)
         {
             var csTestVerify = new VerifyCS.Test
