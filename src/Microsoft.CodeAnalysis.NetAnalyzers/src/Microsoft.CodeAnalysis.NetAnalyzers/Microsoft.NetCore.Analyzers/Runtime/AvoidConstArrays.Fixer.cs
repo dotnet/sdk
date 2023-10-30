@@ -51,10 +51,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
             IArrayCreationOperation arrayArgument = GetArrayCreationOperation(node, model, cancellationToken, out bool isInvoked);
-            INamedTypeSymbol containingType = model.GetEnclosingSymbol(node.SpanStart, cancellationToken)!.ContainingType;
+            ISymbol enclosingSymbol = model.GetEnclosingSymbol(node.SpanStart, cancellationToken)!;
+            INamedTypeSymbol containingType = enclosingSymbol.ContainingType;
+            HashSet<string> identifiers = new(containingType.MemberNames);
+            if (enclosingSymbol is IMethodSymbol method)
+            {
+                identifiers.AddRange(method.Parameters.Select(p => p.Name));
+            }
+
+            IMethodBodyOperation? containingMethod = arrayArgument.GetAncestor<IMethodBodyOperation>(OperationKind.MethodBody);
+            if (containingMethod?.BlockBody is not null)
+            {
+                identifiers.AddRange(containingMethod.BlockBody.Locals.Select(l => l.Name));
+            }
 
             // Get a valid member name for the extracted constant
-            string newMemberName = GetExtractedMemberName(containingType.MemberNames, properties["paramName"] ?? GetMemberNameFromType(arrayArgument));
+            string newMemberName = GetExtractedMemberName(identifiers, properties["paramName"] ?? GetMemberNameFromType(arrayArgument));
 
             // Get method containing the symbol that is being diagnosed
             IOperation? methodContext = arrayArgument.GetAncestor<IMethodBodyOperation>(OperationKind.MethodBody);
@@ -131,20 +143,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return (IArrayCreationOperation)model.GetOperation(node.ChildNodes().First(), cancellationToken)!;
         }
 
-        private static string GetExtractedMemberName(IEnumerable<string> memberNames, string parameterName)
+        private static string GetExtractedMemberName(ISet<string> identifierNames, string parameterName)
         {
             bool hasCollectionEnding = s_collectionMemberEndings.Any(x => parameterName.EndsWith(x, true, CultureInfo.InvariantCulture));
 
             if (parameterName == "source" // for LINQ, "sourceArray" is clearer than "source"
-                || (memberNames.Contains(parameterName) && !hasCollectionEnding))
+                || (identifierNames.Contains(parameterName) && !hasCollectionEnding))
             {
                 parameterName += "Array";
             }
 
-            if (memberNames.Contains(parameterName))
+            if (identifierNames.Contains(parameterName))
             {
                 int suffix = 0;
-                while (memberNames.Contains(parameterName + suffix))
+                while (identifierNames.Contains(parameterName + suffix))
                 {
                     suffix++;
                 }
