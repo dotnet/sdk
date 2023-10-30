@@ -95,7 +95,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     operationBlockContext.RegisterOperationAction(operationContext =>
                     {
                         var throwOperation = (IThrowOperation)operationContext.Operation;
-                        if (ThrowOperationOccursInDelegate(throwOperation))
+                        if (throwOperation.TryGetContainingAnonymousFunctionOrLocalFunction() is not null)
                         {
                             return;
                         }
@@ -113,22 +113,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }, OperationKind.Throw);
                 });
             });
-        }
-
-        private static bool ThrowOperationOccursInDelegate(IThrowOperation throwOperation)
-        {
-            var throwParent = throwOperation.Parent;
-            while (throwParent is not null)
-            {
-                if (throwParent is IDelegateCreationOperation)
-                {
-                    return true;
-                }
-
-                throwParent = throwParent.Parent;
-            }
-
-            return false;
         }
 
         /// <summary>
