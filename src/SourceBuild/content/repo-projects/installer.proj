@@ -57,7 +57,6 @@
     <RepositoryReference Include="sdk" />
     <RepositoryReference Include="test-templates" />
     <RepositoryReference Include="vstest" />
-    <RepositoryReference Include="xliff-tasks" />
   </ItemGroup>
 
   <!--
