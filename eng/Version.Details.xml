@@ -386,6 +386,16 @@
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
+    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-alpha.1.23529.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>cf9bb86cd908a00fa50459ae17ec9c4a76f85fe6</Sha>
+    </Dependency>
+    <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0-alpha.1.23529.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>cf9bb86cd908a00fa50459ae17ec9c4a76f85fe6</Sha>
+    </Dependency>
+    <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
     <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.0-alpha.1.23529.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>cf9bb86cd908a00fa50459ae17ec9c4a76f85fe6</Sha>

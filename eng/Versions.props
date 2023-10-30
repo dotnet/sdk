@@ -56,11 +56,11 @@
     <MicrosoftNETHostModelVersion>9.0.0-alpha.1.23529.3</MicrosoftNETHostModelVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>9.0.0-alpha.1.23529.3</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsDependencyModelVersion>$(MicrosoftExtensionsDependencyModelPackageVersion)</MicrosoftExtensionsDependencyModelVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-alpha.1.23529.3</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-alpha.1.23529.3</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingVersion>9.0.0-alpha.1.23529.3</MicrosoftExtensionsLoggingVersion>
     <MicrosoftNETILLinkTasksPackageVersion>9.0.0-alpha.1.23529.3</MicrosoftNETILLinkTasksPackageVersion>
     <SystemServiceProcessServiceControllerVersion>9.0.0-alpha.1.23529.3</SystemServiceProcessServiceControllerVersion>
-    <MicrosoftExtensionsLoggingPackageVersion>$(MicrosoftExtensionsLoggingConsoleVersion)</MicrosoftExtensionsLoggingPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>$(MicrosoftExtensionsLoggingConsoleVersion)</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
