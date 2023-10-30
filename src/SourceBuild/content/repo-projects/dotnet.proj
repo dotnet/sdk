@@ -26,7 +26,6 @@
     <RepositoryReference Include="sourcelink" />
     <RepositoryReference Include="diagnostics" />
     <RepositoryReference Include="emsdk" />
-    <RepositoryReference Include="xliff-tasks" />
     <RepositoryReference Include="cecil" />
     <RepositoryReference Include="symreader" />
     <RepositoryReference Include="source-build-externals" />

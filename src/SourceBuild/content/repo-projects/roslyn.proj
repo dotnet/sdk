@@ -21,7 +21,6 @@
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
     <RepositoryReference Include="source-build-externals" />
-    <RepositoryReference Include="xliff-tasks" />
     <RepositoryReference Include="runtime" />
   </ItemGroup>
 

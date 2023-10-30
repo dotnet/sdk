@@ -19,7 +19,6 @@
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="msbuild" /> 
     <RepositoryReference Include="source-build-externals" />
-    <RepositoryReference Include="xliff-tasks" />
   </ItemGroup>
 
   <Target Name="SetArcadeSdkDir"
