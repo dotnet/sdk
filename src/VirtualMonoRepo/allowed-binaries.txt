@@ -44,6 +44,8 @@ src/razor/**/SampleApp/**/fonts/*
 src/roslyn/**/CodeAnalysisTest/*
 src/roslyn/src/ExpressionEvaluator/Core/Source/ExpressionCompiler/Resources/WindowsProxy.winmd # https://github.com/dotnet/roslyn/issues/66718
 
+src/runtime/src/*.woff
+src/runtime/src/*.woff2
 src/runtime/src/libraries/System.Diagnostics.EventLog/src/Messages/EventLogMessages.res # Icon
 src/runtime/src/libraries/System.Speech/src/*.upsmap # https://github.com/dotnet/runtime/issues/81692
 src/runtime/src/libraries/System.Text.Encoding.CodePages/src/Data/codepages.nlp # https://github.com/dotnet/runtime/issues/81693
