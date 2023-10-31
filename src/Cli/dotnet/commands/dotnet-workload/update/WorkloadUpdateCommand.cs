@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private readonly bool _adManifestOnlyOption;
         private readonly bool _printRollbackDefinitionOnly;
         private readonly bool _fromPreviousSdk;
+        private WorkloadHistoryRecord _workloadHistoryState;
 
         public WorkloadUpdateCommand(
             ParseResult parseResult,
@@ -155,7 +156,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
         private IEnumerable<ManifestVersionUpdate> CalculateManifestUpdates(IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> rollbackFileContents)
         {
-            if (string.IsNullOrWhiteSpace(_fromRollbackDefinition))
+            if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) && !_fromHistorySpecified)
             {
                 return _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate);
             }
@@ -170,8 +171,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         throw new GracefulException(LocalizableStrings.WorkloadHistoryRecordNonIntegerId, isUserError: true);
                     }
 
-                    var workloadHistoryRecord = workloadHistoryRecords[index - 1];
-                    state = workloadHistoryRecord.StateAfterCommand;
+                    _workloadHistoryState = workloadHistoryRecords[index - 1];
+                    state = _workloadHistoryState.StateAfterCommand;
                 }
                 else if (!string.IsNullOrEmpty(_beforeID))
                 {
@@ -180,8 +181,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         throw new GracefulException(LocalizableStrings.WorkloadHistoryRecordNonIntegerId, isUserError: true);
                     }
 
-                    var workloadHistoryRecord = workloadHistoryRecords[index - 1];
-                    state = workloadHistoryRecord.StateBeforeCommand;
+                    _workloadHistoryState = workloadHistoryRecords[index - 1];
+                    state = _workloadHistoryState.StateBeforeCommand;
                 }
                 else
                 {
@@ -238,7 +239,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     foreach (var manifestUpdate in manifestsToUpdate)
                     {
-                        _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, rollback);
+                        if (!manifestUpdate.ExistingVersion.Equals(manifestUpdate.NewVersion) ||
+                            !manifestUpdate.ExistingFeatureBand.ToString().Equals(manifestUpdate.NewFeatureBand))
+                        {
+                            _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, rollback);
+                        }
                     }
 
                     _workloadResolver.RefreshWorkloadManifests();
@@ -249,7 +254,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
 
-                    UpdateInstallState(useRollback, manifestsToUpdate);
+                    UpdateInstallState(useRollback || _fromHistorySpecified, manifestsToUpdate);
                 },
                 rollback: () =>
                 {
@@ -277,7 +282,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
         private IEnumerable<WorkloadId> GetUpdatableWorkloads()
         {
-            var workloads = GetInstalledWorkloads(_fromPreviousSdk);
+            var workloads = _fromHistorySpecified ?
+                GetInstalledWorkloadsFromHistory() :
+                GetInstalledWorkloads(_fromPreviousSdk);
 
             if (workloads == null || !workloads.Any())
             {
