@@ -44,7 +44,7 @@
             "**/*.mdb",
             "**/*.nupkg",
             "**/*.pdb",
-            "**/*.tgz",            
+            "**/*.tgz",
             "**/*.zip"
         ]
     },
@@ -188,8 +188,14 @@
             "defaultRemote": "https://github.com/dotnet/xdt"
         },
         {
+            // TODO: Remove the xliff-tasks mapping once the synchronization flags it as unused
+            // We no longer synchronize it but we can't remove it yet until
+            // it disappears from all of the Version.Details.xml files.
+            // https://github.com/dotnet/installer/issues/17661
             "name": "xliff-tasks",
-            "defaultRemote": "https://github.com/dotnet/xliff-tasks"
+            "defaultRemote": "https://github.com/dotnet/xliff-tasks",
+            "ignoreDefaults": true,
+            "exclude": [ "**/*" ]
         }
     ]
 }
