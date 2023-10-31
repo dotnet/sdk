@@ -38,7 +38,7 @@
 - Run the analyzer locally against `dotnet/runtime` and `dotnet/roslyn-analyzers` [(instructions)](#testing-against-the-runtime-and-roslyn-analyzers-repo).
   - Review each of the failures in those repositories and determine the course of action for each.
   - Use the failures to discover nuance and guide the implementation details.
-  - Run the analyzer against `dotnet/roslyn` [(instructions)](#testing-against-the-roslyn-repo), and if feasable with `dotnet/aspnetcore` repos.
+  - Run the analyzer against `dotnet/roslyn` [(instructions)](#testing-against-the-roslyn-repo), and if feasible with `dotnet/aspnetcore` repos.
   - Document for review: matching and non-matching scenarios, including any discovered nuance.
   - All warnings and errors in these repos are addressed (to prevent build failures)
     - `Info` level diagnostics do not need to be fully resolved or suppressed as they do not cause build failures
