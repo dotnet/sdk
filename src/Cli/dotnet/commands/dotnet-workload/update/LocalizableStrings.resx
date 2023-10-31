@@ -139,10 +139,7 @@
     <value>Workload update failed: {0}</value>
   </data>
   <data name="WorkloadHistoryRecordNonIntegerId" xml:space="preserve">
-    <value>The ID of a workload history record should be an integer. Check the value passed in with --before or --after.</value>
-  </data>
-  <data name="WorkloadHistoryRecordNoIdSpecified" xml:space="preserve">
-    <value>Must specify a workload history ID via --before or --after when updating or installing from workload history records. You can see IDs using the `dotnet workload history` command.</value>
+    <value>The ID of a workload history record should be a positive integer.</value>
   </data>
   <data name="FromPreviousSdkOptionDescription" xml:space="preserve">
     <value>Include workloads installed with earlier SDK versions in update.</value>
@@ -160,15 +157,9 @@
     <value>Update workloads based on specified rollback definition file.</value>
   </data>
   <data name="FromHistoryOptionDescription" xml:space="preserve">
-    <value>Update workloads to a previous version specified by the --before or --after option.</value>
+    <value>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</value>
   </data>
   <data name="HistoryManifestOnlyOptionDescription" xml:space="preserve">
     <value>Update workload manifests without updating the installed workloads.</value>
-  </data>
-  <data name="HistoryBeforeOptionDescription" xml:space="preserve">
-    <value>Update workloads to the state from before the specified ID.</value>
-  </data>
-  <data name="HistoryAfterOptionDescription" xml:space="preserve">
-    <value>Update workloads to the state from after the specified ID.</value>
   </data>
 </root>

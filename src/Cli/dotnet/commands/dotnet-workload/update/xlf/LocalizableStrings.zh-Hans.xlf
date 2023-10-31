@@ -13,8 +13,8 @@
         <note />
       </trans-unit>
       <trans-unit id="FromHistoryOptionDescription">
-        <source>Update workloads to a previous version specified by the --before or --after option.</source>
-        <target state="new">Update workloads to a previous version specified by the --before or --after option.</target>
+        <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
+        <target state="new">Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</target>
         <note />
       </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
@@ -25,16 +25,6 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">基于指定的回滚定义文件更新工作负载。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="HistoryAfterOptionDescription">
-        <source>Update workloads to the state from after the specified ID.</source>
-        <target state="new">Update workloads to the state from after the specified ID.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="HistoryBeforeOptionDescription">
-        <source>Update workloads to the state from before the specified ID.</source>
-        <target state="new">Update workloads to the state from before the specified ID.</target>
         <note />
       </trans-unit>
       <trans-unit id="HistoryManifestOnlyOptionDescription">
@@ -72,14 +62,9 @@
         <target state="translated">未能将工作负载更新程序包下载到缓存: {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadHistoryRecordNoIdSpecified">
-        <source>Must specify a workload history ID via --before or --after when updating or installing from workload history records. You can see IDs using the `dotnet workload history` command.</source>
-        <target state="new">Must specify a workload history ID via --before or --after when updating or installing from workload history records. You can see IDs using the `dotnet workload history` command.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadHistoryRecordNonIntegerId">
-        <source>The ID of a workload history record should be an integer. Check the value passed in with --before or --after.</source>
-        <target state="new">The ID of a workload history record should be an integer. Check the value passed in with --before or --after.</target>
+        <source>The ID of a workload history record should be a positive integer.</source>
+        <target state="new">The ID of a workload history record should be a positive integer.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
