@@ -440,14 +440,6 @@ namespace EndToEnd.Tests
                 // TODO: This block need to be updated when every template updates their default tfm.
                 // Currently winforms updated their default templates target but not others.
                 if (template.StartsWith("mstest")
-                       || template.StartsWith("winforms")
-                       || template.StartsWith("wpf")
-                       || template.StartsWith("web")
-                       || template.StartsWith("razor")
-                       || template.StartsWith("blazor")
-                       || template.StartsWith("mvc")
-                       || template.StartsWith("worker")
-                       || template.StartsWith("grpc")
                        || template.StartsWith("classlib")
                        || template.StartsWith("console")
                        || template.StartsWith("nunit")
