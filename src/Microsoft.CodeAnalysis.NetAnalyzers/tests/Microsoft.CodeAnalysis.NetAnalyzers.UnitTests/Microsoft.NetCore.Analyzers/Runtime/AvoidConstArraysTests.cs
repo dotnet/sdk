@@ -835,5 +835,127 @@ public class MyClass
     }
 }");
         }
+
+        [Fact, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
+        public Task UseUniqueIdentifier_Parameter()
+        {
+            const string source = """
+                                  class Sample
+                                  {
+                                      void A(char separator, char separatorArray)
+                                      {
+                                          "".Split([|new char[] { 'a', 'b' }|]);
+                                      }
+                                  }
+                                  """;
+            const string fixedSource = """
+                                       class Sample
+                                       {
+                                           internal static readonly char[] separatorArray0 = new char[] { 'a', 'b' };
+                                       
+                                           void A(char separator, char separatorArray)
+                                           {
+                                               "".Split(separatorArray0);
+                                           }
+                                       }
+                                       """;
+
+            return VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [Fact, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
+        public Task UseUniqueIdentifier_Local()
+        {
+            const string source = """
+                                  class Sample
+                                  {
+                                      void A()
+                                      {
+                                          object separator = null;
+                                          object separatorArray = null;
+                                          "".Split([|new char[] { 'a', 'b' }|]);
+                                      }
+                                  }
+                                  """;
+            const string fixedSource = """
+                                       class Sample
+                                       {
+                                           internal static readonly char[] separatorArray0 = new char[] { 'a', 'b' };
+                                       
+                                           void A()
+                                           {
+                                               object separator = null;
+                                               object separatorArray = null;
+                                               "".Split(separatorArray0);
+                                           }
+                                       }
+                                       """;
+
+            return VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [Fact, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
+        public Task UseUniqueIdentifier_Field()
+        {
+            const string source = """
+                                  class Sample
+                                  {
+                                      private string separator;
+                                      private string separatorArray;
+
+                                      void A()
+                                      {
+                                          "".Split([|new char[] { 'a', 'b' }|]);
+                                      }
+                                  }
+                                  """;
+            const string fixedSource = """
+                                       class Sample
+                                       {
+                                           private string separator;
+                                           private string separatorArray;
+                                           internal static readonly char[] separatorArray0 = new char[] { 'a', 'b' };
+
+                                           void A()
+                                           {
+                                               "".Split(separatorArray0);
+                                           }
+                                       }
+                                       """;
+
+            return VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [Fact, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
+        public Task UseUniqueIdentifier_FieldAndParameter()
+        {
+            const string source = """
+                                  class Sample
+                                  {
+                                      private string separator;
+                                      private string separatorArray;
+
+                                      void A(char separatorArray0)
+                                      {
+                                          "".Split([|new char[] { 'a', 'b' }|]);
+                                      }
+                                  }
+                                  """;
+            const string fixedSource = """
+                                       class Sample
+                                       {
+                                           private string separator;
+                                           private string separatorArray;
+                                           internal static readonly char[] separatorArray1 = new char[] { 'a', 'b' };
+                                       
+                                           void A(char separatorArray0)
+                                           {
+                                               "".Split(separatorArray1);
+                                           }
+                                       }
+                                       """;
+
+            return VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
     }
 }
