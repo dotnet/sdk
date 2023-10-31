@@ -52,9 +52,9 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 "--include-generated"});
 
             // Assert
-            Assert.Equal(0, result.Errors.Count);
-            Assert.Equal(0, result.UnmatchedTokens.Count);
-            Assert.Equal(0, result.UnmatchedTokens.Count);
+            Assert.Empty(result.Errors);
+            Assert.Empty(result.UnmatchedTokens);
+            Assert.Empty(result.UnmatchedTokens);
             result.GetValue(FormatCommandCommon.NoRestoreOption);
             Assert.Collection(result.GetValue(FormatCommandCommon.IncludeOption),
                 i0 => Assert.Equal("include1", i0),
@@ -79,7 +79,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "workspaceValue" });
 
             // Assert
-            Assert.Equal(0, result.Errors.Count);
+            Assert.Empty(result.Errors);
             Assert.Equal("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
         }
 
@@ -93,7 +93,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "workspaceValue", "--verbosity", "detailed" });
 
             // Assert
-            Assert.Equal(0, result.Errors.Count);
+            Assert.Empty(result.Errors);
             Assert.Equal("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
             Assert.Equal("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
         }
@@ -108,7 +108,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--verbosity", "detailed", "workspaceValue" });
 
             // Assert
-            Assert.Equal(0, result.Errors.Count);
+            Assert.Empty(result.Errors);
             Assert.Equal("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
             Assert.Equal("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
         }
@@ -123,7 +123,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "workspaceValue1", "workspaceValue2" });
 
             // Assert
-            Assert.Equal(1, result.Errors.Count);
+            Assert.Single(result.Errors);
         }
 
         [Fact]
@@ -136,7 +136,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--folder", "--fix-analyzers" });
 
             // Assert
-            Assert.Equal(1, result.Errors.Count);
+            Assert.Single(result.Errors);
         }
 
         [Fact]
@@ -149,7 +149,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--folder", "--fix-style" });
 
             // Assert
-            Assert.Equal(1, result.Errors.Count);
+            Assert.Single(result.Errors);
         }
 
         [Fact]
@@ -162,7 +162,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "whitespace", "--folder", "--no-restore" });
 
             // Assert
-            Assert.Equal(1, result.Errors.Count);
+            Assert.Single(result.Errors);
         }
 
         [Fact]
@@ -175,7 +175,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--binarylog" });
 
             // Assert
-            Assert.Equal(0, result.Errors.Count);
+            Assert.Empty(result.Errors);
             Assert.NotNull(result.GetResult(FormatCommandCommon.BinarylogOption));
         }
 
@@ -189,7 +189,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--binarylog", "log" });
 
             // Assert
-            Assert.Equal(0, result.Errors.Count);
+            Assert.Empty(result.Errors);
             Assert.NotNull(result.GetResult(FormatCommandCommon.BinarylogOption));
         }
 
@@ -203,7 +203,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "whitespace", "--folder", "--binarylog" });
 
             // Assert
-            Assert.Equal(1, result.Errors.Count);
+            Assert.Single(result.Errors);
         }
 
         [Fact]
@@ -216,7 +216,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--diagnostics" });
 
             // Assert
-            Assert.Equal(1, result.Errors.Count);
+            Assert.Single(result.Errors);
         }
 
         [Fact]
@@ -229,7 +229,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--diagnostics", "RS0016" });
 
             // Assert
-            Assert.Equal(0, result.Errors.Count);
+            Assert.Empty(result.Errors);
         }
 
         [Fact]
@@ -242,7 +242,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--diagnostics", "RS0016", "RS0017", "RS0018" });
 
             // Assert
-            Assert.Equal(0, result.Errors.Count);
+            Assert.Empty(result.Errors);
         }
     }
 }
