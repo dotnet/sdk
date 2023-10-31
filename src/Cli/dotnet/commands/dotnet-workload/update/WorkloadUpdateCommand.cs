@@ -51,6 +51,31 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, sdkFeatureBand: _sdkFeatureBand);
         }
 
+        private WorkloadHistoryRecord _WorkloadHistoryRecord
+        {
+            get
+            {
+                if (_workloadHistoryState is not null)
+                {
+                    return _workloadHistoryState;
+                }
+
+                if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
+                {
+                    var workloadHistoryRecords = _workloadInstaller.GetWorkloadHistoryRecords().OrderBy(r => r.TimeStarted).ToList();
+                    if (!int.TryParse(_fromHistorySpecified, out int index) || index < 1 || index > workloadHistoryRecords.Count)
+                    {
+                        throw new GracefulException(LocalizableStrings.WorkloadHistoryRecordNonIntegerId, isUserError: true);
+                    }
+
+                    _workloadHistoryState = workloadHistoryRecords[index - 1];
+                    return _workloadHistoryState;
+                }
+
+                return null;
+            }
+        }
+
         public override int Execute()
         {
             WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
@@ -172,14 +197,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
             else if (fromHistory)
             {
-                var workloadHistoryRecords = _workloadInstaller.GetWorkloadHistoryRecords().OrderBy(r => r.TimeStarted).ToList();
-                if (!int.TryParse(_fromHistorySpecified, out int index) || index < 1 || index > workloadHistoryRecords.Count)
-                {
-                    throw new GracefulException(LocalizableStrings.WorkloadHistoryRecordNonIntegerId, isUserError: true);
-                }
-
-                _workloadHistoryState = workloadHistoryRecords[index - 1];
-                WorkloadHistoryState state = _workloadHistoryState.StateAfterCommand;
+                WorkloadHistoryState state = _WorkloadHistoryRecord.StateAfterCommand;
 
                 var currentWorkloadState = WorkloadRollbackInfo.FromManifests(_workloadResolver.GetInstalledManifests());
 
@@ -188,13 +206,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 foreach (KeyValuePair<string, string> m in state.ManifestVersions)
                 {
                     var manifestId = new ManifestId(m.Key);
+                    var featureBandAndVersion = m.Value.Split('/');
                     var currentVersionInformation = _workloadManifestUpdater.GetInstalledManifestVersion(manifestId);
                     versionUpdates.Add(new ManifestVersionUpdate(
                         manifestId,
                         currentVersionInformation.Version,
                         currentVersionInformation.Band.ToString(),
-                        new ManifestVersion(m.Value.Split('/')[0]),
-                        m.Value.Split('/')[1]));
+                        new ManifestVersion(featureBandAndVersion[0]),
+                        featureBandAndVersion[1]));
                 }
 
                 return versionUpdates;
@@ -276,11 +295,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             return urls;
         }
 
-        private IEnumerable<WorkloadId> GetUpdatableWorkloads(IReporter reporter = null)
+        private IEnumerable<WorkloadId> GetUpdatableWorkloads(IReporter reporter = null, List<WorkloadHistoryRecord> workloadHistoryRecords = null)
         {
             reporter ??= Reporter;
             var workloads = !string.IsNullOrWhiteSpace(_fromHistorySpecified) ?
-                GetInstalledWorkloadsFromHistory() :
+                _WorkloadHistoryRecord.StateAfterCommand.InstalledWorkloads.Select(s => new WorkloadId(s)) :
                 GetInstalledWorkloads(_fromPreviousSdk);
 
             if (workloads == null || !workloads.Any())
