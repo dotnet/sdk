@@ -3,7 +3,7 @@
   <ProductDependencies>
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>17ea9ab3f662320d4ac62d3a2b783b5054ad80bf</Sha>
+      <Sha>0395649aa16820be8a669203b265b0a578e82843</Sha>
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis" Version="4.8.0-3.23518.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
@@ -31,15 +31,15 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>17ea9ab3f662320d4ac62d3a2b783b5054ad80bf</Sha>
+      <Sha>0395649aa16820be8a669203b265b0a578e82843</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>17ea9ab3f662320d4ac62d3a2b783b5054ad80bf</Sha>
+      <Sha>0395649aa16820be8a669203b265b0a578e82843</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.0-rtm.23525.7">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="8.0.0-rtm.23530.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>17ea9ab3f662320d4ac62d3a2b783b5054ad80bf</Sha>
+      <Sha>0395649aa16820be8a669203b265b0a578e82843</Sha>
       <SourceBuild RepoName="runtime" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.430701">
