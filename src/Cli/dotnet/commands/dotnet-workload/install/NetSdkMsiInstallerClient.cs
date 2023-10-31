@@ -1019,9 +1019,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             PackageSourceLocation packageSourceLocation = null,
             IReporter reporter = null,
             string tempDirPath = null,
-            RestoreActionConfig restoreActionConfig = null)
+            RestoreActionConfig restoreActionConfig = null,
+            bool shouldLog = true)
         {
-            TimestampedFileLogger logger = new(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log"));
+            ISynchronizingLogger logger =
+                shouldLog ? new TimestampedFileLogger(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log"))
+                          : new NullInstallerLogger();
             InstallClientElevationContext elevationContext = new(logger);
 
             if (nugetPackageDownloader == null)
