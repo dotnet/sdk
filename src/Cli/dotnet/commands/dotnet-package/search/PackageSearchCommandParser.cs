@@ -7,47 +7,48 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Package.Search.LocalizableStri
 
 namespace Microsoft.DotNet.Cli
 {
-    internal static class PackageCommandParser
+    internal static class PackageSearchCommandParser
     {
-        public static readonly CliArgument<string> SearchTermArgument = new("SearchTerm")
+        public static readonly CliArgument<IEnumerable<string>> SearchTermArgument = new CliArgument<IEnumerable<string>>("SearchTerm")
         {
             HelpName = LocalizableStrings.SearchTermArgumentName,
             Description = LocalizableStrings.SearchTermDescription
         };
 
-        public static readonly CliOption<List<string>> Sources = new("--source")
+        public static readonly CliOption Sources =  new ForwardedOption<IEnumerable<string>>("--source")
         {
             Description = LocalizableStrings.SourceDescription,
             HelpName = LocalizableStrings.SourceArgumentName
-        };
+        }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
+        .AllowSingleArgPerToken();
 
-        public static readonly CliOption<int?> Take = new("--take")
+        public static readonly CliOption<string> Take = new ForwardedOption<string>("--take")
         {
             Description = LocalizableStrings.TakeDescription,
             HelpName = LocalizableStrings.TakeArgumentName
-        };
+        }.ForwardAsMany(o => new [] { "--take", o });
 
-        public static readonly CliOption<int?> Skip = new("--skip")
+        public static readonly CliOption<string> Skip = new ForwardedOption<string>("--skip")
         {
             Description = LocalizableStrings.SkipDescription,
             HelpName = LocalizableStrings.SkipArgumentName
-        };
+        }.ForwardAsMany(o => new[] { "--skip", o });
 
-        public static readonly CliOption<bool> ExactMatch = new("--exact-match")
+        public static readonly CliOption<bool> ExactMatch = new ForwardedOption<bool>("--exact-match")
         {
             Description = LocalizableStrings.ExactMatchDescription
-        };
+        }.ForwardAs("--exact-match");
 
-        public static readonly CliOption<bool> Interactive = new("--interactive")
+        public static readonly CliOption<bool> Interactive = new ForwardedOption<bool>("--interactive")
         {
             Description = LocalizableStrings.InteractiveDescription
-        };
+        }.ForwardAs("--interactive");
 
-        public static readonly CliOption<bool> Prerelease = new("--prerelease")
+        public static readonly CliOption<bool> Prerelease = new ForwardedOption<bool>("--prerelease")
         {
             Description = LocalizableStrings.PrereleaseDescription
-        };
-        public static readonly string DocsLink = "";
+        }.ForwardAs("--prerelease");
+
 
         private static readonly CliCommand Command = ConstructCommand();
 
@@ -57,15 +58,6 @@ namespace Microsoft.DotNet.Cli
         }
 
         private static CliCommand ConstructCommand()
-        {
-            CliCommand command = new DocumentedCommand("package", DocsLink);
-
-            command.Subcommands.Add(SearchCommand());
-
-            return command;
-        }
-
-        private static CliCommand SearchCommand()
         {
             CliCommand searchCommand = new("search", LocalizableStrings.CommandDescription)
             {
@@ -81,8 +73,7 @@ namespace Microsoft.DotNet.Cli
             searchCommand.Options.Add(Interactive);
             searchCommand.Options.Add(Prerelease);
 
-
-            searchCommand.SetAction(NuGetCommand.Run);
+            searchCommand.SetAction((parseResult) => new PackageSearchCommand(parseResult).Execute());
 
             return searchCommand;
         }
