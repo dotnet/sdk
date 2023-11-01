@@ -95,7 +95,7 @@
 
     <!-- Install a coherent set of workload manifests -->
     <Exec Condition="Exists('$(RedistLayoutPath)TestRollback.json')"
-          Command="$(RedistLayoutPath)dotnet workload update --from-rollback-file $(RedistLayoutPath)TestRollback.json -v diag"
+          Command="$(RedistLayoutPath)dotnet workload update --from-rollback-file $(RedistLayoutPath)TestRollback.json"
           EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)"/>
 
     <ItemGroup>
