@@ -47,7 +47,7 @@ These tests are expected to live in the dotnet/roslyn-analyzers repo to make loc
 
 #### End-to-End Tests
 
-An end-to-end compilation test that measures how long the build takes on a large real-world project (based off existing scenarios [here](https://github.com/dotnet/performance/blob/main/docs/sdk-scenarios.md#sdk-build-throughput-scenario)). This test will be run twice, once with all muti-core build features disabled (no `/m` is passed to msbuild, and `/parallel-` is passed to the compiler) and once with the SDK defaults enabled. The reason we will want a test with no parallelism is to make it easier to see the source of regressions. These test will not just measure how long it takes analyzers to execute but the entire SDK-based build process. It will need to collect an ETL file for investigation as well as the following metrics in a binlog file
+An end-to-end compilation test that measures how long the build takes on a large real-world project (based off existing scenarios [here](https://github.com/dotnet/performance/blob/main/docs/sdk-scenarios.md#sdk-build-throughput-scenario)). This test will be run twice, once with all mutli-core build features disabled (no `/m` is passed to msbuild, and `/parallel-` is passed to the compiler) and once with the SDK defaults enabled. The reason we will want a test with no parallelism is to make it easier to see the source of regressions. These test will not just measure how long it takes analyzers to execute but the entire SDK-based build process. It will need to collect an ETL file for investigation as well as the following metrics in a binlog file
 
 - How much time was spend in analysis (`/p:reportanalyzer=true`)
 - How long each build task took (recorded by default in the binlog file)

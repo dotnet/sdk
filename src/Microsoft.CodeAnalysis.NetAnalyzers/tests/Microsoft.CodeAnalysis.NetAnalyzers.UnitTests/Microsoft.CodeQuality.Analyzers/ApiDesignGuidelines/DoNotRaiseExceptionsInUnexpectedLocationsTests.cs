@@ -573,6 +573,45 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(6, 9, "Finalize", "Exception"));
         }
+
+        [Fact, WorkItem(6963, "https://github.com/dotnet/roslyn-analyzers/issues/6963")]
+        public Task Lambda_NoDiagnostic()
+        {
+            const string code = """
+                                using System;
+
+                                public class ShouldNotViolate
+                                {
+                                    static readonly Action a;
+                                
+                                    static ShouldNotViolate()
+                                    {
+                                        a = () => throw new DivideByZeroException();
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact, WorkItem(6963, "https://github.com/dotnet/roslyn-analyzers/issues/6963")]
+        public Task VB_Lambda_NoDiagnostic()
+        {
+            const string code = """
+                                Imports System
+
+                                Public Class ShouldNotViolate
+                                    Shared ReadOnly a As Action
+                                
+                                    Shared Sub New()
+                                        a = Sub () Throw New DivideByZeroException()
+                                    End Sub
+                                End Class
+                                """;
+
+            return VerifyVB.VerifyAnalyzerAsync(code);
+        }
+
         #endregion
 
         #region Operator tests
