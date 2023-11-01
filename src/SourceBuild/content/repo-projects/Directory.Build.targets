@@ -58,29 +58,6 @@
       NewText="$(NewText)" />
   </Target>
 
-  <Target Name="UpdateBuildToolFramework"
-          BeforeTargets="Build"
-          Condition="'$(EngCommonToolsShFile)' != ''"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)UpdateBuildToolFramework.complete" >
-
-    <!-- Update the BuildToolFramework for repos that have not adopted the current version of Arcade-->
-    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
-                       OldText="_InitializeBuildToolFramework=&quot;netcoreapp3.1&quot;"
-                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;" />
-    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
-                       OldText="_InitializeBuildToolFramework=&quot;net7.0&quot;"
-                       NewText="_InitializeBuildToolFramework=&quot;$(NetCurrent)&quot;" />
-
-    <!-- Temporary workaround for when the ci option is specified, non-zero exit are swallowed which prevents builds from failing within 
-         the build process.  https://github.com/dotnet/source-build/issues/2307 -->
-    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
-                       OldText="ExitWithExitCode 0"
-                       NewText="ExitWithExitCode $exit_code" />
-
-    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateBuildToolFramework.complete" Overwrite="true" />
-  </Target>
-
   <Target Name="UpdateNuGetConfig"
           BeforeTargets="Build"
           Condition="'$(NuGetConfigFile)' != '' OR '@(NuGetConfigFiles)' != ''"
