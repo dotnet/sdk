@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli
             var searchArgument = _parseResult.GetValue(PackageSearchCommandParser.SearchTermArgument);
             if (searchArgument != null)
             {
-                args.AddRange(searchArgument);
+                args.Add(searchArgument);
             }
 
             args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageSearchCommandParser.GetCommand()));

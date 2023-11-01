@@ -9,10 +9,11 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class PackageSearchCommandParser
     {
-        public static readonly CliArgument<IEnumerable<string>> SearchTermArgument = new CliArgument<IEnumerable<string>>("SearchTerm")
+        public static readonly CliArgument<string> SearchTermArgument = new CliArgument<string>("SearchTerm")
         {
             HelpName = LocalizableStrings.SearchTermArgumentName,
-            Description = LocalizableStrings.SearchTermDescription
+            Description = LocalizableStrings.SearchTermDescription,
+            Arity = ArgumentArity.ZeroOrOne
         };
 
         public static readonly CliOption Sources =  new ForwardedOption<IEnumerable<string>>("--source")
@@ -59,11 +60,7 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            CliCommand searchCommand = new("search", LocalizableStrings.CommandDescription)
-            {
-                // The actions are not defined here and just forwarded to NuGet app
-                TreatUnmatchedTokensAsErrors = false
-            };
+            CliCommand searchCommand = new("search", LocalizableStrings.CommandDescription);
 
             searchCommand.Arguments.Add(SearchTermArgument);
             searchCommand.Options.Add(Sources);
@@ -73,7 +70,15 @@ namespace Microsoft.DotNet.Cli
             searchCommand.Options.Add(Interactive);
             searchCommand.Options.Add(Prerelease);
 
-            searchCommand.SetAction((parseResult) => new PackageSearchCommand(parseResult).Execute());
+            searchCommand.SetAction((parseResult) => {
+                var command = new PackageSearchCommand(parseResult);
+                int exitCode = command.Execute();
+
+                if (exitCode == 1)
+                {
+                    parseResult.ShowHelp();
+                }
+            });
 
             return searchCommand;
         }
