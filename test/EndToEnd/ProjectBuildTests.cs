@@ -440,8 +440,6 @@ namespace EndToEnd.Tests
                 // TODO: This block need to be updated when every template updates their default tfm.
                 // Currently winforms updated their default templates target but not others.
                 if (template.StartsWith("mstest")
-                       || template.StartsWith("classlib")
-                       || template.StartsWith("console")
                        || template.StartsWith("nunit")
                        || template.StartsWith("xunit"))
                 {
