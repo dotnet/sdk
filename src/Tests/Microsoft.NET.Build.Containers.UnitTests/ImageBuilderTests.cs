@@ -68,7 +68,7 @@ public class ImageBuilderTests
         JsonNode? node = JsonNode.Parse(simpleImageConfig);
         Assert.NotNull(node);
 
-        ImageConfig baseConfig = new ImageConfig(node);
+        ImageConfig baseConfig = new(node);
 
         baseConfig.AddLabel("testLabel1", "v1");
         baseConfig.AddLabel("testLabel2", "v2");
@@ -139,7 +139,7 @@ public class ImageBuilderTests
         JsonNode? node = JsonNode.Parse(simpleImageConfig);
         Assert.NotNull(node);
 
-        ImageConfig baseConfig = new ImageConfig(node);
+        ImageConfig baseConfig = new(node);
 
         baseConfig.AddLabel("testLabel1", "v1");
         baseConfig.AddLabel("existing2", "v2");
@@ -207,7 +207,7 @@ public class ImageBuilderTests
         JsonNode? node = JsonNode.Parse(simpleImageConfig);
         Assert.NotNull(node);
 
-        ImageConfig baseConfig = new ImageConfig(node);
+        ImageConfig baseConfig = new(node);
 
         baseConfig.ExposePort(6000, PortType.tcp);
         baseConfig.ExposePort(6010, PortType.udp);
@@ -221,7 +221,7 @@ public class ImageBuilderTests
 
         Assert.Equal(2, resultPorts.Count);
         Assert.NotNull(resultPorts["6000/tcp"] as JsonObject);
-        Assert.NotNull( resultPorts["6010/udp"] as JsonObject);
+        Assert.NotNull(resultPorts["6010/udp"] as JsonObject);
     }
 
     [Fact]
@@ -279,7 +279,7 @@ public class ImageBuilderTests
         JsonNode? node = JsonNode.Parse(simpleImageConfig);
         Assert.NotNull(node);
 
-        ImageConfig baseConfig = new ImageConfig(node);
+        ImageConfig baseConfig = new(node);
 
         baseConfig.ExposePort(6000, PortType.tcp);
         baseConfig.ExposePort(6010, PortType.udp);
@@ -564,10 +564,12 @@ public class ImageBuilderTests
 
     private ImageBuilder FromBaseImageConfig(string baseImageConfig, [CallerMemberName] string testName = "")
     {
-        var manifest = new ManifestV2() {
+        var manifest = new ManifestV2()
+        {
             SchemaVersion = 2,
             MediaType = SchemaTypes.DockerManifestV2,
-            Config = new ManifestConfig() {
+            Config = new ManifestConfig()
+            {
                 mediaType = "",
                 size = 0,
                 digest = "sha256:0"

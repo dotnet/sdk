@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void NoTelemetryIfCommandIsInvalid()
         {
-            string[] args = { "publish", "-r"};
+            string[] args = { "publish", "-r" };
             Action a = () => { Cli.Program.ProcessArgs(args); };
             a.Should().NotThrow<ArgumentOutOfRangeException>();
         }
@@ -359,7 +359,7 @@ namespace Microsoft.DotNet.Tests
         [WindowsOnlyFact]
         public void InternalreportinstallsuccessCommandCollectExeNameWithEventname()
         {
-            FakeRecordEventNameTelemetry fakeTelemetry = new FakeRecordEventNameTelemetry();
+            FakeRecordEventNameTelemetry fakeTelemetry = new();
             string[] args = { "c:\\mypath\\dotnet-sdk-latest-win-x64.exe" };
 
             InternalReportinstallsuccess.ProcessInputAndSendTelemetry(args, fakeTelemetry);

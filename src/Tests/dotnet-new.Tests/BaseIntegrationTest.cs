@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string templateLocation = Path.GetFullPath(Path.Combine(DotnetNewTestTemplatesBasePath, templateName));
             if (!Directory.Exists(templateLocation))
             {
-                Assert.False(true, $"The test template '{templateName}' does not exist.");
+                Assert.Fail($"The test template '{templateName}' does not exist.");
             }
             return templateLocation;
         }
@@ -106,13 +106,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// <summary>
         /// Installs test template to dotnet new.
         /// </summary>
-        /// <param name="templateName">The name of the test tempalte to install.</param>
+        /// <param name="templateNameOrPath">The name or path of the test tempalte to install.</param>
         /// <param name="log">Test logger.</param>
         /// <param name="homeDirectory">The settings path for dotnet new.</param>
         /// <param name="workingDirectory">The working directory to use.</param>
-        internal static string InstallTestTemplate(string templateName, ITestOutputHelper log, string homeDirectory, string? workingDirectory = null)
+        internal string InstallTestTemplate(string templateNameOrPath, ITestOutputHelper log, string homeDirectory, string? workingDirectory = null)
         {
-            string testTemplate = GetTestTemplateLocation(templateName);
+            string testTemplate = GetTestTemplateLocation(templateNameOrPath);
+
+            if (Directory.Exists(templateNameOrPath))
+            {
+                testTemplate = templateNameOrPath;
+            }
 
             DotnetNewCommand command = new DotnetNewCommand(log, "install", testTemplate)
                 .WithCustomHive(homeDirectory);
@@ -156,7 +161,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             folder = Path.GetFullPath(folder);
             if (!Directory.Exists(folder))
             {
-                Assert.False(true, $"The folder '{folder}' does not exist.");
+                Assert.Fail($"The folder '{folder}' does not exist.");
             }
             return folder;
         }
@@ -166,7 +171,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             file = Path.GetFullPath(file);
             if (!File.Exists(file))
             {
-                Assert.False(true, $"The file '{file}' does not exist.");
+                Assert.Fail($"The file '{file}' does not exist.");
             }
             return file;
         }
@@ -176,11 +181,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string repoRoot = Path.GetFullPath(Path.Combine(TestContext.Current.TestAssetsDirectory, "..", ".."));
             if (!Directory.Exists(repoRoot))
             {
-                Assert.False(true, $"The repo root cannot be evaluated.");
+                Assert.Fail($"The repo root cannot be evaluated.");
             }
             if (!File.Exists(Path.Combine(repoRoot, "sdk.sln")))
             {
-                Assert.False(true, $"The repo root doesn't contain 'sdk.sln'.");
+                Assert.Fail($"The repo root doesn't contain 'sdk.sln'.");
             }
             return repoRoot;
         }

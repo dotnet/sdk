@@ -31,6 +31,48 @@ namespace ManifestReaderTests
             Directory.CreateDirectory(_manifestVersionBandDirectory);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void ItShouldReturnTheWorkloadVersion(bool useWorkloadSet)
+        {
+            Initialize();
+
+            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
+            CreateMockManifest(_manifestRoot, "8.0.200", "android", "33.0.2-rc.1", true);
+            CreateMockManifest(_manifestRoot, "8.0.200-rc.2", "maui", "15.0.1-rc.456", true);
+
+            if (useWorkloadSet)
+            {
+                CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.200", @"
+                    {
+                    ""ios"": ""11.0.2/8.0.100"",
+                    ""android"": ""33.0.2-rc.1/8.0.200"",
+                    ""maui"": ""15.0.1-rc.456/8.0.200-rc.2"",
+                    }
+                ");
+            }
+
+            var sdkDirectoryWorkloadManifestProvider
+                = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null);
+
+            if (useWorkloadSet)
+            {
+                sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion().Should().Be("8.0.200");
+            }
+            else
+            {
+                string[] manifests = sdkDirectoryWorkloadManifestProvider.GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}.{m.ManifestVersion}").ToArray();
+                manifests.Length.Should().Be(1);
+                manifests.Should().Contain("android.8.0.200.33.0.2-rc.1");
+                sdkDirectoryWorkloadManifestProvider.GetWorkloadVersion().Should().Be("8.0.200-manifests.4ba11739");
+            }
+
+            Directory.Delete(Path.Combine(_manifestRoot, "8.0.100"), recursive: true);
+            Directory.Delete(Path.Combine(_manifestRoot, "8.0.200"), recursive: true);
+            Directory.Delete(Path.Combine(_manifestRoot, "8.0.200-rc.2"), recursive: true);
+        }
+
         [Fact]
         public void ItShouldReturnListOfManifestFiles()
         {
@@ -248,6 +290,7 @@ namespace ManifestReaderTests
             CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.1", true);
             CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
             CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.1", true);
+            CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.2", true);
 
             CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.201", """
     {
@@ -559,7 +602,7 @@ namespace ManifestReaderTests
   "ios": "12.0.1/8.0.200"
 }
 """);
-            CreateMockInstallState("8.0.200", 
+            CreateMockInstallState("8.0.200",
                 """
                 {
                     "workloadVersion": "8.0.201"
@@ -1026,7 +1069,7 @@ namespace ManifestReaderTests
             GetManifestContents(sdkDirectoryWorkloadManifestProvider)
                 .Should()
                 .BeEquivalentTo("Android: AndroidContent1", "iOS: iOSContent", "Test: TestContent2");
-         
+
         }
 
         [Fact]
@@ -1035,7 +1078,7 @@ namespace ManifestReaderTests
             Initialize();
 
             var additionalManifestDirectory = Path.Combine(_testDirectory, "AdditionalManifests");
-                
+
             var environmentMock = new EnvironmentMock();
             environmentMock.Add(EnvironmentVariableNames.WORKLOAD_MANIFEST_ROOTS, additionalManifestDirectory);
 
@@ -1049,7 +1092,7 @@ namespace ManifestReaderTests
             GetManifestContents(sdkDirectoryWorkloadManifestProvider)
                 .Should()
                 .BeEquivalentTo("Android: AndroidContent");
-         
+
         }
 
         [Fact]
@@ -1232,7 +1275,7 @@ Microsoft.Net.Workload.Emscripten.net7"
 
         private string CreateMockInstallState(string featureBand, string installStateContents)
         {
-            var installStateFolder = Path.Combine(_fakeDotnetRootDirectory!, "metadata", "workloads", "8.0.200", "InstallState");
+            var installStateFolder = Path.Combine(_fakeDotnetRootDirectory!, "metadata", "workloads", featureBand, "InstallState");
             Directory.CreateDirectory(installStateFolder);
 
             string installStatePath = Path.Combine(installStateFolder, "default.json");
@@ -1374,7 +1417,7 @@ Microsoft.Net.Workload.Emscripten.net7"
 
         private class EnvironmentMock
         {
-            Dictionary<string, string> _mockedEnvironmentVariables = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> _mockedEnvironmentVariables = new(StringComparer.OrdinalIgnoreCase);
 
             public void Add(string variable, string value)
             {

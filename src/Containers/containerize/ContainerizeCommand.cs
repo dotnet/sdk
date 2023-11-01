@@ -23,7 +23,7 @@ internal class ContainerizeCommand : CliRootCommand
         Required = true
     };
 
-    internal CliOption<string> BaseImageNameOption { get;  } = new("--baseimagename")
+    internal CliOption<string> BaseImageNameOption { get; } = new("--baseimagename")
     {
         Description = "The base image to pull.",
         Required = true
@@ -38,6 +38,12 @@ internal class ContainerizeCommand : CliRootCommand
     internal CliOption<string> OutputRegistryOption { get; } = new("--outputregistry")
     {
         Description = "The registry to push to.",
+        Required = false
+    };
+
+    internal CliOption<string> ArchiveOutputPathOption { get; } = new("--archiveoutputpath")
+    {
+        Description = "The file path to which to write a tar.gz archive of the container image.",
         Required = false
     };
 
@@ -182,36 +188,38 @@ internal class ContainerizeCommand : CliRootCommand
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
     {
         PublishDirectoryArgument.AcceptLegalFilePathsOnly();
-        this.Arguments.Add(PublishDirectoryArgument);
-        this.Options.Add(BaseRegistryOption);
-        this.Options.Add(BaseImageNameOption);
-        this.Options.Add(BaseImageTagOption);
-        this.Options.Add(OutputRegistryOption);
-        this.Options.Add(RepositoryOption);
-        this.Options.Add(ImageTagsOption);
-        this.Options.Add(WorkingDirectoryOption);
-        this.Options.Add(EntrypointOption);
-        this.Options.Add(EntrypointArgsOption);
-        this.Options.Add(DefaultArgsOption);
-        this.Options.Add(AppCommandOption);
-        this.Options.Add(AppCommandArgsOption);
-        this.Options.Add(AppCommandInstructionOption);
-        this.Options.Add(LabelsOption);
-        this.Options.Add(PortsOption);
-        this.Options.Add(EnvVarsOption);
-        this.Options.Add(RidOption);
-        this.Options.Add(RidGraphPathOption);
+        Arguments.Add(PublishDirectoryArgument);
+        Options.Add(BaseRegistryOption);
+        Options.Add(BaseImageNameOption);
+        Options.Add(BaseImageTagOption);
+        Options.Add(OutputRegistryOption);
+        Options.Add(ArchiveOutputPathOption);
+        Options.Add(RepositoryOption);
+        Options.Add(ImageTagsOption);
+        Options.Add(WorkingDirectoryOption);
+        Options.Add(EntrypointOption);
+        Options.Add(EntrypointArgsOption);
+        Options.Add(DefaultArgsOption);
+        Options.Add(AppCommandOption);
+        Options.Add(AppCommandArgsOption);
+        Options.Add(AppCommandInstructionOption);
+        Options.Add(LabelsOption);
+        Options.Add(PortsOption);
+        Options.Add(EnvVarsOption);
+        Options.Add(RidOption);
+        Options.Add(RidGraphPathOption);
         LocalRegistryOption.AcceptOnlyFromAmong(KnownLocalRegistryTypes.SupportedLocalRegistryTypes);
-        this.Options.Add(LocalRegistryOption);
-        this.Options.Add(ContainerUserOption);
+        Options.Add(LocalRegistryOption);
+        Options.Add(ContainerUserOption);
 
-        this.SetAction(async (parseResult, cancellationToken) =>
+        SetAction(async (parseResult, cancellationToken) =>
         {
             DirectoryInfo _publishDir = parseResult.GetValue(PublishDirectoryArgument)!;
             string _baseReg = parseResult.GetValue(BaseRegistryOption)!;
             string _baseName = parseResult.GetValue(BaseImageNameOption)!;
             string _baseTag = parseResult.GetValue(BaseImageTagOption)!;
             string? _outputReg = parseResult.GetValue(OutputRegistryOption);
+            string? _archiveOutputPath = parseResult.GetValue(ArchiveOutputPathOption);
             string _name = parseResult.GetValue(RepositoryOption)!;
             string[] _tags = parseResult.GetValue(ImageTagsOption)!;
             string _workingDir = parseResult.GetValue(WorkingDirectoryOption)!;
@@ -256,6 +264,7 @@ internal class ContainerizeCommand : CliRootCommand
                 _ridGraphPath,
                 _localContainerDaemon,
                 _containerUser,
+                _archiveOutputPath,
                 loggerFactory,
                 cancellationToken).ConfigureAwait(false);
         });

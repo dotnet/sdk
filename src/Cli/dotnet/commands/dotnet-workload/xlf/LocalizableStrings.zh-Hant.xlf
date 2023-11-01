@@ -72,6 +72,11 @@
         <target state="translated">安裝來源</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionDescription">
+        <source>Display the currently installed workload version.</source>
+        <target state="translated">顯示目前安裝的工作負載版本。</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

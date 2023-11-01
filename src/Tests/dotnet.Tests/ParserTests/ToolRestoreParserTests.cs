@@ -80,11 +80,20 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [Fact]
+        public void ToolRestoreParserCanParseNoHttpCacheOption()
+        {
+            var result =
+                Parser.Instance.Parse(@"dotnet tool restore --no-http-cache");
+
+            result.OptionValuesToBeForwarded(ToolRestoreCommandParser.GetCommand()).Should().ContainSingle("--no-http-cache");
+        }
+
+        [Fact]
         public void ToolRestoreParserCanParseIgnoreFailedSourcesOption()
         {
             var result =
                 Parser.Instance.Parse(@"dotnet tool restore --ignore-failed-sources");
-            
+
             result.OptionValuesToBeForwarded(ToolRestoreCommandParser.GetCommand()).Should().ContainSingle("--ignore-failed-sources");
         }
 

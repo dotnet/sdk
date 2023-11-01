@@ -14,7 +14,7 @@ namespace Microsoft.Build.Tasks
         public AllowEmptyTelemetry()
         {
             EventData = Array.Empty<ITaskItem>();
-            EventName = String.Empty;
+            EventName = string.Empty;
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Microsoft.Build.Tasks
                     {
                         value = HashWithNormalizedCasing(value);
                     }
-                    if (String.IsNullOrEmpty(value))
+                    if (string.IsNullOrEmpty(value))
                     {
                         properties[key] = "null";
                     }
@@ -63,7 +63,7 @@ namespace Microsoft.Build.Tasks
         // We don't want to introduce a project<->project dependency, and the logic is straightforward enough.
         private static string HashWithNormalizedCasing(string text)
         {
-            var utf8UpperBytes = System.Text.Encoding.UTF8.GetBytes(text.ToUpperInvariant());
+            var utf8UpperBytes = Encoding.UTF8.GetBytes(text.ToUpperInvariant());
 #if NETFRAMEWORK
             var crypt = System.Security.Cryptography.SHA256.Create();
             var hash = new System.Text.StringBuilder();

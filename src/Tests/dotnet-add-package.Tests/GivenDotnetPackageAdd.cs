@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("add", "package", packageName, "--version",  packageVersion);
+                .Execute("add", "package", packageName, "--version", packageVersion);
             cmd.Should().Pass();
             cmd.StdOut.Should().Contain($"PackageReference for package '{packageName}' version '{packageVersion}' " +
                 $"added to file '{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj'.");
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         }
 
         public static readonly List<object[]> AddPkg_PackageVersionsLatestPrereleaseSucessData
-            = new List<object[]>
+            = new()
             {
                     new object[] { new string[] { "0.0.5", "0.9.0", "1.0.0-preview.3" }, "1.0.0-preview.3" },
                     new object[] { new string[] { "0.0.5", "0.9.0", "1.0.0-preview.3", "1.1.1-preview.7" }, "1.1.1-preview.7" },
@@ -46,14 +46,14 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         public void WhenPrereleaseOptionIsPassed(string[] inputVersions, string expectedVersion)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "Project",
                 IsExe = false,
                 TargetFrameworks = targetFramework,
             };
 
-            var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e, identifier: expectedVersion + e +  inputVersions.GetHashCode().ToString())).ToArray(); 
+            var packages = inputVersions.Select(e => GetPackagePath(targetFramework, "A", e, identifier: expectedVersion + e + inputVersions.GetHashCode().ToString())).ToArray();
 
             testProject.AdditionalProperties.Add("RestoreSources",
                                      "$(RestoreSources);" + string.Join(";", packages.Select(package => Path.GetDirectoryName(package))));
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         }
 
         [Fact]
-        public void 
+        public void
             WhenValidProjectAndPackageArePassedItGetsAdded()
         {
             var testAsset = "TestAppSimple";
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .WithSource()
                 .Path;
 
-            var packageDirectory = Path.Combine(projectDirectory, "local packages"); 
+            var packageDirectory = Path.Combine(projectDirectory, "local packages");
 
             var csproj = $"{projectDirectory + Path.DirectorySeparatorChar + testAsset}.csproj";
             var packageName = "Newtonsoft.Json";

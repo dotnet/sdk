@@ -46,7 +46,7 @@ namespace Microsoft.NET.Publish.Tests
                 msbuildArgs.Add($"/p:UseAppHost={useAppHost}");
             }
 
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX) &&
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX) &&
                 targetFramework == "netcoreapp2.1")
             {
                 //  .NET Core 2.1.0 packages don't support latest versions of OS X, so roll forward to the
@@ -112,7 +112,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining(Strings.FrameworkDependentAppHostRequiresVersion21.Replace("“", "\"").Replace("”", "\""));
+                .HaveStdOutContaining(Strings.FrameworkDependentAppHostRequiresVersion21.Replace("\u0093", "\"").Replace("\u0094", "\""));
         }
     }
 }

@@ -31,7 +31,13 @@ static class ContainerCli
     public static RunExeCommand InspectCommand(ITestOutputHelper log, params string[] args)
       => CreateCommand(log, "inspect", args);
 
-    private static RunExeCommand CreateCommand(ITestOutputHelper log, string command, string[] args)
+    public static RunExeCommand LoadCommand(ITestOutputHelper log, params string[] args)
+      => CreateCommand(log, "load", args);
+
+    public static RunExeCommand PortCommand(ITestOutputHelper log, string containerName, int port)
+      => CreateCommand(log, "port", containerName, port.ToString());
+
+    private static RunExeCommand CreateCommand(ITestOutputHelper log, string command, params string[] args)
     {
         string commandPath = IsPodman ? "podman" : "docker";
 

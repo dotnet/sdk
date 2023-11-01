@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.Versioning;
 using System.Runtime.CompilerServices;
+using System.Runtime.Versioning;
 using Newtonsoft.Json.Linq;
 using NuGet.Versioning;
 
@@ -283,10 +283,11 @@ namespace Microsoft.NET.Build.Tests
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
             var getValuesCommand = new GetValuesCommand(Log, libraryProjectDirectory,
-                "netstandard1.5", "DefineConstants");
-
-            getValuesCommand.ShouldCompile = true;
-            getValuesCommand.Configuration = configuration;
+                "netstandard1.5", "DefineConstants")
+            {
+                ShouldCompile = true,
+                Configuration = configuration
+            };
 
             getValuesCommand
                 .Execute("/p:Configuration=" + configuration)
@@ -579,7 +580,7 @@ class Program
         [InlineData("netcoreapp3.1", "", true)]
         public void It_defines_target_platform_defaults_correctly(string targetFramework, string propertyName, bool defaultsDefined)
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "TargetPlatformDefaults",
                 TargetFrameworks = targetFramework
@@ -613,7 +614,7 @@ class Program
         [InlineData("netcoreapp3.1")]
         public void It_defines_windows_version_default_correctly(string targetFramework)
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "WindowsVersionDefault",
                 ProjectSdk = "Microsoft.NET.Sdk.WindowsDesktop",
@@ -893,6 +894,50 @@ class Program
             else
             {
                 predefinedCulturesOnly.Value<string>().Should().Be(expectedPredefinedValue);
+            }
+        }
+
+        [Theory]
+        [InlineData("True")]
+        [InlineData("False")]
+        [InlineData(null)]
+        public void It_can_evaluate_metrics_support(string value)
+        {
+            var testProj = new TestProject()
+            {
+                Name = "CheckMetricsSupport",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+
+            if (value is not null)
+            {
+                testProj.AdditionalProperties["MetricsSupport"] = value;
+            }
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProj, identifier: value);
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            string runtimeConfigName = $"{testProj.Name}.runtimeconfig.json";
+            var outputDirectory = buildCommand.GetOutputDirectory(testProj.TargetFrameworks);
+            outputDirectory.Should().HaveFile(runtimeConfigName);
+
+            string runtimeConfigFile = Path.Combine(outputDirectory.FullName, runtimeConfigName);
+            string runtimeConfigContents = File.ReadAllText(runtimeConfigFile);
+            JObject runtimeConfig = JObject.Parse(runtimeConfigContents);
+            JToken metricsSupport = runtimeConfig["runtimeOptions"]["configProperties"]["System.Diagnostics.Metrics.Meter.IsSupported"];
+
+            if (value is null)
+            {
+                metricsSupport.Should().BeNull();
+            }
+            else
+            {
+                metricsSupport.Value<string>().Should().Be(value);
             }
         }
 

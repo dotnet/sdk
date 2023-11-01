@@ -132,7 +132,7 @@ namespace Microsoft.NET.Build.Tests
 
         TestProject GetTestProject(string name, string target, bool isSdkProject)
         {
-            TestProject ret = new TestProject()
+            TestProject ret = new()
             {
                 Name = name,
                 IsSdkProject = isSdkProject
@@ -182,8 +182,10 @@ namespace Microsoft.NET.Build.Tests
             var buildCommand = new BuildCommand(parentAsset);
             buildCommand.Execute().Should().Pass();
 
-            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(parentAsset.Path, parentProject.Name), tfm, "ResultOutput");
-            getValuesCommand.DependsOnTargets = "Build";
+            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(parentAsset.Path, parentProject.Name), tfm, "ResultOutput")
+            {
+                DependsOnTargets = "Build"
+            };
             getValuesCommand.Execute().Should().Pass();
 
             var valuesResult = getValuesCommand.GetValuesWithMetadata().Select(pair => Path.GetFullPath(pair.value));
@@ -254,7 +256,7 @@ namespace Microsoft.NET.Build.Tests
             testProjectC.AdditionalProperties.Add("DisableTransitiveProjectReferences", "true");
             testProjectC.ReferencedProjects.Add(testProjectB);
             var testAsset = _testAssetsManager.CreateTestProject(testProjectC).WithProjectChanges((path, p) =>
-            { 
+            {
                 if (Path.GetFileNameWithoutExtension(path) == testProjectA.Name)
                 {
                     var ns = p.Root.Name.Namespace;

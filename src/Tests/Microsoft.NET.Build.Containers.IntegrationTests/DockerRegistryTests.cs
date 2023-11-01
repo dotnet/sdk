@@ -22,7 +22,7 @@ public class DockerRegistryTests
     {
         var loggerFactory = new TestLoggerFactory(_testOutput);
         var logger = loggerFactory.CreateLogger(nameof(GetFromRegistry));
-        Registry registry = new Registry(DockerRegistryManager.LocalRegistry, logger);
+        Registry registry = new(DockerRegistryManager.LocalRegistry, logger);
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
 
         // Don't need rid graph for local registry image pulls - since we're only pushing single image manifests (not manifest lists)
@@ -45,7 +45,8 @@ public class DockerRegistryTests
         var registryAuthDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "auth"));
         var registryCertsDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "certs"));
         var registryName = "localhost:5555";
-        try {
+        try
+        {
             if (!registryCertsDir.Exists)
             {
                 registryCertsDir.Create();
@@ -73,12 +74,12 @@ public class DockerRegistryTests
             // login to that registry
             ContainerCli.LoginCommand(_testOutput, "--username", "testuser", "--password", "testpassword", registryName).Execute().Should().Pass();
             // push an image to that registry using username/password
-            Registry localAuthed = new Registry(new Uri($"https://{registryName}"), logger, settings: new() { ParallelUploadEnabled = false, ForceChunkedUpload = true });
+            Registry localAuthed = new(new Uri($"https://{registryName}"), logger, settings: new() { ParallelUploadEnabled = false, ForceChunkedUpload = true });
             var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
-            Registry mcr = new Registry(DockerRegistryManager.BaseImageSource, logger);
+            Registry mcr = new(DockerRegistryManager.BaseImageSource, logger);
 
-            var sourceImage = new ImageReference(mcr, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag);
-            var destinationImage = new ImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag);
+            var sourceImage = new SourceImageReference(mcr, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net6ImageTag);
+            var destinationImage = new DestinationImageReference(localAuthed, DockerRegistryManager.RuntimeBaseImage,new[] { DockerRegistryManager.Net6ImageTag });
             ImageBuilder? downloadedImage = await mcr.GetImageManifestAsync(
                 DockerRegistryManager.RuntimeBaseImage,
                 DockerRegistryManager.Net6ImageTag,

@@ -62,7 +62,7 @@ namespace Microsoft.NET.Build.Tests
                 .CopyTestAsset("AppWithLibraryAndRid", "BuildFrameworkDependentRIDSpecific")
                 .WithSource();
 
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 //  .NET Core 2.1.0 packages don't support latest versions of OS X, so roll forward to the
                 //  latest patch which does
@@ -106,7 +106,7 @@ namespace Microsoft.NET.Build.Tests
                 $"libuv{FileConstants.DynamicLibSuffix}"
             };
 
-            outputDirectory.Should().OnlyHaveFiles(expectedFiles.Where(x => !String.IsNullOrEmpty(x)).ToList() );
+            outputDirectory.Should().OnlyHaveFiles(expectedFiles.Where(x => !string.IsNullOrEmpty(x)).ToList());
 
             new DotnetCommand(Log, Path.Combine(outputDirectory.FullName, "App.dll"))
                 .Execute()

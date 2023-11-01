@@ -22,6 +22,11 @@
         <target state="translated">CONTAINER2026: ContainerAppCommand et ContainerAppCommandArgs doivent être vides lorsque ContainerAppCommandInstruction est '{0}'.</target>
         <note>{StrBegin="CONTAINER2026: "}</note>
       </trans-unit>
+      <trans-unit id="ArchiveRegistry_PushInfo">
+        <source>local archive at '{0}'</source>
+        <target state="translated">archive locale à «{0}»</target>
+        <note>{0} is the path to the file written</note>
+      </trans-unit>
       <trans-unit id="BaseEntrypointOverwritten">
         <source>CONTAINER2022: The base image has an entrypoint that will be overwritten to start the application. Set ContainerAppCommandInstruction to 'Entrypoint' if this is desired. To preserve the base image entrypoint, set ContainerAppCommandInstruction to 'DefaultArgs'.</source>
         <target state="translated">CONTAINER2022: L'image de base a un point d'entrée qui sera écrasé pour démarrer l'application. Définissez ContainerAppCommandInstruction sur 'Entrypoint' si vous le souhaitez. Pour conserver le point d'entrée de l'image de base, définissez ContainerAppCommandInstruction sur "DefaultArgs".</target>
@@ -53,13 +58,13 @@
         <note>{StrBegin="CONTAINER1001: "}</note>
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToLocalDaemon">
-        <source>Pushed container '{0}' to Docker daemon.</source>
-        <target state="translated">Le conteneur «{0}» a été envoyé au démon Docker.</target>
+        <source>Pushed image '{0}' to {1}.</source>
+        <target state="translated">L’image '{0}' a été envoyée à {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_ImageUploadedToRegistry">
-        <source>Pushed container '{0}' to registry '{1}'.</source>
-        <target state="translated">Le conteneur «{0}» a été envoyé au registre «{1}».</target>
+        <source>Pushed image '{0}' to registry '{1}'.</source>
+        <target state="translated">L’image «{0}» a été envoyée au registre «{1}».</target>
         <note />
       </trans-unit>
       <trans-unit id="ContainerBuilder_StartBuildingImage">
@@ -77,6 +82,11 @@
         <target state="translated">CONTAINER2012: impossible de reconnaître le registre '{0}'.</target>
         <note>{StrBegin="CONTAINER2012: "}</note>
       </trans-unit>
+      <trans-unit id="DockerCli_PushInfo">
+        <source>local registry via '{0}'</source>
+        <target state="translated">registre local via «{0}»</target>
+        <note>{0} is the command used</note>
+      </trans-unit>
       <trans-unit id="DockerInfoFailed">
         <source>CONTAINER3002: Failed to get docker info({0})\n{1}\n{2}</source>
         <target state="translated">CONTAINER3002: échec de l’obtention des informations docker ({0})\n{1}\n{2}</target>
@@ -87,7 +97,7 @@
         <target state="translated">CONTAINER3002: échec de l’obtention des informations docker : {0}</target>
         <note>{StrBegin="CONTAINER3002: "}</note>
       </trans-unit>
-      <trans-unit id="DockerProcessCreationFailed">
+      <trans-unit id="ContainerRuntimeProcessCreationFailed">
         <source>CONTAINER3001: Failed creating {0} process.</source>
         <target state="translated">CONTAINER3001: Échec du processus de création {0}.</target>
         <note>CONTAINER3001: {0} is the name of the command we failed to run, usually 'docker' or 'podman'.</note>
@@ -247,14 +257,24 @@
         <target state="translated">CONTAINER2011: {0} '{1}' n’existe pas</target>
         <note>{StrBegin="CONTAINER2011: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryOperationFailed">
+        <source>CONTAINER1017: Unable to communicate with the registry '{0}'.</source>
+        <target state="translated">CONTAINER1017: nous n’avons pas pu communiquer avec le Registre '{0}'.</target>
+        <note>{StrBegin="CONTAINER1017:" }</note>
+      </trans-unit>
       <trans-unit id="RegistryOutputPushFailed">
         <source>CONTAINER1013: Failed to push to the output registry: {0}</source>
         <target state="translated">CONTAINER1013: échec de l’envoi (push) vers le Registre de sortie : {0}</target>
         <note>{StrBegin="CONTAINER1013: "}</note>
       </trans-unit>
+      <trans-unit id="RegistryPullFailed">
+        <source>CONTAINER1014: Manifest pull failed.</source>
+        <target state="translated">CONTAINER1014: échec du tirage (pull) du manifeste.</target>
+        <note>{StrBegin="CONTAINER1014: "}</note>
+      </trans-unit>
       <trans-unit id="RegistryPushFailed">
         <source>CONTAINER1005: Registry push failed; received status code '{0}'.</source>
-        <target state="new">CONTAINER1005: Registry push failed; received status code '{0}'.</target>
+        <target state="translated">CONTAINER1005: échec de l’envoi (push) du Registre ; code d’état « {0} » reçu.</target>
         <note>{StrBegin="CONTAINER1005: "}</note>
       </trans-unit>
       <trans-unit id="Registry_ConfigUploadStarted">
@@ -302,6 +322,11 @@
         <target state="translated">Balise «{0}» chargée sur «{1}».</target>
         <note>{1} is the registry name</note>
       </trans-unit>
+      <trans-unit id="RepositoryNotFound">
+        <source>CONTAINER1015: Unable to access the repository '{0}' at tag '{1}' in the registry '{2}'. Please confirm that this name and tag are present in the registry.</source>
+        <target state="translated">CONTAINER1015: nous n’avons pas pu accéder au référentiel '{0}' à la balise '{1}' dans le Registre '{2}'. Veuillez confirmer que ce nom et cette balise sont présents dans le Registre.</target>
+        <note>{StrBegin="CONTAINER1015: "}</note>
+      </trans-unit>
       <trans-unit id="RequiredItemsContainsEmptyItems">
         <source>CONTAINER4003: Required '{0}' items contain empty items.</source>
         <target state="translated">CONTAINER4003: les éléments de '{0}' obligatoires contiennent des éléments vides.</target>
@@ -321,6 +346,11 @@
         <source>CONTAINER1006: Too many retries, stopping.</source>
         <target state="translated">CONTAINER1006: trop de tentatives, arrêt.</target>
         <note>{StrBegin="CONTAINER1006: "}</note>
+      </trans-unit>
+      <trans-unit id="UnableToAccessRepository">
+        <source>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</source>
+        <target state="translated">CONTAINER1016: nous n’avons pas pu accéder au référentiel '{0}' dans le Registre '{1}'. Confirmez que vos informations d’identification sont correctes et que vous avez accès à ce référentiel et à ce Registre.</target>
+        <note>{StrBegin="CONTAINER1016:" }</note>
       </trans-unit>
       <trans-unit id="UnknownAppCommandInstruction">
         <source>CONTAINER2021: Unknown AppCommandInstruction '{0}'. Valid instructions are {1}.</source>

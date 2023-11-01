@@ -6,12 +6,13 @@ namespace Microsoft.NET.Build.Containers;
 /// <summary>
 /// Abstracts over the concept of a local registry storeof some kind.
 /// </summary>
-internal interface ILocalRegistry {
+internal interface ILocalRegistry
+{
 
     /// <summary>
     /// Loads an image (presumably from a tarball) into the local registry.
     /// </summary>
-    public Task LoadAsync(BuiltImage image, ImageReference sourceReference, ImageReference destinationReference, CancellationToken cancellationToken);
+    public Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken);
 
     /// <summary>
     /// Checks to see if the local registry is available. This is used to give nice errors to the user.

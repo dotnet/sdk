@@ -504,6 +504,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(DebuggerSupport)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Diagnostics.Metrics.Meter.IsSupported"
+                                    Condition="'$(MetricsSupport)' != ''"
+                                    Value="$(MetricsSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Tracing.EventSource.IsSupported"
                                     Condition="'$(EventSourceSupport)' != ''"
                                     Value="$(EventSourceSupport)"
@@ -548,6 +553,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeHostConfigurationOption Include="System.Net.Http.UseNativeHttpHandler"
                                     Condition="'$(UseNativeHttpHandler)' != ''"
                                     Value="$(UseNativeHttpHandler)"
+                                    Trim="true" />
+
+    <RuntimeHostConfigurationOption Include="System.Net.Security.UseManagedNtlm"
+                                    Condition="'$(_UseManagedNtlm)' != ''"
+                                    Value="$(_UseManagedNtlm)"
                                     Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Reflection.Metadata.MetadataUpdater.IsSupported"
@@ -1271,6 +1281,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_IsExecutable)' == 'true'">
     <ProjectCapability Include="CrossPlatformExecutable" />
+  </ItemGroup>
+
+  <!-- Native AOT compilation -->
+  <!-- Native AOT properties should be shown by default for projects targeting .NET 8 or higher, except for WPF and WinForms projects -->
+  <ItemGroup Condition="'$(UseWPF)' != 'true'
+             and '$(UseWindowsForms)' != 'true'
+             and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+             and $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '8.0'))">
+    <ProjectCapability Include="NativeAOT"/>
   </ItemGroup>
 
   <!-- Reference Manager capabilities -->

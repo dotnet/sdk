@@ -26,7 +26,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolInstallLocalCommandTests:SdkTest
+    public class ToolInstallLocalCommandTests : SdkTest
     {
         private readonly IFileSystem _fileSystem;
         private readonly IToolPackageStore _toolPackageStore;
@@ -37,13 +37,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _pathToPlacePackages;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly string _manifestFilePath;
-        private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
+        private readonly PackageId _packageIdA = new("local.tool.console.a");
         private readonly NuGetVersion _packageVersionA;
-        private readonly ToolCommandName _toolCommandNameA = new ToolCommandName("a");
+        private readonly ToolCommandName _toolCommandNameA = new("a");
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
 
-        public ToolInstallLocalCommandTests(ITestOutputHelper log):base(log) 
+        public ToolInstallLocalCommandTests(ITestOutputHelper log) : base(log)
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
 
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
             _pathToPlacePackages = Path.Combine(_temporaryDirectory, "pathToPlacePackage");
             ToolPackageStoreMock toolPackageStoreMock =
-                new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
+                new(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
             
             _toolPackageDownloaderMock = new ToolPackageDownloaderMock(
@@ -219,7 +219,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new FilePath(_manifestFilePath),
                 _packageIdA,
                 new NuGetVersion(1, 1, 1),
-                new[] {_toolCommandNameA});
+                new[] { _toolCommandNameA });
 
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
 
@@ -336,7 +336,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             installLocalCommand.Execute().Should().Be(0);
             _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
-         }
+        }
 
         [Fact]
         public void GivenNoManifestFileAndCreateManifestIfNeededFlagItShouldCreateManifestInSln()
@@ -370,7 +370,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ParseResult parseResult =
                 Parser.Instance.Parse(
                     $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
-            
+
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
                 _toolPackageDownloaderMock,
@@ -385,7 +385,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private IToolPackageDownloader GetToolToolPackageInstallerWithPreviewInFeed()
         {
-            List<MockFeed> feeds = new List<MockFeed>
+            List<MockFeed> feeds = new()
             {
                 new MockFeed
                 {

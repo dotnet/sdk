@@ -7,12 +7,12 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class BuildWithComponentsIntegrationTest : AspNetSdkTest
     {
-        public BuildWithComponentsIntegrationTest(ITestOutputHelper log) : base(log) {}
+        public BuildWithComponentsIntegrationTest(ITestOutputHelper log) : base(log) { }
 
         [CoreMSBuildOnlyFact]
         public void Build_Components_WithDotNetCoreMSBuild_Works() => Build_ComponentsWorks();
 
-        [RequiresMSBuildVersionFact("17.7.0.25102")]
+        [RequiresMSBuildVersionFact("17.8.0.37606")]
         public void Build_Components_WithDesktopMSBuild_Works() => Build_ComponentsWorks();
 
         [Fact]

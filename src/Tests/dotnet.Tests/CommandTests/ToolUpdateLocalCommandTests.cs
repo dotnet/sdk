@@ -36,8 +36,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly ToolPackageDownloaderMock _toolPackageDownloaderMock;
         private readonly NuGetVersion _packageOriginalVersionA;
         private readonly NuGetVersion _packageNewVersionA;
-        private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
-        private readonly ToolCommandName _toolCommandNameA = new ToolCommandName("a");
+        private readonly PackageId _packageIdA = new("local.tool.console.a");
+        private readonly ToolCommandName _toolCommandNameA = new("a");
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly ToolRestoreCommand _toolRestoreCommand;
 
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _packageNewVersionA = NuGetVersion.Parse("2.0.0");
 
             ToolPackageStoreMock toolPackageStoreMock =
-                new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
+                new(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
             _mockFeed = new MockFeed
             {
@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _toolRestoreCommand.Execute();
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
-            ToolUpdateLocalCommand toolUpdateLocalCommand = new ToolUpdateLocalCommand(
+            ToolUpdateLocalCommand toolUpdateLocalCommand = new(
                 parseResult,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
@@ -211,14 +211,14 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _toolRestoreCommand.Execute();
             _mockFeed.Packages[0].Version = _packageNewVersionA.ToNormalizedString();
 
-            ToolUpdateLocalCommand toolUpdateLocalCommand = new ToolUpdateLocalCommand(
+            ToolUpdateLocalCommand toolUpdateLocalCommand = new(
                 parseResult,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
                 _reporter);
-            ToolUpdateCommand toolUpdateCommand = new ToolUpdateCommand(
+            ToolUpdateCommand toolUpdateCommand = new(
                 parseResult,
                 toolUpdateLocalCommand: toolUpdateLocalCommand);
 

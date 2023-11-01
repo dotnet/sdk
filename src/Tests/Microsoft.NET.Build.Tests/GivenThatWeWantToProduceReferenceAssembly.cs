@@ -6,14 +6,14 @@ namespace Microsoft.NET.Build.Tests
     public class GivenThatWeWantToProduceReferenceAssembly : SdkTest
     {
         public GivenThatWeWantToProduceReferenceAssembly(ITestOutputHelper log) : base(log)
-        {}
+        { }
 
         [RequiresMSBuildVersionTheory("16.8.0")]
         [InlineData("netcoreapp3.1", false)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
         public void It_produces_ref_assembly_for_appropriate_frameworks(string targetFramework, bool expectedExists)
         {
-            TestProject testProject = new TestProject()
+            TestProject testProject = new()
             {
                 Name = "ProduceRefAssembly",
                 IsExe = true,

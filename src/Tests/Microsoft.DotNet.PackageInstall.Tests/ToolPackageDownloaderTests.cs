@@ -3,19 +3,19 @@
 
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Versioning;
-using System.Runtime.CompilerServices;
-using Microsoft.DotNet.ToolPackage;
 using NuGet.Frameworks;
+using NuGet.Versioning;
 using NuGet.Configuration;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
@@ -984,7 +984,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     Path.GetRandomFileName() + " " + Path.GetRandomFileName());
 
             FilePath nugetConfigFullPath =
-                new FilePath(Path.GetFullPath(Path.Combine(tempPathForNugetConfigWithWhiteSpace, nugetConfigName)));
+                new(Path.GetFullPath(Path.Combine(tempPathForNugetConfigWithWhiteSpace, nugetConfigName)));
             return nugetConfigFullPath;
         }
 
@@ -993,7 +993,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
-        private static readonly PackageId TestPackageId = new PackageId("global.tool.console.demo");
+        private static readonly PackageId TestPackageId = new("global.tool.console.demo");
         private static readonly IEnumerable<NuGetFramework> TestFrameworks = new NuGetFramework[] { NuGetFramework.Parse("netcoreapp2.1") };
         private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
         public ToolPackageDownloaderTests(ITestOutputHelper log) : base(log)

@@ -147,6 +147,11 @@
         <target state="translated">No se ha encontrado la versión de carga de trabajo {0}, que se especificó en {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotFound">
+        <source>Workload version {0} was not found.</source>
+        <target state="translated">No se encontró la versión de carga de trabajo {0}.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

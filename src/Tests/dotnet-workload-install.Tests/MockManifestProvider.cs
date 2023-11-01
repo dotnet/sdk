@@ -27,20 +27,23 @@ namespace ManifestReaderTests
 
         public SdkFeatureBand SdkFeatureBand { get; set; }
 
+        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
+
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
+        {
+            foreach ((var id, var path, var featureBand) in _manifests)
             {
-                foreach ((var id, var path, var featureBand) in _manifests)
-                {
-                    yield return new(
-                        id,
-                        Path.GetDirectoryName(path),
-                        path,
-                        featureBand ?? SdkFeatureBand.ToString(),
-                        () => File.OpenRead(path),
-                        () => WorkloadManifestReader.TryOpenLocalizationCatalogForManifest(path)
-                    );
-                }
+                yield return new(
+                    id,
+                    Path.GetDirectoryName(path),
+                    path,
+                    featureBand ?? SdkFeatureBand.ToString(),
+                    string.Empty,
+                    () => File.OpenRead(path),
+                    () => WorkloadManifestReader.TryOpenLocalizationCatalogForManifest(path)
+                );
             }
+        }
 
         public string GetSdkFeatureBand() => SdkFeatureBand.ToString();
     }

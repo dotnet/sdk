@@ -171,7 +171,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"PSC-OVERRIDES-{publishSelfContained}-{selfContainedIsGlobal}-{publishSelfContainedIsGlobal}");
             var publishCommand = new DotnetCommand(Log);
-            List<string> args = new List<string>
+            List<string> args = new()
             {
                 "publish",
                 selfContainedIsGlobal ? $"/p:SelfContained={selfContained}" : "",
@@ -446,7 +446,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
             // Another command, which should not be affected by PublishRelease
             new BuildCommand(helloWorldAsset)
                .Execute();
-            
+
             var expectedAssetPath = Path.Combine(helloWorldAsset.Path, "bin", "Release");
             Assert.False(Directory.Exists(expectedAssetPath));
         }

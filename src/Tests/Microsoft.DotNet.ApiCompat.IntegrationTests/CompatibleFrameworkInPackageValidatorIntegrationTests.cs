@@ -18,9 +18,9 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
         {
         }
 
-        private (SuppressableTestLog, CompatibleFrameworkInPackageValidator) CreateLoggerAndValidator()
+        private (SuppressibleTestLog, CompatibleFrameworkInPackageValidator) CreateLoggerAndValidator()
         {
-            SuppressableTestLog log = new();
+            SuppressibleTestLog log = new();
             CompatibleFrameworkInPackageValidator validator = new(log,
                 new ApiCompatRunner(log,
                     new SuppressionEngine(),
@@ -53,11 +53,11 @@ namespace PackageValidationTests
 }";
             testProject.SourceFiles.Add("Hello.cs", sourceCode);
             TestAsset asset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
-            PackCommand packCommand = new PackCommand(Log, Path.Combine(asset.TestRoot, testProject.Name));
+            PackCommand packCommand = new(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
             Package package = Package.Create(packCommand.GetNuGetPackage(), null);
-            (SuppressableTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
+            (SuppressibleTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
 
             validator.Validate(new PackageValidatorOption(package));
 
@@ -94,11 +94,11 @@ namespace PackageValidationTests
 
             testProject.SourceFiles.Add("Hello.cs", sourceCode);
             TestAsset asset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
-            PackCommand packCommand = new PackCommand(Log, Path.Combine(asset.TestRoot, testProject.Name));
+            PackCommand packCommand = new(Log, Path.Combine(asset.TestRoot, testProject.Name));
             var result = packCommand.Execute();
             Assert.Equal(string.Empty, result.StdErr);
             Package package = Package.Create(packCommand.GetNuGetPackage(), null);
-            (SuppressableTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
+            (SuppressibleTestLog log, CompatibleFrameworkInPackageValidator validator) = CreateLoggerAndValidator();
 
             validator.Validate(new PackageValidatorOption(package));
 

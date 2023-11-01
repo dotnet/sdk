@@ -1,4 +1,5 @@
 setTimeout(async function () {
+  const hotReloadActiveKey = '_dotnet_watch_hot_reload_active';
   // Ensure we only try to connect once, even if the script is both injected and manually inserted
   const scriptInjectedSentinel = '_dotnet_watch_ws_injected';
   if (window.hasOwnProperty(scriptInjectedSentinel)) {
@@ -46,7 +47,8 @@ setTimeout(async function () {
         'BlazorHotReloadDeltav1': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas, false),
         'BlazorHotReloadDeltav2': () => applyBlazorDeltas(payload.sharedSecret, payload.deltas, true),
         'HotReloadDiagnosticsv1': () => displayDiagnostics(payload.diagnostics),
-        'BlazorRequestApplyUpdateCapabilities': getBlazorWasmApplyUpdateCapabilities,
+        'BlazorRequestApplyUpdateCapabilities': () => getBlazorWasmApplyUpdateCapabilities(false),
+        'BlazorRequestApplyUpdateCapabilities2': () => getBlazorWasmApplyUpdateCapabilities(true),
         'AspNetCoreHotReloadApplied': () => aspnetCoreHotReloadApplied()
       };
 
@@ -93,12 +95,19 @@ setTimeout(async function () {
       .forEach(e => updateCssElement(e));
   }
 
-  function getBlazorWasmApplyUpdateCapabilities() {
+  function getBlazorWasmApplyUpdateCapabilities(sendErrorToClient) {
     let applyUpdateCapabilities;
     try {
       applyUpdateCapabilities = window.Blazor._internal.getApplyUpdateCapabilities();
-    } catch {
-      applyUpdateCapabilities = '';
+    } catch (error) {
+      const message = error.message || '<unknown error>'
+      let messageAndStack = error.stack || message
+      if (!messageAndStack.includes(message))
+      {
+         messageAndStack = message + "\n" + messageAndStack;
+      }
+
+      applyUpdateCapabilities = sendErrorToClient ? "!" + messageAndStack : '';
     }
     connection.send(applyUpdateCapabilities);
   }
@@ -181,18 +190,33 @@ setTimeout(async function () {
     if (document.querySelector('#dotnet-hotreload-toast')) {
       return;
     }
+    if (!window[hotReloadActiveKey])
+    {
+        return;
+    }
     const el = document.createElement('div');
     el.id = 'dotnet-hotreload-toast';
     el.innerHTML = "<svg style=\"filter: drop-shadow(0px 2px 1px rgb(0 0 0 / 0.4));\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 500 500\"><style><![CDATA[#hotreloaded-ellipse1 {animation: hotreloaded-ellipse1_c_o 1800ms linear 1 normal forwards}@keyframes hotreloaded-ellipse1_c_o { 0% {opacity: 0} 16.666667% {opacity: 1} 72.222222% {opacity: 1} 90% {opacity: 0} 100% {opacity: 0}} #hotreloaded-path1 {animation-name: hotreloaded-path1__m, hotreloaded-path1_c_o;animation-duration: 1800ms;animation-delay:100ms;animation-fill-mode: forwards;animation-timing-function: linear;animation-direction: normal;animation-iteration-count: 1;}@keyframes hotreloaded-path1__m { 0% {d: path('M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242')} 16.666667% {d: path('M126.151214,288.396852L126.151214,288.396852L126.151214,288.396852')} 22.222222% {d: path('M126.151214,288.396852L196.625037,350.661591L196.625037,350.661591');animation-timing-function: cubic-bezier(0.42,0,0.58,1)} 33.333333% {d: path('M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242')} 100% {d: path('M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242')}}@keyframes hotreloaded-path1_c_o { 0% {opacity: 0} 16.666667% {opacity: 0} 22.222222% {opacity: 1} 72.222222% {opacity: 1} 90% {opacity: 0} 100% {opacity: 0}}]]></style><ellipse id=\"hotreloaded-ellipse1\" rx=\"212.808853\" ry=\"205.404598\" transform=\"matrix(0.982102 0 0 1.017504 251 238)\" opacity=\"0\" fill=\"rgb(120,120,120)\"/><path id=\"hotreloaded-path1\" d=\"M126.151214,288.396852L196.625037,350.661591L320.793323,178.518242\" transform=\"matrix(1 0 0 1 27.527732 -26.589916)\" opacity=\"0\" fill=\"none\" stroke=\"rgb(255,255,255)\" stroke-width=\"40\" stroke-linecap=\"round\"/></svg>";
     el.setAttribute('style', 'z-index: 1000000; width: 48px; height: 48px; position:fixed; top:5px; left: 5px');
     document.body.appendChild(el);
+    window[hotReloadActiveKey] = false;
     setTimeout(() => el.remove(), 2000);
   }
 
   function aspnetCoreHotReloadApplied() {
     if (window.Blazor) {
-      // If this page has any Blazor, don't refresh the browser.
-      notifyHotReloadApplied();
+      window[hotReloadActiveKey] = true;
+      // hotReloadApplied triggers an enhanced navigation to
+      // refresh pages that have been statically rendered with
+      // Blazor SSR.
+      if (window.Blazor?._internal?.hotReloadApplied)
+      {
+        Blazor._internal.hotReloadApplied();
+      }
+      else
+      {
+        notifyHotReloadApplied();
+      }
     } else {
       location.reload();
     }
@@ -274,6 +298,11 @@ setTimeout(async function () {
 
       webSocket.addEventListener('open', onOpen);
       webSocket.addEventListener('close', onClose);
+      if (window.Blazor?.removeEventListener && window.Blazor?.addEventListener)
+      {
+        webSocket.addEventListener('close', () => window.Blazor?.removeEventListener('enhancedload', notifyHotReloadApplied));
+        window.Blazor?.addEventListener('enhancedload', notifyHotReloadApplied);
+      }
     });
   }
 }, 500);

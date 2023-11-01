@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly string DocsLink = "https://aka.ms/dotnet-restore";
 
-        public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new CliArgument<IEnumerable<string>>(CommonLocalizableStrings.SolutionOrProjectArgumentName)
+        public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CommonLocalizableStrings.SolutionOrProjectArgumentName)
         {
             Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
             Arity = ArgumentArity.ZeroOrMore
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli
         }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
         .AllowSingleArgPerToken();
 
-        private static IEnumerable<CliOption> FullRestoreOptions() => 
+        private static IEnumerable<CliOption> FullRestoreOptions() =>
             ImplicitRestoreOptions(true, true, true, true).Concat(
                 new CliOption[] {
                     CommonOptions.VerbosityOption,
@@ -80,9 +80,9 @@ namespace Microsoft.DotNet.Cli
                 command.Options.Add(option);
             }
         }
-        private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-"));
-        private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-") + 1, rid.Length - rid.LastIndexOf("-") - 1);
-        public static string RestoreRuntimeArgFunc(IEnumerable<string> rids) 
+        private static string GetOsFromRid(string rid) => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
+        private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
+        public static string RestoreRuntimeArgFunc(IEnumerable<string> rids)
         {
             List<string> convertedRids = new();
             foreach (string rid in rids)
@@ -147,9 +147,15 @@ namespace Microsoft.DotNet.Cli
 
             yield return new ForwardedOption<bool>("--no-cache")
             {
-                Description = showHelp ? LocalizableStrings.CmdNoCacheOptionDescription : string.Empty,
-                Hidden = !showHelp
+                Description = string.Empty,
+                Hidden = true
             }.ForwardAs("-property:RestoreNoCache=true");
+
+            yield return new ForwardedOption<bool>("--no-http-cache")
+            {
+                Description = showHelp ? LocalizableStrings.CmdNoHttpCacheOptionDescription : string.Empty,
+                Hidden = !showHelp
+            }.ForwardAs("-property:RestoreNoHttpCache=true");
 
             yield return new ForwardedOption<bool>("--ignore-failed-sources")
             {
