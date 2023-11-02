@@ -118,39 +118,39 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CommandDescription" xml:space="preserve">
-    <value>Searches a given source using the query string provided. If no sources are specified, all sources defined in NuGet.config are used.</value>
+    <value>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</value>
   </data>
   <data name="ExactMatchDescription" xml:space="preserve">
-    <value>Return exact matches only as a search result.</value>
+    <value>Require that the search term exactly match the name of the package. Ignores --take and --skip options.</value>
   </data>
   <data name="InteractiveDescription" xml:space="preserve">
-    <value>Allows the command to stop and wait for user input or action (for example to complete authentication).</value>
+    <value>Stop and wait for user input or action (for example to complete authentication).</value>
   </data>
   <data name="PrereleaseDescription" xml:space="preserve">
-    <value>Allow prelease packages to be shown.</value>
+    <value>Include prerelease packages.</value>
   </data>
   <data name="SearchTermArgumentName" xml:space="preserve">
     <value>SearchTerm</value>
   </data>
   <data name="SearchTermDescription" xml:space="preserve">
-    <value>Specifies the search term to filter results. Use this argument to search for packages matching the provided query. Example: dotnet package search json.</value>
+    <value>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: dotnet package search some.package. See also --exact-match.</value>
   </data>
   <data name="SkipArgumentName" xml:space="preserve">
     <value>Skip</value>
   </data>
   <data name="SkipDescription" xml:space="preserve">
-    <value>The number of results to skip, for pagination. The default is 0.</value>
+    <value>Number of results to skip, to allow pagination. Default 0.</value>
   </data>
   <data name="SourceArgumentName" xml:space="preserve">
     <value>Source</value>
   </data>
   <data name="SourceDescription" xml:space="preserve">
-    <value>The package source to search. You can pass multiple --source options to search multiple package sources.</value>
+    <value>The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</value>
   </data>
   <data name="TakeArgumentName" xml:space="preserve">
     <value>Take</value>
   </data>
   <data name="TakeDescription" xml:space="preserve">
-    <value>The number of results to return. The default value is 20.</value>
+    <value>Number of results to return. Default 20.</value>
   </data>
 </root>
