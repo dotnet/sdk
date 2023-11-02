@@ -37,5 +37,10 @@
     <UsagePattern IdentityGlob="Microsoft.NET.HostModel/*8.0.0*" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyModel/*8.0.0*" />
     <UsagePattern IdentityGlob="Microsoft.Bcl.AsyncInterfaces/*8.0.0*" />
+
+    <!-- Needs NetToolCurrent to be net9.0 for source build from arcade.
+         See https://github.com/dotnet/sdk/pull/36437#issuecomment-1787709627 -->
+    <UsagePattern IdentityGlob="Microsoft.AspNetCore.App.Ref/*8.0.0*" />
+    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Ref/*8.0.0*" />
   </IgnorePatterns>
 </UsageData>
