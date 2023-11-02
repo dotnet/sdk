@@ -388,10 +388,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var determineAdditionalStringFormattingMethodsAutomatically = context.Options.GetBoolOptionValue(EditorConfigOptionNames.TryDetermineAdditionalStringFormattingMethodsAutomatically,
                         ArgumentCountRule, context.Operation.Syntax.SyntaxTree, context.Compilation, defaultValue: false);
                 if (determineAdditionalStringFormattingMethodsAutomatically &&
-                    TryGetFormatInfoByParameterName(method, out info) &&
-                    info.ExpectedStringFormatArgumentCount == -1)
+                    TryGetFormatInfoByParameterName(method, out info))
                 {
-                    return info;
+                    if (info.ExpectedStringFormatArgumentCount == -1)
+                    {
+                        return info;
+                    }
+                    else
+                    {
+                        // TryGetFormatInfoByParameterName always adds info to _map
+                        // We only support heuristically found format method that use 'params'.
+                        _map.TryRemove(method, out _);
+                    }
                 }
 
                 _map.TryAdd(method, null);

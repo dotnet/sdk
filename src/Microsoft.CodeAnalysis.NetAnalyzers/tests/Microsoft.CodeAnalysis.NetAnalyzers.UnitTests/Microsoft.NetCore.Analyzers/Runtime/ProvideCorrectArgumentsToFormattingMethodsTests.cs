@@ -469,6 +469,69 @@ End Class"
             await basicTest.RunAsync();
         }
 
+        [Fact]
+        [WorkItem(7023, "https://github.com/dotnet/roslyn-analyzers/issues/7023")]
+
+        public async Task EditorConfigConfiguration_HeuristicAdditionalStringFormattingMethodsShouldNotConsiderIFormattableToString()
+        {
+            string editorConfigText =
+                "dotnet_code_quality.try_determine_additional_string_formatting_methods_automatically = true";
+
+            var csharpTest = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+class Test
+{
+    string Formatted(double value1, double value2)
+    {
+        return value1 >= value2 ?
+            value1.ToString(""F1"", System.Globalization.CultureInfo.InvariantCulture) :
+            value2.ToString(""F1"", System.Globalization.CultureInfo.InvariantCulture);
+    }
+}"
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
+                }
+            };
+
+            await csharpTest.RunAsync();
+
+            var basicTest = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Class Test
+    Private Function M1(ByVal value1 as Double, ByVal value2 as Double) As String
+        If value1 > value2
+            Return value1.ToString(""F1"", System.Globalization.CultureInfo.InvariantCulture)
+        Else
+            Return value2.ToString(""F1"", System.Globalization.CultureInfo.InvariantCulture)
+        End If
+    End Function
+End Class"
+},
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+
+[*]
+{editorConfigText}
+") }
+                }
+            };
+
+            await basicTest.RunAsync();
+        }
+
         [Theory]
         [WorkItem(2799, "https://github.com/dotnet/roslyn-analyzers/issues/2799")]
         // No configuration - validate no diagnostics in default configuration
