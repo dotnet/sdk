@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-#if NETCOREAPP
+#if NET
 using System.Runtime.Loader;
 #endif
 
@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.ApiCompat
     internal sealed class RoslynResolver
     {
         private readonly string _roslynAssembliesPath;
-#if NETCOREAPP
+#if NET
         private readonly AssemblyLoadContext? _currentContext;
 #endif
 
@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.ApiCompat
         {
             _roslynAssembliesPath = roslynAssembliesPath;
 
-#if NETCOREAPP
+#if NET
             _currentContext = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
             if (_currentContext != null)
             {
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.ApiCompat
 
         public void Unregister()
         {
-#if NETCOREAPP
+#if NET
             if (_currentContext != null)
             {
                 _currentContext.Resolving -= Resolve;
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.ApiCompat
 #endif
         }
 
-#if NETCOREAPP
+#if NET
         private Assembly? Resolve(AssemblyLoadContext context, AssemblyName assemblyName)
         {
             return LoadRoslyn(assemblyName, path => context.LoadFromAssemblyPath(path));

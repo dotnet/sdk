@@ -10,10 +10,10 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     /// </summary>
     public class RuleContext : IRuleContext
     {
-        private readonly List<Action<IAssemblySymbol?, IAssemblySymbol?, MetadataInformation, MetadataInformation, bool, IList<CompatDifference>>> _onAssemblySymbolActions = new();
-        private readonly List<Action<ITypeSymbol?, ITypeSymbol?, MetadataInformation, MetadataInformation, IList<CompatDifference>>> _onTypeSymbolActions = new();
-        private readonly List<Action<ISymbol?, ISymbol?, MetadataInformation, MetadataInformation, IList<CompatDifference>>> _onMemberSymbolActions = new();
-        private readonly List<Action<ISymbol?, ISymbol?, ITypeSymbol, ITypeSymbol, MetadataInformation, MetadataInformation, IList<CompatDifference>>> _onMemberSymbolWithContainingTypeActions = new();
+        private readonly List<Action<IAssemblySymbol?, IAssemblySymbol?, MetadataInformation, MetadataInformation, bool, IList<CompatDifference>>> _onAssemblySymbolActions = [];
+        private readonly List<Action<ITypeSymbol?, ITypeSymbol?, MetadataInformation, MetadataInformation, IList<CompatDifference>>> _onTypeSymbolActions = [];
+        private readonly List<Action<ISymbol?, ISymbol?, MetadataInformation, MetadataInformation, IList<CompatDifference>>> _onMemberSymbolActions = [];
+        private readonly List<Action<ISymbol?, ISymbol?, ITypeSymbol, ITypeSymbol, MetadataInformation, MetadataInformation, IList<CompatDifference>>> _onMemberSymbolWithContainingTypeActions = [];
 
         /// <inheritdoc />
         public void RegisterOnAssemblySymbolAction(Action<IAssemblySymbol?, IAssemblySymbol?, MetadataInformation, MetadataInformation, bool, IList<CompatDifference>> action)

@@ -8,14 +8,9 @@ namespace Microsoft.DotNet.GenAPI
 {
     internal static class IMethodSymbolExtensions
     {
-        /// <summary>
-        /// Compare the equality of two method signatures for the purpose of emitting a "new"
-        /// keyword on a method's return type. This is *not* meant to be complete implementation,
-        /// but rather a heuristic to check that one method may hide another.
-        /// </summary>
-        /// <param name="method"></param>
-        /// <param name="otherMethod"></param>
-        /// <returns>true if the signatures are determined to be equal</returns>
+        // Compare the equality of two method signatures for the purpose of emitting a "new"
+        // keyword on a method's return type. This is *not* meant to be a complete implementation,
+        // but rather a heuristic to check that one method may hide another.
         public static bool SignatureEquals(this IMethodSymbol? method, IMethodSymbol? otherMethod)
         {
             if (method is null || otherMethod is null)
@@ -57,12 +52,7 @@ namespace Microsoft.DotNet.GenAPI
             return true;
         }
 
-        /// <summary>
-        /// Examines the a method to determine if it could be an implicit default constructor that can be removed from source and impliicitly provided by the compiler.
-        /// </summary>
-        /// <param name="method">Method to examine.</param>
-        /// <param name="symbolFilter">Symbol filter to apply in order to determine if other constructors are included from the containing type or its base type.</param>
-        /// <returns>True if the method could be an implicit default constructor.</returns>
+        // Examines the a method to determine if it could be an implicit default constructor that can be removed from source and implicitly provided by the compiler.
         public static bool IsImplicitDefaultConstructor(this IMethodSymbol method, ISymbolFilter symbolFilter)
         {
             // ensure this is a parameterless constructor

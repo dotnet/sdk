@@ -9,24 +9,16 @@ namespace Microsoft.DotNet.ApiCompat.Task
     /// <summary>
     /// Class that can log Suppressions in an MSBuild task, by implementing MSBuildLog and ISuppressibleLog.
     /// </summary>
-    internal sealed class SuppressibleMSBuildLog : MSBuildLog, ISuppressibleLog
+    internal sealed class SuppressibleMSBuildLog(NET.Build.Tasks.Logger log,
+        ISuppressionEngine suppressionEngine) : MSBuildLog(log), ISuppressibleLog
     {
-        private readonly ISuppressionEngine _suppressionEngine;
-
         /// <inheritdoc />
         public bool HasLoggedErrorSuppressions { get; private set; }
-
-        public SuppressibleMSBuildLog(NET.Build.Tasks.Logger log,
-            ISuppressionEngine suppressionEngine)
-            : base(log)
-        {
-            _suppressionEngine = suppressionEngine;
-        }
 
         /// <inheritdoc />
         public bool LogError(Suppression suppression, string code, string message)
         {
-            if (_suppressionEngine.IsErrorSuppressed(suppression))
+            if (suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
             HasLoggedErrorSuppressions = true;
@@ -38,7 +30,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
         /// <inheritdoc />
         public bool LogWarning(Suppression suppression, string code, string message)
         {
-            if (_suppressionEngine.IsErrorSuppressed(suppression))
+            if (suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
             LogWarning(code, message);

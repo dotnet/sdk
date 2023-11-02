@@ -1564,7 +1564,10 @@ namespace Microsoft.NET.Build.Tasks
                                 }
                                 else
                                 {
-                                    _task.Log.LogMessage(Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
+                                    // We emit low-priority messages here because some clients may interpret normal or higher messages
+                                    // as warnings when they have codes, locations, etc.
+                                    // Roslyn does similar for IDE-only analysis messages.
+                                    _task.Log.LogMessage(MessageImportance.Low, Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
                                 }
                             }
                             locale = normalizedLocale;
@@ -1578,7 +1581,10 @@ namespace Microsoft.NET.Build.Tasks
                             }
                             else
                             {
-                                _task.Log.LogMessage(Strings.PackageContainsUnknownLocale, package.Name, package.Version.ToNormalizedString(), cnf.InvalidCultureName);
+                                // We emit low-priority messages here because some clients may interpret normal or higher messages
+                                // as warnings when they have codes, locations, etc.
+                                // Roslyn does similar for IDE-only analysis messages.
+                                _task.Log.LogMessage(MessageImportance.Low, Strings.PackageContainsUnknownLocale, package.Name, package.Version.ToNormalizedString(), cnf.InvalidCultureName);
                             }
 
                             // We could potentially strip this unknown locale at this point, but we do not.

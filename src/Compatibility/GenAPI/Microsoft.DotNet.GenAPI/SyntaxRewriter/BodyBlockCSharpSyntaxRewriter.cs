@@ -12,15 +12,8 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
     /// modify visited constructor, method declarations SyntaxNodes in depth-first order.
     /// Rewrites body with default implementation details.
     /// </summary>
-    public class BodyBlockCSharpSyntaxRewriter : CSharpSyntaxRewriter
+    public class BodyBlockCSharpSyntaxRewriter(string? _exceptionMessage) : CSharpSyntaxRewriter
     {
-        private readonly string? _exceptionMessage;
-
-        public BodyBlockCSharpSyntaxRewriter(string? exceptionMessage)
-        {
-            _exceptionMessage = exceptionMessage;
-        }
-
         /// <inheritdoc />
         public override SyntaxNode? VisitConstructorDeclaration(ConstructorDeclarationSyntax node)
         {
@@ -143,7 +136,7 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
                 GetMethodBodyFromText($"throw new PlatformNotSupportedException(\"{_exceptionMessage}\");") :
                 GetMethodBodyFromText("throw null;");
 
-        private SyntaxNode? ProcessPropertyDeclarationSyntax(AccessorDeclarationSyntax node)
+        private AccessorDeclarationSyntax? ProcessPropertyDeclarationSyntax(AccessorDeclarationSyntax node)
         {
             if (node.Kind() == SyntaxKind.GetAccessorDeclaration)
             {

@@ -36,11 +36,6 @@ namespace Microsoft.DotNet.PackageValidation
         public string PackagePath { get; }
 
         /// <summary>
-        /// List of package dependencies per framework.
-        /// </summary>
-        public Dictionary<NuGetFramework, IEnumerable<PackageDependency>> PackageDependencies { get; }
-
-        /// <summary>
         /// List of assets in the package.
         /// </summary>
         public IEnumerable<ContentItem> PackageAssets { get; }
@@ -78,7 +73,7 @@ namespace Microsoft.DotNet.PackageValidation
         /// <summary>
         /// List of assembly references grouped by target framework.
         /// </summary>
-        public Dictionary<NuGetFramework, IEnumerable<string>>? AssemblyReferences { get; }
+        public IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? AssemblyReferences { get; }
 
         /// <summary>
         /// List of the frameworks in the package.
@@ -89,13 +84,11 @@ namespace Microsoft.DotNet.PackageValidation
             string packageId,
             string version,
             IEnumerable<string> packageAssets,
-            Dictionary<NuGetFramework, IEnumerable<PackageDependency>> packageDependencies,
-            Dictionary<NuGetFramework, IEnumerable<string>>? assemblyReferences = null)
+            IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? assemblyReferences = null)
         {
             PackagePath = packagePath;
             PackageId = packageId;
             Version = version;
-            PackageDependencies = packageDependencies;
 
             _conventions = new ManagedCodeConventions(s_runtimeGraph);
             _contentItemCollection = new ContentItemCollection();
@@ -127,7 +120,7 @@ namespace Microsoft.DotNet.PackageValidation
         /// </summary>
         /// <param name="packagePath">The path to the package path.</param>
         /// <param name="packageAssemblyReferences">Optional assembly references with target framework information.</param>
-        public static Package Create(string? packagePath, Dictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences = null)
+        public static Package Create(string? packagePath, IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences = null)
         {
             if (string.IsNullOrEmpty(packagePath))
             {
@@ -145,13 +138,7 @@ namespace Microsoft.DotNet.PackageValidation
             string version = nuspecReader.GetVersion().ToString();
             IEnumerable<string> packageAssets = packageReader.GetFiles().Where(t => t.EndsWith(".dll")).ToArray();
 
-            Dictionary<NuGetFramework, IEnumerable<PackageDependency>> packageDependencies = new();
-            foreach (PackageDependencyGroup item in nuspecReader.GetDependencyGroups())
-            {
-                packageDependencies.Add(item.TargetFramework, item.Packages);
-            }
-
-            return new Package(packagePath!, packageId, version, packageAssets, packageDependencies, packageAssemblyReferences);
+            return new Package(packagePath!, packageId, version, packageAssets, packageAssemblyReferences);
         }
 
         /// <summary>

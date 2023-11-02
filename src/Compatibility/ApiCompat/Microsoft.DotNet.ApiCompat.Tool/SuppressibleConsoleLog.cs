@@ -9,24 +9,16 @@ namespace Microsoft.DotNet.ApiCompat.Tool
     /// <summary>
     /// Class that can log Suppressions to the Console, by implementing ConsoleLog and ISuppressibleLog.
     /// </summary>
-    internal sealed class SuppressibleConsoleLog : ConsoleLog, ISuppressibleLog
+    internal sealed class SuppressibleConsoleLog(ISuppressionEngine suppressionEngine,
+        MessageImportance messageImportance) : ConsoleLog(messageImportance), ISuppressibleLog
     {
-        private readonly ISuppressionEngine _suppressionEngine;
-
         /// <inheritdoc />
         public bool HasLoggedErrorSuppressions { get; private set; }
-
-        public SuppressibleConsoleLog(ISuppressionEngine suppressionEngine,
-            MessageImportance messageImportance)
-            : base(messageImportance)
-        {
-            _suppressionEngine = suppressionEngine;
-        }
 
         /// <inheritdoc />
         public bool LogError(Suppression suppression, string code, string message)
         {
-            if (_suppressionEngine.IsErrorSuppressed(suppression))
+            if (suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
             HasLoggedErrorSuppressions = true;
@@ -38,7 +30,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
         /// <inheritdoc />
         public bool LogWarning(Suppression suppression, string code, string message)
         {
-            if (_suppressionEngine.IsErrorSuppressed(suppression))
+            if (suppressionEngine.IsErrorSuppressed(suppression))
                 return false;
 
             LogWarning(code, message);

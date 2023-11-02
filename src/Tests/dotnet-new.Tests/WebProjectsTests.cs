@@ -30,6 +30,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("mvc_cs-70", "mvc", "-f", "net7.0")]
         [InlineData("mvc_fs-70", "mvc", "-lang", "F#", "-f", "net7.0")]
         [InlineData("api_cs-70", "webapi", "-f", "net7.0")]
+        [InlineData("emptyweb_cs-80", "web", "-f", "net8.0")]
+        [InlineData("mvc_cs-80", "mvc", "-f", "net8.0")]
+        [InlineData("mvc_fs-80", "mvc", "-lang", "F#", "-f", "net8.0")]
+        [InlineData("api_cs-80", "webapi", "-f", "net8.0")]
         public void AllWebProjectsRestoreAndBuild(string testName, params string[] args)
         {
             string workingDir = Path.Combine(_fixture.BaseWorkingDirectory, testName);

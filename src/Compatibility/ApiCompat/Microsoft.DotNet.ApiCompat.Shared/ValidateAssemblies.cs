@@ -55,8 +55,8 @@ namespace Microsoft.DotNet.ApiCompat
 
                 for (int i = 0; i < leftAssemblies.Length; i++)
                 {
-                    IReadOnlyList<MetadataInformation> leftMetadataInformation = GetMetadataInformation(leftAssemblies[i], GetAssemblyReferences(leftAssembliesReferences, i), leftAssembliesStringTransformer);
-                    IReadOnlyList<MetadataInformation> rightMetadataInformation = GetMetadataInformation(rightAssemblies[i], GetAssemblyReferences(rightAssembliesReferences, i), rightAssembliesStringTransformer);
+                    List<MetadataInformation> leftMetadataInformation = GetMetadataInformation(leftAssemblies[i], GetAssemblyReferences(leftAssembliesReferences, i), leftAssembliesStringTransformer);
+                    List<MetadataInformation> rightMetadataInformation = GetMetadataInformation(rightAssemblies[i], GetAssemblyReferences(rightAssembliesReferences, i), rightAssembliesStringTransformer);
 
                     // Enqueue the work item
                     ApiCompatRunnerWorkItem workItem = new(leftMetadataInformation, apiCompatOptions, rightMetadataInformation);
@@ -117,11 +117,11 @@ namespace Microsoft.DotNet.ApiCompat
             return assemblyReferences[0];
         }
 
-        private static IReadOnlyList<MetadataInformation> GetMetadataInformation(string path,
+        private static List<MetadataInformation> GetMetadataInformation(string path,
             IEnumerable<string>? assemblyReferences,
             RegexStringTransformer? regexStringTransformer)
         {
-            List<MetadataInformation> metadataInformation = new();
+            List<MetadataInformation> metadataInformation = [];
             foreach (string assembly in GetFilesFromPath(path))
             {
                 metadataInformation.Add(new MetadataInformation(
@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.ApiCompat
 
             // If the path isn't a directory, see if it's a glob expression.
             string filename = Path.GetFileName(path);
-#if NETCOREAPP
+#if NET
             if (filename.Contains('*'))
 #else
             if (filename.Contains("*"))

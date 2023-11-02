@@ -27,13 +27,13 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
                 @"ref/netcoreapp3.1/TestPackage.dll",
                 @"ref/netstandard2.0/TestPackage.dll"
             };
-            Package baselinePackage = new(string.Empty, "TestPackage", "1.0.0", previousFilePaths, null, null);
+            Package baselinePackage = new(string.Empty, "TestPackage", "1.0.0", previousFilePaths, null);
 
             string[] currentFilePaths = new[]
             {
                 @"ref/netcoreapp3.1/TestPackage.dll"
             };
-            Package package = new(string.Empty, "TestPackage", "2.0.0", currentFilePaths, null, null);
+            Package package = new(string.Empty, "TestPackage", "2.0.0", currentFilePaths, null);
             (SuppressibleTestLog log, BaselinePackageValidator validator) = CreateLoggerAndValidator();
 
             validator.Validate(new PackageValidatorOption(package,
