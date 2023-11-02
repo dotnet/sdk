@@ -10,32 +10,23 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
     /// Suppression engine that contains a collection of <see cref="Suppression"/> items. It provides API to add a suppression, check if a passed-in suppression is already suppressed
     /// and serialize all suppressions down into a file.
     /// </summary>
-    public class SuppressionEngine : ISuppressionEngine
+    /// <param name="noWarn">A string that contains warning and error codes to ignore suppressions with the corresponding diagnostic id.</param>
+    /// <param name="baselineAllErrors">If true, baselines all errors.</param>
+    public class SuppressionEngine(string? noWarn = null, bool baselineAllErrors = false) : ISuppressionEngine
     {
         protected const string DiagnosticIdDocumentationComment = " https://learn.microsoft.com/en-us/dotnet/fundamentals/package-validation/diagnostic-ids ";
-        private readonly HashSet<Suppression> _baselineSuppressions = new();
-        private readonly HashSet<Suppression> _suppressions = new();
-        private readonly HashSet<string> _noWarn;
+        private readonly HashSet<Suppression> _baselineSuppressions = [];
+        private readonly HashSet<Suppression> _suppressions = [];
+        private readonly HashSet<string> _noWarn = string.IsNullOrEmpty(noWarn) ? [] : new HashSet<string>(noWarn!.Split(';'));
 
         /// <inheritdoc/>
-        public bool BaselineAllErrors { get; }
+        public bool BaselineAllErrors { get; } = baselineAllErrors;
 
         /// <inheritdoc/>
         public IReadOnlyCollection<Suppression> BaselineSuppressions => _baselineSuppressions;
 
         /// <inheritdoc/>
         public IReadOnlyCollection<Suppression> Suppressions => _suppressions;
-
-        /// <summary>
-        /// Creates a SuppressionEngine instance with the provided NoWarn string and a boolean that determines if errors should be baselined.
-        /// </summary>
-        /// <param name="noWarn">A string that contains warning and error codes to ignore suppressions with the corresponding diagnostic id.</param>
-        /// <param name="baselineAllErrors">If true, baselines all errors.</param>
-        public SuppressionEngine(string? noWarn = null, bool baselineAllErrors = false)
-        {
-            BaselineAllErrors = baselineAllErrors;
-            _noWarn = string.IsNullOrEmpty(noWarn) ? new HashSet<string>() : new HashSet<string>(noWarn!.Split(';'));
-        }
 
         /// <inheritdoc/>
         public void LoadSuppressions(params string[] suppressionFiles)
@@ -153,11 +144,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         /// <inheritdoc/>
         public IReadOnlyCollection<Suppression> GetUnnecessarySuppressions() => _baselineSuppressions.Except(_suppressions).ToArray();
 
+        /// <inheritdoc/>
         protected virtual void AfterWritingSuppressionsCallback(Stream stream) { /* Do nothing. Used for tests. */ }
 
         // FileAccess.Read and FileShare.Read are specified to allow multiple processes to concurrently read from the suppression file.
+        /// <inheritdoc/>
         protected virtual Stream GetReadableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Open, FileAccess.Read, FileShare.Read);
 
+        /// <inheritdoc/>
         protected virtual Stream GetWritableStream(string suppressionFile) => new FileStream(suppressionFile, FileMode.Create);
 
         private static XmlSerializer CreateXmlSerializer() => new(typeof(Suppression[]), new XmlRootAttribute("Suppressions"));

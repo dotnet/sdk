@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.GenAPI
             project = project.AddMetadataReferences(_metadataReferences);
 
             IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_symbolFilter.Include);
-            List<SyntaxNode> namespaceSyntaxNodes = new();
+            List<SyntaxNode> namespaceSyntaxNodes = [];
 
             foreach (INamespaceSymbol namespaceSymbol in namespaceSymbols.Order())
             {

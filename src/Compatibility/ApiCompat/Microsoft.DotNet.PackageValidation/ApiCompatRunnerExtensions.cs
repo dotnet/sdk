@@ -10,10 +10,8 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.PackageValidation
 {
-    /// <summary>
-    /// <see cref="ApiCompatRunner"/> extension methods that are specific to package validation
-    /// and rely on NuGet API.
-    /// </summary>
+    // ApiCompatRunner extension methods that are specific to package validation
+    // and rely on NuGet API.
     internal static class ApiCompatRunnerExtensions
     {
         public static void QueueApiCompatFromContentItem(this IApiCompatRunner apiCompatRunner,
@@ -28,7 +26,7 @@ namespace Microsoft.DotNet.PackageValidation
             Debug.Assert(rightContentItems.Count > 0);
 
             // Don't enqueue duplicate items (if no right package is supplied and items match)
-            if (rightPackage is null && ContentItemCollectionEquals(leftContentItems, rightContentItems))
+            if (rightPackage is null && leftContentItems.SequenceEqual(rightContentItems, ContentItemEqualityComparer.Instance))
             {
                 return;
             }
@@ -94,25 +92,6 @@ namespace Microsoft.DotNet.PackageValidation
             }
 
             return new MetadataInformation(Path.GetFileName(item.Path), item.Path, package.PackagePath, assemblyReferences, displayString);
-        }
-
-        private static bool ContentItemCollectionEquals(IReadOnlyList<ContentItem> leftContentItems,
-            IReadOnlyList<ContentItem> rightContentItems)
-        {
-            if (leftContentItems.Count != rightContentItems.Count)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < leftContentItems.Count; i++)
-            {
-                if (leftContentItems[i].Path != rightContentItems[i].Path)
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
     }
 }

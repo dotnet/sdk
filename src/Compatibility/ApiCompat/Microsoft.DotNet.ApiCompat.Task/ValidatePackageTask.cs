@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         protected override void ExecuteCore()
         {
-            Func<ISuppressionEngine, SuppressibleMSBuildLog> logFactory = (suppressionEngine) => new(Log, suppressionEngine);
+            SuppressibleMSBuildLog logFactory(ISuppressionEngine suppressionEngine) => new(Log, suppressionEngine);
             ValidatePackage.Run(logFactory,
                 GenerateSuppressionFile,
                 PreserveUnnecessarySuppressions,
