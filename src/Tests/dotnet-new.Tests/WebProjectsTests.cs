@@ -133,6 +133,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates60Path, BaseWorkingDirectory);
             InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates70Path, BaseWorkingDirectory);
+            InstallPackage(TemplatePackagesPaths.MicrosoftDotNetWebProjectTemplates80Path, BaseWorkingDirectory);
         }
 
         internal string BaseWorkingDirectory { get; private set; }
