@@ -37,9 +37,5 @@
     <UsagePattern IdentityGlob="Microsoft.NET.HostModel/*8.0.0*" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.DependencyModel/*8.0.0*" />
     <UsagePattern IdentityGlob="Microsoft.Bcl.AsyncInterfaces/*8.0.0*" />
-
-    <!-- in trying to unblock main, we have an older 8.0 ref pack for the moment -->
-    <UsagePattern IdentityGlob="Microsoft.AspNetCore.App.Ref/*8.0.0*" />
-    <UsagePattern IdentityGlob="Microsoft.NETCore.App.Ref/*8.0.0*" />
   </IgnorePatterns>
 </UsageData>
