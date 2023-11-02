@@ -135,9 +135,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         try
                         {
-                            var workloadIds = GetUpdatableWorkloads();
-                            recorder.HistoryRecord.WorkloadArguments = workloadIds.Select(id => id.ToString()).ToList();
-                            UpdateWorkloads(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption), rollbackFileContents, workloadIds: workloadIds);
+                            UpdateWorkloads(recorder, _includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption), rollbackFileContents);
                         }
                         catch (Exception e)
                         {
@@ -155,20 +153,23 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             return _workloadInstaller.ExitCode;
         }
 
-        public void UpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> rollbackFileContents = null, IEnumerable<WorkloadId> workloadIds = null)
+        public void UpdateWorkloads(WorkloadHistoryRecorder recorder = null, bool includePreviews = false, DirectoryPath? offlineCache = null, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> rollbackFileContents = null)
         {
             Reporter.WriteLine();
 
-            workloadIds ??= GetUpdatableWorkloads();
+            var workloadIds = GetUpdatableWorkloads();
+            if (recorder is not null)
+            {
+                recorder.HistoryRecord.WorkloadArguments = workloadIds.Select(id => id.ToString()).ToList();
+            }
+
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
 
-            var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+            var useRollbackOrHistory = !string.IsNullOrWhiteSpace(_fromRollbackDefinition) || !string.IsNullOrWhiteSpace(_fromHistorySpecified);
 
-            var manifestsToUpdate = useRollback ?
-                _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+            var manifestsToUpdate = CalculateManifestUpdates(recorder);
 
-            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, offlineCache);
+            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollbackOrHistory, offlineCache);
 
             WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
@@ -179,14 +180,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
         }
 
-        private IEnumerable<ManifestVersionUpdate> CalculateManifestUpdates(IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> rollbackFileContents)
+        private IEnumerable<ManifestVersionUpdate> CalculateManifestUpdates(WorkloadHistoryRecorder recorder)
         {
-            bool fromHistory = !string.IsNullOrWhiteSpace(_fromHistorySpecified);
-            if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) && !fromHistory)
-            {
-                return _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate);
-            }
-            else if (fromHistory)
+            if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
             {
                 WorkloadHistoryState state = _WorkloadHistoryRecord.StateAfterCommand;
 
@@ -209,16 +205,20 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                 return versionUpdates;
             }
+            else if (!string.IsNullOrWhiteSpace(_fromRollbackDefinition))
+            {
+                return _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, recorder);
+            }
             else
             {
-                return _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, rollbackFileContents);
+                return _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
         }
 
         private void UpdateWorkloadsWithInstallRecord(
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
-            bool useRollback,
+            bool shouldUpdateInstallState,
             DirectoryPath? offlineCache = null)
         {
 
@@ -253,10 +253,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     if (string.IsNullOrWhiteSpace(_fromHistorySpecified) || !_historyManifestOnlyOption)
                     {
                         var workloads = GetUpdatableWorkloads();
+                        _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
+                    }
 
-                    _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
-
-                    UpdateInstallState(useRollback || !string.IsNullOrWhiteSpace(_fromHistorySpecified), manifestsToUpdate);
+                    UpdateInstallState(shouldUpdateInstallState, manifestsToUpdate);
                 },
                 rollback: () =>
                 {

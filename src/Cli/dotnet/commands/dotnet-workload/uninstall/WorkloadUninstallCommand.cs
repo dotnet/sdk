@@ -21,7 +21,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
         private readonly ReleaseVersion _sdkVersion;
         private readonly string _userProfileDir;
         
-
         public WorkloadUninstallCommand(
             ParseResult parseResult,
             IReporter reporter = null,
@@ -33,6 +32,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
                 .Select(workloadId => new WorkloadId(workloadId)).ToList().AsReadOnly();
 
             _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
+            _workloadResolver = _workloadResolverFactory.Create().WorkloadResolver;
 
             if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
             {
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
                                 .DeleteWorkloadInstallationRecord(workloadId, featureBand);
                         }
 
-                        _workloadInstaller.GarbageCollectInstalledWorkloadPacks();
+                        WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
                         Reporter.WriteLine();
                         Reporter.WriteLine(string.Format(LocalizableStrings.UninstallSucceeded, string.Join(" ", _workloadIds)));

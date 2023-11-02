@@ -193,10 +193,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> manifestRollbackContents = null)
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, WorkloadHistoryRecorder recorder)
         {
             var currentManifestIds = GetInstalledManifestIds();
-            manifestRollbackContents ??= ParseRollbackDefinitionFile(rollbackDefinitionFilePath, _sdkFeatureBand);
+            var manifestRollbackContents = ParseRollbackDefinitionFile(rollbackDefinitionFilePath, _sdkFeatureBand);
+            if (recorder is not null)
+            {
+                recorder.HistoryRecord.RollbackFileContents = manifestRollbackContents.ToDictionary(w => w.id.ToString(), w => $"{w.version}/{w.featureBand}");
+            }
 
             var unrecognizedManifestIds = manifestRollbackContents.Where(rollbackManifest => !currentManifestIds.Contains(rollbackManifest.Item1));
             if (unrecognizedManifestIds.Any())
@@ -209,7 +213,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 .Select(manifest =>
                 {
                     var installedManifestInfo = GetInstalledManifestVersion(manifest.id);
-                    return new ManifestVersionUpdate(manifest.id, installedManifestInfo.manifestVersion, installedManifestInfo.sdkFeatureBand.ToString(),
+                    return new ManifestVersionUpdate(manifest.id, installedManifestInfo.Version, installedManifestInfo.Band.ToString(),
                         manifest.version, manifest.featureBand.ToString());
                 });
 
@@ -452,7 +456,5 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private static string GetAdvertisingWorkloadsFilePath(string userProfileDir, SdkFeatureBand featureBand) => Path.Combine(userProfileDir, $".workloadAdvertisingUpdates{featureBand}");
 
         private string GetAdvertisingManifestPath(SdkFeatureBand featureBand, ManifestId manifestId) => Path.Combine(_userProfileDir, "sdk-advertising", featureBand.ToString(), manifestId.ToString());
-
-        private record ManifestVersionWithBand(ManifestVersion Version, SdkFeatureBand Band);
     }
 }

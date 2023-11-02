@@ -18,36 +18,19 @@ namespace Microsoft.DotNet.Workloads.Workload.History
         private readonly IInstaller _workloadInstaller;
         private IWorkloadResolver _workloadResolver;
         private readonly ReleaseVersion _sdkVersion;
-        private readonly string _dotnetPath;
 
         public WorkloadHistoryCommand(
             ParseResult parseResult,
             IReporter reporter = null,
-            IWorkloadResolver workloadResolver = null,
             IInstaller workloadInstaller = null,
             INuGetPackageDownloader nugetPackageDownloader = null,
             string dotnetDir = null,
-            string tempDirPath = null,
-            string version = null,
-            string userProfileDir = null
+            string tempDirPath = null
         ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
         {
-            var creationParameters = new WorkloadResolverFactory.CreationParameters()
-            {
-                DotnetPath = dotnetDir,
-                UserProfileDir = userProfileDir,
-                GlobalJsonStartDir = null,
-                SdkVersionFromOption = parseResult.SafelyGetValueForOption(InstallingWorkloadCommandParser.VersionOption),
-                VersionForTesting = version,
-                CheckIfFeatureBandManifestExists = !(parseResult.SafelyGetValueForOption(InstallingWorkloadCommandParser.PrintDownloadLinkOnlyOption)),
-                WorkloadResolverForTesting = workloadResolver,
-                UseInstalledSdkVersionForResolver = true
-            };
+            var creationResult = new WorkloadResolverFactory().Create();
 
-            var creationResult = WorkloadResolverFactory.Create(creationParameters);
-
-            _dotnetPath = creationResult.DotnetPath;
-            userProfileDir = creationResult.UserProfileDir;
+            var userProfileDir = creationResult.UserProfileDir;
             _sdkVersion = creationResult.SdkVersion;
             _workloadResolver = creationResult.WorkloadResolver;
             var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);

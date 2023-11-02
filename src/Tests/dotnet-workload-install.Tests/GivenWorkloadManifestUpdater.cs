@@ -442,7 +442,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installationRepo = new MockInstallationRecordRepository();
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, new MockPackWorkloadInstaller());
 
-            var manifestUpdates = manifestUpdater.CalculateManifestRollbacks(rollbackDefPath);
+            var manifestUpdates = manifestUpdater.CalculateManifestRollbacks(rollbackDefPath, null);
             manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates);
         }
 
@@ -485,7 +485,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installationRepo = new MockInstallationRecordRepository();
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, new MockPackWorkloadInstaller());
 
-            manifestUpdater.CalculateManifestRollbacks(rollbackDefPath);
+            manifestUpdater.CalculateManifestRollbacks(rollbackDefPath, null);
             string.Join(" ", _reporter.Lines).Should().Contain(rollbackDefPath);
         }
 
@@ -527,7 +527,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installationRepo = new MockInstallationRecordRepository();
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, new MockPackWorkloadInstaller());
 
-            manifestUpdater.CalculateManifestRollbacks(rollbackDefPath);
+            manifestUpdater.CalculateManifestRollbacks(rollbackDefPath, null);
             string.Join(" ", _reporter.Lines).Should().Contain(rollbackDefPath);
         }
 

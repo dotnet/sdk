@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates();
 
-        IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath);
+        IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath, WorkloadHistoryRecorder recorder);
 
         Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand);
 
@@ -22,8 +22,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         void DeleteUpdatableWorkloadsFile();
 
-        (ManifestVersion manifestVersion, SdkFeatureBand sdkFeatureBand) GetInstalledManifestVersion(ManifestId manifestId);
+        ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId);
     }
 
     internal record ManifestUpdateWithWorkloads(ManifestVersionUpdate ManifestUpdate, WorkloadCollection Workloads);
+
+    internal record ManifestVersionWithBand(ManifestVersion Version, SdkFeatureBand Band);
 }
