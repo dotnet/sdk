@@ -121,7 +121,7 @@
     <value>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</value>
   </data>
   <data name="ExactMatchDescription" xml:space="preserve">
-    <value>Require that the search term exactly match the name of the package. Ignores --take and --skip options.</value>
+    <value>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</value>
   </data>
   <data name="InteractiveDescription" xml:space="preserve">
     <value>Stop and wait for user input or action (for example to complete authentication).</value>
@@ -133,7 +133,7 @@
     <value>SearchTerm</value>
   </data>
   <data name="SearchTermDescription" xml:space="preserve">
-    <value>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: dotnet package search some.package. See also --exact-match.</value>
+    <value>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</value>
   </data>
   <data name="SkipArgumentName" xml:space="preserve">
     <value>Skip</value>
