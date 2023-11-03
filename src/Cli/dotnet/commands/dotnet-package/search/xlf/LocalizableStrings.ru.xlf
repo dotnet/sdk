@@ -3,23 +3,23 @@
   <file datatype="xml" source-language="en" target-language="ru" original="../LocalizableStrings.resx">
     <body>
       <trans-unit id="CommandDescription">
-        <source>Searches a given source using the query string provided. If no sources are specified, all sources defined in NuGet.config are used.</source>
-        <target state="new">Searches a given source using the query string provided. If no sources are specified, all sources defined in NuGet.config are used.</target>
+        <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
+        <target state="new">Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</target>
         <note />
       </trans-unit>
       <trans-unit id="ExactMatchDescription">
-        <source>Return exact matches only as a search result.</source>
-        <target state="new">Return exact matches only as a search result.</target>
+        <source>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</source>
+        <target state="new">Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</target>
         <note />
       </trans-unit>
       <trans-unit id="InteractiveDescription">
-        <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
-        <target state="new">Allows the command to stop and wait for user input or action (for example to complete authentication).</target>
+        <source>Stop and wait for user input or action (for example to complete authentication).</source>
+        <target state="new">Stop and wait for user input or action (for example to complete authentication).</target>
         <note />
       </trans-unit>
       <trans-unit id="PrereleaseDescription">
-        <source>Allow prelease packages to be shown.</source>
-        <target state="new">Allow prelease packages to be shown.</target>
+        <source>Include prerelease packages.</source>
+        <target state="new">Include prerelease packages.</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchTermArgumentName">
@@ -28,8 +28,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SearchTermDescription">
-        <source>Specifies the search term to filter results. Use this argument to search for packages matching the provided query. Example: dotnet package search json.</source>
-        <target state="new">Specifies the search term to filter results. Use this argument to search for packages matching the provided query. Example: dotnet package search json.</target>
+        <source>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</source>
+        <target state="new">Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipArgumentName">
@@ -38,8 +38,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SkipDescription">
-        <source>The number of results to skip, for pagination. The default is 0.</source>
-        <target state="new">The number of results to skip, for pagination. The default is 0.</target>
+        <source>Number of results to skip, to allow pagination. Default 0.</source>
+        <target state="new">Number of results to skip, to allow pagination. Default 0.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceArgumentName">
@@ -48,8 +48,8 @@
         <note />
       </trans-unit>
       <trans-unit id="SourceDescription">
-        <source>The package source to search. You can pass multiple --source options to search multiple package sources.</source>
-        <target state="new">The package source to search. You can pass multiple --source options to search multiple package sources.</target>
+        <source>The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</source>
+        <target state="new">The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</target>
         <note />
       </trans-unit>
       <trans-unit id="TakeArgumentName">
@@ -58,8 +58,8 @@
         <note />
       </trans-unit>
       <trans-unit id="TakeDescription">
-        <source>The number of results to return. The default value is 20.</source>
-        <target state="new">The number of results to return. The default value is 20.</target>
+        <source>Number of results to return. Default 20.</source>
+        <target state="new">Number of results to return. Default 20.</target>
         <note />
       </trans-unit>
     </body>
