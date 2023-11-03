@@ -450,10 +450,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 throw new NuGetPackageNotFoundException(
                     string.Format(
                         LocalizableStrings.IsNotFoundInNuGetFeeds,
-                        $"{packageIdentifier}::{versionRange}",
+                        $"{packageIdentifier} of version range {versionRange}",
                         string.Join(", ", packageSources.Select(source => source.Source))));
             }
-
         }
 
             private async Task<(PackageSource, IPackageSearchMetadata)> GetLatestVersionInternalAsync(
