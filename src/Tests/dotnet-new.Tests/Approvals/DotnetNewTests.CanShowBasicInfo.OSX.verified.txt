@@ -2,7 +2,7 @@
 
 Common templates are:
 Template Name         Short Name    Language    Tags               
---------------------  ------------  ----------  -------------------
+--------------------  ------------  ----------  ----------------------
 Blazor Web App        blazor        [C#]        Web/Blazor/WebAssembly
 Class Library         classlib      [C#],F#,VB  Common/Library     
 Console App           console       [C#],F#,VB  Common/Console     
