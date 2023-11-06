@@ -137,22 +137,13 @@ namespace Microsoft.DotNet.Cli
 
         private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult)
         {
-            if (symbolResult.Token() == default)
+            return symbolResult.Tokens switch
             {
-                return parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>();
-            }
-            else if (symbolResult.Token().Type.Equals(CliTokenType.Command))
-            {
-                return ((System.CommandLine.Parsing.CommandResult)symbolResult).Command.Name;
-            }
-            else if (symbolResult.Token().Type.Equals(CliTokenType.Argument))
-            {
-                return symbolResult.Token().Value;
-            }
-            else
-            {
-                return string.Empty;
-            }
+                [] => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>(),
+                [{ Type: CliTokenType.Command }, ..] => (symbolResult as System.CommandLine.Parsing.CommandResult).Command.Name,
+                [{ Type: CliTokenType.Argument, Value: var token }, ..] => token,
+                    _ => string.Empty
+            };
         }
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
@@ -207,8 +198,9 @@ namespace Microsoft.DotNet.Cli
         private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
         {
             var optionString = shorthand ? "-p" : "--property";
-            var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(CliTokenType.Option));
-            var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
+            var options =
+                parseResult.CommandResult.Children.OfType<OptionResult>();
+            var propertyOptions = options.Where(o => o.Option.Aliases.Contains(optionString));
             var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
         }
