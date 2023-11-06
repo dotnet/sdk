@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli
             var optionString = shorthand ? "-p" : "--property";
             var options =
                 parseResult.CommandResult.Children.OfType<OptionResult>();
-            var propertyOptions = options.Where(o => o.Option.Aliases.Contains(optionString));
+            var propertyOptions = options.Where(o => o.Option.Name.Equals(optionString, StringComparison.OrdinalIgnoreCase) || o.Option.Aliases.Contains(optionString, StringComparer.OrdinalIgnoreCase));
             var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
         }
