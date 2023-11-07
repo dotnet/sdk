@@ -459,7 +459,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         private string GenerateVersionRangeErrorDescription(string packageIdentifier, VersionRange versionRange)
         {
-            if(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion == versionRange.MaxVersion)
+            if (!string.IsNullOrEmpty(versionRange.OriginalString) && versionRange.OriginalString == "*")
+            {
+                return $"{packageIdentifier}";
+            }
+            else if(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion == versionRange.MaxVersion)
             {
                 return $"Version {versionRange.MinVersion} of package {packageIdentifier}";
             }
