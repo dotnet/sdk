@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Parser;
+using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -140,9 +141,9 @@ namespace Microsoft.DotNet.Cli
             return symbolResult.Tokens switch
             {
                 [] => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>(),
-                [{ Type: CliTokenType.Command }, ..] => (symbolResult as System.CommandLine.Parsing.CommandResult).Command.Name,
+                [{ Type: CliTokenType.Command }, ..] => (symbolResult as CommandResult)?.Command.Name,
                 [{ Type: CliTokenType.Argument, Value: var token }, ..] => token,
-                    _ => string.Empty
+                _ => string.Empty
             };
         }
 
@@ -198,9 +199,10 @@ namespace Microsoft.DotNet.Cli
         private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
         {
             var optionString = shorthand ? "-p" : "--property";
-            var options =
-                parseResult.CommandResult.Children.OfType<OptionResult>();
-            var propertyOptions = options.Where(o => o.Option.Name.Equals(optionString, StringComparison.OrdinalIgnoreCase) || o.Option.Aliases.Contains(optionString, StringComparer.OrdinalIgnoreCase));
+            var options = parseResult.CommandResult.Children.OfType<OptionResult>();
+            var propertyOptions = options.Where(o =>
+                o.Option.Name.Equals(optionString, StringComparison.OrdinalIgnoreCase) ||
+                o.Option.Aliases.Contains(optionString, StringComparer.OrdinalIgnoreCase));
             var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
         }
