@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private static bool IsBarePackageVersion (string packageVersion)
         {
             // Define a regular expression pattern to match the "a.b.c" format
-            string pattern = @"^\d+\.\d+\.\d+$";
+            string pattern = @"^\d+\.\d+\.\d+(-[\w\d]+(\.[\w\d]+)*)?(\+[\w\d]+(\.[\w\d]+)*)?$";
 
             // Use Regex.IsMatch to check if the input matches the pattern
             return Regex.IsMatch(packageVersion, pattern);
