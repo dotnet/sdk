@@ -85,7 +85,7 @@ jobs:
   - ${{ if ne(parameters.excludeSdkContentTests, 'true') }}:
     - download: ${{ parameters.installerBuildResourceId }}
       artifact: BlobArtifacts
-      patterns: '**/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(preview|rc|rtm)*)-linux-${{ parameters.architecture }}.tar.gz'
+      patterns: '**/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(preview|rc|rtm)*)-linux*-${{ parameters.architecture }}.tar.gz'
       displayName: Download MSFT sdk Tarball
 
   - ${{ if eq(parameters.usePreviousArtifacts, 'true') }}:
@@ -156,7 +156,12 @@ jobs:
 
       if [[ '${{ parameters.excludeSdkContentTests}}' != 'true' ]]; then
         dockerVolumeArgs+=" -v $(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/:/BlobArtifacts"
-        msftSdkTarballName=$(find "$(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/" -name "dotnet-sdk-*-linux-${{ parameters.architecture }}.tar.gz" -exec basename {} \;)
+        platform="linux"
+        docker run --rm $(_Container) /bin/sh -c "cat /etc/os-release | grep -q alpine"
+        if [[ $? == 0 ]]; then
+          platform="$platform-musl"
+        fi
+        msftSdkTarballName=$(find "$(PIPELINE.WORKSPACE)/${{ parameters.installerBuildResourceId }}/BlobArtifacts/" -name "dotnet-sdk-*-$platform-${{ parameters.architecture }}.tar.gz" -exec basename {} \;)
         dockerEnvArgs+=" -e SMOKE_TESTS_MSFT_SDK_TARBALL_PATH=/BlobArtifacts/$msftSdkTarballName"
       fi
 
