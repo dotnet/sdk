@@ -4,6 +4,7 @@
     <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
     <_SuppressSdkImports>true</_SuppressSdkImports>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+    <NetCurrent>net9.0</NetCurrent>
   </PropertyGroup>
 
   <Import Condition="'$(SkipArcadeSdkImport)' != 'true'" Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
