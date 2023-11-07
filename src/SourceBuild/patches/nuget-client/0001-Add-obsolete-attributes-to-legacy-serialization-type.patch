@@ -1,0 +1,219 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Tue, 7 Nov 2023 18:44:00 +0000
+Subject: [PATCH] Add obsolete attributes to legacy serialization types
+
+Backport: https://github.com/NuGet/NuGet.Client/pull/5496
+---
+ .../Exceptions/PackageSourceException.cs                       | 3 +++
+ src/NuGet.Core/NuGet.Commands/Common/CommandException.cs       | 3 +++
+ .../Exceptions/NuGetConfigurationException.cs                  | 3 +++
+ src/NuGet.Core/NuGet.Frameworks/FrameworkException.cs          | 3 +++
+ .../Licenses/NuGetLicenseExpressionParsingException.cs         | 3 +++
+ .../NuGet.Protocol/Exceptions/FatalProtocolException.cs        | 3 +++
+ .../NuGet.Protocol/Exceptions/InvalidCacheProtocolException.cs | 3 +++
+ .../NuGet.Protocol/Exceptions/NuGetProtocolException.cs        | 3 +++
+ .../NuGet.Protocol/Exceptions/RetriableProtocolException.cs    | 3 +++
+ src/NuGet.Core/NuGet.Protocol/Plugins/PluginException.cs       | 3 +++
+ src/NuGet.Core/NuGet.Protocol/Plugins/ProtocolException.cs     | 3 +++
+ .../Exceptions/NuGetResolverConstraintException.cs             | 3 +++
+ .../NuGet.Resolver/Exceptions/NuGetResolverException.cs        | 3 +++
+ .../NuGet.Resolver/Exceptions/NuGetResolverInputException.cs   | 3 +++
+ 14 files changed, 42 insertions(+)
+
+diff --git a/src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/Exceptions/PackageSourceException.cs b/src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/Exceptions/PackageSourceException.cs
+index ef589f85a..623d92259 100644
+--- a/src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/Exceptions/PackageSourceException.cs
++++ b/src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/Exceptions/PackageSourceException.cs
+@@ -14,6 +14,9 @@ public PackageSourceException(string message)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected PackageSourceException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Commands/Common/CommandException.cs b/src/NuGet.Core/NuGet.Commands/Common/CommandException.cs
+index 0b2ded3fc..8ffa132ac 100644
+--- a/src/NuGet.Core/NuGet.Commands/Common/CommandException.cs
++++ b/src/NuGet.Core/NuGet.Commands/Common/CommandException.cs
+@@ -29,6 +29,9 @@ public CommandException(string message, Exception exception)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected CommandException(SerializationInfo info, StreamingContext context)
+             : base(info, context)
+         {
+diff --git a/src/NuGet.Core/NuGet.Configuration/Exceptions/NuGetConfigurationException.cs b/src/NuGet.Core/NuGet.Configuration/Exceptions/NuGetConfigurationException.cs
+index 7e62c4562..7eef58607 100644
+--- a/src/NuGet.Core/NuGet.Configuration/Exceptions/NuGetConfigurationException.cs
++++ b/src/NuGet.Core/NuGet.Configuration/Exceptions/NuGetConfigurationException.cs
+@@ -22,6 +22,9 @@ public NuGetConfigurationException(string message, Exception innerException)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected NuGetConfigurationException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Frameworks/FrameworkException.cs b/src/NuGet.Core/NuGet.Frameworks/FrameworkException.cs
+index 9e538d481..99d6ebb5e 100644
+--- a/src/NuGet.Core/NuGet.Frameworks/FrameworkException.cs
++++ b/src/NuGet.Core/NuGet.Frameworks/FrameworkException.cs
+@@ -14,6 +14,9 @@ public FrameworkException(string message)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected FrameworkException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Packaging/Licenses/NuGetLicenseExpressionParsingException.cs b/src/NuGet.Core/NuGet.Packaging/Licenses/NuGetLicenseExpressionParsingException.cs
+index b48fe5bdd..1af5356e0 100644
+--- a/src/NuGet.Core/NuGet.Packaging/Licenses/NuGetLicenseExpressionParsingException.cs
++++ b/src/NuGet.Core/NuGet.Packaging/Licenses/NuGetLicenseExpressionParsingException.cs
+@@ -18,6 +18,9 @@ public NuGetLicenseExpressionParsingException(string message, Exception innerExc
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected NuGetLicenseExpressionParsingException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Protocol/Exceptions/FatalProtocolException.cs b/src/NuGet.Core/NuGet.Protocol/Exceptions/FatalProtocolException.cs
+index 68913b98d..fcb1e9dac 100644
+--- a/src/NuGet.Core/NuGet.Protocol/Exceptions/FatalProtocolException.cs
++++ b/src/NuGet.Core/NuGet.Protocol/Exceptions/FatalProtocolException.cs
+@@ -18,6 +18,9 @@ public FatalProtocolException(string message, Exception innerException) : base(m
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected FatalProtocolException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Protocol/Exceptions/InvalidCacheProtocolException.cs b/src/NuGet.Core/NuGet.Protocol/Exceptions/InvalidCacheProtocolException.cs
+index de810344a..ca9b08c77 100644
+--- a/src/NuGet.Core/NuGet.Protocol/Exceptions/InvalidCacheProtocolException.cs
++++ b/src/NuGet.Core/NuGet.Protocol/Exceptions/InvalidCacheProtocolException.cs
+@@ -23,6 +23,9 @@ public InvalidCacheProtocolException(string message, Exception innerException)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected InvalidCacheProtocolException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Protocol/Exceptions/NuGetProtocolException.cs b/src/NuGet.Core/NuGet.Protocol/Exceptions/NuGetProtocolException.cs
+index 8a1a81c9d..dc5566170 100644
+--- a/src/NuGet.Core/NuGet.Protocol/Exceptions/NuGetProtocolException.cs
++++ b/src/NuGet.Core/NuGet.Protocol/Exceptions/NuGetProtocolException.cs
+@@ -22,6 +22,9 @@ public NuGetProtocolException(string message, Exception innerException)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected NuGetProtocolException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Protocol/Exceptions/RetriableProtocolException.cs b/src/NuGet.Core/NuGet.Protocol/Exceptions/RetriableProtocolException.cs
+index 4a63a8f4c..46e0001b4 100644
+--- a/src/NuGet.Core/NuGet.Protocol/Exceptions/RetriableProtocolException.cs
++++ b/src/NuGet.Core/NuGet.Protocol/Exceptions/RetriableProtocolException.cs
+@@ -17,6 +17,9 @@ public RetriableProtocolException(string message, Exception innerException) : ba
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected RetriableProtocolException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Protocol/Plugins/PluginException.cs b/src/NuGet.Core/NuGet.Protocol/Plugins/PluginException.cs
+index da7df46fd..9976aa6c4 100644
+--- a/src/NuGet.Core/NuGet.Protocol/Plugins/PluginException.cs
++++ b/src/NuGet.Core/NuGet.Protocol/Plugins/PluginException.cs
+@@ -31,6 +31,9 @@ public PluginException(string message, Exception innerException)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         private PluginException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Protocol/Plugins/ProtocolException.cs b/src/NuGet.Core/NuGet.Protocol/Plugins/ProtocolException.cs
+index df18f9f81..9f1ee5b11 100644
+--- a/src/NuGet.Core/NuGet.Protocol/Plugins/ProtocolException.cs
++++ b/src/NuGet.Core/NuGet.Protocol/Plugins/ProtocolException.cs
+@@ -31,6 +31,9 @@ public ProtocolException(string message, Exception innerException)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         private ProtocolException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverConstraintException.cs b/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverConstraintException.cs
+index 6998e28c1..1f3c51adb 100644
+--- a/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverConstraintException.cs
++++ b/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverConstraintException.cs
+@@ -17,6 +17,9 @@ public NuGetResolverConstraintException(string message)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected NuGetResolverConstraintException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverException.cs b/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverException.cs
+index e2b426eb4..7edeaf690 100644
+--- a/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverException.cs
++++ b/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverException.cs
+@@ -14,6 +14,9 @@ public NuGetResolverException(string message)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected NuGetResolverException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }
+diff --git a/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverInputException.cs b/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverInputException.cs
+index e1542ec4f..f10f6a9f4 100644
+--- a/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverInputException.cs
++++ b/src/NuGet.Core/NuGet.Resolver/Exceptions/NuGetResolverInputException.cs
+@@ -17,6 +17,9 @@ public NuGetResolverInputException(string message)
+         {
+         }
+ 
++#if NET8_0_OR_GREATER
++        [Obsolete(DiagnosticId = "SYSLIB0051")] // https://github.com/dotnet/docs/issues/34893
++#endif
+         protected NuGetResolverInputException(SerializationInfo info, StreamingContext context) : base(info, context)
+         {
+         }

@@ -5,9 +5,6 @@
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
-    <!-- NU5129: https://github.com/dotnet/runtime/issues/89208 -->
-    <RepoNoWarns>NU5129</RepoNoWarns>
-
     <CleanCommand>$(ProjectDirectory)/clean$(ShellExtension)</CleanCommand>
 
     <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>

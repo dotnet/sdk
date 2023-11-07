@@ -26,38 +26,6 @@
     <MSBuild Projects="@(_DependentProject)" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
-  <Target Name="AddNoWarns"
-          BeforeTargets="Build"
-          Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') OR EXISTS('$(ProjectDirectory)src/Directory.Build.props') "
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(RepoCompletedSemaphorePath)AddNoWarns.complete" >
-
-    <!-- Don't warn on warnings that can be generated in source-build
-         but not necessarily in repo builds. 
-
-         NU1603 - See https://github.com/dotnet/source-build/issues/2766.
-
-         NU5104 - During preview builds, some packages have pre-release versions.
-                  Some repos with stable versions may need to uptake these packages 
-                  with pre-release versions because of PVP when building with 
-                  source-build.  -->
-    <PropertyGroup>
-      <OldText><![CDATA[</Project>]]></OldText>
-      <NewText>
-        <![CDATA[  <PropertyGroup>
-    <NoWarn>%24(NoWarn);NU5104;NU1603;$(RepoNoWarns)</NoWarn>
-  </PropertyGroup>
-</Project>]]>
-      </NewText>
-
-      <DirectoryBuildPropsFile Condition=" EXISTS('$(ProjectDirectory)Directory.Build.props') ">$(ProjectDirectory)Directory.Build.props</DirectoryBuildPropsFile>
-      <DirectoryBuildPropsFile Condition=" '$(DirectoryBuildPropsFile)' == '' AND EXISTS('$(ProjectDirectory)src/Directory.Build.props') ">$(ProjectDirectory)src/Directory.Build.props</DirectoryBuildPropsFile>
-    </PropertyGroup>
-    <ReplaceTextInFile InputFile="$(DirectoryBuildPropsFile)"
-      OldText="$(OldText)"
-      NewText="$(NewText)" />
-  </Target>
-
   <Target Name="UpdateNuGetConfig"
           BeforeTargets="Build"
           Condition="'$(NuGetConfigFile)' != '' OR '@(NuGetConfigFiles)' != ''"
