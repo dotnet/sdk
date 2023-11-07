@@ -102,7 +102,7 @@
     <PackageVersion Include="System.Text.Json" Version="$(MicrosoftNETCoreAppRefPackageVersion)" />
     <PackageVersion Include="System.Windows.Extensions" Version="$(MicrosoftNETCoreAppRefPackageVersion)" />
     <PackageVersion Include="System.Xml.XmlDocument" Version="$(SystemXmlXmlDocumentPackageVersion)" />
-    <PackageVersion Include="Valleysoft.DockerCredsProvider" Version="2.2.0" />
+    <PackageVersion Include="Valleysoft.DockerCredsProvider" Version="2.2.1" />
     <PackageVersion Include="xunit" Version="$(XUnitVersion)" />
     <PackageVersion Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
     <PackageVersion Include="xunit.console" Version="$(XUnitVersion)"/>
