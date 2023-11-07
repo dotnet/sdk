@@ -33,6 +33,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         void ReplaceWorkloadResolver(IWorkloadResolver workloadResolver);
 
         void Shutdown();
+
+        /// <summary>
+        /// Delete the install state file at the specified path.
+        /// </summary>
+        /// <param name="path">The full path of the default.json install state file.</param>
+        void DeleteInstallState(string path);
+
+        /// <summary>
+        /// Writes the specified JSON contents to the install state file.
+        /// </summary>
+        /// <param name="path">The full path of the default.json install state file.</param>
+        /// <param name="jsonLines">The JSON contents describing the install state.</param>
+        void WriteInstallState(string path, IEnumerable<string> jsonLines);
     }
 
     // Interface to pass to workload manifest updater

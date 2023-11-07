@@ -173,16 +173,25 @@ namespace Microsoft.DotNet.Installer.Windows
                 });
                 log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
 
-                FileInfo fi = new(destinationFile);
-                FileSecurity fs = new();
-
-                // Set the owner and group to built-in administrators (BA). All other ACE values are inherited from
-                // the parent directory. See https://github.com/dotnet/sdk/issues/28450. If the directory's descriptor
-                // is correctly configured, we should end up with an inherited ACE for Everyone: (A;ID;0x1200a9;;;WD)
-                fs.SetOwner(s_AdministratorsSid);
-                fs.SetGroup(s_AdministratorsSid);
-                fi.SetAccessControl(fs);
+                SecureFile(destinationFile);
             }
+        }
+
+        /// <summary>
+        /// Secures a file by setting the owner and group to built-in administrators (BA). All other ACE values are inherited from
+        /// the parent directory.
+        /// </summary>
+        /// <param name="path">The path of the file to secure.</param>
+        public static void SecureFile(string path)
+        {
+            FileInfo fi = new(path);
+            FileSecurity fs = new();
+            
+            // See https://github.com/dotnet/sdk/issues/28450. If the directory's descriptor
+            // is correctly configured, we should end up with an inherited ACE for Everyone: (A;ID;0x1200a9;;;WD)
+            fs.SetOwner(s_AdministratorsSid);
+            fs.SetGroup(s_AdministratorsSid);
+            fi.SetAccessControl(fs);
         }
 
         /// <summary>

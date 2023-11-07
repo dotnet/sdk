@@ -146,5 +146,35 @@ namespace Microsoft.DotNet.Installer.Windows
                 SdkFeatureBand = sdkFeatureBand.ToString(),
             });
         }
+
+        /// <summary>
+        /// Send an <see cref="InstallRequestMessage"/> to delete the install state file.
+        /// </summary>
+        /// <param name="path">The path of the install state file to delete.</param>
+        /// <returns></returns>
+        public InstallResponseMessage SendRemoveInstallStateFileRequest(string path)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.RemoveInstallStateFile,
+                InstallStateFile = path
+            });
+        }
+
+        /// <summary>
+        /// Sends an <see cref="InstallRequestMessage"/> to write the install state file.
+        /// </summary>
+        /// <param name="path">the path of the install state file to write.</param>
+        /// <param name="value">A multi-line string containing the formatted JSON data to write.</param>
+        /// <returns></returns>
+        public InstallResponseMessage SendWriteInstallStateFileRequest(string path, IEnumerable<string> jsonLines)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.WriteInstallStateFile,
+                InstallStateFile = path,
+                InstallStateContents = jsonLines.ToArray()
+            });
+        }
     }
 }

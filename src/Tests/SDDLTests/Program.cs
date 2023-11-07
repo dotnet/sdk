@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
@@ -21,6 +22,21 @@ namespace SDDLTests
         /// The full path of ProgramData.
         /// </summary>
         private static readonly string s_programData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+
+        /// <summary>
+        /// Directory under ProgramData to store the install state file.
+        /// </summary>
+        private static readonly string s_installStateDirectory = Path.Combine(s_programData, "SDDLTest", "workloads", "8.0.100", "InstallState");
+
+        /// <summary>
+        /// The filename and extension of the install state file.
+        /// </summary>
+        private static readonly string s_installStateFile = "default.json";
+
+        /// <summary>
+        /// The full path of the install state file.
+        /// </summary>
+        private static readonly string s_installStateFileAssetPath = Path.Combine(s_installStateDirectory, s_installStateFile);
 
         /// <summary>
         /// Directory under the user's %temp% directory where the test asset will be created.
@@ -230,6 +246,25 @@ namespace SDDLTests
             VerifyFileSecurityDescriptor(s_cachedTestAssetPath, "BA", "BA", 4, "A;ID;0x1200a9;;;WD", "A;ID;FA;;;SY", "A;ID;FA;;;BA", "A;ID;0x1200a9;;;BU");
         }
 
+        private static void CreateInstallStateAsset()
+        {
+            MsiPackageCache.CreateSecureDirectory(s_installStateDirectory);
+            File.WriteAllLines(s_installStateFileAssetPath, new[] { "line1", "line2" });
+            MsiPackageCache.SecureFile(s_installStateFileAssetPath);
+        }
+
+        private static void VerifyInstallStateDescriptors()
+        {
+            // Dump the descriptor of ProgramData since it's useful for analyzing.
+            DirectorySecurity ds = new DirectorySecurity(s_programData, s_accessControlSections);
+            string descriptor = ds.GetSecurityDescriptorSddlForm(s_accessControlSections);
+            Console.WriteLine($" Directory: {s_programData}");
+            Console.WriteLine($"Descriptor: {descriptor}");
+
+            VerifyDirectorySecurityDescriptor(s_installStateDirectory, "BA", "BA", 4, "A;OICIID;0x1200a9;;;WD", "A;OICIID;FA;;;SY", "A;OICIID;FA;;;BA", "A;OICIID;0x1200a9;;;BU");
+            VerifyFileSecurityDescriptor(s_installStateFileAssetPath, "BA", "BA", 4, "A;ID;0x1200a9;;;WD", "A;ID;FA;;;SY", "A;ID;FA;;;BA", "A;ID;0x1200a9;;;BU");
+        }
+
         static void Main(string[] args)
         {
             if (!OperatingSystem.IsWindows())
@@ -251,6 +286,8 @@ namespace SDDLTests
                     try
                     {
                         RelocateAndSecureAsset();
+
+                        CreateInstallStateAsset();
                     }
                     catch
                     {
@@ -268,6 +305,9 @@ namespace SDDLTests
                         CreateTestAsset();
                         RelocateAndSecureAsset();
                         VerifyDescriptors();
+
+                        CreateInstallStateAsset();
+                        VerifyInstallStateDescriptors();
                     }
                     catch (Exception e)
                     {
@@ -317,6 +357,7 @@ namespace SDDLTests
                         }
 
                         VerifyDescriptors();
+                        VerifyInstallStateDescriptors();
                     }
                     else
                     {
