@@ -167,8 +167,8 @@ namespace SDDLTests
         /// </summary>
         private static void RelocateAndSecureAsset()
         {
-            MsiPackageCache.CreateSecureDirectory(s_workloadPackCacheDirectory);
-            MsiPackageCache.MoveAndSecureFile(s_userTestAssetPath, s_cachedTestAssetPath);
+            SecurityUtils.CreateSecureDirectory(s_workloadPackCacheDirectory);
+            SecurityUtils.MoveAndSecureFile(s_userTestAssetPath, s_cachedTestAssetPath);
         }
 
         /// <summary>
@@ -248,9 +248,9 @@ namespace SDDLTests
 
         private static void CreateInstallStateAsset()
         {
-            MsiPackageCache.CreateSecureDirectory(s_installStateDirectory);
+            SecurityUtils.CreateSecureDirectory(s_installStateDirectory);
             File.WriteAllLines(s_installStateFileAssetPath, new[] { "line1", "line2" });
-            MsiPackageCache.SecureFile(s_installStateFileAssetPath);
+            SecurityUtils.SecureFile(s_installStateFileAssetPath);
         }
 
         private static void VerifyInstallStateDescriptors()

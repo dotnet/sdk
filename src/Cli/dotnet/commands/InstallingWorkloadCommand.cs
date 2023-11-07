@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             _defaultJsonPath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
         }
 
-        protected IEnumerable<string> GetInstallState(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
+        protected IEnumerable<string> GetInstallStateContents(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
             ToJsonEnumerable(WorkloadSet.FromManifests(
                     manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
                     ).ToDictionaryForJson());

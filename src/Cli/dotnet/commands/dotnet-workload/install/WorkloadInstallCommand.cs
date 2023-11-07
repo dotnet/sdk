@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (usingRollback)
                     {
-                        installer.WriteInstallState(_defaultJsonPath, GetInstallState(manifestsToUpdate));
+                        installer.WriteInstallState(_defaultJsonPath, GetInstallStateContents(manifestsToUpdate));
                     }
                 },
                 rollback: () =>
