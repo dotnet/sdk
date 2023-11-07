@@ -42,8 +42,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             VersionRange versionRange = null;
 
             // accept 'bare' versions and interpret 'bare' versions as NuGet exact versions
-            string text = packageVersion?.Trim();
-            if (!string.IsNullOrEmpty(packageVersion) && IsBarePackageVersion(text))
+            if (!string.IsNullOrEmpty(packageVersion) && SemanticVersion.TryParse(packageVersion, out SemanticVersion version2))
             {
                 packageVersion = "[" + packageVersion + "]";
             }
@@ -56,15 +55,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         packageVersion));
             }
             return versionRange;
-        }
-
-        private static bool IsBarePackageVersion (string packageVersion)
-        {
-            // Define a regular expression pattern to match the "a.b.c" format
-            string pattern = @"^\d+\.\d+\.\d+(-[\w\d]+(\.[\w\d]+)*)?(\+[\w\d]+(\.[\w\d]+)*)?$";
-
-            // Use Regex.IsMatch to check if the input matches the pattern
-            return Regex.IsMatch(packageVersion, pattern);
         }
     }
 }
