@@ -270,7 +270,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore,
                 HelpName = "tfm=file1,file2,..."
             };
-            CliOption<string[]?> baselinePackageFrameworksToIgnoreOption = new("--baseline-package-target-frameworks-to-ignore")
+            CliOption<string[]?> baselinePackageFrameworksToIgnoreOption = new("--baseline-package-frameworks-to-ignore")
             {
                 Description = "A set of target frameworks to ignore from the baseline package.",
                 AllowMultipleArgumentsPerToken = true,
