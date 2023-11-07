@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.TemplateEngine.Abstractions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
@@ -162,7 +164,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false)
         {
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion, packageSourceLocation, includePreview).ConfigureAwait(false);
-            
+
             SourceRepository repository = GetSourceRepository(source);
             if (repository.PackageSource.IsLocal)
             {
@@ -450,14 +452,37 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 throw new NuGetPackageNotFoundException(
                     string.Format(
                         LocalizableStrings.IsNotFoundInNuGetFeeds,
-                        $"{packageIdentifier} of version range {versionRange}",
+                        GenerateVersionRangeErrorDescription(packageIdentifier, versionRange),
                         string.Join(", ", packageSources.Select(source => source.Source))));
             }
         }
 
-            private async Task<(PackageSource, IPackageSearchMetadata)> GetLatestVersionInternalAsync(
-            string packageIdentifier, IEnumerable<PackageSource> packageSources, bool includePreview,
-            CancellationToken cancellationToken)
+        private string GenerateVersionRangeErrorDescription(string packageIdentifier, VersionRange versionRange)
+        {
+            if(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion == versionRange.MaxVersion)
+            {
+                return $"Version {versionRange.MinVersion} of package {packageIdentifier}";
+            }
+            else if(versionRange.HasLowerAndUpperBounds)
+            {
+                return $"A version between {versionRange.MinVersion} and {versionRange.MaxVersion} of package {packageIdentifier}";
+            }
+            else if(versionRange.HasLowerBound)
+            {
+                return $"A version higher than {versionRange.MinVersion} of package {packageIdentifier}";
+            }
+            else if(versionRange.HasUpperBound)
+            {
+                return $"A version less than {versionRange.MaxVersion} of package {packageIdentifier}";
+            }
+
+            // Default message if the format doesn't match any of the expected cases
+            return $"A version of {versionRange} of package {packageIdentifier}";
+        }
+
+        private async Task<(PackageSource, IPackageSearchMetadata)> GetLatestVersionInternalAsync(
+        string packageIdentifier, IEnumerable<PackageSource> packageSources, bool includePreview,
+        CancellationToken cancellationToken)
         {
             if (packageSources == null)
             {
@@ -498,7 +523,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     .SelectMany(result => result.foundPackages.Select(package => (result.source, package)));
 
             if (!accumulativeSearchResults.Any())
-            {  
+            {
                 throw new NuGetPackageNotFoundException(
                     string.Format(
                         LocalizableStrings.IsNotFoundInNuGetFeeds,
@@ -526,7 +551,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             VersionRange versionRange,
              PackageSourceLocation packageSourceLocation = null)
         {
-            if(versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
+            if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
             {
                 return versionRange.MinVersion;
             }
@@ -623,7 +648,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
 
             throw new NuGetPackageNotFoundException(string.Format(LocalizableStrings.IsNotFoundInNuGetFeeds,
-                $"{packageIdentifier}::{packageVersion}", string.Join(";", sources.Select(s => s.Source))));
+                                        GenerateVersionRangeErrorDescription(packageIdentifier, new VersionRange(minVersion: packageVersion, maxVersion: packageVersion, includeMaxVersion: true)),
+                                        string.Join(";", sources.Select(s => s.Source))));
         }
 
         private async Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)>
