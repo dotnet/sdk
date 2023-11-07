@@ -10,13 +10,11 @@ parameters:
   # The following parameters aren't expected to be passed in rather they are used for encapsulation
   # -----------------------------------------------------------------------------------------------
   alpine317Container: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17
-  centOS7Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-source-build-20210714125450-5d87b80
-  centOS8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-8-source-build-20211118190102-9355e7b
+  centOS7Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-source-build
   centOSStream9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9-20220107135047-4cd394c
-  debian9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-stretch-20211001171226-047508b
-  debian9Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-arm64v8-20220405201138-a251961
-  fedora38Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-20230609193134-47458d2
-  ubuntu1804Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-20210924170306-047508b
+  debian11Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-arm64v8
+  fedora38Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38
+  ubuntu1804Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04
   poolInternalAmd64:
     name: NetCore1ESPool-Svc-Internal
     demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
@@ -56,12 +54,6 @@ jobs:
         _ExcludeOmniSharpTests: true
         _RunOnline: false
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-        CentOS8-Offline:
-          _BootstrapPrep: false
-          _Container: ${{ parameters.centOS8Container }}
-          _EnablePoison: false
-          _ExcludeOmniSharpTests: false
-          _RunOnline: false
         CentOSStream9-Offline:
           _BootstrapPrep: false
           _Container: ${{ parameters.centOSStream9Container }}
@@ -97,9 +89,9 @@ jobs:
       dependsOn: ${{ parameters.dependsOn }}
       installerBuildResourceId: ${{ parameters.installerBuildResourceId }}
       matrix:
-        Debian9-Offline:
+        Debian11-Offline:
           _BootstrapPrep: true
-          _Container: ${{ parameters.debian9Arm64Container }}
+          _Container: ${{ parameters.debian11Arm64Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
           _RunOnline: false
