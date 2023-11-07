@@ -12,6 +12,11 @@
         <target state="translated">命令文字 '{0}' 格式錯誤</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoExecutableFoundMatchingCommandErrorMessage">
+        <source>Could not execute because the specified command or file was not found.</source>
+        <target state="new">Could not execute because the specified command or file was not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
         <source>Unable to locate dotnet multiplexer</source>
         <target state="translated">找不到 dotnet multiplexer</target>
@@ -28,16 +33,14 @@
         <note />
       </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommand">
-        <source>Could not execute because the specified command or file was not found.
-Possible reasons for this include:
+        <source>Possible reasons for this include:
   * You misspelled a built-in dotnet command.
   * You intended to execute a .NET program, but {0} does not exist.
   * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</source>
-        <target state="translated">因為找不到指定的命令或檔案，所以無法執行。
-可能的原因包括:
-  * 內建 dotnet 命令拼寫錯誤。
-  * 您預計要執行 .NET 程式，但不存在 {0}。
-  * 您預計要執行全域工具，但在 PATH 上找不到此名稱且開頭為 dotnet 的可執行檔。</target>
+        <target state="new">Possible reasons for this include:
+  * You misspelled a built-in dotnet command.
+  * You intended to execute a .NET program, but {0} does not exist.
+  * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</target>
         <note />
       </trans-unit>
       <trans-unit id="WaitingForDebuggerToAttach">
