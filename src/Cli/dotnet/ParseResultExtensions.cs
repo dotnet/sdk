@@ -136,16 +136,12 @@ namespace Microsoft.DotNet.Cli
             return subargs.Concat(runArgs).ToArray();
         }
 
-        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult)
+        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
         {
-            return symbolResult.Tokens switch
-            {
-                [] => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>(),
-                [{ Type: CliTokenType.Command }, ..] => (symbolResult as CommandResult)?.Command.Name,
-                [{ Type: CliTokenType.Argument, Value: var token }, ..] => token,
-                _ => string.Empty
-            };
-        }
+            CommandResult commandResult => commandResult.Command.Name,
+            ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value ?? string.Empty,
+            _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
+        };
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
             (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
