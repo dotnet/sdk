@@ -21,8 +21,7 @@ public class DebugTests : SdkTests
     /// <Summary>
     /// Verifies that all generated native files include native debug symbols.
     /// </Summary>
-    // https://github.com/dotnet/source-build/issues/3668
-    //[Fact]
+    [Fact]
     public void SourceBuiltSdkContainsNativeDebugSymbols()
     {
 

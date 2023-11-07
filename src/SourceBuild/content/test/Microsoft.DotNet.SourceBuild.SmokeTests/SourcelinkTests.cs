@@ -32,8 +32,7 @@ public class SourcelinkTests : SdkTests
     /// <summary>
     /// Verifies that all symbols have valid sourcelinks.
     /// </summary>
-    // https://github.com/dotnet/source-build/issues/3668
-    // [Fact]
+    [Fact]
     public void VerifySourcelinks()
     {
         try

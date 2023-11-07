@@ -20,9 +20,8 @@ public class WebScenarioTests : SdkTests
 {
     public WebScenarioTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    // https://github.com/dotnet/source-build/issues/3668
-    // [Theory]
-    // [MemberData(nameof(GetScenarioObjects))]
+    [Theory]
+    [MemberData(nameof(GetScenarioObjects))]
     public void VerifyScenario(TestScenario scenario) => scenario.Execute(DotNetHelper);
 
     public static IEnumerable<object[]> GetScenarioObjects() => GetScenarios().Select(scenario => new object[] { scenario });

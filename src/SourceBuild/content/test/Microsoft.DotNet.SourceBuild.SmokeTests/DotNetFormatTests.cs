@@ -19,8 +19,7 @@ public class DotNetFormatTests : SdkTests
     /// <Summary>
     /// Format an unformatted project and verify that the output matches the pre-computed solution.
     /// </Summary>
-    // https://github.com/dotnet/source-build/issues/3668
-    // [Fact]
+    [Fact]
     public void FormatProject()
     {
         string unformattedCsFilePath = Path.Combine(BaselineHelper.GetAssetsDirectory(), UnformattedFileName);
