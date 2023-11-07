@@ -10,6 +10,8 @@
 ###   --no-bootstrap              Don't replace portable packages in the download source-built artifacts
 ###   --no-prebuilts              Exclude the download of the prebuilts archive
 ###   --no-sdk                    Exclude the download of the .NET SDK
+###   --artifacts-rid             The RID of the previously source-built artifacts archive to download
+###                               Default is centos.8-x64
 ###   --runtime-source-feed       URL of a remote server or a local directory, from which SDKs and
 ###                               runtimes can be downloaded
 ###   --runtime-source-feed-key   Key for accessing the above server, if necessary
@@ -24,10 +26,13 @@ function print_help () {
     sed -n '/^### /,/^$/p' "$source" | cut -b 5-
 }
 
+defaultArtifactsRid='centos.8-x64'
+
 buildBootstrap=true
 downloadArtifacts=true
 downloadPrebuilts=true
 installDotnet=true
+artifactsRid=$defaultArtifactsRid
 runtime_source_feed='' # IBM requested these to support s390x scenarios
 runtime_source_feed_key='' # IBM requested these to support s390x scenarios
 positional_args=()
@@ -52,6 +57,9 @@ while :; do
       ;;
     --no-sdk)
       installDotnet=false
+      ;;
+    --artifacts-rid)
+      artifactsRid=$2
       ;;
     --runtime-source-feed)
       runtime_source_feed=$2
@@ -107,17 +115,27 @@ fi
 function DownloadArchive {
   archiveType="$1"
   isRequired="$2"
+  artifactsRid="$3"
 
   packageVersionsPath="$SCRIPT_ROOT/eng/Versions.props"
   notFoundMessage="No source-built $archiveType found to download..."
 
   echo "  Looking for source-built $archiveType to download..."
-  archiveVersionLine=$(grep -m 1 "<PrivateSourceBuilt${archiveType}Url>" "$packageVersionsPath" || :)
-  versionPattern="<PrivateSourceBuilt${archiveType}Url>(.*)</PrivateSourceBuilt${archiveType}Url>"
+  archiveVersionLine=$(grep -m 1 "<PrivateSourceBuilt${archiveType}Version>" "$packageVersionsPath" || :)
+  versionPattern="<PrivateSourceBuilt${archiveType}Version>(.*)</PrivateSourceBuilt${archiveType}Version>"
   if [[ $archiveVersionLine =~ $versionPattern ]]; then
-      archiveUrl="${BASH_REMATCH[1]}"
-      echo "  Downloading source-built $archiveType from $archiveUrl..."
-      (cd "$packagesArchiveDir" && curl --retry 5 -O "$archiveUrl")
+    archiveVersion="${BASH_REMATCH[1]}"
+
+    if [ "$archiveType" == "Prebuilts" ]; then
+        archiveRid=$defaultArtifactsRid
+    else
+        archiveRid=$artifactsRid
+    fi
+
+    archiveUrl="https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.$archiveType.$archiveVersion.$archiveRid.tar.gz"
+
+    echo "  Downloading source-built $archiveType from $archiveUrl..."
+    (cd "$packagesArchiveDir" && curl --retry 5 -O "$archiveUrl")
   elif [ "$isRequired" == true ]; then
     echo "  ERROR: $notFoundMessage"
     exit 1
@@ -164,12 +182,12 @@ fi
 
 # Read the eng/Versions.props to get the archives to download and download them
 if [ "$downloadArtifacts" == true ]; then
-  DownloadArchive Artifacts true
+  DownloadArchive Artifacts true $artifactsRid
   if [ "$buildBootstrap" == true ]; then
       BootstrapArtifacts
   fi
 fi
 
 if [ "$downloadPrebuilts" == true ]; then
-  DownloadArchive Prebuilts false
+  DownloadArchive Prebuilts false $artifactsRid
 fi
