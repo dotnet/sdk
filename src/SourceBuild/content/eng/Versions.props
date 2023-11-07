@@ -15,23 +15,21 @@
       Building .NET from source depends on several archives, depending on the branch's current
       source-buildability status.
 
-      PrivateSourceBuiltArtifactsUrl is a tar.gz of .NET build outputs from a previous
-      build needed to build the current version of .NET. This is always defined, because .NET needs
-      to be bootstrappable at any point in time.
+      PrivateSourceBuiltSdkVersion is the version number of a tar.gz of the source build .NET SDK
+      from the previous release for a particular OS. It is used by CI to validate that the current
+      release can be built with it.
 
-      PrivateSourceBuiltPrebuiltsUrl is a tar.gz of assets downloaded from the internet
-      that are needed to build the current version of .NET. Early in the lifecycle of a .NET major
-      or minor release, prebuilts may be needed. When the release is mature, prebuilts are not
-      necessary, and this property is removed from the file.
+      PrivateSourceBuiltArtifactsVersion is the version number of a tar.gz of .NET build outputs
+      from a previous build needed to build the current version of .NET. This is always defined
+      because .NET needs to be bootstrappable at any point in time.
 
-      PrivateSourceBuiltSdkUrl_<abc> is a tar.gz of the source build .NET SDK from the previous release
-      for a particular OS. It is used by CI to validate that the current release can be built with it.
-
-      These URLs can't be composed from their base URL and version as we read them from the
-      prep.sh and pipeline scripts, outside of MSBuild.
+      PrivateSourceBuiltPrebuiltsVersion is the version number of a tar.gz of assets downloaded
+      from the internet that are needed to build the current version of .NET. Early in the lifecycle
+      of a .NET major or minor release, prebuilts may be needed. When the release is mature, prebuilts
+      are not necessary, and this property is removed from the file.
     -->
-    <PrivateSourceBuiltArtifactsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Artifacts.8.0.100-rc.2.23502.1.centos.8-x64.tar.gz</PrivateSourceBuiltArtifactsUrl>
-    <PrivateSourceBuiltSdkUrl_CentOS8Stream>https://dotnetcli.azureedge.net/source-built-artifacts/sdks/dotnet-sdk-8.0.100-rc.2.23502.1-centos.8-x64.tar.gz</PrivateSourceBuiltSdkUrl_CentOS8Stream>
-    <PrivateSourceBuiltPrebuiltsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Prebuilts.0.1.0-9.0.100-3.centos.8-x64.tar.gz</PrivateSourceBuiltPrebuiltsUrl>
+    <PrivateSourceBuiltSdkVersion>8.0.100-rc.2.23502.1</PrivateSourceBuiltSdkVersion>
+    <PrivateSourceBuiltArtifactsVersion>8.0.100-rc.2.23502.1</PrivateSourceBuiltArtifactsVersion>
+    <PrivateSourceBuiltPrebuiltsVersion>0.1.0-9.0.100-3</PrivateSourceBuiltPrebuiltsVersion>
   </PropertyGroup>
 </Project>
