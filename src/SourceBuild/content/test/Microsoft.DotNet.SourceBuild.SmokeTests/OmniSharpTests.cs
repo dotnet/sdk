@@ -25,19 +25,18 @@ public class OmniSharpTests : SdkTests
 
     public OmniSharpTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    // https://github.com/dotnet/source-build/issues/3668
-    // [SkippableTheory(Config.ExcludeOmniSharpEnv, skipOnTrueEnv: true, skipArchitectures: new[] { "ppc64le", "s390x" })]
-    // [InlineData(DotNetTemplate.BlazorWasm)]
-    // [InlineData(DotNetTemplate.ClassLib)]
-    // [InlineData(DotNetTemplate.Console)]
-    // [InlineData(DotNetTemplate.MSTest)]
-    // [InlineData(DotNetTemplate.Mvc)]
-    // [InlineData(DotNetTemplate.NUnit)]
-    // [InlineData(DotNetTemplate.Web)]
-    // [InlineData(DotNetTemplate.WebApp)]
-    // [InlineData(DotNetTemplate.WebApi)]
-    // [InlineData(DotNetTemplate.Worker)]
-    // [InlineData(DotNetTemplate.XUnit)]
+    [SkippableTheory(Config.ExcludeOmniSharpEnv, skipOnTrueEnv: true, skipArchitectures: new[] { "ppc64le", "s390x" })]
+    [InlineData(DotNetTemplate.BlazorWasm)]
+    [InlineData(DotNetTemplate.ClassLib)]
+    [InlineData(DotNetTemplate.Console)]
+    [InlineData(DotNetTemplate.MSTest)]
+    [InlineData(DotNetTemplate.Mvc)]
+    [InlineData(DotNetTemplate.NUnit)]
+    [InlineData(DotNetTemplate.Web)]
+    [InlineData(DotNetTemplate.WebApp)]
+    [InlineData(DotNetTemplate.WebApi)]
+    [InlineData(DotNetTemplate.Worker)]
+    [InlineData(DotNetTemplate.XUnit)]
     public async void VerifyScenario(DotNetTemplate template)
     {
         await InitializeOmniSharp();

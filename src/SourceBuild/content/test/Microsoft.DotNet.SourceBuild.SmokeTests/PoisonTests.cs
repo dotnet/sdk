@@ -13,8 +13,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
     {
         public PoisonTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
         
-        // https://github.com/dotnet/source-build/issues/3668
-        // [SkippableFact(Config.PoisonReportPathEnv, skipOnNullOrWhiteSpaceEnv: true)]
+        [SkippableFact(Config.PoisonReportPathEnv, skipOnNullOrWhiteSpaceEnv: true)]
         public void VerifyUsage()
         {
             if (!File.Exists(Config.PoisonReportPath))
