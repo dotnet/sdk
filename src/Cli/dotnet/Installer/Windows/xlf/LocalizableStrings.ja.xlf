@@ -7,6 +7,11 @@
         <target state="translated">{0} の AuthentiCode 署名は、信頼されている組織に属していません。</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidInstallStateFile">
+        <source>Invalid install state file: {0}</source>
+        <target state="new">Invalid install state file: {0}</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

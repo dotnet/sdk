@@ -182,6 +182,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        public void DeleteInstallState(string path) =>
+            RemoveInstallStateFile(path);
+
+        public void WriteInstallState(string path, IEnumerable<string> jsonLines) =>
+            WriteInstallStateFile(path, jsonLines);
+
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care
         /// about dependents that match the SDK host we're running under. For example, an x86 SDK should not be

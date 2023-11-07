@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -451,6 +450,20 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 DeleteAllWorkloadInstallationRecords();
             }
 
+        }
+
+        public void DeleteInstallState(string path)
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+
+        public void WriteInstallState(string path, IEnumerable<string> jsonLines)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllLines(path, jsonLines);
         }
 
         /// <summary>

@@ -156,6 +156,20 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             WorkloadResolver = workloadResolver;
         }
+
+        public void DeleteInstallState(string path)
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+
+        public void WriteInstallState(string path, IEnumerable<string> jsonLines)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllLines(path, jsonLines);
+        }
     }
 
     internal class MockInstallationRecordRepository : IWorkloadInstallationRecordRepository

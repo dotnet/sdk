@@ -120,4 +120,7 @@
   <data name="AuthentiCodeNoTrustedOrg" xml:space="preserve">
     <value>AuthentiCode signature for {0} does not belong to a trusted organization.</value>
   </data>
+  <data name="InvalidInstallStateFile" xml:space="preserve">
+    <value>Invalid install state file: {0}</value>
+  </data>
 </root>
