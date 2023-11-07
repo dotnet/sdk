@@ -463,25 +463,29 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 return $"{packageIdentifier}";
             }
-            else if(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion == versionRange.MaxVersion)
+            else if (versionRange.HasLowerAndUpperBounds && versionRange.MinVersion == versionRange.MaxVersion)
             {
-                return $"Version {versionRange.MinVersion} of package {packageIdentifier}";
+                return string.Format(LocalizableStrings.PackageVersionDescriptionForExactVersionMatch,
+                    versionRange.MinVersion, packageIdentifier);
             }
-            else if(versionRange.HasLowerAndUpperBounds)
+            else if (versionRange.HasLowerAndUpperBounds)
             {
-                return $"A version between {versionRange.MinVersion} and {versionRange.MaxVersion} of package {packageIdentifier}";
+                return string.Format(LocalizableStrings.PackageVersionDescriptionForVersionWithLowerAndUpperBounds,
+                    versionRange.MinVersion, versionRange.MaxVersion, packageIdentifier);
             }
-            else if(versionRange.HasLowerBound)
+            else if (versionRange.HasLowerBound)
             {
-                return $"A version higher than {versionRange.MinVersion} of package {packageIdentifier}";
+                return string.Format(LocalizableStrings.PackageVersionDescriptionForVersionWithLowerBound,
+                    versionRange.MinVersion, packageIdentifier);
             }
-            else if(versionRange.HasUpperBound)
+            else if (versionRange.HasUpperBound)
             {
-                return $"A version less than {versionRange.MaxVersion} of package {packageIdentifier}";
+                return string.Format(LocalizableStrings.PackageVersionDescriptionForVersionWithUpperBound,
+                    versionRange.MaxVersion, packageIdentifier);
             }
 
             // Default message if the format doesn't match any of the expected cases
-            return $"A version of {versionRange} of package {packageIdentifier}";
+            return string.Format(LocalizableStrings.PackageVersionDescriptionDefault, versionRange, packageIdentifier);
         }
 
         private async Task<(PackageSource, IPackageSearchMetadata)> GetLatestVersionInternalAsync(
