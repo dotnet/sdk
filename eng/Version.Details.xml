@@ -412,30 +412,30 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.23556.2">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.23556.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2f4d6cd8a16cfb03ca41d54ab8c7c9a9f65a5cae</Sha>
+      <Sha>21c8b7373b7e4845f7df0ad15654529c1f41b66d</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.23556.2">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.23556.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2f4d6cd8a16cfb03ca41d54ab8c7c9a9f65a5cae</Sha>
+      <Sha>21c8b7373b7e4845f7df0ad15654529c1f41b66d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="9.0.0-beta.23556.2">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="9.0.0-beta.23556.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2f4d6cd8a16cfb03ca41d54ab8c7c9a9f65a5cae</Sha>
+      <Sha>21c8b7373b7e4845f7df0ad15654529c1f41b66d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="9.0.0-beta.23556.2">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="9.0.0-beta.23556.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2f4d6cd8a16cfb03ca41d54ab8c7c9a9f65a5cae</Sha>
+      <Sha>21c8b7373b7e4845f7df0ad15654529c1f41b66d</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.0-alpha.1.23556.8">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bfca4c7cb0bc466a30039330ae26f95bf4fe7951</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="9.0.0-beta.23556.2">
+    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="9.0.0-beta.23556.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>2f4d6cd8a16cfb03ca41d54ab8c7c9a9f65a5cae</Sha>
+      <Sha>21c8b7373b7e4845f7df0ad15654529c1f41b66d</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
