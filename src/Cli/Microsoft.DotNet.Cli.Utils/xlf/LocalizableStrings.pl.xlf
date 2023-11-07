@@ -12,6 +12,11 @@
         <target state="translated">Nieprawidłowo sformułowany tekst polecenia „{0}”</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoExecutableFoundMatchingCommandErrorMessage">
+        <source>Could not execute because the specified command or file was not found.</source>
+        <target state="new">Could not execute because the specified command or file was not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
         <source>Unable to locate dotnet multiplexer</source>
         <target state="translated">Nie można zlokalizować multipleksera dotnet</target>
@@ -28,16 +33,14 @@
         <note />
       </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommand">
-        <source>Could not execute because the specified command or file was not found.
-Possible reasons for this include:
+        <source>Possible reasons for this include:
   * You misspelled a built-in dotnet command.
   * You intended to execute a .NET program, but {0} does not exist.
   * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</source>
-        <target state="translated">Nie można wykonać, ponieważ nie odnaleziono określonego polecenia lub pliku.
-Możliwe przyczyny:
-  * Błąd pisowni wbudowanego polecenia dotnet .
-  * Planowano wykonanie programu platformy .NET, ale element {0} nie istnieje.
-  * Planowano uruchomienie narzędzia globalnego, ale nie można odnaleźć pliku wykonywalnego z prefiksem dotnet o tej nazwie w zmiennej PATH.</target>
+        <target state="new">Possible reasons for this include:
+  * You misspelled a built-in dotnet command.
+  * You intended to execute a .NET program, but {0} does not exist.
+  * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</target>
         <note />
       </trans-unit>
       <trans-unit id="WaitingForDebuggerToAttach">
