@@ -550,11 +550,11 @@ namespace Microsoft.DotNet.Installer.Windows
             if (IsElevated)
             {
                 // Create the parent folder for the state file and set up all required ACLs
-                MsiPackageCache.CreateSecureDirectory(Path.GetDirectoryName(path));
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
 
                 File.WriteAllLines(path, jsonLines);
 
-                MsiPackageCache.SecureFile(path);
+                SecurityUtils.SecureFile(path);
             }
             else if (IsClient)
             {

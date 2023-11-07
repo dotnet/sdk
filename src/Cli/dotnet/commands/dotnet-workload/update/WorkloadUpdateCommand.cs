@@ -158,7 +158,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     if (useRollback)
                     {
-                        _workloadInstaller.WriteInstallState(_defaultJsonPath, GetInstallState(manifestsToUpdate));
+                        _workloadInstaller.WriteInstallState(_defaultJsonPath, GetInstallStateContents(manifestsToUpdate));
                     }
                     else
                     {
