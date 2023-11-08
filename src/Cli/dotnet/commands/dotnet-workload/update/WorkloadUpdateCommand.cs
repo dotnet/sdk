@@ -237,6 +237,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             transaction.Run(
                 action: context =>
                 {
+                    UpdateInstalledWorkloadsFromHistory(sdkFeatureBand, context, offlineCache);
+
                     bool rollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
                     foreach (var manifestUpdate in manifestsToUpdate)
@@ -294,6 +296,43 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
 
             return workloads;
+        }
+
+        private void UpdateInstalledWorkloadsFromHistory(SdkFeatureBand sdkFeatureBand, ITransactionContext context, DirectoryPath? offlineCache)
+        {
+            if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
+            {
+                // Only have specified workloads installed afterwards.
+                var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
+                var desiredWorkloads = _WorkloadHistoryRecord.WorkloadArguments.Select(id => new WorkloadId(id));
+
+                var workloadsToInstall = new List<WorkloadId>();
+                var workloadsToUninstall = new List<WorkloadId>();
+
+                foreach (var id in installedWorkloads)
+                {
+                    if (!desiredWorkloads.Contains(id))
+                    {
+                        workloadsToUninstall.Add(id);
+                    }
+                }
+
+                foreach (var id in desiredWorkloads)
+                {
+                    if (!installedWorkloads.Contains(id))
+                    {
+                        workloadsToInstall.Add(id);
+                    }
+                }
+
+                _workloadInstaller.InstallWorkloads(workloadsToInstall, sdkFeatureBand, context, offlineCache);
+
+                foreach (var id in workloadsToUninstall)
+                {
+                    _workloadInstaller.GetWorkloadInstallationRecordRepository()
+                       .DeleteWorkloadInstallationRecord(id, sdkFeatureBand);
+                }
+            }
         }
     }
 }

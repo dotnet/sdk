@@ -552,8 +552,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords()
         {
             List<WorkloadHistoryRecord> historyRecords = new();
+            var workloadHistoryDirectory = GetWorkloadHistoryDirectory();
 
-            foreach (var file in Directory.GetFiles(GetWorkloadHistoryDirectory(), "*.json"))
+            if (!Directory.Exists(workloadHistoryDirectory))
+            {
+                return Enumerable.Empty<WorkloadHistoryRecord>();
+            }
+
+            foreach (var file in Directory.GetFiles(workloadHistoryDirectory, "*.json"))
             {
                 try
                 {

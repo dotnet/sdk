@@ -49,16 +49,18 @@ namespace Microsoft.DotNet.Workloads.Workload.History
             {
                 Reporter.WriteLine(LocalizableStrings.NoHistoryFound);
             }
+            else
+            {
+                var table = new PrintableTable<WorkloadHistoryDisplay.DisplayRecord>();
+                table.AddColumn(LocalizableStrings.Id, r => r.ID?.ToString() ?? "");
+                table.AddColumn(LocalizableStrings.Date, r => r.TimeStarted?.ToString() ?? "");
+                table.AddColumn(LocalizableStrings.Command, r => r.Command);
+                table.AddColumn(LocalizableStrings.Workloads, r => r.Workloads == null ? "" : string.Join(", ", r.Workloads));
 
-            var table = new PrintableTable<WorkloadHistoryDisplay.DisplayRecord>();
-            table.AddColumn(LocalizableStrings.Id, r => r.ID?.ToString() ?? "");
-            table.AddColumn(LocalizableStrings.Date, r => r.TimeStarted?.ToString() ?? "");
-            table.AddColumn(LocalizableStrings.Command, r => r.Command);
-            table.AddColumn(LocalizableStrings.Workloads, r => r.Workloads == null ? "" : string.Join(", ", r.Workloads));
-
-            Reporter.WriteLine();
-            table.PrintRows(displayRecords, l => Reporter.WriteLine(l));
-            Reporter.WriteLine();
+                Reporter.WriteLine();
+                table.PrintRows(displayRecords, l => Reporter.WriteLine(l));
+                Reporter.WriteLine();
+            }
 
             return 0;
         }

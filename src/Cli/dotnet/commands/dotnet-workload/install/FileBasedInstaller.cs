@@ -489,7 +489,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             List<WorkloadHistoryRecord> historyRecords = new();
 
-            foreach (var file in Directory.GetFiles(GetWorkloadHistoryDirectory(), "*.json"))
+            var workloadHistoryDirectory = GetWorkloadHistoryDirectory();
+
+            if (!Directory.Exists(workloadHistoryDirectory))
+            {
+                return Enumerable.Empty<WorkloadHistoryRecord>();
+            }
+
+            foreach (var file in Directory.GetFiles(workloadHistoryDirectory, "*.json"))
             {
                 try
                 {
