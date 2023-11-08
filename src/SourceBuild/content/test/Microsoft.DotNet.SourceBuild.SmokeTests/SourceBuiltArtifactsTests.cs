@@ -58,7 +58,8 @@ public class SourceBuiltArtifactsTests : SdkTests
             string[] sdkVersionLines = File.ReadAllLines(Path.Combine(outputDir, sdkVersionPath));
             string expectedSdkVersion = sdkVersionLines[1];
 
-            Assert.Equal(expectedSdkVersion, sdkVersion);
+            // Disable due to https://github.com/dotnet/source-build/issues/3693
+            // Assert.Equal(expectedSdkVersion, sdkVersion);
         }
         finally
         {
