@@ -1,7 +1,7 @@
-# This is the dotnet/dotnet pipeline that is triggered every weekday at midnight (00:00 UTC) for "main" and when changes are pushed to release/* and internal/release/* branches.
+# This is the dotnet/dotnet pipeline that is triggered every weekday at midnight PST (08:00 UTC) for "main" and when changes are pushed to release/* and internal/release/* branches.
 
 schedules:
-- cron: '0 0 * * Mon-Fri'
+- cron: '0 8 * * Mon-Fri'
   displayName: Weekday midnight build
   branches:
     include:
