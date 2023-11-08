@@ -18,7 +18,7 @@ public class LaunchSettingsProfileTest
     }
 
     [Fact]
-    public void LoadsLaunchProfile()
+    public void LoadsLaunchProfiles()
     {
         var project = _testAssets.CreateTestProject(new TestProject("Project1")
         {
@@ -42,7 +42,7 @@ public class LaunchSettingsProfileTest
               "environmentVariables": {
                 "ASPNETCORE_ENVIRONMENT": "Development"
               }
-            }
+            }, // This comment and trailing comma shouldn't cause any issues
           }
         }
         """);
@@ -59,69 +59,6 @@ public class LaunchSettingsProfileTest
 
         expected = LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, "notfound", _reporter);
         Assert.NotNull(expected);
-    }
-
-    [Fact]
-    public void LoadsLaunchProfileWithTrailingCommas()
-    {
-        var project = _testAssets.CreateTestProject(new TestProject("Project1")
-        {
-            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-        });
-
-        WriteFile(project, Path.Combine("Properties", "launchSettings.json"),
-        """
-        {
-          "profiles": {
-            "test": {
-              "applicationUrl": "https://localhost:5002",
-              "commandName": "Project",
-              "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development",
-              }
-            },
-          }
-        }
-        """);
-
-        var projectDirectory = Path.Combine(project.TestRoot, "Project1");
-
-        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, "test", _reporter);
-
-        Assert.NotNull(expected);
-        Assert.Equal("https://localhost:5002", expected.ApplicationUrl);
-    }
-
-    [Fact]
-    public void LoadsLaunchProfileWithComment()
-    {
-        var project = _testAssets.CreateTestProject(new TestProject("Project1")
-        {
-            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
-        });
-
-        WriteFile(project, Path.Combine("Properties", "launchSettings.json"),
-        """
-        {
-          "profiles": {
-            // This is my launch profile
-            "test": {
-              "applicationUrl": "https://localhost:5002",
-              "commandName": "Project",
-              "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-              }
-            }
-          }
-        }
-        """);
-
-        var projectDirectory = Path.Combine(project.TestRoot, "Project1");
-
-        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, "test", _reporter);
-
-        Assert.NotNull(expected);
-        Assert.Equal("https://localhost:5002", expected.ApplicationUrl);
     }
 
     private static string WriteFile(TestAsset testAsset, string name, string contents = "")
