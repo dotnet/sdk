@@ -137,42 +137,12 @@ namespace Microsoft.DotNet.Cli
             return subargs.Concat(runArgs).ToArray();
         }
 
-        private static CliToken Token(this SymbolResult symbolResult)
+        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
         {
-            return symbolResult switch
-            {
-                CommandResult commandResult => commandResult.IdentifierToken,
-                OptionResult optionResult => optionResult.IdentifierToken is null ?
-                    new CliToken($"--{optionResult.Option.Name}", CliTokenType.Option, optionResult.Option) :
-                    optionResult.IdentifierToken,
-                ArgumentResult argResult => new CliToken(GetArgResultValue(argResult), CliTokenType.Argument, argResult.Argument),
-                _ => default
-            };
-
-            // TODO: WE SHOULD NOT NEED TO DO THIS LONGTERM! There seems to be no mechanism currently to get at the raw value of an ArgumentResult without knowing the type you're expecting.
-            static string GetArgResultValue(ArgumentResult argResult)
-            {
-                var methodInfo = argResult.GetType().GetMethod("GetArgumentConversionResult", BindingFlags.Instance | BindingFlags.NonPublic);
-                var conversionResult = methodInfo.Invoke(argResult, null);
-                var value = conversionResult.GetType().GetField("Value", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(conversionResult);
-                return value.ToString();
-            }
-        }
-
-        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult.Token() switch
-        {
-            null => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>(),
-            { Type: CliTokenType.Command } => ((CommandResult)symbolResult).Command.Name,
-            { Type: CliTokenType.Argument } => symbolResult.Token().Value,
-            _ => string.Empty
+            CommandResult commandResult => commandResult.Command.Name,
+            ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value ?? string.Empty,
+            _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
         };
-
-        //private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
-        //{
-        //    CommandResult commandResult => commandResult.Command.Name,
-        //    ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value ?? string.Empty,
-        //    _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
-        //};
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
             (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
@@ -226,22 +196,20 @@ namespace Microsoft.DotNet.Cli
         private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
         {
             var optionString = shorthand ? "-p" : "--property";
-            var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(CliTokenType.Option));
-            var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
+            var propertyOptions = parseResult.CommandResult.Children.Where(c => GetOptionTokenOrDefault(c)?.Value.Equals(optionString) ?? false);
             var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
-        }
 
-        //private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
-        //{
-        //    var optionString = shorthand ? "-p" : "--property";
-        //    var options = parseResult.CommandResult.Children.OfType<OptionResult>();
-        //    var propertyOptions = options.Where(o =>
-        //        o.Option.Name.Equals(optionString, StringComparison.OrdinalIgnoreCase) ||
-        //        o.Option.Aliases.Contains(optionString, StringComparer.OrdinalIgnoreCase));
-        //    var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
-        //    return propertyValues;
-        //}
+            static CliToken GetOptionTokenOrDefault(SymbolResult symbolResult)
+            {
+                if (symbolResult is not OptionResult optionResult)
+                {
+                    return null;
+                }
+
+                return optionResult.IdentifierToken ?? new CliToken($"--{optionResult.Option.Name}", CliTokenType.Option, optionResult.Option);
+            }
+        }
 
         [Conditional("DEBUG")]
         public static void HandleDebugSwitch(this ParseResult parseResult)
