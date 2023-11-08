@@ -95,6 +95,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
             command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
             command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
+            command.Options.Add(ToolCommandRestorePassThroughOptions.NoHttpCacheOption);
             command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
             command.Options.Add(VerbosityOption);
             command.Options.Add(ArchitectureOption);

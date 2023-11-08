@@ -21,7 +21,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
         {
             get
             {
-                return String.Format(ConnectionInfo.DestinationUrl, ConnectionInfo.SiteName, "zip/site/wwwroot/");
+                return string.Format(ConnectionInfo.DestinationUrl, ConnectionInfo.SiteName, "zip/site/wwwroot/");
             }
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
             if (!File.Exists(zipFileFullPath))
             {
                 // If the source file directory does not exist quit early.
-                _logger.LogError(String.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, Resources.KUDUDEPLOY_DeployOutputPathEmpty));
+                _logger.LogError(string.Format(Resources.KUDUDEPLOY_AzurePublishErrorReason, Resources.KUDUDEPLOY_DeployOutputPathEmpty));
                 return false;
             }
 
@@ -41,7 +41,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
 
         private async System.Threading.Tasks.Task<bool> PostZipAsync(string zipFilePath)
         {
-            if (String.IsNullOrEmpty(zipFilePath))
+            if (string.IsNullOrEmpty(zipFilePath))
             {
                 return false;
             }
@@ -58,12 +58,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Kudu
                         req.Headers.Add("Authorization", "Basic " + AuthorizationInfo);
                         req.Content = content;
 
-                        _logger.LogMessage(Microsoft.Build.Framework.MessageImportance.High, Resources.KUDUDEPLOY_PublishAzure);
+                        _logger.LogMessage(Build.Framework.MessageImportance.High, Resources.KUDUDEPLOY_PublishAzure);
                         using (var response = await client.SendAsync(req))
                         {
                             if (!response.IsSuccessStatusCode)
                             {
-                                _logger.LogError(String.Format(Resources.KUDUDEPLOY_PublishZipFailedReason, ConnectionInfo.SiteName, response.ReasonPhrase));
+                                _logger.LogError(string.Format(Resources.KUDUDEPLOY_PublishZipFailedReason, ConnectionInfo.SiteName, response.ReasonPhrase));
                                 return false;
                             }
                         }

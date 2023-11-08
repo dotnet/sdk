@@ -45,15 +45,33 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool IsAotCompatible { get; set; }
 
+        public bool SilenceIsAotCompatibleUnsupportedWarning { get; set; }
+
+        public string MinNonEolTargetFrameworkForAot { get; set; }
+
         public bool EnableAotAnalyzer { get; set; }
+
+        public string FirstTargetFrameworkVersionToSupportAotAnalyzer { get; set; }
 
         public bool PublishTrimmed { get; set; }
 
         public bool IsTrimmable { get; set; }
 
+        public string FirstTargetFrameworkVersionToSupportTrimAnalyzer { get; set; }
+
+        public bool SilenceIsTrimmableUnsupportedWarning { get; set; }
+
+        public string MinNonEolTargetFrameworkForTrimming { get; set; }
+
         public bool EnableTrimAnalyzer { get; set; }
 
         public bool EnableSingleFileAnalyzer { get; set; }
+
+        public string FirstTargetFrameworkVersionToSupportSingleFileAnalyzer { get; set; }
+
+        public bool SilenceEnableSingleFileAnalyzerUnsupportedWarning { get; set; }
+
+        public string MinNonEolTargetFrameworkForSingleFile { get; set; }
 
         public bool AotUseKnownRuntimePackForTarget { get; set; }
 
@@ -164,7 +182,7 @@ namespace Microsoft.NET.Build.Tasks
 
             var frameworkReferenceMap = FrameworkReferences.ToDictionary(fr => fr.ItemSpec, StringComparer.OrdinalIgnoreCase);
 
-            HashSet<string> unrecognizedRuntimeIdentifiers = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> unrecognizedRuntimeIdentifiers = new(StringComparer.OrdinalIgnoreCase);
 
             bool windowsOnlyErrorLogged = false;
             foreach (var knownFrameworkReference in knownFrameworkReferencesForTargetFramework)
@@ -207,7 +225,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                 }
 
-                TaskItem targetingPack = new TaskItem(knownFrameworkReference.Name);
+                TaskItem targetingPack = new(knownFrameworkReference.Name);
                 targetingPack.SetMetadata(MetadataKeys.NuGetPackageId, knownFrameworkReference.TargetingPackName);
                 targetingPack.SetMetadata(MetadataKeys.PackageConflictPreferredPackages, string.Join(";", preferredPackages));
 
@@ -255,7 +273,7 @@ namespace Microsoft.NET.Build.Tasks
                         !(DisableTransitiveFrameworkReferenceDownloads && frameworkReference == null))
                     {
                         //  Download targeting pack
-                        TaskItem packageToDownload = new TaskItem(knownFrameworkReference.TargetingPackName);
+                        TaskItem packageToDownload = new(knownFrameworkReference.TargetingPackName);
                         packageToDownload.SetMetadata(MetadataKeys.Version, targetingPackVersion);
 
                         packagesToDownload.Add(packageToDownload);
@@ -341,7 +359,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     foreach (var runtimeIdentifier in RuntimeIdentifiers)
                     {
-                        if (processedPrimaryRuntimeIdentifier && runtimeIdentifier == this.RuntimeIdentifier)
+                        if (processedPrimaryRuntimeIdentifier && runtimeIdentifier == RuntimeIdentifier)
                         {
                             //  We've already processed this RID
                             continue;
@@ -357,7 +375,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!string.IsNullOrEmpty(knownFrameworkReference.RuntimeFrameworkName) && !knownFrameworkReference.RuntimePackAlwaysCopyLocal)
                 {
-                    TaskItem runtimeFramework = new TaskItem(knownFrameworkReference.RuntimeFrameworkName);
+                    TaskItem runtimeFramework = new(knownFrameworkReference.RuntimeFrameworkName);
 
                     runtimeFramework.SetMetadata(MetadataKeys.Version, runtimeFrameworkVersion);
                     runtimeFramework.SetMetadata(MetadataKeys.FrameworkName, knownFrameworkReference.Name);
@@ -399,7 +417,7 @@ namespace Microsoft.NET.Build.Tasks
             _normalizedTargetFrameworkVersion ??= NormalizeVersion(new Version(TargetFrameworkVersion));
             packagesToDownload ??= new List<ITaskItem>();
 
-            List<ITaskItem> implicitPackageReferences = new List<ITaskItem>();
+            List<ITaskItem> implicitPackageReferences = new();
 
             if (ReadyToRunEnabled && ReadyToRunUseCrossgen2)
             {
@@ -442,10 +460,8 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     else if (IsAotCompatible || EnableAotAnalyzer)
                     {
-                        // Technically this is reachable by setting EnableAotAnalyzer without IsAotCompatible,
-                        // but the recommended way to enable AOT analysis is to set IsAotCompatible,
-                        // so the warning points to the common case.
-                        Log.LogWarning(Strings.IsAotCompatibleUnsupported);
+                        if (!SilenceIsAotCompatibleUnsupportedWarning)
+                            Log.LogWarning(Strings.IsAotCompatibleUnsupported, MinNonEolTargetFrameworkForAot);
                     }
                     else if (PublishTrimmed)
                     {
@@ -453,16 +469,15 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     else if (IsTrimmable || EnableTrimAnalyzer)
                     {
-                        // Technically this is reachable by setting EnableTrimAnalyzer without IsTrimmable,
-                        // but the recommended way to enable trim analysis is to set IsTrimmable,
-                        // so the warning points to the common case.
-                        Log.LogWarning(Strings.IsTrimmableUnsupported);
+                        if (!SilenceIsTrimmableUnsupportedWarning)
+                            Log.LogWarning(Strings.IsTrimmableUnsupported, MinNonEolTargetFrameworkForTrimming);
                     }
                     else if (EnableSingleFileAnalyzer)
                     {
                         // There's no IsSingleFileCompatible setting. EnableSingleFileAnalyzer is the
                         // recommended way to ensure single-file compatibility for libraries.
-                        Log.LogWarning(Strings.EnableSingleFileAnalyzerUnsupported);
+                        if (!SilenceEnableSingleFileAnalyzerUnsupportedWarning)
+                            Log.LogWarning(Strings.EnableSingleFileAnalyzerUnsupported, MinNonEolTargetFrameworkForSingleFile);
                     }
                     else
                     {
@@ -513,7 +528,7 @@ namespace Microsoft.NET.Build.Tasks
             if (knownRuntimePacksForTargetFramework?.Any() == true)
             {
                 // Determine the known runtime identifier platforms based on all available Microsoft.NETCore.App packs
-                HashSet<string> knownRuntimeIdentifierPlatforms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                HashSet<string> knownRuntimeIdentifierPlatforms = new(StringComparer.OrdinalIgnoreCase);
                 var netCoreAppPacks = knownRuntimePacksForTargetFramework!.Where(krp => krp.Name.Equals("Microsoft.NETCore.App", StringComparison.OrdinalIgnoreCase));
                 foreach (KnownRuntimePack netCoreAppPack in netCoreAppPacks)
                 {
@@ -665,7 +680,7 @@ namespace Microsoft.NET.Build.Tasks
 
                     if (runtimePacks != null)
                     {
-                        TaskItem runtimePackItem = new TaskItem(runtimePackName);
+                        TaskItem runtimePackItem = new(runtimePackName);
                         runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageId, runtimePackName);
                         runtimePackItem.SetMetadata(MetadataKeys.NuGetPackageVersion, resolvedRuntimePackVersion);
                         runtimePackItem.SetMetadata(MetadataKeys.FrameworkName, selectedRuntimePack.Name);
@@ -694,7 +709,7 @@ namespace Microsoft.NET.Build.Tasks
                         runtimePackPath == null &&
                         (wasReferencedDirectly || !DisableTransitiveFrameworkReferenceDownloads))
                     {
-                        TaskItem packageToDownload = new TaskItem(runtimePackName);
+                        TaskItem packageToDownload = new(runtimePackName);
                         packageToDownload.SetMetadata(MetadataKeys.Version, resolvedRuntimePackVersion);
 
                         packagesToDownload.Add(packageToDownload);
@@ -819,8 +834,24 @@ namespace Microsoft.NET.Build.Tasks
                 packagesToDownload.Add(runtimePackToDownload);
             }
 
+            if (toolPackType is ToolPackType.ILLink)
+            {
+                // The ILLink tool pack is available for some TargetFrameworks where we nonetheless consider
+                // IsTrimmable/IsAotCompatible/EnableSingleFile to be unsupported, because the framework
+                // was not annotated with the attributes.
+                var firstTargetFrameworkVersionToSupportAotAnalyzer = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportAotAnalyzer));
+                if ((IsAotCompatible || EnableAotAnalyzer) && normalizedTargetFrameworkVersion < firstTargetFrameworkVersionToSupportAotAnalyzer)
+                    return ToolPackSupport.UnsupportedForTargetFramework;
+                var firstTargetFrameworkVersionToSupportSingleFileAnalyzer = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportSingleFileAnalyzer));
+                if (EnableSingleFileAnalyzer && normalizedTargetFrameworkVersion < firstTargetFrameworkVersionToSupportSingleFileAnalyzer)
+                    return ToolPackSupport.UnsupportedForTargetFramework;
+                var firstTargetFrameworkVersionToSupportTrimAnalyzer = NormalizeVersion(new Version(FirstTargetFrameworkVersionToSupportTrimAnalyzer));
+                if ((IsTrimmable || EnableTrimAnalyzer) && normalizedTargetFrameworkVersion < firstTargetFrameworkVersionToSupportTrimAnalyzer)
+                    return ToolPackSupport.UnsupportedForTargetFramework;
+            }
+
             // Packs with RID-agnostic build packages that contain MSBuild targets.
-            if (toolPackType is not ToolPackType.Crossgen2)
+            if (toolPackType is not ToolPackType.Crossgen2 && EnableRuntimePackDownload)
             {
                 var buildPackageName = knownPack.ItemSpec;
                 var buildPackage = new TaskItem(buildPackageName);
@@ -833,7 +864,8 @@ namespace Microsoft.NET.Build.Tasks
             // The version comparison doesn't consider prerelease labels, so 8.0.0-foo will be considered equal to 8.0.0 and
             // will not get the extra analyzer package reference.
             if (toolPackType is ToolPackType.ILLink &&
-                new VersionComparer(VersionComparison.Version).Compare(NuGetVersion.Parse(packVersion), new NuGetVersion(8, 0, 0)) < 0)
+                new VersionComparer(VersionComparison.Version).Compare(NuGetVersion.Parse(packVersion), new NuGetVersion(8, 0, 0)) < 0 &&
+                EnableRuntimePackDownload)
             {
                 var analyzerPackage = new TaskItem("Microsoft.NET.ILLink.Analyzers");
                 analyzerPackage.SetMetadata(MetadataKeys.Version, packVersion);

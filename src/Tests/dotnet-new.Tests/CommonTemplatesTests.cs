@@ -82,12 +82,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             //  on dev and CI runs and possibly from the version within test host. Easiest is just to scrub it away
             if (expectedTemplateName.Equals("global.json file") && args == null)
             {
-                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(default).ConfigureAwait(false);
+                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(default);
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");
             }
 
-            VerificationEngine engine = new VerificationEngine(_logger);
-            await engine.Execute(options).ConfigureAwait(false);
+            VerificationEngine engine = new(_logger);
+            await engine.Execute(options);
         }
 
         //
@@ -164,7 +164,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData(new object[] { "console", "VB" })]
         public async void AotVariants(string name, string language)
         {
-            // "net8.0";
+            // template framework needs to be hardcoded here during the major version transition.
             string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{language}");
@@ -213,8 +213,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
             );
 
-            VerificationEngine engine = new VerificationEngine(_logger);
-            await engine.Execute(options).ConfigureAwait(false);
+            VerificationEngine engine = new(_logger);
+            await engine.Execute(options);
 
             Directory.Delete(workingDir, true);
         }
@@ -320,9 +320,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         [Theory]
         //creates all possible combinations for supported templates, language versions and frameworks
-#pragma warning disable CA1825 // Avoid zero-length array allocations. https://github.com/dotnet/sdk/issues/28672
         [MemberData(nameof(FeaturesSupport_Data))]
-#pragma warning restore CA1825 // Avoid zero-length array allocations.
         public async void FeaturesSupport(
             string name,
             bool buildPass,
@@ -336,7 +334,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             bool supportsImplicitUsings,
             bool supportsFileScopedNs)
         {
-            // "net8.0";
+            // Templates have not been updated to net9.0 yet "net8.0";
+            // string currentDefaultFramework = "net8.0";
             string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");
@@ -414,8 +413,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
             );
 
-            VerificationEngine engine = new VerificationEngine(_logger);
-            await engine.Execute(options).ConfigureAwait(false);
+            VerificationEngine engine = new(_logger);
+            await engine.Execute(options);
 
             if (buildPass)
             {

@@ -20,8 +20,8 @@ internal class DefaultRegistryAPI : IRegistryAPI
         _baseUri = baseUri;
         _logger = logger;
         _client = CreateClient(registryName, baseUri, logger, isAmazonECRRegistry);
-        Manifest = new DefaultManifestOperations(_baseUri, _client, _logger);
-        Blob = new DefaultBlobOperations(_baseUri, _client, _logger);
+        Manifest = new DefaultManifestOperations(_baseUri, registryName, _client, _logger);
+        Blob = new DefaultBlobOperations(_baseUri, registryName, _client, _logger);
     }
 
     public IBlobOperations Blob { get; }
@@ -30,10 +30,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
 
     private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isAmazonECRRegistry = false)
     {
-        var innerHandler = new SocketsHttpHandler()
-        {
-            PooledConnectionLifetime = TimeSpan.FromMilliseconds(10 /* total guess */)
-        };
+        var innerHandler = new SocketsHttpHandler();
 
         // Ignore certificate for https localhost repository.
         if (baseUri.Host == "localhost" && baseUri.Scheme == "https")

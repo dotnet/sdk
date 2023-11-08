@@ -238,17 +238,26 @@ namespace Microsoft.DotNet.Cli
             else
             {
                 PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
-                var resolvedCommand = CommandFactoryUsingResolver.Create(
-                        "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand),
-                        args.GetSubArguments(),
-                        FrameworkConstants.CommonFrameworks.NetStandardApp15);
-                PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
+                try
+                {
+                    var resolvedCommand = CommandFactoryUsingResolver.Create(
+                            "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand),
+                            args.GetSubArguments(),
+                            FrameworkConstants.CommonFrameworks.NetStandardApp15);
+                    PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
 
-                PerformanceLogEventSource.Log.ExtensibleCommandStart();
-                var result = resolvedCommand.Execute();
-                PerformanceLogEventSource.Log.ExtensibleCommandStop();
+                    PerformanceLogEventSource.Log.ExtensibleCommandStart();
+                    var result = resolvedCommand.Execute();
+                    PerformanceLogEventSource.Log.ExtensibleCommandStop();
 
-                exitCode = result.ExitCode;
+                    exitCode = result.ExitCode;
+                }
+                catch (CommandUnknownException e)
+                {
+                    Reporter.Error.WriteLine(e.Message.Red());
+                    Reporter.Output.WriteLine(e.InstructionMessage);
+                    exitCode = 1;
+                }
             }
 
             PerformanceLogEventSource.Log.TelemetryClientFlushStart();
@@ -292,7 +301,7 @@ namespace Microsoft.DotNet.Cli
 
             Reporter.Verbose.WriteLine(
                 string.Format(
-                    Utils.LocalizableStrings.DotnetCliHomeUsed,
+                    LocalizableStrings.DotnetCliHomeUsed,
                     home,
                     CliFolderPathCalculator.DotnetHomeVariableName));
         }

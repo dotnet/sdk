@@ -15,7 +15,7 @@ parameters:
   timeoutInMinutes: 180
 
 jobs:
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0.1xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0.2xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
   - template: /eng/common/templates/job/onelocbuild.yml
     parameters:
       CreatePr: true
@@ -272,10 +272,11 @@ jobs:
                 -configuration $(_BuildConfig)
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+                $(_InternalRuntimeDownloadArgs)
           displayName: Run AoT Tests in Helix
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-              HelixAccessToken: ''
+              HelixAccessToken: $(_HelixApiToken)
               RunAoTTests: 'true'
 
       - ${{ if eq(parameters.agentOs, 'Darwin') }}:
@@ -304,6 +305,7 @@ jobs:
                 --projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+                $(_InternalRuntimeDownloadArgs)
           displayName: Run AoT Tests in Helix
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)

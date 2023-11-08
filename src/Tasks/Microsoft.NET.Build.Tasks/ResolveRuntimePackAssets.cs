@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             var runtimePackAssets = new List<ITaskItem>();
 
-            HashSet<string> frameworkReferenceNames = new HashSet<string>(FrameworkReferences.Select(item => item.ItemSpec), StringComparer.OrdinalIgnoreCase);
+            HashSet<string> frameworkReferenceNames = new(FrameworkReferences.Select(item => item.ItemSpec), StringComparer.OrdinalIgnoreCase);
 
             foreach (var unavailableRuntimePack in UnavailableRuntimePacks)
             {
@@ -40,7 +40,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            HashSet<string> processedRuntimePackRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> processedRuntimePackRoots = new(StringComparer.OrdinalIgnoreCase);
 
             foreach (var runtimePack in ResolvedRuntimePacks)
             {
@@ -136,8 +136,8 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         throw new BuildErrorException($"Culture not set in runtime manifest for {assetPath}");
                     }
-                    if (this.SatelliteResourceLanguages.Length >= 1 &&
-                        !this.SatelliteResourceLanguages.Any(lang => string.Equals(lang.ItemSpec, culture, StringComparison.OrdinalIgnoreCase)))
+                    if (SatelliteResourceLanguages.Length >= 1 &&
+                        !SatelliteResourceLanguages.Any(lang => string.Equals(lang.ItemSpec, culture, StringComparison.OrdinalIgnoreCase)))
                     {
                         continue;
                     }

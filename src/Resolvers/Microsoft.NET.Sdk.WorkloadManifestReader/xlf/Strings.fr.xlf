@@ -147,6 +147,11 @@
         <target state="translated">La version de charge de travail {0}, qui a été spécifiée dans {1}, est introuvable.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotFound">
+        <source>Workload version {0} was not found.</source>
+        <target state="translated">La version de la charge de travail {0} est introuvable.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

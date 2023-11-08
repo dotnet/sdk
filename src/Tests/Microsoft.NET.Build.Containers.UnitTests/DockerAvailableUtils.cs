@@ -5,6 +5,8 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 
 public class DockerAvailableTheoryAttribute : TheoryAttribute
 {
+    public static string LocalRegistry => DockerCliStatus.LocalRegistry;
+
     public DockerAvailableTheoryAttribute(bool skipPodman = false)
     {
         if (!DockerCliStatus.IsAvailable)
@@ -21,6 +23,8 @@ public class DockerAvailableTheoryAttribute : TheoryAttribute
 
 public class DockerAvailableFactAttribute : FactAttribute
 {
+    public static string LocalRegistry => DockerCliStatus.LocalRegistry;
+
     public DockerAvailableFactAttribute(bool skipPodman = false)
     {
         if (!DockerCliStatus.IsAvailable)
@@ -37,10 +41,13 @@ public class DockerAvailableFactAttribute : FactAttribute
 
 // tiny optimization - since there are many instances of this attribute we should only get
 // the daemon status once
-file static class DockerCliStatus
+static file class DockerCliStatus
 {
     public static readonly bool IsAvailable;
     public static readonly string? Command;
+    public static string LocalRegistry
+        => Command == DockerCli.PodmanCommand ? KnownLocalRegistryTypes.Podman
+                                              : KnownLocalRegistryTypes.Docker;
 
     static DockerCliStatus()
     {

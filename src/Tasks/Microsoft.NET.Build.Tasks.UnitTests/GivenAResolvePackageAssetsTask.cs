@@ -25,9 +25,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
             catch (ArgumentNullException)
             {
-                Assert.True(
-                    false,
-                    "HashSettings is likely not correctly handling null value of one or more optional task parameters");
+                Assert.Fail("HashSettings is likely not correctly handling null value of one or more optional task parameters");
 
                 throw; // unreachable
             }
@@ -49,7 +47,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         break;
 
                     default:
-                        Assert.True(false, $"{property.Name} is not a bool or string or ITaskItem[]. Update the test code to handle that.");
+                        Assert.Fail($"{property.Name} is not a bool or string or ITaskItem[]. Update the test code to handle that.");
                         throw null; // unreachable
                 }
 
@@ -161,7 +159,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var invalidContextWarnings = engine.Warnings.Where(msg => msg.Code == "NETSDK1188");
             invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
 
-            var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1188");
+            var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1188" && msg.Importance == MessageImportance.Low);
             invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
 
         }
@@ -184,7 +182,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             var invalidContextWarnings = engine.Warnings.Where(msg => msg.Code == "NETSDK1187");
             invalidContextWarnings.Should().HaveCount(shouldHaveWarnings ? 1 : 0);
 
-            var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1187");
+            var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1187" && msg.Importance == MessageImportance.Low);
             invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
         }
 

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
@@ -36,6 +37,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly IFirstPartyNuGetPackageSigningVerifier _firstPartyNuGetPackageSigningVerifier;
         private bool _validationMessagesDisplayed = false;
         private IDictionary<PackageSource, SourceRepository> _sourceRepositories;
+        private readonly bool _isNuGetTool;
 
         private bool _verifySignatures;
 
@@ -47,7 +49,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             IReporter reporter = null,
             RestoreActionConfig restoreActionConfig = null,
             Func<IEnumerable<Task>> timer = null,
-            bool verifySignatures = false)
+            bool verifySignatures = false,
+            bool isNuGetTool = false)
         {
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
@@ -69,18 +72,21 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(),
                 !_restoreActionConfig.Interactive);
+            _isNuGetTool = isNuGetTool;
         }
 
         public async Task<string> DownloadPackageAsync(PackageId packageId,
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
-            DirectoryPath? downloadFolder = null)
+            bool includeUnlisted = false,
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null)
         {
             CancellationToken cancellationToken = CancellationToken.None;
 
             (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
-                packageSourceLocation, includePreview);
+                packageSourceLocation, includePreview, includeUnlisted, packageSourceMapping).ConfigureAwait(false);
 
             FindPackageByIdResource resource = null;
             SourceRepository repository = GetSourceRepository(source);
@@ -155,8 +161,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false)
         {
-            (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion, packageSourceLocation, includePreview);
-
+            (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion, packageSourceLocation, includePreview).ConfigureAwait(false);
+            
             SourceRepository repository = GetSourceRepository(source);
             if (repository.PackageSource.IsLocal)
             {
@@ -173,13 +179,13 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public async Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
         {
             await using FileStream packageStream = File.OpenRead(packagePath);
-            PackageFolderReader packageReader = new PackageFolderReader(targetFolder.Value);
-            PackageExtractionContext packageExtractionContext = new PackageExtractionContext(
+            PackageFolderReader packageReader = new(targetFolder.Value);
+            PackageExtractionContext packageExtractionContext = new(
                 PackageSaveMode.Defaultv3,
                 XmlDocFileSaveMode.None,
                 null,
                 _verboseLogger);
-            NuGetPackagePathResolver packagePathResolver = new NuGetPackagePathResolver(targetFolder.Value);
+            NuGetPackagePathResolver packagePathResolver = new(targetFolder.Value);
             CancellationToken cancellationToken = CancellationToken.None;
 
             var allFilesInPackage = await PackageExtractor.ExtractPackageAsync(
@@ -214,13 +220,15 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private async Task<(PackageSource, NuGetVersion)> GetPackageSourceAndVersion(PackageId packageId,
              NuGetVersion packageVersion = null,
              PackageSourceLocation packageSourceLocation = null,
-             bool includePreview = false)
+             bool includePreview = false,
+             bool includeUnlisted = false,
+             PackageSourceMapping packageSourceMapping = null)
         {
             CancellationToken cancellationToken = CancellationToken.None;
 
             IPackageSearchMetadata packageMetadata;
 
-            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageSourceLocation);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation, packageSourceMapping);
             PackageSource source;
 
             if (packageVersion is null)
@@ -233,7 +241,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 packageVersion = new NuGetVersion(packageVersion);
                 (source, packageMetadata) =
                     await GetPackageMetadataAsync(packageId.ToString(), packageVersion, packagesSources,
-                        cancellationToken).ConfigureAwait(false);
+                        cancellationToken, includeUnlisted).ConfigureAwait(false);
             }
 
             packageVersion = packageMetadata.Identity.Version;
@@ -284,9 +292,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return true;
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(PackageSourceLocation packageSourceLocation = null)
+        private IEnumerable<PackageSource> LoadNuGetSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
         {
-            IEnumerable<PackageSource> defaultSources = new List<PackageSource>();
+            List<PackageSource> defaultSources = new List<PackageSource>();
             string currentDirectory = Directory.GetCurrentDirectory();
             ISettings settings;
             if (packageSourceLocation?.NugetConfig != null)
@@ -303,9 +311,26 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     packageSourceLocation?.RootConfigDirectory?.Value ?? currentDirectory);
             }
 
-            PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
-            defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+            PackageSourceProvider packageSourceProvider = new(settings);
+            defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
 
+            packageSourceMapping = packageSourceMapping ?? PackageSourceMapping.GetPackageSourceMapping(settings);
+
+            // filter package patterns if enabled            
+            if (_isNuGetTool && packageSourceMapping?.IsEnabled == true)
+            {
+                IReadOnlyList<string> sources = packageSourceMapping.GetConfiguredPackageSources(packageId.ToString());
+
+                if (sources.Count == 0)
+                {
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, packageId));
+                }
+                defaultSources = defaultSources.Where(source => sources.Contains(source.Name)).ToList();
+                if (defaultSources.Count == 0)
+                {
+                    throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, packageId));
+                }
+            }
 
             if (packageSourceLocation?.AdditionalSourceFeed?.Any() ?? false)
             {
@@ -316,7 +341,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         continue;
                     }
 
-                    PackageSource packageSource = new PackageSource(source);
+                    PackageSource packageSource = new(source);
                     if (packageSource.TrySourceAsUri == null)
                     {
                         _verboseLogger.LogWarning(string.Format(
@@ -325,7 +350,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         continue;
                     }
 
-                    defaultSources = defaultSources.Append(packageSource);
+                    defaultSources.Add(packageSource);
                 }
             }
 
@@ -339,7 +364,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return defaultSources;
             }
 
-            List<PackageSource> customSources = new List<PackageSource>();
+            List<PackageSource> customSources = new();
             foreach (string source in packageSourceLocation?.SourceFeedOverrides)
             {
                 if (string.IsNullOrWhiteSpace(source))
@@ -347,7 +372,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     continue;
                 }
 
-                PackageSource packageSource = new PackageSource(source);
+                PackageSource packageSource = new(source);
                 if (packageSource.TrySourceAsUri == null)
                 {
                     _verboseLogger.LogWarning(string.Format(
@@ -377,7 +402,61 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return retrievedSources;
         }
 
-        private async Task<(PackageSource, IPackageSearchMetadata)> GetLatestVersionInternalAsync(
+        private async Task<(PackageSource, IPackageSearchMetadata)> GetMatchingVersionInternalAsync(
+            string packageIdentifier, IEnumerable<PackageSource> packageSources, VersionRange versionRange,
+            CancellationToken cancellationToken)
+        {
+            if (packageSources == null)
+            {
+                throw new ArgumentNullException(nameof(packageSources));
+            }
+
+            if (string.IsNullOrWhiteSpace(packageIdentifier))
+            {
+                throw new ArgumentException($"{nameof(packageIdentifier)} cannot be null or empty",
+                    nameof(packageIdentifier));
+            }
+
+            (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)[] foundPackagesBySource;
+
+            if (_restoreActionConfig.DisableParallel)
+            {
+                foundPackagesBySource = packageSources.Select(source => GetPackageMetadataAsync(source,
+                    packageIdentifier,
+                    true, false, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult()).ToArray();
+            }
+            else
+            {
+                foundPackagesBySource =
+                    await Task.WhenAll(
+                            packageSources.Select(source => GetPackageMetadataAsync(source, packageIdentifier,
+                                true, false, cancellationToken)))
+                        .ConfigureAwait(false);
+            }
+
+            IEnumerable<(PackageSource source, IPackageSearchMetadata package)> accumulativeSearchResults =
+                foundPackagesBySource
+                    .SelectMany(result => result.foundPackages.Select(package => (result.source, package)));
+
+            var availableVersions = accumulativeSearchResults.Select(t => t.package.Identity.Version).ToList();
+            var bestVersion = versionRange.FindBestMatch(availableVersions);
+            if (bestVersion != null)
+            {
+                var bestResult = accumulativeSearchResults.First(t => t.package.Identity.Version == bestVersion);
+                return bestResult;
+            }
+            else
+            {
+                throw new NuGetPackageNotFoundException(
+                    string.Format(
+                        LocalizableStrings.IsNotFoundInNuGetFeeds,
+                        $"{packageIdentifier}::{versionRange}",
+                        string.Join(", ", packageSources.Select(source => source.Source))));
+            }
+
+        }
+
+            private async Task<(PackageSource, IPackageSearchMetadata)> GetLatestVersionInternalAsync(
             string packageIdentifier, IEnumerable<PackageSource> packageSources, bool includePreview,
             CancellationToken cancellationToken)
         {
@@ -398,14 +477,14 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 foundPackagesBySource = packageSources.Select(source => GetPackageMetadataAsync(source,
                     packageIdentifier,
-                    true, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult()).ToArray();
+                    true, false, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult()).ToArray();
             }
             else
             {
                 foundPackagesBySource =
                     await Task.WhenAll(
                             packageSources.Select(source => GetPackageMetadataAsync(source, packageIdentifier,
-                                true, cancellationToken)))
+                                true, false, cancellationToken)))
                         .ConfigureAwait(false);
             }
 
@@ -444,8 +523,30 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return latestVersion;
         }
 
+        public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
+            VersionRange versionRange,
+             PackageSourceLocation packageSourceLocation = null)
+        {
+            if(versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
+            {
+                return versionRange.MinVersion;
+            }
+
+            CancellationToken cancellationToken = CancellationToken.None;
+            IPackageSearchMetadata packageMetadata;
+
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
+            PackageSource source;
+
+            (source, packageMetadata) = await GetMatchingVersionInternalAsync(packageId.ToString(), packagesSources,
+                    versionRange, cancellationToken).ConfigureAwait(false);
+
+            NuGetVersion packageVersion = packageMetadata.Identity.Version;
+            return packageVersion;
+        }
+
         private async Task<(PackageSource, IPackageSearchMetadata)> GetPackageMetadataAsync(string packageIdentifier,
-            NuGetVersion packageVersion, IEnumerable<PackageSource> sources, CancellationToken cancellationToken)
+            NuGetVersion packageVersion, IEnumerable<PackageSource> sources, CancellationToken cancellationToken, bool includeUnlisted = false)
         {
             if (string.IsNullOrWhiteSpace(packageIdentifier))
             {
@@ -461,7 +562,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             List<Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)>> tasks = sources
                 .Select(source =>
-                    GetPackageMetadataAsync(source, packageIdentifier, true, linkedCts.Token)).ToList();
+                    GetPackageMetadataAsync(source, packageIdentifier, true, includeUnlisted, linkedCts.Token)).ToList();
 
             bool TryGetPackageMetadata(
                 (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages) sourceAndFoundPackages,
@@ -527,7 +628,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         }
 
         private async Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)>
-            GetPackageMetadataAsync(PackageSource source, string packageIdentifier, bool includePrerelease = false,
+            GetPackageMetadataAsync(PackageSource source, string packageIdentifier, bool includePrerelease = false, bool includeUnlisted = false,
                 CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrWhiteSpace(packageIdentifier))
@@ -549,7 +650,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 foundPackages = await resource.GetMetadataAsync(
                     packageIdentifier,
                     includePrerelease,
-                    false,
+                    includeUnlisted,
                     _cacheSettings,
                     _verboseLogger,
                     cancellationToken).ConfigureAwait(false);
@@ -569,7 +670,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             CancellationToken cancellationToken = CancellationToken.None;
             IPackageSearchMetadata packageMetadata;
-            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageSourceLocation);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
 
             (_, packageMetadata) = await GetLatestVersionInternalAsync(packageId.ToString(), packagesSources,
                 includePreview, cancellationToken).ConfigureAwait(false);

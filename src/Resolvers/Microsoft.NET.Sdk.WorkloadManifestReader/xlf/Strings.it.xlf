@@ -147,6 +147,11 @@
         <target state="translated">La versione del carico di lavoro {0}, specificata in {1}, non è stata trovata.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotFound">
+        <source>Workload version {0} was not found.</source>
+        <target state="translated">La versione {0} del carico di lavoro non è stata trovata.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -80,7 +80,7 @@ namespace Microsoft.NET.TestFramework
             //  one running the tests, it won't interfere
             Environment.SetEnvironmentVariable("MSBuildSdksPath", null);
 
-            TestContext testContext = new TestContext();
+            TestContext testContext = new();
 
             bool runAsTool = false;
             if (Directory.Exists(Path.Combine(AppContext.BaseDirectory, "Assets")))
@@ -200,11 +200,11 @@ namespace Microsoft.NET.TestFramework
 
             //  Important to set this before below code which ends up calling through TestContext.Current, which would
             //  result in infinite recursion / stack overflow if TestContext.Current wasn't set
-            TestContext.Current = testContext;
+            Current = testContext;
 
             //  Set up test hooks for in-process tests
             Environment.SetEnvironmentVariable(
-                DotNet.Cli.Utils.Constants.MSBUILD_EXE_PATH,
+                Constants.MSBUILD_EXE_PATH,
                 Path.Combine(testContext.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
 
             Environment.SetEnvironmentVariable(
@@ -212,7 +212,7 @@ namespace Microsoft.NET.TestFramework
                 Path.Combine(testContext.ToolsetUnderTest.SdksPath));
 
 #if NETCOREAPP
-            DotNet.Cli.Utils.MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
+            MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
                 testContext.ToolsetUnderTest.SdkFolderUnderTest;
 #endif
         }
@@ -221,16 +221,20 @@ namespace Microsoft.NET.TestFramework
         {
             string directory = AppContext.BaseDirectory;
 
-            while (directory != null && !Directory.Exists(Path.Combine(directory, ".git")))
+            while (directory is not null)
             {
+                var gitPath = Path.Combine(directory, ".git");
+                if (Directory.Exists(gitPath) || File.Exists(gitPath))
+                {
+                    // Found the repo root, which should either have a .git folder or, if the repo
+                    // is part of a Git worktree, a .git file.
+                    return directory;
+                }
+
                 directory = Directory.GetParent(directory)?.FullName;
             }
 
-            if (directory == null)
-            {
-                return null;
-            }
-            return directory;
+            return null;
         }
         private static string FindOrCreateFolderInTree(string relativePath, string startPath)
         {
@@ -271,14 +275,14 @@ namespace Microsoft.NET.TestFramework
 
         public void WriteGlobalJson(string path)
         {
-            WriteGlobalJson(path, this.SdkVersion);
+            WriteGlobalJson(path, SdkVersion);
         }
 
         public static void WriteGlobalJson(string path, string sdkVersion)
         {
             if (!string.IsNullOrEmpty(sdkVersion))
             {
-                string globalJsonPath = System.IO.Path.Combine(path, "global.json");
+                string globalJsonPath = Path.Combine(path, "global.json");
                 File.WriteAllText(globalJsonPath, @"{
   ""sdk"": {
     ""version"": """ + sdkVersion + @"""

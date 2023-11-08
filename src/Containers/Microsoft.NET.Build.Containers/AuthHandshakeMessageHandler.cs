@@ -123,8 +123,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         public string ResolvedToken => token ?? access_token ?? throw new ArgumentException(Resource.GetString(nameof(Strings.InvalidTokenResponse)));
         public DateTimeOffset ResolvedExpiration {
             get {
-                var issueTime = this.issued_at ?? DateTimeOffset.UtcNow; // per spec, if no issued_at use the current time
-                var validityDuration = this.expires_in ?? 60; // per spec, if no expires_in use 60 seconds
+                var issueTime = issued_at ?? DateTimeOffset.UtcNow; // per spec, if no issued_at use the current time
+                var validityDuration = expires_in ?? 60; // per spec, if no expires_in use 60 seconds
                 var expirationTime = issueTime.AddSeconds(validityDuration);
                 return expirationTime;
             }
@@ -215,7 +215,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             Content = new FormUrlEncodedContent(parameters)
         };
 
-        HttpResponseMessage postResponse = await base.SendAsync(postMessage, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage postResponse = await base.SendAsync(postMessage, cancellationToken).ConfigureAwait(false);
         if (!postResponse.IsSuccessStatusCode)
         {
             await postResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
@@ -263,13 +263,11 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             var message = new HttpRequestMessage(HttpMethod.Get, builder.ToString());
             message.Headers.Authorization = header;
 
-            var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
+            using var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
             if (!tokenResponse.IsSuccessStatusCode)
             {
-                await tokenResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
+                throw new UnableToAccessRepositoryException(_registryName);
             }
-            tokenResponse.EnsureSuccessStatusCode();
-            _logger.LogTrace("Received '{statuscode}'.", tokenResponse.StatusCode);
 
             TokenResponse? token = JsonSerializer.Deserialize<TokenResponse>(tokenResponse.Content.ReadAsStream(cancellationToken));
             if (token is null)
@@ -329,6 +327,10 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 }
                 else if (response is { StatusCode: HttpStatusCode.Unauthorized } && TryParseAuthenticationInfo(response, out string? scheme, out AuthInfo? authInfo))
                 {
+                    // Load the reply so the HTTP connection becomes available to send the authentication request.
+                    // Ideally we'd call LoadIntoBufferAsync, but it has no overload that accepts a CancellationToken so we call ReadAsByteArrayAsync instead.
+                    _ = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+
                     if (await GetAuthenticationAsync(_registryName, scheme, authInfo, cancellationToken).ConfigureAwait(false) is (AuthenticationHeaderValue authHeader, DateTimeOffset expirationTime))
                     {
                         _authenticationHeaders[_registryName] = authHeader;
