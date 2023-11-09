@@ -216,6 +216,7 @@
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-alpha.1.23558.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>143fe7a0470e35717d26cded473041eb8bb5a75d</Sha>
+      <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-alpha.1.23558.4">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
