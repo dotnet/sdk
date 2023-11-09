@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
   internal class TemplatePackageVersion
   {
-      public const string MicrosoftTemplateSearchTemplateDiscoveryPackageVersion = "$(MicrosoftTemplateEngineAbstractionsPackageVersion)"%3B
+      public const string MicrosoftTemplateSearchTemplateDiscoveryPackageVersion = "$(MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)"%3B
   }
 }
       ]]>
