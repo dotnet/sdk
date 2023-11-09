@@ -27,8 +27,7 @@
     <Bundled90Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates90PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <Bundled90Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates90PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <Bundled90Templates Include="Microsoft.DotNet.Common.ProjectTemplates.9.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates90PackageVersion)" />
-    <!-- Not available yet for 9.0 -->
-    <Bundled90Templates Include="Microsoft.DotNet.Test.ProjectTemplates.8.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates80PackageVersion)" />
+    <Bundled90Templates Include="Microsoft.DotNet.Test.ProjectTemplates.9.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates90PackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Label=".NET 8.0 templates">
