@@ -169,15 +169,16 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 {
                     _environmentPathInstruction.PrintAddPathInstructionIfPathDoesNotExist();
                 }
-                if (!_verbosity.IsQuiet())
+                if (_verbosity.IsQuiet())
                 {
-                    _reporter.WriteLine(
-                    string.Format(
-                        LocalizableStrings.InstallationSucceeded,
-                        string.Join(", ", package.Commands.Select(c => c.Name)),
-                        package.Id,
-                        package.Version.ToNormalizedString()).Green());
+                    return 0;
                 }
+                _reporter.WriteLine(
+                string.Format(
+                    LocalizableStrings.InstallationSucceeded,
+                    string.Join(", ", package.Commands.Select(c => c.Name)),
+                    package.Id,
+                    package.Version.ToNormalizedString()).Green());
 
                 return 0;
             }
