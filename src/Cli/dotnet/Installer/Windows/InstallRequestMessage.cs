@@ -40,15 +40,6 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// The path of the install state file.
-        /// </summary>
-        public string InstallStateFile
-        {
-            get;
-            set;
-        }
-
-        /// <summary>
         /// The path of the MSI log file to generate when installing, uninstalling or repairing a specific MSI.
         /// </summary>
         public string LogFile

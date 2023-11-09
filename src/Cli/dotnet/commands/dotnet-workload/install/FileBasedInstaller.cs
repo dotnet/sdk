@@ -452,16 +452,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         }
 
-        public void DeleteInstallState(string path)
+        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand)
         {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
+            
             if (File.Exists(path))
             {
                 File.Delete(path);
             }
         }
 
-        public void WriteInstallState(string path, IEnumerable<string> jsonLines)
+        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines)
         {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.WriteAllLines(path, jsonLines);
         }

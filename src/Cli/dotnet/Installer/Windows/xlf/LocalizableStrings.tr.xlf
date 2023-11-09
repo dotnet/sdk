@@ -7,11 +7,6 @@
         <target state="translated">{0} için AuthentiCode imzası güvenilir bir kuruluşa ait değil.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidInstallStateFile">
-        <source>Invalid install state file: {0}</source>
-        <target state="new">Invalid install state file: {0}</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>

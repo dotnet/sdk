@@ -7,11 +7,6 @@
         <target state="translated">{0}에 대한 AuthentiCode 서명이 신뢰할 수 있는 조직에 속해 있지 않습니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidInstallStateFile">
-        <source>Invalid install state file: {0}</source>
-        <target state="new">Invalid install state file: {0}</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>

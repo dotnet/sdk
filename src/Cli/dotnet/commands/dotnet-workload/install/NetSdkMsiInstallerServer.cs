@@ -94,13 +94,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             break;
 
                         case InstallRequestType.WriteInstallStateFile:
-                            WriteInstallStateFile(request.InstallStateFile, request.InstallStateContents);
-                            Dispatcher.ReplySuccess($"Created install state file: {request.InstallStateFile}");
+                            WriteInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand), request.InstallStateContents);
+                            Dispatcher.ReplySuccess($"Created install state file for {request.SdkFeatureBand}.");
                             break;
 
                         case InstallRequestType.RemoveInstallStateFile:
-                            RemoveInstallStateFile(request.InstallStateFile);
-                            Dispatcher.ReplySuccess($"Deleted install state file: {request.InstallStateFile}");
+                            RemoveInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand));
+                            Dispatcher.ReplySuccess($"Deleted install state file for {request.SdkFeatureBand}.");
                             break;
 
                         default:

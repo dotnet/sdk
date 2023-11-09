@@ -7,11 +7,6 @@
         <target state="translated">La signature AuthentiCode pour {0} n’appartient pas à une organisation approuvée.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidInstallStateFile">
-        <source>Invalid install state file: {0}</source>
-        <target state="new">Invalid install state file: {0}</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -158,11 +158,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     if (useRollback)
                     {
-                        _workloadInstaller.WriteInstallState(_defaultJsonPath, GetInstallStateContents(manifestsToUpdate));
+                        _workloadInstaller.WriteInstallState(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
                     else
                     {
-                        _workloadInstaller.DeleteInstallState(_defaultJsonPath);
+                        _workloadInstaller.DeleteInstallState(sdkFeatureBand);
                     }
                 },
                 rollback: () =>

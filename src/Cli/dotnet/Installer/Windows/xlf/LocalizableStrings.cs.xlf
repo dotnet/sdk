@@ -7,11 +7,6 @@
         <target state="translated">Podpis AuthentiCode pro {0} nepatří důvěryhodné organizaci.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidInstallStateFile">
-        <source>Invalid install state file: {0}</source>
-        <target state="new">Invalid install state file: {0}</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>

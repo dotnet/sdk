@@ -182,11 +182,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public void DeleteInstallState(string path) =>
-            RemoveInstallStateFile(path);
+        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand) =>
+            RemoveInstallStateFile(sdkFeatureBand);
 
-        public void WriteInstallState(string path, IEnumerable<string> jsonLines) =>
-            WriteInstallStateFile(path, jsonLines);
+        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines) =>
+            WriteInstallStateFile(sdkFeatureBand, jsonLines);
 
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care

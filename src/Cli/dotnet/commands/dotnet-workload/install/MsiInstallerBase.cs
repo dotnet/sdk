@@ -494,12 +494,13 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// Deletes the specified install state file.
+        /// Deletes install state file for the specified feature band.
         /// </summary>
-        /// <param name="path">The path of the install state file to delete.</param>
-        protected void RemoveInstallStateFile(string path)
+        /// <param name="sdkFeatureBand">The feature band of the install state file.</param>
+        protected void RemoveInstallStateFile(SdkFeatureBand sdkFeatureBand)
         {
-            VerifyInstallStateFile(path);
+            string path = WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null);
+
             if (File.Exists(path))
             {
                 Log?.LogMessage($"Install state file does not exist: {path}");
@@ -514,37 +515,19 @@ namespace Microsoft.DotNet.Installer.Windows
             }
             else if (IsClient)
             {
-                InstallResponseMessage response = Dispatcher.SendRemoveInstallStateFileRequest(path);
+                InstallResponseMessage response = Dispatcher.SendRemoveInstallStateFileRequest(sdkFeatureBand);
                 ExitOnFailure(response, $"Failed to remove install state file: {path}");
-            }
-        }
-
-        /// <summary>
-        /// Verify that the specified path points to an install state file.
-        /// </summary>
-        /// <exception cref="ArgumentException" />
-        /// <remarks>
-        /// This method is intended to avoid arbitrary file creation and delete operation when executing install state
-        /// file related operations.
-        /// </remarks>
-        private void VerifyInstallStateFile(string path)
-        {
-            if (string.IsNullOrWhiteSpace(path) ||
-                (!path.StartsWith(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)) &&
-                !path.EndsWith("default.json")))
-            {
-                throw new ArgumentException(string.Format(LocalizableStrings.InvalidInstallStateFile, path));
             }
         }
 
         /// <summary>
         /// Writes the contents of the install state JSON file.
         /// </summary>
-        /// <param name="path">The path of the isntall state file to write.</param>
+        /// <param name="sdkFeatureBand">The path of the isntall state file to write.</param>
         /// <param name="jsonLines">The contents of the JSON file, formatted as a single line.</param>
-        protected void WriteInstallStateFile(string path, IEnumerable<string> jsonLines)
+        protected void WriteInstallStateFile(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines)
         {
-            VerifyInstallStateFile(path);
+            string path = WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null);
             Elevate();
 
             if (IsElevated)
@@ -558,7 +541,7 @@ namespace Microsoft.DotNet.Installer.Windows
             }
             else if (IsClient)
             {
-                InstallResponseMessage respone = Dispatcher.SendWriteInstallStateFileRequest(path, jsonLines);
+                InstallResponseMessage respone = Dispatcher.SendWriteInstallStateFileRequest(sdkFeatureBand, jsonLines);
                 ExitOnFailure(respone, $"Failed to write install state file: {path}");
             }
         }

@@ -39,11 +39,6 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected IInstaller _workloadInstaller;
         protected IWorkloadManifestUpdater _workloadManifestUpdater;
 
-        /// <summary>
-        /// The path of the default.json file tracking the install state for the current SDK.
-        /// </summary>
-        protected readonly string _defaultJsonPath;
-
         public InstallingWorkloadCommand(
             ParseResult parseResult,
             IReporter reporter,
@@ -91,8 +86,6 @@ namespace Microsoft.DotNet.Workloads.Workload
 
             _workloadInstallerFromConstructor = workloadInstaller;
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
-
-            _defaultJsonPath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
         }
 
         protected IEnumerable<string> GetInstallStateContents(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
