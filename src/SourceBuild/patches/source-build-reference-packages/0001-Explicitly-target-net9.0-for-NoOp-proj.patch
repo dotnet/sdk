@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Tue, 7 Nov 2023 12:40:49 -0600
+Subject: [PATCH] Explicitly target net9.0 for NoOp proj
+
+https://github.com/dotnet/source-build/issues/3663
+---
+ eng/NoOp.csproj | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/NoOp.csproj b/eng/NoOp.csproj
+index 659aa00a..3ecefd43 100644
+--- a/eng/NoOp.csproj
++++ b/eng/NoOp.csproj
+@@ -5,7 +5,7 @@
+   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+ 
+   <PropertyGroup>
+-    <TargetFramework>$(NetCurrent)</TargetFramework>
++    <TargetFramework>net9.0</TargetFramework>
+   </PropertyGroup>
+ 
+   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
