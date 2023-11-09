@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommandErrorMessage">
         <source>Could not execute because the specified command or file was not found.</source>
-        <target state="new">Could not execute because the specified command or file was not found.</target>
+        <target state="translated">Не удалось выполнить, поскольку указанная команда или файл не найдены.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
@@ -37,10 +37,10 @@
   * You misspelled a built-in dotnet command.
   * You intended to execute a .NET program, but {0} does not exist.
   * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</source>
-        <target state="new">Possible reasons for this include:
-  * You misspelled a built-in dotnet command.
-  * You intended to execute a .NET program, but {0} does not exist.
-  * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</target>
+        <target state="translated">Возможные причины этого включают:
+  * Вы допустили ошибку во встроенной команде dotnet.
+  * Вы собирались выполнить программу .NET, но {0} не существует.
+  * Вы собирались запустить глобальное средство, но в PATH не удалось найти исполняемый файл с префиксом dotnet и таким именем.</target>
         <note />
       </trans-unit>
       <trans-unit id="WaitingForDebuggerToAttach">
