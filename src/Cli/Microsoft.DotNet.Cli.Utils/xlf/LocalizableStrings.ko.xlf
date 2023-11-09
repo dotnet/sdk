@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommandErrorMessage">
         <source>Could not execute because the specified command or file was not found.</source>
-        <target state="new">Could not execute because the specified command or file was not found.</target>
+        <target state="translated">지정한 명령 또는 파일을 찾을 수 없어 실행하지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
@@ -37,10 +37,10 @@
   * You misspelled a built-in dotnet command.
   * You intended to execute a .NET program, but {0} does not exist.
   * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</source>
-        <target state="new">Possible reasons for this include:
-  * You misspelled a built-in dotnet command.
-  * You intended to execute a .NET program, but {0} does not exist.
-  * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</target>
+        <target state="translated">이에 대한 예상 원인은 다음과 같습니다.
+  * 기본 제공 dotnet 명령의 철자가 잘못되었습니다.
+  * .NET 프로그램을 실행하려고 했지만 {0}이(가) 없습니다.
+  * 전역 도구를 실행하려고 했지만 PATH에서 이 이름의 dotnet 접두사 실행 파일을 찾지 못했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WaitingForDebuggerToAttach">
