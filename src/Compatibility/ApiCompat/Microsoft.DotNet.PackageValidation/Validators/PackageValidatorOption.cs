@@ -43,10 +43,11 @@ namespace Microsoft.DotNet.PackageValidation.Validators
 
         /// <summary>
         /// A set of frameworks to ignore from the baseline package.
+        /// Entries are stored with invariant culture and ignored casing.
         /// </summary>
         public HashSet<string>? BaselinePackageFrameworksToIgnore { get; } =
             baselinePackageFrameworksToIgnore is not null ?
-                new HashSet<string>(baselinePackageFrameworksToIgnore) :
+                new HashSet<string>(baselinePackageFrameworksToIgnore, StringComparer.InvariantCultureIgnoreCase) :
                 null;
     }
 }

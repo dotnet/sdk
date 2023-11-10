@@ -120,6 +120,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
 
         /// <summary>
         /// A set of target frameworks to ignore from the baseline package.
+        /// The framework string must exactly match the folder name in the baseilne package.
         /// </summary>
         public string[]? BaselinePackageFrameworksToIgnore { get; set; }
 
