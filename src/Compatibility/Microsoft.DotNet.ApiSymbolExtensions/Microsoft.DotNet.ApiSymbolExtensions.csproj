@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
+    <TargetFrameworks>$(NetToolCurrent);$(NetFrameworkToolCurrent)</TargetFrameworks>
   </PropertyGroup>
 
   <!-- Exclude files that depend on Microsoft.Build.Framework and Microsoft.Build.Utilities.Core. These will be included by users of this package. -->

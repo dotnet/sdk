@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net472;$(ToolsetTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(ToolsetTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(ToolsetTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == '$(ToolsetTargetFramework)'">Exe</OutputType>
     <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>

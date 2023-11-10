@@ -18,9 +18,6 @@ export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory
 export DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=$HELIX_CORRELATION_PAYLOAD/r
 export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/Assets
 
-export DOTNET_ROLL_FORWARD=Major
-export DOTNET_ROLL_FORWARD_TO_PRERELEASE=1
-
 # call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive
 

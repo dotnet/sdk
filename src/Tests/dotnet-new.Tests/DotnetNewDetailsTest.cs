@@ -40,6 +40,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [Fact]
         public void CannotDisplayUnknownPackageDetails()
         {
+            // skip the test in internal test runs as it will error on the internal feed
+            if (Environment.GetEnvironmentVariable("SYSTEM_TEAMPROJECT") == "internal")
+            {
+                return;
+            }
             new DotnetNewCommand(_log, "details", "Some package that does not exist")
             .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
