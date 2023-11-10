@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
         }
 
-        [Theory]
+        [WindowsOnlyTheory]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             }
         }
 
-        [Theory]
+        [WindowsOnlyTheory]
         [InlineData(false)]
         [InlineData(true)]
         public void GivenNugetConfigVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)

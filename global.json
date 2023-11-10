@@ -6,7 +6,7 @@
         "$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)"
       ],
       "aspnetcore": [
-        "$(MicrosoftAspNetCoreAppRefPackageVersion)"
+        "$(MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion)"
       ]
     },
     "vs-opt": {

@@ -402,7 +402,7 @@
       <trans-unit id="EnableSingleFileAnalyzerUnsupported">
         <source>NETSDK1211: EnableSingleFileAnalyzer is not supported for the target framework. Consider multi-targeting to a supported framework to enable single-file analysis, and set EnableSingleFileAnalyzer only for the supported frameworks. For example:
 &lt;EnableSingleFileAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/EnableSingleFileAnalyzer&gt;</source>
-        <target state="new">NETSDK1211: EnableSingleFileAnalyzer is not supported for the target framework. Consider multi-targeting to a supported framework to enable single-file analysis, and set EnableSingleFileAnalyzer only for the supported frameworks. For example:
+        <target state="translated">NETSDK1211: EnableSingleFileAnalyzer se pro cílovou architekturu nepodporuje. Zvažte vícenásobné cílení na podporovanou architekturu, abyste mohli povolit analýzu jednoho souboru, a nastavte EnableSingleFileAnalyzer pouze pro podporované architektury. Například:
 &lt;EnableSingleFileAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/EnableSingleFileAnalyzer&gt;</target>
         <note>{StrBegin="NETSDK1211: "}</note>
       </trans-unit>
