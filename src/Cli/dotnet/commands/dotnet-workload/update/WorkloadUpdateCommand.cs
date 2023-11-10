@@ -263,8 +263,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     foreach (var manifestUpdate in manifestsToUpdate)
                     {
-                        if (!manifestUpdate.ExistingVersion.Equals(manifestUpdate.NewVersion) ||
-                            !manifestUpdate.ExistingFeatureBand.ToString().Equals(manifestUpdate.NewFeatureBand))
+                        if (manifestUpdate.NewFeatureBand != null && manifestUpdate.NewVersion != null &&
+                            (!manifestUpdate.ExistingVersion.Equals(manifestUpdate.NewVersion) ||
+                            !manifestUpdate.ExistingFeatureBand.ToString().Equals(manifestUpdate.NewFeatureBand)))
                         {
                             _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, rollback);
                         }
@@ -324,7 +325,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 // Only have specified workloads installed afterwards.
                 var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
-                var desiredWorkloads = _WorkloadHistoryRecord.WorkloadArguments.Select(id => new WorkloadId(id));
+                var desiredWorkloads = _WorkloadHistoryRecord.StateAfterCommand.InstalledWorkloads.Select(id => new WorkloadId(id));
 
                 var workloadsToInstall = new List<WorkloadId>();
                 var workloadsToUninstall = new List<WorkloadId>();

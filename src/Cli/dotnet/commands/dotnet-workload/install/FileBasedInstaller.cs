@@ -206,7 +206,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public void RemoveWorkloadManifest(string featureBand, string manifestId, string version, DirectoryPath? offlineCache)
         {
             var newManifestPath = Path.Combine(GetManifestInstallDirForFeatureBand(featureBand), manifestId, version);
-            Directory.Delete(newManifestPath);
+            if (Directory.Exists(newManifestPath))
+            {
+                Directory.Delete(newManifestPath, true);
+            }
         }
 
         public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false)
