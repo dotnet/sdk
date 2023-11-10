@@ -120,4 +120,10 @@
   <data name="AuthentiCodeNoTrustedOrg" xml:space="preserve">
     <value>AuthentiCode signature for {0} does not belong to a trusted organization.</value>
   </data>
+  <data name="CertificateInvalidForCodeSigning" xml:space="preserve">
+    <value>The certificate used to sign {0} is not valid for code signing purposes.</value>
+  </data>
+  <data name="FailedToVerifyTrustedMicrosoftRoot" xml:space="preserve">
+    <value>Failed to verify that the certificate chain for {0} terminated in a Microsoft trusted root certificate.</value>
+  </data>
 </root>

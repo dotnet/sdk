@@ -7,6 +7,16 @@
         <target state="translated">La firma AuthentiCode para {0} no pertenece a una organización de confianza.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CertificateInvalidForCodeSigning">
+        <source>The certificate used to sign {0} is not valid for code signing purposes.</source>
+        <target state="new">The certificate used to sign {0} is not valid for code signing purposes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToVerifyTrustedMicrosoftRoot">
+        <source>Failed to verify that the certificate chain for {0} terminated in a Microsoft trusted root certificate.</source>
+        <target state="new">Failed to verify that the certificate chain for {0} terminated in a Microsoft trusted root certificate.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

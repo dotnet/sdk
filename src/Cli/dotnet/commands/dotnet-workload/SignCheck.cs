@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.DotNet.Installer.Windows.Security;
 using Microsoft.Win32;
 
@@ -25,8 +26,31 @@ namespace Microsoft.DotNet.Workloads.Workload
         {
             if (OperatingSystem.IsWindows())
             {
-                return AuthentiCode.IsSigned(path) &&
-                    AuthentiCode.IsSignedByTrustedOrganization(path, AuthentiCode.TrustedOrganizations);
+                // API is only available on XP and Server 2003 or later versions. .NET requires Win7 minimum.
+#pragma warning disable CA1416
+                if (AuthentiCode.IsSigned(path, IsCacheOnlyRevocationChecksPolicySet()) == 0)
+                {
+                    X509Certificate certificate = X509Certificate.CreateFromSignedFile(path);
+
+                    return certificate.IsIntendedForCodeSigning() && certificate.HasMicrosoftTrustedRoot();
+                }
+#pragma warning restore CA1416
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the global policy to limit revocation checks to cached URLs for workloads is set.
+        /// </summary>
+        /// <returns><see langword="true"/> if the policy is set; <see langword="false"/> otherwise.</returns>
+        public static bool IsCacheOnlyRevocationChecksPolicySet()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                using RegistryKey policyKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Policies\Microsoft\dotnet\Workloads");
+
+                return ((int?)policyKey?.GetValue("CacheOnlyRevocationChecks") ?? 0) != 0;
             }
 
             return false;
