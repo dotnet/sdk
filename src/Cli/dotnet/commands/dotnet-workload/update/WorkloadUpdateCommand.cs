@@ -156,7 +156,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
 
-                    UpdateInstallState(useRollback, manifestsToUpdate);
+                    if (useRollback)
+                    {
+                        _workloadInstaller.WriteInstallState(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
+                    }
+                    else
+                    {
+                        _workloadInstaller.DeleteInstallState(sdkFeatureBand);
+                    }
                 },
                 rollback: () =>
                 {
