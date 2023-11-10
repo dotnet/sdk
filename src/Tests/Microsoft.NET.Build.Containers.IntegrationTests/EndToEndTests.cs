@@ -210,7 +210,7 @@ public class EndToEndTests : IDisposable
     }
 
 
-    [DockerAvailableTheory()]
+    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/36160")]
     [InlineData("webapi", false)]
     [InlineData("webapi", true)]
     [InlineData("worker", false)]
