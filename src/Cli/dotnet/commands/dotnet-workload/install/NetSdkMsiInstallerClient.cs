@@ -325,6 +325,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository() => RecordRepository;
 
+        public void RemoveWorkloadManifest(string featureBand, string manifestId, string version, DirectoryPath? offlineCache)
+        {
+            string msiPackageId = GetManifestPackageId(new ManifestId(manifestId), new SdkFeatureBand(featureBand)).ToString();
+
+            // Retrieve the payload from the MSI package cache.
+            MsiPayload msi = GetCachedMsiPayload(msiPackageId, version, offlineCache);
+
+            ExecutePackage(msi, InstallAction.Uninstall);
+        }
+
         public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false)
         {
             try

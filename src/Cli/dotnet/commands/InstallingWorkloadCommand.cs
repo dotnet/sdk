@@ -99,7 +99,8 @@ namespace Microsoft.DotNet.Workloads.Workload
             if (createDefaultJson)
             {
                 var jsonContents = WorkloadSet.FromManifests(
-                    manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
+                    manifestVersionUpdates.Where(update => update.NewFeatureBand != null && update.NewVersion != null)
+                    .Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
                     ).ToDictionaryForJson();
                 Directory.CreateDirectory(Path.GetDirectoryName(defaultJsonPath));
                 File.WriteAllLines(defaultJsonPath, ToJsonEnumerable(jsonContents));

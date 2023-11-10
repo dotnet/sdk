@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
@@ -203,6 +204,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         featureBandAndVersion[1]));
                 }
 
+                foreach (var (id, version, featureBand) in currentWorkloadState.ManifestVersions)
+                {
+                    if (!state.ManifestVersions.ContainsKey(id.ToString()))
+                    {
+                        versionUpdates.Add(new ManifestVersionUpdate(id, version, featureBand.ToString(), null, null));
+                    }
+                }
+
                 return versionUpdates;
             }
             else if (!string.IsNullOrWhiteSpace(_fromRollbackDefinition))
@@ -238,6 +247,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 action: context =>
                 {
                     UpdateInstalledWorkloadsFromHistory(sdkFeatureBand, context, offlineCache);
+
+                    if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
+                    {
+                        foreach (var update in manifestsToUpdate)
+                        {
+                            if (update.NewFeatureBand == null && update.NewVersion == null)
+                            {
+                                _workloadInstaller.RemoveWorkloadManifest(update.ExistingFeatureBand, update.ManifestId.ToString(), update.ExistingVersion.ToString(), offlineCache);
+                            }
+                        }
+                    }
 
                     bool rollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
