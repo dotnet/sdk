@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             VersionRange versionRange = null;
 
             // accept 'bare' versions and interpret 'bare' versions as NuGet exact versions
-            if (!string.IsNullOrEmpty(packageVersion) && SemanticVersion.TryParse(packageVersion, out SemanticVersion version2))
+            if (!string.IsNullOrEmpty(packageVersion) && NuGetVersion.TryParse(packageVersion, out SemanticVersion version2))
             {
                 packageVersion = "[" + packageVersion + "]";
             }
