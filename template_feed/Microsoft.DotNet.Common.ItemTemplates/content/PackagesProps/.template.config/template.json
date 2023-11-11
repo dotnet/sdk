@@ -9,7 +9,7 @@
   ],
   "name": "MSBuild Directory.Packages.props file",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "An empty Directory.Packages.props file which can be used to specify package version centrally",
+  "description": "An empty Directory.Packages.props file which can be used to specify package versions centrally",
   "tags": {
     "type": "item"
   },
