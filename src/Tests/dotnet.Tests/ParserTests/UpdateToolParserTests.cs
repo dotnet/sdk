@@ -101,6 +101,15 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [Fact]
+        public void UpdateToolParserCanParseNoHttpCacheOption()
+        {
+            var result =
+                Parser.Instance.Parse(@"dotnet tool update -g console.test.app --no-http-cache");
+
+            result.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()).Should().ContainSingle("--no-http-cache");
+        }
+
+        [Fact]
         public void UpdateToolParserCanParseIgnoreFailedSourcesOption()
         {
             var result =

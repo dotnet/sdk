@@ -13,35 +13,25 @@ namespace Microsoft.DotNet.ApiCompatibility.Mapping
     /// This also holds the nested types as a list of <see cref="ITypeMapper"/> and the members defined within the type
     /// as a list of <see cref="IMemberMapper"/>
     /// </summary>
-    public class TypeMapper : ElementMapper<ITypeSymbol>, ITypeMapper
+    /// <param name="ruleRunner">The <see cref="IRuleRunner"/> that compares the type mapper elements.</param>
+    /// <param name="settings">The <see cref="IMapperSettings"/> used to compare the type mapper elements.</param>
+    /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
+    /// <param name="containingNamespace">The containing <see cref="INamespaceMapper"/>.</param>
+    /// <param name="containingType">The containing <see cref="ITypeMapper"/>. <see langword="null" />, if the type doesn't have a containing type.</param>
+    public class TypeMapper(IRuleRunner ruleRunner,
+        IMapperSettings settings,
+        int rightSetSize,
+        INamespaceMapper containingNamespace,
+        ITypeMapper? containingType = null) : ElementMapper<ITypeSymbol>(ruleRunner, settings, rightSetSize), ITypeMapper
     {
         private Dictionary<ITypeSymbol, ITypeMapper>? _nestedTypes;
         private Dictionary<ISymbol, IMemberMapper>? _members;
 
         /// <inheritdoc />
-        public INamespaceMapper ContainingNamespace { get; }
+        public INamespaceMapper ContainingNamespace { get; } = containingNamespace;
 
         /// <inheritdoc />
-        public ITypeMapper? ContainingType { get; }
-
-        /// <summary>
-        /// Instantiates a type mapper.
-        /// </summary>
-        /// <param name="ruleRunner">The <see cref="IRuleRunner"/> that compares the type mapper elements.</param>
-        /// <param name="settings">The <see cref="IMapperSettings"/> used to compare the type mapper elements.</param>
-        /// <param name="rightSetSize">The number of elements in the right set to compare.</param>
-        /// <param name="containingNamespace">The containing <see cref="INamespaceMapper"/>.</param>
-        /// <param name="containingType">The containing <see cref="ITypeMapper"/>. Null, if the type doesn't have a containing type.</param>
-        public TypeMapper(IRuleRunner ruleRunner,
-            IMapperSettings settings,
-            int rightSetSize,
-            INamespaceMapper containingNamespace,
-            ITypeMapper? containingType = null)
-            : base(ruleRunner, settings, rightSetSize)
-        {
-            ContainingNamespace = containingNamespace;
-            ContainingType = containingType;
-        }
+        public ITypeMapper? ContainingType { get; } = containingType;
 
         internal bool ShouldDiffElement(int rightIndex)
         {

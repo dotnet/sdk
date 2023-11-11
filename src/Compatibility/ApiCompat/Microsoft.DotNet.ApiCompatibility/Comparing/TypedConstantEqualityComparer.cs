@@ -9,13 +9,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Comparing
     /// <summary>
     /// Defines methods to support the comparison of <see cref="TypedConstant"/> for equality.
     /// </summary>
-    public sealed class TypedConstantEqualityComparer : IEqualityComparer<TypedConstant>
+    public sealed class TypedConstantEqualityComparer(IEqualityComparer<ISymbol> symbolEqualityComparer) : IEqualityComparer<TypedConstant>
     {
-        private readonly IEqualityComparer<ISymbol> _symbolEqualityComparer;
-
-        public TypedConstantEqualityComparer(IEqualityComparer<ISymbol> symbolEqualityComparer) =>
-            _symbolEqualityComparer = symbolEqualityComparer;
-
         /// <inheritdoc />
         public int GetHashCode([DisallowNull] TypedConstant obj) => throw new NotImplementedException();
 
@@ -32,7 +27,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Comparing
                         return false;
                     break;
                 case TypedConstantKind.Type:
-                    if (!_symbolEqualityComparer.Equals((x.Value as INamedTypeSymbol)!, (y.Value as INamedTypeSymbol)!))
+                    if (!symbolEqualityComparer.Equals((x.Value as INamedTypeSymbol)!, (y.Value as INamedTypeSymbol)!))
                         return false;
                     break;
                 default:
@@ -41,7 +36,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Comparing
                     break;
             }
 
-            return _symbolEqualityComparer.Equals(x.Type!, y.Type!);
+            return symbolEqualityComparer.Equals(x.Type!, y.Type!);
         }
     }
 }

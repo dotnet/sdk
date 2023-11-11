@@ -6,15 +6,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
     /// <summary>
     /// Class to define common logging abstraction to the console across the APICompat and GenAPI codebases.
     /// </summary>
-    public class ConsoleLog : ILog
+    public class ConsoleLog(MessageImportance messageImportance) : ILog
     {
-        private readonly MessageImportance _messageImportance;
-
         /// <inheritdoc />
         public bool HasLoggedErrors { get; private set; }
-
-        public ConsoleLog(MessageImportance messageImportance) =>
-            _messageImportance = messageImportance;
 
         /// <inheritdoc />
         public virtual void LogError(string message)
@@ -45,7 +40,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
         /// <inheritdoc />
         public virtual void LogMessage(MessageImportance importance, string message)
         {
-            if (importance > _messageImportance)
+            if (importance > messageImportance)
                 return;
 
             Console.WriteLine(message);

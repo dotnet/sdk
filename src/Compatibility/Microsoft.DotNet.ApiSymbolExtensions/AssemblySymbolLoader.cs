@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         // value are the containing folder.
         private readonly Dictionary<string, string> _referencePathFiles = new(StringComparer.OrdinalIgnoreCase);
         private readonly HashSet<string> _referencePathDirectories = new(StringComparer.OrdinalIgnoreCase);
-        private readonly List<AssemblyLoadWarning> _warnings = new();
+        private readonly List<AssemblyLoadWarning> _warnings = [];
         private readonly Dictionary<string, MetadataReference> _loadedAssemblies;
         private readonly bool _resolveReferences;
         private CSharpCompilation _cSharpCompilation;
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <param name="includeInternalSymbols">True to include all internal metadata for assemblies loaded. Default is false which only includes public and some internal metadata. <seealso cref="MetadataImportOptions"/></param>
         public AssemblySymbolLoader(bool resolveAssemblyReferences = false, bool includeInternalSymbols = false)
         {
-            _loadedAssemblies = new Dictionary<string, MetadataReference>();
+            _loadedAssemblies = [];
             CSharpCompilationOptions compilationOptions = new(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: NullableContextOptions.Enable,
                 metadataImportOptions: includeInternalSymbols ? MetadataImportOptions.Internal : MetadataImportOptions.Public);
             _cSharpCompilation = CSharpCompilation.Create($"AssemblyLoader_{DateTime.Now:MM_dd_yy_HH_mm_ss_FFF}", options: compilationOptions);
@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             // Reference assemblies of the passed in assemblies that themselves are passed in, will be skipped to be resolved,
             // as they are resolved as part of the loop below.
             ImmutableHashSet<string> fileNames = paths.Select(path => Path.GetFileName(path)).ToImmutableHashSet();
-            IReadOnlyList<MetadataReference> assembliesToReturn = LoadFromPaths(paths, fileNames);
+            List<MetadataReference> assembliesToReturn = LoadFromPaths(paths, fileNames);
 
             // Create IAssemblySymbols out of the MetadataReferences.
             // Doing this after resolving references to make sure that references are available.
@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
 
             _cSharpCompilation = _cSharpCompilation.WithAssemblyName(assemblyName);
 
-            List<SyntaxTree> syntaxTrees = new();
+            List<SyntaxTree> syntaxTrees = [];
             foreach (string filePath in filePaths)
             {
                 syntaxTrees.Add(CSharpSyntaxTree.ParseText(File.ReadAllText(filePath)));
@@ -210,7 +210,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <inheritdoc />
         public IEnumerable<IAssemblySymbol> LoadMatchingAssemblies(IEnumerable<IAssemblySymbol> fromAssemblies, IEnumerable<string> searchPaths, bool validateMatchingIdentity = true, bool warnOnMissingAssemblies = true)
         {
-            List<IAssemblySymbol> matchingAssemblies = new();
+            List<IAssemblySymbol> matchingAssemblies = [];
             foreach (IAssemblySymbol assembly in fromAssemblies)
             {
                 bool found = false;
@@ -231,7 +231,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
                         {
                             if (validateMatchingIdentity && !matchingAssembly.Identity.Equals(assembly.Identity))
                             {
-                                _cSharpCompilation = _cSharpCompilation.RemoveReferences(new[] { reference });
+                                _cSharpCompilation = _cSharpCompilation.RemoveReferences([ reference ]);
                                 _loadedAssemblies.Remove(name);
                                 continue;
                             }
@@ -258,9 +258,9 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// <inheritdoc />
         public IEnumerable<MetadataReference> MetadataReferences => _cSharpCompilation.References;
 
-        private IReadOnlyList<MetadataReference> LoadFromPaths(IEnumerable<string> paths, ImmutableHashSet<string>? referenceAssemblyNamesToIgnore = null)
+        private List<MetadataReference> LoadFromPaths(IEnumerable<string> paths, ImmutableHashSet<string>? referenceAssemblyNamesToIgnore = null)
         {
-            List<MetadataReference> result = new();
+            List<MetadataReference> result = [];
             foreach (string path in paths)
             {
                 if (Directory.Exists(path))
@@ -321,7 +321,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
             PEMemoryBlock image = reader.GetEntireImage();
             MetadataReference metadataReference = MetadataReference.CreateFromImage(image.GetContent());
             _loadedAssemblies.Add(name, metadataReference);
-            _cSharpCompilation = _cSharpCompilation.AddReferences(new MetadataReference[] { metadataReference });
+            _cSharpCompilation = _cSharpCompilation.AddReferences([ metadataReference ]);
 
             if (_resolveReferences)
             {

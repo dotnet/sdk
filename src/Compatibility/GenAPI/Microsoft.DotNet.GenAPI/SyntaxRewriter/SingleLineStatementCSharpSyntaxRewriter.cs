@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
         public override SyntaxNode? VisitEventDeclaration(EventDeclarationSyntax node) =>
             VisitBasePropertyDeclarationSyntax(node);
 
-        private static SyntaxNode? VisitBaseMethodDeclarationSyntax(BaseMethodDeclarationSyntax node)
+        private static BaseMethodDeclarationSyntax? VisitBaseMethodDeclarationSyntax(BaseMethodDeclarationSyntax node)
         {
             BlockSyntax? body = node.Body;
             if (body != null)
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.GenAPI.SyntaxRewriter
             return node.WithBody(body);
         }
 
-        private static SyntaxNode? VisitBasePropertyDeclarationSyntax(BasePropertyDeclarationSyntax node)
+        private static BasePropertyDeclarationSyntax? VisitBasePropertyDeclarationSyntax(BasePropertyDeclarationSyntax node)
         {
             AccessorListSyntax? accessorList = node.AccessorList;
 

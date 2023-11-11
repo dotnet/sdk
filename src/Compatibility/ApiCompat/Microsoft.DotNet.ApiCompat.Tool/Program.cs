@@ -196,7 +196,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 (string, string)[]? leftAssembliesTransformationPattern = parseResult.GetValue(leftAssembliesTransformationPatternOption);
                 (string, string)[]? rightAssembliesTransformationPattern = parseResult.GetValue(rightAssembliesTransformationPatternOption);
 
-                Func<ISuppressionEngine, SuppressibleConsoleLog> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
+                SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidateAssemblies.Run(logFactory,
                     generateSuppressionFile,
                     preserveUnnecessarySuppressions,
@@ -270,6 +270,12 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore,
                 HelpName = "tfm=file1,file2,..."
             };
+            CliOption<string[]?> baselinePackageFrameworksToIgnoreOption = new("--baseline-package-frameworks-to-ignore")
+            {
+                Description = "A set of target frameworks to ignore from the baseline package. The framework string must exactly match the folder name in the baseline package.",
+                AllowMultipleArgumentsPerToken = true,
+                Arity = ArgumentArity.ZeroOrMore,
+            };
 
             CliCommand packageCommand = new("package", "Validates the compatibility of package assets");
             packageCommand.Arguments.Add(packageArgument);
@@ -281,6 +287,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             packageCommand.Options.Add(baselinePackageOption);
             packageCommand.Options.Add(packageAssemblyReferencesOption);
             packageCommand.Options.Add(baselinePackageAssemblyReferencesOption);
+            packageCommand.Options.Add(baselinePackageFrameworksToIgnoreOption);
             packageCommand.SetAction((ParseResult parseResult) =>
             {
                 // If a roslyn assemblies path isn't provided, use the compiled against version from a subfolder.
@@ -309,8 +316,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 string? runtimeGraph = parseResult.GetValue(runtimeGraphOption);
                 Dictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences = parseResult.GetValue(packageAssemblyReferencesOption);
                 Dictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences = parseResult.GetValue(baselinePackageAssemblyReferencesOption);
+                string[]? baselinePackageFrameworksToIgnore = parseResult.GetValue(baselinePackageFrameworksToIgnoreOption);
 
-                Func<ISuppressionEngine, SuppressibleConsoleLog> logFactory = (suppressionEngine) => new(suppressionEngine, verbosity);
+                SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidatePackage.Run(logFactory,
                     generateSuppressionFile,
                     preserveUnnecessarySuppressions,
@@ -330,7 +338,8 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                     baselinePackage,
                     runtimeGraph,
                     packageAssemblyReferences,
-                    baselinePackageAssemblyReferences);
+                    baselinePackageAssemblyReferences,
+                    baselinePackageFrameworksToIgnore);
 
                 roslynResolver.Unregister();
             });
@@ -341,29 +350,29 @@ namespace Microsoft.DotNet.ApiCompat.Tool
 
         private static string[][] ParseAssemblyReferenceArgument(ArgumentResult argumentResult)
         {
-            List<string[]> args = new();
+            List<string[]> args = [];
             foreach (var token in argumentResult.Tokens)
             {
                 args.Add(token.Value.Split(','));
             }
 
-            return args.ToArray();
+            return [.. args];
         }
 
         private static string[] ParseAssemblyArgument(ArgumentResult argumentResult)
         {
-            List<string> args = new();
+            List<string> args = [];
             foreach (var token in argumentResult.Tokens)
             {
                 args.AddRange(token.Value.Split(','));
             }
 
-            return args.ToArray();
+            return [.. args];
         }
 
         private static (string CaptureGroupPattern, string ReplacementString)[]? ParseTransformationPattern(ArgumentResult argumentResult)
         {
-            var patterns = new (string CaptureGroupPattern, string ReplacementPattern)[argumentResult.Tokens.Count];
+            var patterns = new(string CaptureGroupPattern, string ReplacementPattern)[argumentResult.Tokens.Count];
             for (int i = 0; i < argumentResult.Tokens.Count; i++)
             {
                 string[] parts = argumentResult.Tokens[i].Value.Split(';');

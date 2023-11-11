@@ -29,8 +29,9 @@ namespace Microsoft.DotNet.ApiCompat
             bool enableStrictModeForBaselineValidation,
             string? baselinePackagePath,
             string? runtimeGraph,
-            Dictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences,
-            Dictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences)
+            IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences,
+            IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences,
+            string[]? baselinePackageFrameworksToIgnore)
         {
             // Initialize the service provider
             ApiCompatServiceProvider serviceProvider = new(logFactory,
@@ -70,7 +71,8 @@ namespace Microsoft.DotNet.ApiCompat
                     enableStrictMode: enableStrictModeForBaselineValidation,
                     enqueueApiCompatWorkItems: runApiCompat,
                     executeApiCompatWorkItems: false,
-                    baselinePackage: Package.Create(baselinePackagePath, baselinePackageAssemblyReferences)));
+                    Package.Create(baselinePackagePath, baselinePackageAssemblyReferences),
+                    baselinePackageFrameworksToIgnore));
             }
 
             if (runApiCompat)

@@ -13,44 +13,32 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
     /// <summary>
     /// Enqueues work items and performs api compatibility checks on them.
     /// </summary>
-    public class ApiCompatRunner : IApiCompatRunner
+    public class ApiCompatRunner(ISuppressibleLog log,
+        ISuppressionEngine suppressionEngine,
+        IApiComparerFactory apiComparerFactory,
+        IAssemblySymbolLoaderFactory assemblySymbolLoaderFactory) : IApiCompatRunner
     {
-        private readonly HashSet<ApiCompatRunnerWorkItem> _workItems = new();
-        private readonly ISuppressibleLog _log;
-        private readonly ISuppressionEngine _suppressionEngine;
-        private readonly IApiComparerFactory _apiComparerFactory;
-        private readonly IAssemblySymbolLoaderFactory _assemblySymbolLoaderFactory;
+        private readonly HashSet<ApiCompatRunnerWorkItem> _workItems = [];
 
         /// <inheritdoc />
         public IReadOnlyCollection<ApiCompatRunnerWorkItem> WorkItems => _workItems;
 
-        public ApiCompatRunner(ISuppressibleLog log,
-            ISuppressionEngine suppressionEngine,
-            IApiComparerFactory apiComparerFactory,
-            IAssemblySymbolLoaderFactory assemblySymbolLoaderFactory)
-        {
-            _suppressionEngine = suppressionEngine;
-            _log = log;
-            _apiComparerFactory = apiComparerFactory;
-            _assemblySymbolLoaderFactory = assemblySymbolLoaderFactory;
-        }
-
         /// <inheritdoc />
         public void ExecuteWorkItems()
         {
-            _log.LogMessage(MessageImportance.Low,
+            log.LogMessage(MessageImportance.Low,
                 string.Format(Resources.ApiCompatRunnerExecutingWorkItems,
                     _workItems.Count));
 
             foreach (ApiCompatRunnerWorkItem workItem in _workItems)
             {
-                IReadOnlyList<ElementContainer<IAssemblySymbol>> leftContainerList = CreateAssemblySymbols(workItem.Left, workItem.Options, out bool resolvedExternallyProvidedAssemblyReferences);
+                List<ElementContainer<IAssemblySymbol>> leftContainerList = CreateAssemblySymbols(workItem.Left, out bool resolvedExternallyProvidedAssemblyReferences);
                 bool runWithReferences = resolvedExternallyProvidedAssemblyReferences;
 
                 List<IEnumerable<ElementContainer<IAssemblySymbol>>> rightContainersList = new(workItem.Right.Count);
                 foreach (IReadOnlyList<MetadataInformation> right in workItem.Right)
                 {
-                    IReadOnlyList<ElementContainer<IAssemblySymbol>> rightContainers = CreateAssemblySymbols(right.ToImmutableArray(), workItem.Options, out resolvedExternallyProvidedAssemblyReferences);
+                    List<ElementContainer<IAssemblySymbol>> rightContainers = CreateAssemblySymbols(right.ToImmutableArray(), out resolvedExternallyProvidedAssemblyReferences);
                     rightContainersList.Add(rightContainers);
                     runWithReferences &= resolvedExternallyProvidedAssemblyReferences;
                 }
@@ -61,7 +49,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                     continue;
 
                 // Create and configure the work item specific api comparer
-                IApiComparer apiComparer = _apiComparerFactory.Create();
+                IApiComparer apiComparer = apiComparerFactory.Create();
                 apiComparer.Settings.StrictMode = workItem.Options.EnableStrictMode;
                 apiComparer.Settings.WithReferences = runWithReferences;
 
@@ -73,7 +61,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                 foreach (var differenceGroup in differenceGroups)
                 {
                     // Log the difference header only if there are differences and errors aren't baselined.
-                    bool logHeader = !_suppressionEngine.BaselineAllErrors;
+                    bool logHeader = !suppressionEngine.BaselineAllErrors;
 
                     foreach (CompatDifference difference in differenceGroup)
                     {
@@ -86,20 +74,20 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                         };
 
                         // If the error is suppressed, don't log anything.
-                        if (_suppressionEngine.IsErrorSuppressed(suppression))
+                        if (suppressionEngine.IsErrorSuppressed(suppression))
                             continue;
 
                         if (logHeader)
                         {
                             logHeader = false;
-                            _log.LogError(string.Format(Resources.ApiCompatibilityHeader,
+                            log.LogError(string.Format(Resources.ApiCompatibilityHeader,
                                 difference.Left.AssemblyId,
                                 difference.Right.AssemblyId,
                                 workItem.Options.IsBaselineComparison ? difference.Left.FullPath : "left",
                                 workItem.Options.IsBaselineComparison ? difference.Right.FullPath : "right"));
                         }
 
-                        _log.LogError(suppression,
+                        log.LogError(suppression,
                             difference.DiagnosticId,
                             difference.Message);
                     }
@@ -109,14 +97,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
             _workItems.Clear();
         }
 
-        private IReadOnlyList<ElementContainer<IAssemblySymbol>> CreateAssemblySymbols(IReadOnlyList<MetadataInformation> metadataInformation,
-            ApiCompatRunnerOptions options,
+        private List<ElementContainer<IAssemblySymbol>> CreateAssemblySymbols(IReadOnlyList<MetadataInformation> metadataInformation,
             out bool resolvedExternallyProvidedAssemblyReferences)
         {
             string[] aggregatedReferences = metadataInformation.Where(m => m.References != null).SelectMany(m => m.References!).Distinct().ToArray();
             resolvedExternallyProvidedAssemblyReferences = aggregatedReferences.Length > 0;
 
-            IAssemblySymbolLoader loader = _assemblySymbolLoaderFactory.Create(resolvedExternallyProvidedAssemblyReferences);
+            IAssemblySymbolLoader loader = assemblySymbolLoaderFactory.Create(resolvedExternallyProvidedAssemblyReferences);
             if (resolvedExternallyProvidedAssemblyReferences)
             {
                 loader.AddReferenceSearchPaths(aggregatedReferences);
@@ -143,7 +130,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                 IAssemblySymbol? assemblySymbol = assemblySymbols[i];
                 if (assemblySymbol == null)
                 {
-                    _log.LogMessage(MessageImportance.High,
+                    log.LogMessage(MessageImportance.High,
                         string.Format(Resources.AssemblyLoadError,
                             metadataInformation[i].AssemblyId));
                     continue;

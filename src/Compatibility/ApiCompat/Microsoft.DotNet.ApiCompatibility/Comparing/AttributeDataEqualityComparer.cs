@@ -9,18 +9,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Comparing
     /// <summary>
     /// Defines methods to support the comparison of <see cref="AttributeData"/> for equality.
     /// </summary>
-    public sealed class AttributeDataEqualityComparer : IEqualityComparer<AttributeData>
+    public sealed class AttributeDataEqualityComparer(IEqualityComparer<ISymbol> symbolEqualityComparer,
+        IEqualityComparer<TypedConstant> typedConstantEqualityComparer) : IEqualityComparer<AttributeData>
     {
-        private readonly IEqualityComparer<ISymbol> _symbolEqualityComparer;
-        private readonly IEqualityComparer<TypedConstant> _typedConstantEqualityComparer;
-
-        public AttributeDataEqualityComparer(IEqualityComparer<ISymbol> symbolEqualityComparer,
-            IEqualityComparer<TypedConstant> typedConstantEqualityComparer)
-        {
-            _symbolEqualityComparer = symbolEqualityComparer;
-            _typedConstantEqualityComparer = typedConstantEqualityComparer;
-        }
-
         /// <inheritdoc />
         public int GetHashCode([DisallowNull] AttributeData obj) => throw new NotImplementedException();
 
@@ -29,18 +20,18 @@ namespace Microsoft.DotNet.ApiCompatibility.Comparing
         {
             if (x != null && y != null)
             {
-                if (!_symbolEqualityComparer.Equals(x.AttributeClass!, y.AttributeClass!))
+                if (!symbolEqualityComparer.Equals(x.AttributeClass!, y.AttributeClass!))
                 {
                     return false;
                 }
 
 
-                if (!Enumerable.SequenceEqual(x.ConstructorArguments, y.ConstructorArguments, _typedConstantEqualityComparer))
+                if (!Enumerable.SequenceEqual(x.ConstructorArguments, y.ConstructorArguments, typedConstantEqualityComparer))
                 {
                     return false;
                 }
 
-                return Enumerable.SequenceEqual(x.NamedArguments, y.NamedArguments, new NamedArgumentComparer(_typedConstantEqualityComparer));
+                return Enumerable.SequenceEqual(x.NamedArguments, y.NamedArguments, new NamedArgumentComparer(typedConstantEqualityComparer));
             }
 
             return x == y;

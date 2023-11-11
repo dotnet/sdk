@@ -12,18 +12,9 @@ namespace Microsoft.DotNet.PackageValidation.Validators
     /// Validates that no target framework / rid support is dropped in the latest package.
     /// Reports all the breaking changes in the latest package.
     /// </summary>
-    public class BaselinePackageValidator : IPackageValidator
+    public sealed class BaselinePackageValidator(ISuppressibleLog log,
+        IApiCompatRunner apiCompatRunner) : IPackageValidator
     {
-        private readonly ISuppressibleLog _log;
-        private readonly IApiCompatRunner _apiCompatRunner;
-
-        public BaselinePackageValidator(ISuppressibleLog log,
-            IApiCompatRunner apiCompatRunner)
-        {
-            _log = log;
-            _apiCompatRunner = apiCompatRunner;
-        }
-
         /// <summary>
         /// Validates the latest NuGet package doesn't drop any target framework/rid and does not introduce any breaking changes.
         /// </summary>
@@ -31,13 +22,21 @@ namespace Microsoft.DotNet.PackageValidation.Validators
         public void Validate(PackageValidatorOption options)
         {
             if (options.BaselinePackage is null)
+            {
                 throw new ArgumentNullException(nameof(options.BaselinePackage));
+            }
 
             ApiCompatRunnerOptions apiCompatOptions = new(options.EnableStrictMode, isBaselineComparison: true);
 
-            // Iterate over all target frameworks in the package.
             foreach (NuGetFramework baselineTargetFramework in options.BaselinePackage.FrameworksInPackage)
             {
+                // Skip target frameworks excluded from the baseline package.
+                if (options.BaselinePackageFrameworksToIgnore is not null &&
+                   options.BaselinePackageFrameworksToIgnore.Contains(baselineTargetFramework.GetShortFolderName()))
+                {
+                    continue;
+                }
+
                 // Retrieve the compile time assets from the baseline package
                 IReadOnlyList<ContentItem>? baselineCompileAssets = options.BaselinePackage.FindBestCompileAssetForFramework(baselineTargetFramework);
                 if (baselineCompileAssets != null)
@@ -46,14 +45,14 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                     IReadOnlyList<ContentItem>? latestCompileAssets = options.Package.FindBestCompileAssetForFramework(baselineTargetFramework);
                     if (latestCompileAssets == null)
                     {
-                        _log.LogError(new Suppression(DiagnosticIds.TargetFrameworkDropped) { Target = baselineTargetFramework.ToString() },
+                        log.LogError(new Suppression(DiagnosticIds.TargetFrameworkDropped) { Target = baselineTargetFramework.ToString() },
                             DiagnosticIds.TargetFrameworkDropped,
                             string.Format(Resources.MissingTargetFramework,
                                 baselineTargetFramework));
                     }
                     else if (options.EnqueueApiCompatWorkItems)
                     {
-                        _apiCompatRunner.QueueApiCompatFromContentItem(_log,
+                        apiCompatRunner.QueueApiCompatFromContentItem(log,
                             baselineCompileAssets,
                             latestCompileAssets,
                             apiCompatOptions,
@@ -70,14 +69,14 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                     IReadOnlyList<ContentItem>? latestRuntimeAssets = options.Package.FindBestRuntimeAssetForFramework(baselineTargetFramework);
                     if (latestRuntimeAssets == null)
                     {
-                        _log.LogError(new Suppression(DiagnosticIds.TargetFrameworkDropped) { Target = baselineTargetFramework.ToString() },
+                        log.LogError(new Suppression(DiagnosticIds.TargetFrameworkDropped) { Target = baselineTargetFramework.ToString() },
                             DiagnosticIds.TargetFrameworkDropped,
                             string.Format(Resources.MissingTargetFramework,
                                 baselineTargetFramework));
                     }
                     else if (options.EnqueueApiCompatWorkItems)
                     {
-                        _apiCompatRunner.QueueApiCompatFromContentItem(_log,
+                        apiCompatRunner.QueueApiCompatFromContentItem(log,
                             baselineRuntimeAssets,
                             latestRuntimeAssets,
                             apiCompatOptions,
@@ -99,7 +98,7 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                         IReadOnlyList<ContentItem>? latestRuntimeSpecificAssets = options.Package.FindBestRuntimeAssetForFrameworkAndRuntime(baselineTargetFramework, baselineRuntimeSpecificAssetsRidGroup.Key);
                         if (latestRuntimeSpecificAssets == null)
                         {
-                            _log.LogError(new Suppression(DiagnosticIds.TargetFrameworkAndRidPairDropped) { Target = baselineTargetFramework.ToString() + "-" + baselineRuntimeSpecificAssetsRidGroup.Key },
+                            log.LogError(new Suppression(DiagnosticIds.TargetFrameworkAndRidPairDropped) { Target = baselineTargetFramework.ToString() + "-" + baselineRuntimeSpecificAssetsRidGroup.Key },
                                 DiagnosticIds.TargetFrameworkAndRidPairDropped,
                                 string.Format(Resources.MissingTargetFrameworkAndRid,
                                     baselineTargetFramework,
@@ -107,7 +106,7 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                         }
                         else if (options.EnqueueApiCompatWorkItems)
                         {
-                            _apiCompatRunner.QueueApiCompatFromContentItem(_log,
+                            apiCompatRunner.QueueApiCompatFromContentItem(log,
                                 baselineRuntimeSpecificAssetsRidGroup.ToArray(),
                                 latestRuntimeSpecificAssets,
                                 apiCompatOptions,
@@ -119,7 +118,9 @@ namespace Microsoft.DotNet.PackageValidation.Validators
             }
 
             if (options.ExecuteApiCompatWorkItems)
-                _apiCompatRunner.ExecuteWorkItems();
+            {
+                apiCompatRunner.ExecuteWorkItems();
+            }
         }
     }
 }

@@ -1425,7 +1425,6 @@ namespace CompatTests
     public bool A;
     public int B;
   }
-
   [Foo(""S"", A = true, B = 3)]
   public class First {}
 }
@@ -1442,7 +1441,6 @@ namespace CompatTests
     public int B;
     public string X;
   }
-
   [Foo(""T"", A = false, B = 4)]
   public class First {}
 }

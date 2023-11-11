@@ -8,15 +8,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
     /// <summary>
     /// Class to define common logging abstraction for MSBuild tasks across the APICompat and GenAPI codebases.
     /// </summary>
-    internal class MSBuildLog : ILog
+    internal class MSBuildLog(Logger log) : ILog
     {
-        internal readonly Logger _log;
-
         /// <inheritdoc />
-        public bool HasLoggedErrors => _log.HasLoggedErrors;
-
-        public MSBuildLog(Logger log) =>
-            _log = log;
+        public bool HasLoggedErrors => log.HasLoggedErrors;
 
         /// <inheritdoc />
         public virtual void LogError(string message) =>
@@ -43,6 +38,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Logging
             LogCore((MessageLevel)importance, null, message);
 
         private void LogCore(MessageLevel level, string? code, string message) =>
-            _log.Log(new Message(level, message, code));
+            log.Log(new Message(level, message, code));
     }
 }
