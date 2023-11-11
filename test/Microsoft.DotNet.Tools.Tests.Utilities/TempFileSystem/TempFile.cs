@@ -55,12 +55,9 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         {
             return new FileStream(_path, FileMode.Open, access);
         }
- 
-        public string Path
-        {
-            get { return _path; }
-        }
- 
+
+        public string Path => _path;
+
         public TempFile WriteAllText(string content, Encoding encoding)
         {
             File.WriteAllText(_path, content, encoding);

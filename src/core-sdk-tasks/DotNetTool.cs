@@ -39,15 +39,9 @@ namespace Microsoft.DotNet.Cli.Build
 
         public string WorkingDirectory { get; set; }
 
-        protected override string ToolName
-        {
-            get { return $"dotnet{Constants.ExeSuffix}"; }
-        }
+        protected override string ToolName => $"dotnet{Constants.ExeSuffix}";
 
-        protected override MessageImportance StandardOutputLoggingImportance
-        {
-            get { return MessageImportance.High; } // or else the output doesn't get logged by default
-        }
+        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
         protected override string GenerateFullPathToTool()
         {

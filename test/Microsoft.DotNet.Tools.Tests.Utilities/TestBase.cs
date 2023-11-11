@@ -34,13 +34,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             }
         }
 
-        protected static string RepoRoot
-        {
-            get
-            {
-                return RepoDirectoriesProvider.RepoRoot;
-            }
-        }
+        protected static string RepoRoot => RepoDirectoriesProvider.RepoRoot;
 
         public static TestAssets TestAssets
         {

@@ -93,15 +93,9 @@ namespace Microsoft.DotNet.Build.Tasks
             return base.Execute();
         }
 
-        protected override string ToolName
-        {
-            get { return "tar"; }
-        }
+        protected override string ToolName => "tar";
 
-        protected override MessageImportance StandardOutputLoggingImportance
-        {
-            get { return MessageImportance.High; } // or else the output doesn't get logged by default
-        }
+        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
         protected override string GenerateFullPathToTool()
         {

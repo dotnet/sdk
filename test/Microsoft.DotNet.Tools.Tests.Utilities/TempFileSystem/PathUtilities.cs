@@ -19,13 +19,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         internal static readonly string DirectorySeparatorStr = new string(DirectorySeparatorChar, 1);
         internal const char VolumeSeparatorChar = ':';
 
-        private static bool IsUnixLikePlatform
-        {
-            get
-            {
-                return Path.DirectorySeparatorChar == '/';
-            }
-        }
+        private static bool IsUnixLikePlatform => Path.DirectorySeparatorChar == '/';
 
         internal static bool IsDirectorySeparator(char c)
         {

@@ -42,12 +42,9 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                 }
             }
         }
- 
-        public string Path
-        {
-            get { return _path; }
-        }
- 
+
+        public string Path => _path;
+
         public DirectoryInfo DirectoryInfo => new DirectoryInfo(Path);
 
         /// <summary>
