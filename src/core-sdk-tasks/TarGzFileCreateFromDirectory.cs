@@ -131,6 +131,6 @@ namespace Microsoft.DotNet.Build.Tasks
             return excludes;
         }
 
-        protected override void LogToolCommand(string message) => base.LogToolCommand($"{base.GetWorkingDirectory()}> {message}");
+        protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
     }
 }

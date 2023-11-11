@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Microsoft.Build.Utilities;
 using Microsoft.Build.Framework;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 

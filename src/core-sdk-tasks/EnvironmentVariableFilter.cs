@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.Build
 
         public IEnumerable<string> GetEnvironmentVariableNamesToRemove()
         {
-            var allEnvironmentVariableNames = (IEnumerable<string>)Environment
+            var allEnvironmentVariableNames = Environment
                 .GetEnvironmentVariables()
                 .Keys
                 .Cast<string>();

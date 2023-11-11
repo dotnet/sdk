@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Build.Framework;
@@ -63,7 +62,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
             if (toolResult)
             {
-                var files = System.IO.Directory.GetFiles(Path.GetDirectoryName(TempOutputPath));
+                var files = Directory.GetFiles(Path.GetDirectoryName(TempOutputPath));
                 var dest = Path.GetDirectoryName(DestinationPath);
                 // Copy both dll and pdb files to the destination folder
                 foreach(var file in files)
@@ -168,6 +167,6 @@ namespace Microsoft.DotNet.Build.Tasks
 
         private string GetMissingDependenciesOk() => "-MissingDependenciesOK";
 
-        protected override void LogToolCommand(string message) => base.LogToolCommand($"{base.GetWorkingDirectory()}> {message}");
+        protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
     }
 }

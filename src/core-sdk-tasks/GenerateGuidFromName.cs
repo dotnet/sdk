@@ -3,8 +3,6 @@
 
 using System;
 using System.Security.Cryptography;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.DotNet.Cli.Build
 {

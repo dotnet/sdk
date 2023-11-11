@@ -1,7 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Xunit;

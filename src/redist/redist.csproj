@@ -10,10 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Update="Microsoft.NETCore.App" 
-                        TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
-                        RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
-                        />
+    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
 
     <ProjectReference Include="..\SdkResolver\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <ProjectReference Include="..\VSTemplateLocator\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildFromSource)' != 'true'" />

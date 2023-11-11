@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
 
 namespace EndToEnd
 {
