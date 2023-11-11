@@ -8,4 +8,6 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 <!--#endif-->
+  <ItemGroup>
+  </ItemGroup>
 </Project>
