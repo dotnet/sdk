@@ -62,20 +62,20 @@ namespace Microsoft.DotNet.Cli.Build
             BundledTemplatesWithInstallPaths = BundledTemplates.Select(t =>
             {
                 var templateWithInstallPath = new TaskItem(t);
-                templateWithInstallPath.SetMetadata("BundledTemplateInstallPath", groups[t.GetMetadata("TemplateFrameworkVersion")].BundledTemplateInstallPath);
+                templateWithInstallPath.SetMetadata("BundledTemplateInstallPath", groups[t.GetMetadata("TemplateFrameworkVersion")].InstallPath);
                 return templateWithInstallPath;
             }).ToArray();
 
             TemplatesComponents = groups.Select(g =>
             {
-                string majorMinorWithoutDots = g.Value.BundledTemplateMajorMinorVersion.Replace(".", "");
+                string majorMinorWithoutDots = g.Value.MajorMinorVersion.Replace(".", "");
                 var componentItem = new TaskItem($"NetCore{majorMinorWithoutDots}Templates");
                 var templateBaseFilename = $"dotnet-{majorMinorWithoutDots}templates";
                 componentItem.SetMetadata("TemplateBaseFilename", templateBaseFilename);
-                componentItem.SetMetadata("TemplatesMajorMinorVersion", g.Value.BundledTemplateMajorMinorVersion);
+                componentItem.SetMetadata("TemplatesMajorMinorVersion", g.Value.MajorMinorVersion);
                 var installerUpgradeCode = GenerateGuidFromName.GenerateGuid(string.Join("-", templateBaseFilename, FullNugetVersion, ProductMonikerRid) + InstallerExtension).ToString().ToUpper();
                 componentItem.SetMetadata("InstallerUpgradeCode", installerUpgradeCode);
-                componentItem.SetMetadata("MSIVersion", GenerateMsiVersionFromFullVersion.GenerateMsiVersion(CombinedBuildNumberAndRevision, g.Value.BundledTemplateMajorMinorPatchVersion));
+                componentItem.SetMetadata("MSIVersion", GenerateMsiVersionFromFullVersion.GenerateMsiVersion(CombinedBuildNumberAndRevision, g.Value.MajorMinorPatchVersion));
 
                 var brandName = System.Version.Parse(g.Key).Major >= 5 ?
                     $"Microsoft .NET {g.Key} Templates" :
@@ -89,24 +89,20 @@ namespace Microsoft.DotNet.Cli.Build
             return true;
         }
 
-        public static
-            (string BundledTemplateInstallPath,
-            string BundledTemplateMajorMinorVersion,
-			string BundledTemplateMajorMinorPatchVersion) 
-            Calculate(string aspNetCorePackageVersionTemplate)
+        public static BundledTemplate Calculate(string aspNetCorePackageVersionTemplate)
         {
             var aspNetCoreTemplate = NuGetVersion.Parse(aspNetCorePackageVersionTemplate);
-
             NuGetVersion baseMajorMinorPatch = GetBaseMajorMinorPatch(aspNetCoreTemplate);
-
             string bundledTemplateInstallPath = aspNetCoreTemplate.IsPrerelease
                 ? $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}-{aspNetCoreTemplate.Release}"
                 : $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}";
 
-            return (
-                bundledTemplateInstallPath,
-                $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}", 
-                $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}");
+            return new BundledTemplate
+            {
+                InstallPath = bundledTemplateInstallPath,
+                MajorMinorVersion = $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}",
+                MajorMinorPatchVersion = $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}"
+            };
         }
 
         private static NuGetVersion GetBaseMajorMinorPatch(NuGetVersion aspNetCoreTemplate)
@@ -126,5 +122,12 @@ namespace Microsoft.DotNet.Cli.Build
                 basePatch);
             return baseMajorMinorPatch;
         }
+    }
+
+    public record BundledTemplate
+    {
+        public string InstallPath { get; set; }
+        public string MajorMinorVersion { get; set; }
+        public string MajorMinorPatchVersion { get; set; }
     }
 }

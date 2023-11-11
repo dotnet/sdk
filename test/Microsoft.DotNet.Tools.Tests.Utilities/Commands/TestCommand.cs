@@ -71,9 +71,9 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
         private async Task<CommandResult> ExecuteAsyncInternal(string executable, string args)
         {
-            var stdOut = new List<String>();
+            var stdOut = new List<string>();
 
-            var stdErr = new List<String>();
+            var stdErr = new List<string>();
 
             CurrentProcess = CreateProcess(executable, args); 
 
@@ -118,8 +118,8 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             return new CommandResult(
                 CurrentProcess.StartInfo,
                 CurrentProcess.ExitCode,
-                String.Join(System.Environment.NewLine, stdOut),
-                String.Join(System.Environment.NewLine, stdErr));
+                string.Join(System.Environment.NewLine, stdOut),
+                string.Join(System.Environment.NewLine, stdErr));
         }
 
         private Process CreateProcess(string executable, string args)

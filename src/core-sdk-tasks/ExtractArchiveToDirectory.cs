@@ -47,13 +47,10 @@ namespace Microsoft.DotNet.Build.Tasks
 
             var retVal = true;
 
-            if (Directory.Exists(DestinationDirectory))
+            if (Directory.Exists(DestinationDirectory) && CleanDestination == true)
             {
-                if (CleanDestination == true)
-                {
-                    Log.LogMessage(MessageImportance.Low, "'{0}' already exists, trying to delete before unzipping...", DestinationDirectory);
-                    Directory.Delete(DestinationDirectory, recursive: true);
-                }
+                Log.LogMessage(MessageImportance.Low, "'{0}' already exists, trying to delete before unzipping...", DestinationDirectory);
+                Directory.Delete(DestinationDirectory, recursive: true);
             }
 
             if (!File.Exists(SourceArchive))
@@ -178,16 +175,7 @@ namespace Microsoft.DotNet.Build.Tasks
             return retVal;
         }
 
-        private bool ShouldExtractItem(string path)
-        {
-            if (DirectoriesToCopy != null)
-            {
-                return DirectoriesToCopy.Any(p => path.StartsWith(p.ItemSpec));
-
-            }
-
-            return false;
-        }
+        private bool ShouldExtractItem(string path) => DirectoriesToCopy?.Any(p => path.StartsWith(p.ItemSpec)) ?? false;
 
         protected override string ToolName => "tar";
 

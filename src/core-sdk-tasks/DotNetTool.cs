@@ -1,10 +1,9 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 using System.Diagnostics;
-
+using System.Runtime.InteropServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-
 using Microsoft.DotNet.Cli.Build.Framework;
 
 namespace Microsoft.DotNet.Cli.Build
@@ -19,16 +18,9 @@ namespace Microsoft.DotNet.Cli.Build
 
         protected abstract string Args { get; }
 
-        protected override ProcessStartInfo GetProcessStartInfo(
-            string pathToTool,
-            string commandLineCommands, 
-            string responseFileSwitch)
+        protected override ProcessStartInfo GetProcessStartInfo(string pathToTool, string commandLineCommands, string responseFileSwitch)
         {
-            var psi = base.GetProcessStartInfo(
-                pathToTool,
-                commandLineCommands,
-                responseFileSwitch);
-                
+            var psi = base.GetProcessStartInfo(pathToTool, commandLineCommands, responseFileSwitch);
             foreach (var environmentVariableName in new EnvironmentFilter().GetEnvironmentVariableNamesToRemove())
             {
                 psi.Environment.Remove(environmentVariableName);
@@ -39,23 +31,21 @@ namespace Microsoft.DotNet.Cli.Build
 
         public string WorkingDirectory { get; set; }
 
-        protected override string ToolName => $"dotnet{Constants.ExeSuffix}";
+        protected override string ToolName => $"dotnet{(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty)}";
 
         protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
         protected override string GenerateFullPathToTool()
         {
-            string path = ToolPath;
-
-            // if ToolPath was not provided by the MSBuild script 
-            if (string.IsNullOrEmpty(path))
+            // if ToolPath was not provided by the MSBuild script
+            if (string.IsNullOrEmpty(ToolPath))
             {
                 Log.LogError($"Could not find the Path to {ToolName}");
 
                 return string.Empty;
             }
 
-            return path;
+            return ToolPath;
         }
 
         protected override string GetWorkingDirectory() => WorkingDirectory ?? base.GetWorkingDirectory();

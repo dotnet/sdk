@@ -19,21 +19,14 @@ namespace Microsoft.DotNet.Cli.Build
         {
             if (NuGetVersion.TryParse(RuntimePackVersion, out var version))
             {
-                if (version.IsPrerelease && version.Patch == 0)
-                {
-                    DefaultRuntimeFrameworkVersion = RuntimePackVersion;
-                }
-                else
-                {
-                    DefaultRuntimeFrameworkVersion = new NuGetVersion(version.Major, version.Minor, 0).ToFullString();
-                }
+                DefaultRuntimeFrameworkVersion = version.IsPrerelease && version.Patch == 0 ?
+                    RuntimePackVersion :
+                    new NuGetVersion(version.Major, version.Minor, 0).ToFullString();
 
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
     }
 }

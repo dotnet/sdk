@@ -37,17 +37,15 @@ namespace Microsoft.DotNet.Cli.Build
 
         protected override string GenerateFullPathToTool()
         {
-            string path = ToolPath;
-
             // if ToolPath was not provided by the MSBuild script 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(ToolPath))
             {
                 Log.LogError($"Could not find the Path to {ToolName}");
 
                 return string.Empty;
             }
 
-            return path;
+            return ToolPath;
         }
 
         protected override string GetWorkingDirectory() => WorkingDirectory ?? base.GetWorkingDirectory();
@@ -65,16 +63,9 @@ namespace Microsoft.DotNet.Cli.Build
 
         protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance) => Log.LogMessage(messageImportance, singleLine, null);
 
-        protected override ProcessStartInfo GetProcessStartInfo(
-            string pathToTool,
-            string commandLineCommands,
-            string responseFileSwitch)
+        protected override ProcessStartInfo GetProcessStartInfo(string pathToTool, string commandLineCommands, string responseFileSwitch)
         {
-            var psi = base.GetProcessStartInfo(
-                pathToTool,
-                commandLineCommands,
-                responseFileSwitch);
-
+            var psi = base.GetProcessStartInfo(pathToTool, commandLineCommands, responseFileSwitch);
             foreach (var environmentVariableName in new EnvironmentFilter().GetEnvironmentVariableNamesToRemove())
             {
                 psi.Environment.Remove(environmentVariableName);

@@ -48,6 +48,7 @@ namespace Microsoft.DotNet.Cli.Build
             {
                 Log.LogWarning($"GetComponentCommit failed for VersionDetailsXmlFile={VersionDetailsXmlFile}, DependencyName={DependencyName}: {ex}");
             }
+
             return true;
         }
     }

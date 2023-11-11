@@ -28,14 +28,6 @@ namespace Microsoft.DotNet.Cli.Build
 
         private string GetMode() => Mode;
 
-        private string GetRecursive()
-        {
-            if(Recursive)
-            {
-                return "--recursive";
-            }
-
-            return null;
-        }
+        private string GetRecursive() => Recursive ? "--recursive" : null;
     }
 }

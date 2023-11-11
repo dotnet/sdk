@@ -24,6 +24,7 @@ namespace Microsoft.DotNet.Cli.Build
             var runtimeJsonRoot = JObject.Parse(runtimeJsonContents);
             string [] runtimeIdentifiers = ((JObject)runtimeJsonRoot["runtimes"]).Properties().Select(p => p.Name).ToArray();
             AvailableRuntimePackRuntimeIdentifiers = runtimeIdentifiers.Select(rid => new TaskItem(rid)).ToArray();
+
             return true;
         }
     }
