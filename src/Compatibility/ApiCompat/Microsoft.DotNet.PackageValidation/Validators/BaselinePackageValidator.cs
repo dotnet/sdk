@@ -28,9 +28,15 @@ namespace Microsoft.DotNet.PackageValidation.Validators
 
             ApiCompatRunnerOptions apiCompatOptions = new(options.EnableStrictMode, isBaselineComparison: true);
 
-            // Iterate over all target frameworks in the package.
             foreach (NuGetFramework baselineTargetFramework in options.BaselinePackage.FrameworksInPackage)
             {
+                // Skip target frameworks excluded from the baseline package.
+                if (options.BaselinePackageFrameworksToIgnore is not null &&
+                   options.BaselinePackageFrameworksToIgnore.Contains(baselineTargetFramework.GetShortFolderName()))
+                {
+                    continue;
+                }
+
                 // Retrieve the compile time assets from the baseline package
                 IReadOnlyList<ContentItem>? baselineCompileAssets = options.BaselinePackage.FindBestCompileAssetForFramework(baselineTargetFramework);
                 if (baselineCompileAssets != null)

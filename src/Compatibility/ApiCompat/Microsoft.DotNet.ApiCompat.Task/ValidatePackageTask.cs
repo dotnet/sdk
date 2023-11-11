@@ -118,6 +118,12 @@ namespace Microsoft.DotNet.ApiCompat.Task
         /// </summary>
         public ITaskItem[]? BaselinePackageAssemblyReferences { get; set; }
 
+        /// <summary>
+        /// A set of target frameworks to ignore from the baseline package.
+        /// The framework string must exactly match the folder name in the baseilne package.
+        /// </summary>
+        public string[]? BaselinePackageFrameworksToIgnore { get; set; }
+
         public override bool Execute()
         {
             RoslynResolver roslynResolver = RoslynResolver.Register(RoslynAssembliesPath!);
@@ -153,15 +159,16 @@ namespace Microsoft.DotNet.ApiCompat.Task
                 BaselinePackageTargetPath,
                 RuntimeGraph,
                 ParsePackageAssemblyReferences(PackageAssemblyReferences),
-                ParsePackageAssemblyReferences(BaselinePackageAssemblyReferences));
+                ParsePackageAssemblyReferences(BaselinePackageAssemblyReferences),
+                BaselinePackageFrameworksToIgnore);
         }
 
         private static Dictionary<NuGetFramework, IEnumerable<string>>? ParsePackageAssemblyReferences(ITaskItem[]? packageAssemblyReferences)
         {
-            if (packageAssemblyReferences == null || packageAssemblyReferences.Length == 0)
+            if (packageAssemblyReferences is null || packageAssemblyReferences.Length == 0)
                 return null;
 
-            Dictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferencesDict = new(packageAssemblyReferences.Length);
+            Dictionary<NuGetFramework, IEnumerable<string>> packageAssemblyReferencesDict = new(packageAssemblyReferences.Length);
             foreach (ITaskItem taskItem in packageAssemblyReferences)
             {
                 string targetFrameworkMoniker = taskItem.GetMetadata("TargetFrameworkMoniker");
