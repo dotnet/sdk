@@ -29,6 +29,7 @@ NuGet Config                                  nugetconfig,nuget.config          
 NUnit 3 Test Item                             nunit-test                  [C#],F#,VB  Test/NUnit                    
 NUnit 3 Test Project                          nunit                       [C#],F#,VB  Test/NUnit                    
 NUnit Playwright Test Project                 nunit-playwright            [C#]        Test/NUnit/Playwright         
+MSBuild Directory.Packages.props file         packagesprops               [C#]        MSBuild/packages/props/CPM    
 Protocol Buffer File                          proto                                   Web/gRPC                      
 Razor Class Library                           razorclasslib               [C#]        Web/Razor/Library             
 Razor Component                               razorcomponent              [C#]        Web/ASP.NET                   
