@@ -191,10 +191,7 @@ namespace EndToEnd.Tests
         [InlineData("nunit")]
         [InlineData("web")]
         [InlineData("mvc")]
-        public void ItCanBuildTemplates(string templateName, string language = "")
-        {
-            TestTemplateCreateAndBuild(templateName, language: language);
-        }
+        public void ItCanBuildTemplates(string templateName, string language = "") => TestTemplateCreateAndBuild(templateName, language: language);
 
         /// <summary>
         /// The test checks if dotnet new shows curated list correctly after the SDK installation and template insertion.
@@ -309,25 +306,16 @@ namespace EndToEnd.Tests
         [WindowsOnlyTheory]
         [InlineData("wpf")]
         [InlineData("winforms")]
-        public void ItCanBuildDesktopTemplates(string templateName)
-        {
-            TestTemplateCreateAndBuild(templateName);
-        }
+        public void ItCanBuildDesktopTemplates(string templateName) => TestTemplateCreateAndBuild(templateName);
 
         [WindowsOnlyTheory]
         [InlineData("wpf")]
-        public void ItCanBuildDesktopTemplatesSelfContained(string templateName)
-        {
-            TestTemplateCreateAndBuild(templateName, selfContained: true);
-        }
+        public void ItCanBuildDesktopTemplatesSelfContained(string templateName) => TestTemplateCreateAndBuild(templateName, selfContained: true);
 
         [Theory]
         [InlineData("web")]
         [InlineData("console")]
-        public void ItCanBuildTemplatesSelfContained(string templateName)
-        {
-            TestTemplateCreateAndBuild(templateName, selfContained: true);
-        }
+        public void ItCanBuildTemplatesSelfContained(string templateName) => TestTemplateCreateAndBuild(templateName, selfContained: true);
 
         /// <summary>
         /// The test checks if the template creates the template for correct framework by default.

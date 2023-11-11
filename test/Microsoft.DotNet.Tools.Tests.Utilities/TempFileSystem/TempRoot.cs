@@ -61,12 +61,9 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             _temps.Add(dir);
             return dir;
         }
- 
-        public TempFile CreateFile(string prefix = null, string extension = null, string directory = null, [CallerFilePath]string callerSourcePath = null, [CallerLineNumber]int callerLineNumber = 0)
-        {
-            return AddFile(new DisposableFile(prefix, extension, directory, callerSourcePath, callerLineNumber));
-        }
- 
+
+        public TempFile CreateFile(string prefix = null, string extension = null, string directory = null, [CallerFilePath] string callerSourcePath = null, [CallerLineNumber] int callerLineNumber = 0) => AddFile(new DisposableFile(prefix, extension, directory, callerSourcePath, callerLineNumber));
+
         public DisposableFile AddFile(DisposableFile file)
         {
             _temps.Add(file);

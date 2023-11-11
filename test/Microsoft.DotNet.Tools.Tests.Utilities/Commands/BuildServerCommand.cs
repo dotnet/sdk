@@ -7,14 +7,8 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 {
     public sealed class BuildServerCommand : DotnetCommand
     {
-        public override CommandResult Execute(string args = "")
-        {
-            return base.Execute($"build-server {args}");
-        }
+        public override CommandResult Execute(string args = "") => base.Execute($"build-server {args}");
 
-        public override CommandResult ExecuteWithCapturedOutput(string args = "")
-        {
-            return base.ExecuteWithCapturedOutput($"build-server {args}");
-        }
+        public override CommandResult ExecuteWithCapturedOutput(string args = "") => base.ExecuteWithCapturedOutput($"build-server {args}");
     }
 }

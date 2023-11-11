@@ -58,10 +58,7 @@ namespace Microsoft.DotNet.Cli.Build
             return path;
         }
 
-        protected override string GetWorkingDirectory()
-        {
-            return WorkingDirectory ?? base.GetWorkingDirectory();
-        }
+        protected override string GetWorkingDirectory() => WorkingDirectory ?? base.GetWorkingDirectory();
 
         protected override string GenerateCommandLineCommands()
         {
@@ -72,9 +69,6 @@ namespace Microsoft.DotNet.Cli.Build
             return commandLineCommands;
         }
 
-        protected override void LogToolCommand(string message)
-        {
-            base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
-        }
+        protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
     }
 }

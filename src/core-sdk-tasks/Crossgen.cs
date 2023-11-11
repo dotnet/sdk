@@ -127,15 +127,9 @@ namespace Microsoft.DotNet.Build.Tasks
             return "crossgen2";
         }
 
-        protected override string GenerateCommandLineCommands()
-        {
-            return $"{GetInPath()} {GetOutPath()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
-        }
+        protected override string GenerateCommandLineCommands() => $"{GetInPath()} {GetOutPath()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
 
-        private string GetArchitecture()
-        {
-            return $"--targetarch {Architecture}";
-        }
+        private string GetArchitecture() => $"--targetarch {Architecture}";
 
         private string GetCreateSymbols()
         {
@@ -153,15 +147,9 @@ namespace Microsoft.DotNet.Build.Tasks
             return null;
         }
 
-        private string GetInPath()
-        {
-            return $"\"{SourceAssembly}\"";
-        }
-        
-        private string GetOutPath()
-        {
-            return $"-o \"{TempOutputPath}\"";
-        }
+        private string GetInPath() => $"\"{SourceAssembly}\"";
+
+        private string GetOutPath() => $"-o \"{TempOutputPath}\"";
 
         private string GetPlatformAssemblyPaths()
         {
@@ -177,15 +165,9 @@ namespace Microsoft.DotNet.Build.Tasks
             
             return platformAssemblyPaths;
         }
-        
-        private string GetMissingDependenciesOk()
-        {
-            return "-MissingDependenciesOK";
-        }
 
-        protected override void LogToolCommand(string message)
-        {
-            base.LogToolCommand($"{base.GetWorkingDirectory()}> {message}");
-        }
+        private string GetMissingDependenciesOk() => "-MissingDependenciesOK";
+
+        protected override void LogToolCommand(string message) => base.LogToolCommand($"{base.GetWorkingDirectory()}> {message}");
     }
 }

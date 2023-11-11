@@ -129,10 +129,7 @@ namespace Microsoft.DotNet.TestFramework
             return this;
         }
 
-        public TestAssetInstance WithProjectChanges(Action<XDocument> xmlAction)
-        {
-            return WithProjectChanges((path, project) => xmlAction(project));
-        }
+        public TestAssetInstance WithProjectChanges(Action<XDocument> xmlAction) => WithProjectChanges((path, project) => xmlAction(project));
 
         public TestAssetInstance WithProjectChanges(Action<string, XDocument> xmlAction)
         {
@@ -211,10 +208,7 @@ namespace Microsoft.DotNet.TestFramework
             }
         }
 
-        private IEnumerable<FileInfo> GetProjectFiles()
-        {
-            return Root.GetFiles(TestAssetInfo.ProjectFilePattern, SearchOption.AllDirectories);
-        }
+        private IEnumerable<FileInfo> GetProjectFiles() => Root.GetFiles(TestAssetInfo.ProjectFilePattern, SearchOption.AllDirectories);
 
         private void Restore(FileInfo projectFile)
         {

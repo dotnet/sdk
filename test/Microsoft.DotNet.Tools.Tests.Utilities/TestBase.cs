@@ -58,10 +58,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         {
         }
 
-        public static string GetUniqueName()
-        {
-            return Guid.NewGuid().ToString("D");
-        }
+        public static string GetUniqueName() => Guid.NewGuid().ToString("D");
 
         public TempRoot Temp
         {
@@ -126,15 +123,9 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             string outputDir,
             string executableName,
             string expectedOutput,
-            bool native = false)
-        {
-            TestExecutable(GetCompilationOutputPath(outputDir, native), executableName, expectedOutput);
-        }
+            bool native = false) => TestExecutable(GetCompilationOutputPath(outputDir, native), executableName, expectedOutput);
 
-        protected void TestNativeOutputExecutable(string outputDir, string executableName, string expectedOutput)
-        {
-            TestOutputExecutable(outputDir, executableName, expectedOutput, true);
-        }
+        protected void TestNativeOutputExecutable(string outputDir, string executableName, string expectedOutput) => TestOutputExecutable(outputDir, executableName, expectedOutput, true);
 
         protected string GetCompilationOutputPath(string outputDir, bool native)
         {

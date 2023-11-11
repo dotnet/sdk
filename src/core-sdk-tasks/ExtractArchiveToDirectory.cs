@@ -193,14 +193,8 @@ namespace Microsoft.DotNet.Build.Tasks
 
         protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
-        protected override string GenerateFullPathToTool()
-        {
-            return "tar";
-        }
+        protected override string GenerateFullPathToTool() => "tar";
 
-        protected override string GenerateCommandLineCommands()
-        {
-            return $"xf {SourceArchive} -C {DestinationDirectory}";
-        }
+        protected override string GenerateCommandLineCommands() => $"xf {SourceArchive} -C {DestinationDirectory}";
     }
 }

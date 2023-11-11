@@ -76,9 +76,6 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             return base.ExecuteWithCapturedOutput(args);
         }
 
-        private string BuildArgs()
-        {
-            return $"{_projectPath} {OutputOption} {BuildBasePathOption} {TempOutputOption} {ConfigurationOption} {VersionSuffixOption} {ServiceableOption}";
-        }
+        private string BuildArgs() => $"{_projectPath} {OutputOption} {BuildBasePathOption} {TempOutputOption} {ConfigurationOption} {VersionSuffixOption} {ServiceableOption}";
     }
 }

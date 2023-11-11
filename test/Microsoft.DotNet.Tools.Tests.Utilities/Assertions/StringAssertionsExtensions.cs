@@ -10,10 +10,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 {
     public static class StringAssertionsExtensions
     {
-        private static string NormalizeLineEndings(string s)
-        {
-            return s.Replace("\r\n", "\n");
-        }
+        private static string NormalizeLineEndings(string s) => s.Replace("\r\n", "\n");
 
         public static AndConstraint<StringAssertions> BeVisuallyEquivalentTo(this StringAssertions assertions, string expected, string because = "", params object[] becauseArgs)
         {

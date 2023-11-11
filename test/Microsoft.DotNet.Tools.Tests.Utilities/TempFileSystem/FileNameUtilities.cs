@@ -25,10 +25,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         /// <returns>
         /// True if <paramref name="path"/> is a simple file name, false if it is null or includes a directory specification.
         /// </returns>
-        internal static bool IsFileName(string path)
-        {
-            return IndexOfFileName(path) == 0;
-        }
+        internal static bool IsFileName(string path) => IndexOfFileName(path) == 0;
 
         /// <summary>
         /// Returns the offset in <paramref name="path"/> where the dot that starts an extension is, or -1 if the path doesn't have an extension.

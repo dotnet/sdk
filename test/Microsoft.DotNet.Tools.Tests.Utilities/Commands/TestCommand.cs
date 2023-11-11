@@ -48,10 +48,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             CurrentProcess.KillTree();
         }
 
-        public virtual CommandResult Execute(string args = "")
-        {
-            return Task.Run(async () => await ExecuteAsync(args)).Result;
-        }
+        public virtual CommandResult Execute(string args = "") => Task.Run(async () => await ExecuteAsync(args)).Result;
 
         public async virtual Task<CommandResult> ExecuteAsync(string args = "")
         {
@@ -194,14 +191,13 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             }
         }
 
-        private string GetBaseDirectory()
-        {
+        private string GetBaseDirectory() =>
 #if NET451
             return AppDomain.CurrentDomain.BaseDirectory;
 #else
-            return AppContext.BaseDirectory;
+            AppContext.BaseDirectory;
 #endif
-        }
+
 
         private void ResolveCommand(ref string executable, ref string args)
         {

@@ -20,25 +20,13 @@ namespace Microsoft.DotNet.Cli.Build
 
         protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
-        protected override string GenerateFullPathToTool()
-        {
-            return "chmod";
-        }
+        protected override string GenerateFullPathToTool() => "chmod";
 
-        protected override string GenerateCommandLineCommands()
-        {
-            return $"{GetRecursive()} {GetMode()} {GetGlob()}";
-        }
+        protected override string GenerateCommandLineCommands() => $"{GetRecursive()} {GetMode()} {GetGlob()}";
 
-        private string GetGlob()
-        {
-            return Glob;
-        }
+        private string GetGlob() => Glob;
 
-        private string GetMode()
-        {
-            return Mode;
-        }
+        private string GetMode() => Mode;
 
         private string GetRecursive()
         {

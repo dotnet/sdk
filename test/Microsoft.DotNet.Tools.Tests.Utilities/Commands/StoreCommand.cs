@@ -28,10 +28,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             return this;
         }
 
-        public StoreCommand WithFramework(NuGetFramework framework)
-        {
-            return WithFramework(framework.GetShortFolderName());
-        }
+        public StoreCommand WithFramework(NuGetFramework framework) => WithFramework(framework.GetShortFolderName());
 
         public StoreCommand WithOutput(string output)
         {
@@ -69,16 +66,13 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             return base.ExecuteWithCapturedOutput(args);
         }
 
-        private string BuildArgs()
-        {
-            return string.Join(" ",
+        private string BuildArgs() => string.Join(" ",
                 ProfileProjectOption,
                 FrameworkOption,
                 OutputOption,
                 IntermediateWorkingDirectoryOption,
                 RuntimeOption,
                 FrameworkVersionOption);
-        }
 
         private string ProfileProjectOption =>  string.Join(" ", _profileProject) ;
 

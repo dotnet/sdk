@@ -11,24 +11,12 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 {
     public static partial class FileInfoExtensions
     {
-        public static FileInfoAssertions Should(this FileInfo file)
-        {
-            return new FileInfoAssertions(file);
-        }
+        public static FileInfoAssertions Should(this FileInfo file) => new FileInfoAssertions(file);
 
-        public static IDisposable Lock(this FileInfo subject)
-        {
-            return new FileInfoLock(subject);
-        }
+        public static IDisposable Lock(this FileInfo subject) => new FileInfoLock(subject);
 
-        public static IDisposable NuGetLock(this FileInfo subject)
-        {
-            return new FileInfoNuGetLock(subject);
-        }
+        public static IDisposable NuGetLock(this FileInfo subject) => new FileInfoNuGetLock(subject);
 
-        public static string ReadAllText(this FileInfo subject)
-        {
-            return File.ReadAllText(subject.FullName);
-        }
+        public static string ReadAllText(this FileInfo subject) => File.ReadAllText(subject.FullName);
     }
 }

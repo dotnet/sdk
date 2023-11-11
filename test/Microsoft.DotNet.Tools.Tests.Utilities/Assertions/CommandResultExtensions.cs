@@ -7,9 +7,6 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 {
     public static class CommandResultExtensions
     {
-        public static CommandResultAssertions Should(this CommandResult commandResult)
-        {
-            return new CommandResultAssertions(commandResult);
-        }
+        public static CommandResultAssertions Should(this CommandResult commandResult) => new CommandResultAssertions(commandResult);
     }
 }

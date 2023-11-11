@@ -40,10 +40,7 @@ namespace EndToEnd
 
         [Theory]
         [ClassData(typeof(SupportedAspNetCoreAllVersions))]
-        public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreAll(string minorVersion)
-        {
-            ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAllPackageName, minorVersion);
-        }
+        public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreAll(string minorVersion) => ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAllPackageName, minorVersion);
 
         internal void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)
         {
@@ -87,13 +84,10 @@ namespace EndToEnd
             #endif
         }
 
-        private static NuGetVersion GetPackageVersion(LockFile lockFile, string packageName)
-        {
-            return lockFile?.Targets?.SingleOrDefault(t => t.RuntimeIdentifier == null)
+        private static NuGetVersion GetPackageVersion(LockFile lockFile, string packageName) => lockFile?.Targets?.SingleOrDefault(t => t.RuntimeIdentifier == null)
                 ?.Libraries?.SingleOrDefault(l =>
                     string.Compare(l.Name, packageName, StringComparison.CurrentCultureIgnoreCase) == 0)
                 ?.Version;
-        }
 
         public string GetExpectedVersion(string packageName, string minorVersion)
         {

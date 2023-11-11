@@ -88,24 +88,15 @@ namespace Microsoft.DotNet.Build.Tasks
             return retVal;
         }
 
-        public override bool Execute()
-        {
-            return base.Execute();
-        }
+        public override bool Execute() => base.Execute();
 
         protected override string ToolName => "tar";
 
         protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
-        protected override string GenerateFullPathToTool()
-        {
-            return "tar";
-        }
+        protected override string GenerateFullPathToTool() => "tar";
 
-        protected override string GenerateCommandLineCommands()
-        {
-            return $"{GetDestinationArchive()} {GetSourceSpecification()}";
-        }
+        protected override string GenerateCommandLineCommands() => $"{GetDestinationArchive()} {GetSourceSpecification()}";
 
         private string GetSourceSpecification()
         {
@@ -123,10 +114,7 @@ namespace Microsoft.DotNet.Build.Tasks
             }
         }
 
-        private string GetDestinationArchive()
-        {
-            return $"-czf {DestinationArchive}";
-        }
+        private string GetDestinationArchive() => $"-czf {DestinationArchive}";
 
         private string GetExcludes()
         {
@@ -142,10 +130,7 @@ namespace Microsoft.DotNet.Build.Tasks
             
             return excludes;
         }
-        
-        protected override void LogToolCommand(string message)
-        {
-            base.LogToolCommand($"{base.GetWorkingDirectory()}> {message}");
-        }
+
+        protected override void LogToolCommand(string message) => base.LogToolCommand($"{base.GetWorkingDirectory()}> {message}");
     }
 }

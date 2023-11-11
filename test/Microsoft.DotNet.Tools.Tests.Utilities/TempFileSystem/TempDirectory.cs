@@ -105,14 +105,8 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             return new TempDirectory(dirPath, _root);
         }
 
-        public void SetCurrentDirectory()
-        {
-            Directory.SetCurrentDirectory(_path);
-        }
- 
-        public override string ToString()
-        {
-            return _path;
-        }
+        public void SetCurrentDirectory() => Directory.SetCurrentDirectory(_path);
+
+        public override string ToString() => _path;
     }
 }

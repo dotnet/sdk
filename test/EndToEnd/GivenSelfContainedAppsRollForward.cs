@@ -92,13 +92,10 @@ namespace EndToEnd
                 "needs to be updated (see the ImplicitPackageVariable items in MSBuildExtensions.targets in this repo)");
         }
 
-        private static NuGetVersion GetPackageVersion(LockFile lockFile, string packageName)
-        {
-            return lockFile?.Targets?.SingleOrDefault(t => t.RuntimeIdentifier != null)
+        private static NuGetVersion GetPackageVersion(LockFile lockFile, string packageName) => lockFile?.Targets?.SingleOrDefault(t => t.RuntimeIdentifier != null)
                 ?.Libraries?.SingleOrDefault(l =>
                     string.Compare(l.Name, packageName, StringComparison.CurrentCultureIgnoreCase) == 0)
                 ?.Version;
-        }
 
         [Fact]
         public void WeCoverLatestNetCoreAppRollForward()

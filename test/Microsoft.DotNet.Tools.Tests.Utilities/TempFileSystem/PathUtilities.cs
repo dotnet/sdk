@@ -21,10 +21,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
         private static bool IsUnixLikePlatform => Path.DirectorySeparatorChar == '/';
 
-        internal static bool IsDirectorySeparator(char c)
-        {
-            return c == DirectorySeparatorChar || c == AltDirectorySeparatorChar;
-        }
+        internal static bool IsDirectorySeparator(char c) => c == DirectorySeparatorChar || c == AltDirectorySeparatorChar;
 
         internal static string TrimTrailingSeparators(string s)
         {
@@ -42,25 +39,13 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             return s;
         }
 
-        internal static string GetExtension(string path)
-        {
-            return FileNameUtilities.GetExtension(path);
-        }
+        internal static string GetExtension(string path) => FileNameUtilities.GetExtension(path);
 
-        internal static string ChangeExtension(string path, string extension)
-        {
-            return FileNameUtilities.ChangeExtension(path, extension);
-        }
+        internal static string ChangeExtension(string path, string extension) => FileNameUtilities.ChangeExtension(path, extension);
 
-        internal static string RemoveExtension(string path)
-        {
-            return FileNameUtilities.ChangeExtension(path, extension: null);
-        }
+        internal static string RemoveExtension(string path) => FileNameUtilities.ChangeExtension(path, extension: null);
 
-        internal static string GetFileName(string path)
-        {
-            return FileNameUtilities.GetFileName(path);
-        }
+        internal static string GetFileName(string path) => FileNameUtilities.GetFileName(path);
 
         /// <summary>
         /// Get directory name from path.

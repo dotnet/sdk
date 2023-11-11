@@ -25,25 +25,13 @@ namespace Microsoft.DotNet.Cli.Build
 
         protected override string ToolName => "package_tool.sh";
 
-        private string GetInputDir()
-        {
-            return $"-i {InputDirectory}";
-        }
+        private string GetInputDir() => $"-i {InputDirectory}";
 
-        private string GetOutputFile()
-        {
-            return $"-o {OutputDirectory}";
-        }
+        private string GetOutputFile() => $"-o {OutputDirectory}";
 
-        private string GetPackageName()
-        {
-            return $"-n {PackageName}";
-        }
+        private string GetPackageName() => $"-n {PackageName}";
 
-        private string GetPackageVersion()
-        {
-            return $"-v {PackageVersion}";
-        }
+        private string GetPackageVersion() => $"-v {PackageVersion}";
 
         protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
@@ -62,10 +50,7 @@ namespace Microsoft.DotNet.Cli.Build
             return path;
         }
 
-        protected override string GetWorkingDirectory()
-        {
-            return WorkingDirectory ?? base.GetWorkingDirectory();
-        }
+        protected override string GetWorkingDirectory() => WorkingDirectory ?? base.GetWorkingDirectory();
 
         protected override string GenerateCommandLineCommands()
         {
@@ -76,15 +61,9 @@ namespace Microsoft.DotNet.Cli.Build
             return commandLineCommands;
         }
 
-        protected override void LogToolCommand(string message)
-        {
-            base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
-        }
+        protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
 
-        protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
-        {
-            Log.LogMessage(messageImportance, singleLine, null);
-        }
+        protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance) => Log.LogMessage(messageImportance, singleLine, null);
 
         protected override ProcessStartInfo GetProcessStartInfo(
             string pathToTool,

@@ -49,10 +49,7 @@ namespace Microsoft.DotNet.TestFramework
             _testWorkingFolder = testWorkingFolder;
         }
 
-        public TestAssetInfo Get(string name)
-        {
-            return Get(TestAssetKinds.TestProjects, name);
-        }
+        public TestAssetInfo Get(string name) => Get(TestAssetKinds.TestProjects, name);
 
         public TestAssetInfo Get(string kind, string name)
         {

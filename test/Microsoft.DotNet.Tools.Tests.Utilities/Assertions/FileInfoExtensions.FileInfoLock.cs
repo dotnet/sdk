@@ -20,10 +20,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                 _fileStream = fileInfo.Open(FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             }
 
-            public void Dispose()
-            {
-                _fileStream.Dispose();
-            }
+            public void Dispose() => _fileStream.Dispose();
         }
     }
 }

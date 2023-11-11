@@ -50,11 +50,8 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                 }
             }
         }
- 
-        public FileStream Open(FileAccess access = FileAccess.ReadWrite)
-        {
-            return new FileStream(_path, FileMode.Open, access);
-        }
+
+        public FileStream Open(FileAccess access = FileAccess.ReadWrite) => new FileStream(_path, FileMode.Open, access);
 
         public string Path => _path;
 
@@ -79,12 +76,9 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
  
             return this;
         }
- 
-        public Task<TempFile> WriteAllTextAsync(string content)
-        {
-            return WriteAllTextAsync(content, Encoding.UTF8);
-        }
- 
+
+        public Task<TempFile> WriteAllTextAsync(string content) => WriteAllTextAsync(content, Encoding.UTF8);
+
         public TempFile WriteAllBytes(byte[] content)
         {
             File.WriteAllBytes(_path, content);
@@ -96,20 +90,11 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             content.WriteToFile(_path);
             return this;
         }
- 
-        public string ReadAllText()
-        {
-            return File.ReadAllText(_path);
-        }
- 
-        public TempFile CopyContentFrom(string path)
-        {
-            return WriteAllBytes(File.ReadAllBytes(path));
-        }
- 
-        public override string ToString()
-        {
-            return _path;
-        }
+
+        public string ReadAllText() => File.ReadAllText(_path);
+
+        public TempFile CopyContentFrom(string path) => WriteAllBytes(File.ReadAllBytes(path));
+
+        public override string ToString() => _path;
     }
 }

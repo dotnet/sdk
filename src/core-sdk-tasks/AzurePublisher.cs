@@ -205,15 +205,9 @@ namespace Microsoft.DotNet.Cli.Build
             }
         }
 
-        private void DeleteBlob(string path)
-        {
-            _blobContainer.GetBlockBlobReference(path).DeleteAsync().Wait();
-        }
+        private void DeleteBlob(string path) => _blobContainer.GetBlockBlobReference(path).DeleteAsync().Wait();
 
-        private static string CalculateRelativePathForFile(string file, Product product, string version)
-        {
-            return $"{product}/{version}/{Path.GetFileName(file)}";
-        }
+        private static string CalculateRelativePathForFile(string file, Product product, string version) => $"{product}/{version}/{Path.GetFileName(file)}";
     }
 }
 #endif
