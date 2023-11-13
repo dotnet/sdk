@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Castle.Core.Internal;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
@@ -980,7 +979,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 res.ErrorMessage.Should().NotBeNullOrEmpty();
                 res.ErrorMessage.Should().Contain(expectedErrorMessage);
                 res.OutputBaseDirectory.Should().Match(s =>
-                    s.IsNullOrEmpty() || !_engineEnvironmentSettings.Host.FileSystem.FileExists(s));
+                    string.IsNullOrEmpty(s) || !_engineEnvironmentSettings.Host.FileSystem.FileExists(s));
             }
             else
             {
