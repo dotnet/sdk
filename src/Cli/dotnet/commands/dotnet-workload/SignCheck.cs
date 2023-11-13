@@ -26,6 +26,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         {
             if (OperatingSystem.IsWindows())
             {
+#if !DOT_NET_BUILD_FROM_SOURCE
                 // API is only available on XP and Server 2003 or later versions. .NET requires Win7 minimum.
 #pragma warning disable CA1416
                 if (AuthentiCode.IsSigned(path, IsCacheOnlyRevocationChecksPolicySet()) == 0)
@@ -35,6 +36,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                     return certificate.IsIntendedForCodeSigning() && certificate.HasMicrosoftTrustedRoot();
                 }
 #pragma warning restore CA1416
+#endif
             }
 
             return false;
