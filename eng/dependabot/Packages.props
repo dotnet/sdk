@@ -6,7 +6,7 @@
     <!--Test dependencies-->
     <PackageVersion Include="Verify.Xunit" Version="22.1.4" />
     <PackageVersion Include="Verify.DiffPlex" Version="2.3.0" />
-    <PackageVersion Include="FakeItEasy" Version="7.4.0" />
+    <PackageVersion Include="FakeItEasy" Version="8.0.0" />
     <PackageVersion Include="Wcwidth.Sources" Version="1.0.0" />
   </ItemGroup>
 </Project>
