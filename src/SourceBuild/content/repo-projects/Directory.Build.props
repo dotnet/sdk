@@ -49,6 +49,10 @@
     <GitCommitDateNoDashes>$(GitCommitDate.Replace('-', ''))</GitCommitDateNoDashes>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DotNetBuildVertical Condition="'$(DotNetBuildVertical)' == ''">false</DotNetBuildVertical>
+  </PropertyGroup>
+
   <!-- A human-readable description of what's building and why. -->
   <PropertyGroup>
     <ProjectBuildReason>'$(RepositoryName)'</ProjectBuildReason>
@@ -157,6 +161,7 @@
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:ReferencePackageNupkgCacheDir="$(ReferencePackagesDir)"</StandardSourceBuildArgs>
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:PreviouslySourceBuiltNupkgCacheDir="$(PrebuiltSourceBuiltPackagesPath)"</StandardSourceBuildArgs>
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:SourceBuildUseMonoRuntime=$(SourceBuildUseMonoRuntime)</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:DotNetBuildVertical=$(DotNetBuildVertical)</StandardSourceBuildArgs>
 
     <StandardSourceBuildCommand>$(ProjectDirectory)\build$(ShellExtension)</StandardSourceBuildCommand>
   </PropertyGroup>
