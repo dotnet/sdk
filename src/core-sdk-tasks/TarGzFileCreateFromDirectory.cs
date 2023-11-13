@@ -102,9 +102,7 @@ namespace Microsoft.DotNet.Build.Tasks
             if (IncludeBaseDirectory)
             {
                 var parentDirectory = Directory.GetParent(SourceDirectory).Parent.FullName;
-
                 var sourceDirectoryName = Path.GetFileName(Path.GetDirectoryName(SourceDirectory));
-
                 return $"--directory {parentDirectory} {sourceDirectoryName}  {GetExcludes()}";
             }
             else

@@ -28,7 +28,6 @@ namespace Microsoft.DotNet.Cli.Build
         [Required]
         public int CombinedBuildNumberAndRevision { get; set; }
 
-
         //  Should be the BundledTemplates with BundledTemplateInstallPath metadata set to the value calculated for that group
         [Output]
         public ITaskItem [] BundledTemplatesWithInstallPaths { get; set; }
@@ -39,11 +38,10 @@ namespace Microsoft.DotNet.Cli.Build
         //  TemplatesMajorMinorVersion: 6.0 (from BundledTemplateMajorMinorVersion from group)
         //  InstallerUpgradeCode: Guid generated using GenerateGuidFromName, combining TemplateBaseFilename, FullNugetVersion, ProductMonikerRid, and InstallerExtension
         //  MSIVersion: Result of calling GenerateMsiVersionFromFullVersion logic with CombinedBuildNumberAndRevision and BundledTemplateMajorMinorPatchVersion from template group
-
         [Output]
         public ITaskItem [] TemplatesComponents { get; set; }
 
-        private const int _patchVersionResetOffset = 1;
+        private const int PatchVersionResetOffset = 1;
 
         public override bool Execute()
         {
@@ -112,15 +110,10 @@ namespace Microsoft.DotNet.Cli.Build
             // more in the above bug's detail.
             // There is no non-deterministic existing ComponentId under Major version 5.
             // so only apply the patch bump when below 5
-
-            int basePatch =
-                aspNetCoreTemplate.Major < 5
-                ? aspNetCoreTemplate.Patch + _patchVersionResetOffset
-                : aspNetCoreTemplate.Patch;
-
-            var baseMajorMinorPatch = new NuGetVersion(aspNetCoreTemplate.Major, aspNetCoreTemplate.Minor,
-                basePatch);
-            return baseMajorMinorPatch;
+            int basePatch = aspNetCoreTemplate.Major < 5 ?
+                aspNetCoreTemplate.Patch + PatchVersionResetOffset :
+                aspNetCoreTemplate.Patch;
+            return new NuGetVersion(aspNetCoreTemplate.Major, aspNetCoreTemplate.Minor, basePatch);
         }
     }
 

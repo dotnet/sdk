@@ -9,15 +9,15 @@ namespace Microsoft.DotNet.Cli.Build
 {
     public class EnvironmentFilter
     {
-        private const string _MSBuildEnvironmentVariablePrefix = "MSBuild";
-        private const string _DotNetEnvironmentVariablePrefix = "DOTNET";
-        private const string _NugetEnvironmentVariablePrefix = "NUGET";
+        private const string MSBuildEnvironmentVariablePrefix = "MSBuild";
+        private const string DotNetEnvironmentVariablePrefix = "DOTNET";
+        private const string NugetEnvironmentVariablePrefix = "NUGET";
 
         private IEnumerable<string> _prefixesOfEnvironmentVariablesToRemove = new string []
         {
-            _MSBuildEnvironmentVariablePrefix,
-            _DotNetEnvironmentVariablePrefix,
-            _NugetEnvironmentVariablePrefix
+            MSBuildEnvironmentVariablePrefix,
+            DotNetEnvironmentVariablePrefix,
+            NugetEnvironmentVariablePrefix
         };
 
         private IEnumerable<string> _environmentVariablesToRemove = new string []
