@@ -8,7 +8,9 @@ using System.Security.AccessControl;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Utils;
+#if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Installer.Windows.Security;
+#endif
 using Microsoft.DotNet.Workloads.Workload;
 using Newtonsoft.Json;
 
@@ -265,6 +267,7 @@ namespace Microsoft.DotNet.Installer.Windows
                 bool cacheOnlyRevocationChecks = SignCheck.IsCacheOnlyRevocationChecksPolicySet();
 
                 // MSI and authenticode verification only applies to Windows. NET only supports Win7 and later.
+#if !DOT_NET_BUILD_FROM_SOURCE
 #pragma warning disable CA1416
                 // WinVerifyTrust returns a status code, not an HRESULT.
                 int lstatus = AuthentiCode.IsSigned(msiPath, cacheOnlyRevocationChecks);
@@ -286,6 +289,7 @@ namespace Microsoft.DotNet.Installer.Windows
                     throw new SecurityException(string.Format(LocalizableStrings.FailedToVerifyTrustedMicrosoftRoot, msiPath));
                 }
 #pragma warning restore CA1416
+#endif
             }
             else
             {

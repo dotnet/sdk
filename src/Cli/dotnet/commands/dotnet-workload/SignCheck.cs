@@ -3,7 +3,9 @@
 
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+#if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Installer.Windows.Security;
+#endif
 using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Workloads.Workload
