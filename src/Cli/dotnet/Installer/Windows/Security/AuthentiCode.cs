@@ -55,8 +55,8 @@ namespace Microsoft.DotNet.Installer.Windows.Security
                 trustData[0].dwUIContext = 0;
                 trustData[0].Anonymous.pFile = fileInfo;
 
-                return WinVerifyTrust((HWND)IntPtr.Zero, ref policyGuid, trustData);                
+                return WinVerifyTrust((HWND)IntPtr.Zero, ref policyGuid, trustData);
             }
-        }        
+        }
     }
 }

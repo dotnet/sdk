@@ -1,16 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.Versioning;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.Installer.Windows.Security;
 
 namespace Microsoft.DotNet.Tests
 {
-    [SupportedOSPlatform("windows")]
+    [SupportedOSPlatform("windows5.1.2600")]
     public class WindowsInstallerTests
     {
         private static string s_testDataPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestData");
@@ -131,58 +131,32 @@ namespace Microsoft.DotNet.Tests
         }
 
         [WindowsOnlyTheory]
-        [InlineData("tampered.msi", false, "The digital signature of the object did not verify.")]
-        [InlineData("dual_signed.dll", true, "")]
-        [InlineData("dotnet_realsigned.exe", true, "")]
-        [InlineData("dotnet_fakesigned.exe", false, "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.")]
-        public void AuthentiCodeSignaturesCanBeVerified(string file, bool shouldBeSigned, string expectedError)
+        // This verifies E_TRUST_BAD_DIGEST
+        [InlineData("tampered.msi", -2146869232, "The digital signature of the object did not verify.")]
+        [InlineData("dual_signed.dll", 0, "")]
+        [InlineData("dotnet_realsigned.exe", 0, "")]
+        // This verifies CERT_E_UNTRUSTEDROOT
+        [InlineData("dotnet_fakesigned.exe", -2146762487, "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.")]
+        public void AuthentiCodeSignaturesCanBeVerified(string file, int expectedStatus, string expectedError)
         {
-            bool isSigned = AuthentiCode.IsSigned(Path.Combine(s_testDataPath, file));
+            int status = AuthentiCode.IsSigned(Path.Combine(s_testDataPath, file));
+            Assert.Equal(expectedStatus, status);
 
-            Assert.Equal(shouldBeSigned, isSigned);
-
-            if (!shouldBeSigned)
+            if (expectedStatus != 0)
             {
-                Assert.Equal(expectedError, new Win32Exception(Marshal.GetLastWin32Error()).Message);
+                Assert.Equal(expectedError, Marshal.GetPInvokeErrorMessage(status));
             }
         }
 
         [WindowsOnlyTheory]
-        [InlineData("dotnet_realsigned.exe")]
-        [InlineData("dotnet_fakesigned.exe")]
-        public void IsSignedByTrustedOrganizationOnlyVerifiesTheSubjectOrganization(string file)
+        [InlineData("dotnet_realsigned.exe", true)]
+        // The file is dual signed, but the cert APIs only look at the first certificate chain so it will pick up the
+        // .NET Foundation certificate that terminates in a DigiCert root certificate and return false.
+        [InlineData("dual_signed.dll", false)]
+        public void ItVerifiesThatTheRootCertificateIsTrusted(string file, bool expectedResult)
         {
-            Assert.True(AuthentiCode.IsSignedByTrustedOrganization(Path.Combine(s_testDataPath, file), AuthentiCode.TrustedOrganizations));
-        }
-
-        [WindowsOnlyFact]
-        public void IsSignedBytTrustedOrganizationVerifiesNestedSignatures()
-        {
-            Assert.True(AuthentiCode.IsSignedByTrustedOrganization(Path.Combine(s_testDataPath, "dual_signed.dll"),
-                "Foo", "Bar", "Microsoft Corporation")); ;
-            Assert.True(AuthentiCode.IsSignedByTrustedOrganization(Path.Combine(s_testDataPath, "dual_signed.dll"),
-                "Foo", "Bar", "WiX Toolset (.NET Foundation)"));
-        }
-
-        [WindowsOnlyFact]
-        public void GetCertificatesRetrievesNestedSignatures()
-        {
-            var certificates = AuthentiCode.GetCertificates(Path.Combine(s_testDataPath, "triple_signed.dll")).ToArray();
-
-            Assert.Equal("CN=Microsoft Corporation, OU=MOPR, O=Microsoft Corporation, L=Redmond, S=Washington, C=US", certificates[0].Subject);
-            Assert.Equal("sha1RSA", certificates[0].SignatureAlgorithm.FriendlyName);
-            Assert.Equal("CN=Microsoft 3rd Party Application Component, O=Microsoft Corporation, L=Redmond, S=Washington, C=US", certificates[1].Subject);
-            Assert.Equal("sha256RSA", certificates[1].SignatureAlgorithm.FriendlyName);
-            Assert.Equal("CN=Microsoft Corporation, OU=MOPR, O=Microsoft Corporation, L=Redmond, S=Washington, C=US", certificates[2].Subject);
-            Assert.Equal("sha256RSA", certificates[2].SignatureAlgorithm.FriendlyName);
-        }
-
-        [WindowsOnlyFact]
-        public void GetCertificatesRetrievesNothingForUnsignedFiles()
-        {
-            var certificates = AuthentiCode.GetCertificates(Assembly.GetExecutingAssembly().Location);
-
-            Assert.Empty(certificates);
+            X509Certificate certificate = X509Certificate.CreateFromSignedFile(Path.Combine(s_testDataPath, file));
+            Assert.Equal(expectedResult, certificate.HasMicrosoftTrustedRoot());
         }
 
         private NamedPipeServerStream CreateServerPipe(string name)
