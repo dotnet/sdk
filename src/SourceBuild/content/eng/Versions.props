@@ -30,6 +30,6 @@
     -->
     <PrivateSourceBuiltSdkVersion>8.0.100-rc.2.23502.1</PrivateSourceBuiltSdkVersion>
     <PrivateSourceBuiltArtifactsVersion>8.0.100-rc.2.23502.1</PrivateSourceBuiltArtifactsVersion>
-    <PrivateSourceBuiltPrebuiltsVersion>0.1.0-9.0.100-3</PrivateSourceBuiltPrebuiltsVersion>
+    <PrivateSourceBuiltPrebuiltsVersion>0.1.0-9.0.100-4</PrivateSourceBuiltPrebuiltsVersion>
   </PropertyGroup>
 </Project>
