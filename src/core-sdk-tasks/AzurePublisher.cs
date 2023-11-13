@@ -27,7 +27,6 @@ namespace Microsoft.DotNet.Cli.Build
 
         private const string s_dotnetBlobContainerName = "dotnet";
 
-        private string _connectionString { get; set; }
         private string _containerName { get; set; }
         private CloudBlobContainer _blobContainer { get; set; }
 
@@ -41,14 +40,7 @@ namespace Microsoft.DotNet.Cli.Build
         {
             var storageCredentials = new StorageCredentials(accountName, accountKey);
             var storageAccount = new CloudStorageAccount(storageCredentials, true);
-            return GetDotnetBlobContainer(storageAccount, containerName);
-        }
-
-        private CloudBlobContainer GetDotnetBlobContainer(CloudStorageAccount storageAccount, string containerName)
-        {
-            CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
-
-            return blobClient.GetContainerReference(containerName);
+            return storageAccount.CreateCloudBlobClient().GetContainerReference(containerName);
         }
 
         public string UploadFile(string file, Product product, string version)
@@ -105,11 +97,7 @@ namespace Microsoft.DotNet.Cli.Build
             }
         }
 
-        public IEnumerable<string> ListBlobs(Product product, string version)
-        {
-            string virtualDirectory = $"{product}/{version}";
-            return ListBlobs(virtualDirectory);
-        }
+        public IEnumerable<string> ListBlobs(Product product, string version) => ListBlobs($"{product}/{version}");
 
         public IEnumerable<string> ListBlobs(string virtualDirectory)
         {
@@ -120,10 +108,7 @@ namespace Microsoft.DotNet.Cli.Build
             return blobFiles.Results.Select(bf => bf.Uri.PathAndQuery.Replace($"/{_containerName}/", string.Empty));
         }
 
-        public string AcquireLeaseOnBlob(
-            string blob,
-            TimeSpan? maxWaitDefault = null,
-            TimeSpan? delayDefault = null)
+        public string AcquireLeaseOnBlob(string blob, TimeSpan? maxWaitDefault = null, TimeSpan? delayDefault = null)
         {
             TimeSpan maxWait = maxWaitDefault ?? TimeSpan.FromSeconds(120);
             TimeSpan delay = delayDefault ?? TimeSpan.FromMilliseconds(500);
@@ -194,13 +179,11 @@ namespace Microsoft.DotNet.Cli.Build
             try
             {
                 DeleteBlob(path);
-
                 return true;
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Deleting blob {path} failed with \r\n{e.Message}");
-
                 return false;
             }
         }

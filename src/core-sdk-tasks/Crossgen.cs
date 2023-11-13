@@ -121,8 +121,6 @@ namespace Microsoft.DotNet.Build.Tasks
 
         private string GetCreateSymbols() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap";
 
-        private string GetReadyToRun() => ReadyToRun ? "-readytorun" : null;
-
         private string GetInPath() => $"\"{SourceAssembly}\"";
 
         private string GetOutPath() => $"-o \"{TempOutputPath}\"";
@@ -140,8 +138,6 @@ namespace Microsoft.DotNet.Build.Tasks
             
             return platformAssemblyPaths;
         }
-
-        private string GetMissingDependenciesOk() => "-MissingDependenciesOK";
 
         protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
     }

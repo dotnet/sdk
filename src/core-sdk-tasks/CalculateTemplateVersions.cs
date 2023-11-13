@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Cli.Build
         }
     }
 
-    public record BundledTemplate
+    public class BundledTemplate
     {
         public string InstallPath { get; set; }
         public string MajorMinorVersion { get; set; }

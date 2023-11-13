@@ -26,16 +26,9 @@ namespace Microsoft.DotNet.Cli.Build
             {
                 var resultItem = new TaskItem(item);
                 item.CopyMetadataTo(resultItem);
-                
-                if (File.Exists(resultItem.GetMetadata("FullPath")) &&
-                    HasMetadata(resultItem.GetMetadata("FullPath")))
-                {
-                    resultItem.SetMetadata("IsPE", "True");
-                }
-                else
-                {
-                    resultItem.SetMetadata("IsPE", "False");
-                }
+
+                var isPe = File.Exists(resultItem.GetMetadata("FullPath")) && HasMetadata(resultItem.GetMetadata("FullPath"));
+                resultItem.SetMetadata("IsPE", isPe.ToString());
 
                 resultItemsList.Add(resultItem);
             }
