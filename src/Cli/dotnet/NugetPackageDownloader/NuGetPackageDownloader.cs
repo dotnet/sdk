@@ -527,7 +527,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             VersionRange versionRange,
              PackageSourceLocation packageSourceLocation = null)
         {
-            if(versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
+            if (versionRange.MinVersion != null && !versionRange.IsFloating &&
+                (versionRange.MaxVersion == null || versionRange.MinVersion == versionRange.MaxVersion))
             {
                 return versionRange.MinVersion;
             }
