@@ -9,12 +9,12 @@ parameters:
 
   # The following parameters aren't expected to be passed in rather they are used for encapsulation
   # -----------------------------------------------------------------------------------------------
-  alpine317Container: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17-20230214152931-7f13c75
-  centOSStream8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8-20220809204800-17a4aab
+  alpine317Container: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17
+  centOSStream8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8
   centOSStream9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9-20220107135047-4cd394c
-  debian11Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-arm64v8-20220812185233-b286fae
-  fedora38Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38-20230609193134-47458d2
-  ubuntu2004Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-20220813234344-4c008dd
+  debian11Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-arm64v8
+  fedora38Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38
+  ubuntu2004Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04
   poolInternalAmd64:
     name: NetCore1ESPool-Svc-Internal
     demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
