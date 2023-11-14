@@ -95,7 +95,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                                       '$(IsAotCompatible)' == 'true'
                                   )">true</EnableAotAnalyzer>
 
-    <!-- EnforceCodeStyleInBuild Allows code style analyzers to be disabled in bulk via msbuild if the user wants to -->
+    <!-- EnforceCodeStyleInBuild allows code style analyzers that are configured to warning/error severity to be enabled on build via msbuild if the user wants to.
+         It is defaulted to 'true' for AnalysisLevel/TFM greater than or equals '9.0', and 'false' otherwise.
+    -->
+    <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == '' And $([MSBuild]::VersionGreaterThanOrEquals($(EffectiveAnalysisLevel), '9.0'))">true</EnforceCodeStyleInBuild>
     <EnforceCodeStyleInBuild Condition="'$(EnforceCodeStyleInBuild)' == ''">false</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
