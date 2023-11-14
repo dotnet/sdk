@@ -68,10 +68,10 @@ namespace Microsoft.DotNet.Cli.Utils
         {
             using (var stream = new BlockingMemoryStream())
             {
-                ManualResetEvent readerThreadExecuting = new ManualResetEvent(false);
+                ManualResetEvent readerThreadExecuting = new(false);
                 bool readerThreadSuccessful = false;
 
-                Thread readerThread = new Thread(() =>
+                Thread readerThread = new(() =>
                 {
                     byte[] buffer = new byte[10];
                     readerThreadExecuting.Set();
@@ -83,16 +83,17 @@ namespace Microsoft.DotNet.Cli.Utils
                     Assert.Equal(3, buffer[2]);
 
                     readerThreadSuccessful = true;
-                });
-
-                readerThread.IsBackground = true;
+                })
+                {
+                    IsBackground = true
+                };
                 readerThread.Start();
 
                 // ensure the thread is executing
                 readerThreadExecuting.WaitOne();
 
                 Assert.True(readerThread.IsAlive);
-               
+
                 // give it a little while to ensure it is blocking
                 Thread.Sleep(10);
                 Assert.True(readerThread.IsAlive);

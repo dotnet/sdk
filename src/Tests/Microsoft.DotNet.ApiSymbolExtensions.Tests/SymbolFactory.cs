@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
 
             Assert.Empty(compilation.GetDiagnostics());
 
-            MemoryStream stream = new MemoryStream();
+            MemoryStream stream = new();
             compilation.Emit(stream);
             stream.Seek(0, SeekOrigin.Begin);
             return stream;
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
                                                                   publicSign: publicSign,
                                                                   cryptoPublicKey: publicSign ? publicKey.ToImmutableArray() : default,
                                                                   nullableContextOptions: enableNullable ? NullableContextOptions.Enable : NullableContextOptions.Disable,
-                                                                  allowUnsafe: allowUnsafe, 
+                                                                  allowUnsafe: allowUnsafe,
                                                                   specificDiagnosticOptions: DiagnosticOptions);
 
             return CSharpCompilation.Create(name, options: compilationOptions, references: DefaultReferences);

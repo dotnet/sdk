@@ -37,14 +37,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 };
                 var reader = new Utf8JsonStreamReader(fileStream, readerOptions);
 #else
-                using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
+                using var textReader = new StreamReader(fileStream, Encoding.UTF8, true);
                 using var jsonReader = new JsonTextReader(textReader);
 
                 var reader = new Utf8JsonStreamReader(jsonReader);
 #endif
 
                 InstallState installState = new();
-                
+
                 JsonReader.ConsumeToken(ref reader, JsonTokenType.StartObject);
                 while (reader.Read())
                 {
@@ -91,7 +91,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                             workloadSetDict[propName] = propValue;
                             break;
                         case JsonTokenType.EndObject:
-                            return WorkloadSet.FromDictionaryForJson(workloadSetDict, new SdkFeatureBand(new ReleaseVersion(0,0,0)));
+                            return WorkloadSet.FromDictionaryForJson(workloadSetDict, new SdkFeatureBand(new ReleaseVersion(0, 0, 0)));
                         default:
                             throw new JsonFormatException(Strings.UnexpectedTokenAtOffset, reader.TokenType, reader.TokenStartIndex);
                     }

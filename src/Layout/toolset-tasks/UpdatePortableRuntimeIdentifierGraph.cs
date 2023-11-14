@@ -32,12 +32,12 @@ namespace Microsoft.DotNet.Cli.Build
             JToken json;
 
             using (var file = File.OpenText(InputFile))
-            using (JsonTextReader reader = new JsonTextReader(file))
+            using (JsonTextReader reader = new(file))
             {
-                json = JObject.ReadFrom(reader);
+                json = JToken.ReadFrom(reader);
             }
 
-            JObject runtimes = (JObject) json["runtimes"];
+            JObject runtimes = (JObject)json["runtimes"];
 
             if (AdditionalRuntimeIdentifiers != null)
             {

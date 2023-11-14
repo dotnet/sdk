@@ -84,7 +84,8 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
         return baseImageTag;
     }
 
-     private string? DetermineLabelBasedOnChannel(int major, int minor, string[] releaseLabels) {
+    private string? DetermineLabelBasedOnChannel(int major, int minor, string[] releaseLabels)
+    {
         var channel = releaseLabels.Length > 0 ? releaseLabels[0] : null;
         switch (channel)
         {
@@ -105,5 +106,5 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
                 Log.LogError(Resources.Strings.InvalidSdkPrereleaseVersion, channel);
                 return null;
         };
-     }
+    }
 }

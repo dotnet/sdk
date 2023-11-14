@@ -16,7 +16,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [MemberData(nameof(PublishData))]
-        public void It_publishes_the_project_correctly(string targetFramework, string [] expectedPublishFiles)
+        public void It_publishes_the_project_correctly(string targetFramework, string[] expectedPublishFiles)
         {
             PublishCommand publishCommand = GetPublishCommand(targetFramework);
             publishCommand
@@ -69,6 +69,7 @@ namespace Microsoft.NET.Publish.Tests
             ""System.GC.RetainVM"": false,
             ""System.Net.Http.EnableActivityPropagation"": false,
             ""System.Net.Http.UseNativeHttpHandler"": true,
+            ""System.Net.Security.UseManagedNtlm"": true,
             ""System.Reflection.Metadata.MetadataUpdater.IsSupported"": false,
             ""System.Reflection.NullabilityInfoContext.IsSupported"": false,
             ""System.Resources.ResourceManager.AllowCustomResourceTypes"": false,

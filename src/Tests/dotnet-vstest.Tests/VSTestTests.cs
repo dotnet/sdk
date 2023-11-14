@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Test.Utilities;
-using Microsoft.DotNet.Cli.Utils;
 using System.Runtime.CompilerServices;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.VSTest.Tests
 {
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
         [Fact]
         public void GivenADllAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp("1");
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("1");
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
@@ -121,7 +121,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
         [Fact]
         public void ItShouldAcceptMultipleLoggers()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp();
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp();
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 
@@ -164,7 +164,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
         [Fact]
         public void ItShouldAcceptNoLoggers()
         {
-            var testProjectDirectory = this.CopyAndRestoreVSTestDotNetCoreTestApp();
+            var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp();
 
             var configuration = Environment.GetEnvironmentVariable("CONFIGURATION") ?? "Debug";
 

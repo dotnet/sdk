@@ -100,8 +100,6 @@ setTimeout(async function () {
     try {
       applyUpdateCapabilities = window.Blazor._internal.getApplyUpdateCapabilities();
     } catch (error) {
-      console.warn(error);
-
       const message = error.message || '<unknown error>'
       let messageAndStack = error.stack || message
       if (!messageAndStack.includes(message))

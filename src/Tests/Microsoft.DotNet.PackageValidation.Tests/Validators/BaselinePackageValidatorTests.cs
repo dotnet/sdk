@@ -10,9 +10,9 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
 {
     public class BaselinePackageValidatorTests
     {
-        private (SuppressableTestLog, BaselinePackageValidator) CreateLoggerAndValidator()
+        private (SuppressibleTestLog, BaselinePackageValidator) CreateLoggerAndValidator()
         {
-            SuppressableTestLog log = new();
+            SuppressibleTestLog log = new();
             BaselinePackageValidator validator = new(log,
                 Mock.Of<IApiCompatRunner>());
 
@@ -22,19 +22,14 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
         [Fact]
         public void TfmDroppedInLatestVersion()
         {
-            string[] previousFilePaths = new[]
-            {
-                @"ref/netcoreapp3.1/TestPackage.dll",
-                @"ref/netstandard2.0/TestPackage.dll"
-            };
-            Package baselinePackage = new(string.Empty, "TestPackage", "1.0.0", previousFilePaths, null, null);
+            Package baselinePackage = new(string.Empty, "TestPackage", "1.0.0",
+            [
+                @"lib/netcoreapp3.1/TestPackage.dll",
+                @"lib/netstandard2.0/TestPackage.dll"
+            ]);
+            Package package = new(string.Empty, "TestPackage", "2.0.0", [ @"lib/netcoreapp3.1/TestPackage.dll" ]);
 
-            string[] currentFilePaths = new[]
-            {
-                @"ref/netcoreapp3.1/TestPackage.dll"
-            };
-            Package package = new(string.Empty, "TestPackage", "2.0.0", currentFilePaths, null, null);
-            (SuppressableTestLog log, BaselinePackageValidator validator) = CreateLoggerAndValidator();
+            (SuppressibleTestLog log, BaselinePackageValidator validator) = CreateLoggerAndValidator();
 
             validator.Validate(new PackageValidatorOption(package,
                 enableStrictMode: false,
@@ -43,6 +38,27 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
 
             Assert.NotEmpty(log.errors);
             Assert.Contains(DiagnosticIds.TargetFrameworkDropped + " " + string.Format(Resources.MissingTargetFramework, ".NETStandard,Version=v2.0"), log.errors);
+        }
+
+        [Fact]
+        public void BaselineFrameworksExcluded()
+        {
+            Package baselinePackage = new(string.Empty, "TestPackage", "1.0.0",
+            [
+                @"lib/netcoreapp3.1/TestPackage.dll",
+                @"lib/netstandard2.0/TestPackage.dll"
+            ]);
+            Package package = new(string.Empty, "TestPackage", "2.0.0", [ @"lib/netstandard2.0/TestPackage.dll" ]);
+
+            (SuppressibleTestLog log, BaselinePackageValidator validator) = CreateLoggerAndValidator();
+
+            validator.Validate(new PackageValidatorOption(package,
+                enableStrictMode: false,
+                enqueueApiCompatWorkItems: false,
+                baselinePackage: baselinePackage,
+                baselinePackageFrameworksToIgnore: [ "netcoreapp3.1" ]));
+
+            Assert.Empty(log.errors);
         }
     }
 }

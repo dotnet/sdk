@@ -228,7 +228,7 @@ Commands:
         {
             var setup = Setup();
             var lib = NewLibWithFrameworks(dir: setup.TestRoot);
-            
+
             int noCondBefore = lib.CsProj().NumberOfItemGroupsWithoutCondition();
             var cmd = new DotnetCommand(Log, "add", lib.CsProjPath, "reference")
                 .WithWorkingDirectory(setup.TestRoot)
@@ -690,7 +690,7 @@ Commands:
             var lib = new ProjDir(setup.LibDir);
             var net45lib = new ProjDir(Path.Combine(setup.TestRoot, "Net45Lib"));
 
-            List<string> args = new List<string>();
+            List<string> args = new();
             if (useFrameworkArg)
             {
                 args.Add("-f");

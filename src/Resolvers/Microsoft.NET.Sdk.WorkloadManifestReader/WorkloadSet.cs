@@ -17,7 +17,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public class WorkloadSet
     {
-        public Dictionary<ManifestId, (ManifestVersion Version, SdkFeatureBand FeatureBand)> ManifestVersions = new Dictionary<ManifestId, (ManifestVersion version, SdkFeatureBand featureBand)>();
+        public Dictionary<ManifestId, (ManifestVersion Version, SdkFeatureBand FeatureBand)> ManifestVersions = new();
 
         //  TODO: Generate version from hash of manifest versions if not otherwise set
         public string? Version { get; set; }
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     string manifestVersionString = parts[0];
                     if (!FXVersion.TryParse(manifestVersionString, out FXVersion version))
                     {
-                        throw new FormatException(String.Format(Strings.InvalidVersionForWorkload, manifest.Key, manifestVersionString));
+                        throw new FormatException(string.Format(Strings.InvalidVersionForWorkload, manifest.Key, manifestVersionString));
                     }
 
                     manifestVersion = new ManifestVersion(parts[0]);

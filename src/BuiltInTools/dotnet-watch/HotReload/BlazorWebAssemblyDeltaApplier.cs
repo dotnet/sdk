@@ -13,8 +13,13 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal sealed class BlazorWebAssemblyDeltaApplier : SingleProcessDeltaApplier
     {
+        private const string DefaultCapabilities60 = "Baseline";
+        private const string DefaultCapabilities70 = "Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes";
+        private const string DefaultCapabilities80 = "Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType";
+
         private static Task<ImmutableArray<string>>? s_cachedCapabilties;
         private readonly IReporter _reporter;
+        private Version? _targetFrameworkVersion;
         private int _sequenceId;
 
         public BlazorWebAssemblyDeltaApplier(IReporter reporter)
@@ -30,6 +35,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             // Configure the app for EnC
             context.ProcessSpec.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
+
+            _targetFrameworkVersion = context.FileSet?.Project?.TargetFrameworkVersion;
         }
 
         public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(DotNetWatchContext context, CancellationToken cancellationToken)
@@ -59,12 +66,24 @@ namespace Microsoft.DotNet.Watcher.Tools
                     }
 
                     var capabilities = Encoding.UTF8.GetString(buffer.AsSpan(0, response.Value.Count));
+                    var shouldFallBackToDefaultCapabilities = false;
 
                     // error while fetching capabilities from WASM:
                     if (capabilities.StartsWith("!"))
                     {
-                        _reporter.Error($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
-                        return ImmutableArray<string>.Empty;
+                        _reporter.Verbose($"Exception while reading WASM runtime capabilities: {capabilities[1..]}");
+                        shouldFallBackToDefaultCapabilities = true;
+                    }
+                    else if (capabilities.Length == 0)
+                    {
+                        _reporter.Verbose($"Unable to read WASM runtime capabilities");
+                        shouldFallBackToDefaultCapabilities = true;
+                    }
+
+                    if (shouldFallBackToDefaultCapabilities)
+                    {
+                        capabilities = GetDefaultCapabilities(_targetFrameworkVersion);
+                        _reporter.Verbose($"Falling back to default WASM capabilities: '{capabilities}'");
                     }
 
                     // Capabilities are expressed a space-separated string.
@@ -76,6 +95,15 @@ namespace Microsoft.DotNet.Watcher.Tools
                     ArrayPool<byte>.Shared.Return(buffer);
                 }
             }
+
+            static string GetDefaultCapabilities(Version? targetFrameworkVersion)
+                => targetFrameworkVersion?.Major switch
+                {
+                    >= 8 => DefaultCapabilities80,
+                    >= 7 => DefaultCapabilities70,
+                    >= 6 => DefaultCapabilities60,
+                    _ => string.Empty,
+                };
         }
 
         public override async Task<ApplyStatus> Apply(DotNetWatchContext context, ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)

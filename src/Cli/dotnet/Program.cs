@@ -1,16 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.CommandFactory;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ShellShim;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.DotNet.CommandFactory;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
-using System.CommandLine;
+using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
 using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.DotNet.Cli
@@ -237,17 +238,26 @@ namespace Microsoft.DotNet.Cli
             else
             {
                 PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
-                var resolvedCommand = CommandFactoryUsingResolver.Create(
-                        "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand),
-                        args.GetSubArguments(),
-                        FrameworkConstants.CommonFrameworks.NetStandardApp15);
-                PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
+                try
+                {
+                    var resolvedCommand = CommandFactoryUsingResolver.Create(
+                            "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand),
+                            args.GetSubArguments(),
+                            FrameworkConstants.CommonFrameworks.NetStandardApp15);
+                    PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
 
-                PerformanceLogEventSource.Log.ExtensibleCommandStart();
-                var result = resolvedCommand.Execute();
-                PerformanceLogEventSource.Log.ExtensibleCommandStop();
+                    PerformanceLogEventSource.Log.ExtensibleCommandStart();
+                    var result = resolvedCommand.Execute();
+                    PerformanceLogEventSource.Log.ExtensibleCommandStop();
 
-                exitCode = result.ExitCode;
+                    exitCode = result.ExitCode;
+                }
+                catch (CommandUnknownException e)
+                {
+                    Reporter.Error.WriteLine(e.Message.Red());
+                    Reporter.Output.WriteLine(e.InstructionMessage);
+                    exitCode = 1;
+                }
             }
 
             PerformanceLogEventSource.Log.TelemetryClientFlushStart();
@@ -291,7 +301,7 @@ namespace Microsoft.DotNet.Cli
 
             Reporter.Verbose.WriteLine(
                 string.Format(
-                    Utils.LocalizableStrings.DotnetCliHomeUsed,
+                    LocalizableStrings.DotnetCliHomeUsed,
                     home,
                     CliFolderPathCalculator.DotnetHomeVariableName));
         }

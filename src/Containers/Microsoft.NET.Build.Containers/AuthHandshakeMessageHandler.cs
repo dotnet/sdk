@@ -77,7 +77,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
         return false;
 
-        static bool TryParseBearerAuthInfo(Dictionary<string, string> authValues, [NotNullWhen(true)] out AuthInfo? authInfo) {
+        static bool TryParseBearerAuthInfo(Dictionary<string, string> authValues, [NotNullWhen(true)] out AuthInfo? authInfo)
+        {
             if (authValues.TryGetValue("realm", out string? realm))
             {
                 string? service = null;
@@ -87,13 +88,15 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 authInfo = new AuthInfo(realm, service, scope);
                 return true;
             }
-            else {
+            else
+            {
                 authInfo = null;
                 return false;
             }
         }
 
-        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, out AuthInfo? authInfo) {
+        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, out AuthInfo? authInfo)
+        {
             authInfo = null;
             return true;
         }
@@ -120,8 +123,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         public string ResolvedToken => token ?? access_token ?? throw new ArgumentException(Resource.GetString(nameof(Strings.InvalidTokenResponse)));
         public DateTimeOffset ResolvedExpiration {
             get {
-                var issueTime = this.issued_at ?? DateTimeOffset.UtcNow; // per spec, if no issued_at use the current time
-                var validityDuration = this.expires_in ?? 60; // per spec, if no expires_in use 60 seconds
+                var issueTime = issued_at ?? DateTimeOffset.UtcNow; // per spec, if no issued_at use the current time
+                var validityDuration = expires_in ?? 60; // per spec, if no expires_in use 60 seconds
                 var expirationTime = issueTime.AddSeconds(validityDuration);
                 return expirationTime;
             }

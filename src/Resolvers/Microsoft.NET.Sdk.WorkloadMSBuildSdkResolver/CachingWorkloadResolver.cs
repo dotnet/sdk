@@ -37,7 +37,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
     class CachingWorkloadResolver
     {
         private sealed record CachedState
-        {            
+        {
             public string DotnetRootPath { get; init; }
             public string SdkVersion { get; init; }
             public string GlobalJsonPath { get; init; }
@@ -95,7 +95,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
                         return null;
                 }
 
-                throw new InvalidOperationException("Unknown resolutionResult type: " + this.GetType());
+                throw new InvalidOperationException("Unknown resolutionResult type: " + GetType());
             }
         }
 
@@ -118,7 +118,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
         {
             if (sdkReferenceName.Equals("Microsoft.NET.SDK.WorkloadAutoImportPropsLocator", StringComparison.OrdinalIgnoreCase))
             {
-                List<string> autoImportSdkPaths = new List<string>();
+                List<string> autoImportSdkPaths = new();
                 foreach (var sdkPackInfo in workloadResolver.GetInstalledWorkloadPacksOfKind(WorkloadPackKind.Sdk))
                 {
                     string sdkPackSdkFolder = Path.Combine(sdkPackInfo.Path, "Sdk");
@@ -133,7 +133,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
             }
             else if (sdkReferenceName.Equals("Microsoft.NET.SDK.WorkloadManifestTargetsLocator", StringComparison.OrdinalIgnoreCase))
             {
-                List<string> workloadManifestPaths = new List<string>();
+                List<string> workloadManifestPaths = new();
                 foreach (var manifestDirectory in manifestProvider.GetManifests().Select(m => m.ManifestDirectory))
                 {
                     var workloadManifestTargetPath = Path.Combine(manifestDirectory, "WorkloadManifest.targets");
@@ -146,7 +146,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
             }
             else
             {
-                var packInfo = workloadResolver.TryGetPackInfo(new WorkloadPackId (sdkReferenceName));
+                var packInfo = workloadResolver.TryGetPackInfo(new WorkloadPackId(sdkReferenceName));
                 if (packInfo != null)
                 {
                     if (Directory.Exists(packInfo.Path))
@@ -163,7 +163,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
                                     { "Version", packInfo.Version }
                                 }));
 
-                        Dictionary<string, string> propertiesToAdd = new Dictionary<string, string>();
+                        Dictionary<string, string> propertiesToAdd = new();
                         return new EmptyResolutionResult(propertiesToAdd, itemsToAdd);
                     }
                 }

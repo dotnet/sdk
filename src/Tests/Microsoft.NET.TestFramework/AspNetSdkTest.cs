@@ -23,12 +23,12 @@ namespace Microsoft.NET.TestFramework
             [CallerMemberName] string callerName = "",
             string subdirectory = "",
             string overrideTfm = null,
-            string identifier = null) 
+            string identifier = null)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset(testAsset, callingMethod: callerName, testAssetSubdirectory: subdirectory, identifier: identifier)
                 .WithSource()
-                .WithProjectChanges(project => 
+                .WithProjectChanges(project =>
                 {
                     var ns = project.Root.Name.Namespace;
                     var targetFramework = project.Descendants()
@@ -44,6 +44,10 @@ namespace Microsoft.NET.TestFramework
                         targetFrameworks.Value = targetFrameworks.Value.Replace("$(AspNetTestTfm)", overrideTfm ?? DefaultTfm);
                     }
                 });
+
+            foreach (string assetPath in Directory.EnumerateFiles(Path.Combine(_testAssetsManager.TestAssetsRoot, "WasmOverride")))
+                File.Copy(assetPath, Path.Combine(projectDirectory.Path, Path.GetFileName(assetPath)));
+
             return projectDirectory;
         }
 

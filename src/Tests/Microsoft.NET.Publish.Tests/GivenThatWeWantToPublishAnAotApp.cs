@@ -3,6 +3,7 @@
 
 using System.Reflection.PortableExecutable;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.Build.Tasks;
 using Newtonsoft.Json.Linq;
 using static Microsoft.NET.Publish.Tests.PublishTestUtils;
 
@@ -61,7 +62,7 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(publishedDll).Should().BeFalse();
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             GetKnownILCompilerPackVersion(testAsset, targetFramework, out string expectedVersion);
@@ -152,7 +153,7 @@ namespace Microsoft.NET.Publish.Tests
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
             // There should be a debug file
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             // The app accesses the runtime config file key-value pair
@@ -204,7 +205,7 @@ namespace Microsoft.NET.Publish.Tests
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
             // There should be a debug file
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             // The app accesses the runtime config file key-value pair
@@ -292,7 +293,7 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(publishedDll).Should().BeFalse();
             // The exe exist and should be native
             File.Exists(publishedExe).Should().BeTrue();
-            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue();
+            DoSymbolsExist(publishDirectory, testProject.Name).Should().BeTrue($"{publishDirectory} should contain {testProject.Name} symbol");
             IsNativeImage(publishedExe).Should().BeTrue();
 
             var command = new RunExeCommand(Log, publishedExe)
@@ -343,7 +344,7 @@ namespace Microsoft.NET.Publish.Tests
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_cross_target_PublishAot_is_enabled(string targetFramework)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == Architecture.X64))
             {
                 var projectName = "HellowWorldNativeAotApp";
                 var rid = "win-arm64";
@@ -373,7 +374,7 @@ namespace Microsoft.NET.Publish.Tests
         [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_cross_PackageReference_PublishAot_is_enabled(string targetFramework)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == Architecture.X64))
             {
                 var projectName = "HellowWorldNativeAotApp";
                 var rid = "win-arm64";
@@ -409,7 +410,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_cross_PackageReference_PublishAot_is_empty(string targetFramework)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == Architecture.X64))
             {
                 var projectName = "HellowWorldNativeAotApp";
                 var rid = "win-arm64";
@@ -482,7 +483,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_fails_with_unsupported_target_rid(string targetFramework)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.OSArchitecture == Architecture.X64)
             {
                 var projectName = "HelloWorldUnsupportedTargetRid";
                 var rid = "linux-x64";
@@ -506,7 +507,7 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_fails_with_unsupported_host_rid(string targetFramework)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.OSArchitecture == Architecture.X64)
             {
                 var projectName = "HelloWorldUnsupportedHostRid";
                 var supportedTargetRid = "linux-arm64";
@@ -590,13 +591,49 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("warning IL3002");
         }
 
+        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        [InlineData("net5.0", true)]
+        [InlineData("net6.0", true)]
+        [InlineData("net7.0", false)]
+        public void PublishAot_fails_for_unsupported_target_framework(string targetFramework, bool shouldFail)
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                // OSX wasn't supported before net8
+                return;
+            }
+
+            var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
+
+            var testProject = new TestProject()
+            {
+                Name = "HelloWorld",
+                TargetFrameworks = targetFramework
+            };
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+
+            var publishCommand = new PublishCommand(testAsset);
+            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}");
+            if (shouldFail) {
+                result.Should().Fail()
+                    .And.HaveStdOutContaining(Strings.AotUnsupportedTargetFramework);
+            } else {
+                result.Should().Pass()
+                    .And.NotHaveStdOutContaining("warning");
+            }
+        }
+
         [RequiresMSBuildVersionTheory("17.8.0")]
         [InlineData("netstandard2.0", true)]
+        [InlineData("net6.0", true)]
+        [InlineData("net7.0", false)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for AOT
         [InlineData("netstandard2.0;net7.0", false)] // Net7.0 is the min TFM supported for AOT and targeting.
         [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for AOT, but leaves a "gap" for the supported net7.0 TFMs.
         [InlineData("alias-ns2", true)]
-        [InlineData("alias-n6", false)]
+        [InlineData("alias-n6", true)]
+        [InlineData("alias-n7", false)]
         [InlineData("alias-n7;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
         [InlineData("alias-ns2;alias-n7", true)] // This is correctly multi-targeted, but the logic can't detect this due to the alias so it still warns.
         public void IsAotCompatible_warns_when_expected_for_not_correctly_multitarget_libraries(string targetFrameworks, bool shouldWarn)
@@ -767,6 +804,32 @@ namespace Microsoft.NET.Publish.Tests
             IsNativeImage(publishedDll).Should().BeTrue();
         }
 
+        [Theory]
+        [InlineData("Static")]
+        [InlineData("Shared")]
+        public void NativeAotLib_warns_when_eventpipe_is_enabled(string libType)
+        {
+            var projectName = "AotStaticLibraryPublishWithEventPipe";
+            var rid = EnvironmentInfo.GetCompatibleRid(ToolsetInfo.CurrentTargetFramework);
+
+            var testProject = CreateTestProjectWithAotLibrary(ToolsetInfo.CurrentTargetFramework, projectName);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = rid;
+            testProject.AdditionalProperties["NativeLib"] = libType;
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            testProject.AdditionalProperties["EventSourceSupport"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            // Revisit once the issue is fixed
+            // https://github.com/dotnet/runtime/issues/89346
+            publishCommand
+                .Execute()
+                .Should().Pass();
+            // Comment in the following code when https://github.com/dotnet/sdk/issues/34839 gets fixed
+            // .And.HaveStdOutContaining("EventSource is not supported or recommended when compiling to a native library");
+        }
+
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAotSharedLib_only_runs_when_switch_is_enabled(string targetFramework)
@@ -840,7 +903,8 @@ namespace Microsoft.NET.Publish.Tests
 
         private void GetKnownILCompilerPackVersion(TestAsset testAsset, string targetFramework, out string version)
         {
-            var getKnownPacks = new GetValuesCommand(testAsset, "KnownILCompilerPack", GetValuesCommand.ValueType.Item, targetFramework) {
+            var getKnownPacks = new GetValuesCommand(testAsset, "KnownILCompilerPack", GetValuesCommand.ValueType.Item, targetFramework)
+            {
                 MetadataNames = new List<string> { "TargetFramework", "ILCompilerPackVersion" }
             };
             getKnownPacks.Execute().Should().Pass();
@@ -1037,7 +1101,7 @@ public class NativeLibraryClass
         {
             try
             {
-                using (FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read))
+                using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))
                 using (var peReader = new PEReader(fs))
                 {
                     return !peReader.HasMetadata;

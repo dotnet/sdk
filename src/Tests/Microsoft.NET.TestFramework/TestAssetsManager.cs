@@ -10,7 +10,7 @@ namespace Microsoft.NET.TestFramework
     {
         public string TestAssetsRoot { get; private set; }
 
-        private List<String> TestDestinationDirectories { get; } = new List<string>();
+        private List<string> TestDestinationDirectories { get; } = new List<string>();
 
         protected ITestOutputHelper Log { get; }
 
@@ -127,8 +127,8 @@ namespace Microsoft.NET.TestFramework
         {
             var testAsset = new TestAsset(testDestinationDirectory, TestContext.Current.SdkVersion, Log);
 
-            Stack<TestProject> projectStack = new Stack<TestProject>(testProjects);
-            HashSet<TestProject> createdProjects = new HashSet<TestProject>();
+            Stack<TestProject> projectStack = new(testProjects);
+            HashSet<TestProject> createdProjects = new();
 
             while (projectStack.Count > 0)
             {

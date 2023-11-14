@@ -15,9 +15,9 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private readonly DirectoryInfo _watchedDirectory;
 
-        private Dictionary<string, FileMeta> _knownEntities = new Dictionary<string, FileMeta>();
-        private Dictionary<string, FileMeta> _tempDictionary = new Dictionary<string, FileMeta>();
-        private HashSet<string> _changes = new HashSet<string>();
+        private Dictionary<string, FileMeta> _knownEntities = new();
+        private Dictionary<string, FileMeta> _tempDictionary = new();
+        private HashSet<string> _changes = new();
 
         private Thread _pollingThread;
         private bool _raiseEvents;
@@ -31,9 +31,11 @@ namespace Microsoft.DotNet.Watcher.Internal
             _watchedDirectory = new DirectoryInfo(watchedDirectory);
             BasePath = _watchedDirectory.FullName;
 
-            _pollingThread = new Thread(new ThreadStart(PollingLoop));
-            _pollingThread.IsBackground = true;
-            _pollingThread.Name = nameof(PollingFileWatcher);
+            _pollingThread = new Thread(new ThreadStart(PollingLoop))
+            {
+                IsBackground = true,
+                Name = nameof(PollingFileWatcher)
+            };
 
             CreateKnownFilesSnapshot();
 

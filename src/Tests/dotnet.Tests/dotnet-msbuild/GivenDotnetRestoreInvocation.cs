@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         private const string ExpectedPrefix =
             "-maxcpucount -verbosity:m -nologo -target:Restore";
-        private static readonly string WorkingDirectory = 
+        private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetRestoreInvocation));
 
         [Theory]
@@ -26,6 +26,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--disable-parallel" }, "-property:RestoreDisableParallel=true")]
         [InlineData(new string[] { "--configfile", "<config>" }, "-property:RestoreConfigFile=<cwd><config>")]
         [InlineData(new string[] { "--no-cache" }, "-property:RestoreNoCache=true")]
+        [InlineData(new string[] { "--no-http-cache" }, "-property:RestoreNoHttpCache=true")]
         [InlineData(new string[] { "--ignore-failed-sources" }, "-property:RestoreIgnoreFailedSources=true")]
         [InlineData(new string[] { "--no-dependencies" }, "-property:RestoreRecursive=false")]
         [InlineData(new string[] { "-v", "minimal" }, @"-verbosity:minimal")]

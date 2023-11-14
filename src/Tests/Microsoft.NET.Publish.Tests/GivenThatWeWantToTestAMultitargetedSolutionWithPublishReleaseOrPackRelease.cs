@@ -38,10 +38,10 @@ namespace Microsoft.NET.Publish.Tests
             string exePReleaseValue, string libraryPReleaseValue, [CallerMemberName] string callingMethod = "", string identifier = "")
         {
             // Project Setup
-            List<TestProject> testProjects = new List<TestProject>();
+            List<TestProject> testProjects = new();
             var testProject = new TestProject("TestProject")
             {
-                TargetFrameworks = String.Join(";", exeProjTfms),
+                TargetFrameworks = string.Join(";", exeProjTfms),
                 IsExe = true
             };
             testProject.RecordProperties("Configuration", "Optimize", PReleaseProperty);
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var libraryProject = new TestProject("LibraryProject")
             {
-                TargetFrameworks = String.Join(";", libraryProjTfms),
+                TargetFrameworks = string.Join(";", libraryProjTfms),
                 IsExe = false
             };
             libraryProject.RecordProperties("Configuration", "Optimize", PReleaseProperty);
@@ -246,7 +246,7 @@ namespace Microsoft.NET.Publish.Tests
             var secondProjectTfm = ToolsetInfo.CurrentTargetFramework; // This should work for Net8+, test name is for brevity
 
             var (testAsset, testProjects) = Setup(new List<string> { firstProjectTfm }, new List<string> { secondProjectTfm }, PublishRelease, "", publishReleaseValue, identifier: publishReleaseValue);
-        
+
             var dotnetCommand = new DotnetPublishCommand(Log);
             dotnetCommand
                 .WithEnvironmentVariable("DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS", "true")
@@ -271,7 +271,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdErrContaining(String.Format(Strings.SolutionProjectConfigurationsConflict, PublishRelease, "")); ;
+                .HaveStdErrContaining(string.Format(Strings.SolutionProjectConfigurationsConflict, PublishRelease, "")); ;
         }
 
         [Fact]

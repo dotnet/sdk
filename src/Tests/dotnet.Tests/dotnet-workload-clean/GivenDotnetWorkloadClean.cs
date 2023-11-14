@@ -2,13 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
-using ManifestReaderTests;
-using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Clean;
+using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 using System.Text.Json;
 
 namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
 
         private void AssertWorkloadInstallationRecordIsRemoved(string workloadInstallationRecordDirectory)
         {
-            Assert.Equal(Directory.GetFiles(workloadInstallationRecordDirectory), System.Array.Empty<string>());
+            Assert.Equal(Directory.GetFiles(workloadInstallationRecordDirectory), Array.Empty<string>());
         }
 
         private void AssertValidPackCountsMatchExpected(string installRoot, int expectedPackCount, int expectedPackRecordCount)

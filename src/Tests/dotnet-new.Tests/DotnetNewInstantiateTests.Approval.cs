@@ -257,8 +257,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public async Task CanInstantiateTemplate_MultiValueChoiceParameterConditions()
         {
             // We cannot use Data-driven unit test (InlineData) as it's not supported by verifier framework (unless separate file per parameters is supplied)
-            await MultiValueChoiceParameterConditionsExecutor(new[] { "TestAssets.TemplateWithMultiValueChoice", "--Platform", "MacOS", "--Platform", "iOS" }).ConfigureAwait(false);
-            await MultiValueChoiceParameterConditionsExecutor(new[] { "TestAssets.TemplateWithMultiValueChoice", "--Platform", "MacOS", "iOS" }).ConfigureAwait(false);
+            await MultiValueChoiceParameterConditionsExecutor(new[] { "TestAssets.TemplateWithMultiValueChoice", "--Platform", "MacOS", "--Platform", "iOS" });
+            await MultiValueChoiceParameterConditionsExecutor(new[] { "TestAssets.TemplateWithMultiValueChoice", "--Platform", "MacOS", "iOS" });
         }
 
         private Task MultiValueChoiceParameterConditionsExecutor(string[] args)

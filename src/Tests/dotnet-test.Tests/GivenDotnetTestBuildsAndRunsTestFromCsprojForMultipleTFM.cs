@@ -1,8 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                        .Execute("--collect", "Code Coverage", "--results-directory", resultsDirectory);
 
             // Verify
-            DirectoryInfo d = new DirectoryInfo(resultsDirectory);
+            DirectoryInfo d = new(resultsDirectory);
             FileInfo[] coverageFileInfos = d.GetFiles("*.coverage", SearchOption.AllDirectories);
             Assert.Single(coverageFileInfos);
         }

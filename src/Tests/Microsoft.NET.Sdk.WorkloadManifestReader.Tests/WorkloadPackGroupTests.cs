@@ -33,12 +33,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
             }
         }
 
-        [Fact(Skip="https://github.com/dotnet/sdk/issues/28759")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/28759")]
         public void GetPackDefinitionLocations()
         {
             var definitionLocations = GetWorkloadPackDefinitionLocations(GetManifests());
 
-            StringBuilder sb = new StringBuilder(); ;
+            StringBuilder sb = new(); ;
             foreach (var kvp in definitionLocations)
             {
                 sb.Append(kvp.Key + ": ");
@@ -99,7 +99,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
         public IEnumerable<WorkloadManifest> GetManifests(SdkDirectoryWorkloadManifestProvider? manifestProvider = null)
         {
             manifestProvider ??= CreateManifestProvider();
-            List<WorkloadManifest> manifests = new List<WorkloadManifest>();
+            List<WorkloadManifest> manifests = new();
             foreach (var readableManifest in manifestProvider.GetManifests())
             {
                 if (readableManifest.ManifestId.Equals("Microsoft.NET.Sdk.TestWorkload"))
@@ -159,8 +159,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
                     {
                         continue;
                     }
-                    List<WorkloadResolver.PackInfo> packInfos = new List<WorkloadResolver.PackInfo>();
-                    List<WorkloadPackId> unavailablePacks = new List<WorkloadPackId>();
+                    List<WorkloadResolver.PackInfo> packInfos = new();
+                    List<WorkloadPackId> unavailablePacks = new();
                     foreach (var packId in workload.Packs)
                     {
                         var packInfo = workloadResolver.TryGetPackInfo(packId);
@@ -173,21 +173,22 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
                             packInfos.Add(packInfo);
                         }
                     }
-                    WorkloadPackGroup group = new WorkloadPackGroup(workload, manifest.Version, packInfos, unavailablePacks);
+                    WorkloadPackGroup group = new(workload, manifest.Version, packInfos, unavailablePacks);
                     groups.Add(group);
                 }
             }
-            
+
 
             return groups;
         }
 
         WorkloadPackGroupJson ConvertGroupToJson(WorkloadPackGroup group)
         {
-            var groupJson = new WorkloadPackGroupJson();
-
-            groupJson.GroupPackageId = group.Workload.Id + ".Packs";
-            groupJson.GroupPackageVersion = group.WorkloadManifestVersion;
+            var groupJson = new WorkloadPackGroupJson
+            {
+                GroupPackageId = group.Workload.Id + ".Packs",
+                GroupPackageVersion = group.WorkloadManifestVersion
+            };
 
             foreach (var pack in group.Packs)
             {
@@ -219,7 +220,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
 
         class WorkloadPackGroupJson
         {
-            public string? GroupPackageId { get;set; }
+            public string? GroupPackageId { get; set; }
             public string? GroupPackageVersion { get; set; }
 
             public List<WorkloadPackJson> Packs { get; set; } = new List<WorkloadPackJson>();

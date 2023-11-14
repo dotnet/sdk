@@ -175,10 +175,10 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             public IEnumerable<WorkloadId> GetInstalledWorkloads(SdkFeatureBand sdkFeatureBand)
             {
-                SdkFeatureBand featureBand = new SdkFeatureBand(new ReleaseVersion(6, 0, 100));
+                SdkFeatureBand featureBand = new(new ReleaseVersion(6, 0, 100));
                 if (sdkFeatureBand.Equals(featureBand))
                 {
-                    return new[] {new WorkloadId("xamarin-android")};
+                    return new[] { new WorkloadId("xamarin-android") };
                 }
 
                 throw new Exception($"Should not pass other feature band {sdkFeatureBand}");

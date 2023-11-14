@@ -1,15 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Utils;
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Utils.ExponentialRetry;
 
 namespace Microsoft.NET.TestFramework.Commands
 {
     public abstract class TestCommand
     {
-        private Dictionary<string, string> _environment = new Dictionary<string, string>();
+        private Dictionary<string, string> _environment = new();
         private bool _doNotEscapeArguments;
 
         public ITestOutputHelper Log { get; }
@@ -119,7 +119,7 @@ namespace Microsoft.NET.TestFramework.Commands
         }
 
         public virtual CommandResult Execute(IEnumerable<string> args)
-        { 
+        {
             var command = CreateCommandSpec(args)
                 .ToCommand(_doNotEscapeArguments)
                 .CaptureStdOut()

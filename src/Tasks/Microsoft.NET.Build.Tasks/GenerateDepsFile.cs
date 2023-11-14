@@ -6,8 +6,8 @@ using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
 using Newtonsoft.Json;
 using NuGet.Packaging.Core;
-using NuGet.RuntimeModel;
 using NuGet.ProjectModel;
+using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string RuntimeGraphPath { get; set; }
 
-        List<ITaskItem> _filesWritten = new List<ITaskItem>();
+        List<ITaskItem> _filesWritten = new();
 
         [Output]
         public ITaskItem[] FilesWritten

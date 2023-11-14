@@ -32,8 +32,8 @@ Default: false
     Detail:
 The target framework for the project.
 Type: choice
-  net8.0  Target net8.0
-Default: net8.0
+  net9.0  Target net9.0
+Default: net9.0
 
   },
   {
@@ -125,8 +125,8 @@ Default: false
     Detail:
 The target framework for the project.
 Type: choice
-  net8.0  Target net8.0
-Default: net8.0
+  net9.0  Target net9.0
+Default: net9.0
 
   },
   {
