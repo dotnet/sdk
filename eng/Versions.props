@@ -117,7 +117,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/templating -->
-    <MicrosoftTemplateEngineCliPackageVersion>6.0.418-rtm.23557.9</MicrosoftTemplateEngineCliPackageVersion>
+    <MicrosoftTemplateEngineCliPackageVersion>6.0.418-rtm.23564.9</MicrosoftTemplateEngineCliPackageVersion>
     <MicrosoftTemplateEngineAbstractionsPackageVersion>6.0.418</MicrosoftTemplateEngineAbstractionsPackageVersion>
     <MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>6.0.418</MicrosoftTemplateEngineOrchestratorRunnableProjectsPackageVersion>
     <MicrosoftTemplateEngineUtilsPackageVersion>6.0.418</MicrosoftTemplateEngineUtilsPackageVersion>
