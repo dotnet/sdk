@@ -12,6 +12,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
+    <_AfterSdkPublishDependsOn Condition="'$(_IsAspNetCoreProject)' == 'true'">AfterPublish</_AfterSdkPublishDependsOn>
+    <_AfterSdkPublishDependsOn Condition="'$(_IsAspNetCoreProject)' != 'true'">Publish</_AfterSdkPublishDependsOn>
+  </PropertyGroup>
+
+  <Target Name="AfterSdkPublish" AfterTargets="$(_AfterSdkPublishDependsOn)"></Target>
+
+  <PropertyGroup>
     <!--
       Indicate to other targets that Microsoft.NET.Sdk is being used.
 
