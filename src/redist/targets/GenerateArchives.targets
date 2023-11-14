@@ -1,5 +1,5 @@
 <Project>
-    <!-- Disable the GenerateArchives step in the local dev build, only do when -pack is specified to speed up dev builds -->
+  <!-- Disable the GenerateArchives step in the local dev build, only do when -pack is specified to speed up dev builds -->
   <Target Name="GenerateArchives"
           Condition="'$(PackInstaller)' == 'true'"
           DependsOnTargets="GenerateLayout;GetCurrentRuntimeInformation"
