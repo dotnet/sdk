@@ -1,7 +1,8 @@
 <Project>
   <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
+  <!-- Disable the cross-gen step in the local dev build, only do when -pack is specified to speed up dev builds -->
   <Target Name="CrossgenLayout"
-          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le'"
+          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le' AND '$(PackInstaller)' == 'true'"
           DependsOnTargets="SetSdkBrandingInfo">
     
     <PropertyGroup>
