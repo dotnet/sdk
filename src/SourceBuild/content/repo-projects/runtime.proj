@@ -18,6 +18,7 @@
     <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
     <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))</BaseOS>
 
+    <PortableBuild Condition="'$(PortableBuild)' == ''">false</PortableBuild>
     <BuildNonPortable>true</BuildNonPortable>
     <BuildNonPortable Condition="'$(PortableBuild)' == 'true'">false</BuildNonPortable>
 
@@ -25,6 +26,7 @@
     <BuildCommandArgs>$(BuildCommandArgs) /p:TargetRid=$(OverrideTargetRid)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:RuntimeOS=$(RuntimeOS)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:BaseOS=$(BaseOS)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:PortableBuild=$(PortableBuild)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:SourceBuildNonPortable=$(BuildNonPortable)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
