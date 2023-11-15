@@ -373,12 +373,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return (manifestWithBand, workloads);
         }
 
-        public ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId)
+        public ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId, bool throwIfNotFound = true)
         {
             var manifest = _workloadResolver.GetInstalledManifests().FirstOrDefault(manifest => manifest.Id.ToLowerInvariant().Equals(manifestId.ToString()));
             if (manifest == null)
             {
-                throw new Exception(string.Format(LocalizableStrings.ManifestDoesNotExist, manifestId.ToString()));
+                if (throwIfNotFound)
+                {
+                    throw new Exception(string.Format(LocalizableStrings.ManifestDoesNotExist, manifestId.ToString()));
+                }
+                else
+                {
+                    return null;
+                }
             }
             return new(new ManifestVersion(manifest.Version), new SdkFeatureBand(manifest.ManifestFeatureBand));
         }

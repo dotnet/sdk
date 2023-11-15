@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return _manifestUpdates;
         }
 
-        public ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId)
+        public ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId, bool throwIfNotFound = true)
         {
             throw new NotImplementedException();
         }

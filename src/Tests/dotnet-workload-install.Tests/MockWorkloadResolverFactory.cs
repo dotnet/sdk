@@ -3,7 +3,6 @@
 
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
@@ -13,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public IWorkloadResolverFactory.CreationResult MockResult { get; set; } = new();
 
         public IWorkloadResolverFactory.CreationResult Create(string globalJsonStartDir = null) => MockResult;
-        public IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion)
+        public IWorkloadResolver CreateForWorkloadSet(string dotnetPath, string sdkVersion, string userProfileDir, string workloadSetVersion, bool useInstallStateOnly)
         {
             if (dotnetPath != MockResult.DotnetPath ||
                 sdkVersion != MockResult.SdkVersion.ToString() ||

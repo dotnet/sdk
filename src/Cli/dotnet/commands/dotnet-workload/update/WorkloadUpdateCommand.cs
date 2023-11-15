@@ -195,11 +195,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 {
                     var manifestId = new ManifestId(m.Key);
                     var featureBandAndVersion = m.Value.Split('/');
-                    var currentVersionInformation = _workloadManifestUpdater.GetInstalledManifestVersion(manifestId);
+                    var currentVersionInformation = _workloadManifestUpdater.GetInstalledManifestVersion(manifestId, throwIfNotFound: false);
+                    var band = currentVersionInformation?.Band;
                     versionUpdates.Add(new ManifestVersionUpdate(
                         manifestId,
-                        currentVersionInformation.Version,
-                        currentVersionInformation.Band.ToString(),
+                        currentVersionInformation?.Version,
+                        band?.ToString(),
                         new ManifestVersion(featureBandAndVersion[0]),
                         featureBandAndVersion[1]));
                 }
@@ -248,23 +249,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 {
                     UpdateInstalledWorkloadsFromHistory(sdkFeatureBand, context, offlineCache);
 
-                    if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
-                    {
-                        foreach (var update in manifestsToUpdate)
-                        {
-                            if (update.NewFeatureBand == null && update.NewVersion == null)
-                            {
-                                _workloadInstaller.RemoveWorkloadManifest(update.ExistingFeatureBand, update.ManifestId.ToString(), update.ExistingVersion.ToString(), offlineCache);
-                            }
-                        }
-                    }
-
                     bool rollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
                     foreach (var manifestUpdate in manifestsToUpdate)
                     {
                         if (manifestUpdate.NewFeatureBand != null && manifestUpdate.NewVersion != null &&
-                            (!manifestUpdate.ExistingVersion.Equals(manifestUpdate.NewVersion) ||
+                            (manifestUpdate.ExistingFeatureBand is null ||
+                            !manifestUpdate.ExistingVersion.Equals(manifestUpdate.NewVersion) ||
                             !manifestUpdate.ExistingFeatureBand.ToString().Equals(manifestUpdate.NewFeatureBand)))
                         {
                             _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, rollback);
@@ -280,6 +271,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     }
 
                     UpdateInstallState(shouldUpdateInstallState, manifestsToUpdate);
+                    if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
+                    {
+                        _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion, useInstallStateOnly: true), offlineCache);
+                    }
                 },
                 rollback: () =>
                 {

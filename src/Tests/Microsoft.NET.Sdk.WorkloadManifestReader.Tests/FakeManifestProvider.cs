@@ -20,7 +20,7 @@ namespace ManifestReaderTests
             _filePaths = filePaths;
         }
 
-        public IEnumerable<ReadableWorkloadManifest> GetManifests()
+        public IEnumerable<ReadableWorkloadManifest> GetManifests(bool useInstallStateOnly)
         {
             foreach (var filePath in _filePaths)
             {
@@ -46,7 +46,7 @@ namespace ManifestReaderTests
 
         public void Add(string id, string content) => _manifests.Add((id, Encoding.UTF8.GetBytes(content)));
 
-        public IEnumerable<ReadableWorkloadManifest> GetManifests()
+        public IEnumerable<ReadableWorkloadManifest> GetManifests(bool useInstallStateOnly)
             => _manifests.Select(m => new ReadableWorkloadManifest(
                 m.id,
                 $@"C:\fake\{m.id}",

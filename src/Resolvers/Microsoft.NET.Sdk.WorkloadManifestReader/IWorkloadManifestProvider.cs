@@ -9,7 +9,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// </summary>
     public interface IWorkloadManifestProvider
     {
-        IEnumerable<ReadableWorkloadManifest> GetManifests();
+        IEnumerable<ReadableWorkloadManifest> GetManifests(bool useInstallStateOnly = false);
 
         string GetSdkFeatureBand();
 

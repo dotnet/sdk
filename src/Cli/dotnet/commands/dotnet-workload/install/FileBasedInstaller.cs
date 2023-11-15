@@ -244,7 +244,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         //  If target directory already exists, back it up in case we roll back
                         if (Directory.Exists(newManifestPath) && Directory.GetFileSystemEntries(newManifestPath).Any())
                         {
-                            tempBackupDir = Path.Combine(_tempPackagesDir.Value, $"{manifestUpdate.ManifestId}-{manifestUpdate.ExistingVersion}-backup");
+                            tempBackupDir = Path.Combine(_tempPackagesDir.Value, $"{manifestUpdate.ManifestId}-{manifestUpdate.ExistingVersion?.ToString() ?? ""}-backup");
                             if (Directory.Exists(tempBackupDir))
                             {
                                 Directory.Delete(tempBackupDir, true);

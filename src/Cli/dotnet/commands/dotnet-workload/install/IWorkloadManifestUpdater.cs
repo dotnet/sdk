@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         void DeleteUpdatableWorkloadsFile();
 
-        ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId);
+        ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId, bool throwIfNotFound = true);
     }
 
     internal record ManifestUpdateWithWorkloads(ManifestVersionUpdate ManifestUpdate, WorkloadCollection Workloads);
