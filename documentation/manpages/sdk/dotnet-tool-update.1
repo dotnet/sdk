@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-update" "1" "2022-10-10" "" ".NET Documentation"
+.TH "dotnet-tool-update" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet tool update
 .PP
@@ -29,19 +29,22 @@ dotnet-tool-update - Updates the specified .NET tool on your machine.
 dotnet tool update <PACKAGE_ID> -g|--global
     [--add-source <SOURCE>] [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
-    [--ignore-failed-sources] [--interactive] [--no-cache]
+    [--ignore-failed-sources] [--interactive]
+    [--no-cache] [--prerelease]
     [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
 dotnet tool update <PACKAGE_ID> --tool-path <PATH>
     [--add-source <SOURCE>] [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
-    [--ignore-failed-sources] [--interactive] [--no-cache]
+    [--ignore-failed-sources] [--interactive] 
+    [--no-cache] [--prerelease]
     [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
 dotnet tool update <PACKAGE_ID> --local
     [--add-source <SOURCE>] [--configfile <FILE>]
     [--disable-parallel] [--framework <FRAMEWORK>]
-    [--ignore-failed-sources] [--interactive] [--no-cache]
+    [--ignore-failed-sources] [--interactive]
+    [--no-cache] [--prerelease]
     [--tool-manifest <PATH>]
     [-v|--verbosity <LEVEL>] [--version <VERSION>]
 
@@ -137,6 +140,12 @@ Can\[cq]t be combined with the \f[V]--global\f[R] option or the \f[V]--tool-path
 .RS 2
 .PP
 Do not cache packages and HTTP requests.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--prerelease\f[B]\f[R]
+.RS 2
+.PP
+Include prerelease versions.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--tool-manifest <PATH>\f[B]\f[R]
