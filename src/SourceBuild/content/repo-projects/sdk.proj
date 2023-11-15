@@ -12,12 +12,6 @@
     <BuildCommandArgs>$(BuildCommandArgs) /p:PortableRid=$(_baseOS)-$(Platform)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:TargetRid=$(TargetRid)</BuildCommandArgs>
 
-    <!-- Propagate RID set in source-build to sdk repo -->
-    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
-    <_baseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))</_baseOS>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:PortableRid=$(_baseOS)-$(Platform)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:TargetRid=$(TargetRid)</BuildCommandArgs>
-
     <!-- Just like mono, arm does not support NativeAot -->
     <BuildCommandArgs Condition="'$(BuildArchitecture)' == 'arm'">$(BuildCommandArgs) /p:NativeAotSupported=false</BuildCommandArgs>
 
