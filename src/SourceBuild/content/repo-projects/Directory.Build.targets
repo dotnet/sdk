@@ -543,8 +543,8 @@
       <ReferencePackageFiles Include="$(ReferencePackagesDir)**/*.nupkg" />
 
       <!-- Check all RIDs from all restored Microsoft.NETCore.Platforms packages. -->
-      <PlatformsRuntimeJsonFiles Include="$(LocalNuGetPackagesRoot)*/microsoft.netcore.platforms/*/runtime.json" />
-      <PlatformsRuntimeJsonFiles Include="$(PackagesDir)microsoft.netcore.platforms/*/runtime.json" />
+      <PlatformsRuntimeJsonFiles Include="$(LocalNuGetPackagesRoot)*/microsoft.netcore.platforms/*/PortableRuntimeIdentifierGraph.json" />
+      <PlatformsRuntimeJsonFiles Include="$(PackagesDir)microsoft.netcore.platforms/*/PortableRuntimeIdentifierGraph.json" />
 
       <!-- Add some other potential top-level project directories for a more specific report. -->
       <ProjectDirectories Include="$(SourceBuiltSdksDir);$(TaskDirectory);$(BaseIntermediatePath)" />

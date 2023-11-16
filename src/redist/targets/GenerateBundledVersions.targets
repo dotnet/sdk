@@ -1195,9 +1195,13 @@ Copyright (c) .NET Foundation. All rights reserved.
           DestinationFiles="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
           SkipUnchangedFiles="true"/>
 
+    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/PortableRuntimeIdentifierGraph.json"
+          DestinationFolder="$(SdkOutputDirectory)"
+          SkipUnchangedFiles="true"/>
+
     <GenerateSdkRuntimeIdentifierChain
           RuntimeIdentifier="$(PortableProductMonikerRid)"
-          RuntimeIdentifierGraphPath="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
+          RuntimeIdentifierGraphPath="$(SdkOutputDirectory)PortableRuntimeIdentifierGraph.json"
           RuntimeIdentifierChainOutputPath="$(SdkOutputDirectory)NETCoreSdkRuntimeIdentifierChain.txt"/>
 
   </Target>
