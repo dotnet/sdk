@@ -196,6 +196,18 @@
             "defaultRemote": "https://github.com/dotnet/xliff-tasks",
             "ignoreDefaults": true,
             "exclude": [ "**/*" ]
+        },
+        {
+            "name": "winforms",
+            "defaultRemote": "https://github.com/dotnet/winforms"
+        },
+        {
+            "name": "wpf",
+            "defaultRemote": "https://github.com/dotnet/wpf"
+        },
+        {
+            "name": "windowsdesktop",
+            "defaultRemote": "https://github.com/dotnet/windowsdesktop"
         }
     ]
 }
