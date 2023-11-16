@@ -2,6 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="$(MSBuildProjectDirectory)/PackageVersions.props" />
+  <Import Project="$(BootstrapOverrideVersionsProps)" Condition="Exists('$(BootstrapOverrideVersionsProps)')" />
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
