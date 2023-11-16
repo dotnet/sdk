@@ -20,6 +20,7 @@ internal sealed class ImageConfig
     private string[]? _newEntrypoint;
     private string[]? _newCmd;
     private string? _user;
+    private bool _userHasBeenExplicitlySet;
 
     /// <summary>
     /// Models the file system of the image. Typically has a key 'type' with value 'layers' and a key 'diff_ids' with a list of layer digests.
@@ -216,7 +217,16 @@ internal sealed class ImageConfig
         _rootFsLayers.Add(l.Descriptor.UncompressedDigest!);
     }
 
-    internal void SetUser(string user) => _user = user;
+    internal void SetUser(string user, bool isUserInteraction = false) {
+        // we don't let automatic/inferred user settings overwrite an explicit user request
+        if (_userHasBeenExplicitlySet && !isUserInteraction)
+        {
+            return;
+        }
+
+        _user = user;
+        _userHasBeenExplicitlySet = isUserInteraction;
+    }
 
     private HashSet<Port> GetExposedPorts()
     {
