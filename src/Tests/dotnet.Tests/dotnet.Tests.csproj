@@ -32,6 +32,7 @@
     <Compile Include="..\dotnet-format.Tests\**\*.cs" LinkBase="dotnet-format" />
     <Compile Include="..\dotnet-fsi.Tests\**\*.cs" LinkBase="dotnet-fsi" />
     <Compile Include="..\dotnet-help.Tests\**\*.cs" LinkBase="dotnet-help" />
+    <Compile Include="..\dotnet-info.Tests\**\*.cs" LinkBase="dotnet-info" />
     <Compile Include="..\dotnet-install-tool.Tests\**\*.cs" LinkBase="dotnet-install-tool" />
     <Compile Include="..\dotnet-list-package.Tests\**\*.cs" LinkBase="dotnet-list-package" />
     <Compile Include="..\dotnet-list-reference.Tests\**\*.cs" LinkBase="dotnet-list-reference" />
