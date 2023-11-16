@@ -15,6 +15,9 @@ using Microsoft.TemplateEngine.Cli.Commands;
 using CommonStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
 
+using Workload = Microsoft.DotNet.Tools.Info.InfoCommand.Workload;
+using WorkloadManifest = Microsoft.DotNet.Tools.Info.InfoCommand.WorkloadManifest;
+
 namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadCommandParser
@@ -47,6 +50,41 @@ namespace Microsoft.DotNet.Cli
             return workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
         }
 
+        internal static List<Workload> GetWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, string dotnetDir = null)
+        {
+            var workloads = new List<Workload>();
+            workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
+            IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
+            InstalledWorkloadsCollection installedWorkloads = workloadInfoHelper.AddInstalledVsWorkloads(installedList);
+
+            if (installedWorkloads.Count == 0)
+            {
+                return workloads;
+            }
+
+            var manifestInfoDict = workloadInfoHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var workloadEntry in installedWorkloads.AsEnumerable())
+            {
+                var workloadManifest = workloadInfoHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workloadEntry.Key));
+                var workloadFeatureBand = manifestInfoDict[workloadManifest.Id].ManifestFeatureBand;
+
+                var workload = new Workload
+                {
+                    Name = workloadEntry.Key,
+                    Manifest = new WorkloadManifest
+                    {
+                        InstallType = WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(workloadFeatureBand), dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath)).ToString(),
+                        Path = workloadManifest.ManifestPath,
+                        Version = workloadManifest.Version
+                    }
+                };
+
+                workloads.Add(workload);
+            }
+
+            return workloads;
+        }
         internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null)
         {
             workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
