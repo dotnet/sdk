@@ -1,7 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Intentionally pinned. This feature is supported in projects targeting 6.0 or newer.-->
-    <TargetFramework>net6.0</TargetFramework>
+    <!--
+      dotnet-watch may inject this assembly to .NET 6.0+ app, so we can't target a newer version.
+      At the same time source build requires us to not target 6.0, so we fall back to netstandard.
+     -->
+    <TargetFramework>netstandard2.1</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <IsPackable>false</IsPackable>
@@ -12,16 +15,6 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <EmbeddedResource Include="WebSocketScriptInjection.js" />
     <EmbeddedResource Include="BlazorHotReload.js" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
-    <!-- Reference 6.0.2 targeting packs in Source Build - this was the earliest version after the API surface stabilized -->
-    <FrameworkReference
-      Update="Microsoft.AspNetCore.App"
-      TargetingPackVersion="6.0.2" />
-    <FrameworkReference
-      Update="Microsoft.NETCore.App"
-      TargetingPackVersion="6.0.2" />
   </ItemGroup>
 
 </Project>
