@@ -14,19 +14,20 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-watch" "1" "2022-11-10" "" ".NET Documentation"
+.TH "dotnet-watch" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet watch
 .PP
 \f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .SH NAME
 .PP
-dotnet-watch - Restarts or hot reloads the specified application when changes in the source code are detected.
+dotnet-watch - Restarts or hot reloads the specified application, or runs a specified dotnet command, when changes in source code are detected.
 .SH SYNOPSIS
 .IP
 .nf
 \f[C]
-dotnet watch [--list]
+dotnet watch [<command>]
+  [--list]
   [--no-hot-reload] [--non-interactive]
   [--project <PROJECT>]
   [-q|--quiet] [-v|--verbose]
@@ -39,8 +40,9 @@ dotnet watch -?|-h|--help
 .SH DESCRIPTION
 .PP
 The \f[V]dotnet watch\f[R] command is a file watcher.
-When it detects a change that is supported for hot reload, it hot reloads the specified application.
-When it detects an unsupported change, it restarts the application.
+When it detects a change, it runs the \f[V]dotnet run\f[R] command or a specified \f[V]dotnet\f[R] command.
+If it runs \f[V]dotnet run\f[R], and the change is supported for hot reload, it hot reloads the specified application.
+If the change isn\[cq]t supported, it restarts the application.
 This process enables fast iterative development from the command line.
 .PP
 While running \f[V]dotnet watch\f[R], you can force the app to rebuild and restart by pressing Ctrl+R in the command shell.
@@ -72,12 +74,20 @@ As an alternative to disabling response compression, manually add the browser re
 .fi
 .SH ARGUMENTS
 .IP \[bu] 2
+\f[B]\f[VB]command\f[B]\f[R]
+.RS 2
+.PP
+\f[V]dotnet watch\f[R] can run any command that is dispatched via the \f[V]dotnet\f[R] executable, such as built-in CLI commands and global tools.
+If you can run \f[V]dotnet <command>\f[R], you can run \f[V]dotnet watch <command>\f[R].
+If the child command isn\[cq]t specified, the default is \f[V]run\f[R] for \f[V]dotnet run\f[R].
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]forwarded arguments\f[B]\f[R]
 .RS 2
 .PP
-Arguments to pass to the child \f[V]dotnet\f[R] process.
-For example: \f[V]run\f[R] with options for dotnet run or \f[V]test\f[R] with options for dotnet test.
-If the child command isn\[cq]t specified, the default is \f[V]run\f[R] for \f[V]dotnet run\f[R].
+Arguments provided after a double dash (\f[V]--\f[R]) are passed to the child \f[V]dotnet\f[R] process.
+If you\[cq]re running \f[V]dotnet watch run\f[R], these arguments are options for dotnet run.
+If you\[cq]re running \f[V]dotnet watch test\f[R], these arguments are options for dotnet test.
 .RE
 .SH OPTIONS
 .IP \[bu] 2
@@ -217,6 +227,12 @@ If this variable is set to \f[V]1\f[R] or \f[V]true\f[R], these optimizations ar
 .PP
 When set to \f[V]1\f[R] or \f[V]true\f[R], \f[V]dotnet watch\f[R] won\[cq]t do special handling for static content files.
 \f[V]dotnet watch\f[R] sets MSBuild property \f[V]DotNetWatchContentFiles\f[R] to \f[V]false\f[R].
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]DOTNET_WATCH_RESTART_ON_RUDE_EDIT\f[B]\f[R]
+.RS 2
+.PP
+When set to \f[V]1\f[R] or \f[V]true\f[R], \f[V]dotnet watch\f[R] will always restart on rude edits instead of asking.
 .RE
 .SS Files watched by default
 .PP
