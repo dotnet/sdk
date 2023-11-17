@@ -588,13 +588,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
-        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
+        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="translated">Enumerable.Cast&lt;T&gt;と Enumerable.OfType&lt;T&gt; が正常に機能するには、互換性のある型が必要です。 
-Enumerable.Cast&lt;T&gt; によって返されるシーケンスによって使用されるジェネリック キャスト (IL 'unbox.any') は、指定された型の要素で実行時に InvalidCastException をスローします。 
-Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (C# 'is' operator/IL 'isinst') は、指定された型の要素では成功しないため、空のシーケンスになります。 
+        <target state="translated">Enumerable.Cast&lt;T&gt;と Enumerable.OfType&lt;T&gt; が正常に機能するには、互換性のある型が必要です。
+Enumerable.Cast&lt;T&gt; によって返されるシーケンスによって使用されるジェネリック キャスト (IL 'unbox.any') は、指定された型の要素で実行時に InvalidCastException をスローします。
+Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (C# 'is' operator/IL 'isinst') は、指定された型の要素では成功しないため、空のシーケンスになります。
 拡大およびユーザー定義の変換は、ジェネリック型ではサポートされていません。</target>
         <note />
       </trans-unit>
@@ -924,12 +924,12 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
-        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
         <target state="translated">ConfigureAwaitOptions.SuppressThrowing は、Task&lt;TResult&gt; ではない、非ジェネリック Task での使用のみサポートされています。Task&lt;TResult&gt; で使用するには、まず、基本型の Task にキャストしてください。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
-        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
         <target state="translated">ConfigureAwaitOptions.SuppressThrowing は、非ジェネリック Task での使用のみサポートされています</target>
         <note />
       </trans-unit>

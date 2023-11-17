@@ -588,12 +588,12 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
-        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
+        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="translated">Enumerable.Cast&lt;T&gt;和 Enumerable.OfType&lt;T&gt; 需要兼容类型才能正常工作。 
-Enumerable.Cast&lt;T&gt; 返回的序列使用的泛型强制转换 (IL 'unbox.any') 将在运行时对指定类型的元素引发 InvalidCastException。 
+        <target state="translated">Enumerable.Cast&lt;T&gt;和 Enumerable.OfType&lt;T&gt; 需要兼容类型才能正常工作。
+Enumerable.Cast&lt;T&gt; 返回的序列使用的泛型强制转换 (IL 'unbox.any') 将在运行时对指定类型的元素引发 InvalidCastException。
 Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isinst') 将从不会成功与指定类型的元素一起使用，从而导致一个空序列。
 泛型类型不支持扩大转换和用户定义的转换。</target>
         <note />
@@ -924,12 +924,12 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
-        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
         <target state="translated">ConfigureAwaitOptions.SuppressThrowing 仅支持用于非泛型任务，不可用于 Task&lt;TResult&gt;。若要将它用于 Task&lt;TResult&gt;，请先强制转换为基本任务。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
-        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
         <target state="translated">只有非泛型任务才支持 ConfigureAwaitOptions.SuppressThrowing</target>
         <note />
       </trans-unit>

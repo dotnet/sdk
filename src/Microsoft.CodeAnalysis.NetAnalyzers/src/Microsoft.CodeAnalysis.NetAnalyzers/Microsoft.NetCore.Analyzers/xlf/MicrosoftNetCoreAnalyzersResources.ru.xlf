@@ -588,13 +588,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
-        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
+        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="translated">Для нормальной работы Enumerable.Cast&lt;T&gt; и Enumerable.OfType&lt;T&gt; требуются совместимые типы. 
-Универсальное приведение (выражение промежуточного языка 'unbox.any'), используемое последовательностью, возвращенной enumerable.Cast&lt;T&gt;, вызовет исключение InvalidCastException во время выполнения для элементов указанных типов. 
-Проверка универсального типа (оператор C# 'is'/выражение промежуточного языка 'isinst'), используемая Enumerable.OfType&lt;T&gt;, никогда не будет выполнена успешно с элементами указанных типов, что приведет к получению пустой последовательности.  
+        <target state="translated">Для нормальной работы Enumerable.Cast&lt;T&gt; и Enumerable.OfType&lt;T&gt; требуются совместимые типы.
+Универсальное приведение (выражение промежуточного языка 'unbox.any'), используемое последовательностью, возвращенной enumerable.Cast&lt;T&gt;, вызовет исключение InvalidCastException во время выполнения для элементов указанных типов.
+Проверка универсального типа (оператор C# 'is'/выражение промежуточного языка 'isinst'), используемая Enumerable.OfType&lt;T&gt;, никогда не будет выполнена успешно с элементами указанных типов, что приведет к получению пустой последовательности.
 Расширяемые и определяемые пользователем преобразования не поддерживаются для универсальных типов.</target>
         <note />
       </trans-unit>
@@ -924,12 +924,12 @@ Widening and user defined conversions are not supported with generic types.</sou
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
-        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
         <target state="translated">ConfigureAwaitOptions.SuppressThrowing поддерживается только с неуниверсальной задачей, а не с задачей&lt;TResult&gt;. Чтобы использовать его с задачей&lt;TResult&gt;, сначала выполните приведение к базовой задаче.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
-        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
         <target state="translated">ConfigureAwaitOptions.SuppressThrowing поддерживается только с неуниверсальной задачей</target>
         <note />
       </trans-unit>
