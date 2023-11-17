@@ -17,11 +17,7 @@
     <PackageReference Include="runtime.win-arm64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
-  <Target
-    Name="GenerateLayout" 
-    Condition=" '$(OS)' == 'Windows_NT' "
-    BeforeTargets="AfterBuild"
-    >
+  <Target Name="GenerateLayout" Condition=" '$(OS)' == 'Windows_NT' " BeforeTargets="AfterBuild">
     <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(OutputPath)" />
 
     <RemoveDir Directories="$(OutputPath)" />
