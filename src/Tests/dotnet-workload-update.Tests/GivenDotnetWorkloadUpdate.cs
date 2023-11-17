@@ -13,6 +13,8 @@ using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Workload.Search.Tests;
+using Microsoft.DotNet.Workloads.Workload.History;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -27,6 +29,86 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             _reporter = new BufferedReporter();
             _manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
             _parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update" });
+        }
+
+        [Fact]
+        public void GivenWorkloadUpdateFromHistory()
+        {
+            string workloadHistoryRecord = @"{
+              ""TimeStarted"": ""2023-11-13T13:25:49.8011987-08:00"",
+              ""TimeCompleted"": ""2023-11-13T13:25:52.8522942-08:00"",
+              ""CommandName"": ""update"",
+              ""WorkloadArguments"": [],
+              ""RollbackFileContents"": null,
+              ""CommandLineArgs"": [],
+              ""Succeeded"": true,
+              ""ErrorMessage"": null,
+              ""StateBeforeCommand"": {
+                ""ManifestVersions"": {
+                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1"",
+                  ""microsoft.net.sdk.aspire"": ""8.0.0-alpha.23471.13/8.0.100-rc.1""
+                },
+                ""InstalledWorkloads"": []
+              },
+              ""StateAfterCommand"": {
+                ""ManifestVersions"": {
+                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1"",
+                  ""microsoft.net.sdk.aspire"": ""8.0.0-alpha.23471.13/8.0.100-rc.1""
+                },
+                ""InstalledWorkloads"": [""maui-android"", ""aspire""]
+              }
+            }";
+
+            IEnumerable<WorkloadManifestInfo> installedManifests = new List<WorkloadManifestInfo>() {
+                                                new WorkloadManifestInfo("microsoft.net.sdk.android", "34.0.0-rc.1", "androidDirectory", "8.0.100-rc.1"),
+                                                new WorkloadManifestInfo("microsoft.net.sdk.ios", "16.4.8825", "iosDirectory", "8.0.100-rc.1") };
+
+            IWorkloadResolverFactory mockResolverFactory = new MockWorkloadResolverFactory(
+                    Path.Combine(Path.GetTempPath(), "dotnetTestPath"),
+                    "7.0.0",
+                    new MockWorkloadResolver(new string[] { "maui-android", "maui-ios" }.Select(s => new WorkloadInfo(new WorkloadId(s), null)),
+                    installedManifests),
+                    "userProfileDir");
+
+            var mauiAndroidPack = new PackInfo(new WorkloadPackId("maui-android-pack"), "34.0", WorkloadPackKind.Sdk, "androidDir", "maui-android-pack");
+            var mauiIosPack = new PackInfo(new WorkloadPackId("maui-ios-pack"), "16.4", WorkloadPackKind.Framework, "iosDir", "maui-ios-pack");
+            var aspirePack = new PackInfo(new WorkloadPackId("aspire-pack"), "8.0", WorkloadPackKind.Library, "aspireDir", "aspire-pack");
+
+            MockPackWorkloadInstaller mockInstaller = new MockPackWorkloadInstaller(
+                    installedWorkloads: new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios"), },
+                    installedPacks: new List<PackInfo>() { mauiAndroidPack, mauiIosPack },
+                    records: new List<WorkloadHistoryRecord>() { JsonSerializer.Deserialize<WorkloadHistoryRecord>(workloadHistoryRecord) })
+            {
+                WorkloadResolver = new MockWorkloadResolver(
+                                        new string[] { "maui-android", "maui-ios", "aspire" }.Select(s => new WorkloadInfo(new WorkloadId(s), null)),
+                                        installedManifests,
+                                        id => new List<WorkloadPackId>() { new WorkloadPackId(id.ToString() + "-pack") },
+                                        id => id.ToString().Contains("android") ? mauiAndroidPack :
+                                              id.ToString().Contains("ios") ? mauiIosPack :
+                                              id.ToString().Contains("aspire") ? aspirePack :
+                                              null)
+                                };
+
+        IWorkloadManifestUpdater mockUpdater = new MockWorkloadManifestUpdater(new ManifestUpdateWithWorkloads[] {
+                    new ManifestUpdateWithWorkloads(
+                        new ManifestVersionUpdate(new ManifestId("microsoft.net.sdk.android"), new ManifestVersion("34.0.0-rc.1"), "8.0.100-rc.1", null, null), null),
+                    new ManifestUpdateWithWorkloads(
+                        new ManifestVersionUpdate(new ManifestId("microsoft.net.sdk.ios"), new ManifestVersion("16.4.8825"), "8.0.100-rc.1", null, null), null) });
+
+            WorkloadUpdateCommand update = new(
+                Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-history", "1" }),
+                Reporter.Output,
+                mockResolverFactory,
+                mockInstaller,
+                new MockNuGetPackageDownloader(),
+                mockUpdater);
+
+            mockInstaller.InstallationRecordRepository.WorkloadInstallRecord.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios") });
+            mockInstaller.GarbageCollectionCalled.Should().BeFalse();
+            update.Execute();
+            mockInstaller.InstallationRecordRepository.WorkloadInstallRecord.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("aspire") });
+            mockInstaller.GarbageCollectionCalled.Should().BeTrue();
+            mockInstaller.InstalledManifests.Select(m => m.manifestUpdate.ManifestId.ToString()).Should().BeEquivalentTo(new List<string>() { "microsoft.net.sdk.android", "microsoft.net.sdk.aspire" });
         }
 
         [Theory]

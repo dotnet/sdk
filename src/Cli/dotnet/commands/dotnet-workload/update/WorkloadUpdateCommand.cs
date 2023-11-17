@@ -205,14 +205,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         featureBandAndVersion[1]));
                 }
 
-                foreach (var (id, version, featureBand) in currentWorkloadState.ManifestVersions)
-                {
-                    if (!state.ManifestVersions.ContainsKey(id.ToString()))
-                    {
-                        versionUpdates.Add(new ManifestVersionUpdate(id, version, featureBand.ToString(), null, null));
-                    }
-                }
-
                 return versionUpdates;
             }
             else if (!string.IsNullOrWhiteSpace(_fromRollbackDefinition))

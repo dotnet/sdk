@@ -9,6 +9,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.History;
+using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -31,13 +32,14 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public int ExitCode => 0;
 
         public MockPackWorkloadInstaller(string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
-            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false)
+            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, List<WorkloadHistoryRecord> records = null)
         {
             InstallationRecordRepository = new MockInstallationRecordRepository(failingWorkload, installedWorkloads);
             FailingRollback = failingRollback;
             InstalledPacks = installedPacks ?? new List<PackInfo>();
             FailingPack = failingPack;
             FailingGarbageCollection = failingGarbageCollection;
+            HistoryRecords = records ?? HistoryRecords;
         }
 
         IEnumerable<PackInfo> GetPacksForWorkloads(IEnumerable<WorkloadId> workloadIds)
@@ -68,12 +70,19 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
                 foreach (var packInfo in packs)
                 {
+                    if (InstalledPacks.Contains(packInfo))
+                    {
+                        continue;
+                    }
+
                     InstalledPacks = InstalledPacks.Append(packInfo).ToList();
                     if (packInfo.Id.ToString().Equals(FailingPack))
                     {
                         throw new Exception($"Failing pack: {packInfo.Id}");
                     }
                 }
+
+                InstallationRecordRepository.WorkloadInstallRecord = InstallationRecordRepository.WorkloadInstallRecord.Union(workloadIds).ToList();
             },
             rollback: () =>
             {
@@ -188,6 +197,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             FailingWorkload = failingWorkload;
             InstalledWorkloads = installedWorkloads ?? new List<WorkloadId>();
+            foreach (var id in installedWorkloads)
+            {
+                WriteWorkloadInstallationRecord(id, new SdkFeatureBand("1.0.0"));
+            }
         }
 
         public void WriteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand)
