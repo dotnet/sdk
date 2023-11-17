@@ -2564,7 +2564,7 @@ Generic math interfaces require the derived type itself to be used for the self 
 
 ## [CA2261](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261): Do not use ConfigureAwaitOptions.SuppressThrowing with Task\<TResult>
 
-The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task\<TResult>.  To use it with a Task\<TResult>, first cast to the base Task.
+The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task\<TResult>.  To use it with a Task\<TResult>, first cast to the base Task.
 
 |Item|Value|
 |-|-|
