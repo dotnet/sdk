@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+     <!-- 6.0.25 produced improperly versioned runtime assets because the OfficialBuildId
+          was not set correctly. This is the actual shipping version that it should have been -->
+     <NonshippingRuntimeVersionFor6_0_25>6.0.25-servicing.23520.6</NonshippingRuntimeVersionFor6_0_25>
+
+     <MicrosoftNETHostModelVersion>$(NonshippingRuntimeVersionFor6_0_25)</MicrosoftNETHostModelVersion>
+     <MicrosoftNETCoreTestHostVersion>$(NonshippingRuntimeVersionFor6_0_25)</MicrosoftNETCoreTestHostVersion>
+     <RuntimeLinuxX64MicrosoftNETCoreTestHostVersion>$(NonshippingRuntimeVersionFor6_0_25)</RuntimeLinuxX64MicrosoftNETCoreTestHostVersion>
+  </PropertyGroup>
+</Project>
