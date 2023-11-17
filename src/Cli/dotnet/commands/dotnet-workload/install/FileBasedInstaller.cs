@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -461,6 +460,23 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 DeleteAllWorkloadInstallationRecords();
             }
 
+        }
+
+        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
+            
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+
+        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllLines(path, jsonLines);
         }
 
         /// <summary>

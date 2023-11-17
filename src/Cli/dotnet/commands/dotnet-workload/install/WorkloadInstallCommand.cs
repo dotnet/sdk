@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             Reporter.WriteLine();
 
-            var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate> ();
+            var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate>();
             var useRollback = false;
 
             if (!skipManifestUpdate)
@@ -261,7 +261,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (usingRollback)
                     {
-                        UpdateInstallState(true, manifestsToUpdate);
+                        installer.WriteInstallState(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
                 },
                 rollback: () =>
@@ -281,7 +281,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private async Task<IEnumerable<string>> GetPackageDownloadUrlsAsync(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview)
         {
             var downloads = await GetDownloads(workloadIds, skipManifestUpdate, includePreview);
-            
+
             var urls = new List<string>();
             foreach (var download in downloads)
             {
