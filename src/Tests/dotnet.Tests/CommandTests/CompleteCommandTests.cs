@@ -34,6 +34,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "sdk",
                 "fsi",
                 "help",
+                "info",
                 "list",
                 "msbuild",
                 "new",
