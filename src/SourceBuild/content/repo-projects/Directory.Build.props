@@ -77,7 +77,10 @@
     <EnvironmentVariables Include="_InitializeDotNetCli=$(DotNetCliToolDir)" />
     <EnvironmentVariables Include="_DotNetInstallDir=$(DotNetCliToolDir)" />
     <EnvironmentVariables Include="_InitializeToolset=$(SourceBuiltSdksDir)Microsoft.DotNet.Arcade.Sdk/tools/Build.proj" Condition="'$(UseBootstrapArcade)' != 'true'" />
-    <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=$(NetCurrent)" />
+
+    <!-- TODO: Revert net8.0 bootstrapping hack: https://github.com/dotnet/source-build/issues/3743-->
+    <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=$(NetCurrent)" Condition="'$(UseBootstrapArcade)' != 'true'"  />
+    <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=net8.0" Condition="'$(UseBootstrapArcade)' == 'true'"  />
 
     <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
 

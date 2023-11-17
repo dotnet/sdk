@@ -4,11 +4,12 @@
     <ImportNetSdkFromRepoToolset>false</ImportNetSdkFromRepoToolset>
     <_SuppressSdkImports>true</_SuppressSdkImports>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
-    <NetCurrent>net9.0</NetCurrent>
   </PropertyGroup>
 
   <Import Condition="'$(SkipArcadeSdkImport)' != 'true'" Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <PropertyGroup>
+    <!-- TODO: Remove NetCurrent override: https://github.com/dotnet/source-build/issues/3743 -->
+    <NetCurrent>net9.0</NetCurrent>
     <!-- Fake, for SDK. -->
     <TargetFramework>netstandard2.0</TargetFramework>
     <!-- We have no projects targeting multiple frameworks, so don't include in output path. -->

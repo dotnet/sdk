@@ -26,6 +26,20 @@
     <MSBuild Projects="@(_DependentProject)" Targets="Build" BuildInParallel="$(BuildInParallel)" StopOnFirstFailure="true" />
   </Target>
 
+  <!-- TODO: Remove this target: https://github.com/dotnet/source-build/issues/3743 -->
+  <Target Name="UpdateBuildToolFramework"
+          BeforeTargets="Build"
+          Condition="'$(EngCommonToolsShFile)' != ''"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(RepoCompletedSemaphorePath)UpdateBuildToolFramework.complete" >
+
+    <ReplaceTextInFile InputFile="$(EngCommonToolsShFile)"
+                       OldText="_InitializeBuildToolFramework=&quot;net8.0&quot;"
+                       NewText="_InitializeBuildToolFramework=&quot;net9.0&quot;" />
+
+    <WriteLinesToFile File="$(RepoCompletedSemaphorePath)UpdateBuildToolFramework.complete" Overwrite="true" />
+  </Target>
+
   <Target Name="UpdateNuGetConfig"
           BeforeTargets="Build"
           Condition="'$(NuGetConfigFile)' != '' OR '@(NuGetConfigFiles)' != ''"
