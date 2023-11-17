@@ -323,7 +323,7 @@ CA1866 | Performance | Info | UseStringMethodCharOverloadWithSingleCharacters, [
 CA1867 | Performance | Disabled | UseStringMethodCharOverloadWithSingleCharacters, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1867)
 CA1868 | Performance | Info | DoNotGuardSetAddOrRemoveByContains, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868)
 CA1869 | Performance | Info | AvoidSingleUseOfLocalJsonSerializerOptions, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1869)
-CA2261 | Usage | Warning | DoNotUseConfigureAwaitWithSuppressThrowing, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2250)
+CA2261 | Usage | Warning | DoNotUseConfigureAwaitWithSuppressThrowing, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261)
 CA1510 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1510)
 CA1511 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1511)
 CA1512 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1512)
