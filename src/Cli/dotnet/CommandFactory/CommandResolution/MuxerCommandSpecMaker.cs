@@ -20,12 +20,22 @@ namespace Microsoft.DotNet.CommandFactory
             {
                 throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
             }
+            IEnumerable<string> modifiedArguments = commandArguments;
+
+            // Add --roll-forward argument first if exists
+            if (commandArguments.Any(arg => arg.Equals("--roll-forward", StringComparison.OrdinalIgnoreCase)))
+            {
+                int index = commandArguments.ToList().IndexOf("--roll-forward");
+                arguments.Add(commandArguments.ElementAt(index));
+                arguments.Add(commandArguments.ElementAt(index + 1));
+                modifiedArguments = commandArguments.Where((element, i) => i != index && i != index + 1);
+            }
 
             arguments.Add(commandPath);
 
-            if (commandArguments != null)
+            if (modifiedArguments != null)
             {
-                arguments.AddRange(commandArguments);
+                arguments.AddRange(modifiedArguments);
             }
 
             return CreateCommandSpec(host, arguments);

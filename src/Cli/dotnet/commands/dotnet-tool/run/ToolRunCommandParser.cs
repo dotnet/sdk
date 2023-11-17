@@ -33,6 +33,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Arguments.Add(CommandNameArgument);
             command.Arguments.Add(CommandArgument);
+            command.Options.Add(RollForwardOption);
 
             command.SetAction((parseResult) => new ToolRunCommand(parseResult).Execute());
 

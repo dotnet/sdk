@@ -30,9 +30,8 @@ namespace Microsoft.DotNet.Tools.Tool.Run
             {
                 // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
                 CommandName = $"dotnet-{_toolCommandName}",
-                CommandArguments = _forwardArgument
+                CommandArguments = (_rollForward != null ? new List<string> { "--roll-forward", _rollForward } : Enumerable.Empty<string>()).Concat(_forwardArgument)
             });
-
             if (commandspec == null)
             {
                 throw new GracefulException(
