@@ -1,0 +1,232 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 16 Nov 2023 14:42:59 -0600
+Subject: [PATCH] Use net9.0 for task assembly paths
+
+Backport: https://github.com/dotnet/source-build/issues/3743
+---
+ .../tools/BuildReleasePackages.targets                          | 2 +-
+ src/Microsoft.DotNet.Arcade.Sdk/tools/BuildTasks.props          | 2 +-
+ .../build/Microsoft.DotNet.Build.Tasks.Installers.props         | 2 +-
+ .../src/build/Packaging.common.targets                          | 2 +-
+ .../build/Microsoft.DotNet.Build.Tasks.TargetFramework.props    | 2 +-
+ .../src/build/Microsoft.DotNet.Build.Tasks.Workloads.props      | 2 +-
+ .../build/Microsoft.DotNet.Deployment.Tasks.Links.props         | 2 +-
+ .../build/Microsoft.DotNet.GenFacades.targets                   | 2 +-
+ .../Sdk/tools/Microsoft.DotNet.Helix.Sdk.props                  | 2 +-
+ .../build/Microsoft.DotNet.PackageTesting.props                 | 2 +-
+ src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props          | 2 +-
+ .../build/Microsoft.DotNet.SignTool.props                       | 2 +-
+ .../tasks/build/Microsoft.DotNet.SourceBuild.Tasks.props        | 2 +-
+ .../build/Microsoft.DotNet.SwaggerGenerator.MSBuild.props       | 2 +-
+ .../src/build/Microsoft.DotNet.XUnitConsoleRunner.props         | 2 +-
+ .../build/Microsoft.DotNet.XliffTasks.targets                   | 2 +-
+ 16 files changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildReleasePackages.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildReleasePackages.targets
+index af86865d..751a79c4 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildReleasePackages.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildReleasePackages.targets
+@@ -2,7 +2,7 @@
+ <Project>
+   <PropertyGroup>
+     <_NuGetRepackAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(NuGetPackageRoot)microsoft.dotnet.nugetrepack.tasks\$(MicrosoftDotnetNuGetRepackTasksVersion)\tools\net472\Microsoft.DotNet.NuGetRepack.Tasks.dll</_NuGetRepackAssembly>
+-    <_NuGetRepackAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.nugetrepack.tasks\$(MicrosoftDotnetNuGetRepackTasksVersion)\tools\net8.0\Microsoft.DotNet.NuGetRepack.Tasks.dll</_NuGetRepackAssembly>
++    <_NuGetRepackAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(NuGetPackageRoot)microsoft.dotnet.nugetrepack.tasks\$(MicrosoftDotnetNuGetRepackTasksVersion)\tools\net9.0\Microsoft.DotNet.NuGetRepack.Tasks.dll</_NuGetRepackAssembly>
+   </PropertyGroup>
+ 
+   <UsingTask TaskName="Microsoft.DotNet.Tools.UpdatePackageVersionTask" AssemblyFile="$(_NuGetRepackAssembly)" />
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildTasks.props b/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildTasks.props
+index 39214fef..74755a09 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildTasks.props
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/BuildTasks.props
+@@ -2,6 +2,6 @@
+ <Project>
+   <PropertyGroup>
+     <ArcadeSdkBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)net472\Microsoft.DotNet.Arcade.Sdk.dll</ArcadeSdkBuildTasksAssembly>
+-    <ArcadeSdkBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)net8.0\Microsoft.DotNet.Arcade.Sdk.dll</ArcadeSdkBuildTasksAssembly>
++    <ArcadeSdkBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)net9.0\Microsoft.DotNet.Arcade.Sdk.dll</ArcadeSdkBuildTasksAssembly>
+   </PropertyGroup>
+ </Project>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Installers/build/Microsoft.DotNet.Build.Tasks.Installers.props b/src/Microsoft.DotNet.Build.Tasks.Installers/build/Microsoft.DotNet.Build.Tasks.Installers.props
+index a7910488..6a8895b5 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Installers/build/Microsoft.DotNet.Build.Tasks.Installers.props
++++ b/src/Microsoft.DotNet.Build.Tasks.Installers/build/Microsoft.DotNet.Build.Tasks.Installers.props
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net8.0\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
++    <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net9.0\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+     <MicrosoftDotNetBuildTasksInstallersTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\net472\Microsoft.DotNet.Build.Tasks.Installers.dll</MicrosoftDotNetBuildTasksInstallersTaskAssembly>
+     <MicrosoftDotNetBuildTasksInstallersMSBuildDir Condition="'$(MicrosoftDotNetBuildTasksInstallersMSBuildDir)' == ''">$(MSBuildThisFileDirectory)</MicrosoftDotNetBuildTasksInstallersMSBuildDir>
+   </PropertyGroup>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.common.targets b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.common.targets
+index 99b1d490..4ae4de45 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.common.targets
++++ b/src/Microsoft.DotNet.Build.Tasks.Packaging/src/build/Packaging.common.targets
+@@ -4,7 +4,7 @@
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+-    <PackagingTaskDir Condition="'$(PackagingTaskDir)' == '' AND '$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)../tools/net8.0/</PackagingTaskDir>
++    <PackagingTaskDir Condition="'$(PackagingTaskDir)' == '' AND '$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)../tools/net9.0/</PackagingTaskDir>
+     <PackagingTaskDir Condition="'$(PackagingTaskDir)' == '' AND '$(MSBuildRuntimeType)' != 'core'">$(MSBuildThisFileDirectory)../tools/net472/</PackagingTaskDir>
+     <RuntimeIdGraphDefinitionFile Condition="'$(RuntimeIdGraphDefinitionFile)' == ''">$(MSBuildThisFileDirectory)runtime.json</RuntimeIdGraphDefinitionFile>
+ 
+diff --git a/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/build/Microsoft.DotNet.Build.Tasks.TargetFramework.props b/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/build/Microsoft.DotNet.Build.Tasks.TargetFramework.props
+index 9712b0ad..801ec5cd 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/build/Microsoft.DotNet.Build.Tasks.TargetFramework.props
++++ b/src/Microsoft.DotNet.Build.Tasks.TargetFramework/src/build/Microsoft.DotNet.Build.Tasks.TargetFramework.props
+@@ -1,7 +1,7 @@
+ <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+ <Project>
+   <PropertyGroup>
+-    <DotNetBuildTasksTargetFrameworkAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">..\tools\net8.0\Microsoft.DotNet.Build.Tasks.TargetFramework.dll</DotNetBuildTasksTargetFrameworkAssembly>
++    <DotNetBuildTasksTargetFrameworkAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">..\tools\net9.0\Microsoft.DotNet.Build.Tasks.TargetFramework.dll</DotNetBuildTasksTargetFrameworkAssembly>
+     <DotNetBuildTasksTargetFrameworkAssembly Condition="'$(MSBuildRuntimeType)' != 'core'">..\tools\net472\Microsoft.DotNet.Build.Tasks.TargetFramework.dll</DotNetBuildTasksTargetFrameworkAssembly>
+   </PropertyGroup>
+ </Project>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Workloads/src/build/Microsoft.DotNet.Build.Tasks.Workloads.props b/src/Microsoft.DotNet.Build.Tasks.Workloads/src/build/Microsoft.DotNet.Build.Tasks.Workloads.props
+index b7e95130..900fdb47 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Workloads/src/build/Microsoft.DotNet.Build.Tasks.Workloads.props
++++ b/src/Microsoft.DotNet.Build.Tasks.Workloads/src/build/Microsoft.DotNet.Build.Tasks.Workloads.props
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <MicrosoftDotNetBuildTasksWorkloadsAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net8.0\Microsoft.DotNet.Build.Tasks.Workloads.dll</MicrosoftDotNetBuildTasksWorkloadsAssembly>
++    <MicrosoftDotNetBuildTasksWorkloadsAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net9.0\Microsoft.DotNet.Build.Tasks.Workloads.dll</MicrosoftDotNetBuildTasksWorkloadsAssembly>
+     <MicrosoftDotNetBuildTasksWorkloadsAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\net472\Microsoft.DotNet.Build.Tasks.Workloads.dll</MicrosoftDotNetBuildTasksWorkloadsAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.Deployment.Tasks.Links/build/Microsoft.DotNet.Deployment.Tasks.Links.props b/src/Microsoft.DotNet.Deployment.Tasks.Links/build/Microsoft.DotNet.Deployment.Tasks.Links.props
+index 3ff65b8c..dcc23986 100644
+--- a/src/Microsoft.DotNet.Deployment.Tasks.Links/build/Microsoft.DotNet.Deployment.Tasks.Links.props
++++ b/src/Microsoft.DotNet.Deployment.Tasks.Links/build/Microsoft.DotNet.Deployment.Tasks.Links.props
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <MicrosoftDotNetDeploymentTasksLinksTaskAssembly Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)net8.0\Microsoft.DotNet.Deployment.Tasks.Links.dll</MicrosoftDotNetDeploymentTasksLinksTaskAssembly>
++    <MicrosoftDotNetDeploymentTasksLinksTaskAssembly Condition=" '$(MSBuildRuntimeType)' == 'Core' ">$(MSBuildThisFileDirectory)net9.0\Microsoft.DotNet.Deployment.Tasks.Links.dll</MicrosoftDotNetDeploymentTasksLinksTaskAssembly>
+     <MicrosoftDotNetDeploymentTasksLinksTaskAssembly Condition=" '$(MSBuildRuntimeType)' != 'Core' ">$(MSBuildThisFileDirectory)net472\Microsoft.DotNet.Deployment.Tasks.Links.dll</MicrosoftDotNetDeploymentTasksLinksTaskAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.GenFacades/build/Microsoft.DotNet.GenFacades.targets b/src/Microsoft.DotNet.GenFacades/build/Microsoft.DotNet.GenFacades.targets
+index 65045a3a..98f22ef3 100644
+--- a/src/Microsoft.DotNet.GenFacades/build/Microsoft.DotNet.GenFacades.targets
++++ b/src/Microsoft.DotNet.GenFacades/build/Microsoft.DotNet.GenFacades.targets
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <GenFacadesTargetAssemblyPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net8.0\Microsoft.DotNet.GenFacades.dll</GenFacadesTargetAssemblyPath>
++    <GenFacadesTargetAssemblyPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net9.0\Microsoft.DotNet.GenFacades.dll</GenFacadesTargetAssemblyPath>
+     <GenFacadesTargetAssemblyPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\net472\Microsoft.DotNet.GenFacades.dll</GenFacadesTargetAssemblyPath>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.Helix/Sdk/tools/Microsoft.DotNet.Helix.Sdk.props b/src/Microsoft.DotNet.Helix/Sdk/tools/Microsoft.DotNet.Helix.Sdk.props
+index 1c51c182..ec91afae 100644
+--- a/src/Microsoft.DotNet.Helix/Sdk/tools/Microsoft.DotNet.Helix.Sdk.props
++++ b/src/Microsoft.DotNet.Helix/Sdk/tools/Microsoft.DotNet.Helix.Sdk.props
+@@ -4,7 +4,7 @@
+   <Import Project="$(MSBuildToolsPath)\Microsoft.NETCoreSdk.BundledVersions.props" Condition="Exists('$(MSBuildToolsPath)\Microsoft.NETCoreSdk.BundledVersions.props')" />
+ 
+   <PropertyGroup Condition="'$(MicrosoftDotNetHelixSdkTasksAssembly)' == ''">
+-    <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)net8.0/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
++    <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)net9.0/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
+     <MicrosoftDotNetHelixSdkTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)net472/Microsoft.DotNet.Helix.Sdk.dll</MicrosoftDotNetHelixSdkTasksAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.PackageTesting/build/Microsoft.DotNet.PackageTesting.props b/src/Microsoft.DotNet.PackageTesting/build/Microsoft.DotNet.PackageTesting.props
+index 82850655..394ed5cc 100644
+--- a/src/Microsoft.DotNet.PackageTesting/build/Microsoft.DotNet.PackageTesting.props
++++ b/src/Microsoft.DotNet.PackageTesting/build/Microsoft.DotNet.PackageTesting.props
+@@ -3,7 +3,7 @@
+ 
+   <PropertyGroup>
+     <DotNetPackageTestingAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\net472\Microsoft.DotNet.PackageTesting.dll</DotNetPackageTestingAssembly>
+-    <DotNetPackageTestingAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net8.0\Microsoft.DotNet.PackageTesting.dll</DotNetPackageTestingAssembly>
++    <DotNetPackageTestingAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net9.0\Microsoft.DotNet.PackageTesting.dll</DotNetPackageTestingAssembly>
+   </PropertyGroup>
+ 
+   <UsingTask TaskName="GetCompatiblePackageTargetFrameworks" AssemblyFile="$(DotNetPackageTestingAssembly)" />
+diff --git a/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props b/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props
+index 44951b96..77176b15 100644
+--- a/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props
++++ b/src/Microsoft.DotNet.SharedFramework.Sdk/sdk/Sdk.props
+@@ -9,7 +9,7 @@
+   -->
+ 
+   <PropertyGroup Condition="'$(DotNetSharedFrameworkTaskDir)' == ''">
+-    <DotNetSharedFrameworkTaskDir Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)../tools/net8.0/</DotNetSharedFrameworkTaskDir>
++    <DotNetSharedFrameworkTaskDir Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)../tools/net9.0/</DotNetSharedFrameworkTaskDir>
+     <DotNetSharedFrameworkTaskDir Condition="'$(MSBuildRuntimeType)' != 'core'">$(MSBuildThisFileDirectory)../tools/net472/</DotNetSharedFrameworkTaskDir>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.SignTool/build/Microsoft.DotNet.SignTool.props b/src/Microsoft.DotNet.SignTool/build/Microsoft.DotNet.SignTool.props
+index 369cb60a..3522d8c5 100644
+--- a/src/Microsoft.DotNet.SignTool/build/Microsoft.DotNet.SignTool.props
++++ b/src/Microsoft.DotNet.SignTool/build/Microsoft.DotNet.SignTool.props
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <MicrosoftDotNetSignToolTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\lib\net8.0\Microsoft.DotNet.SignTool.dll</MicrosoftDotNetSignToolTaskAssembly>
++    <MicrosoftDotNetSignToolTaskAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\lib\net9.0\Microsoft.DotNet.SignTool.dll</MicrosoftDotNetSignToolTaskAssembly>
+     <MicrosoftDotNetSignToolTaskAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\lib\net472\Microsoft.DotNet.SignTool.dll</MicrosoftDotNetSignToolTaskAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.SourceBuild/tasks/build/Microsoft.DotNet.SourceBuild.Tasks.props b/src/Microsoft.DotNet.SourceBuild/tasks/build/Microsoft.DotNet.SourceBuild.Tasks.props
+index 9dc4c6cc..a49ee2b6 100644
+--- a/src/Microsoft.DotNet.SourceBuild/tasks/build/Microsoft.DotNet.SourceBuild.Tasks.props
++++ b/src/Microsoft.DotNet.SourceBuild/tasks/build/Microsoft.DotNet.SourceBuild.Tasks.props
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <MicrosoftDotNetSourceBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)..\tools\net8.0\$(MSBuildThisFileName).dll</MicrosoftDotNetSourceBuildTasksAssembly>
++    <MicrosoftDotNetSourceBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'core'">$(MSBuildThisFileDirectory)..\tools\net9.0\$(MSBuildThisFileName).dll</MicrosoftDotNetSourceBuildTasksAssembly>
+     <MicrosoftDotNetSourceBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'core'">$(MSBuildThisFileDirectory)..\tools\net472\$(MSBuildThisFileName).dll</MicrosoftDotNetSourceBuildTasksAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/build/Microsoft.DotNet.SwaggerGenerator.MSBuild.props b/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/build/Microsoft.DotNet.SwaggerGenerator.MSBuild.props
+index 5362d800..1ae4e21c 100644
+--- a/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/build/Microsoft.DotNet.SwaggerGenerator.MSBuild.props
++++ b/src/Microsoft.DotNet.SwaggerGenerator/Microsoft.DotNet.SwaggerGenerator.MSBuild/build/Microsoft.DotNet.SwaggerGenerator.MSBuild.props
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup Condition="'$(MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly)' == ''">
+-    <MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../tools/net8.0/Microsoft.DotNet.SwaggerGenerator.MSBuild.dll</MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly>
++    <MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../tools/net9.0/Microsoft.DotNet.SwaggerGenerator.MSBuild.dll</MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly>
+     <MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)../tools/net472/Microsoft.DotNet.SwaggerGenerator.MSBuild.dll</MicrosoftDotNetSwaggerGeneratorMSBuildTasksAssembly>
+   </PropertyGroup>
+ 
+diff --git a/src/Microsoft.DotNet.XUnitConsoleRunner/src/build/Microsoft.DotNet.XUnitConsoleRunner.props b/src/Microsoft.DotNet.XUnitConsoleRunner/src/build/Microsoft.DotNet.XUnitConsoleRunner.props
+index 09142a05..0af5cf87 100644
+--- a/src/Microsoft.DotNet.XUnitConsoleRunner/src/build/Microsoft.DotNet.XUnitConsoleRunner.props
++++ b/src/Microsoft.DotNet.XUnitConsoleRunner/src/build/Microsoft.DotNet.XUnitConsoleRunner.props
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <XunitConsoleNetCore21AppPath>$(MSBuildThisFileDirectory)..\tools\net8.0\xunit.console.dll</XunitConsoleNetCore21AppPath>
++    <XunitConsoleNetCore21AppPath>$(MSBuildThisFileDirectory)..\tools\net9.0\xunit.console.dll</XunitConsoleNetCore21AppPath>
+   </PropertyGroup>
+ 
+ </Project>
+diff --git a/src/Microsoft.DotNet.XliffTasks/build/Microsoft.DotNet.XliffTasks.targets b/src/Microsoft.DotNet.XliffTasks/build/Microsoft.DotNet.XliffTasks.targets
+index 2bce08cd..d45f1cb2 100644
+--- a/src/Microsoft.DotNet.XliffTasks/build/Microsoft.DotNet.XliffTasks.targets
++++ b/src/Microsoft.DotNet.XliffTasks/build/Microsoft.DotNet.XliffTasks.targets
+@@ -2,7 +2,7 @@
+ <Project>
+ 
+   <PropertyGroup>
+-    <XliffTasksDirectory Condition="'$(XliffTasksDirectory)' == '' and '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net8.0\</XliffTasksDirectory>
++    <XliffTasksDirectory Condition="'$(XliffTasksDirectory)' == '' and '$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\tools\net9.0\</XliffTasksDirectory>
+     <XliffTasksDirectory Condition="'$(XliffTasksDirectory)' == '' and '$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\tools\net472\</XliffTasksDirectory>
+     <XliffTasksAssembly>$(XliffTasksDirectory)Microsoft.DotNet.XliffTasks.dll</XliffTasksAssembly>
+   </PropertyGroup>

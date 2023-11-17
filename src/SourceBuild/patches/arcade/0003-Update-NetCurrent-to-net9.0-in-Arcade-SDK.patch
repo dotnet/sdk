@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 16 Nov 2023 14:49:33 -0600
+Subject: [PATCH] Update NetCurrent to net9.0 in Arcade SDK
+
+Backport: https://github.com/dotnet/source-build/issues/3743
+---
+ .../tools/TargetFrameworkDefaults.props                       | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props b/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props
+index b7071a30..0afe2322 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/TargetFrameworkDefaults.props
+@@ -10,11 +10,11 @@
+ 
+   <PropertyGroup>
+     <!-- The TFM of the major release of .NET that the Arcade SDK aligns with. -->
+-    <NetCurrent>net8.0</NetCurrent>
++    <NetCurrent>net9.0</NetCurrent>
+ 
+     <!-- The previously released version of .NET.
+          Undefined when NetMinimum and NetPrevious are identical. -->
+-    <NetPrevious>net7.0</NetPrevious>
++    <NetPrevious>net8.0</NetPrevious>
+ 
+     <!-- Lowest supported version of .NET at the time of the release of NetCurrent.
+          E.g. net6.0 when NetCurrent is net8.0. -->

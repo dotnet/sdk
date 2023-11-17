@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 16 Nov 2023 14:48:18 -0600
+Subject: [PATCH] Target net9.0 for arcade projects
+
+Backport: https://github.com/dotnet/source-build/issues/3743
+---
+ Directory.Build.props | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 32befcfc..2285cc5d 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -9,6 +9,7 @@
+     <DebugType>embedded</DebugType>
+     <DebugSymbols>true</DebugSymbols>
+     <LangVersion>Latest</LangVersion>
++    <NetCurrent>net9.0</NetCurrent>
+ 
+     <!--
+       Tools and packages produced by this repository support infrastructure and are not shipping on NuGet or via any other official channel.

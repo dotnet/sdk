@@ -1,0 +1,65 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 16 Nov 2023 14:56:46 -0600
+Subject: [PATCH] Target net9.0
+
+Backport: https://github.com/NuGet/Home/issues/13018
+---
+ build/common.project.props                                      | 2 +-
+ build/common.targets                                            | 2 +-
+ src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj   | 2 +-
+ .../NuGet.PackageManagement/NuGet.PackageManagement.csproj      | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/build/common.project.props b/build/common.project.props
+index 17f9811a1..34069f5d6 100644
+--- a/build/common.project.props
++++ b/build/common.project.props
+@@ -12,7 +12,7 @@
+     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
+     <NETFXTargetFramework>net472</NETFXTargetFramework>
+     <NETCoreTargetFramework>netcoreapp3.1</NETCoreTargetFramework>
+-    <NETCoreTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net8.0</NETCoreTargetFramework>
++    <NETCoreTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">net9.0</NETCoreTargetFramework>
+     <NETCoreTestTargetFrameworks>net8.0</NETCoreTestTargetFrameworks>
+     <NetStandardVersion>netstandard2.0</NetStandardVersion>
+     <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
+diff --git a/build/common.targets b/build/common.targets
+index 08974ae7a..f07f90832 100644
+--- a/build/common.targets
++++ b/build/common.targets
+@@ -6,7 +6,7 @@
+     <IsDesktop>true</IsDesktop>
+   </PropertyGroup>
+ 
+-  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) OR $(TargetFramework.StartsWith('netstandard')) OR $(TargetFramework.StartsWith('net6')) OR $(TargetFramework.StartsWith('net7'))  OR $(TargetFramework.StartsWith('net8')) ">
++  <PropertyGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) OR $(TargetFramework.StartsWith('netstandard')) OR $(TargetFramework.StartsWith('net6')) OR $(TargetFramework.StartsWith('net7'))  OR $(TargetFramework.StartsWith('net8')) OR $(TargetFramework.StartsWith('net9')) ">
+     <DefineConstants>$(DefineConstants);IS_CORECLR</DefineConstants>
+     <IsCore>true</IsCore>
+   </PropertyGroup>
+diff --git a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
+index eea152eb6..74dd4905a 100644
+--- a/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
++++ b/src/NuGet.Core/NuGet.Configuration/NuGet.Configuration.csproj
+@@ -26,7 +26,7 @@
+     <Reference Include="System.Xml.Linq" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0' ">
++  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0' ">
+     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+   </ItemGroup>
+ 
+diff --git a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
+index 38658b221..740dd2bf7 100644
+--- a/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
++++ b/src/NuGet.Core/NuGet.PackageManagement/NuGet.PackageManagement.csproj
+@@ -32,7 +32,7 @@
+     <Reference Include="System.Net.Http" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0' ">
++  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' or '$(TargetFramework)' == 'net7.0' or '$(TargetFramework)' == 'net8.0' or '$(TargetFramework)' == 'net9.0' ">
+     <PackageReference Include="System.ComponentModel.Composition" />
+   </ItemGroup>
+ 
