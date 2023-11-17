@@ -82,34 +82,34 @@
       <Sha>28925c0e519d66c80328aacf973b74e40bb1d5bd</Sha>
       <SourceBuild RepoName="format" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.8.0-7.23558.1">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.8.0-7.23566.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>e091728607ca0fc9efca55ccfb3e59259c6b5a0a</Sha>
+      <Sha>7b75981cf3bd520b86ec4ed00ec156c8bc48e4eb</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.8.0-7.23558.1">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.8.0-7.23566.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>e091728607ca0fc9efca55ccfb3e59259c6b5a0a</Sha>
+      <Sha>7b75981cf3bd520b86ec4ed00ec156c8bc48e4eb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.8.0-7.23558.1">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.8.0-7.23566.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>e091728607ca0fc9efca55ccfb3e59259c6b5a0a</Sha>
+      <Sha>7b75981cf3bd520b86ec4ed00ec156c8bc48e4eb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.8.0-7.23558.1">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.8.0-7.23566.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>e091728607ca0fc9efca55ccfb3e59259c6b5a0a</Sha>
+      <Sha>7b75981cf3bd520b86ec4ed00ec156c8bc48e4eb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.8.0-7.23558.1">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.8.0-7.23566.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>e091728607ca0fc9efca55ccfb3e59259c6b5a0a</Sha>
+      <Sha>7b75981cf3bd520b86ec4ed00ec156c8bc48e4eb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0-7.23558.1">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0-7.23566.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>e091728607ca0fc9efca55ccfb3e59259c6b5a0a</Sha>
+      <Sha>7b75981cf3bd520b86ec4ed00ec156c8bc48e4eb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.8.0-7.23558.1">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.8.0-7.23566.2">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>e091728607ca0fc9efca55ccfb3e59259c6b5a0a</Sha>
+      <Sha>7b75981cf3bd520b86ec4ed00ec156c8bc48e4eb</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="8.0.0-rtm.23531.12">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
@@ -337,14 +337,14 @@
       <Sha>02fe27cd6a9b001c8feb7938e6ef4b3799745759</Sha>
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23518.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23566.2">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>3dc05150cf234f76f6936dcb2853d31a0da1f60e</Sha>
+      <Sha>776b128c95ef681d125adc3eb69f12d480418bb5</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23556.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23565.1">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>fa4c0e8f53ef2541a23e519af4dfb86cb88e1bae</Sha>
+      <Sha>95f83e27806330fec09edd96e06bba3acabe3f35</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.23463.1">
