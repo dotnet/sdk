@@ -588,13 +588,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
-        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.
+        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="translated">Enumerable.Cast&lt;T&gt; e Enumerable.OfType&lt;T&gt; requerem tipos compatíveis para funcionar corretamente.
-A conversão genérica (IL 'unbox.any') usada pela sequência retornada por Enumerable.Cast&lt;T&gt; lançará InvalidCastException em tempo de execução em elementos dos tipos especificados.
-A verificação de tipo genérico (C# 'is' operator/IL 'isinst') usada por Enumerable.OfType&lt;T&gt; nunca terá êxito com elementos de tipos especificados, resultando em uma sequência vazia.
+        <target state="translated">Enumerable.Cast&lt;T&gt; e Enumerable.OfType&lt;T&gt; requerem tipos compatíveis para funcionar corretamente.  
+A conversão genérica (IL 'unbox.any') usada pela sequência retornada por Enumerable.Cast&lt;T&gt; lançará InvalidCastException em tempo de execução em elementos dos tipos especificados.  
+A verificação de tipo genérico (C# 'is' operator/IL 'isinst') usada por Enumerable.OfType&lt;T&gt; nunca terá êxito com elementos de tipos especificados, resultando em uma sequência vazia.  
 Ampliação e conversões definidas pelo usuário não são compatíveis com tipos genéricos.</target>
         <note />
       </trans-unit>
@@ -924,12 +924,12 @@ Ampliação e conversões definidas pelo usuário não são compatíveis com tip
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
-        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
         <target state="translated">Só há suporte para ConfigureAwaitOptions.SuppressThrowing com a tarefa não genérica, não com uma Tarefa&lt;TResult&gt;. Para usá-lo com um Tarefa&lt;TResult&gt;, primeiro converta para o Tarefa base.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
-        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
         <target state="translated">O ConfigureAwaitOptions.SuppressThrowing só é compatível com a tarefa não genérica</target>
         <note />
       </trans-unit>

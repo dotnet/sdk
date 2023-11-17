@@ -4437,7 +4437,7 @@
         "CA2261": {
           "id": "CA2261",
           "shortDescription": "Do not use ConfigureAwaitOptions.SuppressThrowing with Task<TResult>",
-          "fullDescription": "The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task<TResult>.  To use it with a Task<TResult>, first cast to the base Task.",
+          "fullDescription": "The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task<TResult>.  To use it with a Task<TResult>, first cast to the base Task.",
           "defaultLevel": "warning",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261",
           "properties": {

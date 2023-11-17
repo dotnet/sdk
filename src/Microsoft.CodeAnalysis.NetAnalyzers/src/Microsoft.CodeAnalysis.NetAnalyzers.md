@@ -2018,11 +2018,11 @@ Some built-in operators added in .NET 7 behave differently when overflowing than
 
 ## [CA2021](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021): Do not call Enumerable.Cast\<T> or Enumerable.OfType\<T> with incompatible types
 
-Enumerable.Cast\<T> and Enumerable.OfType\<T> require compatible types to function expectedly.
+Enumerable.Cast\<T> and Enumerable.OfType\<T> require compatible types to function expectedly.  
 
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast\<T> will throw InvalidCastException at runtime on elements of the types specified.
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast\<T> will throw InvalidCastException at runtime on elements of the types specified.  
 
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType\<T> will never succeed with elements of types specified, resulting in an empty sequence.
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType\<T> will never succeed with elements of types specified, resulting in an empty sequence.  
 
 Widening and user defined conversions are not supported with generic types.
 
@@ -2564,7 +2564,7 @@ Generic math interfaces require the derived type itself to be used for the self 
 
 ## [CA2261](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261): Do not use ConfigureAwaitOptions.SuppressThrowing with Task\<TResult>
 
-The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task\<TResult>.  To use it with a Task\<TResult>, first cast to the base Task.
+The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task\<TResult>.  To use it with a Task\<TResult>, first cast to the base Task.
 
 |Item|Value|
 |-|-|

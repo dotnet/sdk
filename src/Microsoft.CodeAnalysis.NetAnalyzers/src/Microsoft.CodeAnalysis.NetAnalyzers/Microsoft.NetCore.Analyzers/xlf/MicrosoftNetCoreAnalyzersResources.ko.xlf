@@ -588,13 +588,13 @@
         <note />
       </trans-unit>
       <trans-unit id="DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesDescription">
-        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.
-The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.
-The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.
+        <source>Enumerable.Cast&lt;T&gt; and Enumerable.OfType&lt;T&gt; require compatible types to function expectedly.  
+The generic cast (IL 'unbox.any') used by the sequence returned by Enumerable.Cast&lt;T&gt; will throw InvalidCastException at runtime on elements of the types specified.  
+The generic type check (C# 'is' operator/IL 'isinst') used by Enumerable.OfType&lt;T&gt; will never succeed with elements of types specified, resulting in an empty sequence.  
 Widening and user defined conversions are not supported with generic types.</source>
-        <target state="translated">Enumerable.Cast&lt;T&gt; 및 Enumerable.OfType&lt;T&gt;가 제대로 작동하려면 호환되는 형식이 필요합니다.
-Enumerable.Cast&lt;T&gt;에서 반환된 시퀀스에서 사용하는 일반 캐스트(IL 'unbox.any')는 지정된 형식의 요소에서 런타임에 InvalidCastException을 발생시킵니다.
-Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' 연산자/IL 'isinst')는 지정된 형식의 요소로 성공하지 못하여 결과적으로 빈 시퀀스가 됩니다.
+        <target state="translated">Enumerable.Cast&lt;T&gt; 및 Enumerable.OfType&lt;T&gt;가 제대로 작동하려면 호환되는 형식이 필요합니다.  
+Enumerable.Cast&lt;T&gt;에서 반환된 시퀀스에서 사용하는 일반 캐스트(IL 'unbox.any')는 지정된 형식의 요소에서 런타임에 InvalidCastException을 발생시킵니다.  
+Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' 연산자/IL 'isinst')는 지정된 형식의 요소로 성공하지 못하여 결과적으로 빈 시퀀스가 됩니다.  
 확대 및 사용자 정의 변환은 일반 형식에서 지원되지 않습니다.</target>
         <note />
       </trans-unit>
@@ -924,12 +924,12 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
-        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
         <target state="translated">ConfigureAwaitOptions.SuppressThrowing은 일반적이지 않은 작업에서만 지원되며 작업&lt;TResult&gt;은 지원되지 않습니다.  작업&lt;TResult&gt;과 함께 사용하려면 먼저 기본 작업에 캐스트합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
-        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
         <target state="translated">ConfigureAwaitOptions.SuppressThrowing은 일반적이지 않은 작업에서만 지원됩니다.</target>
         <note />
       </trans-unit>
