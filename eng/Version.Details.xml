@@ -116,69 +116,69 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>d24f2d786313b1df56b37fe7475f8d08d7375ee4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.9.0-preview.1.33">
+    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Build.Tasks" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Console" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Build.Tasks.Console" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Pack" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Build.Tasks.Pack" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Commands" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Commands" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.CommandLine.XPlat" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.CommandLine.XPlat" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Common" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Common" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Configuration" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Configuration" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Credentials" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Credentials" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.DependencyResolver.Core" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.DependencyResolver.Core" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Frameworks" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.LibraryModel" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.LibraryModel" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.ProjectModel" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.ProjectModel" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Protocol" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Protocol" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Packaging" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="6.9.0-preview.1.33">
+    <Dependency Name="NuGet.Versioning" Version="6.9.0-preview.1.34">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>19d1a116a44313910dc9c9a9d1e274727ad82830</Sha>
+      <Sha>39ea8e8081541fb1eb4702a5546e12f81fcad34d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.9.0-preview-23565-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
