@@ -507,8 +507,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 CreatePackInfo("Xamarin.Android.Framework", "8.2.0", WorkloadPackKind.Framework, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.Framework", "8.2.0"), "Xamarin.Android.Framework")
             };
             var installer = includeInstalledPacks ?
-                new MockPackWorkloadInstaller(dotnetRoot, failingWorkload, failingPack, installedWorkloads: installedWorkloads, installedPacks: installedPacks) :
-                new MockPackWorkloadInstaller(dotnetRoot, failingWorkload, failingPack, installedWorkloads: installedWorkloads);
+                new MockPackWorkloadInstaller(failingWorkload, failingPack, installedWorkloads: installedWorkloads, installedPacks: installedPacks) :
+                new MockPackWorkloadInstaller(failingWorkload, failingPack, installedWorkloads: installedWorkloads);
 
             var copiedManifestFolder = Path.Combine(dotnetRoot, "sdk-manifests", new SdkFeatureBand(sdkVersion).ToString(), "SampleManifest");
             Directory.CreateDirectory(copiedManifestFolder);
