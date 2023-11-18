@@ -106,7 +106,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return;
                 }
 
-                var implementsISerializable = namedTypeSymbol.AllInterfaces.Contains(_iserializableTypeSymbol);
+                var implementsISerializable = namedTypeSymbol.Interfaces.Contains(_iserializableTypeSymbol);
                 var isSerializable = IsSerializable(namedTypeSymbol);
 
                 // If the type is public and implements ISerializable

@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SerializationRulesDiagnosticAnalyzer,
@@ -175,6 +176,42 @@ Public Interface I
     Inherits ISerializable
     ReadOnly Property Name() As String
 End Interface");
+        }
+
+        [Fact, WorkItem(6916, "https://github.com/dotnet/roslyn-analyzers/issues/6916")]
+        public async Task CA2237_NoDiagnosticForSerializableImplementedOnBaseClassAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Runtime.Serialization;
+
+public class B : A { }
+
+[Serializable]
+public class A : ISerializable
+{
+    public void GetObjectData(SerializationInfo info, StreamingContext context)
+    {
+        throw new NotImplementedException();
+    }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Runtime.Serialization
+
+Class B
+    Inherits A
+End Class
+
+<Serializable>
+Public Class A
+    Implements ISerializable
+
+    Public Sub GetObjectData(info as SerializationInfo, context as StreamingContext) Implements ISerializable.GetObjectData
+        throw new NotImplementedException()
+    End Sub
+End Class");
         }
 
         private static DiagnosticResult GetCA2237CSharpResultAt(int line, int column, string objectName) =>
