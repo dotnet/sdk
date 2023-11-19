@@ -42,6 +42,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var knownTypeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
                 INamedTypeSymbol? readonlySpanType = knownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1);
                 INamedTypeSymbol? functionType = knownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemFunc2);
+                INamedTypeSymbol? attributeType = knownTypeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttribute);
 
                 // Analyzes an argument operation
                 context.RegisterOperationAction(context =>
@@ -59,7 +60,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         // If no argument, return
                         // If argument is passed as a params array but isn't itself an array, return
-                        if (argumentOperation?.Parameter is null || (argumentOperation.Parameter.IsParams && arrayCreationOperation.IsImplicit))
+                        // If array is declared as an attribute argument, return
+                        if (argumentOperation?.Parameter is null
+                            || (argumentOperation.Parameter.IsParams && arrayCreationOperation.IsImplicit)
+                            || (argumentOperation.Parent is IObjectCreationOperation objectCreation && objectCreation.Type.Inherits(attributeType)))
                         {
                             return;
                         }

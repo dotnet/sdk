@@ -957,5 +957,70 @@ public class MyClass
 
             return VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
+
+        [Fact, WorkItem(7033, "https://github.com/dotnet/roslyn-analyzers/issues/7033")]
+        public Task ArrayAsAttributeParameter_NoDiagnostic()
+        {
+            const string source = """
+                                  using System;
+                                  
+                                  class Sample
+                                  {
+                                      [MyAttribute(new[] {"a", "b", "c"})]
+                                      void M()
+                                      {
+                                      }
+                                  }
+                                  
+                                  class MyAttribute : Attribute
+                                  {
+                                      public MyAttribute(string[] array) {}
+                                  }
+                                  """;
+
+            return VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact, WorkItem(7033, "https://github.com/dotnet/roslyn-analyzers/issues/7033")]
+        public Task ArrayAsNamedAttributeParameter_NoDiagnostic()
+        {
+            const string source = """
+                                  using System;
+                                  
+                                  class Sample
+                                  {
+                                      [MyAttribute(Values = new[] {"a", "b", "c"})]
+                                      void M()
+                                      {
+                                      }
+                                  }
+                                  
+                                  class MyAttribute : Attribute
+                                  {
+                                      public string[] Values { get; set; }
+                                  }
+                                  """;
+
+            return VerifyCS.VerifyAnalyzerAsync(source);
+        }
+
+        [Fact, WorkItem(7033, "https://github.com/dotnet/roslyn-analyzers/issues/7033")]
+        public Task ArrayAsAttributeParameter_Xunit_NoDiagnostic()
+        {
+            const string source = """
+                                  public class Test
+                                  {
+                                      [Xunit.Theory]
+                                      [Xunit.InlineData("a", new[] { "b" })]
+                                      public void Method(string a, string[] b) { }
+                                  }
+                                  """;
+
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit
+            }.RunAsync();
+        }
     }
 }
