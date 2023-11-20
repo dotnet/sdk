@@ -25,7 +25,6 @@ internal static class KnownStrings
         public static readonly string ContainerEnvironmentVariable = nameof(ContainerEnvironmentVariable);
 
         public static readonly string ComputeContainerBaseImage = nameof(ComputeContainerBaseImage);
-        public static readonly string _ComputeContainerBaseImageTag = nameof(_ComputeContainerBaseImageTag);
         public static readonly string ComputeContainerConfig = nameof(ComputeContainerConfig);
         public static readonly string AssemblyName = nameof(AssemblyName);
         public static readonly string ContainerBaseRegistry = nameof(ContainerBaseRegistry);

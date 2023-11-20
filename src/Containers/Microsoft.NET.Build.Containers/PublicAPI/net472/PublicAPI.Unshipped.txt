@@ -21,15 +21,6 @@ override Microsoft.NET.Build.Containers.Port.GetHashCode() -> int
 Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.PortType.tcp = 0 -> Microsoft.NET.Build.Containers.PortType
 Microsoft.NET.Build.Containers.PortType.udp = 1 -> Microsoft.NET.Build.Containers.PortType
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputedBaseImageTag.get -> string?
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ComputeDotnetBaseImageTag() -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ContainerFamily.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.ContainerFamily.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.SdkVersion.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.SdkVersion.set -> void
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.TargetFrameworkVersion.get -> string!
-Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.TargetFrameworkVersion.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.set -> void
@@ -86,7 +77,6 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.g
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.set -> void
-override Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageTag.Execute() -> bool
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolName.get -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateCommandLineCommands() -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateFullPathToTool() -> string!
@@ -115,3 +105,23 @@ Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerTag
 override Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.Execute() -> bool
 static Microsoft.NET.Build.Containers.ContainerHelpers.TryParsePort(string! input, out Microsoft.NET.Build.Containers.Port? port, out Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError? error) -> bool
 static Microsoft.NET.Build.Containers.ContainerHelpers.TryParsePort(string? portNumber, string? portType, out Microsoft.NET.Build.Containers.Port? port, out Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError? error) -> bool
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ComputedContainerBaseImage.get -> string?
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkReferences.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkReferences.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsAotPublished.get -> bool
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsAotPublished.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.get -> bool
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.get -> bool
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ComputeDotnetBaseImageAndTag() -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.SdkVersion.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetFrameworkVersion.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetFrameworkVersion.set -> void
+override Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.Execute() -> bool

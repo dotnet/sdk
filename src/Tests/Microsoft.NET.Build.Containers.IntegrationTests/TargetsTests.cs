@@ -180,9 +180,9 @@ public class TargetsTests
         }, projectName: $"{nameof(CanComputeTagsForSupportedSDKVersions)}_{sdkVersion}_{tfm}_{expectedTag}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        instance.Build(new[]{"_ComputeContainerBaseImageTag"}, new [] { logger }, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
-        var computedTag = instance.GetProperty("_ContainerBaseImageTag").EvaluatedValue;
-        computedTag.Should().Be(expectedTag);
+        instance.Build(new[]{ComputeContainerBaseImage}, new [] { logger }, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedTag = instance.GetProperty(ContainerBaseImage).EvaluatedValue;
+        computedTag.Should().EndWith(expectedTag);
     }
 
     [InlineData("v8.0", "linux-x64", null)]
@@ -244,8 +244,8 @@ public class TargetsTests
         }, projectName: $"{nameof(CanTakeContainerBaseFamilyIntoAccount)}_{sdkVersion}_{tfmMajMin}_{containerFamily}_{expectedTag}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        instance.Build(new[]{ _ComputeContainerBaseImageTag }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
-        var computedBaseImageTag = instance.GetProperty(KnownStrings.Properties._ContainerBaseImageTag)?.EvaluatedValue;
-        computedBaseImageTag.Should().Be(expectedTag);
+        instance.Build(new[]{ ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().EndWith(expectedTag);
     }
 }
