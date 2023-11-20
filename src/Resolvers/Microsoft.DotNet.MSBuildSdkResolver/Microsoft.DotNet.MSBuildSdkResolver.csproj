@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- The version is frozen to allow MSBuild.exe loading it into the default load context -->
+    <AssemblyVersion>8.0.100.0</AssemblyVersion>
     <TargetFrameworks>$(ResolverTargetFramework);net472</TargetFrameworks>
     <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(ResolverTargetFramework)</TargetFrameworks>
     <PlatformTarget>AnyCPU</PlatformTarget>
