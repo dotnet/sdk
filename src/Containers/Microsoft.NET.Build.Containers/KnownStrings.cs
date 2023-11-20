@@ -34,6 +34,10 @@ internal static class KnownStrings
         public static readonly string ContainerGenerateLabels = nameof(ContainerGenerateLabels);
 
         public static readonly string ContainerRuntimeIdentifier = nameof(ContainerRuntimeIdentifier);
+        public static readonly string RuntimeIdentifier = nameof(RuntimeIdentifier);
+        public static readonly string PublishAot = nameof(PublishAot);
+        public static readonly string PublishSelfContained = nameof(PublishSelfContained);
+        public static readonly string InvariantGlobalization = nameof(InvariantGlobalization);
     }
 
     public static class ErrorCodes

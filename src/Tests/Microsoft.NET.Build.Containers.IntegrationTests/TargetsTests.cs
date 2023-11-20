@@ -186,6 +186,7 @@ public class TargetsTests
     }
 
     [InlineData("v8.0", "linux-x64", null)]
+    [InlineData("v8.0", "linux-musl-x64", null)]
     [InlineData("v8.0", "win-x64", "ContainerUser")]
     [InlineData("v7.0", "linux-x64", null)]
     [InlineData("v7.0", "win-x64", null)]
@@ -247,5 +248,65 @@ public class TargetsTests
         instance.Build(new[]{ ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
         var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
         computedBaseImageTag.Should().EndWith(expectedTag);
+    }
+
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime:8.0-alpine")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime:8.0")]
+    [Theory]
+    public void MuslRidsGetAlpineContainers(string rid, string expectedImage)
+    {
+                var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+        }, projectName: $"{nameof(MuslRidsGetAlpineContainers)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[]{ ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-aot")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-jammy-chiseled-aot")]
+    [Theory]
+    public void AOTAppsGetAOTImages(string rid, string expectedImage)
+    {
+                var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishAot] = true.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = true.ToString(),
+        }, projectName: $"{nameof(AOTAppsGetAOTImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[]{ ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-extra")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-jammy-chiseled-extra")]
+    [Theory]
+    public void AOTAppsWithCulturesGetExtraImages(string rid, string expectedImage)
+    {
+                var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishAot] = true.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = false.ToString()
+        }, projectName: $"{nameof(AOTAppsWithCulturesGetExtraImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[]{ ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 }
