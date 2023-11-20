@@ -259,10 +259,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                     }
 
-                    if (usingRollback)
-                    {
-                        UpdateInstallState(true, manifestsToUpdate);
-                    }
+                    UpdateInstallState(usingRollback, manifestsToUpdate, installer.GetFailingWorkload());
                 },
                 rollback: () =>
                 {

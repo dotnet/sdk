@@ -86,6 +86,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return packs;
         }
 
+        public string GetFailingWorkload() => null;
+
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
             var packInfos = GetPacksInWorkloads(workloadIds);

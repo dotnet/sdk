@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                     }
                 }
 
-                InstallationRecordRepository.WorkloadInstallRecord = InstallationRecordRepository.WorkloadInstallRecord.Union(workloadIds).ToList();
+                InstallationRecordRepository.WorkloadInstallRecord = InstallationRecordRepository.WorkloadInstallRecord.Union(workloadIds).ToHashSet();
             },
             rollback: () =>
             {
@@ -184,13 +184,15 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             WorkloadResolver = workloadResolver;
         }
 
+        public string GetFailingWorkload() => InstallationRecordRepository.FailingWorkload;
+
         IEnumerable<WorkloadHistoryRecord> IInstaller.GetWorkloadHistoryRecords() => HistoryRecords;
     }
 
     internal class MockInstallationRecordRepository : IWorkloadInstallationRecordRepository
     {
-        public IList<WorkloadId> WorkloadInstallRecord = new List<WorkloadId>();
-        private readonly string FailingWorkload;
+        public ISet<WorkloadId> WorkloadInstallRecord = new HashSet<WorkloadId>();
+        public readonly string FailingWorkload;
         public IList<WorkloadId> InstalledWorkloads;
 
         public MockInstallationRecordRepository(string failingWorkload = null, IList<WorkloadId> installedWorkloads = null)

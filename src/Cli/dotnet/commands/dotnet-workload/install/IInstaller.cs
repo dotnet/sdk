@@ -32,6 +32,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords();
 
+        // This is for testing
+        string GetFailingWorkload();
+
         /// <summary>
         /// Replace the workload resolver used by this installer. Typically used to call <see cref="GetDownloads(IEnumerable{WorkloadId}, SdkFeatureBand, bool)"/>
         /// for a set of workload manifests that isn't currently installed

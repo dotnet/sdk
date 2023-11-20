@@ -93,8 +93,19 @@ namespace Microsoft.DotNet.Workloads.Workload
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
         }
 
-        protected internal void UpdateInstallState(bool createDefaultJson, IEnumerable<ManifestVersionUpdate> manifestVersionUpdates)
+        protected internal void UpdateInstallState(bool createDefaultJson, IEnumerable<ManifestVersionUpdate> manifestVersionUpdates, string failingWorkload)
         {
+            if (failingWorkload is not null)
+            {
+                foreach (ManifestVersionUpdate update in manifestVersionUpdates)
+                {
+                    if (update.ManifestId.ToString().Equals(failingWorkload))
+                    {
+                        throw new Exception($"Failing workload: {failingWorkload}");
+                    }
+                }
+            }
+
             var defaultJsonPath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
             if (createDefaultJson)
             {

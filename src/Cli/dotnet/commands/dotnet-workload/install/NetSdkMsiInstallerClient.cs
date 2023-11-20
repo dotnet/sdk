@@ -184,6 +184,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        public string GetFailingWorkload() => null;
+
         public void DeleteInstallState(SdkFeatureBand sdkFeatureBand) =>
             RemoveInstallStateFile(sdkFeatureBand);
 
