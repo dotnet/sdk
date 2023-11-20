@@ -25,6 +25,8 @@
     <Platform Condition="'$(Platform)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Platform>
     <Platform Condition="'$(Platform)' == ''">x64</Platform>
 
+    <TargetPlatform>$(Platform)</TargetPlatform>
+    <TargetPlatform Condition="'$(OverrideTargetRid)' != ''">$(OverrideTargetRid.Substring($(OverrideTargetRid.LastIndexOf('-'))).TrimStart('-'))</TargetPlatform>
     <UseStableVersions Condition="'$(UseStableVersions)' == ''">false</UseStableVersions>
   </PropertyGroup>
 
@@ -102,8 +104,8 @@
     <LeakDetectionTasksAssembly>$(LeakDetectionTasksBinDir)Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.dll</LeakDetectionTasksAssembly>
 
     <BaseIntermediatePath>$(BaseOutputPath)obj/</BaseIntermediatePath>
-    <OutputPath>$(BaseOutputPath)$(Platform)/$(Configuration)/</OutputPath>
-    <IntermediatePath>$(BaseIntermediatePath)$(Platform)/$(Configuration)/</IntermediatePath>
+    <OutputPath>$(BaseOutputPath)$(TargetPlatform)/$(Configuration)/</OutputPath>
+    <IntermediatePath>$(BaseIntermediatePath)$(TargetPlatform)/$(Configuration)/</IntermediatePath>
     <LocalNuGetPackagesRoot>$(IntermediatePath)nuget-packages/</LocalNuGetPackagesRoot>
     <SourceBuiltBlobFeedDir>$(IntermediatePath)blob-feed/</SourceBuiltBlobFeedDir>
     <SourceBuiltPackagesPath>$(SourceBuiltBlobFeedDir)packages/</SourceBuiltPackagesPath>
@@ -166,11 +168,11 @@
     <TargetOS Condition="'$(TargetOS)' == '' AND $([MSBuild]::IsOSPlatform('LINUX'))">Linux</TargetOS>
     <TargetOS Condition="'$(TargetOS)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">FreeBSD</TargetOS>
 
-    <PortableRid Condition="'$(__PortableTargetOS)' != ''">$(__PortableTargetOS)-$(Platform)</PortableRid>
-    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</PortableRid>
-    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'OSX'">osx-$(Platform)</PortableRid>
-    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'Linux'">linux-$(Platform)</PortableRid>
-    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'Windows_NT'">win-$(Platform)</PortableRid>
+    <PortableRid Condition="'$(__PortableTargetOS)' != ''">$(__PortableTargetOS)-$(TargetPlatform)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'FreeBSD'">freebsd-$(TargetPlatform)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'OSX'">osx-$(TargetPlatform)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'Linux'">linux-$(TargetPlatform)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'Windows_NT'">win-$(TargetPlatform)</PortableRid>
     <TargetRid Condition="'$(PortableBuild)' == 'true' AND '$(PortableRid)' != ''">$(PortableRid)</TargetRid>
   </PropertyGroup>
 
