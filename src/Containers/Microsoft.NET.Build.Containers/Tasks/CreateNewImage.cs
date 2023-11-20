@@ -31,7 +31,19 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     public override bool Execute()
     {
-        return Task.Run(() => ExecuteAsync(_cancellationTokenSource.Token)).GetAwaiter().GetResult();
+        try
+        {
+            Task.Run(() => ExecuteAsync(_cancellationTokenSource.Token)).ContinueWith(t => t).GetAwaiter().GetResult();
+        }
+        catch (TaskCanceledException ex)
+        {
+            Log.LogWarningFromException(ex);
+        }
+        catch (OperationCanceledException ex)
+        {
+            Log.LogWarningFromException(ex);
+        }
+        return !Log.HasLoggedErrors;
     }
 
     internal async Task<bool> ExecuteAsync(CancellationToken cancellationToken)
