@@ -11,8 +11,8 @@
 
     <!-- StandardSourceBuildArgs include -publish which is not supported by the aspnetcore build script. -->
     <BuildCommandArgs>$(StandardSourceBuildArgs.Replace('--publish', ''))</BuildCommandArgs>
-    <!-- The arch flag (defaults to x64) overrides any value of TargetArchitecture that we might set -->
-    <BuildCommandArgs>$(BuildCommandArgs) --arch $(Platform)</BuildCommandArgs>
+    <BuildCommandArgs Condition="'$(OverrideTargetArch)' == ''">$(BuildCommandArgs) --arch $(Platform)</BuildCommandArgs>
+    <BuildCommandArgs Condition="'$(OverrideTargetArch)' != ''">$(BuildCommandArgs) --arch $(OverrideTargetArch)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) --no-build-repo-tasks</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) --no-build-nodejs</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PortableBuild=$(_portableRidOverridden) /p:TargetRuntimeIdentifier=$(OverrideTargetRid)</BuildCommandArgs>

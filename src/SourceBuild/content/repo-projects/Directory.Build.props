@@ -58,6 +58,12 @@
     <ProjectBuildReason>'$(RepositoryName)'</ProjectBuildReason>
   </PropertyGroup>
 
+  <!-- Cross-build property setting from OverrideTargetRid -->
+  <PropertyGroup Condition="'$(OverrideTargetRid)' != ''">
+    <OverrideTargetOS>$(OverrideTargetRid.Substring(0, $(OverrideTargetRid.LastIndexOf('-'))))</OverrideTargetOS>
+    <OverrideTargetArch>$(OverrideTargetRid.Substring($(OverrideTargetRid.LastIndexOf('-'))).TrimStart('-'))</OverrideTargetArch>
+  </PropertyGroup>
+
   <ItemGroup>
     <EnvironmentVariables Include="DotNetBuildFromSource=true" />
     <EnvironmentVariables Include="DotNetBuildFromSourceFlavor=Product" />
