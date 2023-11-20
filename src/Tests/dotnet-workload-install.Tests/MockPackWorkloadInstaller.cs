@@ -197,9 +197,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             FailingWorkload = failingWorkload;
             InstalledWorkloads = installedWorkloads ?? new List<WorkloadId>();
-            foreach (var id in installedWorkloads)
+            if (installedWorkloads is not null)
             {
-                WriteWorkloadInstallationRecord(id, new SdkFeatureBand("1.0.0"));
+                foreach (var id in installedWorkloads)
+                {
+                    WriteWorkloadInstallationRecord(id, new SdkFeatureBand("1.0.0"));
+                }
             }
         }
 
