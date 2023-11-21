@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-restore" "1" "2022-11-08" "" ".NET Documentation"
+.TH "dotnet-restore" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet restore
 .PP
@@ -26,20 +26,27 @@ dotnet-restore - Restores the dependencies and tools of a project.
 .IP
 .nf
 \f[C]
-dotnet restore [<ROOT>] [--configfile <FILE>] [--disable-parallel]
+dotnet restore [<ROOT>] [--configfile <FILE>] [--disable-build-servers]
+    [--disable-parallel]
     [-f|--force] [--force-evaluate] [--ignore-failed-sources]
     [--interactive] [--lock-file-path <LOCK_FILE_PATH>] [--locked-mode]
     [--no-cache] [--no-dependencies] [--packages <PACKAGES_DIRECTORY>]
     [-r|--runtime <RUNTIME_IDENTIFIER>] [-s|--source <SOURCE>]
-    [--use-lock-file] [-v|--verbosity <LEVEL>]
+    [--use-current-runtime, --ucr [true|false]] [--use-lock-file]
+    [-v|--verbosity <LEVEL>]
 
 dotnet restore -h|--help
 \f[R]
 .fi
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet restore\f[R] command uses NuGet to restore dependencies as well as project-specific tools that are specified in the project file.
-In most cases, you don\[cq]t need to explicitly use the \f[V]dotnet restore\f[R] command, since a NuGet restore is run implicitly if necessary when you run the following commands:
+A .NET project typically references external libraries in NuGet (https://www.nuget.org) packages that provide additional functionality.
+These external dependencies are referenced in the project file (\f[I].csproj\f[R] or \f[I].vbproj\f[R]).
+When you run the \f[V]dotnet restore\f[R] command, the .NET CLI uses NuGet to look for these dependencies and download them if necessary.
+It also ensures that all the dependencies required by the project are compatible with each other and that there are no conflicts between them.
+Once the command is completed, all the dependencies required by the project are available in a local cache and can be used by the .NET CLI to build and run the application.
+.PP
+In most cases, you don\[cq]t need to explicitly use the \f[V]dotnet restore\f[R] command, since if a NuGet restore is necessary, the following commands run it implicitly:
 .IP \[bu] 2
 \f[V]dotnet new\f[R]
 .IP \[bu] 2
@@ -57,11 +64,11 @@ In most cases, you don\[cq]t need to explicitly use the \f[V]dotnet restore\f[R]
 .PP
 Sometimes, it might be inconvenient to run the implicit NuGet restore with these commands.
 For example, some automated systems, such as build systems, need to call \f[V]dotnet restore\f[R] explicitly to control when the restore occurs so that they can control network usage.
-To prevent the implicit NuGet restore, you can use the \f[V]--no-restore\f[R] flag with any of these commands to disable implicit restore.
+To prevent the implicit NuGet restore, you can use the \f[V]--no-restore\f[R] flag with any of these commands.
 .RS
 .PP
 Signed package verification during restore operations requires a certificate root store that is valid for both code signing and timestamping.
-See NuGet signed package verification for details.
+For more inforomation, see NuGet signed package verification.
 .RE
 .SS Specify feeds
 .PP
@@ -134,6 +141,15 @@ The NuGet configuration file (\f[I]nuget.config\f[R]) to use.
 If specified, only the settings from this file will be used.
 If not specified, the hierarchy of configuration files from the current directory will be used.
 For more information, see Common NuGet Configurations.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--disable-build-servers\f[B]\f[R]
+.RS 2
+.PP
+Forces the command to ignore any persistent build servers.
+This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
+A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
+Available since .NET 7 SDK.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--disable-parallel\f[B]\f[R]
@@ -221,6 +237,14 @@ This setting overrides all of the sources specified in the \f[I]nuget.config\f[R
 Multiple sources can be provided by specifying this option multiple times.
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]--use-current-runtime, --ucr [true|false]\f[B]\f[R]
+.RS 2
+.PP
+Sets the \f[V]RuntimeIdentifier\f[R] to a platform portable \f[V]RuntimeIdentifier\f[R] based on the one of your machine.
+This happens implicitly with properties that require a \f[V]RuntimeIdentifier\f[R], such as \f[V]SelfContained\f[R], \f[V]PublishAot\f[R], \f[V]PublishSelfContained\f[R], \f[V]PublishSingleFile\f[R], and \f[V]PublishReadyToRun\f[R].
+If the property is set to false, that implicit resolution will no longer occur.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]--use-lock-file\f[B]\f[R]
 .RS 2
 .PP
@@ -286,3 +310,22 @@ dotnet restore --verbosity detailed
 \f[R]
 .fi
 .RE
+.SS Audit for security vulnerabilities
+.PP
+Starting in .NET 8, you can opt into NuGet security auditing for \f[V]dotnet restore\f[R].
+This auditing produces a report of security vulnerabilities with the affected package name, the severity of the vulnerability, and a link to the advisory for more details.
+.PP
+To opt into security auditing, set the \f[V]<NuGetAudit>\f[R] MSBuild property to \f[V]true\f[R] in your project file.
+Additionally, to retrieve the known vulnerability dataset, ensure that you have the NuGet.org central registry defined as one of your package sources:
+.IP
+.nf
+\f[C]
+<packageSources>
+    <add key=\[dq]nuget.org\[dq] value=\[dq]https://api.nuget.org/v3/index.json\[dq] protocolVersion=\[dq]3\[dq] />
+</packageSources>
+\f[R]
+.fi
+.PP
+You can configure the level at which auditing will fail by setting the \f[V]<NuGetAuditLevel>\f[R] MSBuild property.
+Possible values are \f[V]low\f[R], \f[V]moderate\f[R], \f[V]high\f[R], and \f[V]critical\f[R].
+For example if you only want to see moderate, high, and critical advisories, you can set the property to \f[V]moderate\f[R].

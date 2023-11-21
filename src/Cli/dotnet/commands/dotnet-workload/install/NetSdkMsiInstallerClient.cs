@@ -1073,7 +1073,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 finally
                 {
-                    ((TimestampedFileLogger)Log).Dispose();
+                    if (Log is IDisposable tfl)
+                    {
+                        tfl.Dispose();
+                    }
                 }
             }
         }
