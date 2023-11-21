@@ -13,7 +13,8 @@ namespace Microsoft.DotNet.PackageValidation.Validators
         bool enableStrictMode = false,
         bool enqueueApiCompatWorkItems = true,
         bool executeApiCompatWorkItems = true,
-        Package? baselinePackage = null)
+        Package? baselinePackage = null,
+        string[]? baselinePackageFrameworksToIgnore = null)
     {
         /// <summary>
         /// The latest package that should be validated.
@@ -39,5 +40,14 @@ namespace Microsoft.DotNet.PackageValidation.Validators
         /// The baseline package to validate the latest package.
         /// </summary>
         public Package? BaselinePackage { get; } = baselinePackage;
+
+        /// <summary>
+        /// A set of frameworks to ignore from the baseline package.
+        /// Entries are stored with invariant culture and ignored casing.
+        /// </summary>
+        public HashSet<string>? BaselinePackageFrameworksToIgnore { get; } =
+            baselinePackageFrameworksToIgnore is not null ?
+                new HashSet<string>(baselinePackageFrameworksToIgnore, StringComparer.InvariantCultureIgnoreCase) :
+                null;
     }
 }

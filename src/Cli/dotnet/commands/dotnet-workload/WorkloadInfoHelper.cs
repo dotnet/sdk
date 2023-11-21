@@ -56,7 +56,8 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 userProfileDir,
                 verifySignatures ?? !SignCheck.IsDotNetSigned(),
                 restoreActionConfig: restoreConfig,
-                elevationRequired: false);
+                elevationRequired: false,
+                shouldLog: false);
 
             WorkloadRecordRepo = workloadRecordRepo ?? Installer.GetWorkloadInstallationRecordRepository();
         }

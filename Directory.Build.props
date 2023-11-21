@@ -12,6 +12,8 @@
     <IncludeSymbols>true</IncludeSymbols>
     <IsShippingPackage>false</IsShippingPackage>
     <SdkTargetFramework>net9.0</SdkTargetFramework>
+    <!-- Remove when Arcade TargetFrameworkDefaults point to net9.0. -->
+    <NetToolCurrent Condition="'$(DotNetBuildFromSource)' == 'true'">$(SdkTargetFramework)</NetToolCurrent>
     <!-- Temporarily disable build warnings while upgrading to the net9.0 TFM -->
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
     <ToolsetTargetFramework>$(SdkTargetFramework)</ToolsetTargetFramework>
