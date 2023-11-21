@@ -47,6 +47,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.NETCore.DotNetHostResolver" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.2.24076.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>687be2a32a302aaade82380c0eaafa5af85fb4da</Sha>
@@ -412,6 +416,70 @@
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
     <Dependency Name="System.ServiceProcess.ServiceController" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Text.Json" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="8.0.0">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Win32.SystemEvents" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Composition.AttributedModel" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Composition.Convention" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Composition.Hosting" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Composition.Runtime" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Composition.TypedParts" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Configuration.ConfigurationManager" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Drawing.Common" Version="8.0.0">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-winforms</Uri>
+      <Sha>e4ede9b8979b9d2b1b1d4383f30a791414f0625b</Sha>
+    </Dependency>
+    <Dependency Name="System.Security.Cryptography.Pkcs" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Security.Cryptography.Xml" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Security.Permissions" Version="9.0.0-preview.2.24080.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
+    </Dependency>
+    <Dependency Name="System.Windows.Extensions" Version="9.0.0-preview.2.24080.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
     </Dependency>

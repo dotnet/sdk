@@ -26,7 +26,6 @@
   <PropertyGroup>
     <MicrosoftWebXdtPackageVersion>9.0.0-preview.24079.2</MicrosoftWebXdtPackageVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
-    <MicrosoftExtensionsDependencyModelVersion>2.1.0-preview2-26306-03</MicrosoftExtensionsDependencyModelVersion>
     <MicrosoftApplicationInsightsPackageVersion>2.21.0</MicrosoftApplicationInsightsPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</NETStandardLibraryNETFrameworkVersion>
     <NewtonsoftJsonPackageVersion>13.0.3</NewtonsoftJsonPackageVersion>
@@ -39,7 +38,6 @@
     <SystemCollectionsSpecializedPackageVersion>4.3.0</SystemCollectionsSpecializedPackageVersion>
     <SystemXmlXmlDocumentPackageVersion>4.3.0</SystemXmlXmlDocumentPackageVersion>
     <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
-    <SystemTextJsonVersion>7.0.3</SystemTextJsonVersion>
     <SystemReflectionMetadataLoadContextVersion>9.0.0-preview.2.24080.3</SystemReflectionMetadataLoadContextVersion>
     <SystemManagementPackageVersion>4.6.0</SystemManagementPackageVersion>
     <SystemCommandLineVersion>2.0.0-beta4.24068.1</SystemCommandLineVersion>
@@ -49,19 +47,35 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.2.24080.3</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.0-preview.2.24080.3</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>9.0.0-preview.2.24080.3</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
+    <MicrosoftBclAsyncInterfacesPackageVersion>9.0.0-preview.2.24080.3</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>9.0.0-preview.2.24080.3</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETHostModelVersion>9.0.0-preview.2.24080.3</MicrosoftNETHostModelVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>9.0.0-preview.2.24080.3</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsDependencyModelVersion>$(MicrosoftExtensionsDependencyModelPackageVersion)</MicrosoftExtensionsDependencyModelVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>9.0.0-preview.2.24080.3</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>9.0.0-preview.2.24080.3</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-preview.2.24080.3</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-preview.2.24080.3</MicrosoftExtensionsLoggingConsoleVersion>
     <MicrosoftExtensionsLoggingVersion>9.0.0-preview.2.24080.3</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.2.24080.3</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>9.0.0-preview.2.24080.3</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.1</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETILLinkTasksPackageVersion>9.0.0-preview.2.24080.3</MicrosoftNETILLinkTasksPackageVersion>
+    <MicrosoftNETHostModelVersion>9.0.0-preview.2.24080.3</MicrosoftNETHostModelVersion>
+    <MicrosoftWin32SystemEventsPackageVersion>9.0.0-preview.2.24080.3</MicrosoftWin32SystemEventsPackageVersion>
     <SystemServiceProcessServiceControllerVersion>9.0.0-preview.2.24080.3</SystemServiceProcessServiceControllerVersion>
+    <SystemCompositionAttributedModelPackageVersion>9.0.0-preview.2.24080.3</SystemCompositionAttributedModelPackageVersion>
+    <SystemCompositionConventionPackageVersion>9.0.0-preview.2.24080.3</SystemCompositionConventionPackageVersion>
+    <SystemCompositionHostingPackageVersion>9.0.0-preview.2.24080.3</SystemCompositionHostingPackageVersion>
+    <SystemCompositionRuntimePackageVersion>9.0.0-preview.2.24080.3</SystemCompositionRuntimePackageVersion>
+    <SystemCompositionTypedPartsPackageVersion>9.0.0-preview.2.24080.3</SystemCompositionTypedPartsPackageVersion>
+    <SystemConfigurationConfigurationManagerPackageVersion>9.0.0-preview.2.24080.3</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemDrawingCommonPackageVersion>8.0.0</SystemDrawingCommonPackageVersion>
+    <SystemSecurityCryptographyPkcsPackageVersion>9.0.0-preview.2.24080.3</SystemSecurityCryptographyPkcsPackageVersion>
+    <SystemSecurityCryptographyXmlPackageVersion>9.0.0-preview.2.24080.3</SystemSecurityCryptographyXmlPackageVersion>
+    <SystemSecurityPermissionsPackageVersion>9.0.0-preview.2.24080.3</SystemSecurityPermissionsPackageVersion>
+    <SystemTextJsonPackageVersion>9.0.0-preview.2.24080.3</SystemTextJsonPackageVersion>
+    <SystemWindowsExtensionsPackageVersion>9.0.0-preview.2.24080.3</SystemWindowsExtensionsPackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.0-preview.2.24080.3</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
