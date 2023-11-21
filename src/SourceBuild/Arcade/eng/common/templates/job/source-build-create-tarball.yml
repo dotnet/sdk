@@ -2,7 +2,7 @@
 
 jobs:
 - job: Source_Build_Create_Tarball
-  container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-33-20210222183538-031e7d2
+  container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38
   displayName: Source-Build Create Tarball
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
