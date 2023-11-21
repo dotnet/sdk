@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
                                 //// Get parameterset, localize them
                                 ////
-                                //// Do not bind! untill we see any have the 'IsEnabled' condition - and put those last
+                                //// Do not bind! until we see any have the 'IsEnabled' condition - and put those last
                                 ////     - default and resolved values (bind somehow)
 
                                 //// get parameters without enablement condition - first get those that are required, then conditionaly required, then optional
