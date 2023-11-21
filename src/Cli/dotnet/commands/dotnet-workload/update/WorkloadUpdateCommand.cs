@@ -79,22 +79,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
             recorder.HistoryRecord.CommandName = "update";
 
-            bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-            var rollbackFileContents = usedRollback ? WorkloadManifestUpdater.ParseRollbackDefinitionFile(_fromRollbackDefinition, _sdkFeatureBand) : null;
-            if (usedRollback)
-            {
-                var rollbackContents = new Dictionary<string, string>();
-                recorder.HistoryRecord.WorkloadArguments = new List<string>();
-                foreach (var (id, version, featureBand) in rollbackFileContents)
-                {
-                    var idString = id.ToString();
-                    recorder.HistoryRecord.WorkloadArguments.Add(idString);
-                    rollbackContents[idString] = $"{version}/{featureBand}";
-                }
-
-                recorder.HistoryRecord.RollbackFileContents = rollbackContents;
-            }
-
             try
             {
                 if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
@@ -136,6 +120,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         try
                         {
+                            bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+                            var rollbackFileContents = usedRollback ? WorkloadManifestUpdater.ParseRollbackDefinitionFile(_fromRollbackDefinition, _sdkFeatureBand) : null;
+                            if (usedRollback)
+                            {
+                                var rollbackContents = new Dictionary<string, string>();
+                                recorder.HistoryRecord.WorkloadArguments = new List<string>();
+                                foreach (var (id, version, featureBand) in rollbackFileContents)
+                                {
+                                    var idString = id.ToString();
+                                    recorder.HistoryRecord.WorkloadArguments.Add(idString);
+                                    rollbackContents[idString] = $"{version}/{featureBand}";
+                                }
+
+                                recorder.HistoryRecord.RollbackFileContents = rollbackContents;
+                            }
+
                             UpdateWorkloads(recorder, _includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption), rollbackFileContents);
                         }
                         catch (Exception e)

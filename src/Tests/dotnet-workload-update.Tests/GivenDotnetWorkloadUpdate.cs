@@ -287,7 +287,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 .Select(packId => workloadResolver.TryGetPackInfo(packId))
                 .Where(pack => pack != null);
             installer.RolledBackPacks.Should().BeEquivalentTo(expectedPacks);
-            installer.InstallationRecordRepository.WorkloadInstallRecord.Should().BeEmpty();
+            installer.InstallationRecordRepository.WorkloadInstallRecord.Should().BeEquivalentTo(mockWorkloadIds);
         }
 
         [Fact]
