@@ -321,6 +321,11 @@
           <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
             <Output TaskParameter="Lines" PropertyName="MinimumVSVersion"/>
           </ReadLinesFromFile>
+
+          <PropertyGroup Condition=" '$(VersionSDKMinor)' == '1' and '$(StabilizePackageVersion)' == 'true' ">
+            <MinimumVSVersion>$(MinimumVSVersion.Substring(0,$(MinimumVSVersion.LastIndexOf('.'))))</MinimumVSVersion>
+            <MinimumVSVersion >$([MSBuild]::Add($(MinimumVSVersion), .1))</MinimumVSVersion>
+          </PropertyGroup>
   </Target>
 
   <Target Name="GenerateSdkBundle"
