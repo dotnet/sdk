@@ -171,6 +171,7 @@
     <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</PortableRid>
     <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'OSX'">osx-$(Platform)</PortableRid>
     <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'Linux'">linux-$(Platform)</PortableRid>
+    <PortableRid Condition="$(TargetRid.StartsWith('linux-musl')) or $(TargetRid.StartsWith('alpine'))">linux-musl-$(Platform)</PortableRid>
     <PortableRid Condition="'$(PortableRid)' == '' AND '$(TargetOS)' == 'Windows_NT'">win-$(Platform)</PortableRid>
     <TargetRid Condition="'$(PortableBuild)' == 'true' AND '$(PortableRid)' != ''">$(PortableRid)</TargetRid>
   </PropertyGroup>
