@@ -39,7 +39,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemDefinitionGroup>
 
   <Target Name="_ComputeToolPackInputsToProcessFrameworkReferences" BeforeTargets="ProcessFrameworkReferences">
-    <!-- Keep this in sync with the warnings produced for RequiresILLinkPack in ProcessFrameworkReferences.cs. 
+    <!-- Keep this in sync with the warnings produced for RequiresILLinkPack in ProcessFrameworkReferences.cs.
          Must be set late enough to see the inferred value of EnableSingleFileAnalyzer. -->
     <PropertyGroup>
       <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == '' And (
@@ -101,7 +101,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Don't warn if the library multitargets and includes TFM that's supported by trimming/AOT and is supported by the min non-EOL TFM that supports trimming/AOT. -->
       <_SilenceIsTrimmableUnsupportedWarning Condition="'$(_SilenceIsTrimmableUnsupportedWarning)' == '' And
                                                         @(_TargetFrameworkToSilenceIsTrimmableUnsupportedWarning->Count()) > 0">true</_SilenceIsTrimmableUnsupportedWarning>
-      <_SilenceIsAotCompatibleUnsupportedWarning Condition="'$(_SilenceIsAotCompatibleUnsupportedWarning)' == '' And 
+      <_SilenceIsAotCompatibleUnsupportedWarning Condition="'$(_SilenceIsAotCompatibleUnsupportedWarning)' == '' And
                                                             @(_TargetFrameworkToSilenceIsAotCompatibleUnsupportedWarning->Count()) > 0">true</_SilenceIsAotCompatibleUnsupportedWarning>
       <_SilenceEnableSingleFileAnalyzerUnsupportedWarning Condition="'$(_SilenceEnableSingleFileAnalyzerUnsupportedWarning)' == '' And
                                                           @(_TargetFrameworkToSilenceEnableSingleFileAnalyzerUnsupportedWarning->Count()) > 0">true</_SilenceEnableSingleFileAnalyzerUnsupportedWarning>
@@ -696,6 +696,40 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+                                        _CreateSingleFileHost
+      Create the single-file host for the publish scenario if app is being published as a self-contained single-file .net5+ app
+    ============================================================
+     -->
+  <UsingTask TaskName="CreateAppHost" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="_CreateSingleFileHost"
+          Inputs="@(IntermediateAssembly);$(SingleFileHostSourcePath)"
+          Outputs="$(SingleFileHostIntermediatePath)"
+          DependsOnTargets="_GetAppHostPaths"
+          Condition="'$(PublishSingleFile)' == 'true' and
+                     '$(SelfContained)' == 'true' and
+                     '$(SingleFileHostSourcePath)' != '' and
+                     '$(_TargetFrameworkVersionWithoutV)' >= '5.0' and
+                     Exists('@(IntermediateAssembly)') and
+                     Exists('$(SingleFileHostSourcePath)')">
+    <PropertyGroup>
+      <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
+      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and $([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
+                                      ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">true</_EnableMacOSCodeSign>
+    </PropertyGroup>
+
+    <CreateAppHost AppHostSourcePath="$(SingleFileHostSourcePath)"
+                   AppHostDestinationPath="$(SingleFileHostIntermediatePath)"
+                   AppBinaryName="$(AssemblyName)$(TargetExt)"
+                   IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
+                   WindowsGraphicalUserInterface="$(_UseWindowsGraphicalUserInterface)"
+                   Retries="$(CopyRetryCount)"
+                   RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+                   EnableMacOSCodeSign="$(_EnableMacOSCodeSign)"
+                   />
+  </Target>
+
+  <!--
+    ============================================================
                                         _ComputeCopyToPublishDirectoryItems
     ============================================================
     -->
@@ -736,6 +770,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           KeepDuplicateOutputs=" '$(MSBuildDisableGetCopyToPublishDirectoryItemsOptimization)' == '' "
           DependsOnTargets="AssignTargetPaths;
                             DefaultCopyToPublishDirectoryMetadata;
+                            _CreateSingleFileHost;
                             _SplitProjectReferencesByFileExistence;
                             _GetProjectReferenceTargetFrameworkProperties">
 
@@ -824,6 +859,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
                                             Include="@(_NoneWithTargetPath->'%(FullPath)')"
                                             Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(PublishSingleFile)' == 'true' and '$(SelfContained)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' >= '5.0'">
+      <!-- Remove non-single-file apphost from items to publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
+      <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />
+
+      <!-- Add the single-file host created as part of publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Include="$(SingleFileHostIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
     </ItemGroup>
 
     <ItemGroup>

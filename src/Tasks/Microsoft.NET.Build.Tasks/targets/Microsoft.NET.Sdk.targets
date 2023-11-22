@@ -700,7 +700,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CreateAppHost"
           Inputs="@(IntermediateAssembly);$(AppHostSourcePath)"
           Outputs="$(AppHostIntermediatePath)"
-          DependsOnTargets="_ChooseAppHost;CoreCompile"
+          DependsOnTargets="_GetAppHostPaths;CoreCompile"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true' and
                      '$(AppHostSourcePath)' != '' and
                      Exists('@(IntermediateAssembly)') and
@@ -724,26 +724,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
-                                        _ChooseAppHost
-      Choose the correct app-host for the build scenario:
-      * SingleFileHost if an app being published as a self-contained single-file .net5+ app
-      * AppHost otherwise
-    ============================================================
-     -->
-  <Target Name="_ChooseAppHost"
-          DependsOnTargets="_GetAppHostPaths"
-          Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true'">
-    <PropertyGroup Condition="'$(PublishSingleFile)' == 'true' and
-                              '$(SelfContained)' == 'true' and
-                              '$(_TargetFrameworkVersionWithoutV)' >= '5.0' and
-                              '$(SingleFileHostSourcePath)' != ''">
-      <AppHostSourcePath>$(SingleFileHostSourcePath)</AppHostSourcePath>
-      <AppHostIntermediatePath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)singlefilehost$(_NativeExecutableExtension)'))</AppHostIntermediatePath>
-    </PropertyGroup>
-  </Target>
-
-  <!--
-    ============================================================
                                         _GetAppHostPaths
     Gets the path to apphost (restored via packages or in an apphost pack),
     and computes the path for the destination apphost.
@@ -763,6 +743,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
     <PropertyGroup Condition="'$(UseAppHostFromAssetsFile)' == 'false' Or '@(_NativeRestoredAppHostNETCore)' != ''">
       <AppHostIntermediatePath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)apphost$(_NativeExecutableExtension)'))</AppHostIntermediatePath>
+      <SingleFileHostIntermediatePath>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)singlefilehost$(_NativeExecutableExtension)'))</SingleFileHostIntermediatePath>
     </PropertyGroup>
 
   </Target>
@@ -878,7 +859,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
     -->
   <Target Name="_ComputeNETCoreBuildOutputFiles"
-          DependsOnTargets="_ChooseAppHost;_GetComHostPaths;_GetIjwHostPaths"
+          DependsOnTargets="_GetAppHostPaths;_GetComHostPaths;_GetIjwHostPaths"
           BeforeTargets="AssignTargetPaths"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true'">
 
@@ -894,7 +875,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </None>
     </ItemGroup>
-
 
     <ItemGroup Condition="'$(AppHostIntermediatePath)' != '' or '$(_CopyAndRenameDotnetHost)' == 'true'">
       <!--
