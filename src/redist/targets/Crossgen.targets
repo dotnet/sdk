@@ -2,9 +2,9 @@
   <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR.
        Neither crossgen2 nor mono is supported on the loongarch64 architecture at present. -->
   <Target Name="CrossgenLayout"
-          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le' AND '$(Architecture)' != 'loongarch64' AND '$(PackInstaller)' == 'true'"
+          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le' AND '$(Architecture)' != 'loongarch64' AND '$(PackInstaller)' == 'true' AND !('$(CROSSBUILD)' == 'true' AND '$(DotnetBuildVertical)' == 'true')"
           DependsOnTargets="SetSdkBrandingInfo">
-    
+
     <PropertyGroup>
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
       <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
@@ -59,7 +59,7 @@
       <FSharpFiles Include="@(FSharpFilesRuntimes);@(FSharpFilesRoot)" />
 
       <RazorToolFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
-      
+
       <RemainingFiles Include="$(SdkOutputDirectory)**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles)" />
 
       <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error, and they need to stay their original architecture. -->
@@ -130,7 +130,7 @@
       <!-- FSharp.Build.dll causes the FSharp folder to be included. Remove it, as we don't want other FSharp dlls being included in the crossgen. -->
       <RemainingFolders Remove="$(PublishDir)FSharp\**\*" />
 
-      <!-- RemainingFolders should be ordered so that dependencies are first looked up in the leaf folders. 
+      <!-- RemainingFolders should be ordered so that dependencies are first looked up in the leaf folders.
         Currently it is not ordered and crossgen is picking the wrong dlls when resolving dependencies: https://github.com/dotnet/core-sdk/pull/6774
         As a partial solution, we remove the root folder from the list and put it back to the end.
         Remove the following 2 lines when resolving this issue: https://github.com/dotnet/core-sdk/issues/6877 -->
@@ -186,7 +186,7 @@
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RemainingFolders);$(SharedFrameworkNameVersionPath)" />
-    
+
     <Crossgen
         SourceAssembly="%(RazorToolTargets.FullPath)"
         DestinationPath="%(RazorToolTargets.FullPath)"
