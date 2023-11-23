@@ -51,7 +51,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     /// If a project is self-contained then it includes a runtime, and so the runtime-deps image should be used.
     /// </summary>
     public bool IsSelfContained { get; set; }
-    
+
     /// <summary>
     /// If a project is AOT-published then not only is it self-contained, but it can also remove some other deps - we can use the dotnet/nightly/runtime-deps variant here aot
     /// </summary>
@@ -60,7 +60,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     /// <summary>
     /// If the project is AOT'd the aot image variant doesn't contain ICU and TZData, so we use this flag to see if we need to use the `-extra` variant that does contain those packages.
     /// </summary>
-    public bool UsesInvariantGlobalization { get; set;}
+    public bool UsesInvariantGlobalization { get; set; }
 
     /// <summary>
     /// If set, this expresses a preference for a variant of the container image that we infer for a project.
@@ -101,56 +101,95 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
 
     private bool ComputeRepositoryAndTag([NotNullWhen(true)] out string? repository, [NotNullWhen(true)] out string? tag)
     {
-        var baseVersionPart = ComputeVersionPart();
-        Log.LogMessage("Computed base version tag of {0} from TFM {1} and SDK {2}", baseVersionPart, TargetFrameworkVersion, SdkVersion);
-        if (baseVersionPart is null) {
+        if (ComputeVersionPart() is (string baseVersionPart, bool versionAllowsUsingAOTAndExtrasImages))
+        {
+            Log.LogMessage("Computed base version tag of {0} from TFM {1} and SDK {2}", baseVersionPart, TargetFrameworkVersion, SdkVersion);
+            if (baseVersionPart is null)
+            {
+                repository = null;
+                tag = null;
+                return false;
+            }
+
+            var detectedRepository = (NeedsNightlyImages, IsSelfContained, IsAspNetCoreProject) switch
+            {
+                (true, true, _) when AllowsExperimentalTagInference && versionAllowsUsingAOTAndExtrasImages => "dotnet/nightly/runtime-deps",
+                (_, true, _) => "dotnet/runtime-deps",
+                (_, _, true) => "dotnet/aspnet",
+                (_, _, false) => "dotnet/runtime"
+            };
+            Log.LogMessage("Chose base image repository {0}", detectedRepository);
+            repository = detectedRepository;
+            tag = baseVersionPart;
+
+            if (!string.IsNullOrWhiteSpace(ContainerFamily))
+            {
+                // for the inferred image tags, 'family' aka 'flavor' comes after the 'version' portion (including any preview/rc segments).
+                // so it's safe to just append here
+                tag += $"-{ContainerFamily}";
+                return true;
+            }
+            else
+            {
+                if (!versionAllowsUsingAOTAndExtrasImages)
+                {
+                    tag += IsMuslRID switch
+                    {
+                        true => "-alpine",
+                        false => "" // TODO: should we default here to chiseled iamges for < 8 apps?
+                    };
+                    Log.LogMessage("Selected base image tag {0}", tag);
+                    return true;
+                }
+                else
+                {
+                    // chose the base OS
+                    tag += IsMuslRID switch
+                    {
+                        true => "-alpine",
+                        // default to chiseled for AOT, non-musl Apps
+                        false when IsAotPublished => "-jammy-chiseled", // TODO: should we default here to jammy-chiseled for non-musl RIDs?
+                        // default to jammy for non-AOT, non-musl Apps
+                        false => ""
+                    };
+
+                    // now choose the variant, if any - if globalization then -extra, else -aot
+                    tag += (IsAotPublished, UsesInvariantGlobalization) switch
+                    {
+                        (true, false) => "-extra",
+                        (true, true) => "-aot",
+                        _ => ""
+                    };
+                    Log.LogMessage("Selected base image tag {0}", tag);
+                    return true;
+                }
+            }
+        }
+        else
+        {
             repository = null;
             tag = null;
             return false;
         }
-
-        var detectedRepository = (NeedsNightlyImages, IsSelfContained, IsAspNetCoreProject) switch {
-            (true, true, _) when AllowsExperimentalTagInference => "dotnet/nightly/runtime-deps",
-            (_, true, _) => "dotnet/runtime-deps",
-            (_, _, true) => "dotnet/aspnet",
-            (_, _, false) => "dotnet/runtime"
-        };
-        Log.LogMessage("Chose base image repository {0}", detectedRepository);
-        repository = detectedRepository;
-        tag = baseVersionPart;
-        
-        if (!string.IsNullOrWhiteSpace(ContainerFamily))
-        {
-            // for the inferred image tags, 'family' aka 'flavor' comes after the 'version' portion (including any preview/rc segments).
-            // so it's safe to just append here
-            tag += $"-{ContainerFamily}";
-            return true;
-        }
-        else 
-        {
-            tag += (IsAotPublished, UsesInvariantGlobalization, IsMuslRID) switch 
-            {
-                (true, false, false) => "-jammy-chiseled-extra",
-                (true, false, true) => "-alpine-extra",
-                (true, true, false) => "-jammy-chiseled-aot",
-                (true, true, true) => "-alpine-aot",
-                (false, false, true) => "-alpine",
-                _ => ""
-            };
-            Log.LogMessage("Selected base image tag {0}", tag);
-            return true;
-        }
     }
 
-    private string? ComputeVersionPart()
+    private (string, bool)? ComputeVersionPart()
     {
         if (SemanticVersion.TryParse(TargetFrameworkVersion, out var tfm) && tfm.Major < FirstVersionWithNewTaggingScheme)
         {
-            return $"{tfm.Major}.{tfm.Minor}";
+            // < 8 TFMs don't support the -aot and -extras images
+            return ($"{tfm.Major}.{tfm.Minor}", false);
         }
         else if (SemanticVersion.TryParse(SdkVersion, out var version))
         {
-            return ComputeVersionInternal(version, tfm);
+            if (ComputeVersionInternal(version, tfm) is string majMinor)
+            {
+                return (majMinor, true);
+            }
+            else
+            {
+                return null;
+            }
         }
         else
         {
@@ -180,7 +219,8 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         return baseImageTag;
     }
 
-     private string? DetermineLabelBasedOnChannel(int major, int minor, string[] releaseLabels) {
+    private string? DetermineLabelBasedOnChannel(int major, int minor, string[] releaseLabels)
+    {
         var channel = releaseLabels.Length > 0 ? releaseLabels[0] : null;
         switch (channel)
         {
@@ -201,5 +241,5 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                 Log.LogError(Resources.Strings.InvalidSdkPrereleaseVersion, channel);
                 return null;
         };
-     }
+    }
 }
