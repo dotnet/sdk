@@ -10,6 +10,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal sealed class BrowserRefreshFilter : IWatchFilter, IAsyncDisposable
     {
+        // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
+        private static readonly Version s_minimumSupportedVersion = new(6, 0);
         private readonly DotNetWatchOptions _options;
         private readonly IReporter _reporter;
         private readonly string _muxerPath;
@@ -38,6 +40,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                     _reporter.Verbose("Unable to determine if this project is a webapp.");
                     return;
                 }
+                else if (!IsSupportedVersion(context.ProjectGraph))
+                {
+                    _reporter.Warning(
+                        "Skipping configuring browser-refresh middleware since the target framework version is not supported." +
+                        " For more information see aka.ms/dotnet/watch/unsupported-version");
+                    return;
+                }
                 else if (IsWebApp(context.ProjectGraph))
                 {
                     _reporter.Verbose("Configuring the app to use browser-refresh middleware.");
@@ -64,6 +73,24 @@ namespace Microsoft.DotNet.Watcher.Tools
                 // We've detected a change. Notify the browser.
                 await (_refreshServer?.SendWaitMessageAsync(cancellationToken) ?? default);
             }
+        }
+
+        private bool IsSupportedVersion(ProjectGraph context)
+        {
+            if (context.GraphRoots.FirstOrDefault() is not { } projectNode)
+            {
+                return false;
+            }
+            if (projectNode.ProjectInstance.GetPropertyValue("_TargetFrameworkVersionWithoutV") is not string targetFrameworkVersion)
+            {
+                return false;
+            }
+            if(!Version.TryParse(targetFrameworkVersion, out var version))
+            {
+                return false;
+            }
+
+            return version >= s_minimumSupportedVersion;
         }
 
         private static bool IsWebApp(ProjectGraph projectGraph)
