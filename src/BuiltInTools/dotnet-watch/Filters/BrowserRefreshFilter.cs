@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
                 else if (!IsSupportedVersion(context.ProjectGraph))
                 {
-                    _reporter.Warning(
+                    _reporter.Warn(
                         "Skipping configuring browser-refresh middleware since the target framework version is not supported." +
                         " For more information see 'https://aka.ms/dotnet/watch/unsupported-version'.");
                     return;
