@@ -1304,7 +1304,8 @@ class Test {
 
         [Fact]
         [WorkItem(6684, "https://github.com/dotnet/roslyn-analyzers/issues/6684")]
-        public Task DbContextFactoryCreateDbContext_Diagnostic()
+        [WorkItem(7036, "https://github.com/dotnet/roslyn-analyzers/issues/7036")]
+        public Task DbContextFactoryCreateDbContext_NoDiagnostic()
         {
             return new VerifyCS.Test
             {
@@ -1314,10 +1315,9 @@ using System.Threading.Tasks;
 
 class Test {
     public async Task RunAsync(IDbContextFactory<DbContext> factory) {
-        var context = {|#0:factory.CreateDbContext()|};
+        var context = factory.CreateDbContext();
     }
 }",
-                ExpectedDiagnostics = { new DiagnosticResult(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("IDbContextFactory<DbContext>.CreateDbContext()", "IDbContextFactory<DbContext>.CreateDbContextAsync(CancellationToken)") },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
             }.RunAsync();
         }

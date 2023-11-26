@@ -214,6 +214,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 }
             }
 
+            if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftEntityFrameworkCoreDbContextFactory, out INamedTypeSymbol? dbContextFactoryType))
+            {
+                foreach (var method in dbContextFactoryType.GetMembers().OfType<IMethodSymbol>())
+                {
+                    if (method.Name == "CreateDbContext")
+                    {
+                        methodsBuilder.Add(method);
+                    }
+                }
+            }
+
             return methodsBuilder.ToImmutable();
         }
 
