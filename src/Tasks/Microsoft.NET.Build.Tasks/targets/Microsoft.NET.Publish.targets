@@ -861,7 +861,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                             Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
     </ItemGroup>
 
-    <ItemGroup Condition="'$(PublishSingleFile)' == 'true' and '$(SelfContained)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' >= '5.0'">
+    <ItemGroup Condition="'$(PublishSingleFile)' == 'true' and '$(SelfContained)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' >= '5.0' and Exists('$(SingleFileHostIntermediatePath)')">
       <!-- Remove non-single-file apphost from items to publish -->
       <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
       <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />
