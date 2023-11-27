@@ -16,6 +16,7 @@
 src/arcade/Documentation/UnifiedBuild/Foundational-Concepts.md
 src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/src/BuildFPMToolPreReqs.cs|json
 src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/rpm_templates/copyright|cecill-c
+src/arcade/src/Microsoft.DotNet.XUnitAssert/src/README.md|free-unknown
 src/arcade/src/SignCheck/SignCheck/THIRD-PARTY-NOTICES.TXT
 
 # Doesn't apply to code
@@ -101,6 +102,7 @@ src/installer/src/redist/targets/packaging/**/*.json
 src/msbuild/src/Directory.Build.props|ms-net-library-2018-11
 
 # False positive
+src/msbuild/documentation/specs/proposed/interactive-package-references.md|unknown-license-reference
 src/msbuild/src/Build/Instance/ProjectItemInstance.cs|generic-exception
 
 #
