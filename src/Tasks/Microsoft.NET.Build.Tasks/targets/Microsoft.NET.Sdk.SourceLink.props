@@ -11,6 +11,23 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    Determine whether the project is desktop WPF temp project.
+    Since .NET Framework 4.7.2 WPF temp project name ends with _wpftmp suffix and keeps the language specific extension (e.g. csproj).
+  -->
+  <PropertyGroup Condition="'$(IsWpfTempProject)' == ''">
+    <IsWpfTempProject>false</IsWpfTempProject>
+    <IsWpfTempProject Condition="$(MSBuildProjectName.EndsWith('_wpftmp'))">true</IsWpfTempProject>
+  </PropertyGroup>
+
+  <!--
+    Disable Source Link in desktop WPF temp projects to avoid issues with desktop WPF targets.
+    The generated WPF source files contain incorrect #line paths that cause source embedding to fail.
+  -->
+  <PropertyGroup Condition="'$(IsWpfTempProject)' == 'true'">
+    <EnableSourceLink>false</EnableSourceLink>
+    <EmbedUntrackedSources>false</EmbedUntrackedSources>
+  </PropertyGroup>
 
   <PropertyGroup>
     <!-- Suppress implicit SourceLink inclusion if any Microsoft.SourceLink package is referenced. -->
@@ -27,5 +44,4 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.AzureRepos.Git\build\Microsoft.SourceLink.AzureRepos.Git.props"/>
     <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.Bitbucket.Git\build\Microsoft.SourceLink.Bitbucket.Git.props"/>
   </ImportGroup>
-
 </Project>
