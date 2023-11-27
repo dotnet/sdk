@@ -17,6 +17,7 @@ nugetconfig
 nunit
 nunit-playwright
 nunit-test
+packagesprops
 page
 proto
 razorclasslib

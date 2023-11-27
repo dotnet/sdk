@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Arquivo MSBuild Directory.Packages.props",
+  "description": "Um arquivo Directory.Packages.props vazio que pode ser usado para especificar a versão do pacote centralmente",
+  "symbols/inherit/displayName": "Herdar",
+  "symbols/inherit/description": "Se verdadeiro, adiciona um Import para o Directory.Packages.props mais próximo na hierarquia de diretórios do sistema de arquivos. Directory.Packages.props não herdam por padrão, portanto, isso permite que você crie um conjunto de personalizações pasta por pasta."
+}
