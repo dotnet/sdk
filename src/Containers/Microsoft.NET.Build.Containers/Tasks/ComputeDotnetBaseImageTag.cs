@@ -99,7 +99,7 @@ public sealed class ComputeDotnetBaseImageTag : Microsoft.Build.Utilities.Task
                 }
                 Log.LogError(Resources.Strings.InvalidSdkPrereleaseVersion, channel);
                 return null;
-            case "alpha" or "dev" or "ci":
+            case "alpha" or "dev" or "ci" or "rtm":
                 return $"{major}.{minor}-preview";
             default:
                 Log.LogError(Resources.Strings.InvalidSdkPrereleaseVersion, channel);
