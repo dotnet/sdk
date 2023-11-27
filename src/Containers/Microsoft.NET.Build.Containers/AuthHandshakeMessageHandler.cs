@@ -62,22 +62,33 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
 
         AuthenticationHeaderValue header = authenticateHeader.First();
-        if (header is { Scheme: "Bearer" or "Basic", Parameter: string bearerArgs })
+
+        if (header.Scheme is not null)
         {
             scheme = header.Scheme;
-            var keyValues = ParseBearerArgs(bearerArgs);
-
-            var result = scheme switch
+            var keyValues = ParseBearerArgs(header.Parameter);
+            if (keyValues is null)
             {
-                "Bearer" => TryParseBearerAuthInfo(keyValues, out bearerAuthInfo),
-                "Basic" => TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, out bearerAuthInfo),
-                _ => false
-            };
-            return result;
+                return false;
+            }
+
+            if (header.Scheme.Equals("Basic", StringComparison.OrdinalIgnoreCase))
+            {
+                return TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, out bearerAuthInfo);
+            }
+            else if (header.Scheme.Equals("Bearer", StringComparison.OrdinalIgnoreCase))
+            {
+                return TryParseBearerAuthInfo(keyValues, out bearerAuthInfo);
+            }
+            else
+            {
+                return false;
+            }
         }
         return false;
 
-        static bool TryParseBearerAuthInfo(Dictionary<string, string> authValues, [NotNullWhen(true)] out AuthInfo? authInfo) {
+        static bool TryParseBearerAuthInfo(Dictionary<string, string> authValues, [NotNullWhen(true)] out AuthInfo? authInfo)
+        {
             if (authValues.TryGetValue("realm", out string? realm))
             {
                 string? service = null;
@@ -87,19 +98,25 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                 authInfo = new AuthInfo(realm, service, scope);
                 return true;
             }
-            else {
+            else
+            {
                 authInfo = null;
                 return false;
             }
         }
 
-        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, out AuthInfo? authInfo) {
+        static bool TryParseBasicAuthInfo(Dictionary<string, string> authValues, Uri requestUri, out AuthInfo? authInfo)
+        {
             authInfo = null;
             return true;
         }
 
-        static Dictionary<string, string> ParseBearerArgs(string bearerHeaderArgs)
+        static Dictionary<string, string>? ParseBearerArgs(string? bearerHeaderArgs)
         {
+            if (bearerHeaderArgs is null)
+            {
+                return null;
+            }
             Dictionary<string, string> keyValues = new();
             foreach (Match match in BearerParameterSplitter().Matches(bearerHeaderArgs))
             {
