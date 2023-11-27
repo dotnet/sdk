@@ -216,12 +216,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             if (wellKnownTypeProvider.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftEntityFrameworkCoreDbContextFactory, out INamedTypeSymbol? dbContextFactoryType))
             {
-                foreach (var method in dbContextFactoryType.GetMembers().OfType<IMethodSymbol>())
+                foreach (var method in dbContextFactoryType.GetMembers("CreateDbContext").OfType<IMethodSymbol>())
                 {
-                    if (method.Name == "CreateDbContext")
-                    {
-                        methodsBuilder.Add(method);
-                    }
+                    methodsBuilder.Add(method);
                 }
             }
 
