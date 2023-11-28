@@ -169,6 +169,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 {
                     _environmentPathInstruction.PrintAddPathInstructionIfPathDoesNotExist();
                 }
+
                 if (!_verbosity.IsQuiet())
                 {
                     _reporter.WriteLine(
@@ -178,6 +179,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                             package.Id,
                             package.Version.ToNormalizedString()).Green());
                 }
+
                 return 0;
             }
             catch (Exception ex) when (InstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
