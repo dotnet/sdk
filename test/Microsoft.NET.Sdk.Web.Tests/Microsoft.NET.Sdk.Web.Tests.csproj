@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
-    <ProjectReference Include="..\..\..\src\WebSdk\Web\Tasks\Microsoft.NET.Sdk.Web.Tasks.csproj" />
+    <ProjectReference Include="..\..\src\WebSdk\Web\Tasks\Microsoft.NET.Sdk.Web.Tasks.csproj" />
   </ItemGroup>
 
 </Project>

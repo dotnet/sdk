@@ -89,47 +89,6 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <!--<ItemGroup>
-    <Content Include="..\..\TestAssets\TestProjects\AppWithToolDependency\**\*">
-      <Link>TestAssets/TestProjects/AppWithToolDependency/%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-    <Content Include="..\..\TestAssets\TestProjects\DependencyContextFromTool\**\*">
-      <Link>TestAssets/TestProjects/DependencyContextFromTool/%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
-  </ItemGroup>-->
-  
-  <!--<Target Name="WriteExpectedVersion"
-          BeforeTargets="BeforeBuild"
-          DependsOnTargets="PrepareForBuild">
-
-    <PropertyGroup>
-      <ExpectedVersionFileInIntermediateFolder>$(IntermediateOutputPath)ExpectedSdkVersion.txt</ExpectedVersionFileInIntermediateFolder>
-      
-      <VersionFileContent>$(DotNetCoreSdkLKGVersion)</VersionFileContent>
-      <ExistingVersionFileContent Condition=" Exists('$(ExpectedVersionFileInIntermediateFolder)') ">
-        $([System.IO.File]::ReadAllText($(ExpectedVersionFileInIntermediateFolder)))
-      </ExistingVersionFileContent>
-
-      <ShouldOverwriteVersionFile>false</ShouldOverwriteVersionFile>
-      <ShouldOverwriteVersionFile
-        Condition=" '$(ExistingVersionFileContent.Trim())' != '$(VersionFileContent.Trim())' ">true</ShouldOverwriteVersionFile>
-    </PropertyGroup>
-    
-    <WriteLinesToFile File="$(ExpectedVersionFileInIntermediateFolder)"
-                      Lines="$(VersionFileContent)"
-                      Condition=" '$(ShouldOverwriteVersionFile)' == 'true' "
-                      Overwrite="true" />
-
-    <ItemGroup>
-      <Content Include="$(ExpectedVersionFileInIntermediateFolder)" CopyToOutputDirectory="PreserveNewest" />
-      <FileWrites Include="$(ExpectedVersionFileInIntermediateFolder)" />
-    </ItemGroup>
-  </Target>-->
-
   <Target Name="WriteExpectedTargetFrameworkMoniker" BeforeTargets="BeforeBuild" DependsOnTargets="PrepareForBuild">
     <PropertyGroup>
       <ExpectedTargetFrameworkMonikerFileInIntermediateFolder>$(IntermediateOutputPath)ExpectedTargetFrameworkMoniker.txt</ExpectedTargetFrameworkMonikerFileInIntermediateFolder>
@@ -150,9 +109,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
-    <ProjectReference Include="..\..\Cli\dotnet\dotnet.csproj" />
-    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Sln.Internal\Microsoft.DotNet.Cli.Sln.Internal.csproj" />
-    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Sln.Internal\Microsoft.DotNet.Cli.Sln.Internal.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
   </ItemGroup>
 

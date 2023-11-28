@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Containers\Microsoft.NET.Build.Containers\Microsoft.NET.Build.Containers.csproj" />
+    <ProjectReference Include="..\..\src\Containers\Microsoft.NET.Build.Containers\Microsoft.NET.Build.Containers.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
@@ -42,7 +42,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
     <Compile Remove="FullFramework/*.*" />
-    <Content Include="AuthenticatedRegistry/**/*.*" CopyToOutputDirectory="PreserveNewest"/>
+    <Content Include="AuthenticatedRegistry/**/*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 

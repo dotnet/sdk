@@ -7,7 +7,7 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.tmp</DefaultItemExcludes>
   </PropertyGroup>
 
-  <Import Project="..\..\Directory.Build.props" />
+  <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
