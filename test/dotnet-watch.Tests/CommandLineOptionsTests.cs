@@ -365,7 +365,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             Assert.Null(options);
             Assert.Equal(1, errorCode);
 
-            Assert.Equal("", output.ToString());
+            // TODO: Re-enable this check when a new version of S.CL is released with this fix in it:
+            // https://github.com/dotnet/command-line-api/pull/2289
+            //Assert.Equal("", output.ToString());
         }
 
         [Theory]

@@ -384,16 +384,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             CliConfiguration localCopy = new(sharedConfig.RootCommand)
             {
                 EnableDefaultExceptionHandler = sharedConfig.EnableDefaultExceptionHandler,
-                EnableParseErrorReporting = sharedConfig.EnableParseErrorReporting,
-                EnableTypoCorrections = sharedConfig.EnableTypoCorrections,
                 ResponseFileTokenReplacer = sharedConfig.ResponseFileTokenReplacer,
                 ProcessTerminationTimeout = sharedConfig.ProcessTerminationTimeout,
                 EnablePosixBundling = sharedConfig.EnablePosixBundling,
+                Output = new StringWriter()
             };
-            localCopy.Directives.Clear();
-            localCopy.Directives.AddRange(sharedConfig.Directives);
-
-            localCopy.Output = new StringWriter();
 
             var parseResult = localCopy.Parse(new string[] { command, "-h" });
             parseResult.Invoke();

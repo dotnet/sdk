@@ -56,6 +56,13 @@
     Documentation: A file for configuring the locations NuGet will search for packages
   },
   {
+    Label: packagesprops,
+    Kind: Value,
+    SortText: packagesprops,
+    InsertText: packagesprops,
+    Documentation: An empty Directory.Packages.props file which can be used to specify package versions centrally
+  },
+  {
     Label: sln,
     Kind: Value,
     SortText: sln,

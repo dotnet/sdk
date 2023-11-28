@@ -4,9 +4,11 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Parser;
+using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -135,25 +137,12 @@ namespace Microsoft.DotNet.Cli
             return subargs.Concat(runArgs).ToArray();
         }
 
-        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult)
+        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
         {
-            if (symbolResult.Token() == default)
-            {
-                return parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>();
-            }
-            else if (symbolResult.Token().Type.Equals(CliTokenType.Command))
-            {
-                return ((System.CommandLine.Parsing.CommandResult)symbolResult).Command.Name;
-            }
-            else if (symbolResult.Token().Type.Equals(CliTokenType.Argument))
-            {
-                return symbolResult.Token().Value;
-            }
-            else
-            {
-                return string.Empty;
-            }
-        }
+            CommandResult commandResult => commandResult.Command.Name,
+            ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value ?? string.Empty,
+            _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
+        };
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
             (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
@@ -207,10 +196,19 @@ namespace Microsoft.DotNet.Cli
         private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
         {
             var optionString = shorthand ? "-p" : "--property";
-            var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(CliTokenType.Option));
-            var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
+            var propertyOptions = parseResult.CommandResult.Children.Where(c => GetOptionTokenOrDefault(c)?.Value.Equals(optionString) ?? false);
             var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
+
+            static CliToken GetOptionTokenOrDefault(SymbolResult symbolResult)
+            {
+                if (symbolResult is not OptionResult optionResult)
+                {
+                    return null;
+                }
+
+                return optionResult.IdentifierToken ?? new CliToken($"--{optionResult.Option.Name}", CliTokenType.Option, optionResult.Option);
+            }
         }
 
         [Conditional("DEBUG")]

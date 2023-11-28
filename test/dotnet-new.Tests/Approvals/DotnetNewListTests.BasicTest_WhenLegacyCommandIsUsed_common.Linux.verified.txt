@@ -24,6 +24,7 @@ EditorConfig file                             editorconfig,.editorconfig        
 global.json file                              globaljson,global.json                  Config                        
 MSBuild Directory.Build.props file            buildprops                              MSBuild/props                 
 MSBuild Directory.Build.targets file          buildtargets                            MSBuild/props                 
+MSBuild Directory.Packages.props file         packagesprops                           MSBuild/packages/props/CPM    
 MSTest Playwright Test Project                mstest-playwright           [C#]        Test/MSTest/Playwright        
 MSTest Test Project                           mstest                      [C#],F#,VB  Test/MSTest                   
 MVC Controller                                mvccontroller               [C#]        Web/ASP.NET                   
