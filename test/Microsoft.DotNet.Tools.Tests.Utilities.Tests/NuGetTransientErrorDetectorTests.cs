@@ -34,14 +34,14 @@ namespace Microsoft.DotNet.Tools.Tests.Utilities.Tests
                 "FluentAssertions.Execution.TestFrameworkProvider.Throw(String message)\r\n\u001B[m\u001B[37m           at " +
                 "FluentAssertions.Execution.DefaultAssertionStrategy.HandleFailure(String message)\r\n\u001B[m\u001B[37m           at " +
                 "FluentAssertions.Execution.AssertionScope.FailWith(String message, Object[] args)\r\n\u001B[m\u001B[37m        " +
-                "/_/src/Tests/Microsoft.NET.TestFramework/Assertions/CommandResultAssertions.cs(32,0): at Microsoft.NET.TestFramework.Assertions." +
-                "CommandResultAssertions.Pass()\r\n\u001B[m\u001B[37m        /_/src/Tests/Microsoft.NET.ToolPack.Tests/" +
+                "/_/test/Microsoft.NET.TestFramework/Assertions/CommandResultAssertions.cs(32,0): at Microsoft.NET.TestFramework.Assertions." +
+                "CommandResultAssertions.Pass()\r\n\u001B[m\u001B[37m        /_/test/Microsoft.NET.ToolPack.Tests/" +
                 "PackWithShimsAndResultNugetPackageNuGetPackagexFixture.cs(64,0): at Microsoft.NET.ToolPack.Tests.NupkgOfPackWithShimsFixture." +
                 "SetupNuGetPackage(Boolean multiTarget, String targetFramework)\r\n\u001B[mRunning /datadisks/disk1/work/AD2E0974/p/d/" +
                 "dotnet msbuild /t:Pack /datadisks/disk1/work/AD2E0974/w/A09F08FB/e/testExecutionDirectory/NupkgOfPackWi---BDB2B0FB/consoledemo.csproj " +
-                "/restore\r\n\u001B[37m        /_/src/Tests/Microsoft.NET.ToolPack.Tests/PackWithShimsAndResultNugetPackageNuGetPackagexFixture.cs(47,0): " +
+                "/restore\r\n\u001B[37m        /_/test/Microsoft.NET.ToolPack.Tests/PackWithShimsAndResultNugetPackageNuGetPackagexFixture.cs(47,0): " +
                 "at Microsoft.NET.ToolPack.Tests.NupkgOfPackWithShimsFixture.GetTestToolPackagePath(Boolean multiTarget, String targetFramework)" +
-                "\r\n\u001B[m\u001B[37m        /_/src/Tests/Microsoft.NET.ToolPack.Tests/GivenThatWeWantToPackAToolProjectWithPackagedShim.cs(128,0): " +
+                "\r\n\u001B[m\u001B[37m        /_/test/Microsoft.NET.ToolPack.Tests/GivenThatWeWantToPackAToolProjectWithPackagedShim.cs(128,0): " +
                 "at Microsoft.NET.ToolPack.Tests.GivenThatWeWantToPackAToolProjectWithPackagedShim.It_contains_shim(Boolean multiTarget, String " +
                 "targetFramework)\r\n\u001B[m\u001B[30;1m      Output:\r\n\u001B[m\u001B[37m        > /datadisks/disk1/work/AD2E0974/p/d/dotnet msbuild " +
                 "/t:Pack /datadisks/disk1/work/AD2E0974/w/A09F08FB/e/testExecutionDirectory/NupkgOfPackWi---4E69F8CE/consoledemo.csproj /restore" +

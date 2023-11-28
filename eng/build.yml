@@ -88,7 +88,7 @@ jobs:
                 -ci
                 -restore
                 $(_Test)
-                -projects $(Build.SourcesDirectory)\src\Tests\UnitTests.proj
+                -projects $(Build.SourcesDirectory)\test\UnitTests.proj
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
@@ -120,7 +120,7 @@ jobs:
                 -ci
                 -restore
                 -test
-                -projects $(Build.SourcesDirectory)\src\Tests\UnitTests.proj
+                -projects $(Build.SourcesDirectory)\test\UnitTests.proj
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
@@ -161,7 +161,7 @@ jobs:
                 -ci
                 -restore
                 -test
-                -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
+                -projects $(Build.SourcesDirectory)/test/UnitTests.proj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
@@ -268,7 +268,7 @@ jobs:
                 -restore
                 -test
                 -prepareMachine
-                -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
+                -projects $(Build.SourcesDirectory)/test/UnitTests.proj
                 -configuration $(_BuildConfig)
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
@@ -302,7 +302,7 @@ jobs:
                 --ci
                 --restore
                 --test
-                --projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
+                --projects $(Build.SourcesDirectory)/test/UnitTests.proj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
@@ -396,7 +396,7 @@ jobs:
                 -ci
                 -restore
                 $(_Test)
-                -projects $(Build.SourcesDirectory)\src\Tests\Microsoft.TemplateEngine.Cli.UnitTests\Microsoft.TemplateEngine.Cli.UnitTests.csproj
+                -projects $(Build.SourcesDirectory)\test\Microsoft.TemplateEngine.Cli.UnitTests\Microsoft.TemplateEngine.Cli.UnitTests.csproj
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TemplateEngine.Cli.UnitTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run TemplateEngine Cli Unit Tests
@@ -406,7 +406,7 @@ jobs:
                 -ci
                 -restore
                 $(_Test)
-                -projects $(Build.SourcesDirectory)\src\Tests\dotnet-new.Tests\dotnet-new.IntegrationTests.csproj
+                -projects $(Build.SourcesDirectory)\test\dotnet-new.Tests\dotnet-new.IntegrationTests.csproj
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\dotnet-new.IntegrationTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run dotnet new Integration Tests
@@ -430,7 +430,7 @@ jobs:
                 -ci
                 -restore
                 -test
-                -projects $(Build.SourcesDirectory)/src/Tests/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj
+                -projects $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TemplateEngine.Cli.UnitTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run TemplateEngine Cli Unit Tests
@@ -440,7 +440,7 @@ jobs:
                 -ci
                 -restore
                 -test
-                -projects $(Build.SourcesDirectory)/src/Tests/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+                -projects $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/dotnet-new.IntegrationTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run dotnet new Integration Tests
