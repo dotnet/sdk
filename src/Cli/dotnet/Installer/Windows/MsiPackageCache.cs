@@ -3,15 +3,12 @@
 
 using System.IO.Pipes;
 using System.Runtime.Versioning;
-using System.Security;
 using System.Security.AccessControl;
-using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Utils;
 #if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Installer.Windows.Security;
 #endif
-using Microsoft.DotNet.Workloads.Workload;
 using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Installer.Windows
@@ -264,30 +261,15 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             if (VerifySignatures)
             {
-                bool cacheOnlyRevocationChecks = SignCheck.IsCacheOnlyRevocationChecksPolicySet();
-
                 // MSI and authenticode verification only applies to Windows. NET only supports Win7 and later.
 #if !DOT_NET_BUILD_FROM_SOURCE
 #pragma warning disable CA1416
-                // WinVerifyTrust returns a status code, not an HRESULT.
-                int lstatus = AuthentiCode.IsSigned(msiPath, cacheOnlyRevocationChecks);
-                ExitOnError((uint)lstatus, $"Failed to verify Authenticode signature for {msiPath}.");
-                Log?.LogMessage($"Successfully verified Authenticode signature for {msiPath}, cache-only revocation check: {cacheOnlyRevocationChecks}");
-
-                // We know there's a signature, so we can perform additional checks.
-                X509Certificate certificate = X509Certificate.CreateFromSignedFile(msiPath);
-
-                // 1. Verify the EKU is intended for code signing.
-                if (!certificate.IsIntendedForCodeSigning())
+                if (!Signature.TryVerifyMicrosoftAutheticodeSigned(msiPath, out int result))
                 {
-                    throw new SecurityException(string.Format(LocalizableStrings.CertificateInvalidForCodeSigning, msiPath));
+                    ExitOnError((uint)result, $"Failed to verify Authenticode signature for {msiPath}.");
                 }
 
-                // 2. Verify that the certificate chain terminates in a trusted Microsoft root certificate, a.k.a certificate pinning.
-                if (!certificate.HasMicrosoftTrustedRoot())
-                {
-                    throw new SecurityException(string.Format(LocalizableStrings.FailedToVerifyTrustedMicrosoftRoot, msiPath));
-                }
+                Log?.LogMessage($"Successfully verified Authenticode signature for {msiPath}");
 #pragma warning restore CA1416
 #endif
             }

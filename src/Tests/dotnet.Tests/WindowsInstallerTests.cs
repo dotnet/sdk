@@ -139,24 +139,13 @@ namespace Microsoft.DotNet.Tests
         [InlineData("dotnet_fakesigned.exe", -2146762487, "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.")]
         public void AuthentiCodeSignaturesCanBeVerified(string file, int expectedStatus, string expectedError)
         {
-            int status = AuthentiCode.IsSigned(Path.Combine(s_testDataPath, file));
+            int status = Signature.IsAuthenticodeSigned(Path.Combine(s_testDataPath, file));
             Assert.Equal(expectedStatus, status);
 
             if (expectedStatus != 0)
             {
                 Assert.Equal(expectedError, Marshal.GetPInvokeErrorMessage(status));
             }
-        }
-
-        [WindowsOnlyTheory]
-        [InlineData("dotnet_realsigned.exe", true)]
-        // The file is dual signed, but the cert APIs only look at the first certificate chain so it will pick up the
-        // .NET Foundation certificate that terminates in a DigiCert root certificate and return false.
-        [InlineData("dual_signed.dll", false)]
-        public void ItVerifiesThatTheRootCertificateIsTrusted(string file, bool expectedResult)
-        {
-            X509Certificate certificate = X509Certificate.CreateFromSignedFile(Path.Combine(s_testDataPath, file));
-            Assert.Equal(expectedResult, certificate.HasMicrosoftTrustedRoot());
         }
 
         private NamedPipeServerStream CreateServerPipe(string name)

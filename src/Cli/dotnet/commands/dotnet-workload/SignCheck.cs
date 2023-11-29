@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 #if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Installer.Windows.Security;
 #endif
@@ -15,28 +14,18 @@ namespace Microsoft.DotNet.Workloads.Workload
         private static readonly string s_dotnet = Assembly.GetExecutingAssembly().Location;
 
         /// <summary>
-        /// Determines whether dotnet is signed.
+        /// Determines whether dotnet.dll is signed.
         /// </summary>
-        /// <returns><see langword="true"/> if dotnet is signed; <see langword="false"/> otherwise.</returns>
-        public static bool IsDotNetSigned() => IsSigned(s_dotnet);
-
-        /// <summary>
-        /// Determines whether the specified file is signed by a trusted organization.
-        /// </summary>
-        /// <returns><see langword="true"/> if file is signed; <see langword="false"/> otherwise.</returns>
-        internal static bool IsSigned(string path)
+        /// <returns><see langword="true"/> if dotnet is signed; otherwise, <see langword="false"/>.</returns>
+        public static bool IsDotNetSigned()
         {
             if (OperatingSystem.IsWindows())
             {
 #if !DOT_NET_BUILD_FROM_SOURCE
                 // API is only available on XP and Server 2003 or later versions. .NET requires Win7 minimum.
 #pragma warning disable CA1416
-                if (AuthentiCode.IsSigned(path, IsCacheOnlyRevocationChecksPolicySet()) == 0)
-                {
-                    X509Certificate certificate = X509Certificate.CreateFromSignedFile(path);
-
-                    return certificate.IsIntendedForCodeSigning() && certificate.HasMicrosoftTrustedRoot();
-                }
+                // We don't care about trust in this case, only whether or not the file has a signatue
+                return Signature.IsAuthenticodeSigned(s_dotnet, AllowOnlineRevocationChecks()) == 0;
 #pragma warning restore CA1416
 #endif
             }
@@ -45,19 +34,19 @@ namespace Microsoft.DotNet.Workloads.Workload
         }
 
         /// <summary>
-        /// Determines whether the global policy to limit revocation checks to cached URLs for workloads is set.
+        /// Determines whether revocation checks can go online when verifying signatures for workloads.
         /// </summary>
-        /// <returns><see langword="true"/> if the policy is set; <see langword="false"/> otherwise.</returns>
-        public static bool IsCacheOnlyRevocationChecksPolicySet()
+        /// <returns><see langword="true"/> if the policy key is absent or set to a non-zero value; <see langword="false"/> if the policy key is set to 0.</returns>
+        public static bool AllowOnlineRevocationChecks()
         {
             if (OperatingSystem.IsWindows())
             {
                 using RegistryKey policyKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Policies\Microsoft\dotnet\Workloads");
 
-                return ((int?)policyKey?.GetValue("CacheOnlyRevocationChecks") ?? 0) != 0;
+                return ((int?)policyKey?.GetValue("AllowOnlineRevocationChecks") ?? 1) != 0;
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -75,5 +64,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
             return false;
         }
+
+
     }
 }
