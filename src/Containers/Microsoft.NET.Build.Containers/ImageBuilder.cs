@@ -239,7 +239,7 @@ internal sealed class ImageBuilder
     {
         // asp.net images control port bindings via three environment variables. we should check for those variables and ensure that ports are created for them.
         // precendence is captured at https://github.com/dotnet/aspnetcore/blob/f49c1c7f7467c184ffb630086afac447772096c6/src/Hosting/Hosting/src/GenericHost/GenericWebHostService.cs#L68-L119
-        // ASPNETCORE_URLS is the most specific and is the only one used is present, followed by ASPNETCORE_HTTPS_PORT and ASPNETCORE_HTTP_PORT together
+        // ASPNETCORE_URLS is the most specific and is the only one used if present, followed by ASPNETCORE_HTTPS_PORT and ASPNETCORE_HTTP_PORT together
 
         // https://learn.microsoft.com//aspnet/core/fundamentals/host/web-host?view=aspnetcore-8.0#server-urls - the format of ASPNETCORE_URLS has been stable for many years now
         if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_URLS, out string? urls))
