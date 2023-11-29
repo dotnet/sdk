@@ -129,6 +129,9 @@
   <data name="CommandNameArgumentName" xml:space="preserve">
     <value>COMMAND_NAME</value>
   </data>
+  <data name="RollForwardDescription" xml:space="preserve">
+    <value>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</value>
+  </data>
   <data name="SpecifyExactlyOneCommandName" xml:space="preserve">
     <value>Specify one command name to run.</value>
   </data>

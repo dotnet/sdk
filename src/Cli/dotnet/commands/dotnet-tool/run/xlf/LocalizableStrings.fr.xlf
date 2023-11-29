@@ -22,6 +22,11 @@
         <target state="translated">COMMAND_NAME</target>
         <note />
       </trans-unit>
+      <trans-unit id="RollForwardDescription">
+        <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
+        <target state="new">Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SpecifyExactlyOneCommandName">
         <source>Specify one command name to run.</source>
         <target state="translated">Spécifiez un nom de commande à exécuter.</target>
