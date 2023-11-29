@@ -57,11 +57,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                             $([MSBuild]::IsOSPlatform(`Windows`)) and
                             '$(RuntimeIdentifier)' == ''">
     <_UsingDefaultRuntimeIdentifier>true</_UsingDefaultRuntimeIdentifier>
-    <UseLegacyRids Condition="'$(UseLegacyRids)' == '' and '$(MSBuildRuntimeType)' != 'Core'">true</UseLegacyRids>
     <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x64'">win7-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == ''">win7-x86</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x64' and '$(UseLegacyRids)' != 'true'">win-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="('$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == '') and '$(UseLegacyRids)' != 'true'">win-x86</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x64' and '$(UseRidGraph)' != 'true'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="('$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == '') and '$(UseRidGraph)' != 'true'">win-x86</RuntimeIdentifier>
   </PropertyGroup>
 
   <!-- Breaking change in .NET 8: Some publish properties used to imply SelfContained or require it at the time of this PR to work. We decided to infer SelfContained still in these situations. -->
