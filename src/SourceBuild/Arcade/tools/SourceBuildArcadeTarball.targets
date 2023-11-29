@@ -172,8 +172,9 @@
       WorkingDirectory="$(TarballRepoSourceDir)"
       Condition="$(IsRootRepo) != 'true'" />
 
+    
     <Exec
-      Command="git -c http.https://dnceng@dev.azure.com/dnceng/internal/_git/azure-identitymodel.extraheader='AUTHORIZATION: bearer $(AzDoPat)' submodule update --init --recursive"
+      Command="git -c http.https://dnceng@dev.azure.com/.extraheader='AUTHORIZATION: bearer $(AzDoPat)' submodule update --init --recursive"
       WorkingDirectory="$(TarballRepoSourceDir)" />
 
     <Exec
