@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.CommandFactory
             IEnumerable<string> modifiedArguments = commandArguments;
 
             // Add --roll-forward argument first if exists
-            if (commandArguments.Any(arg => arg.Equals("--roll-forward", StringComparison.OrdinalIgnoreCase)))
+            if (commandArguments != null && commandArguments.Any(arg => arg.Equals("--roll-forward", StringComparison.OrdinalIgnoreCase)))
             {
                 int index = commandArguments.ToList().IndexOf("--roll-forward");
                 arguments.Add(commandArguments.ElementAt(index));
