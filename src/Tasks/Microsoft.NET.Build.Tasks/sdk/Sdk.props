@@ -31,7 +31,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <UsingNETSdkDefaults>true</UsingNETSdkDefaults>
 
-    <CustomAfterDirectoryBuildProps>$(MSBuildThisFileDirectory)UseArtifactsOutputPath.props</CustomAfterDirectoryBuildProps>
+    <CustomAfterDirectoryBuildProps>$(CustomAfterDirectoryBuildProps);$(MSBuildThisFileDirectory)UseArtifactsOutputPath.props</CustomAfterDirectoryBuildProps>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectFullPath)' == '$(ProjectToOverrideProjectExtensionsPath)'">
