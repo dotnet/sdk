@@ -173,7 +173,7 @@
       Condition="$(IsRootRepo) != 'true'" />
 
     <Exec
-      Command="git submodule update --init --recursive --depth 1"
+      Command="git -c http.https://dnceng@dev.azure.com/dnceng/internal/_git/azure-identitymodel.extraheader='AUTHORIZATION: bearer $(System.AccessToken)' submodule update --init --recursive"
       WorkingDirectory="$(TarballRepoSourceDir)" />
 
     <Exec
