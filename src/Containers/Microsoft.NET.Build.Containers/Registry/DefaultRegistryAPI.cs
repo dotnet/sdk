@@ -30,7 +30,10 @@ internal class DefaultRegistryAPI : IRegistryAPI
 
     private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isAmazonECRRegistry = false)
     {
-        var innerHandler = new SocketsHttpHandler();
+        var innerHandler = new SocketsHttpHandler()
+        {
+            UseCookies = false,
+        };
 
         // Ignore certificate for https localhost repository.
         if (baseUri.Host == "localhost" && baseUri.Scheme == "https")
