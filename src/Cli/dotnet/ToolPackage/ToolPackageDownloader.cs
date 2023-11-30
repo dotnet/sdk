@@ -209,8 +209,55 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             DirectoryPath toolDownloadDir
             )
         {
-            
+            var toolsDirectory = Path.Combine(toolDownloadDir.ToString().Trim('"'), packageId.ToString(), packageVersion.ToString(), "tools");
 
+            // TBD: if roll forward all frameworks
+            string[] subDirectories = Directory.GetDirectories(toolsDirectory);
+            foreach (string subDirectory in subDirectories)
+            {
+                UpdateRuntimeConfigFile(toolsDirectory, subDirectory);
+            }
+        }
+
+        private static void UpdateRuntimeConfigFile(
+            string toolsDir,
+            string frameworkDir
+            )
+        {
+            // Get the setting file
+            var settingFilePath = Path.Combine(toolsDir, frameworkDir, "any", "DotnetToolSettings.xml");
+            if (!File.Exists(settingFilePath))
+            {
+                // TBD
+                throw new Exception();
+            }
+
+            // Get runtimeConfig file
+            string runtimeConfigFileFolder = null;
+            XDocument dotnetToolSettings = XDocument.Load(settingFilePath);
+            XElement commandElement = dotnetToolSettings.Descendants("Command").FirstOrDefault();
+            if (commandElement != null)
+            {
+                XAttribute entryPointAttribute = commandElement.Attribute("EntryPoint");
+                if (entryPointAttribute != null)
+                {
+                    runtimeConfigFileFolder = entryPointAttribute.Value;
+                }
+            }
+
+            var runtimeConfigFilePath = $"{Path.GetFileNameWithoutExtension(runtimeConfigFileFolder)}{".runtimeconfig.json"}";
+
+            // Update the runtimeconfig.json file
+            string existingJson = File.ReadAllText(runtimeConfigFilePath);
+
+            var jsonObject = JObject.Parse(existingJson);
+            var runtimeOptions = jsonObject["runtimeOptions"] as JObject;
+            if (runtimeOptions != null)
+            {
+                runtimeOptions["rollForward"] = "LatestMajor";
+                string updateJson = jsonObject.ToString();
+                File.WriteAllText(runtimeConfigFilePath, updateJson);
+            }
         }
 
         private static IEnumerable<LockFileItem> GetLockFileItems(
