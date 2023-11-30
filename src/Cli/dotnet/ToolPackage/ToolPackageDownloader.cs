@@ -215,17 +215,16 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             string[] subDirectories = Directory.GetDirectories(toolsDirectory);
             foreach (string subDirectory in subDirectories)
             {
-                UpdateRuntimeConfigFile(toolsDirectory, subDirectory);
+                UpdateRuntimeConfigFile(subDirectory);
             }
         }
 
         private static void UpdateRuntimeConfigFile(
-            string toolsDir,
             string frameworkDir
             )
         {
             // Get the setting file
-            var settingFilePath = Path.Combine(toolsDir, frameworkDir, "any", "DotnetToolSettings.xml");
+            var settingFilePath = Path.Combine(frameworkDir, "any", "DotnetToolSettings.xml");
             if (!File.Exists(settingFilePath))
             {
                 // TBD
@@ -245,7 +244,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 }
             }
 
-            var runtimeConfigFilePath = $"{Path.GetFileNameWithoutExtension(runtimeConfigFileFolder)}{".runtimeconfig.json"}";
+            var runtimeConfigFilePath = Path.Combine(Path.GetDirectoryName(settingFilePath), $"{Path.GetFileNameWithoutExtension(runtimeConfigFileFolder)}{".runtimeconfig.json"}");
 
             // Update the runtimeconfig.json file
             string existingJson = File.ReadAllText(runtimeConfigFilePath);
