@@ -96,7 +96,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
             string targetFramework = null,
-            bool isGlobalTool = false
+            bool isGlobalTool = false,
+            bool globalToolRollForward = false
             )
         {
             string rollbackDirectory = null;

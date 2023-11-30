@@ -13,7 +13,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
             string targetFramework = null,
-            bool isGlobalTool = false
+            bool isGlobalTool = false,
+            bool globalToolRollForward = false
         );
     }
 }

@@ -27,6 +27,10 @@ using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using NuGet.Configuration;
 using Microsoft.TemplateEngine.Utils;
+using System.Text.Json;
+using System.Xml;
+using System.Text.Json.Nodes;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.DotNet.Cli.ToolPackage
 {
@@ -72,7 +76,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             VerbosityOptions verbosity = VerbosityOptions.normal,
             VersionRange versionRange = null,
             string targetFramework = null,
-            bool isGlobalTool = false
+            bool isGlobalTool = false,
+            bool globalToolRollForward = false
             )
         {
             var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);

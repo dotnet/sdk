@@ -134,7 +134,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         versionRange: versionRange,
                         targetFramework: _framework,
                         verbosity: _verbosity,
-                        isGlobalTool: true
+                        isGlobalTool: true,
+                        globalToolRollForward: _rollForward
                     );
 
                     NuGetFramework framework;
