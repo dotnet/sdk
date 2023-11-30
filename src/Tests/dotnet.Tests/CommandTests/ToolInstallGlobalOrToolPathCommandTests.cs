@@ -370,6 +370,23 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenRunWithValidBareVersionItShouldInterpretAsNuGetExactVersion()
+        {
+            const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+
+            var toolInstallGlobalOrToolPathCommand = new DotnetCommand(Log, "tool", "install", "-g", UnlistedPackageId, "--version", "0.5.0", "--add-source", nugetSourcePath)
+                .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
+                .WithWorkingDirectory(testDir);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Pass();
+
+            // Uninstall the unlisted package
+            var toolUninstallCommand = new DotnetCommand(Log, "tool", "uninstall", "-g", UnlistedPackageId);
+            toolUninstallCommand.Execute().Should().Pass();
+        }
+
+        [Fact]
         public void WhenRunWithoutValidVersionUnlistedToolItShouldThrow()
         {
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
