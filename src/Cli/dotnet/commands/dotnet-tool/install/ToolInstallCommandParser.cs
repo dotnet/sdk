@@ -56,6 +56,11 @@ namespace Microsoft.DotNet.Cli
             Description = CommonLocalizableStrings.ArchitectureOptionDescription
         };
 
+        public static readonly CliOption<bool> RollForwardOption = new("--roll-forward")
+        {
+            Description = LocalizableStrings.RollForwardOptionDescription
+        };
+
         public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
         
         public static readonly CliOption<bool> LocalOption = ToolAppliedOption.LocalOption;
