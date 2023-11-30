@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
-            bool globalToolRollForward = false
+            bool isGlobalToolRollForward = false
             )
         {
             var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
@@ -145,6 +145,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                                        
                     CreateAssetFile(packageId, packageVersion, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
 
+                    if (isGlobalToolRollForward)
+                    {
+                        UpdateRuntimeConfig(packageId, packageVersion, toolDownloadDir);
+                    }
+                    
                     DirectoryPath toolReturnPackageDirectory;
                     DirectoryPath toolReturnJsonParentDirectory;
 
@@ -196,6 +201,16 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 managedCodeConventions.Patterns.ToolsAssemblies);
 
             lockFileLib.ToolsAssemblies.AddRange(toolsGroup);
+        }
+
+        private static void UpdateRuntimeConfig(
+            PackageId packageId,
+            NuGetVersion packageVersion,
+            DirectoryPath toolDownloadDir
+            )
+        {
+            
+
         }
 
         private static IEnumerable<LockFileItem> GetLockFileItems(

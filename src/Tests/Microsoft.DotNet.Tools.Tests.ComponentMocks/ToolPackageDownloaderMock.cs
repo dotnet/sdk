@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
-            bool globalToolRollForward = false
+            bool isGlobalToolRollForward = false
             )
         {
             string rollbackDirectory = null;
