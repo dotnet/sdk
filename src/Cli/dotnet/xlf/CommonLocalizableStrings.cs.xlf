@@ -282,6 +282,11 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
         <target state="translated">Řešení {0} již obsahuje projekt {1} ve složce řešení {2}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSettingsNotFound">
+        <source>Tool settings file does not exist for the tool {0}.</source>
+        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Aktualizovat</target>

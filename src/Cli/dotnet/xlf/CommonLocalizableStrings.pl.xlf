@@ -282,6 +282,11 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Rozwiązanie {0} zawiera już projekt {1} w folderze rozwiązania {2}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSettingsNotFound">
+        <source>Tool settings file does not exist for the tool {0}.</source>
+        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Aktualizuj</target>

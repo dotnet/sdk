@@ -282,6 +282,11 @@ Varsayılan değer 'false' olur. Ancak çalışma zamanı tanımlayıcısı beli
         <target state="translated">{0} çözümü zaten {2} çözüm klasöründe {1} projesini içeriyor.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSettingsNotFound">
+        <source>Tool settings file does not exist for the tool {0}.</source>
+        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Güncelleştir</target>

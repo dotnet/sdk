@@ -282,6 +282,11 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">A solução {0} já contém o projeto {1} na pasta da solução {2}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSettingsNotFound">
+        <source>Tool settings file does not exist for the tool {0}.</source>
+        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Atualização</target>
