@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(CoreSdkTargetFramework);net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(CoreSdkTargetFramework)</TargetFrameworks>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RootNamespace>Microsoft.DotNet.Cli.Build</RootNamespace>
+    <DefineConstants Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefineConstants);SOURCE_BUILD</DefineConstants>
+    <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!--<ItemGroup>
+    <PackageReference Include="Microsoft.Build" Version="15.7.179" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.7.179" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="NuGet.Versioning" Version="$(NuGetBuildTasksPackageVersion)" />
+    <PackageReference Include="NuGet.Packaging" Version="$(NuGetBuildTasksPackageVersion)" />
+    <PackageReference Include="System.Reflection.Metadata" Version="1.4.2" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+  </ItemGroup>-->
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="NuGet.Versioning" />
+    <PackageReference Include="NuGet.Packaging" />
+    <!--<PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" />-->
+    <PackageReference Include="WindowsAzure.Storage" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <PackageReference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <Reference Include="System.Net.Http" />
+  </ItemGroup>
+
+  <!-- Global usings -->
+  <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
+  <ItemGroup>
+    <Using Include="Microsoft.Build.Framework" />
+    <Using Include="Microsoft.Build.Utilities" />
+     <!-- This causes conflicts with System.Threading.Tasks.Task. Giving it an alias to avoid the conflict. -->
+    <Using Include="Microsoft.Build.Utilities.Task" Alias="Task" />
+  </ItemGroup>
+
+</Project>

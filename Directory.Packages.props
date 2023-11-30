@@ -103,6 +103,7 @@
     <PackageVersion Include="System.Windows.Extensions" Version="$(MicrosoftNETCoreAppRefPackageVersion)" />
     <PackageVersion Include="System.Xml.XmlDocument" Version="$(SystemXmlXmlDocumentPackageVersion)" />
     <PackageVersion Include="Valleysoft.DockerCredsProvider" Version="2.2.0" />
+    <PackageVersion Include="WindowsAzure.Storage" Version="9.3.3" />
     <PackageVersion Include="xunit" Version="$(XUnitVersion)" />
     <PackageVersion Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
     <PackageVersion Include="xunit.console" Version="$(XUnitVersion)"/>
