@@ -23,8 +23,7 @@ namespace Microsoft.DotNet.Cli
             new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
             {
                 Description = CommonLocalizableStrings.VerbosityOptionDescription,
-                HelpName = CommonLocalizableStrings.LevelArgumentName,
-                DefaultValueFactory = _ => VerbosityOptions.minimal
+                HelpName = CommonLocalizableStrings.LevelArgumentName
             }.ForwardAsSingle(o => $"-verbosity:{o}");
 
         public static CliOption<VerbosityOptions> HiddenVerbosityOption =
