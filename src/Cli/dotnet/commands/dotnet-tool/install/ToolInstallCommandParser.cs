@@ -99,6 +99,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(VerbosityOption);
             command.Options.Add(ArchitectureOption);
             command.Options.Add(CreateManifestIfNeededOption);
+            command.Options.Add(RollForwardOption);
 
             command.SetAction((parseResult) => new ToolInstallCommand(parseResult).Execute());
 
