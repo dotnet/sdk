@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tools.Tool.Run
         private readonly string _toolCommandName;
         private readonly LocalToolsCommandResolver _localToolsCommandResolver;
         private readonly IEnumerable<string> _forwardArgument;
-        private readonly string _rollForward;
+        public readonly string _rollForward;
 
         public ToolRunCommand(
             ParseResult result,
