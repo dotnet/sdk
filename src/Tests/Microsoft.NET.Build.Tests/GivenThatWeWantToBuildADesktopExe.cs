@@ -37,8 +37,8 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyTheory]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", false, "AnyCPU")]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", true, "x86")]
-        [InlineData("SQLite/3.13.0", false, "x86")]
-        [InlineData("SQLite/3.13.0", true, "x86")]
+        [InlineData("Libuv/1.10.0", false, "x86")]
+        [InlineData("Libuv/1.10.0", true, "x86")]
 
         public void PlatformTargetInferredCorrectly(string packageToReference, bool referencePlatformPackage, string expectedPlatform)
         {
