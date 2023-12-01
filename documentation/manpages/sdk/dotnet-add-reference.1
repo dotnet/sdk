@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-add-reference" "1" "2022-10-10" "" ".NET Documentation"
+.TH "dotnet-add-reference" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet add reference
 .PP
@@ -43,6 +43,20 @@ After running the command, the \f[V]<ProjectReference>\f[R] elements are added t
   <ProjectReference Include=\[dq]app.csproj\[dq] />
   <ProjectReference Include=\[dq]..\[rs]lib2\[rs]lib2.csproj\[dq] />
   <ProjectReference Include=\[dq]..\[rs]lib1\[rs]lib1.csproj\[dq] />
+</ItemGroup>
+\f[R]
+.fi
+.SS Add a reference to an assembly that isn\[cq]t in a project
+.PP
+There\[cq]s no CLI command to add a reference to an assembly that isn\[cq]t in a project or a package.
+But you can do that by editing your \f[I].csproj\f[R] file and adding markup similar to the following example:
+.IP
+.nf
+\f[C]
+<ItemGroup>
+  <Reference Include=\[dq]MyAssembly\[dq]>
+    <HintPath>\[dq].\[rs]MyDLLFolder\[rs]MyAssembly.dll</HintPath>
+  </Reference>
 </ItemGroup>
 \f[R]
 .fi

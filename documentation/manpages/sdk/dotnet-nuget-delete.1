@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-delete" "1" "2022-10-10" "" ".NET Documentation"
+.TH "dotnet-nuget-delete" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet nuget delete
 .PP
@@ -81,7 +81,9 @@ The API key for the server.
 \f[B]\f[VB]--no-service-endpoint\f[B]\f[R]
 .RS 2
 .PP
-Doesn\[cq]t append \[lq]api/v2/package\[rq] to the source URL.
+By default, the command appends \[lq]/api/v2/package\[rq] to the specified URL.
+This option is for custom feeds that must use the exact source URL as specified with the \f[V]--source\f[R] option.
+For more information, see the \f[V]--source\f[R] option later in this article.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--non-interactive\f[B]\f[R]
@@ -94,8 +96,8 @@ Doesn\[cq]t prompt for user input or confirmations.
 .RS 2
 .PP
 Specifies the server URL.
-Supported URLs for nuget.org include \f[V]https://www.nuget.org\f[R], \f[V]https://www.nuget.org/api/v3\f[R], and \f[V]https://www.nuget.org/api/v2/package\f[R].
-For private feeds, replace the host name (for example, \f[V]%hostname%/api/v3\f[R]).
+The URL specified by using this option can be either V2 (\f[V]https://www.nuget.org/api/v2/\f[R]) or V3 (\f[V]https://api.nuget.org/v3/index.json\f[R]).
+For private feeds, replace the host name (for example, \f[V]%hostname%/api/v3/index.json\f[R]).
 .RE
 .SH EXAMPLES
 .IP \[bu] 2
