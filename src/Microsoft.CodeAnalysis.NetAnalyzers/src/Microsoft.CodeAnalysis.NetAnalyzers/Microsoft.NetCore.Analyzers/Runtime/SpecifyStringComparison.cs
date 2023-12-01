@@ -225,12 +225,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     .GetMembers(targetMethod.Name)
                     .OfType<IMethodSymbol>()
                     .Where(method => method.IsStatic == targetMethod.IsStatic &&
-                                     IsAccessible(invocationStart, method, semanticModel));
-
-            static bool IsAccessible(int position, IMethodSymbol method, SemanticModel? semanticModel)
-            {
-                return semanticModel != null && semanticModel.IsAccessible(position, method);
-            }
+                                     semanticModel.IsAccessible(invocationStart, method));
         }
     }
 }
