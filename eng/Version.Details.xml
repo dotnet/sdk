@@ -218,23 +218,23 @@
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>4fc1911f267f74f26c5443e6b219d782f1b02fcd</Sha>
+      <Sha>a0e7b5d8673f28c41bcac6e2001b39ba2c8fab54</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.8.0" Version="8.0.1-servicing.23580.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.8.0" Version="8.0.1-servicing.23580.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>4fc1911f267f74f26c5443e6b219d782f1b02fcd</Sha>
+      <Sha>a0e7b5d8673f28c41bcac6e2001b39ba2c8fab54</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>4fc1911f267f74f26c5443e6b219d782f1b02fcd</Sha>
+      <Sha>a0e7b5d8673f28c41bcac6e2001b39ba2c8fab54</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.8.0" Version="8.0.1-servicing.23580.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.8.0" Version="8.0.1-servicing.23580.5">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>4fc1911f267f74f26c5443e6b219d782f1b02fcd</Sha>
+      <Sha>a0e7b5d8673f28c41bcac6e2001b39ba2c8fab54</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="8.0.1-servicing.23580.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="8.0.1-servicing.23580.5" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
-      <Sha>429ec934d125d0c878613ec1c450553393a00952</Sha>
+      <Sha>ac40bed7a33baf164d3984ca90c2aedba996a7b2</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
