@@ -103,10 +103,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // but it is recommended to explicitly specify it for clarity and readability:
                 // https://learn.microsoft.com/dotnet/standard/base-types/best-practices-strings#recommendations-for-string-usage
                 var methodsWithSameNameAsTargetMethod =
-                    GetAccessibleMethodsWithSameNameAsTargetMethod(
-                        invocationExpression,
-                        targetMethod,
-                        oaContext.Operation.SemanticModel);
+                    GetAccessibleMethodsWithSameNameAsTargetMethod(invocationExpression, targetMethod);
 
                 if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
                 {
@@ -216,8 +213,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static IEnumerable<IMethodSymbol> GetAccessibleMethodsWithSameNameAsTargetMethod(
             IInvocationOperation invocationExpression,
-            IMethodSymbol targetMethod,
-            SemanticModel semanticModel)
+            IMethodSymbol targetMethod)
         {
             var invocationStart = invocationExpression.Syntax.GetLocation().SourceSpan.Start;
 
@@ -225,7 +221,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     .GetMembers(targetMethod.Name)
                     .OfType<IMethodSymbol>()
                     .Where(method => method.IsStatic == targetMethod.IsStatic &&
-                                     semanticModel.IsAccessible(invocationStart, method));
+                                     invocationExpression.SemanticModel!.IsAccessible(invocationStart, method));
         }
     }
 }
