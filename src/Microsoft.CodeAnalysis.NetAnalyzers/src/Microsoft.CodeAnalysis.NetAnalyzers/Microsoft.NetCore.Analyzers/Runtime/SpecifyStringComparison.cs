@@ -217,7 +217,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static IEnumerable<IMethodSymbol> GetAccessibleMethodsWithSameNameAsTargetMethod(
             IInvocationOperation invocationExpression,
             IMethodSymbol targetMethod,
-            SemanticModel? semanticModel)
+            SemanticModel semanticModel)
         {
             var invocationStart = invocationExpression.Syntax.GetLocation().SourceSpan.Start;
 
