@@ -35,6 +35,12 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c07cb4441d6270327472e88919f3d4eb6cc0450f</Sha>
     </Dependency>
+    <!-- Change blob version in GenerateLayout.targets if this is unpinned to service targeting pack -->
+    <!-- No new netstandard.library planned for 3.1 timeframe at this time. -->
+    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
+      <Uri>https://github.com/dotnet/core-setup</Uri>
+      <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.NETCore.Platforms" Version="9.0.0-alpha.1.23560.9">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>c07cb4441d6270327472e88919f3d4eb6cc0450f</Sha>
@@ -308,6 +314,40 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>8a539d35e7db61ce0956489f60edaa4ac0c57ce6</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.2.1" Version="1.0.2-beta4.22406.1">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>0385265f4d0b6413d64aea0223172366a9b9858c</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.5.0" Version="1.1.0-rc.23558.1">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>307b8f538d83a955d8f6dd909eee41a5555f2f4d</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.6.0" Version="1.1.0-rc.23559.1">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>e1aecaf3a332e25fae8cc7aa09d524b5e7c4a47a</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.7.0" Version="1.1.0-rc.23559.1">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>e1aecaf3a332e25fae8cc7aa09d524b5e7c4a47a</Sha>
+      <SourceBuild RepoName="test-templates" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.8.0" Version="1.1.0-rc.23559.1">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>e1aecaf3a332e25fae8cc7aa09d524b5e7c4a47a</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.23559.1">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>e1aecaf3a332e25fae8cc7aa09d524b5e7c4a47a</Sha>
+    </Dependency>
+    <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-alpha.1.23557.11" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/winforms</Uri>
+      <Sha>1d604b5425cbbaf54f2b5be181096d1cf6b0271d</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-alpha.1.23558.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/wpf</Uri>
+      <Sha>bac14e97f89dcdba259ccb21d9eaa8ad47f262a7</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="7.0.0-preview.22423.2" Pinned="true">
       <Uri>https://github.com/dotnet/xdt</Uri>
       <Sha>9a1c3e1b7f0c8763d4c96e593961a61a72679a7b</Sha>
@@ -418,6 +458,22 @@
       <Sha>a6513a141bc5cb0d7d625399918fcbca1dc8a412</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.CMake.Sdk" Version="9.0.0-beta.23559.3">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>a6513a141bc5cb0d7d625399918fcbca1dc8a412</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.23559.3">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>a6513a141bc5cb0d7d625399918fcbca1dc8a412</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.23551.2">
+      <Uri>https://github.com/dotnet/arcade-services</Uri>
+      <Sha>88b0cbb096999d03068ddc9945465a3f5b6ba5da</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.23551.2">
+      <Uri>https://github.com/dotnet/arcade-services</Uri>
+      <Sha>88b0cbb096999d03068ddc9945465a3f5b6ba5da</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.23559.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>a6513a141bc5cb0d7d625399918fcbca1dc8a412</Sha>
@@ -437,6 +493,20 @@
     <Dependency Name="Microsoft.DotNet.XliffTasks" Version="9.0.0-beta.23559.3">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>a6513a141bc5cb0d7d625399918fcbca1dc8a412</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="8.0.0-alpha.1.22557.12">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>af841c8b33cecc92d74222298f1e45bf7bf3d90a</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.23558.1">
+      <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
+      <Sha>8b3155afc95d149699cbd761b18b059755cfd198</Sha>
+      <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="8.0.0-preview.23424.2">
+      <Uri>https://github.com/dotnet/scenario-tests</Uri>
+      <Sha>8af694a5e3986a27ccfee1a638ba311c7e9bc55d</Sha>
+      <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>

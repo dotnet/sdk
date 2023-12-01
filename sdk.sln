@@ -487,6 +487,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks", "src\Installer\core-sdk-tasks\core-sdk-tasks.csproj", "{18299588-C31E-4647-9052-B2233FED1926}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer_shim", "src\Installer\finalizer\finalizer_shim.csproj", "{9A127490-D8F4-4282-BE5F-0DC965C1CE8F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -909,6 +911,10 @@ Global
 		{18299588-C31E-4647-9052-B2233FED1926}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{18299588-C31E-4647-9052-B2233FED1926}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{18299588-C31E-4647-9052-B2233FED1926}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A127490-D8F4-4282-BE5F-0DC965C1CE8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A127490-D8F4-4282-BE5F-0DC965C1CE8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A127490-D8F4-4282-BE5F-0DC965C1CE8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A127490-D8F4-4282-BE5F-0DC965C1CE8F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1078,6 +1084,7 @@ Global
 		{85A01ACB-CC90-45EF-8F6C-AFC2B9F31126} = {3AD322BF-405B-4A53-9858-51CF66E8509F}
 		{E014DF18-8378-4422-ABA7-DB039B72E640} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
 		{18299588-C31E-4647-9052-B2233FED1926} = {E014DF18-8378-4422-ABA7-DB039B72E640}
+		{9A127490-D8F4-4282-BE5F-0DC965C1CE8F} = {E014DF18-8378-4422-ABA7-DB039B72E640}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
