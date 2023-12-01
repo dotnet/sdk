@@ -103,7 +103,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // but it is recommended to explicitly specify it for clarity and readability:
                 // https://learn.microsoft.com/dotnet/standard/base-types/best-practices-strings#recommendations-for-string-usage
                 var methodsWithSameNameAsTargetMethod =
-                    GetAccessibleMethodsWithSameNameAsTargetMethod(invocationExpression, targetMethod);
+                    GetAccessibleMethodsWithSameNameAsTargetMethod(
+                        invocationExpression,
+                        targetMethod,
+                        oaContext.Operation.SemanticModel);
 
                 if (methodsWithSameNameAsTargetMethod.HasMoreThan(1))
                 {
@@ -213,32 +216,21 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static IEnumerable<IMethodSymbol> GetAccessibleMethodsWithSameNameAsTargetMethod(
             IInvocationOperation invocationExpression,
-            IMethodSymbol targetMethod)
+            IMethodSymbol targetMethod,
+            SemanticModel? semanticModel)
         {
             var invocationStart = invocationExpression.Syntax.GetLocation().SourceSpan.Start;
 
-            var methodsWithSameNameAsTargetMethod =
-                invocationExpression.SemanticModel?
-                    .LookupSymbols(
-                        invocationStart,
-                        targetMethod.ContainingType,
-                        targetMethod.Name)
-                    .OfType<IMethodSymbol>()
-                    .Where(method => method.IsStatic == targetMethod.IsStatic) ?? Enumerable.Empty<IMethodSymbol>();
-
-            var immutableHashSetBuilder = ImmutableHashSet.CreateBuilder<IMethodSymbol>(SymbolEqualityComparer.Default);
-            immutableHashSetBuilder.AddRange(methodsWithSameNameAsTargetMethod);
-
-            var protectedMethodsWithSameNameAsTargetMethod =
-                targetMethod.ContainingType
+            return targetMethod.ContainingType
                     .GetMembers(targetMethod.Name)
                     .OfType<IMethodSymbol>()
-                    .Where(method => method.DeclaredAccessibility == Accessibility.Protected &&
-                        method.IsStatic == targetMethod.IsStatic);
+                    .Where(method => method.IsStatic == targetMethod.IsStatic &&
+                                     IsAccessible(invocationStart, method, semanticModel));
 
-            immutableHashSetBuilder.AddRange(protectedMethodsWithSameNameAsTargetMethod);
-
-            return immutableHashSetBuilder.ToImmutableHashSet();
+            static bool IsAccessible(int position, IMethodSymbol method, SemanticModel? semanticModel)
+            {
+                return semanticModel != null && semanticModel.IsAccessible(position, method);
+            }
         }
     }
 }
