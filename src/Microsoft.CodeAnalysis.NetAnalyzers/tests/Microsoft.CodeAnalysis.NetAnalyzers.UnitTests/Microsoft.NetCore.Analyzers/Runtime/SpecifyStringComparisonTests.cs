@@ -587,6 +587,254 @@ public class C
 }");
         }
 
+        [Fact, WorkItem(6943, "https://github.com/dotnet/roslyn-analyzers/issues/6943")]
+        public async Task CA1307_StaticMethodWithPrivateOverload_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class G
+{
+    public static void DoSomething()
+    {
+        F.M("""");
+    }
+}
+
+public class F
+{
+    private static void M(string s, StringComparison c) { }
+    public static void M(string s) { }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class G
+    Public Shared Sub DoSomething()
+        F.M("""")
+    End Sub
+End Class
+
+Public Class F
+    Private Shared Sub M(s As String, c As StringComparison)
+    End Sub
+
+    Public Shared Sub M(s As String)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(6943, "https://github.com/dotnet/roslyn-analyzers/issues/6943")]
+        public async Task CA1307_StaticMethodWithAccessibleInstanceOverload_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class G
+{
+    public static void DoSomething()
+    {
+        F.M("""");
+    }
+}
+
+public class F
+{
+    public void M(string s, StringComparison c) { }
+    public static void M(string s) { }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class G
+    Public Shared Sub DoSomething()
+        F.M("""")
+    End Sub
+End Class
+
+Public Class F
+    Public Sub M(s As String, c As StringComparison)
+    End Sub
+
+    Public Shared Sub M(s As String)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(6943, "https://github.com/dotnet/roslyn-analyzers/issues/6943")]
+        public async Task CA1307_StaticMethodWithProtectedStaticOverloadOnBaseClass_DiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class G : F
+{
+    public static void DoSomething()
+    {
+        F.M("""");
+    }
+}
+
+public class F
+{
+    protected static void M(string s, StringComparison c) { }
+    public static void M(string s) { }
+}",
+                GetCA1307CSharpResultsAt(8, 9, "F.M(string)",
+                    "G.DoSomething()",
+                    "F.M(string, System.StringComparison)"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class G
+    Inherits F
+
+    Public Shared Sub DoSomething()
+        F.M("""")
+    End Sub
+End Class
+
+Public Class F
+    Protected Shared Sub M(s As String, c As StringComparison)
+    End Sub
+
+    Public Shared Sub M(s As String)
+    End Sub
+End Class",
+                GetCA1307BasicResultsAt(8, 9, "F.M(String)",
+                "G.DoSomething()",
+                "F.M(String, System.StringComparison)"));
+        }
+
+        [Fact, WorkItem(6943, "https://github.com/dotnet/roslyn-analyzers/issues/6943")]
+        public async Task CA1307_PrivateOverloadOnBaseClass_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class G : F
+{
+    public void DoSomething()
+    {
+        M("""");
+    }
+}
+
+public class F
+{
+    private void M(string s, StringComparison c) { }
+    public void M(string s) { }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class G
+    Inherits F
+
+    Public Sub DoSomething()
+        M("""")
+    End Sub
+End Class
+
+Public Class F
+    Private Sub M(s As String, c As StringComparison)
+    End Sub
+
+    Public Sub M(s As String)
+    End Sub
+End Class");
+        }
+
+        [Fact, WorkItem(6943, "https://github.com/dotnet/roslyn-analyzers/issues/6943")]
+        public async Task CA1307_ProtectedOverloadOnBaseClass_DiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class G : F
+{
+    public void DoSomething()
+    {
+        M("""");
+    }
+}
+
+public class F
+{
+    protected void M(string s, StringComparison c) { }
+    public void M(string s) { }
+}",
+                GetCA1307CSharpResultsAt(8, 9, "F.M(string)",
+                    "G.DoSomething()",
+                    "F.M(string, System.StringComparison)"));
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class G
+    Inherits F
+
+    Public Sub DoSomething()
+        M("""")
+    End Sub
+End Class
+
+Public Class F
+    Protected Sub M(s As String, c As StringComparison)
+    End Sub
+
+    Public Sub M(s As String)
+    End Sub
+End Class",
+                GetCA1307BasicResultsAt(8, 9, "F.M(String)",
+                    "G.DoSomething()",
+                    "F.M(String, System.StringComparison)"));
+        }
+
+        [Fact, WorkItem(6943, "https://github.com/dotnet/roslyn-analyzers/issues/6943")]
+        public async Task CA1307_StaticOverloadOnBaseClass_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+
+public class G : F
+{
+    public void DoSomething()
+    {
+        M("""");
+    }
+}
+
+public class F
+{
+    public static void M(string s, StringComparison c) { }
+    public void M(string s) { }
+}");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+
+Public Class G
+    Inherits F
+
+    Public Sub DoSomething()
+        M("""")
+    End Sub
+End Class
+
+Public Class F
+    Public Shared Sub M(s As String, c As StringComparison)
+    End Sub
+
+    Public Sub M(s As String)
+    End Sub
+End Class");
+        }
+
         private static DiagnosticResult GetCA1307CSharpResultsAt(int line, int column, string arg1, string arg2, string arg3) =>
 #pragma warning disable RS0030 // Do not use banned APIs
             VerifyCS.Diagnostic(SpecifyStringComparisonAnalyzer.Rule_CA1307)
