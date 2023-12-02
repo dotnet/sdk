@@ -1,14 +1,15 @@
 <Project Sdk="Microsoft.DotNet.CMake.Sdk">
+
   <PropertyGroup>
     <CMakeLists>CMakeLists.txt</CMakeLists>
   </PropertyGroup>
 
-  <!-- 
-  This will be passed through -D and referenced by the CMakeLists.txt to correctly resolve
-  the platform specific libs
-  -->
+  <!-- This will be passed through -D and referenced by the CMakeLists.txt to correctly resolve the platform specific libs. -->
   <ItemGroup>
     <CMakeDefines Include="Platform" Value="$(Platform)" />
+    <CMakeDefines Include="ArtifactsDir" Value="$(ArtifactsDir)" />
+    <!-- Include this item below to create a binlog for the native build. -->
     <!-- <CMakeNativeToolArguments Include="/bl:$(ArtifactsDir)native.binlog" /> -->
   </ItemGroup>
+
 </Project>
