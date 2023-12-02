@@ -31,5 +31,8 @@ namespace Microsoft.DotNet.Watcher
 
         public string? ShortDisplayName()
             => Path.GetFileNameWithoutExtension(Executable);
+
+        public string GetArgumentsDisplay()
+            => EscapedArguments ?? CommandLineUtilities.JoinArguments(Arguments ?? []);
     }
 }

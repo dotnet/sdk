@@ -55,6 +55,24 @@ namespace Microsoft.DotNet.Watcher.Tests
             Assert.Equal(expectedApplicationArgs, await App.AssertOutputLineStartsWith("Arguments = "));
         }
 
+        [Theory]
+        [InlineData(new[] { "--no-hot-reload", "--", "run", "args" }, "Argument Specified in Props,run,args")]
+        [InlineData(new[] { "--", "run", "args" }, "Argument Specified in Props,run,args")]
+        // if arguments specified on command line the ones from launch profile are ignored
+        [InlineData(new[] { "-lp", "P1", "--", "run", "args" },"Argument Specified in Props,run,args")]
+        // if no arguments specified on command line the ones from launch profile are added
+        [InlineData(new[] { "-lp", "P1" }, "Argument Specified in Props,Arg1 from launch profile,Arg2 from launch profile")]
+        public async Task Arguments_HostArguments(string[] arguments, string expectedApplicationArgs)
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppCustomHost", identifier: string.Join(",", arguments))
+                .WithSource()
+                .Path;
+
+            App.Start(testAsset, arguments);
+
+            Assert.Equal(expectedApplicationArgs, await App.AssertOutputLineStartsWith("Arguments = "));
+        }
+
         [Fact]
         public async Task RunArguments_NoHotReload()
         {
