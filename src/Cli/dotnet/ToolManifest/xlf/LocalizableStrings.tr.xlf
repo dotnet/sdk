@@ -36,6 +36,11 @@ Aranan konumların bir listesi için aracın adından önce "-d" seçeneğini be
         <target state="translated">Paketler için birden fazla giriş var: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolMissingRollForward">
+        <source>Missing 'rollForward' entry.</source>
+        <target state="new">Missing 'rollForward' entry.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
         <source>Expected a {0} for property '{1}'.</source>
         <target state="translated">'{1}' özelliği için bir {0} bekleniyordu.</target>

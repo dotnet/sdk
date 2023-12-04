@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.ToolManifest
         private const string JsonPropertyIsRoot = "isRoot";
         private const string JsonPropertyCommands = "commands";
         private const string JsonPropertyTools = "tools";
+        private const string JsonPropertyRollForward = "rollForward";
 
         public ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileDetector dangerousFileDetector = null)
         {
@@ -32,7 +33,8 @@ namespace Microsoft.DotNet.ToolManifest
             FilePath manifest,
             PackageId packageId,
             NuGetVersion nuGetVersion,
-            ToolCommandName[] toolCommandNames)
+            ToolCommandName[] toolCommandNames,
+            bool rollForward = false)
         {
             SerializableLocalToolsManifest deserializedManifest =
                 DeserializeLocalToolsManifest(manifest);
@@ -70,7 +72,8 @@ namespace Microsoft.DotNet.ToolManifest
                 {
                     PackageId = packageId.ToString(),
                     Version = nuGetVersion.ToNormalizedString(),
-                    Commands = toolCommandNames.Select(c => c.Value).ToArray()
+                    Commands = toolCommandNames.Select(c => c.Value).ToArray(),
+                    RollForward = rollForward,
                 });
 
             _fileSystem.File.WriteAllText(manifest.Value, deserializedManifest.ToJson());
@@ -80,7 +83,8 @@ namespace Microsoft.DotNet.ToolManifest
             FilePath manifest,
             PackageId packageId,
             NuGetVersion newNuGetVersion,
-            ToolCommandName[] newToolCommandNames)
+            ToolCommandName[] newToolCommandNames,
+            bool rollForward = false)
         {
             SerializableLocalToolsManifest deserializedManifest =
                 DeserializeLocalToolsManifest(manifest);
@@ -199,6 +203,11 @@ namespace Microsoft.DotNet.ToolManifest
                                 serializableLocalToolSinglePackage.Commands = commands.ToArray();
                             }
 
+                            if (toolJson.Value.TryGetStringValue(JsonPropertyRollForward, out var rollForwardJson))
+                            {
+                                serializableLocalToolSinglePackage.RollForward = bool.Parse(rollForwardJson);
+                            }
+
                             serializableLocalToolsManifest.Tools.Add(serializableLocalToolSinglePackage);
                         }
                     }
@@ -269,6 +278,8 @@ namespace Microsoft.DotNet.ToolManifest
                     packageLevelErrors.Add(LocalizableStrings.FieldCommandsIsMissing);
                 }
 
+                bool rollForward = tools.RollForward;
+
                 if (packageLevelErrors.Any())
                 {
                     var joinedWithIndentation = string.Join(Environment.NewLine,
@@ -282,7 +293,8 @@ namespace Microsoft.DotNet.ToolManifest
                         packageId,
                         version,
                         ToolCommandName.Convert(tools.Commands),
-                        correspondingDirectory));
+                        correspondingDirectory,
+                        rollForward));
                 }
             }
 
@@ -325,6 +337,7 @@ namespace Microsoft.DotNet.ToolManifest
             public string PackageId { get; set; }
             public string Version { get; set; }
             public string[] Commands { get; set; }
+            public bool RollForward { get; set; }
         }
 
         private static bool CommandNamesEqual(ToolCommandName[] left, ToolCommandName[] right)
@@ -379,8 +392,8 @@ namespace Microsoft.DotNet.ToolManifest
                         {
                             writer.WriteStringValue(toolCommandName);
                         }
-
                         writer.WriteEndArray();
+                        writer.WriteString(JsonPropertyRollForward, tool.RollForward.ToString());
                         writer.WriteEndObject();
                     }
 

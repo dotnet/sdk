@@ -36,6 +36,11 @@ Eine Liste der durchsuchten Speicherorte erhalten Sie, indem Sie vor dem Toolnam
         <target state="translated">Für diese Pakete ist mehr als ein Eintrag vorhanden: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolMissingRollForward">
+        <source>Missing 'rollForward' entry.</source>
+        <target state="new">Missing 'rollForward' entry.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
         <source>Expected a {0} for property '{1}'.</source>
         <target state="translated">Erwartet wurde "{0}" für die Eigenschaft "{1}".</target>

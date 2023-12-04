@@ -22,6 +22,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         private readonly string _explicitManifestFile;
         private readonly bool _createManifestIfNeeded;
+        private readonly bool _rollForward;
 
         public ToolInstallLocalCommand(
             ParseResult parseResult,
@@ -44,6 +45,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
             _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader);
+            _rollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
         }
 
         public override int Execute()
@@ -61,7 +63,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 manifestFile,
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version,
-                toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
+                toolDownloadedPackage.Commands.Select(c => c.Name).ToArray(),
+                _rollForward);
 
             _localToolsResolverCache.SaveToolPackage(
                 toolDownloadedPackage,

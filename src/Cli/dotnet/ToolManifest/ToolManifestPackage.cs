@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Eventing.Reader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -13,6 +14,7 @@ namespace Microsoft.DotNet.ToolManifest
         public PackageId PackageId { get; }
         public NuGetVersion Version { get; }
         public ToolCommandName[] CommandNames { get; }
+        public bool RollForward { get; }
         /// <summary>
         /// The directory that will take effect first.
         /// When it is under .config directory, it is not .config directory
@@ -23,12 +25,14 @@ namespace Microsoft.DotNet.ToolManifest
         public ToolManifestPackage(PackageId packagePackageId,
             NuGetVersion version,
             ToolCommandName[] toolCommandNames,
-            DirectoryPath firstEffectDirectory)
+            DirectoryPath firstEffectDirectory,
+            bool rollForward)
         {
             FirstEffectDirectory = firstEffectDirectory;
             PackageId = packagePackageId;
             Version = version ?? throw new ArgumentNullException(nameof(version));
             CommandNames = toolCommandNames ?? throw new ArgumentNullException(nameof(toolCommandNames));
+            RollForward = rollForward;
         }
 
         public override bool Equals(object obj)

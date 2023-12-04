@@ -36,6 +36,11 @@ Para obter uma lista de localizações pesquisadas, especifique a opção "-d" a
         <target state="translated">Existe mais de uma entrada para os pacotes: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolMissingRollForward">
+        <source>Missing 'rollForward' entry.</source>
+        <target state="new">Missing 'rollForward' entry.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
         <source>Expected a {0} for property '{1}'.</source>
         <target state="translated">Um {0} era esperado para a propriedade '{1}'.</target>
