@@ -5,6 +5,8 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.ToolManifest;
+using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tool.Run
 {
@@ -13,22 +15,33 @@ namespace Microsoft.DotNet.Tools.Tool.Run
         private readonly string _toolCommandName;
         private readonly LocalToolsCommandResolver _localToolsCommandResolver;
         private readonly IEnumerable<string> _forwardArgument;
-        public readonly string _rollForward;
+        public string _rollForward;
+        private readonly ToolManifestFinder _toolManifest;
 
         public ToolRunCommand(
             ParseResult result,
-            LocalToolsCommandResolver localToolsCommandResolver = null)
+            LocalToolsCommandResolver localToolsCommandResolver = null,
+            ToolManifestFinder toolManifest = null)
             : base(result)
         {
             _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
             _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
             _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
             _rollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
+            _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
         }
 
         public override int Execute()
         {
-            CommandSpec commandspec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
+            if (_toolManifest.TryFind(new ToolCommandName(_toolCommandName), out var toolManifestPackage))
+            {
+                if (toolManifestPackage.RollForward)
+                {
+                    _rollForward = "LatestMajor";
+                }
+            }
+
+                CommandSpec commandspec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
             {
                 // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
                 CommandName = $"dotnet-{_toolCommandName}",
