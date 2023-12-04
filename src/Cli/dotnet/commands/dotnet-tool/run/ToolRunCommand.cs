@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Tool.Run
             {
                 if (toolManifestPackage.RollForward)
                 {
-                    _rollForward = "LatestMajor";
+                    _rollForward = "Major";
                 }
             }
 
