@@ -12,6 +12,6 @@ namespace Microsoft.DotNet.ToolManifest
     {
         void Add(FilePath manifest, PackageId packageId, NuGetVersion nuGetVersion, ToolCommandName[] toolCommandNames, bool RollForward = false);
         void Remove(FilePath manifest, PackageId packageId);
-        void Edit(FilePath manifest, PackageId packageId, NuGetVersion newNuGetVersion, ToolCommandName[] newToolCommandNames, bool RollForward = false);
+        void Edit(FilePath manifest, PackageId packageId, NuGetVersion newNuGetVersion, ToolCommandName[] newToolCommandNames);
     }
 }

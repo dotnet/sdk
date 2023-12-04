@@ -47,6 +47,7 @@ namespace Microsoft.DotNet.ToolManifest
             {
                 var existingPackage = existing.Single();
 
+                // TBD
                 if (existingPackage.PackageId.Equals(packageId)
                     && existingPackage.Version == nuGetVersion
                     && CommandNamesEqual(existingPackage.CommandNames, toolCommandNames))
@@ -83,8 +84,7 @@ namespace Microsoft.DotNet.ToolManifest
             FilePath manifest,
             PackageId packageId,
             NuGetVersion newNuGetVersion,
-            ToolCommandName[] newToolCommandNames,
-            bool rollForward = false)
+            ToolCommandName[] newToolCommandNames)
         {
             SerializableLocalToolsManifest deserializedManifest =
                 DeserializeLocalToolsManifest(manifest);
