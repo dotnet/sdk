@@ -1080,5 +1080,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
         }
+
+        void IInstaller.AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode) => AdjustInstallMode(sdkFeatureBand, newMode);
     }
 }

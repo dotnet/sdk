@@ -202,6 +202,11 @@ For more reasons, including package naming enforcement, visit https://aka.ms/fai
         <target state="translated">安裝工具所在的目錄。若該目錄不存在，則會建立該目錄。</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetMode">
+        <source>Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</source>
+        <target state="new">Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

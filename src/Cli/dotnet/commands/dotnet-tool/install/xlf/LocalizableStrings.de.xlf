@@ -202,6 +202,11 @@ Weitere Gründe sowie Informationen zum Erzwingen der Paketbenennung finden Sie 
         <target state="translated">Das Verzeichnis, in dem das Tool installiert wird. Das Verzeichnis wird erstellt, wenn es nicht vorhanden ist.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetMode">
+        <source>Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</source>
+        <target state="new">Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

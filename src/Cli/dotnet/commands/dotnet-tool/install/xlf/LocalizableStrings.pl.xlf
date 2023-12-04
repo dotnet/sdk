@@ -202,6 +202,11 @@ Więcej przyczyn, w tym wymuszanie nazw pakietów, można znaleźć na stronie h
         <target state="translated">Katalog, w którym zostanie zainstalowane narzędzie. Jeśli katalog nie istnieje, zostanie utworzony.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetMode">
+        <source>Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</source>
+        <target state="new">Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

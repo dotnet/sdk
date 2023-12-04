@@ -170,6 +170,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="LocalOptionDescription" xml:space="preserve">
     <value>Install the tool and add to the local tool manifest (default).</value>
   </data>
+  <data name="WorkloadSetMode" xml:space="preserve">
+    <value>Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</value>
+  </data>
   <data name="InstallFullCommandNameLocalized" xml:space="preserve">
     <value>.NET Install Command</value>
   </data>

@@ -52,6 +52,11 @@
         <target state="translated">캐시할 워크로드 업데이트 패키지를 다운로드하지 못했습니다. {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
+        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
+        <target state="new">Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">알림 매니페스트를 업데이트했습니다.</target>

@@ -202,6 +202,11 @@ Další příčiny, včetně vynucování formátu názvů balíčků, najdete t
         <target state="translated">Adresář, do kterého se nástroj nainstaluje. Pokud tento adresář neexistuje, bude vytvořen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetMode">
+        <source>Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</source>
+        <target state="new">Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

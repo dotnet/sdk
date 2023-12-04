@@ -202,6 +202,11 @@ Per altri motivi, inclusa l'aggiunta obbligatoria del prefisso microsoft ai nomi
         <target state="translated">Directory in cui verrà installato lo strumento. Se non esiste già, verrà creata.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetMode">
+        <source>Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</source>
+        <target state="new">Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

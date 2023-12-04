@@ -202,6 +202,11 @@ Para ver mais motivos, inclusive a imposição de nome de pacote, visite https:/
         <target state="translated">O diretório no qual a ferramenta será instalada. O diretório será criado se ele ainda não existir.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetMode">
+        <source>Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</source>
+        <target state="new">Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

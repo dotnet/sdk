@@ -52,6 +52,11 @@
         <target state="translated">未能将工作负载更新程序包下载到缓存: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
+        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
+        <target state="new">Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">成功更新广告清单。</target>

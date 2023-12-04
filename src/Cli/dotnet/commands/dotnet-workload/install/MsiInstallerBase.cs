@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
@@ -270,6 +272,47 @@ namespace Microsoft.DotNet.Installer.Windows
             }
 
             throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+        }
+
+        /// <summary>
+        /// Instructs future workload operations to use workload sets or loose manifests, per newMode.
+        /// </summary>
+        /// <param name="sdkFeatureBand">The feature band to update</param>
+        /// <param name="newMode">Where to use loose manifests or workload sets</param>
+        /// <param name="logFile">Full path of the log file</param>
+        /// <returns>Error code indicating the result of the operation</returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        protected void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        {
+            Elevate();
+
+            if (IsElevated)
+            {
+                string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null), "default.json");
+                if (!File.Exists(path))
+                {
+                    // Create the parent folder for the state file and set up all required ACLs
+                    SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
+
+                    File.WriteAllLines(path, new string[] { "{", $@"""useWorkloadSets"": ""{newMode}"",", "}" });
+
+                    SecurityUtils.SecureFile(path);
+                }
+                else
+                {
+                    File.WriteAllLines(path, FileBasedInstaller.AdjustModeInJsonContents(File.ReadAllLines(path), newMode));
+                }
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendMsiRequest(InstallRequestType.AdjustWorkloadMode,
+                    null, null, newMode);
+                ExitOnFailure(response, "Failed to update install mode.");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
         }
 
         /// <summary>

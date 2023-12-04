@@ -689,5 +689,48 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         }
 
         private bool IsSingleFilePack(PackInfo packInfo) => packInfo.Kind.Equals(WorkloadPackKind.Library) || packInfo.Kind.Equals(WorkloadPackKind.Template);
+
+        public void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            if (!File.Exists(path))
+            {
+                File.WriteAllLines(path, new string[] { "{", $@"""useWorkloadSets"": ""{newMode}"",", "}" });
+            }
+            else
+            {
+                File.WriteAllLines(path, AdjustModeInJsonContents(File.ReadAllLines(path), newMode));
+            }
+        }
+
+        internal static IEnumerable<string> AdjustModeInJsonContents(IEnumerable<string> currentContents, string newMode)
+        {
+            bool updatedMode = false;
+            bool needClosingBrace = false;
+            foreach (string line in currentContents)
+            {
+                if (needClosingBrace)
+                {
+                    yield return "}";
+                }
+
+                if (line.Contains("useWorkloadSets"))
+                {
+                    yield return $@"""useWorkloadSets"": ""{newMode}"",";
+                    updatedMode = true;
+                }
+                else if (line.Equals("}"))
+                {
+                    needClosingBrace = true;
+                }
+            }
+
+            if (!updatedMode)
+            {
+                yield return $@"""useWorkloadSets"": ""{newMode}"",";
+                yield return "}";
+            }
+        }
     }
 }

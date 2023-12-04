@@ -202,6 +202,11 @@ Paket adlandırma zorlaması dahil diğer nedenler için şu adresi ziyaret edin
         <target state="translated">Aracın yükleneceği dizin. Dizin yoksa oluşturulur.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetMode">
+        <source>Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</source>
+        <target state="new">Determine whether dotnet should use workload sets or loose manifests when installing or updating workloads.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

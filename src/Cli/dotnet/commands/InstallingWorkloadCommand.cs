@@ -206,6 +206,12 @@ namespace Microsoft.DotNet.Workloads.Workload
 
     internal static class InstallingWorkloadCommandParser
     {
+        public static readonly CliOption<string> WorkloadSetMode = new("--mode")
+        {
+            Description = Strings.WorkloadSetMode,
+            Hidden = true
+        };
+
         public static readonly CliOption<bool> PrintDownloadLinkOnlyOption = new("--print-download-link-only")
         {
             Description = Strings.PrintDownloadLinkOnlyDescription,

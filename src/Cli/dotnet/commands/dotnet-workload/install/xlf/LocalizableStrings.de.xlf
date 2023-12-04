@@ -362,6 +362,11 @@
         <target state="translated">PFAD</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetMode">
+        <source>Control whether future workload operations should use workload sets or loose manifests.</source>
+        <target state="new">Control whether future workload operations should use workload sets or loose manifests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
         <target state="translated">Es sind Workloadupdates verfügbar. Um weitere Informationen zu erhalten, führen Sie `dotnet workload list` aus.</target>

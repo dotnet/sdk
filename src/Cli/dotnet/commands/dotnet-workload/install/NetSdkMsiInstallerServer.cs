@@ -103,6 +103,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Deleted install state file for {request.SdkFeatureBand}.");
                             break;
 
+                        case InstallRequestType.AdjustWorkloadMode:
+                            AdjustInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.ProductCode);
+                            string newMode = request.ProductCode.Equals("true", StringComparison.OrdinalIgnoreCase) ? "workload sets" : "loose manifests";
+                            Dispatcher.ReplySuccess($"Updated install mode to use {newMode}.");
+                            break;
+
                         default:
                             throw new InvalidOperationException($"Unknown message request: {(int)request.RequestType}");
                     }
