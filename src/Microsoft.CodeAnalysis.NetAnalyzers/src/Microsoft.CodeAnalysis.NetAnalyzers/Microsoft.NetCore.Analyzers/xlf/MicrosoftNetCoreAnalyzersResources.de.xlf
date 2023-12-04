@@ -924,12 +924,12 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
-        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
         <target state="translated">"ConfigureResultitOptions.SuppressInternewing" wird nur mit dem nicht generischen Task und nicht mit einem Task&lt;TResult&gt; unterstützt.  Um es mit einem Task&lt;TResult&gt; zu verwenden, wandeln Sie zuerst in den Basistask um.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
-        <source>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</source>
+        <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
         <target state="translated">"Configure OdbcitOptions.SuppressInternewing" wird nur mit dem nicht generischen Task unterstützt.</target>
         <note />
       </trans-unit>

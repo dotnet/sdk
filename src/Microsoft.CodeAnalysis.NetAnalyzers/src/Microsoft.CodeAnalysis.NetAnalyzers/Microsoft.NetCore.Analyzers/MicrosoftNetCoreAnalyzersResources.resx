@@ -1005,10 +1005,10 @@
     <value>Do not use ConfigureAwaitOptions.SuppressThrowing with Task&lt;TResult&gt;</value>
   </data>
   <data name="DoNotUseConfigureAwaitWithSuppressThrowingMessage" xml:space="preserve">
-    <value>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task</value>
+    <value>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</value>
   </data>
   <data name="DoNotUseConfigureAwaitWithSuppressThrowingDescription" xml:space="preserve">
-    <value>The ConfigureAwaitOptions.SuppressThrowing is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</value>
+    <value>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</value>
   </data>
   <data name="DoNotCreateTaskCompletionSourceWithWrongArgumentsTitle" xml:space="preserve">
     <value>Argument passed to TaskCompletionSource constructor should be TaskCreationOptions enum instead of TaskContinuationOptions enum</value>
