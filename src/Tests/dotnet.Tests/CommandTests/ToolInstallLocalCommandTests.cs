@@ -43,7 +43,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly ToolCommandName _toolCommandNameA = new ToolCommandName("a");
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
-        private readonly MockFeed _mockFeed;
 
         public ToolInstallLocalCommandTests(ITestOutputHelper log):base(log) 
         {
