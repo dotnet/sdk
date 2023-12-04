@@ -9,7 +9,7 @@
   <Target Name="_PublishDotnetWatchToRedist_Inputs">
     <ItemGroup>
       <_DotnetWatchBuildOutput Include="$(ArtifactsDir)bin\dotnet-watch\$(Configuration)\$(SdkTargetFramework)\**"/>
-      
+
       <!--
         To reduce the size of the SDK, we use the compiler dependencies that are located in the `Roslyn/bincore` location
         instead of shipping our own copies in the dotnet-watch tool. These assemblies will be resolved by path in the
@@ -24,14 +24,12 @@
   </Target>
 
   <Target Name="PublishDotnetWatchToRedist"
-          DependsOnTargets="GetDotnetWatchRedistOutputDirectory;_PublishDotnetWatchToRedist_Inputs"
-          Inputs="@(_DotnetWatchInputFile)"
-          Outputs="@(_DotnetWatchInputFile->'$(DotnetWatchRedistOutputDirectory)$(DotnetWatchRedistOutputSubdirectory)%(RecursiveDir)%(Filename)%(Extension)')">
+          DependsOnTargets="GetDotnetWatchRedistOutputDirectory;_PublishDotnetWatchToRedist_Inputs">
 
-    <Copy SourceFiles="@(_DotnetWatchInputFile)" DestinationFiles="$(DotnetWatchRedistOutputDirectory)$(DotnetWatchRedistOutputSubdirectory)%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(_DotnetWatchInputFile)" DestinationFiles="@(_DotnetWatchInputFile->'$(DotnetWatchRedistOutputDirectory)$(DotnetWatchRedistOutputSubdirectory)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
 
     <ItemGroup>
-      <FileWrites Include="@(_DotnetWatchOutputFile)" />
+      <FileWrites Include="@(_DotnetWatchInputFile->'$(DotnetWatchRedistOutputDirectory)$(DotnetWatchRedistOutputSubdirectory)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
   </Target>
 </Project>
