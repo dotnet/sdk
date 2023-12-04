@@ -47,11 +47,14 @@ namespace Microsoft.DotNet.ToolManifest
             {
                 var existingPackage = existing.Single();
 
-                // TBD
+                // Update the tool manifest if --roll-forward changes
                 if (existingPackage.PackageId.Equals(packageId)
                     && existingPackage.Version == nuGetVersion
                     && CommandNamesEqual(existingPackage.CommandNames, toolCommandNames))
                 {
+                    var toEdit = deserializedManifest.Tools.Single(t => new PackageId(t.PackageId).Equals(packageId));
+                    toEdit.RollForward = rollForward;
+                    _fileSystem.File.WriteAllText(manifest.Value, deserializedManifest.ToJson());
                     return;
                 }
 
