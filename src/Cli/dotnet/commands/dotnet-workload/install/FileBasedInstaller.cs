@@ -696,7 +696,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             if (!File.Exists(path))
             {
-                File.WriteAllLines(path, new string[] { "{", $@"""useWorkloadSets"": ""{newMode}"",", "}" });
+                File.WriteAllLines(path, new string[] { "{", $@"""useWorkloadSets"": ""{newMode}""", "}" });
             }
             else
             {
@@ -712,23 +712,28 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 if (needClosingBrace)
                 {
-                    yield return "}";
+                    yield return "}" + (updatedMode ? string.Empty : ',');
+                    needClosingBrace = false;
                 }
 
                 if (line.Contains("useWorkloadSets"))
                 {
-                    yield return $@"""useWorkloadSets"": ""{newMode}"",";
+                    yield return $@"""useWorkloadSets"": ""{newMode}""" + (line.Contains(',') ? ',' : string.Empty);
                     updatedMode = true;
                 }
                 else if (line.Equals("}"))
                 {
                     needClosingBrace = true;
                 }
+                else
+                {
+                    yield return line;
+                }
             }
 
             if (!updatedMode)
             {
-                yield return $@"""useWorkloadSets"": ""{newMode}"",";
+                yield return $@"""useWorkloadSets"": ""{newMode}""";
                 yield return "}";
             }
         }
