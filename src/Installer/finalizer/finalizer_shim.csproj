@@ -1,7 +1,8 @@
-﻿<Project TreatAsLocalProperty="Platform">
+﻿<Project Sdk="Microsoft.Build.NoTargets" TreatAsLocalProperty="Platform">
+<!-- <Project TreatAsLocalProperty="Platform"> -->
 
-  <!-- Explicit importing of the SDK so that the SDK targets (Build, Test, Pack, etc) can be overridden after the SDK.targets is imported. -->
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+  <!-- Explicit importing of the SDK so that the SDK targets (Build, Test, Pack, etc) can be overridden after the Sdk.targets is imported. -->
+  <!-- <Import Project="Sdk.props" Sdk="Microsoft.Build.NoTargets" /> -->
 
   <PropertyGroup>
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
@@ -19,20 +20,56 @@
 
   <Target Name="GenerateSdkVersionFile" BeforeTargets="CoreCompile" DependsOnTargets="GenerateNativeVersionFile" />
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <!-- <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" /> -->
 
   <PropertyGroup>
-    <Platform Condition="'$(Platform)'=='' Or $(Platform)=='AnyCPU'">$(Architecture)</Platform>
+    <Platform Condition="'$(Platform)' == '' Or $(Platform) == 'AnyCPU'">$(Architecture)</Platform>
   </PropertyGroup>
 
-  <Target Name="Build" Condition="'$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x86' Or '$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64' Or '$(Architecture)' == 'arm')">
-    <MSBuild Projects="finalizer2.csproj" Properties="Platform=$(Platform)" Targets="Restore;Build" />
-  </Target>
+  <!-- <Target Name="RestoreNative" AfterTargets="Restore"> -->
+  <!-- <Target Name="Restore"> -->
+    <!-- <MSBuild Projects="finalizer2.csproj" Properties="Platform=$(Platform)" Targets="Restore" /> -->
+  <!-- </Target> -->
 
-  <Target Name="Test" />
+  <!-- <Target Name="Build" Condition="'$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x86' Or '$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64' Or '$(Architecture)' == 'arm')"> -->
+  <!-- <Target Name="BuildNative" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x86' Or '$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64' Or '$(Architecture)' == 'arm')"> -->
+    <!-- <MSBuild Projects="finalizer2.csproj" Properties="Platform=$(Platform)" Targets="Restore" /> -->
+    <!-- <MSBuild Projects="finalizer2.csproj" Properties="Platform=$(Platform)" Targets="Build" /> -->
+  <!-- </Target> -->
+
+  <!-- <Target Name="Test" />
   <Target Name="Pack" />
   <Target Name="Rebuild" />
   <Target Name="IntegrationTest" />
-  <Target Name="PerformanceTest" />
+  <Target Name="PerformanceTest" /> -->
+
+  <PropertyGroup>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Signed.Wix" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.CMake.Sdk#referencing-native-assets-with-nativeprojectreference -->
+    <NativeProjectReference Include="CMakeLists.txt" CMakeProject="finalizer.proj" BuildNative="true" />
+  </ItemGroup>
+  
+  <!-- This target needs to run before the native project reference is built. -->
+  <Target Name="CopyWixSdk" AfterTargets="Restore" BeforeTargets="Build">
+    <ItemGroup>
+      <WixLib Include="$(WixSdkPath)vs2017\lib\**\*.*" />
+      <WixInclude Include="$(WixSdkPath)inc\**\*.*" />
+    </ItemGroup>
+
+    <!-- Copy all the lib files for x86, x64, and arm64 -->
+    <Copy SourceFiles="@(WixLib)" DestinationFiles="@(WixLib->'$(ArtifactsDir)WixSdk\lib\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(WixInclude)" DestinationFolder="$(ArtifactsDir)WixSdk\inc" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Import Project="ProjectReference.targets" Sdk="Microsoft.DotNet.CMake.Sdk" />
 
 </Project>

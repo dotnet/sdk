@@ -28,7 +28,7 @@
   </ItemGroup>
   
   <!-- This target needs to run before the native project reference is built. -->
-  <Target Name="CopySdk" AfterTargets="Restore" BeforeTargets="Build">
+  <Target Name="CopyWixSdk" AfterTargets="Restore" BeforeTargets="Build">
     <ItemGroup>
       <WixLib Include="$(WixSdkPath)vs2017\lib\**\*.*" />
       <WixInclude Include="$(WixSdkPath)inc\**\*.*" />
