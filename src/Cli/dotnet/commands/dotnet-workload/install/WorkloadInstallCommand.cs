@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                      _workloadResolver, Verbosity, _userProfileDir, VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
                                      _packageSourceLocation, RestoreActionConfiguration, elevationRequired: !_printDownloadLinkOnly && string.IsNullOrWhiteSpace(_downloadToCacheOption));
 
-            _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(Reporter, _workloadResolver, PackageDownloader, _userProfileDir, TempDirectoryPath,
+            _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(Reporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
 
             ValidateWorkloadIdsInput();
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             else if (_skipManifestUpdate && usedRollback)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndRollback, 
+                throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndRollback,
                     WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name,
                     WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name), isUserError: true);
             }
@@ -128,7 +128,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             Reporter.WriteLine();
 
-            var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate> ();
+            var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate>();
             var useRollback = false;
 
             if (!skipManifestUpdate)
@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
                 manifestsToUpdate = useRollback ?
                     _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.manifestUpdate);
+                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
 
             InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
@@ -229,7 +229,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (usingRollback)
                     {
-                        UpdateInstallState(true, manifestsToUpdate);
+                        installer.WriteInstallState(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
                 },
                 rollback: () =>
@@ -249,7 +249,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private async Task<IEnumerable<string>> GetPackageDownloadUrlsAsync(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview)
         {
             var downloads = await GetDownloads(workloadIds, skipManifestUpdate, includePreview);
-            
+
             var urls = new List<string>();
             foreach (var download in downloads)
             {

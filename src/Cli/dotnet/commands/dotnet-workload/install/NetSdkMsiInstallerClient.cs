@@ -182,6 +182,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand) =>
+            RemoveInstallStateFile(sdkFeatureBand);
+
+        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines) =>
+            WriteInstallStateFile(sdkFeatureBand, jsonLines);
+
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care
         /// about dependents that match the SDK host we're running under. For example, an x86 SDK should not be
@@ -1019,9 +1025,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             PackageSourceLocation packageSourceLocation = null,
             IReporter reporter = null,
             string tempDirPath = null,
-            RestoreActionConfig restoreActionConfig = null)
+            RestoreActionConfig restoreActionConfig = null,
+            bool shouldLog = true)
         {
-            TimestampedFileLogger logger = new(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log"));
+            ISynchronizingLogger logger =
+                shouldLog ? new TimestampedFileLogger(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log"))
+                          : new NullInstallerLogger();
             InstallClientElevationContext elevationContext = new(logger);
 
             if (nugetPackageDownloader == null)
@@ -1064,7 +1073,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 finally
                 {
-                    ((TimestampedFileLogger)Log).Dispose();
+                    if (Log is IDisposable tfl)
+                    {
+                        tfl.Dispose();
+                    }
                 }
             }
         }

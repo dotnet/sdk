@@ -174,7 +174,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
                 scope.Complete();
             }
-
             return 0;
         }
 
@@ -233,6 +232,17 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             try
             {
                 uninstallAction();
+                if (!_verbosity.IsQuiet())
+                {
+                    _reporter.WriteLine(
+                        string.Format(
+                            LocalizableStrings.InstallationSucceeded,
+                            string.Join(", ", package.Commands.Select(c => c.Name)),
+                            package.Id,
+                            package.Version.ToNormalizedString()).Green());
+                }
+
+                return 0;
             }
             catch (Exception ex)
                 when (ToolUninstallCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
