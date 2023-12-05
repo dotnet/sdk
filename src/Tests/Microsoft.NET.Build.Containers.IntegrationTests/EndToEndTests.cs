@@ -211,8 +211,7 @@ public class EndToEndTests : IDisposable
         return publishDirectory;
     }
 
-    // [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/36160")]
-    [Fact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/36160")]
     public async Task EndToEnd_MultiProjectSolution()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
