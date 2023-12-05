@@ -1,0 +1,15 @@
+<Project>
+
+  <Import Project="..\..\..\Directory.Build.props"/>
+
+  <!-- The Architecture is used in both the csproj and nativeproj to condition when the nativeproj is built and what platform the nativeproj uses. -->
+  <PropertyGroup>
+    <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
+    <Architecture Condition="'$(Architecture)' == '' And ('$(BuildArchitecture)' == 'arm64' Or '$(BuildArchitecture)' == 'arm')">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == ''">x64</Architecture>
+  </PropertyGroup>
+
+</Project>
