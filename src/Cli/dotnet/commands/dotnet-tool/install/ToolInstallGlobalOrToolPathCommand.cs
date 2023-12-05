@@ -11,11 +11,11 @@ using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.Uninstall;
+using Microsoft.DotNet.Tools.Tool.Update;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using Microsoft.DotNet.Tools.Tool.Update;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         isGlobalTool: true
                     );
 
-                    EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage);
+                    EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
 
                     NuGetFramework framework;
                     if (string.IsNullOrEmpty(_framework) && newInstalledPackage.Frameworks.Count() > 0)
@@ -178,9 +178,9 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             return 0;
         }
 
-        private static void EnsureVersionIsHigher(IToolPackage oldPackageNullable, IToolPackage newInstalledPackage)
+        private static void EnsureVersionIsHigher(IToolPackage oldPackageNullable, IToolPackage newInstalledPackage, bool allowDowngrade)
         {
-            if (oldPackageNullable != null && (newInstalledPackage.Version < oldPackageNullable.Version))
+            if (oldPackageNullable != null && (newInstalledPackage.Version < oldPackageNullable.Version && !allowDowngrade))
             {
                 throw new GracefulException(
                     new[]
