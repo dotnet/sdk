@@ -19,12 +19,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly IToolManifestEditor _toolManifestEditor;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private readonly IToolPackageDownloader _toolPackageDownloader;
-        private readonly ToolInstallLocalInstaller _toolLocalPackageInstaller;
         private readonly Lazy<ToolInstallLocalCommand> _toolInstallLocalCommand;
         private readonly IReporter _reporter;
-
-        private readonly PackageId _packageId;
-        private readonly string _explicitManifestFile;
 
         public ToolUpdateLocalCommand(
             ParseResult parseResult,
@@ -35,9 +31,6 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             IReporter reporter = null)
             : base(parseResult)
         {
-            _packageId = new PackageId(parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument));
-            _explicitManifestFile = parseResult.GetValue(ToolUpdateCommandParser.ToolManifestOption);
-
             _reporter = (reporter ?? Reporter.Output);
 
             if (toolPackageDownloader == null)
@@ -59,7 +52,6 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
 
-            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader);
             _toolInstallLocalCommand = new Lazy<ToolInstallLocalCommand>(
                 () => new ToolInstallLocalCommand(
                     parseResult,
