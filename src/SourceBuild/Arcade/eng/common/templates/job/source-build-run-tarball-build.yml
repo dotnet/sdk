@@ -11,7 +11,7 @@ parameters:
   # -----------------------------------------------------------------------------------------------
   alpine317Container: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17
   centOS7Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-source-build
-  centOSStream9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9-20220107135047-4cd394c
+  centOSStream9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
   debian11Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-arm64v8
   fedora38Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38
   ubuntu1804Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04
@@ -40,18 +40,21 @@ jobs:
         _BootstrapPrep: true
         _Container: ${{ parameters.alpine317Container }}
         _ExcludeOmniSharpTests: true
+        _OverrideDistroDisablingSha1: false
         _RunOnline: false
       CentOS7-Online:
         _BootstrapPrep: false
         _Container: ${{ parameters.centOS7Container }}
         _EnablePoison: false
         _ExcludeOmniSharpTests: true
+        _OverrideDistroDisablingSha1: false
         _RunOnline: true
       CentOS7-Offline:
         _BootstrapPrep: false
         _Container: ${{ parameters.centOS7Container }}
         _EnablePoison: false
         _ExcludeOmniSharpTests: true
+        _OverrideDistroDisablingSha1: false
         _RunOnline: false
       ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
         CentOSStream9-Offline:
@@ -59,18 +62,21 @@ jobs:
           _Container: ${{ parameters.centOSStream9Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
+          _OverrideDistroDisablingSha1: true
           _RunOnline: false
         Fedora38-Offline:
           _BootstrapPrep: false
           _Container: ${{ parameters.fedora38Container }}
           _EnablePoison: true
           _ExcludeOmniSharpTests: false
+          _OverrideDistroDisablingSha1: false
           _RunOnline: false
         Ubuntu1804-Offline:
           _BootstrapPrep: false
           _Container: ${{ parameters.ubuntu1804Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
+          _OverrideDistroDisablingSha1: false
           _RunOnline: false
     name: Build_Tarball_x64
     pool:
@@ -94,6 +100,7 @@ jobs:
           _Container: ${{ parameters.debian11Arm64Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
+          _OverrideDistroDisablingSha1: false
           _RunOnline: false
       name: Build_Tarball_arm64
       pool: ${{ parameters.poolInternalArm64 }}
@@ -114,6 +121,7 @@ jobs:
           _Container: ${{ parameters.fedora38Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
+          _OverrideDistroDisablingSha1: false
           _RunOnline: false
       name: Build_Tarball_x64_Using_Previous
       pool:
