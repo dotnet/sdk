@@ -20,6 +20,7 @@ src/arcade/src/Microsoft.DotNet.XUnitAssert/src/README.md|free-unknown
 src/arcade/src/SignCheck/SignCheck/THIRD-PARTY-NOTICES.TXT
 
 # Doesn't apply to code
+src/arcade/eng/xcopy-msbuild/msbuild.nuspec|ms-visual-2015-sdk
 src/arcade/src/Microsoft.DotNet.Arcade.Sdk/tools/Licenses/*
 
 # Applies to installer, not source
@@ -186,6 +187,7 @@ src/runtime/src/tests/JIT/Performance/CodeQuality/V8/Crypto/Crypto.cs|unknown-li
 # Test data
 src/runtime/src/libraries/System.Private.Xml.Linq/tests/XDocument.Common/InputSpace.cs|other-permissive
 src/runtime/src/libraries/System.Private.Xml.Linq/tests/XDocument.Common/THIRD-PARTY-NOTICE|other-permissive
+src/runtime/src/libraries/System.Runtime/tests/System.Runtime.Tests/TestModule/README.md|unknown-license-reference
 src/runtime/src/libraries/System.ServiceModel.Syndication/tests/TestFeeds/AtomFeeds/*.xml
 src/runtime/src/libraries/System.Text.RegularExpressions/tests/FunctionalTests/AttRegexTests.cs|other-permissive
 
@@ -259,3 +261,22 @@ src/vstest/src/Microsoft.TestPlatform.Extensions.BlameDataCollector/ProcDumpArgs
 # Build asset, but not applying to code
 src/vstest/src/package/Microsoft.CodeCoverage/ThirdPartyNoticesCodeCoverage.txt
 src/vstest/src/package/Microsoft.VisualStudio.TestTools.TestPlatform.V2.CLI/License.rtf
+
+#
+# winforms
+#
+
+# ISSUE: Winforms repo bringing in a non-open source license (https://github.com/dotnet/source-build/issues/3772)
+src/winforms/src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/LICENSE.txt
+
+#
+# wpf
+#
+
+# Not applicable to source
+src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationCore/System/Windows/Media/FontEmbeddingRights.cs|proprietary-license
+src/wpf/eng/WpfArcadeSdk/tools/AvTrace/GenTraceSources.pl|proprietary-license
+src/wpf/eng/WpfArcadeSdk/tools/GenXmlStringTable.pl|proprietary-license
+
+# False positive
+src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationUI/MS/Internal/Documents/RMPublishingDialog.RightsTable.cs|unknown-license-reference
