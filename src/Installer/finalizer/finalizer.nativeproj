@@ -1,17 +1,18 @@
+<!-- Platform needs to be set with TreatAsLocalProperty since it is a global property and cannot be overridden otherwise. -->
 <Project Sdk="Microsoft.DotNet.CMake.Sdk" TreatAsLocalProperty="Platform">
 
   <PropertyGroup>
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
-    <Architecture Condition="'$(Architecture)' == '' AND ('$(BuildArchitecture)' == 'arm64' OR '$(BuildArchitecture)' == 'arm')">$(BuildArchitecture)</Architecture>
-    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Architecture>
-    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
-    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And ('$(BuildArchitecture)' == 'arm64' Or '$(BuildArchitecture)' == 'arm')">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
     <Architecture Condition="'$(Architecture)' == ''">x64</Architecture>
   </PropertyGroup>
 
   <PropertyGroup>
-    <CMakeLists>CMakeLists.txt</CMakeLists>
     <Platform Condition="'$(Platform)' == '' Or $(Platform) == 'AnyCPU'">$(Architecture)</Platform>
+    <CMakeLists>CMakeLists.txt</CMakeLists>
   </PropertyGroup>
 
   <!-- This will be passed through -D and referenced by the CMakeLists.txt to correctly resolve the platform specific libs. -->

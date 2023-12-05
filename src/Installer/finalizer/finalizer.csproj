@@ -1,52 +1,20 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets" TreatAsLocalProperty="Platform">
-<!-- <Project TreatAsLocalProperty="Platform"> -->
-
-  <!-- Explicit importing of the SDK so that the SDK targets (Build, Test, Pack, etc) can be overridden after the Sdk.targets is imported. -->
-  <!-- <Import Project="Sdk.props" Sdk="Microsoft.Build.NoTargets" /> -->
+﻿<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
-    <Architecture Condition="'$(Architecture)' == '' AND ('$(BuildArchitecture)' == 'arm64' OR '$(BuildArchitecture)' == 'arm')">$(BuildArchitecture)</Architecture>
-    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Architecture>
-    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
-    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And ('$(BuildArchitecture)' == 'arm64' Or '$(BuildArchitecture)' == 'arm')">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
+    <Architecture Condition="'$(Architecture)' == '' And '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
     <Architecture Condition="'$(Architecture)' == ''">x64</Architecture>
   </PropertyGroup>
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <NativeVersionFile>$(ArtifactsObjDir)sdk_version.h</NativeVersionFile>
-  </PropertyGroup>
-
-  <Target Name="GenerateSdkVersionFile" BeforeTargets="CoreCompile" DependsOnTargets="GenerateNativeVersionFile" />
-
-  <!-- <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" /> -->
-
-  <PropertyGroup>
-    <Platform Condition="'$(Platform)' == '' Or $(Platform) == 'AnyCPU'">$(Architecture)</Platform>
-  </PropertyGroup>
-
-  <!-- <Target Name="RestoreNative" AfterTargets="Restore"> -->
-  <!-- <Target Name="Restore"> -->
-    <!-- <MSBuild Projects="finalizer2.csproj" Properties="Platform=$(Platform)" Targets="Restore" /> -->
-  <!-- </Target> -->
-
-  <!-- <Target Name="Build" Condition="'$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x86' Or '$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64' Or '$(Architecture)' == 'arm')"> -->
-  <!-- <Target Name="BuildNative" AfterTargets="Build" Condition="'$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x86' Or '$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64' Or '$(Architecture)' == 'arm')"> -->
-    <!-- <MSBuild Projects="finalizer2.csproj" Properties="Platform=$(Platform)" Targets="Restore" /> -->
-    <!-- <MSBuild Projects="finalizer2.csproj" Properties="Platform=$(Platform)" Targets="Build" /> -->
-  <!-- </Target> -->
-
-  <!-- <Target Name="Test" />
-  <Target Name="Pack" />
-  <Target Name="Rebuild" />
-  <Target Name="IntegrationTest" />
-  <Target Name="PerformanceTest" /> -->
-
-  <PropertyGroup>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <NativeVersionFile>$(ArtifactsObjDir)sdk_version.h</NativeVersionFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -54,9 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.CMake.Sdk#referencing-native-assets-with-nativeprojectreference -->
-    <NativeProjectReference Include="CMakeLists.txt" CMakeProject="finalizer.proj" BuildNative="true" />
+    <!-- See: https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.CMake.Sdk#referencing-native-assets-with-nativeprojectreference -->
+    <NativeProjectReference Include="CMakeLists.txt" CMakeProject="finalizer.nativeproj" BuildNative="true" />
   </ItemGroup>
+
+  <Target Name="GenerateSdkVersionFile" BeforeTargets="CoreCompile" DependsOnTargets="GenerateNativeVersionFile" />
   
   <!-- This target needs to run before the native project reference is built. -->
   <Target Name="CopyWixSdk" AfterTargets="Restore" BeforeTargets="Build">
@@ -70,6 +40,8 @@
     <Copy SourceFiles="@(WixInclude)" DestinationFolder="$(ArtifactsDir)WixSdk\inc" SkipUnchangedFiles="true" />
   </Target>
 
-  <Import Project="ProjectReference.targets" Sdk="Microsoft.DotNet.CMake.Sdk" />
+  <!-- This imports the CMake SDK and because BuildNative is true, it builds the native project. -->
+  <!-- See: https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.CMake.Sdk#referencing-native-assets-with-nativeprojectreference -->
+  <Import Project="ProjectReference.targets" Sdk="Microsoft.DotNet.CMake.Sdk" Condition="'$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x86' Or '$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64' Or '$(Architecture)' == 'arm')" />
 
 </Project>
