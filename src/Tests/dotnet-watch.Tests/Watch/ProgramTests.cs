@@ -43,7 +43,10 @@ namespace Microsoft.DotNet.Watcher.Tests
         [InlineData(new[] { "run" }, "")]
         [InlineData(new[] { "run", "args" }, "args")]
         [InlineData(new[] { "--", "run", "args" }, "run,args")]
+        [InlineData(new[] { "--", "test", "args" }, "test,args")]
+        [InlineData(new[] { "--", "build", "args" }, "build,args")]
         [InlineData(new[] { "abc" }, "abc")]
+        [InlineData(new[] { "workload", "list" }, "workload,list")]
         public async Task Arguments(string[] arguments, string expectedApplicationArgs)
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: string.Join(",", arguments))
@@ -163,6 +166,49 @@ namespace Microsoft.DotNet.Watcher.Tests
             Assert.Equal(expectedArgs, await App.AssertOutputLineStartsWith("Arguments: "));
 
             Assert.Contains(App.Process.Output, l => l.Contains($"Found named launch profile '{profileName}'."));
+        }
+
+        [Fact]
+        public async Task TestCommand()
+        {
+            var testAsset = TestAssets.CopyTestAsset("XunitCore")
+                .WithSource();
+
+            App.Start(testAsset.Path, ["--verbose", "test", "--list-tests"]);
+
+            await App.AssertOutputLineEquals("The following Tests are available:");
+            await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest");
+
+            // update file:
+            var testFile = Path.Combine(testAsset.Path, "UnitTest1.cs");
+            var content = File.ReadAllText(testFile, Encoding.UTF8);
+            File.WriteAllText(testFile, content.Replace("VSTestXunitPassTest", "VSTestXunitPassTest2"), Encoding.UTF8);
+
+            await App.AssertOutputLineEquals("The following Tests are available:");
+            await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
+        }
+
+        [Fact]
+        public async Task TestCommand_MultiTargeting()
+        {
+            var testAsset = TestAssets.CopyTestAsset("XunitMulti")
+                .WithSource();
+
+            App.Start(testAsset.Path, ["--verbose", "--framework", ToolsetInfo.CurrentTargetFramework, "test", "--list-tests"]);
+
+            await App.AssertOutputLineEquals("The following Tests are available:");
+            await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitFailTestNetCoreApp");
+        }
+
+        [Fact]
+        public async Task BuildCommand()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
+                .WithSource();
+
+            App.Start(testAsset.Path, ["--verbose", "--property", "TestProperty=123", "build", "/t:TestTarget"]);
+
+            await App.AssertOutputLine(line => line.Contains("warning : The value of property is '123'", StringComparison.Ordinal));
         }
     }
 }
