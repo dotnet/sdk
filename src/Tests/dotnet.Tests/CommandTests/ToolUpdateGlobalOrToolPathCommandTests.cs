@@ -333,6 +333,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)
         {
             ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
+            var store = new ToolPackageStoreMock(
+                    new DirectoryPath(_toolsDirectory),
+                    _fileSystem);
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
@@ -341,7 +344,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     fileSystem: _fileSystem,
                     _reporter,
                     _mockFeeds
-                    )),
+                    ), new ToolPackageUninstallerMock(_fileSystem, store)),
                 (_, _) => GetMockedShellShimRepository(),
                 _environmentPathInstructionMock,
                 _reporter);

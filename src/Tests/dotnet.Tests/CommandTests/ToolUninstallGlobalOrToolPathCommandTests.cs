@@ -235,10 +235,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     fileSystem: _fileSystem,
                     _reporter
                     );
+            var toolPackageDownloaderMock = new ToolPackageUninstallerMock(_fileSystem, store);
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (store, store, packageDownloaderMock),
+                (location, forwardArguments) => (store, store, packageDownloaderMock, toolPackageDownloaderMock),
                 (_, _) => new ShellShimRepository(
                     new DirectoryPath(_shimsDirectory),
                     string.Empty,
