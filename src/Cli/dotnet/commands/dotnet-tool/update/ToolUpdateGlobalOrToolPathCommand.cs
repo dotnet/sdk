@@ -120,8 +120,10 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                     {
                         shellShimRepository.CreateShim(command.Executable, command.Name, newInstalledPackage.PackagedShims);
                     }
-
-                    PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
+                    if (!_verbosity.IsQuiet())
+                    {
+                        PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
+                    }
                 });
 
                 scope.Complete();
