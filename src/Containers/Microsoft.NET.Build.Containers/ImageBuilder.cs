@@ -110,7 +110,7 @@ internal sealed class ImageBuilder
     /// <summary>
     /// Sets the USER for the image.
     /// </summary>
-    internal void SetUser(string user) => _baseImageConfig.SetUser(user);
+    internal void SetUser(string user, bool isExplicitUserInteraction = true) => _baseImageConfig.SetUser(user, isExplicitUserInteraction);
 
     internal static (string[] entrypoint, string[] cmd) DetermineEntrypointAndCmd(
         string[] entrypoint,
@@ -227,7 +227,7 @@ internal sealed class ImageBuilder
         if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.APP_UID, out string? appUid))
         {
             _logger.LogTrace("Setting user from APP_UID environment variable");
-            SetUser(appUid);
+            SetUser(appUid, isExplicitUserInteraction: false);
         }
     }
 
@@ -237,8 +237,27 @@ internal sealed class ImageBuilder
     /// </summary>
     internal void AssignPortsFromEnvironment()
     {
-        // asp.net images control port bindings via three environment variables. we should check for those variables and ensure that ports are created for them
+        // asp.net images control port bindings via three environment variables. we should check for those variables and ensure that ports are created for them.
+        // precendence is captured at https://github.com/dotnet/aspnetcore/blob/f49c1c7f7467c184ffb630086afac447772096c6/src/Hosting/Hosting/src/GenericHost/GenericWebHostService.cs#L68-L119
+        // ASPNETCORE_URLS is the most specific and is the only one used if present, followed by ASPNETCORE_HTTPS_PORT and ASPNETCORE_HTTP_PORT together
 
+        // https://learn.microsoft.com//aspnet/core/fundamentals/host/web-host?view=aspnetcore-8.0#server-urls - the format of ASPNETCORE_URLS has been stable for many years now
+        if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_URLS, out string? urls))
+        {
+            foreach (var url in Split(urls))
+            {
+                _logger.LogTrace("Setting ports from ASPNETCORE_URLS environment variable");
+                var match = aspnetPortRegex.Match(url);
+                if (match.Success && int.TryParse(match.Groups["port"].Value, out int port))
+                {
+                    _logger.LogTrace("Added port {port}", port);
+                    ExposePort(port, PortType.tcp);
+                }
+            }
+            return; // we're done here - ASPNETCORE_URLS is the most specific and overrides the other two
+        }
+
+        // port-specific
         // https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/endpoints?view=aspnetcore-8.0#specify-ports-only - new for .NET 8 - allows just changing port(s) easily
         if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_HTTP_PORTS, out string? httpPorts))
         {
@@ -270,21 +289,6 @@ internal sealed class ImageBuilder
                 else
                 {
                     _logger.LogTrace("Skipped port {port} because it could not be parsed as an integer", port);
-                }
-            }
-        }
-
-        // https://learn.microsoft.com//aspnet/core/fundamentals/host/web-host?view=aspnetcore-8.0#server-urls - the format of ASPNETCORE_URLS has been stable for many years now
-        if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.ASPNETCORE_URLS, out string? urls))
-        {
-            foreach (var url in Split(urls))
-            {
-                _logger.LogTrace("Setting ports from ASPNETCORE_URLS environment variable");
-                var match = aspnetPortRegex.Match(url);
-                if (match.Success && int.TryParse(match.Groups["port"].Value, out int port))
-                {
-                    _logger.LogTrace("Added port {port}", port);
-                    ExposePort(port, PortType.tcp);
                 }
             }
         }

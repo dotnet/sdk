@@ -22,12 +22,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public bool FailingRollback;
         public bool FailingGarbageCollection;
         private readonly string FailingPack;
+        private readonly string _dotnetDir;
 
         public IWorkloadResolver WorkloadResolver { get; set; }
 
         public int ExitCode => 0;
 
-        public MockPackWorkloadInstaller(string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
+        public MockPackWorkloadInstaller(string dotnetDir, string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
             IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false)
         {
             InstallationRecordRepository = new MockInstallationRecordRepository(failingWorkload, installedWorkloads);
@@ -35,6 +36,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             InstalledPacks = installedPacks ?? new List<PackInfo>();
             FailingPack = failingPack;
             FailingGarbageCollection = failingGarbageCollection;
+            _dotnetDir = dotnetDir;
         }
 
         IEnumerable<PackInfo> GetPacksForWorkloads(IEnumerable<WorkloadId> workloadIds)
@@ -155,6 +157,22 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void ReplaceWorkloadResolver(IWorkloadResolver workloadResolver)
         {
             WorkloadResolver = workloadResolver;
+        }
+
+        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+        }
+
+        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllLines(path, jsonLines);
         }
     }
 

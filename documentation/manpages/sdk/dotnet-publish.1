@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-publish" "1" "2022-10-24" "" ".NET Documentation"
+.TH "dotnet-publish" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet publish
 .PP
@@ -27,7 +27,7 @@ dotnet-publish - Publishes the application and its dependencies to a folder for 
 .nf
 \f[C]
 dotnet publish [<PROJECT>|<SOLUTION>] [-a|--arch <ARCHITECTURE>]
-    [-c|--configuration <CONFIGURATION>]
+    [-c|--configuration <CONFIGURATION>] [--disable-build-servers]
     [-f|--framework <FRAMEWORK>] [--force] [--interactive]
     [--manifest <PATH_TO_MANIFEST_FILE>] [--no-build] [--no-dependencies]
     [--no-restore] [--nologo] [-o|--output <OUTPUT_DIRECTORY>]
@@ -74,6 +74,7 @@ The \f[V]-c\f[R] and \f[V]-o\f[R] parameters map to MSBuild\[cq]s \f[V]Configura
 .PP
 The \f[V]dotnet publish\f[R] command accepts MSBuild options, such as \f[V]-p\f[R] for setting properties and \f[V]-l\f[R] to define a logger.
 For example, you can set an MSBuild property by using the format: \f[V]-p:<NAME>=<VALUE>\f[R].
+.SS .pubxml files
 .PP
 You can also set publish-related properties by referring to a \f[I].pubxml\f[R] file.
 For example:
@@ -85,9 +86,42 @@ dotnet publish -p:PublishProfile=FolderProfile
 .fi
 .PP
 The preceding example uses the \f[I]FolderProfile.pubxml\f[R] file that is found in the \f[I]<project_folder>/Properties/PublishProfiles\f[R] folder.
-If you specify a path and file extension when setting the \f[V]PublishProfile\f[R] property, they are ignored.
+If you specify a path and file extension when setting the \f[V]PublishProfile\f[R] property, they\[cq]re ignored.
 MSBuild by default looks in the \f[I]Properties/PublishProfiles\f[R] folder and assumes the \f[I]pubxml\f[R] file extension.
 To specify the path and filename including extension, set the \f[V]PublishProfileFullPath\f[R] property instead of the \f[V]PublishProfile\f[R] property.
+.PP
+In the \f[I].pubxml\f[R] file:
+.IP \[bu] 2
+\f[V]PublishUrl\f[R] is used by Visual Studio to denote the Publish target.
+.IP \[bu] 2
+\f[V]PublishDir\f[R] is used by the CLI to denote the Publish target.
+.PP
+If you want the scenario to work in all places, you can initialize both these properties to the same value in the \f[I].pubxml\f[R] file.
+When GitHub issue dotnet/sdk#20931 (https://github.com/dotnet/sdk/issues/20931) is resolved, only one of these properties will need to be set.
+.PP
+Some properties in the \f[I].pubxml\f[R] file are honored only by Visual Studio and have no effect on \f[V]dotnet publish\f[R].
+We\[cq]re working to bring the CLI more into alignment with Visual Studio\[cq]s behavior.
+But some properties will never be used by the CLI.
+The CLI and Visual Studio both do the packaging aspect of publishing, and dotnet/sdk#29817 (https://github.com/dotnet/sdk/pull/29817) plans to add support for more properties related to that.
+But the CLI doesn\[cq]t do the deployment automation aspect of publishing, and properties related to that aren\[cq]t supported.
+The most notable \f[I].pubxml\f[R] properties that aren\[cq]t supported by \f[V]dotnet publish\f[R] are the following ones that impact the build:
+.IP \[bu] 2
+\f[V]LastUsedBuildConfiguration\f[R]
+.IP \[bu] 2
+\f[V]Configuration\f[R]
+.IP \[bu] 2
+\f[V]Platform\f[R]
+.IP \[bu] 2
+\f[V]LastUsedPlatform\f[R]
+.IP \[bu] 2
+\f[V]TargetFramework\f[R]
+.IP \[bu] 2
+\f[V]TargetFrameworks\f[R]
+.IP \[bu] 2
+\f[V]RuntimeIdentifier\f[R]
+.IP \[bu] 2
+\f[V]RuntimeIdentifiers\f[R]
+.SS MSBuild properties
 .PP
 The following MSBuild properties change the output of \f[V]dotnet publish\f[R].
 .IP \[bu] 2
@@ -166,6 +200,15 @@ Defines the build configuration.
 The default for most projects is \f[V]Debug\f[R], but you can override the build configuration settings in your project.
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]--disable-build-servers\f[B]\f[R]
+.RS 2
+.PP
+Forces the command to ignore any persistent build servers.
+This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
+A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
+Available since .NET 7 SDK.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
 .RS 2
 .PP
@@ -237,7 +280,7 @@ It defaults to \f[I][project_file_folder]/bin/[configuration]/[framework]/[runti
 .PP
 In a web project, if the output folder is in the project folder, successive \f[V]dotnet publish\f[R] commands result in nested output folders.
 For example, if the project folder is \f[I]myproject\f[R], and the publish output folder is \f[I]myproject/publish\f[R], and you run \f[V]dotnet publish\f[R] twice, the second run puts content files such as \f[I].config\f[R] and \f[I].json\f[R] files in \f[I]myproject/publish/publish\f[R].
-To avoid nesting publish folders, specify a publish folder that is not \f[B]directly\f[R] under the project folder, or exclude the publish folder from the project.
+To avoid nesting publish folders, specify a publish folder that isn\[cq]t \f[B]directly\f[R] under the project folder, or exclude the publish folder from the project.
 To exclude a publish folder named \f[I]publishoutput\f[R], add the following element to a \f[V]PropertyGroup\f[R] element in the \f[I].csproj\f[R] file:
 .IP
 .nf
@@ -245,6 +288,14 @@ To exclude a publish folder named \f[I]publishoutput\f[R], add the following ele
 <DefaultItemExcludes>$(DefaultItemExcludes);publishoutput**</DefaultItemExcludes>
 \f[R]
 .fi
+.IP \[bu] 2
+\&.NET 7.0.200 SDK and later
+.RS 2
+.PP
+If you specify the \f[V]--output\f[R] option when running this command on a solution, the CLI will emit a warning (an error in 7.0.200) due to the unclear semantics of the output path.
+The \f[V]--output\f[R] option is disallowed because all outputs of all built projects would be copied into the specified directory, which isn\[cq]t compatible with multi-targeted projects, as well as projects that have different versions of direct and transitive dependencies.
+For more information, see Solution-level \f[V]--output\f[R] option no longer valid for build-related commands.
+.RE
 .IP \[bu] 2
 \&.NET Core 3.x SDK and later
 .RS 2
@@ -408,6 +459,8 @@ Target frameworks
 .IP \[bu] 2
 Runtime Identifier (RID) catalog
 .IP \[bu] 2
+Containerize a .NET app with dotnet publish
+.IP \[bu] 2
 Working with macOS Catalina Notarization
 .IP \[bu] 2
 Directory structure of a published application
@@ -418,4 +471,4 @@ Visual Studio publish profiles (.pubxml) for ASP.NET Core app deployment
 .IP \[bu] 2
 dotnet msbuild
 .IP \[bu] 2
-ILLInk.Tasks
+Trim self-contained deployments
