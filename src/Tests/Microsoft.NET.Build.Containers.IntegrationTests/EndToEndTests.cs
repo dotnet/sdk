@@ -288,8 +288,6 @@ public class EndToEndTests : IDisposable
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute();
 
-        string stdOut = commandResult.StdOut;
-
         commandResult.Should().Pass();
         commandResult.Should().HaveStdOutContaining("Pushed image 'webapp:latest'");
         commandResult.Should().HaveStdOutContaining("Pushed image 'consoleapp:latest'");
