@@ -162,6 +162,46 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenRunWithRollForwardItShouldRollForwardToTrueInManifestFile()
+        {
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()} --roll-forward");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.ReadAllText(_manifestFilePath).Should()
+                .Contain("\"rollForward\": \"True\"");
+        }
+
+        [Fact]
+        public void WhenRunWithoutRollForwardItShouldDefaultRollForwardToFalseInManifestFile()
+        {
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()}");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.ReadAllText(_manifestFilePath).Should()
+                .Contain("\"rollForward\": \"False\"");
+        }
+
+        [Fact]
         public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldSaveToCacheAndAddToManifestFile()
         {
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
