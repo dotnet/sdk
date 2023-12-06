@@ -298,7 +298,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var parseResultQuiet = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --verbosity quiet");
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 parseResultQuiet,
-                _createToolPackageStoresAndDownloader,
+                _createToolPackageStoreDownloaderUninstaller,
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);

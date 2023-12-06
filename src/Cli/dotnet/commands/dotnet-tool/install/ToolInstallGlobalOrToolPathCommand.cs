@@ -231,18 +231,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         {
             try
             {
-                uninstallAction();
-                if (!_verbosity.IsQuiet())
-                {
-                    _reporter.WriteLine(
-                        string.Format(
-                            LocalizableStrings.InstallationSucceeded,
-                            string.Join(", ", package.Commands.Select(c => c.Name)),
-                            package.Id,
-                            package.Version.ToNormalizedString()).Green());
-                }
-
-                return 0;
+                uninstallAction();           
             }
             catch (Exception ex)
                 when (ToolUninstallCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
@@ -296,33 +285,36 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         private void PrintSuccessMessage(IToolPackage oldPackage, IToolPackage newInstalledPackage)
         {
-            if (oldPackage == null)
+            if (!_verbosity.IsQuiet())
             {
-                _reporter.WriteLine(
-                    string.Format(
-                        Install.LocalizableStrings.InstallationSucceeded,
-                        string.Join(", ", newInstalledPackage.Commands.Select(c => c.Name)),
-                        newInstalledPackage.Id,
-                        newInstalledPackage.Version.ToNormalizedString()).Green());
-            }
-            else if (oldPackage.Version != newInstalledPackage.Version)
-            {
-                _reporter.WriteLine(
-                    string.Format(
-                        Update.LocalizableStrings.UpdateSucceeded,
-                        newInstalledPackage.Id,
-                        oldPackage.Version.ToNormalizedString(),
-                        newInstalledPackage.Version.ToNormalizedString()).Green());
-            }
-            else
-            {
-                _reporter.WriteLine(
-                    string.Format(
-                        (
-                        newInstalledPackage.Version.IsPrerelease ?
-                        Update.LocalizableStrings.UpdateSucceededPreVersionNoChange : Update.LocalizableStrings.UpdateSucceededStableVersionNoChange
-                        ),
-                        newInstalledPackage.Id, newInstalledPackage.Version).Green());
+                if (oldPackage == null)
+                {
+                    _reporter.WriteLine(
+                        string.Format(
+                            Install.LocalizableStrings.InstallationSucceeded,
+                            string.Join(", ", newInstalledPackage.Commands.Select(c => c.Name)),
+                            newInstalledPackage.Id,
+                            newInstalledPackage.Version.ToNormalizedString()).Green());
+                }
+                else if (oldPackage.Version != newInstalledPackage.Version)
+                {
+                    _reporter.WriteLine(
+                        string.Format(
+                            Update.LocalizableStrings.UpdateSucceeded,
+                            newInstalledPackage.Id,
+                            oldPackage.Version.ToNormalizedString(),
+                            newInstalledPackage.Version.ToNormalizedString()).Green());
+                }
+                else
+                {
+                    _reporter.WriteLine(
+                        string.Format(
+                            (
+                            newInstalledPackage.Version.IsPrerelease ?
+                            Update.LocalizableStrings.UpdateSucceededPreVersionNoChange : Update.LocalizableStrings.UpdateSucceededStableVersionNoChange
+                            ),
+                            newInstalledPackage.Id, newInstalledPackage.Version).Green());
+                }
             }
         }
     }
