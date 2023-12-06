@@ -49,7 +49,7 @@
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100" Version="8.0.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>8219dd3f8f022dcd2fd8df2319ab4222fa11aa39</Sha>
+      <Sha>2406616d0e3a31d80b326e27c156955bfa41c791</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.9.0-preview-23605-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
@@ -277,18 +277,18 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>3f1acb59718cadf111a0a796681e3d3509bb3381</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.23605.1">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="7.0.0-preview.23606.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>96a1ad3afcdfa47f0989dd0440c909ef2e5166e2</Sha>
+      <Sha>69d077c78502a18f3a7dd25ac2f7f171c542e524</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.23605.1">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="7.0.0-preview.23606.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>96a1ad3afcdfa47f0989dd0440c909ef2e5166e2</Sha>
+      <Sha>69d077c78502a18f3a7dd25ac2f7f171c542e524</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.23605.1">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="7.0.0-preview.23606.1">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>96a1ad3afcdfa47f0989dd0440c909ef2e5166e2</Sha>
+      <Sha>69d077c78502a18f3a7dd25ac2f7f171c542e524</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
