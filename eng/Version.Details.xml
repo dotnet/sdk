@@ -49,7 +49,7 @@
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100" Version="8.0.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>8219dd3f8f022dcd2fd8df2319ab4222fa11aa39</Sha>
+      <Sha>2406616d0e3a31d80b326e27c156955bfa41c791</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.9.0-preview-23605-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
@@ -64,13 +64,13 @@
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>2f3d37672a69142a13a62856b09034a915bedc70</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.200-beta.23605.2">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.200-beta.23606.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>05bb885a7119b541816e16ca9980ab685ffbfaa5</Sha>
+      <Sha>48b4a3bb4fcf74027658fdd02a4cf6b2b1f38242</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.200-beta.23605.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.200-beta.23606.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>05bb885a7119b541816e16ca9980ab685ffbfaa5</Sha>
+      <Sha>48b4a3bb4fcf74027658fdd02a4cf6b2b1f38242</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="dotnet-format" Version="8.0.453106">
