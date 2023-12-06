@@ -462,11 +462,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines)
+        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllLines(path, jsonLines);
+            File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", File.Exists(path) ? File.ReadAllText(path) : null, lines: jsonLines));
+        }
+
+        public void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("useWorkloadSets", File.Exists(path) ? File.ReadAllText(path) : null, singleValue: newMode));
         }
 
         /// <summary>
@@ -689,53 +696,5 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         }
 
         private bool IsSingleFilePack(PackInfo packInfo) => packInfo.Kind.Equals(WorkloadPackKind.Library) || packInfo.Kind.Equals(WorkloadPackKind.Template);
-
-        public void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
-        {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            if (!File.Exists(path))
-            {
-                File.WriteAllLines(path, new string[] { "{", $@"""useWorkloadSets"": ""{newMode}""", "}" });
-            }
-            else
-            {
-                File.WriteAllLines(path, AdjustModeInJsonContents(File.ReadAllLines(path), newMode));
-            }
-        }
-
-        internal static IEnumerable<string> AdjustModeInJsonContents(IEnumerable<string> currentContents, string newMode)
-        {
-            bool updatedMode = false;
-            bool needClosingBrace = false;
-            foreach (string line in currentContents)
-            {
-                if (needClosingBrace)
-                {
-                    yield return "}" + (updatedMode ? string.Empty : ',');
-                    needClosingBrace = false;
-                }
-
-                if (line.Contains("useWorkloadSets"))
-                {
-                    yield return $@"""useWorkloadSets"": ""{newMode}""" + (line.Contains(',') ? ',' : string.Empty);
-                    updatedMode = true;
-                }
-                else if (line.Equals("}"))
-                {
-                    needClosingBrace = true;
-                }
-                else
-                {
-                    yield return line;
-                }
-            }
-
-            if (!updatedMode)
-            {
-                yield return $@"""useWorkloadSets"": ""{newMode}""";
-                yield return "}";
-            }
-        }
     }
 }

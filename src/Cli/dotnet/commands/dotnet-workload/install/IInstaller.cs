@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         /// </summary>
         /// <param name="sdkFeatureBand">The SDK feature band of the install state file.</param>
         /// <param name="jsonLines">The JSON contents describing the install state.</param>
-        void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines);
+        void WriteInstallState(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines);
 
         void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode);
     }

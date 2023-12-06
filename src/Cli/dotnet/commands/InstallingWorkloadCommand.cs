@@ -3,8 +3,11 @@
 
 using System.CommandLine;
 using System.IO;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -88,22 +91,30 @@ namespace Microsoft.DotNet.Workloads.Workload
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
         }
 
-        protected IEnumerable<string> GetInstallStateContents(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
-            ToJsonEnumerable(WorkloadSet.FromManifests(
+        protected static Dictionary<string, string> GetInstallStateContents(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
+            WorkloadSet.FromManifests(
                     manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
-                    ).ToDictionaryForJson());
-
-        private IEnumerable<string> ToJsonEnumerable(Dictionary<string, string> dict)
+                    ).ToDictionaryForJson();
+        
+        public static string AdjustInstallState(string key, string initialContent = null, string singleValue = null, Dictionary<string, string> lines = null)
         {
-            yield return "{";
-            yield return "\"manifests\": {";
-            foreach (KeyValuePair<string, string> line in dict)
+            var json = JsonNode.Parse(initialContent ?? "{}");
+            if (singleValue is not null)
             {
-                yield return $"\"{line.Key}\": \"{line.Value}\",";
+                json.Root.AsObject()[key] = singleValue;
             }
-            yield return "}";
-            yield return "}";
-            yield break;
+            else
+            {
+                var newObj = new JsonObject();
+                foreach (var line in lines)
+                {
+                    newObj[line.Key] = line.Value;
+                }
+
+                json[key] = newObj;
+            }
+
+            return json.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)

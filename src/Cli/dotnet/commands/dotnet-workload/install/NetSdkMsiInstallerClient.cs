@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public void DeleteInstallState(SdkFeatureBand sdkFeatureBand) =>
             RemoveInstallStateFile(sdkFeatureBand);
 
-        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines) =>
+        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines) =>
             WriteInstallStateFile(sdkFeatureBand, jsonLines);
 
         /// <summary>

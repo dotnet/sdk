@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -289,19 +290,12 @@ namespace Microsoft.DotNet.Installer.Windows
             if (IsElevated)
             {
                 string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null), "default.json");
-                if (!File.Exists(path))
-                {
-                    // Create the parent folder for the state file and set up all required ACLs
-                    SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
+                // Create the parent folder for the state file and set up all required ACLs
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
 
-                    File.WriteAllLines(path, new string[] { "{", $@"""useWorkloadSets"": ""{newMode}"",", "}" });
+                File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("useWorkloadSets", File.Exists(path) ? File.ReadAllText(path) : null, singleValue: newMode));
 
-                    SecurityUtils.SecureFile(path);
-                }
-                else
-                {
-                    File.WriteAllLines(path, FileBasedInstaller.AdjustModeInJsonContents(File.ReadAllLines(path), newMode));
-                }
+                SecurityUtils.SecureFile(path);
             }
             else if (IsClient)
             {
@@ -568,7 +562,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// </summary>
         /// <param name="sdkFeatureBand">The path of the isntall state file to write.</param>
         /// <param name="jsonLines">The contents of the JSON file, formatted as a single line.</param>
-        protected void WriteInstallStateFile(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines)
+        protected void WriteInstallStateFile(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null), "default.json");
             Elevate();
@@ -578,7 +572,7 @@ namespace Microsoft.DotNet.Installer.Windows
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
 
-                File.WriteAllLines(path, jsonLines);
+                File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", initialContent: File.Exists(path) ? File.ReadAllText(path) : null, lines: jsonLines));
 
                 SecurityUtils.SecureFile(path);
             }
