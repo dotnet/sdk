@@ -703,20 +703,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CreateSingleFileHost"
           Inputs="@(IntermediateAssembly);$(SingleFileHostSourcePath)"
           Outputs="$(SingleFileHostIntermediatePath)"
-          DependsOnTargets="_GetAppHostPaths"
-          Condition="'$(PublishSingleFile)' == 'true' and
-                     '$(SelfContained)' == 'true' and
-                     '$(SingleFileHostSourcePath)' != '' and
-                     '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
-                     $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and
+          DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration"
+          Condition="'$(_UseSingleFileHostForPublish)' == 'true' and
                      Exists('@(IntermediateAssembly)') and
                      Exists('$(SingleFileHostSourcePath)')">
-    <PropertyGroup>
-      <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
-      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and $([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
-                                      ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">true</_EnableMacOSCodeSign>
-    </PropertyGroup>
-
     <CreateAppHost AppHostSourcePath="$(SingleFileHostSourcePath)"
                    AppHostDestinationPath="$(SingleFileHostIntermediatePath)"
                    AppBinaryName="$(AssemblyName)$(TargetExt)"
@@ -861,7 +851,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                             Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
     </ItemGroup>
 
-    <ItemGroup Condition="'$(PublishSingleFile)' == 'true' and '$(SelfContained)' == 'true' and $([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net5.0')) and Exists('$(SingleFileHostIntermediatePath)')">
+    <ItemGroup Condition="'$(_UseSingleFileHostForPublish)' == 'true' and Exists('$(SingleFileHostIntermediatePath)')">
       <!-- Remove non-single-file apphost from items to publish -->
       <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
       <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />

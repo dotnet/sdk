@@ -691,6 +691,27 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+                                        _GetAppHostPaths
+    Gets the path to apphost (restored via packages or in an apphost pack),
+    and computes the path for the destination apphost.
+    ============================================================
+     -->
+  <Target Name="_GetAppHostCreationConfiguration"
+          Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true'">
+    <PropertyGroup>
+      <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
+      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and $([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
+                                      ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">true</_EnableMacOSCodeSign>
+      <_UseSingleFileHostForPublish Condition="'$(PublishSingleFile)' == 'true' and
+                                               '$(SelfContained)' == 'true' and
+                                               '$(SingleFileHostSourcePath)' != '' and
+                                               '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
+                                               $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0))">true</_UseSingleFileHostForPublish>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    ============================================================
                                         _CreateAppHost
     If we found a restored apphost, create the modified destination apphost
     with options from the project.
@@ -700,17 +721,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_CreateAppHost"
           Inputs="@(IntermediateAssembly);$(AppHostSourcePath)"
           Outputs="$(AppHostIntermediatePath)"
-          DependsOnTargets="_GetAppHostPaths;CoreCompile"
+          DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration;CoreCompile"
           Condition="'$(ComputeNETCoreBuildOutputFiles)' == 'true' and
                      '$(AppHostSourcePath)' != '' and
                      Exists('@(IntermediateAssembly)') and
                      Exists('$(AppHostSourcePath)')">
-    <PropertyGroup>
-      <_UseWindowsGraphicalUserInterface Condition="($(RuntimeIdentifier.StartsWith('win')) or $(DefaultAppHostRuntimeIdentifier.StartsWith('win'))) and '$(OutputType)'=='WinExe'">true</_UseWindowsGraphicalUserInterface>
-      <_EnableMacOSCodeSign Condition="'$(_EnableMacOSCodeSign)' == '' and $([MSBuild]::IsOSPlatform(`OSX`)) and Exists('/usr/bin/codesign') and
-                                      ($(RuntimeIdentifier.StartsWith('osx')) or $(AppHostRuntimeIdentifier.StartsWith('osx')))">true</_EnableMacOSCodeSign>
-    </PropertyGroup>
-
     <CreateAppHost AppHostSourcePath="$(AppHostSourcePath)"
                    AppHostDestinationPath="$(AppHostIntermediatePath)"
                    AppBinaryName="$(AssemblyName)$(TargetExt)"
