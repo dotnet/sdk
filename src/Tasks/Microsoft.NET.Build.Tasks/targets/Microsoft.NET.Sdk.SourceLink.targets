@@ -20,7 +20,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_SourceLinkSdkSubDir>build</_SourceLinkSdkSubDir>
     <_SourceLinkSdkSubDir Condition="'$(IsCrossTargetingBuild)' == 'true'">buildMultiTargeting</_SourceLinkSdkSubDir>
 
-    <EmbedUntrackedSources Condition="'$(EmbedUntrackedSources)' == ''">true</EmbedUntrackedSources>
+    <!-- Workaround for https://github.com/dotnet/sdk/issues/36585 (Desktop XAML targets do not produce correct #line directives) -->
+    <EmbedUntrackedSources Condition="'$(EmbedUntrackedSources)' == '' and '$(ImportFrameworkWinFXTargets)' != 'true'">true</EmbedUntrackedSources>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.Build.Tasks.Git\build\Microsoft.Build.Tasks.Git.targets"/>
