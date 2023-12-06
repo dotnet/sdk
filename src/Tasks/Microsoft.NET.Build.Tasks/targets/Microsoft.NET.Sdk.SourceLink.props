@@ -11,6 +11,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup>
     <!-- Suppress implicit SourceLink inclusion if any Microsoft.SourceLink package is referenced. -->
     <SuppressImplicitGitSourceLink Condition="'$(PkgMicrosoft_SourceLink_Common)' != ''">true</SuppressImplicitGitSourceLink>
@@ -26,4 +27,5 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.AzureRepos.Git\build\Microsoft.SourceLink.AzureRepos.Git.props"/>
     <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.SourceLink.Bitbucket.Git\build\Microsoft.SourceLink.Bitbucket.Git.props"/>
   </ImportGroup>
+
 </Project>
