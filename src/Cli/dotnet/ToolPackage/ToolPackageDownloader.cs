@@ -257,7 +257,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             var runtimeOptions = jsonObject["runtimeOptions"] as JObject;
             if (runtimeOptions != null)
             {
-                runtimeOptions["rollForward"] = "LatestMajor";
+                runtimeOptions["rollForward"] = "Major";
                 string updateJson = jsonObject.ToString();
                 File.WriteAllText(runtimeConfigFilePath, updateJson);
             }
