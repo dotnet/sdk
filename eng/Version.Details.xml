@@ -49,7 +49,7 @@
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100" Version="8.0.0" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>8219dd3f8f022dcd2fd8df2319ab4222fa11aa39</Sha>
+      <Sha>2406616d0e3a31d80b326e27c156955bfa41c791</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.9.0-preview-23605-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
@@ -179,18 +179,18 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>707c46e558b2b027d7ae942028c369e26545f10a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.9.0-preview-23604-01">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.9.0-preview-23605-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>3dec0798866b2d16b838d7a78421070b99574861</Sha>
+      <Sha>9ba40788aa9f1a794a71e9d3055a246cb62381e9</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.9.0-preview-23604-01">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.9.0-preview-23605-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>3dec0798866b2d16b838d7a78421070b99574861</Sha>
+      <Sha>9ba40788aa9f1a794a71e9d3055a246cb62381e9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.9.0-preview-23604-01">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.9.0-preview-23605-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>3dec0798866b2d16b838d7a78421070b99574861</Sha>
+      <Sha>9ba40788aa9f1a794a71e9d3055a246cb62381e9</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
