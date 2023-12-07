@@ -40,7 +40,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 () => new ToolInstallGlobalOrToolPathCommand(
                     parseResult,
                     _createToolPackageStoreDownloaderUninstaller,
-                    _createShellShimRepository));
+                    _createShellShimRepository,
+                    reporter: reporter));
         }
 
         public override int Execute()

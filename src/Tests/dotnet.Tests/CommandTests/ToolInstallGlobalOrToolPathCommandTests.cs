@@ -1,24 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
+using System.Text.Json;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.ShellShim;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Tests.ComponentMocks;
+using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Tools.Tool.Update;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using System.Text.Json;
-using System.CommandLine;
-using Parser = Microsoft.DotNet.Cli.Parser;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.NET.TestFramework;
-using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Update;
-using static System.Formats.Asn1.AsnWriter;
 using CreateShellShimRepository = Microsoft.DotNet.Tools.Tool.Install.CreateShellShimRepository;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
+using Parser = Microsoft.DotNet.Cli.Parser;
 
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
