@@ -84,8 +84,8 @@ Se si vuole creare un manifesto, usare `dotnet new tool-manifest`, in genere nel
         <note />
       </trans-unit>
       <trans-unit id="RollForwardOptionDescription">
-        <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
-        <target state="new">Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</target>
+        <source>Roll forward to framework version of Major.</source>
+        <target state="new">Roll forward to framework version of Major.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
