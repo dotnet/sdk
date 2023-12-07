@@ -308,7 +308,7 @@ namespace Microsoft.NET.Build.Tests
                 WorkingDirectory = testAsset.Path
             };
 
-            buildCommand.Execute("-p:Platform=x64", "-bl").Should().Pass();
+            buildCommand.Execute("-p:Platform=x64").Should().Pass();
 
             var sourceLinkFilePath = Path.Combine(intDir, "NETCoreCppCliTest.sourcelink.json");
             var actualContent = File.ReadAllText(sourceLinkFilePath, Encoding.UTF8);
