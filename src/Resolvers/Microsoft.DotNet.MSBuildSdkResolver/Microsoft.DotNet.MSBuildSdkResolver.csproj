@@ -132,4 +132,33 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="VerifyDependencies" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" AfterTargets="Build">
+    <ResolveAssemblyReference AssemblyFiles="$(TargetPath)" SearchPaths="" AutoUnify="true">
+      <Output TaskParameter="ResolvedDependencyFiles" ItemName="ResolvedDependencies"/>
+    </ResolveAssemblyReference>
+
+    <ItemGroup>
+      <ExpectedDependencies Include="Microsoft.Deployment.DotNet.Releases, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+      <ExpectedDependencies Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed" />
+      <ExpectedDependencies Include="Microsoft.Build.Framework, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+      <ExpectedDependencies Include="System.Collections.Immutable, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+      <ExpectedDependencies Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+      <ExpectedDependencies Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+      <ExpectedDependencies Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+    </ItemGroup>
+
+    <!-- Check that the dependencies of the output assembly match our expectations -->
+    <PropertyGroup>
+      <ResolvedDependenciesList>@(ResolvedDependencies->'%(FusionName)')</ResolvedDependenciesList>
+      <ExpectedDependenciesList>@(ExpectedDependencies->'%(Identity)')</ExpectedDependenciesList>
+      <DependencyMismatchErrorText>This may have consequences for MSBuild.exe binding redirects, please get signoff from the MSBuild team.</DependencyMismatchErrorText>
+    </PropertyGroup>
+
+    <Error Text="$(AssemblyName) is expected to depend on %(ExpectedDependencies.Identity). $(DependencyMismatchErrorText)"
+           Condition="!($([System.String]::Copy('$(ResolvedDependenciesList)').Contains('%(ExpectedDependencies.Identity)')))" />
+    <Error Text="$(AssemblyName) is not expected to depend on %(ResolvedDependencies.FusionName). (DependencyMismatchErrorText)"
+           Condition="!($([System.String]::Copy('$(ExpectedDependenciesList)').Contains('%(ResolvedDependencies.FusionName)')))" />
+  </Target>
+
 </Project>
