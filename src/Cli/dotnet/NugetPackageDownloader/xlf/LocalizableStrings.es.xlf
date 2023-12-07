@@ -44,27 +44,27 @@
       </trans-unit>
       <trans-unit id="PackageVersionDescriptionDefault">
         <source>A version of {0} of package {1}</source>
-        <target state="new">A version of {0} of package {1}</target>
+        <target state="translated">Versión de {0} del paquete {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageVersionDescriptionForExactVersionMatch">
         <source>Version {0} of package {1}</source>
-        <target state="new">Version {0} of package {1}</target>
+        <target state="translated">Versión {0} del paquete {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageVersionDescriptionForVersionWithLowerAndUpperBounds">
         <source>A version between {0} and {1} of package {2}</source>
-        <target state="new">A version between {0} and {1} of package {2}</target>
+        <target state="translated">Una versión entre {0} y {1} del paquete {2}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageVersionDescriptionForVersionWithLowerBound">
         <source>A version higher than {0} of package {1}</source>
-        <target state="new">A version higher than {0} of package {1}</target>
+        <target state="translated">Una versión superior a {0} del paquete {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageVersionDescriptionForVersionWithUpperBound">
         <source>A version less than {0} of package {1}</source>
-        <target state="new">A version less than {0} of package {1}</target>
+        <target state="translated">Versión anterior a la {0} del paquete {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
