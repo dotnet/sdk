@@ -104,7 +104,6 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="elevationContext"></param>
         /// <param name="logger"></param>
         /// <param name="verifySignatures">Determines whether MSI signatures should be verified</param>
-        /// <param name="allowOnlineRevocationChecks">Determines whether revocation checks can go online when verifying MSI signatures.</param>
         protected InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifySignatures)
         {
             ElevationContext = elevationContext;
