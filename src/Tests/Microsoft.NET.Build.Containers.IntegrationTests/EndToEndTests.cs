@@ -209,7 +209,7 @@ public class EndToEndTests : IDisposable
         return publishDirectory;
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/36160")]
+    [DockerAvailableFact]
     public async Task EndToEnd_MultiProjectSolution()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
@@ -524,7 +524,8 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
             $"/p:RuntimeFrameworkVersion=8.0.0-preview.3.23174.8",
-            $"/p:ContainerImageTag={imageTag}")
+            $"/p:ContainerImageTag={imageTag}",
+            "/bl:E:\\test.binlog")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
