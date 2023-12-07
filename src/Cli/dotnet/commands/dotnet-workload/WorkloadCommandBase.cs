@@ -16,14 +16,6 @@ namespace Microsoft.DotNet.Workloads.Workload
     internal abstract class WorkloadCommandBase : CommandBase
     {
         /// <summary>
-        /// Indicates whether revocation checks use an online
-        /// </summary>
-        protected bool AllowOnlineRevocationChecks
-        {
-            get;
-        }
-
-        /// <summary>
         /// The package downloader to use for acquiring NuGet packages.
         /// </summary>
         protected INuGetPackageDownloader PackageDownloader
@@ -125,8 +117,6 @@ namespace Microsoft.DotNet.Workloads.Workload
                 Reporter,
                 restoreActionConfig: RestoreActionConfiguration,
                 verifySignatures: VerifySignatures);
-
-            AllowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
         }
 
         /// <summary>
