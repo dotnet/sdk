@@ -283,13 +283,13 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="logFile">Full path of the log file</param>
         /// <returns>Error code indicating the result of the operation</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        protected void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        protected void AdjustInstallMode(string dotnetDir, SdkFeatureBand sdkFeatureBand, string newMode)
         {
             Elevate();
 
             if (IsElevated)
             {
-                string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null), "default.json");
+                string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
 
@@ -300,7 +300,7 @@ namespace Microsoft.DotNet.Installer.Windows
             else if (IsClient)
             {
                 InstallResponseMessage response = Dispatcher.SendMsiRequest(InstallRequestType.AdjustWorkloadMode,
-                    null, null, newMode);
+                    null, null, newMode, dotnetDir, sdkFeatureBand.ToString());
                 ExitOnFailure(response, "Failed to update install mode.");
             }
             else
@@ -534,9 +534,9 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Deletes install state file for the specified feature band.
         /// </summary>
         /// <param name="sdkFeatureBand">The feature band of the install state file.</param>
-        protected void RemoveInstallStateFile(SdkFeatureBand sdkFeatureBand)
+        protected void RemoveInstallStateFile(string dotnetDir, SdkFeatureBand sdkFeatureBand)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null), "default.json");
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
 
             if (!File.Exists(path))
             {
@@ -552,7 +552,7 @@ namespace Microsoft.DotNet.Installer.Windows
             }
             else if (IsClient)
             {
-                InstallResponseMessage response = Dispatcher.SendRemoveInstallStateFileRequest(sdkFeatureBand);
+                InstallResponseMessage response = Dispatcher.SendRemoveInstallStateFileRequest(dotnetDir, sdkFeatureBand);
                 ExitOnFailure(response, $"Failed to remove install state file: {path}");
             }
         }
@@ -562,9 +562,9 @@ namespace Microsoft.DotNet.Installer.Windows
         /// </summary>
         /// <param name="sdkFeatureBand">The path of the isntall state file to write.</param>
         /// <param name="jsonLines">The contents of the JSON file, formatted as a single line.</param>
-        protected void WriteInstallStateFile(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
+        protected void WriteInstallStateFile(string dotnetDir, SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null), "default.json");
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
             Elevate();
 
             if (IsElevated)
@@ -578,7 +578,7 @@ namespace Microsoft.DotNet.Installer.Windows
             }
             else if (IsClient)
             {
-                InstallResponseMessage respone = Dispatcher.SendWriteInstallStateFileRequest(sdkFeatureBand, jsonLines);
+                InstallResponseMessage respone = Dispatcher.SendWriteInstallStateFileRequest(dotnetDir, sdkFeatureBand, jsonLines);
                 ExitOnFailure(respone, $"Failed to write install state file: {path}");
             }
         }

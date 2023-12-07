@@ -452,9 +452,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         }
 
-        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand)
+        public void DeleteInstallState(string dotnetDir, SdkFeatureBand sdkFeatureBand)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
             
             if (File.Exists(path))
             {
@@ -462,16 +462,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
+        public void WriteInstallState(string dotnetDir, SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", File.Exists(path) ? File.ReadAllText(path) : null, lines: jsonLines));
         }
 
-        public void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        public void AdjustInstallMode(string dotnetDir, SdkFeatureBand sdkFeatureBand, string newMode)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("useWorkloadSets", File.Exists(path) ? File.ReadAllText(path) : null, singleValue: newMode));
         }

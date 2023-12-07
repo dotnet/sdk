@@ -12,6 +12,15 @@ namespace Microsoft.DotNet.Installer.Windows
     internal class InstallRequestMessage : InstallMessageBase
     {
         /// <summary>
+        /// Path to the directory with the dotnet executable
+        /// </summary>
+        public string DotnetDir
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// The dependent value to add or remove when updating reference counts.
         /// </summary>
         public string Dependent

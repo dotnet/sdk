@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        public void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        public void AdjustInstallMode(string dotnetDir, SdkFeatureBand sdkFeatureBand, string newMode)
         {
             throw new NotImplementedException();
         }
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             WorkloadResolver = workloadResolver;
         }
 
-        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand)
+        public void DeleteInstallState(string dotnetDir, SdkFeatureBand sdkFeatureBand)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             if (File.Exists(path))
@@ -174,7 +174,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
+        public void WriteInstallState(string dotnetDir, SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));

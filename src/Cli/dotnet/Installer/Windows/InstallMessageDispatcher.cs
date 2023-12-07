@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="packagePath">The path to the MSI package.</param>
         /// <param name="productCode">The product code of the installer package.</param>
         /// <returns></returns>
-        public InstallResponseMessage SendMsiRequest(InstallRequestType requestType, string logFile, string packagePath = null, string productCode = null)
+        public InstallResponseMessage SendMsiRequest(InstallRequestType requestType, string logFile, string packagePath = null, string productCode = null, string dotnetDir = null, string band = null)
         {
             return Send(new InstallRequestMessage
             {
@@ -118,6 +118,8 @@ namespace Microsoft.DotNet.Installer.Windows
                 LogFile = logFile,
                 PackagePath = packagePath,
                 ProductCode = productCode,
+                DotnetDir = dotnetDir,
+                SdkFeatureBand = band,
             });
         }
 
@@ -152,12 +154,13 @@ namespace Microsoft.DotNet.Installer.Windows
         /// </summary>
         /// <param name="sdkFeatureBand">The SDK feature band of the install state file to delete.</param>
         /// <returns></returns>
-        public InstallResponseMessage SendRemoveInstallStateFileRequest(SdkFeatureBand sdkFeatureBand)
+        public InstallResponseMessage SendRemoveInstallStateFileRequest(string dotnetDir, SdkFeatureBand sdkFeatureBand)
         {
             return Send(new InstallRequestMessage
             {
                 RequestType = InstallRequestType.RemoveInstallStateFile,
                 SdkFeatureBand = sdkFeatureBand.ToString(),
+                DotnetDir = dotnetDir,
             });
         }
 
@@ -167,13 +170,14 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="sdkFeatureBand">The SDK feature band of the install state file to write</param>
         /// <param name="value">A multi-line string containing the formatted JSON data to write.</param>
         /// <returns></returns>
-        public InstallResponseMessage SendWriteInstallStateFileRequest(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
+        public InstallResponseMessage SendWriteInstallStateFileRequest(string dotnetDir, SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
         {
             return Send(new InstallRequestMessage
             {
                 RequestType = InstallRequestType.WriteInstallStateFile,
                 SdkFeatureBand = sdkFeatureBand.ToString(),
-                InstallStateContents = jsonLines
+                DotnetDir = dotnetDir,
+                InstallStateContents = jsonLines,
             });
         }
     }

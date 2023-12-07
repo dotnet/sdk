@@ -182,11 +182,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand) =>
-            RemoveInstallStateFile(sdkFeatureBand);
+        public void DeleteInstallState(string dotnetDir, SdkFeatureBand sdkFeatureBand) =>
+            RemoveInstallStateFile(dotnetDir, sdkFeatureBand);
 
-        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines) =>
-            WriteInstallStateFile(sdkFeatureBand, jsonLines);
+        public void WriteInstallState(string dotnetDir, SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines) =>
+            WriteInstallStateFile(dotnetDir, sdkFeatureBand, jsonLines);
 
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care
@@ -1081,6 +1081,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void IInstaller.AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode) => AdjustInstallMode(sdkFeatureBand, newMode);
+        void IInstaller.AdjustInstallMode(string dotnetDir, SdkFeatureBand sdkFeatureBand, string newMode) => AdjustInstallMode(dotnetDir, sdkFeatureBand, newMode);
     }
 }

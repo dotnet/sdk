@@ -38,16 +38,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         /// Delete the install state file at the specified path.
         /// </summary>
         /// <param name="sdkFeatureBand">The SDK feature band of the install state file.</param>
-        void DeleteInstallState(SdkFeatureBand sdkFeatureBand);
+        void DeleteInstallState(string dotnetDir, SdkFeatureBand sdkFeatureBand);
 
         /// <summary>
         /// Writes the specified JSON contents to the install state file.
         /// </summary>
         /// <param name="sdkFeatureBand">The SDK feature band of the install state file.</param>
         /// <param name="jsonLines">The JSON contents describing the install state.</param>
-        void WriteInstallState(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines);
+        void WriteInstallState(string dotnetDir, SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines);
 
-        void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode);
+        void AdjustInstallMode(string dotnetDir, SdkFeatureBand sdkFeatureBand, string newMode);
     }
 
     // Interface to pass to workload manifest updater
