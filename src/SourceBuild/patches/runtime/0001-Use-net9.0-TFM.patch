@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 7 Dec 2023 15:53:03 -0600
+Subject: [PATCH] Use net9.0 TFM
+
+Backport: https://github.com/dotnet/source-build/issues/3663
+---
+ Directory.Build.props                         | 2 +-
+ src/tools/illink/src/ILLink.Tasks/LinkTask.cs | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 2a5cd307f52..a068060eab8 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -99,7 +99,7 @@
+     <!-- when this is updated, make sure to keep $(_TargetFrameworkForNETCoreTasks)
+          in src/mono/wasm/build/WasmApp.LocalBuild.props
+          and in src/mono/msbuild/apple/build/AppleBuild.LocalBuild.props in sync -->
+-    <NetCoreAppToolCurrentVersion>8.0</NetCoreAppToolCurrentVersion>
++    <NetCoreAppToolCurrentVersion>9.0</NetCoreAppToolCurrentVersion>
+     <NetCoreAppToolCurrent>net$(NetCoreAppToolCurrentVersion)</NetCoreAppToolCurrent>
+     <NetCoreAppCurrentToolTargetFrameworkMoniker>$(NetCoreAppCurrentIdentifier),Version=v$(NetCoreAppToolCurrentVersion)</NetCoreAppCurrentToolTargetFrameworkMoniker>
+ 
+diff --git a/src/tools/illink/src/ILLink.Tasks/LinkTask.cs b/src/tools/illink/src/ILLink.Tasks/LinkTask.cs
+index 5ac4ecd46ce..9fd5c536603 100644
+--- a/src/tools/illink/src/ILLink.Tasks/LinkTask.cs
++++ b/src/tools/illink/src/ILLink.Tasks/LinkTask.cs
+@@ -262,7 +262,7 @@ public class ILLink : ToolTask
+ 				var taskDirectory = Path.GetDirectoryName (Assembly.GetExecutingAssembly ().Location);
+ #pragma warning restore IL3000 // Avoid accessing Assembly file path when publishing as a single file
+ 				// IL Linker always runs on .NET Core, even when using desktop MSBuild to host ILLink.Tasks.
+-				_illinkPath = Path.Combine (Path.GetDirectoryName (taskDirectory), "net8.0", "illink.dll");
++				_illinkPath = Path.Combine (Path.GetDirectoryName (taskDirectory), "net9.0", "illink.dll");
+ 				return _illinkPath;
+ 			}
+ 			set => _illinkPath = value;
