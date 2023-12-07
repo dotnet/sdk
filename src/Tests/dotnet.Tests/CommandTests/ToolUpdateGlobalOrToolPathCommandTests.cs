@@ -153,6 +153,21 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenAnExistedHigherversionInstallationWhenUpdateToLowerVersionItErrors()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId} --version {LowerPackageVersion} --verbosity minimal");
+
+            Action a = () => command.Execute();
+
+            a.Should().Throw<GracefulException>().And.Message
+                .Should().Contain(
+                  string.Format(LocalizableStrings.UpdateToLowerVersion, LowerPackageVersion, HigherPackageVersion));
+        }
+
+        [Fact]
         public void GivenAnExistedLowerversionInstallationWhenCallWithWildCardVersionItCanPrintSuccessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
