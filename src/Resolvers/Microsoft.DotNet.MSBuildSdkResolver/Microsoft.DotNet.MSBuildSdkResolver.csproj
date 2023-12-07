@@ -157,7 +157,7 @@
 
     <Error Text="$(AssemblyName) is expected to depend on %(ExpectedDependencies.Identity). $(DependencyMismatchErrorText)"
            Condition="!($([System.String]::Copy('$(ResolvedDependenciesList)').Contains('%(ExpectedDependencies.Identity)')))" />
-    <Error Text="$(AssemblyName) is not expected to depend on %(ResolvedDependencies.FusionName). (DependencyMismatchErrorText)"
+    <Error Text="$(AssemblyName) is not expected to depend on %(ResolvedDependencies.FusionName). $(DependencyMismatchErrorText)"
            Condition="!($([System.String]::Copy('$(ExpectedDependenciesList)').Contains('%(ResolvedDependencies.FusionName)')))" />
   </Target>
 
