@@ -30,7 +30,8 @@ namespace Microsoft.DotNet.ApiCompat
             string? baselinePackagePath,
             string? runtimeGraph,
             IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences,
-            IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences)
+            IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences,
+            string[]? baselinePackageFrameworksToIgnore)
         {
             // Initialize the service provider
             ApiCompatServiceProvider serviceProvider = new(logFactory,
@@ -70,7 +71,8 @@ namespace Microsoft.DotNet.ApiCompat
                     enableStrictMode: enableStrictModeForBaselineValidation,
                     enqueueApiCompatWorkItems: runApiCompat,
                     executeApiCompatWorkItems: false,
-                    baselinePackage: Package.Create(baselinePackagePath, baselinePackageAssemblyReferences)));
+                    Package.Create(baselinePackagePath, baselinePackageAssemblyReferences),
+                    baselinePackageFrameworksToIgnore));
             }
 
             if (runApiCompat)

@@ -339,7 +339,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             packInstaller.InstalledManifests[0].manifestUpdate.ExistingFeatureBand.Should().Be(manifestsToUpdate[0].ManifestUpdate.ExistingFeatureBand);
             packInstaller.InstalledManifests[0].offlineCache.Should().Be(null);
 
-            var defaultJsonPath = Path.Combine(dotnetPath, "dotnet", "metadata", "workloads", "6.0.300", "InstallState", "default.json");
+            var defaultJsonPath = Path.Combine(dotnetPath, "metadata", "workloads", "6.0.300", "InstallState", "default.json");
             File.Exists(defaultJsonPath).Should().BeTrue();
             var json = JsonDocument.Parse(new FileStream(defaultJsonPath, FileMode.Open, FileAccess.Read), new JsonDocumentOptions() { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
             json.RootElement.Should().NotBeNull();
@@ -423,8 +423,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 CreatePackInfo("Xamarin.Android.Framework", "8.2.0", WorkloadPackKind.Framework, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.Framework", "8.2.0"), "Xamarin.Android.Framework")
             };
             var installer = includeInstalledPacks ?
-                new MockPackWorkloadInstaller(failingWorkload, failingPack, installedWorkloads: installedWorkloads, installedPacks: installedPacks) :
-                new MockPackWorkloadInstaller(failingWorkload, failingPack, installedWorkloads: installedWorkloads);
+                new MockPackWorkloadInstaller(dotnetRoot, failingWorkload, failingPack, installedWorkloads: installedWorkloads, installedPacks: installedPacks) :
+                new MockPackWorkloadInstaller(dotnetRoot, failingWorkload, failingPack, installedWorkloads: installedWorkloads);
 
             var copiedManifestFolder = Path.Combine(dotnetRoot, "sdk-manifests", new SdkFeatureBand(sdkVersion).ToString(), "SampleManifest");
             Directory.CreateDirectory(copiedManifestFolder);
@@ -446,7 +446,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater);
 
-            return (testDirectory, installManager, installer, workloadResolver, manifestUpdater, nugetDownloader);
+            return (dotnetRoot, installManager, installer, workloadResolver, manifestUpdater, nugetDownloader);
         }
     }
 }

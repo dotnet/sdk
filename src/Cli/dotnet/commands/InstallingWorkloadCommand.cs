@@ -88,25 +88,10 @@ namespace Microsoft.DotNet.Workloads.Workload
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
         }
 
-        protected internal void UpdateInstallState(bool createDefaultJson, IEnumerable<ManifestVersionUpdate> manifestVersionUpdates)
-        {
-            var defaultJsonPath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-            if (createDefaultJson)
-            {
-                var jsonContents = WorkloadSet.FromManifests(
+        protected IEnumerable<string> GetInstallStateContents(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
+            ToJsonEnumerable(WorkloadSet.FromManifests(
                     manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
-                    ).ToDictionaryForJson();
-                Directory.CreateDirectory(Path.GetDirectoryName(defaultJsonPath));
-                File.WriteAllLines(defaultJsonPath, ToJsonEnumerable(jsonContents));
-            }
-            else
-            {
-                if (File.Exists(defaultJsonPath))
-                {
-                    File.Delete(defaultJsonPath);
-                }
-            }
-        }
+                    ).ToDictionaryForJson());
 
         private IEnumerable<string> ToJsonEnumerable(Dictionary<string, string> dict)
         {

@@ -1,21 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
-using System.IO.Pipes;
 using System.Runtime.Versioning;
-using System.Security.AccessControl;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Principal;
-using Microsoft.DotNet.Cli.Utils;
 #if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Installer.Windows.Security;
-using Microsoft.DotNet.Workloads.Workload;
-using Windows.Win32.Security.Cryptography;
-
 #endif
 using Newtonsoft.Json;
-using Windows.Win32;
 
 namespace Microsoft.DotNet.Installer.Windows
 {
@@ -29,57 +19,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Determines whether revocation checks can go online.
         /// </summary>
         private bool _allowOnlineRevocationChecks;
-
-        /// <summary>
-        /// Default inheritance to apply to directory ACLs.
-        /// </summary>
-        private static readonly InheritanceFlags s_DefaultInheritance = InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit;
-
-        /// <summary>
-        /// SID that matches built-in administrators.
-        /// </summary>
-        private static readonly SecurityIdentifier s_AdministratorsSid = new(WellKnownSidType.BuiltinAdministratorsSid, null);
-
-        /// <summary>
-        /// SID that matches everyone.
-        /// </summary>
-        private static readonly SecurityIdentifier s_EveryoneSid = new(WellKnownSidType.WorldSid, null);
-
-        /// <summary>
-        /// Local SYSTEM SID.
-        /// </summary>
-        private static readonly SecurityIdentifier s_LocalSystemSid = new(WellKnownSidType.LocalSystemSid, null);
-
-        /// <summary>
-        /// SID matching built-in user accounts.
-        /// </summary>
-        private static readonly SecurityIdentifier s_UsersSid = new(WellKnownSidType.BuiltinUsersSid, null);
-
-        /// <summary>
-        /// ACL rule associated with the Administrators SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_AdministratorRule = new(s_AdministratorsSid, FileSystemRights.FullControl,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
-        /// ACL rule associated with the Everyone SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_EveryoneRule = new(s_EveryoneSid, FileSystemRights.ReadAndExecute,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
-        /// ACL rule associated with the Local SYSTEM SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_LocalSystemRule = new(s_LocalSystemSid, FileSystemRights.FullControl,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
-        /// ACL rule associated with the built-in users SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_UsersRule = new(s_UsersSid, FileSystemRights.ReadAndExecute,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
+        
         /// The root directory of the package cache where MSI workload packs are stored.
         /// </summary>
         public readonly string PackageCacheRoot;
@@ -91,21 +31,6 @@ namespace Microsoft.DotNet.Installer.Windows
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "dotnet", "workloads")
                 : packageCacheRoot;
             _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
-        }
-
-        /// <summary>
-        /// Creates the specified directory and secures it by configuring access rules (ACLs) that allow sub-directories
-        /// and files to inherit access control entries. 
-        /// </summary>
-        /// <param name="path">The path of the directory to create.</param>
-        public static void CreateSecureDirectory(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                DirectorySecurity ds = new();
-                SetDirectoryAccessRules(ds);
-                ds.CreateDirectory(path);
-            }
         }
 
         /// <summary>
@@ -134,7 +59,7 @@ namespace Microsoft.DotNet.Installer.Windows
                     Directory.Delete(packageDirectory, recursive: true);
                 }
 
-                CreateSecureDirectory(packageDirectory);
+                SecurityUtils.CreateSecureDirectory(packageDirectory);
 
                 // We cannot assume that the MSI adjacent to the manifest is the one to cache. We'll trust
                 // the manifest to provide the MSI filename.
@@ -145,8 +70,8 @@ namespace Microsoft.DotNet.Installer.Windows
                 string cachedMsiPath = Path.Combine(packageDirectory, Path.GetFileName(msiPath));
                 string cachedManifestPath = Path.Combine(packageDirectory, Path.GetFileName(manifestPath));
 
-                MoveAndSecureFile(manifestPath, cachedManifestPath, Log);
-                MoveAndSecureFile(msiPath, cachedMsiPath, Log);
+                SecurityUtils.MoveAndSecureFile(manifestPath, cachedManifestPath, Log);
+                SecurityUtils.MoveAndSecureFile(msiPath, cachedMsiPath, Log);
             }
             else if (IsClient)
             {
@@ -163,37 +88,6 @@ namespace Microsoft.DotNet.Installer.Windows
         public string GetPackageDirectory(string packageId, string packageVersion)
         {
             return Path.Combine(PackageCacheRoot, packageId, packageVersion);
-        }
-
-        /// <summary>
-        /// Moves a file from one location to another if the destination file does not already exist and
-        /// configure its permissions.
-        /// </summary>
-        /// <param name="sourceFile">The source file to move.</param>
-        /// <param name="destinationFile">The destination where the source file will be moved.</param>
-        /// <param name="log">The underlying setup log to use.</param>
-        public static void MoveAndSecureFile(string sourceFile, string destinationFile, ISetupLogger log = null)
-        {
-            if (!File.Exists(destinationFile))
-            {
-                FileAccessRetrier.RetryOnMoveAccessFailure(() =>
-                {
-                    // Moving the file preserves the owner SID and fails to inherit the WD ACE.
-                    File.Copy(sourceFile, destinationFile, overwrite: true);
-                    File.Delete(sourceFile);
-                });
-                log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
-
-                FileInfo fi = new(destinationFile);
-                FileSecurity fs = new();
-
-                // Set the owner and group to built-in administrators (BA). All other ACE values are inherited from
-                // the parent directory. See https://github.com/dotnet/sdk/issues/28450. If the directory's descriptor
-                // is correctly configured, we should end up with an inherited ACE for Everyone: (A;ID;0x1200a9;;;WD)
-                fs.SetOwner(s_AdministratorsSid);
-                fs.SetGroup(s_AdministratorsSid);
-                fi.SetAccessControl(fs);
-            }
         }
 
         /// <summary>
@@ -246,22 +140,6 @@ namespace Microsoft.DotNet.Installer.Windows
 
             msiPath = possibleMsiPath;
             return true;
-        }
-
-        /// <summary>
-        /// Apply a standard set of access rules to the directory security descriptor. The owner and group will
-        /// be set to built-in Administrators. Full access is granted to built-in administators and SYSTEM with
-        /// read, execute, synchronize permssions for built-in users and Everyone.
-        /// </summary>
-        /// <param name="ds">The security descriptor to update.</param>
-        private static void SetDirectoryAccessRules(DirectorySecurity ds)
-        {
-            ds.SetOwner(s_AdministratorsSid);
-            ds.SetGroup(s_AdministratorsSid);
-            ds.SetAccessRule(s_AdministratorRule);
-            ds.SetAccessRule(s_LocalSystemRule);
-            ds.SetAccessRule(s_UsersRule);
-            ds.SetAccessRule(s_EveryoneRule);
         }
 
         /// <summary>
