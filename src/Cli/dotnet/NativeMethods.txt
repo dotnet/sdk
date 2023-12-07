@@ -1,5 +1,7 @@
 ﻿// Methods
 WinVerifyTrust
+CertFreeCertificateChain
+CertGetCertificateChain
 CertVerifyCertificateChainPolicy
 
 // Structs, constants, enums
@@ -9,3 +11,5 @@ WTD*
 CERT_STORE*
 CERT_CHAIN_POLICY*
 MICROSOFT_ROOT_CERT*
+TRUST_E*
+CERT_E*

@@ -4,7 +4,6 @@
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.Versioning;
-using System.Security.Cryptography.X509Certificates;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.Installer.Windows.Security;
 
@@ -131,21 +130,38 @@ namespace Microsoft.DotNet.Tests
         }
 
         [WindowsOnlyTheory]
-        // This verifies E_TRUST_BAD_DIGEST
-        [InlineData("tampered.msi", -2146869232, "The digital signature of the object did not verify.")]
-        [InlineData("dual_signed.dll", 0, "")]
-        [InlineData("dotnet_realsigned.exe", 0, "")]
-        // This verifies CERT_E_UNTRUSTEDROOT
-        [InlineData("dotnet_fakesigned.exe", -2146762487, "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.")]
-        public void AuthentiCodeSignaturesCanBeVerified(string file, int expectedStatus, string expectedError)
+        // This verifies E_TRUST_BAD_DIGEST (file was modified after being signed)
+        [InlineData(@"tampered.msi", -2146869232)]
+        [InlineData(@"dual_signed.dll", 0)]
+        [InlineData(@"dotnet_realsigned.exe", 0)]
+        // Signed by the .NET Foundation, terminates in a DigiCert root, so should be accepted by the Authenticode trust provider.
+        [InlineData(@"BootstrapperCore.dll", 0)]
+        // Old SHA1 certificate, but still a valid signature.
+        [InlineData(@"system.web.mvc.dll", 0)]
+        public void AuthentiCodeSignaturesCanBeVerified(string file, int expectedStatus)
         {
             int status = Signature.IsAuthenticodeSigned(Path.Combine(s_testDataPath, file));
             Assert.Equal(expectedStatus, status);
+        }
 
-            if (expectedStatus != 0)
-            {
-                Assert.Equal(expectedError, Marshal.GetPInvokeErrorMessage(status));
-            }
+        [WindowsOnlyTheory]
+        [InlineData(@"dotnet_realsigned.exe", 0)]
+        // Valid SHA1 signature, but no longer considered a trusted root certificate, should return CERT_E_UNTRUSTEDROOT.
+        [InlineData(@"system.web.mvc.dll", -2146762487)]
+        // The first certificate chain terminates in a non-Microsoft root so it fails the policy. Workloads do not currently support
+        // 3rd party installers. If we change that policy and we sign installers with the Microsoft 3rd Party certificate we will need to extract the nested
+        // signature and verify that at least one chain terminates in a Microsoft root. The WinTrust logic will also need to be updated to verify each
+        // chain.
+        [InlineData(@"dual_signed.dll", -2146762487)]
+        // DigiCert root should fail the policy check because it's not a trusted Microsoft root certificate.
+        [InlineData(@"BootstrapperCore.dll", -2146762487)]
+        // Digest will fail verification, BUT the root certificate in the chain is a trusted root.
+        [InlineData(@"tampered.msi", 0)]
+        public void ItVerifiesTrustedMicrosoftRootCertificateChainPolicy(string file, int expectedResult)
+        {
+            int result = Signature.HasMicrosoftTrustedRoot(Path.Combine(s_testDataPath, file));
+
+            Assert.Equal(expectedResult, result);
         }
 
         private NamedPipeServerStream CreateServerPipe(string name)

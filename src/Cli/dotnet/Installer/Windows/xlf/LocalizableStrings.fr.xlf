@@ -2,19 +2,9 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="fr" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AuthentiCodeNoTrustedOrg">
-        <source>AuthentiCode signature for {0} does not belong to a trusted organization.</source>
-        <target state="translated">La signature AuthentiCode pour {0} n’appartient pas à une organisation approuvée.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CertificateInvalidForCodeSigning">
-        <source>The certificate used to sign {0} is not valid for code signing purposes.</source>
-        <target state="new">The certificate used to sign {0} is not valid for code signing purposes.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedToVerifyTrustedMicrosoftRoot">
-        <source>Failed to verify that the certificate chain for {0} terminated in a Microsoft trusted root certificate.</source>
-        <target state="new">Failed to verify that the certificate chain for {0} terminated in a Microsoft trusted root certificate.</target>
+      <trans-unit id="UnableToCheckCertificateChainPolicy">
+        <source>The requested certificate chain policy could not be checked: {0}</source>
+        <target state="new">The requested certificate chain policy could not be checked: {0}</target>
         <note />
       </trans-unit>
     </body>

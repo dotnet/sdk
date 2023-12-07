@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using Microsoft.DotNet.Workloads.Workload;
 using Windows.Win32.Foundation;
+using Windows.Win32.Security.Cryptography;
 using Windows.Win32.Security.WinTrust;
 using static Windows.Win32.PInvoke;
-using Windows.Win32.Security.Cryptography;
-using System.Security.Cryptography;
 
 namespace Microsoft.DotNet.Installer.Windows.Security
 {
@@ -21,57 +20,48 @@ namespace Microsoft.DotNet.Installer.Windows.Security
     internal static class Signature
     {
         /// <summary>
-        /// Extended key usage OID for id-kp-codeSigning.
-        /// </summary>
-        private static readonly Oid s_EkuCodeSigningOid = new Oid("1.3.6.1.5.5.7.3.3");
-
-        /// <summary>
-        /// Tries to verify that the specified file contains a valid Authenticode signature associated with
-        /// a trusted Microsoft root certificate.
+        /// Verifies that the certificate used to sign the specified file terminates in a trusted Microsoft root certificate. The policy check is performed against
+        /// the first simple chain. 
         /// </summary>
         /// <param name="path">The path of the file to verify.</param>
-        /// <param name="result">If verification fails, the result may contain a status or error code. A detailed error message may be obtained
-        /// by calling <see cref="Marshal.GetPInvokeErrorMessage(int)"/>.</param>
-        /// <returns><see langword="true"/> if the file has a valid Microsoft Authenticode signature; otherwise, <see langword="false"/>.</returns>
-        public static bool TryVerifyMicrosoftAutheticodeSigned(string path, out int result)
+        /// <returns>0 if the policy could be checked.<see cref="Marshal.GetPInvokeErrorMessage(int)"/> can be called to obtain more detail about the failure.</returns>
+        /// <exception cref="CryptographicException"/>
+        /// <remarks>This method does not perform any other chain validation like revocation checks, timestamping, etc.</remarks>
+        internal static unsafe int HasMicrosoftTrustedRoot(string path)
         {
-            result = IsAuthenticodeSigned(path, SignCheck.AllowOnlineRevocationChecks());
-
-            if (result != 0)
-            {
-                return false;
-            }
-
-            // Verify the certificate's EKU to ensure it's intended for code signing.
-            using X509Chain chain = new();
+            // Create an X509Certificate2 instance so we can access the certificate context and create a chain context.
             using X509Certificate2 certificate = new(path);
 
-            chain.ChainPolicy.VerificationFlags = X509VerificationFlags.IgnoreNotTimeValid;
-            chain.ChainPolicy.ApplicationPolicy.Add(s_EkuCodeSigningOid);
+            // We don't use X509Chain because it doesn't support verifying the specific policy and because we defer
+            // that to the WinTrust provider as it performs timestamp and revocation checks.
+            HCERTCHAINENGINE HCCE_LOCAL_MACHINE = (HCERTCHAINENGINE)0x01;
+            CERT_CHAIN_PARA* pChainPara = stackalloc CERT_CHAIN_PARA[1];
+            CERT_CHAIN_CONTEXT* pChainContext = stackalloc CERT_CHAIN_CONTEXT[1];
+            CERT_CONTEXT* pCertContext = (CERT_CONTEXT*)certificate.Handle;
+            uint dwFlags = 0;
 
-            if (!chain.Build(certificate) || DateTime.Now < certificate.NotBefore)
+            if (!CertGetCertificateChain(HCCE_LOCAL_MACHINE, pCertContext, null, default, pChainPara, dwFlags, null, &pChainContext))
             {
-                return false;
+                CertFreeCertificateChain(pChainContext);
+                throw new CryptographicException(Marshal.GetPInvokeErrorMessage(Marshal.GetLastWin32Error()));
             }
 
-            // Verify that the root certificate is a trusted Microsoft root. X509 APIs do not support the Microsoft root chain policy flag
-            // so we have to call CertVerifyCertificateChainPolicy directly. Note: we're relying on the certificate chain context
-            // previously created when chain.Build() was called.
             CERT_CHAIN_POLICY_PARA policyCriteria = default;
             CERT_CHAIN_POLICY_STATUS policyStatus = default;
 
-            unsafe
+            policyCriteria.cbSize = (uint)sizeof(CERT_CHAIN_POLICY_PARA);
+            policyCriteria.dwFlags = (CERT_CHAIN_POLICY_FLAGS)MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
+
+            if (!CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_MICROSOFT_ROOT, pChainContext, &policyCriteria, &policyStatus))
             {
-                policyCriteria.cbSize = (uint)sizeof(CERT_CHAIN_POLICY_PARA);
-                policyCriteria.dwFlags = (CERT_CHAIN_POLICY_FLAGS)MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
-
-                // The result will always be true if the chain policy could be checked, regardless of the outcome. CertVerifyCertificateChainPolicy
-                // only returns false if the policy could not be checked. 
-                bool policyChecked = CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_MICROSOFT_ROOT, (CERT_CHAIN_CONTEXT*)chain.ChainContext, &policyCriteria, &policyStatus);
-                result = (int)policyStatus.dwError;
-
-                return policyChecked && result == 0;
+                CertFreeCertificateChain(pChainContext);
+                // CertVerifyCertificateChainPolicy always returns true, even if the policy check fails. It only returns
+                // false if the policy could not be checked.
+                throw new CryptographicException(string.Format(LocalizableStrings.UnableToCheckCertificateChainPolicy, nameof(CERT_CHAIN_POLICY_MICROSOFT_ROOT)));
             }
+
+            CertFreeCertificateChain(pChainContext);
+            return (int)policyStatus.dwError;
         }
 
         /// <summary>
@@ -84,7 +74,7 @@ namespace Microsoft.DotNet.Installer.Windows.Security
         /// A valid Authenticode signature does not establish trust. For example, Microsoft SHA1 signatures will return a positive result, even though their
         /// root certificates are no longer trusted. This simply verifies that the Authenticode signature is valid.
         /// </remarks>
-        public static unsafe int IsAuthenticodeSigned(string path, bool allowOnlineRevocationChecks = true)
+        internal static unsafe int IsAuthenticodeSigned(string path, bool allowOnlineRevocationChecks = true)
         {
             WINTRUST_FILE_INFO* fileInfo = stackalloc WINTRUST_FILE_INFO[1];
             WINTRUST_DATA* trustData = stackalloc WINTRUST_DATA[1];

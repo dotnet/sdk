@@ -117,13 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AuthentiCodeNoTrustedOrg" xml:space="preserve">
-    <value>AuthentiCode signature for {0} does not belong to a trusted organization.</value>
-  </data>
-  <data name="CertificateInvalidForCodeSigning" xml:space="preserve">
-    <value>The certificate used to sign {0} is not valid for code signing purposes.</value>
-  </data>
-  <data name="FailedToVerifyTrustedMicrosoftRoot" xml:space="preserve">
-    <value>Failed to verify that the certificate chain for {0} terminated in a Microsoft trusted root certificate.</value>
+  <data name="UnableToCheckCertificateChainPolicy" xml:space="preserve">
+    <value>The requested certificate chain policy could not be checked: {0}</value>
   </data>
 </root>

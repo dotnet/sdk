@@ -103,7 +103,8 @@ namespace Microsoft.DotNet.Installer.Windows
         /// </summary>
         /// <param name="elevationContext"></param>
         /// <param name="logger"></param>
-        /// <param name="verifySignatures"></param>
+        /// <param name="verifySignatures">Determines whether MSI signatures should be verified</param>
+        /// <param name="allowOnlineRevocationChecks">Determines whether revocation checks can go online when verifying MSI signatures.</param>
         protected InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifySignatures)
         {
             ElevationContext = elevationContext;
@@ -123,7 +124,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Checks the specified error code to determine whether it indicates a success result. If not, additional extended information
         /// is retrieved before throwing a <see cref="WorkloadException"/>.
         /// 
-        /// The<see cref="Restart"/> property will be set to <see langword="true" /> if the error is either <see cref="Error.SUCCESS_REBOOT_INITIATED"/>
+        /// The <see cref="Restart"/> property will be set to <see langword="true" /> if the error is either <see cref="Error.SUCCESS_REBOOT_INITIATED"/>
         /// or <see cref="Error.SUCCESS_REBOOT_REQUIRED"/>.
         /// </summary>
         /// <param name="error">The error code to check.</param>
@@ -133,18 +134,7 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             if (!Error.Success(error))
             {
-                StringBuilder sb = new(2048);
-                NativeMethods.FormatMessage((uint)(FormatMessage.FromSystem | FormatMessage.IgnoreInserts),
-                    IntPtr.Zero, error, 0, sb, (uint)sb.Capacity, IntPtr.Zero);
-                string errorDetail = sb.ToString().TrimEnd(Environment.NewLine.ToCharArray());
-                string errorMessage = $"{message} Error: 0x{error:x8}.";
-
-                if (!string.IsNullOrWhiteSpace(errorDetail))
-                {
-                    errorMessage += $" {errorDetail}";
-                }
-
-                throw new WorkloadException(error, errorMessage);
+                throw new WorkloadException($"{message} Error: 0x{error:x8}, {Marshal.GetPInvokeErrorMessage((int)error)}");
             }
 
             // Once set to true, we retain restart information for the duration of the underlying command.
