@@ -53,13 +53,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest prerelease version (version '{1}').</source>
-        <target state="translated">'{0}' aracı, en yeni ön sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
+        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
+        <target state="needs-review-translation">'{0}' aracı, en yeni ön sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">'{0}' aracı, en son kararlı sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
+        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
+        <target state="needs-review-translation">'{0}' aracı, en son kararlı sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

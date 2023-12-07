@@ -53,13 +53,13 @@
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest prerelease version (version '{1}').</source>
-        <target state="translated">ツール '{0}' は、最新のプレリリース バージョン (バージョン '{1}') で再インストールされました。</target>
+        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
+        <target state="needs-review-translation">ツール '{0}' は、最新のプレリリース バージョン (バージョン '{1}') で再インストールされました。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">ツール '{0}' が安定した最新バージョン (バージョン '{1}') で再インストールされました。</target>
+        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
+        <target state="needs-review-translation">ツール '{0}' が安定した最新バージョン (バージョン '{1}') で再インストールされました。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">
