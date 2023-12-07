@@ -1,15 +1,5 @@
 <Project>
 
-  <Target Name="RemoveUninteresingToolingPackageReferences"
-          BeforeTargets="CollectPackageReferences">
-    <!-- The source-build infra doesn't need sourcelink. Avoid this prebuilt. -->
-    <ItemGroup>
-      <PackageReference Remove="Microsoft.SourceLink.GitHub" />
-      <PackageReference Remove="Microsoft.SourceLink.Vsts.Git" />
-      <PackageReference Remove="Microsoft.SourceLink.AzureRepos.Git" />
-    </ItemGroup>
-  </Target>
-
   <Target Name="DetermineMicrosoftSourceBuildIntermediateInstallerVersion">
     <!-- Manually load the installer version from the PVP.     -->
     <XmlPeek XmlInputPath="$(IntermediatePath)PackageVersions.package-source-build.Current.props"

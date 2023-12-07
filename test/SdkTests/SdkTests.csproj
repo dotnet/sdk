@@ -64,7 +64,7 @@
       <RuntimeVersionToInstall Include="5.0.0" />
       <RuntimeVersionToInstall Include="6.0.0" />
       <RuntimeVersionToInstall Include="7.0.0" />
-      <RuntimeVersionToInstall Include="8.0.0-rc.2.23479.6" />
+      <RuntimeVersionToInstall Include="8.0.0" />
     </ItemGroup>
     
   </Target>
