@@ -1,10 +1,10 @@
 <Project>
+
   <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR.
        Neither crossgen2 nor mono is supported on the loongarch64 architecture at present. -->
   <Target Name="CrossgenLayout"
           Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le' AND '$(Architecture)' != 'loongarch64'"
           DependsOnTargets="SetSdkBrandingInfo">
-    
     <PropertyGroup>
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
       <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
@@ -59,7 +59,7 @@
       <FSharpFiles Include="@(FSharpFilesRuntimes);@(FSharpFilesRoot)" />
 
       <RazorToolFiles Include="$(SdkOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
-      
+
       <RemainingFiles Include="$(SdkOutputDirectory)**\*" Exclude="$(SdkOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles)" />
 
       <!-- Removing Full CLR built TestHost assemblies from getting Crossgen as it is throwing error, and they need to stay their original architecture. -->
@@ -71,7 +71,6 @@
 
       <!-- Removing Containers as containerize .DLLs and net472 components shouldn't be crossgenned. -->
       <RemainingFiles Remove="$(SdkOutputDirectory)Containers\**\*" />
-
 
       <!-- Add back the .NET Core assemblies in the Sdks folder -->
       <RemainingFiles Include="$(NetSdkTools)**\*" />
@@ -100,7 +99,6 @@
       <!-- Don't crossgen reference assemblies redisted with msbuild for RoslynCodeTaskFactory -->
       <RazorToolFiles Remove="$(SdkOutputDirectory)**\ref\*.dll" />
       <RemainingFiles Remove="$(SdkOutputDirectory)**\ref\*.dll" />
-
     </ItemGroup>
 
     <AddMetadataIsPE Items="@(RoslynFiles)">
@@ -136,7 +134,6 @@
         Remove the following 2 lines when resolving this issue: https://github.com/dotnet/core-sdk/issues/6877 -->
       <RemainingFolders Remove="$(SdkOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
       <RemainingFolders Include="$(SdkOutputDirectory.TrimEnd('\').TrimEnd('/'))" />
-
     </ItemGroup>
 
     <!-- Crossgen does not support generating symbols on Mac  -->
@@ -146,19 +143,19 @@
       <CreateCrossgenSymbols Condition="'$(OSName)' == 'freebsd'">false</CreateCrossgenSymbols>
     </PropertyGroup>
 
-    <Error Text="Potentially missed crossgen for '$(NetSdkTools)', directory does not exist" Condition= "!EXISTS('$(NetSdkTools)') "/>
-    <Error Text="Potentially missed crossgen for '$(BlazorWasmTools)', directory does not exist" Condition= "!EXISTS('$(BlazorWasmTools)') "/>
-    <Error Text="Potentially missed crossgen for '$(NuGetPackTools)', directory does not exist" Condition= "!EXISTS('$(NuGetPackTools)') "/>
-    <Error Text="Potentially missed crossgen for '$(RazorTasks)', directory does not exist" Condition= "!EXISTS('$(RazorTasks)') "/>
-    <Error Text="Potentially missed crossgen for '$(WindowsDesktopTools)', directory does not exist" Condition= "!EXISTS('$(WindowsDesktopTools)') AND '$(DotNetBuildFromSource)' != 'true'"/>
-    <Error Text="Potentially missed crossgen for '$(PublishTools)', directory does not exist" Condition= "!EXISTS('$(PublishTools)') "/>
-    <Error Text="Potentially missed crossgen for '$(WebTools)', directory does not exist" Condition= "!EXISTS('$(WebTools)') "/>
-    <Error Text="Potentially missed crossgen for '$(ProjectSystemTools)', directory does not exist" Condition= "!EXISTS('$(ProjectSystemTools)') "/>
-    <Error Text="Potentially missed crossgen for '$(WorkerTools)', directory does not exist" Condition= "!EXISTS('$(WorkerTools)') "/>
-    <Error Text="Potentially missed crossgen for Roslyn, RoslynTargets is empty" Condition= "@(RoslynTargets) == ''"/>
-    <Error Text="Potentially missed crossgen for FSharp, FSharpTargets is empty" Condition= "@(FSharpTargets) == ''"/>
-    <Error Text="Potentially missed crossgen for Razor, RazorToolTargets is empty" Condition= "@(RazorToolTargets) == ''"/>
-    <Error Text="Potentially missed crossgen for other SDK files, RemainingTargets is empty" Condition= "@(RemainingTargets) == ''"/>
+    <Error Text="Potentially missed crossgen for '$(NetSdkTools)', directory does not exist" Condition= "!EXISTS('$(NetSdkTools)') " />
+    <Error Text="Potentially missed crossgen for '$(BlazorWasmTools)', directory does not exist" Condition= "!EXISTS('$(BlazorWasmTools)') " />
+    <Error Text="Potentially missed crossgen for '$(NuGetPackTools)', directory does not exist" Condition= "!EXISTS('$(NuGetPackTools)') " />
+    <Error Text="Potentially missed crossgen for '$(RazorTasks)', directory does not exist" Condition= "!EXISTS('$(RazorTasks)') " />
+    <Error Text="Potentially missed crossgen for '$(WindowsDesktopTools)', directory does not exist" Condition= "!EXISTS('$(WindowsDesktopTools)') AND '$(DotNetBuildFromSource)' != 'true'" />
+    <Error Text="Potentially missed crossgen for '$(PublishTools)', directory does not exist" Condition= "!EXISTS('$(PublishTools)') " />
+    <Error Text="Potentially missed crossgen for '$(WebTools)', directory does not exist" Condition= "!EXISTS('$(WebTools)') " />
+    <Error Text="Potentially missed crossgen for '$(ProjectSystemTools)', directory does not exist" Condition= "!EXISTS('$(ProjectSystemTools)') " />
+    <Error Text="Potentially missed crossgen for '$(WorkerTools)', directory does not exist" Condition= "!EXISTS('$(WorkerTools)') " />
+    <Error Text="Potentially missed crossgen for Roslyn, RoslynTargets is empty" Condition= "@(RoslynTargets) == ''" />
+    <Error Text="Potentially missed crossgen for FSharp, FSharpTargets is empty" Condition= "@(FSharpTargets) == ''" />
+    <Error Text="Potentially missed crossgen for Razor, RazorToolTargets is empty" Condition= "@(RazorToolTargets) == ''" />
+    <Error Text="Potentially missed crossgen for other SDK files, RemainingTargets is empty" Condition= "@(RemainingTargets) == ''" />
 
     <Crossgen
         SourceAssembly="%(RoslynTargets.FullPath)"
@@ -186,7 +183,7 @@
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
         PlatformAssemblyPaths="@(RemainingFolders);$(SharedFrameworkNameVersionPath)" />
-    
+
     <Crossgen
         SourceAssembly="%(RazorToolTargets.FullPath)"
         DestinationPath="%(RazorToolTargets.FullPath)"
@@ -213,4 +210,5 @@
     <Exec Command="find $(SdkOutputDirectory) -type d -exec chmod 755 {} \;" />
     <Exec Command="find $(SdkOutputDirectory) -type f -exec chmod 644 {} \;" />
   </Target>
+
 </Project>

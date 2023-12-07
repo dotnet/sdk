@@ -1,8 +1,8 @@
 <Project>
+
   <Target Name="GenerateArchives"
           DependsOnTargets="GenerateLayout;GetCurrentRuntimeInformation"
           BeforeTargets="AfterBuild">
-
     <!-- When running in Docker under a Windows host, tar is warning "file changed as we read it" for several files and returning exit code 1.
          So this flag allows that to be ignored. -->
     <PropertyGroup Condition="'$(IgnoreTarExitCode)' == ''">
@@ -31,14 +31,14 @@
         SourceDirectory="$(RedistLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).tar.gz"
         OverwriteDestination="true"
-        IgnoreExitCode="$(IgnoreTarExitCode)"/>
+        IgnoreExitCode="$(IgnoreTarExitCode)" />
 
     <TarGzFileCreateFromDirectory
         Condition=" '$(OSName)' != 'win' and '$(DotNetBuildFromSource)' != 'true'"
         SourceDirectory="$(SdkInternalLayoutPath)"
         DestinationArchive="$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdk).tar.gz"
         OverwriteDestination="true"
-        IgnoreExitCode="$(IgnoreTarExitCode)"/>
-    
+        IgnoreExitCode="$(IgnoreTarExitCode)" />
   </Target>
+
 </Project>

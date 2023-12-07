@@ -1,4 +1,5 @@
 <Project>
+
   <Target Name="GenerateFullNuGetVersion">
     <PropertyGroup>
       <FullNugetVersion>$(VersionPrefix)-$(PreReleaseVersionLabel)</FullNugetVersion>
@@ -14,4 +15,5 @@
       <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitHash" />
     </Exec>
   </Target>
+
 </Project>

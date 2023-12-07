@@ -1,4 +1,5 @@
 <Project>
+
   <PropertyGroup>
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
     <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet-internal\</SdkInternalLayoutPath>
@@ -343,7 +344,6 @@
         <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
     </ItemGroup>
-
   </Target>
 
   <Target Name="DownloadBundledComponents" DependsOnTargets="SetupBundledComponents">
@@ -441,7 +441,7 @@
 
       <!-- Creating a new item here isn't strictly necessary, but makes it easier to see what's going on in the .binlog,
            since the metadata updates don't show up there -->
-      <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledLayoutPackageDownloadFiles)"/>
+      <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledLayoutPackageDownloadFiles)" />
     </ItemGroup>
   </Target>
 
@@ -454,13 +454,12 @@
   <Target Name="LayoutBundledComponents">
     <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
                                DestinationDirectory="$(RedistLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)"
-                               DirectoriesToCopy="%(BundledLayoutComponent.DirectoriesToCopy)"/>
+                               DirectoriesToCopy="%(BundledLayoutComponent.DirectoriesToCopy)" />
 
     <Copy SourceFiles="@(BundledLayoutPackageDownloadFilesWithDestination)"
           DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
           SkipUnchangedFiles="true"
           />
-
   </Target>
 
   <Target Name="RetargetTools">
@@ -487,8 +486,7 @@
                       Overwrite="true" />
   </Target>
 
-  <Target Name="CopyKnownWorkloadManifestFile" >
-
+  <Target Name="CopyKnownWorkloadManifestFile">
     <ItemGroup>
       <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLower())" />
     </ItemGroup>
@@ -509,10 +507,8 @@
     <WriteLinesToFile File="$(RedistLayoutPath)metadata/workloads/$(CliProductBandVersion)00/userlocal"
                       Overwrite="true" />
   </Target>
-  
 
   <Target Name="LayoutAppHostTemplate" DependsOnTargets="RunResolvePackageDependencies">
-
     <PropertyGroup>
       <NETCoreAppHostPackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</NETCoreAppHostPackageName>
       <AppHostRestorePath>$(IntermediateOutputPath)AppHostRestore\</AppHostRestorePath>
@@ -547,7 +543,7 @@
       <AllFileOfRestoredAppHostPackage Include="$(AppHostRestorePath)\**\*.*" />
       <NativeRestoredAppHostNETCore
           Include="@(AllFileOfRestoredAppHostPackage)"
-          Condition="'%(FileName)%(Extension)' == '$(AppHostExecutableName)'"/>
+          Condition="'%(FileName)%(Extension)' == '$(AppHostExecutableName)'" />
     </ItemGroup>
 
     <Error Condition="@(NativeRestoredAppHostNETCore->Distinct()->Count()) != 1"
@@ -559,7 +555,6 @@
 
     <Message Text="Copy from @(NativeRestoredAppHostNETCore) to $(AppHostTemplatePath)."
              Importance="High" />
-
   </Target>
 
   <Target Name="GeneratePrecomputedRarCache" DependsOnTargets="LayoutTemplates;LayoutManifests;LayoutBundledTools">
@@ -595,24 +590,21 @@
                             LayoutAppHostTemplate;
                             GeneratePrecomputedRarCache;
                             ReplaceBundledRuntimePackFilesWithSymbolicLinks"
-          BeforeTargets="AfterBuild">
-
-  </Target>
+          BeforeTargets="AfterBuild" />
 
   <Target Name="GenerateInternalLayout"
           DependsOnTargets="GenerateLayout"
           BeforeTargets="AfterBuild">
-
     <RemoveDir Directories="$(SdkInternalLayoutPath)" />
     <MakeDir Directories="$(SdkInternalLayoutPath)" />
 
     <!-- Create "SDK Internal" layout to create the MSI to bundle -->
     <ItemGroup>
-      <SdkInternalFiles Include="$(RedistLayoutPath)sdk/$(Version)/**/*.*"/>
+      <SdkInternalFiles Include="$(RedistLayoutPath)sdk/$(Version)/**/*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(SdkInternalFiles)"
-          DestinationFiles="@(SdkInternalFiles -> '$(SdkInternalLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')"/>
-
+          DestinationFiles="@(SdkInternalFiles -> '$(SdkInternalLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
+
 </Project>

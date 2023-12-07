@@ -1,4 +1,5 @@
 <Project>
+
   <Target Name="SetBuildDefaults" DependsOnTargets="GetCurrentRuntimeInformation">
     <PropertyGroup>
       <!-- Currently, 'arm*' SDK's do not include the LZMA for performance upon extraction of the NuGet archive. -->
@@ -39,4 +40,5 @@
       <PathListSeparator Condition=" '$(OS)' == 'Windows_NT' ">%3b</PathListSeparator>
     </PropertyGroup>
   </Target>
+
 </Project>

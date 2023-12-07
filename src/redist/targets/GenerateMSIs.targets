@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">  
+<Project>
+
   <Target Name="SetupWixProperties" DependsOnTargets="GetCurrentRuntimeInformation">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
@@ -122,14 +122,13 @@
           DependsOnTargets="SetupWixProperties;MsiTargetsSetupInputOutputs"
           Inputs="$(WixDownloadSentinel)"
           Outputs="$(WixDestinationPath)">
-
     <!-- Setup sentinel to take advantage of incrementality -->
     <MakeDir Directories="$(WixRoot)" />
     <WriteLinesToFile
         File="$(WixDownloadSentinel)"
         Lines="$(WixVersion)"
         Overwrite="true"
-        Encoding="Unicode"/>
+        Encoding="Unicode" />
 
     <DownloadFile
         Uri="$(WixDownloadUrl)"
@@ -139,7 +138,6 @@
     <ExtractArchiveToDirectory
         SourceArchive="$(WixDestinationPath)"
         DestinationDirectory="$(WixRoot)" />
-
   </Target>
 
   <Target Name="GenerateSdkMsi"
@@ -148,7 +146,6 @@
           Inputs="$(SdkInternalLayoutPath)**/*;
                     $(SdkGenerateMsiPowershellScript)"
           Outputs="$(SdkMSIInstallerFile)">
-
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateMsiPowershellScript) ^
                       '$(SdkInternalLayoutPath.TrimEnd('\'))' ^
                       '$(SdkMSIInstallerFile)' ^
@@ -190,7 +187,6 @@
           Condition=" '$(OS)' == 'Windows_NT' "
           Inputs="$(SdkPlaceholderGenerateMsiPowershellScript)"
           Outputs="$(SdkPlaceholderMSIInstallerFile)">
-
     <Exec Command="powershell -NoProfile -NoLogo $(SdkPlaceholderGenerateMsiPowershellScript) ^
                       '$(SdkPlaceholderMSIInstallerFile)' ^
                       '$(WixRoot)' ^
@@ -226,7 +222,6 @@
           Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'"
           Inputs="@(TemplatesMsiComponent);$(TemplatesGenerateMsiPowershellScript)"
           Outputs="%(TemplatesMsiComponent.MSIInstallerFile)">
-
     <Exec Command="powershell -NoProfile -NoLogo $(TemplatesGenerateMsiPowershellScript) ^
                       '%(TemplatesMsiComponent.LayoutPath)' ^
                       '%(TemplatesMsiComponent.MSIInstallerFile)' ^
@@ -247,7 +242,6 @@
         <TemplatesMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
         <TemplatesMsiWixSrcFiles Include="$(WixRoot)\template-install-files.wixobj" />
     </ItemGroup>
-
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
       OutputFolder="$(LightCommandPackagesDir)"
@@ -313,14 +307,13 @@
           BeforeTargets="GenerateSdkBundle"
           Condition=" '$(OS)' == 'Windows_NT' "
           Outputs="$(MinimumVSVersion)">
+    <PropertyGroup>
+      <MinimumMSBuildVersionFile Condition="$([System.Text.RegularExpressions.Regex]::Match(%(SDKInternalFiles.Identity),'.*minimumMSBuildVersion').Success) ">%(SDKInternalFiles.Identity)</MinimumMSBuildVersionFile>
+    </PropertyGroup>
 
-          <PropertyGroup>
-            <MinimumMSBuildVersionFile Condition="$([System.Text.RegularExpressions.Regex]::Match(%(SDKInternalFiles.Identity),'.*minimumMSBuildVersion').Success) ">%(SDKInternalFiles.Identity)</MinimumMSBuildVersionFile>
-          </PropertyGroup>
-
-          <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
-            <Output TaskParameter="Lines" PropertyName="MinimumVSVersion"/>
-          </ReadLinesFromFile>
+    <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
+      <Output TaskParameter="Lines" PropertyName="MinimumVSVersion" />
+    </ReadLinesFromFile>
   </Target>
 
   <Target Name="GenerateSdkBundle"
@@ -332,19 +325,18 @@
                     $(DownloadedSharedHostInstallerFile);
                     $(SdkGenerateBundlePowershellScript)"
           Outputs="$(CombinedFrameworkSdkHostMSIInstallerFile)">
-
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
       <!-- While we don't have 9.0 templates available (need SDK update, choose the 8.0 templates -->
       <!-- <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/> -->
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'" /> -->
       <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                         Condition="'%(TemplatesMajorMinorVersion)' == '8.0'"/>
+                                         Condition="'%(TemplatesMajorMinorVersion)' == '8.0'" />
     </ItemGroup>
     <PropertyGroup>
       <LatestTemplateMsiInstallerFile>@(LatestTemplateInstallerComponent->'%(MSIInstallerFile)')</LatestTemplateMsiInstallerFile>
     </PropertyGroup>
-    
+
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateBundlePowershellScript) ^
                       -WorkloadManifestWxsFile '$(WorkloadManifestsWxsPath)' ^
                       -CLISDKMSIFile '$(SdkMSIInstallerFile)' ^
@@ -404,7 +396,6 @@
                     $(ToolsetInstallerNuspecFile);
                     $(GenerateNupkgPowershellScript)"
           Outputs="$(ToolsetInstallerNupkgFile)">
-
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ArtifactsDir)' ^
                       '$(SdkMSIInstallerFile)' ^
@@ -422,7 +413,6 @@
                     $(SdkPlaceholderInstallerNuspecFile);
                     $(GenerateNupkgPowershellScript)"
           Outputs="$(SdkPlaceholderInstallerNupkgFile)">
-
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ArtifactsDir)' ^
                       '$(SdkPlaceholderMSIInstallerFile)' ^
@@ -440,7 +430,6 @@
                     $(TemplatesInstallerNuspecFile);
                     $(GenerateNupkgPowershellScript)"
           Outputs="@(TemplatesNupkgComponent->'%(NupkgFile)')">
-
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ArtifactsDir)' ^
                       '%(TemplatesNupkgComponent.MSIInstallerFile)' ^
@@ -462,7 +451,6 @@
         <MajorMinorVersion>%(TemplatesMajorMinorVersion)</MajorMinorVersion>
       </TemplatesNupkgComponent>
     </ItemGroup>
-
   </Target>
 
   <Target Name="GenerateVSToolsNupkg"
@@ -472,7 +460,6 @@
                   $(VSToolsNuspecFile);
                   $(GenerateNupkgPowershellScript)"
           Outputs="$(VSToolsNupkgFile)">
-
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ArtifactsDir)' ^
                       '$(RedistLayoutPath.TrimEnd('\'))' ^
@@ -489,7 +476,6 @@
                   $(VSToolsResolverNuspecFile);
                   $(GenerateNupkgPowershellScript)"
           Outputs="$(VSToolsResolverNupkgFile)">
-
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ArtifactsDir)' ^
                       '$(SdkResolverLayoutPath.TrimEnd('\'))' ^
@@ -505,9 +491,8 @@
                     $(SdkMSBuildExtensionsNuspecFile);
                     $(GenerateNupkgPowershellScript)"
           Outputs="$(SdkMSBuildExtensionsNupkgFile);$(SdkMSBuildExtensionsSwrFile)">
-
     <GenerateMSBuildExtensionsSWR MSBuildExtensionsLayoutDirectory="$(MSBuildExtensionsLayoutDirectory)"
-                                  OutputFile="$(SdkMSBuildExtensionsSwrFile)"/>
+                                  OutputFile="$(SdkMSBuildExtensionsSwrFile)" />
 
     <!-- Include the swr file in the nuget package for VS authoring -->
     <Copy SourceFiles="$(SdkMSBuildExtensionsSwrFile)" DestinationFolder="$(MSBuildExtensionsLayoutDirectory)" />
@@ -518,7 +503,6 @@
                       '$(FullNugetVersion)' ^
                       '$(SdkMSBuildExtensionsNuspecFile)' ^
                       '$(SdkMSBuildExtensionsNupkgFile)'" />
-
   </Target>
 
   <Target Name="GenerateVSTemplateLocatorNupkg"
@@ -528,14 +512,12 @@
                     $(VSTemplateLocatorNuspecFile);
                     $(GenerateNupkgPowershellScript)"
           Outputs="$(VSTemplateLocatorNupkgFile)">
-
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ArtifactsDir)' ^
                       '$(VSTemplateLocatorLayoutPath.TrimEnd('\'))' ^
                       '$(FullNugetVersion)' ^
                       '$(VSTemplateLocatorNuspecFile)' ^
                       '$(VSTemplateLocatorNupkgFile)'" />
-
   </Target>
 
   <Target Name="GenerateMsis"
@@ -554,6 +536,5 @@
                             GenerateSdkMSBuildExtensionsNupkg;
                             GenerateVSTemplateLocatorNupkg"
         Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' " />
-
 
 </Project>

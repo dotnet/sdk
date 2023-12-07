@@ -1,4 +1,5 @@
 <Project>
+
   <Target Name="SetSdkBrandingInfo">
     <PropertyGroup>
       <BuildName>cli</BuildName>
@@ -15,5 +16,5 @@
       <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
     </PropertyGroup>
   </Target>
-  
+
 </Project>

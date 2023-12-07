@@ -2,8 +2,7 @@
 
   <Target Name="GenerateBundledVersions"
           Condition="'$(PgoInstrument)' != 'true'"
-          DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps" >
-
+          DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps">
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productVersion.txt"
       Lines="$(PackageVersion)"
@@ -63,7 +62,7 @@
       File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
       Lines="@(Line->'%(Identity)_commit=&quot;%(Commit)&quot; %(Identity)_version=&quot;%(Version)&quot;', '%0A')"
       Overwrite="true"
-      Encoding="ASCII"/>
+      Encoding="ASCII" />
 
     <!-- Format for productCommits-%rid%.json:
       {
@@ -81,8 +80,7 @@
       File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).json"
       Lines="$(JsonContents)"
       Overwrite="true"
-      Encoding="ASCII"/>
-
+      Encoding="ASCII" />
   </Target>
 
   <Target Name="GenerateBundledVersionsProps" DependsOnTargets="SetupBundledComponents">
@@ -94,7 +92,7 @@
       <_NETCoreAppPackageVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</_NETCoreAppPackageVersion>
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
-      
+
       <!-- TODO: Once .NET 8.0.X has released, update these version numbers to 8.0.$(VersionFeature80) -->
       <_NET80RuntimePackVersion>8.0.0-rc.2.23479.6</_NET80RuntimePackVersion>
       <_NET80TargetingPackVersion>8.0.0-rc.2.23479.6</_NET80TargetingPackVersion>
@@ -168,12 +166,12 @@
           win-x86;
           " />
 
-      <NetCore31RuntimePackRids Include="@(NetCore30RuntimePackRids)"/>
+      <NetCore31RuntimePackRids Include="@(NetCore30RuntimePackRids)" />
 
       <Net50AppHostRids Include="
           @(NetCore31RuntimePackRids);
           linux-musl-arm;
-          "/>
+          " />
 
       <Net50RuntimePackRids Include="
           @(Net50AppHostRids);
@@ -185,7 +183,7 @@
           osx-arm64;
           linux-s390x;
           linux-loongarch64;
-          "/>
+          " />
 
       <Net60RuntimePackRids Include="
           @(Net50RuntimePackRids);
@@ -204,7 +202,7 @@
           linux-bionic-x64;
           linux-bionic-x86;
           linux-ppc64le;
-          "/>
+          " />
 
       <Net80AppHostRids Include="
           @(Net70AppHostRids);
@@ -417,26 +415,24 @@
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.$(VersionFeature21)"/>
+                               LatestVersion="2.1.$(VersionFeature21)" />
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
                                TargetFrameworkVersion="2.1"
                                DefaultVersion="2.1.1"
-                               LatestVersion="2.1.$(VersionFeature21)"/>
-
+                               LatestVersion="2.1.$(VersionFeature21)" />
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.App"
                                TargetFrameworkVersion="2.2"
                                DefaultVersion="2.2.0"
-                               LatestVersion="2.2.8"/>
+                               LatestVersion="2.2.8" />
       <ImplicitPackageVariable Include="Microsoft.AspNetCore.All"
                                TargetFrameworkVersion="2.2"
                                DefaultVersion="2.2.0"
-                               LatestVersion="2.2.8"/>
+                               LatestVersion="2.2.8" />
     </ItemGroup>
 
     <PropertyGroup>
       <PortableProductMonikerRid Condition="'$(PortableProductMonikerRid)' == ''">$(ProductMonikerRid)</PortableProductMonikerRid>
     </PropertyGroup>
-
 
     <PropertyGroup>
       <BundledVersionsPropsContent>
@@ -453,6 +449,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
+
   <PropertyGroup>
     <NetCoreRoot Condition="'%24(NetCoreRoot)' == ''">%24([MSBuild]::NormalizePath('%24(MSBuildThisFileDirectory)..\..\'))</NetCoreRoot>
     <NetCoreTargetingPackRoot Condition="'%24(NetCoreTargetingPackRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(NetCoreRoot)'))packs</NetCoreTargetingPackRoot>
@@ -471,7 +468,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_NETCoreSdkIsPreview>$(_NETCoreSdkBeingBuiltIsPreview)</_NETCoreSdkIsPreview>
   </PropertyGroup>
   <ItemGroup>
-    @(ImplicitPackageVariable->'<ImplicitPackageReferenceVersion Include="%(Identity)" TargetFrameworkVersion="%(TargetFrameworkVersion)" DefaultVersion="%(DefaultVersion)" LatestVersion="%(LatestVersion)"/>', '
+    @(ImplicitPackageVariable->'<ImplicitPackageReferenceVersion Include="%(Identity)" TargetFrameworkVersion="%(TargetFrameworkVersion)" DefaultVersion="%(DefaultVersion)" LatestVersion="%(LatestVersion)" />', '
     ')
 
     <!-- .NET 9.0 -->
@@ -630,7 +627,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownILLinkPack Include="Microsoft.NET.ILLink.Tasks"
                      TargetFramework="net8.0"
                      ILLinkPackVersion="$(_NET80RuntimePackVersion)" />
-    
+
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net8.0"
                              WebAssemblySdkPackVersion="$(_NET80WebAssemblyPackVersion)" />
@@ -1041,7 +1038,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                               RuntimePackRuntimeIdentifiers="@(AspNetCore31RuntimePackRids, '%3B')"
                               />
 
-
     <!-- .NET Core 3.0 -->
     <KnownFrameworkReference Include="Microsoft.NETCore.App"
                               TargetFramework="netcoreapp3.0"
@@ -1141,6 +1137,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_KnownRuntimeIdentiferPlatforms Include="@(_KnownRuntimeIdentiferPlatforms, '%3B')" />
     <_ExcludedKnownRuntimeIdentiferPlatforms Include="@(_ExcludedKnownRuntimeIdentiferPlatforms, '%3B')" />
   </ItemGroup>
+
 </Project>
 ]]>
     </BundledVersionsPropsContent>
@@ -1171,9 +1168,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
+
   <ItemGroup>
 @(BundledDotnetTools->HasMetadata('ObsoletesCliTool')->'    %3CBundledDotNetCliToolReference Include="%(ObsoletesCliTool)" /%3E','%0A')
   </ItemGroup>
+
 </Project>
 ]]>
     </BundledBundledCliToolsPropsContent>
@@ -1193,12 +1192,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(_NETCorePlatformsPackageVersion)/runtime.json"
           DestinationFiles="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
-          SkipUnchangedFiles="true"/>
+          SkipUnchangedFiles="true" />
 
     <GenerateSdkRuntimeIdentifierChain
           RuntimeIdentifier="$(PortableProductMonikerRid)"
           RuntimeIdentifierGraphPath="$(SdkOutputDirectory)RuntimeIdentifierGraph.json"
-          RuntimeIdentifierChainOutputPath="$(SdkOutputDirectory)NETCoreSdkRuntimeIdentifierChain.txt"/>
+          RuntimeIdentifierChainOutputPath="$(SdkOutputDirectory)NETCoreSdkRuntimeIdentifierChain.txt" />
 
   </Target>
+
 </Project>
