@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
             }
         }
 
-        private static void PrintTable(IEnumerable<IToolPackage> packageEnumerable)
+        private void PrintTable(IEnumerable<IToolPackage> packageEnumerable)
         {
             var table = new PrintableTable<IToolPackage>();
 
@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
             table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
         }
 
-        private static void PrintJson(IEnumerable<IToolPackage> packageEnumerable)
+        private void PrintJson(IEnumerable<IToolPackage> packageEnumerable)
         {
             var json = System.Text.Json.JsonSerializer.Serialize(packageEnumerable.Select(p => new
             {
