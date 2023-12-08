@@ -925,12 +925,12 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="translated">ConfigureAwaitOptions.SuppressThrowing は、Task&lt;TResult&gt; ではない、非ジェネリック Task での使用のみサポートされています。Task&lt;TResult&gt; で使用するには、まず、基本型の Task にキャストしてください。</target>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
-        <target state="translated">ConfigureAwaitOptions.SuppressThrowing は、非ジェネリック Task での使用のみサポートされています</target>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
@@ -1920,7 +1920,7 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="needs-review-translation">'AsSpan' の方が 'Substring' より効率的です。'Substring' は O(n) 文字列コピーを実行しますが、'AsSpan' はこれを実行せず、固定コストがあります。</target>
+        <target state="new">'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
@@ -2200,7 +2200,7 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
         <source>The format argument is not a valid format string</source>
-        <target state="new">The format argument is not a valid format string</target>
+        <target state="translated">format 引数が有効な書式指定文字列ではありません</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
@@ -2260,47 +2260,47 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
-        <target state="needs-review-translation">'CompareTo' を使用するときに大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。これは、割り当てにつながるためです。代わりに、'StringComparer' を使用して、大文字と小文字を区別しない比較を実行してください。</target>
+        <target state="translated">'CompareTo' を使用するときに大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。これは、割り当てにつながるためです。代わりに、'StringComparer' を使用して、大文字と小文字を区別しない比較を実行してください。'StringComparer' の使用に切り替えると、動作が微妙に変化する可能性があるため、提案を適用した後に十分なテストを実施することが重要です。また、文化的に敏感な比較を行う必要がない場合は、'StringComparer.OrdinalIgnoreCase' の使用を検討してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
         <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
-        <target state="needs-review-translation">大文字と小文字を区別しない比較を実行するには、'StringComparer' を使用することをお勧めします</target>
+        <target state="translated">大文字と小文字を区別しない比較を実行するには、'StringComparer' を使用することをお勧めしますが、これにより、動作が微妙に変化する可能性があることに注意してください。そのため、提案を適用した後に十分なテストを実施してください。また、文化的に敏感な比較を行う必要がない場合は、'StringComparer.OrdinalIgnoreCase' の使用を検討してください</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="needs-review-translation">'string.{0}(string, StringComparison)' オーバーロードを使用してください</target>
+        <target state="translated">'string.{0}(string, StringComparison)' オーバーロードを使用してください</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
-        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
+        <target state="translated">大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。これは、割り当てにつながるためです。代わりに、'StringComparison' 列挙値を受け取る 'Contains'、'IndexOf'、'StartsWith' のメソッド オーバーロードを呼び出すことをお勧めします。'StringComparison' を受け取るオーバーロードの使用に切り替えると、動作が微妙に変化する可能性があるため、提案を適用した後に十分なテストを実施することが重要です。また、文化的に敏感な比較を行う必要がない場合は、'StringComparison.OrdinalIgnoreCase' の使用を検討してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
         <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
-        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
+        <target state="translated">大文字と小文字を区別しない比較を実行するには、'StringComparison' 列挙値を受け取る '{0}' の文字列比較メソッド オーバーロードをお勧めしますが、これにより、動作が微妙に変化する可能性があることに注意してください。そのため、提案を適用した後に十分なテストを実施してください。また、文化的に敏感な比較を行う必要がない場合は、'StringComparison.OrdinalIgnoreCase' の使用を検討してください</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
         <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="needs-review-translation">大文字と小文字を区別しない文字列比較を実行するには、'StringComparison' メソッド オーバーロードをお勧めします</target>
+        <target state="translated">大文字と小文字を区別しない文字列比較を実行するには、'StringComparison' メソッド オーバーロードを使用します</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="needs-review-translation">'string.Equals(string, StringComparison)' を使用する</target>
+        <target state="translated">'string.Equals(string, StringComparison)' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
-        <target state="needs-review-translation">'string.ToLower() == string.ToLower()' で大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。これは、割り当てにつながるためです。代わりに、string.Equals(string, StringComparison)' を使用して、大文字と小文字を区別しない比較を実行してください。</target>
+        <target state="translated">大文字と小文字を区別しない文字列比較を実行するために、'ToLower'、'ToUpper'、'ToLowerInvariant'、および 'ToUpperInvariant' を呼び出さないようにしてください。'string.ToLower() == string.ToLower()' のように、割り当てにつながるためです。代わりに、'string.Equals(string, StringComparison)' を使用して大文字と小文字を区別しない比較を実行してください。'StringComparison' を受け取るオーバーロードの使用に切り替えると、動作が微妙に変化する可能性があるため、提案を適用した後に十分なテストを実施することが重要です。また、文化的に敏感な比較を行う必要がない場合は、'StringComparison.OrdinalIgnoreCase' の使用を検討してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
         <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
-        <target state="needs-review-translation">大文字と小文字を区別しない比較を実行するには、'string.Equals(string, StringComparison)' の使用を優先します。</target>
+        <target state="translated">大文字と小文字を区別しない比較を実行するには、'string.Equals(string, StringComparison)' を使用することをお勧めしますが、これにより、動作が微妙に変化する可能性があることに注意してください。そのため、提案を適用した後に十分なテストを実施してください。また、文化的に敏感な比較を行う必要がない場合は、'StringComparison.OrdinalIgnoreCase' の使用を検討してください</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3005,22 +3005,22 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">
         <source>Use 'SearchValues'</source>
-        <target state="new">Use 'SearchValues'</target>
+        <target state="translated">'SearchValues' を使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesDescription">
         <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
-        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <target state="translated">値を 'IndexOfAny'/'ContainsAny'' に直接渡すよりも、キャッシュされた 'SearchValues' インスタンスを使用する方が効率的です。</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesMessage">
         <source>Use a cached 'SearchValues' instance for improved searching performance</source>
-        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <target state="translated">キャッシュされた 'SearchValues' インスタンスを使用して検索パフォーマンスを向上させる</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesTitle">
         <source>Use a cached 'SearchValues' instance</source>
-        <target state="new">Use a cached 'SearchValues' instance</target>
+        <target state="translated">キャッシュされた 'SearchValues' インスタンスを使用する</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">

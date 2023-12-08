@@ -925,12 +925,12 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="translated">ConfigureAwaitOptions.SuppressThrowing est uniquement pris en charge avec la tâche non générique, et non avec une tâche Task&lt;TResult&gt;. Pour l’utiliser avec une tâche Task&lt;TResult&gt;, commencez par effectuer un cast vers la tâche de base.</target>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
-        <target state="translated">ConfigureAwaitOptions.SuppressThrowing est uniquement pris en charge avec la tâche non générique</target>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
@@ -1920,7 +1920,7 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="needs-review-translation">« AsSpan » est plus efficace, « SUBSTRING ». 'Substring’ effectue une copie de chaîne O (n), alors que ’AsSpan’ ne possède pas un coût constant.</target>
+        <target state="new">'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
@@ -2200,7 +2200,7 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
         <source>The format argument is not a valid format string</source>
-        <target state="new">The format argument is not a valid format string</target>
+        <target state="translated">L’argument de format n’est pas une chaîne de format valide</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
@@ -2260,47 +2260,47 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
-        <target state="needs-review-translation">Évitez d’appeler 'ToLower', 'ToUpper', 'ToLowerInvariant' et 'ToUpperInvariant' pour effectuer des comparaisons de chaînes qui ne respectent pas la casse lors de l’utilisation de 'CompareTo', car elles entraînent une allocation. Utilisez plutôt 'StringComparer' pour effectuer des comparaisons qui ne respectent pas la casse.</target>
+        <target state="translated">Évitez d’appeler « ToLower », « ToUpper », « ToLowerInvariant » et « ToUpperInvariant » pour effectuer des comparaisons de chaînes sans respect de la casse lors de l’utilisation de « CompareTo », car elles entraînent une allocation. Utilisez plutôt « StringComparer » pour effectuer des comparaisons qui ne respectent pas la casse. Le passage à l’utilisation de « StringComparer » peut entraîner des modifications subtiles du comportement. Il est donc important d’effectuer des tests approfondis après l’application de la suggestion. En outre, si aucune comparaison sensible à la culture n’est nécessaire, envisagez d’utiliser « StringComparer.OrdinalIgnoreCase ».</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
         <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
-        <target state="needs-review-translation">Préférez utiliser 'StringComparer' pour effectuer une comparaison qui ne respecte pas la casse</target>
+        <target state="translated">Utilisez de préférence « StringComparer » pour effectuer une comparaison sans respect de la casse, mais gardez à l’esprit que cela peut entraîner des modifications subtiles du comportement. Veillez donc à effectuer des tests approfondis après l’application de la suggestion ou, si la comparaison sensible à la culture n’est pas nécessaire, envisagez d’utiliser « StringComparer.OrdinalIgnoreCase »</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="needs-review-translation">Utiliser la surcharge « string.{0}(string, StringComparison) »</target>
+        <target state="translated">Utiliser la surcharge « string.{0}(string, StringComparison) »</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
-        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
+        <target state="translated">Évitez d’appeler « ToLower », « ToUpper », « ToLowerInvariant » et « ToUpperInvariant » pour effectuer des comparaisons de chaînes sans respect de la casse, car elles entraînent une allocation. Préférez plutôt appeler les surcharges de méthode de « Contains », d’« IndexOf » et de « StartsWith » qui acceptent une valeur enum « StringComparison » pour effectuer des comparaisons qui ne respectent pas la casse. Le passage à l’utilisation d’une surcharge qui accepte « StringComparison » peut entraîner des modifications subtiles du comportement. Il est donc important d’effectuer des tests approfondis après l’application de la suggestion. En outre, si aucune comparaison sensible à la culture n’est nécessaire, envisagez d’utiliser « StringComparison.OrdinalIgnoreCase ».</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
         <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
-        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
+        <target state="translated">Préférez la surcharge de méthode de comparaison de chaînes de « {0} » qui accepte une valeur enum « StringComparison » pour effectuer une comparaison qui ne respecte pas la casse, mais gardez à l’esprit que cela peut entraîner des modifications subtiles du comportement. Veillez donc à effectuer des tests approfondis après l’application de la suggestion ou, si la comparaison sensible à la culture n’est pas nécessaire, envisagez d’utiliser « StringComparison.OrdinalIgnoreCase »</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
         <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="needs-review-translation">Préférer les surcharges de méthode 'StringComparison' pour effectuer des comparaisons de chaînes qui ne respectent pas la casse</target>
+        <target state="translated">Utiliser les surcharges de méthode « StringComparison » pour effectuer des comparaisons de chaînes sans respect de la casse</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="needs-review-translation">Utilisez 'string. Equals(string, StringComparison)'</target>
+        <target state="translated">Utilisez 'string. Equals(string, StringComparison)'</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
-        <target state="needs-review-translation">Évitez d’appeler « ToLower », « ToUpper », « ToLowerInvariant » et « ToUpperInvariant » pour effectuer des comparaisons de chaînes non sensibles à la casse, comme dans « string ». ToLower() == chaîne. ToLower()', car ils entraînent une allocation. Utilisez plutôt 'string'. Equals(string, StringComparison) » pour effectuer des comparaisons qui ne respectent pas la casse.</target>
+        <target state="translated">Évitez d’appeler « ToLower », « ToUpper », « ToLowerInvariant » et « ToUpperInvariant » pour effectuer des comparaisons de chaînes sans respect de la casse, comme dans « string.ToLower() == string.ToLower() », car elles entraînent une allocation. Utilisez plutôt « string.Equals(string, StringComparison) » pour effectuer des comparaisons qui ne respectent pas la casse. Le passage à l’utilisation d’une surcharge qui accepte « StringComparison » peut entraîner des modifications subtiles du comportement. Il est donc important d’effectuer des tests approfondis après l’application de la suggestion. En outre, si aucune comparaison sensible à la culture n’est nécessaire, envisagez d’utiliser « StringComparison.OrdinalIgnoreCase ».</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
         <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
-        <target state="needs-review-translation">Préférer l’utilisation de 'string. Equals(string, StringComparison)' pour effectuer une comparaison qui ne respecte pas la casse</target>
+        <target state="translated">Utilisez de préférence « string.Equals(string, StringComparison) » pour effectuer une comparaison sans respect de la casse, mais gardez à l’esprit que cela peut entraîner des modifications subtiles du comportement. Veillez donc à effectuer des tests approfondis après l’application de la suggestion ou, si la comparaison sensible à la culture n’est pas nécessaire, envisagez d’utiliser « StringComparison.OrdinalIgnoreCase »</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3005,22 +3005,22 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">
         <source>Use 'SearchValues'</source>
-        <target state="new">Use 'SearchValues'</target>
+        <target state="translated">Utiliser « SearchValues »</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesDescription">
         <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
-        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <target state="translated">L’utilisation d’un instance 'SearchValues' mis en cache est plus efficace que de passer directement des valeurs à 'IndexOfAny'/'ContainsAny'.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesMessage">
         <source>Use a cached 'SearchValues' instance for improved searching performance</source>
-        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <target state="translated">Utiliser une instance « SearchValues » mis en cache pour améliorer les performances de recherche</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesTitle">
         <source>Use a cached 'SearchValues' instance</source>
-        <target state="new">Use a cached 'SearchValues' instance</target>
+        <target state="translated">Utiliser une instance « SearchValues » mis en cache</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">

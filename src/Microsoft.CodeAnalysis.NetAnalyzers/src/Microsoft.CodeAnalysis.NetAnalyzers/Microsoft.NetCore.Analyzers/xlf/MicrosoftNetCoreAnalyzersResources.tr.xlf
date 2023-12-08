@@ -925,12 +925,12 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="translated">ConfigureAwaitOptions.SuppressThrowing, Task&lt;TResult&gt; ile değil, yalnızca genel olmayan Task ile desteklenir. Bu işlevi Task&lt;TResult&gt; ile kullanmak için öncelikle türü temel Task olarak değiştirin.</target>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
-        <target state="translated">ConfigureAwaitOptions.SuppressThrowing yalnızca genel olmayan Task ile desteklenir</target>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
@@ -1920,7 +1920,7 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="needs-review-translation">'AsSpan', 'Substring'den daha verimlidir. 'Substring' bir O(n) dizesi kopyası oluşturur ama 'AsSpan' bunu yapmaz ve sabit bir maliyeti vardır.</target>
+        <target state="new">'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
@@ -2200,7 +2200,7 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
         <source>The format argument is not a valid format string</source>
-        <target state="new">The format argument is not a valid format string</target>
+        <target state="translated">Biçim bağımsız değişkeni geçerli bir biçim dizesi değil</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
@@ -2260,47 +2260,47 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
-        <target state="needs-review-translation">Bir tahsise yol açtıkları için 'CompareTo' kullanırken büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'ToLower', 'ToUpper', 'ToLowerInvariant' ve 'ToUpperInvariant' çağırmaktan kaçının. Bunun yerine, büyük/küçük harfe duyarsız karşılaştırmalar yapmak için 'StringComparer' kullanın.</target>
+        <target state="translated">Ayırmaya yol açtıklarından 'CompareTo' kullanırken büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'ToLower', 'ToUpper', 'ToLowerInvariant' ve 'ToUpperInvariant' çağırmaktan kaçının. Büyük/küçük harfe duyarsız karşılaştırma yapmak için 'StringComparer' kullanmayı tercih edin. 'StringComparer' kullanımına geçmek davranışta küçük değişikliklere neden olabileceğinden öneriyi uyguladıktan sonra mutlaka kapsamlı test yapılmalıdır. Ayrıca, kültürel açıdan hassas karşılaştırma gerekmiyorsa 'StringComparer.OrdinalIgnoreCase' kullanmayı göz önünde bulundurun.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
         <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
-        <target state="needs-review-translation">Büyük/küçük harfe duyarlı olmayan bir karşılaştırma yapmak için 'StringComparer' kullanmayı tercih edin</target>
+        <target state="translated">Büyük/küçük harfe duyarsız bir karşılaştırma gerçekleştirmek için 'StringComparer' kullanmayı tercih edin ancak bunun davranışta küçük değişikliklere neden olabileceğini unutmayın. Bu nedenle, öneriyi uyguladıktan sonra mutlaka kapsamlı testler yapın veya kültürel açıdan hassas karşılaştırma gerekmiyorsa 'StringComparer.OrdinalIgnoreCase' kullanmayı göz önünde bulundurun</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="needs-review-translation">'string.{0}(string, StringComparison)' aşırı yüklemesini kullan</target>
+        <target state="translated">'string.{0}(string, StringComparison)' aşırı yüklemesini kullan</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
-        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
+        <target state="translated">Ayırmaya yol açtıklarından büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'ToLower', 'ToUpper', 'ToLowerInvariant' ve 'ToUpperInvariant' çağırmaktan kaçının. Bunun yerine, büyük/küçük harfe duyarsız karşılaştırmalar gerçekleştirmek için 'StringComparison' sabit listesi değeri alan 'Contains', 'IndexOf' ve 'StartsWith' metot aşırı yüklemelerini çağırmayı tercih edin. 'StringComparer' alan bir aşırı yüklemeye geçmek geçmek davranışta küçük değişikliklere neden olabileceğinden öneriyi uyguladıktan sonra mutlaka kapsamlı test yapılmalıdır. Ayrıca, kültürel açıdan hassas karşılaştırma gerekmiyorsa 'StringComparer.OrdinalIgnoreCase' kullanmayı göz önünde bulundurun.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
         <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
-        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
+        <target state="translated">Büyük/küçük harfe duyarsız bir karşılaştırma gerçekleştirmek StringComparison' sabit listesi değeri alan '{0}' metot aşırı yüklemelerini tercih edin ancak bunun davranışta küçük değişikliklere neden olabileceğini unutmayın. Bu nedenle, öneriyi uyguladıktan sonra mutlaka kapsamlı testler yapın veya kültürel açıdan hassas karşılaştırma gerekmiyorsa 'StringComparer.OrdinalIgnoreCase' kullanmayı göz önünde bulundurun</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
         <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="needs-review-translation">Büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'StringComparison' metodu aşırı yüklemelerini tercih edin</target>
+        <target state="translated">Büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'StringComparison' metodu aşırı yüklemelerini kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="needs-review-translation">'string.Equals(string, StringComparison)' parametresini kullanın</target>
+        <target state="translated">'string.Equals(string, StringComparison)' parametresini kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
-        <target state="needs-review-translation">Bir ayrıma işlemine yol açtıkları için 'string.ToLower() == string.ToLower()' parametresinde olduğu gibi büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'ToLower', 'ToUpper', 'ToLowerInvariant' ve 'ToUpperInvariant' parametrelerini çağırmaktan kaçının. Bunun yerine, büyük/küçük harfe duyarsız karşılaştırmalar yapmak için 'string.Equals(string, StringComparison)' parametresini kullanın.</target>
+        <target state="translated">Ayırmaya yol açtıklarından 'string.ToLower() == string.ToLower()' gibi büyük/küçük harfe duyarsız dize karşılaştırmaları gerçekleştirmek için 'ToLower', 'ToUpper', 'ToLowerInvariant' ve 'ToUpperInvariant' çağırmaktan kaçının. Bunun yerine, büyük/küçük harfe duyarsız karşılaştırma yapmak için 'string.Equals(string, StringComparison)' parametresini kullanmayı tercih edin. 'StringComparer' alan bir aşırı yüklemeye geçmek geçmek davranışta küçük değişikliklere neden olabileceğinden öneriyi uyguladıktan sonra mutlaka kapsamlı test yapılmalıdır. Ayrıca, kültürel açıdan hassas karşılaştırma gerekmiyorsa 'StringComparer.OrdinalIgnoreCase' kullanmayı göz önünde bulundurun.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
         <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
-        <target state="needs-review-translation">Büyük/küçük harfe duyarsız karşılaştırma yapmak için 'string.Equals(string, StringComparison)' parametresini kullanmayı tercih edin</target>
+        <target state="translated">Büyük/küçük harfe duyarsız bir karşılaştırma gerçekleştirmek için 'string.Equals(string, StringComparison)' kullanmayı tercih edin ancak bunun davranışta küçük değişikliklere neden olabileceğini unutmayın. Bu nedenle, öneriyi uyguladıktan sonra mutlaka kapsamlı testler yapın veya kültürel açıdan hassas karşılaştırma gerekmiyorsa 'StringComparer.OrdinalIgnoreCase' kullanmayı göz önünde bulundurun</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3005,22 +3005,22 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">
         <source>Use 'SearchValues'</source>
-        <target state="new">Use 'SearchValues'</target>
+        <target state="translated">'SearchValues' kullan</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesDescription">
         <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
-        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <target state="translated">Önbelleğe alınmış bir 'SearchValues' örneğinin kullanımı, değerleri doğrudan 'IndexOfAny'/'ContainsAny' değerine geçmekten daha verimlidir.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesMessage">
         <source>Use a cached 'SearchValues' instance for improved searching performance</source>
-        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <target state="translated">Gelişmiş arama performansı için önbelleğe alınmış 'SearchValues' örneğini kullanın</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesTitle">
         <source>Use a cached 'SearchValues' instance</source>
-        <target state="new">Use a cached 'SearchValues' instance</target>
+        <target state="translated">Önbelleğe alınmış bir 'SearchValues' örneği kullan</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">

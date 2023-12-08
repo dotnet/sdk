@@ -925,12 +925,12 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="translated">"ConfigureResultitOptions.SuppressInternewing" wird nur mit dem nicht generischen Task und nicht mit einem Task&lt;TResult&gt; unterstützt.  Um es mit einem Task&lt;TResult&gt; zu verwenden, wandeln Sie zuerst in den Basistask um.</target>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
-        <target state="translated">"Configure OdbcitOptions.SuppressInternewing" wird nur mit dem nicht generischen Task unterstützt.</target>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
@@ -1920,7 +1920,7 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="needs-review-translation">"AsSpan" ist effizienter als "Substring". Im Gegensatz zu "Substring" führt "AsSpan" keine O(n)-Zeichenfolgenkopie durch und bietet daher konstante Kosten.</target>
+        <target state="new">'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
@@ -2200,7 +2200,7 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
         <source>The format argument is not a valid format string</source>
-        <target state="new">The format argument is not a valid format string</target>
+        <target state="translated">Das Formatargument ist keine gültige Formatzeichenfolge.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
@@ -2260,47 +2260,47 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
-        <target state="needs-review-translation">Vermeiden Sie das Aufrufen von "ToLower", "ToUpper", "ToLowerInvariant" und "ToUpperInvariant", um Zeichenfolgenvergleiche ohne Beachtung der Groß-/Kleinschreibung bei Verwendung von "CompareTo" durchzuführen, da sie zu einer Zuordnung führen. Verwenden Sie stattdessen "StringComparer", um Vergleiche ohne Beachtung der Groß-/Kleinschreibung durchzuführen.</target>
+        <target state="translated">Vermeiden Sie den Aufruf von "ToLower", "ToUpper", "ToLowerInvariant" und "ToUpperInvariant", um Zeichenfolgenvergleiche ohne Beachtung der Groß-/Kleinschreibung bei Verwendung von "CompareTo" durchzuführen, da sie zu einer Zuordnung führen. Verwenden Sie stattdessen "StringComparer", um Vergleiche ohne Beachtung der Groß-/Kleinschreibung durchzuführen. Der Wechsel zur Verwendung von "StringComparer" kann geringfügige Verhaltensänderungen verursachen. Daher ist es wichtig, nach der Anwendung des Vorschlags umfassende Tests durchzuführen. Wenn kein kulturabhängiger Vergleich erforderlich ist, sollten Sie außerdem die Verwendung von "StringComparer.OrdinalIgnoreCase" in Betracht ziehen.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
         <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
-        <target state="needs-review-translation">Verwenden Sie "StringComparer" vor, um einen Vergleich ohne Beachtung der Groß-/Kleinschreibung durchzuführen.</target>
+        <target state="translated">Verwenden Sie lieber "StringComparer", um einen Vergleich ohne Berücksichtigung der Groß-/Kleinschreibung durchzuführen. Beachten Sie jedoch, dass dies zu geringfügigen Verhaltensänderungen führen kann. Stellen Sie daher sicher, dass Sie nach dem Anwenden des Vorschlags gründlich testen. Falls kein kulturabhängiger Vergleich erforderlich ist, sollten Sie "StringComparer.OrdinalIgnoreCase" verwenden.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="needs-review-translation">Verwenden Sie die "string.{0}(string, StringComparison)"-Überladung</target>
+        <target state="translated">Verwenden Sie die "string.{0}(string, StringComparison)"-Überladung</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
-        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
+        <target state="translated">Vermeiden Sie den Aufruf von "ToLower", "ToUpper", "ToLowerInvariant" und "ToUpperInvariant", um Zeichenfolgenvergleiche ohne Beachtung der Groß-/Kleinschreibung durchzuführen, da sie zu einer Zuordnung führen. Rufen Sie stattdessen lieber die Methodenüberladungen von "Contains", "IndexOf" und "StartsWith" auf, die einen StringComparison-Enumerationswert verwenden, um Vergleiche ohne Beachtung der Groß-/Kleinschreibung durchzuführen. Der Wechsel zu einer Überladung, die einen "StringComparison" akzeptiert, kann geringfügige Verhaltensänderungen verursachen. Daher ist es wichtig, nach dem Anwenden des Vorschlags gründlich zu testen. Wenn kein kulturabhängiger Vergleich erforderlich ist, sollten Sie außerdem die Verwendung von "StringComparison.OrdinalIgnoreCase" in Betracht ziehen.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
         <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
-        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
+        <target state="translated">Beachten Sie jedoch, dass dies zu geringfügigen Änderungen im Verhalten führen kann. Stellen Sie daher sicher, dass Sie nach der Anwendung des Vorschlags gründlich testen, oder wenn kein kulturabhängiger Vergleich erforderlich ist, erwägen Sie die Verwendung von "StringComparison.OrdinalIgnoreCase". Überladung der Zeichenfolgenvergleichsmethode von "{0}" bevorzugen, die einen Enumerationswert "StringComparison" akzeptiert, um einen Vergleich ohne Berücksichtigung der Groß-/Kleinschreibung durchzuführen.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
         <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="needs-review-translation">"StringComparison"-Methodenüberladungen bevorzugen, um Zeichenfolgenvergleiche ohne Beachtung der Groß-/Kleinschreibung durchzuführen</target>
+        <target state="translated">"StringComparison"-Methodenüberladungen verwenden, um Zeichenfolgenvergleiche ohne Beachtung der Groß-/Kleinschreibung durchzuführen</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="needs-review-translation">Verwenden Sie "string.Equals(string, StringComparison)"</target>
+        <target state="translated">Verwenden Sie "string.Equals(string, StringComparison)"</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
-        <target state="needs-review-translation">Vermeiden Sie den Aufruf von "ToLower", "ToUpper", "ToLowerInvariant" und "ToUpperInvariant", um Zeichenfolgenvergleiche ohne Beachtung der Groß-/Kleinschreibung durchzuführen, wie in "string.ToLower() == Zeichenfolge. ToLower()", da sie zu einer Zuordnung führen. Verwenden Sie stattdessen "string.Equals(string, StringComparison)", um Vergleiche ohne Beachtung der Groß-/Kleinschreibung durchzuführen.</target>
+        <target state="translated">Vermeiden Sie den Aufruf von "ToLower", "ToUpper", "ToLowerInvariant" und "ToUpperInvariant", um Zeichenfolgenvergleiche ohne Beachtung der Groß-/Kleinschreibung durchzuführen, wie in "string.ToLower() == string.ToLower()", da sie zu einer Zuordnung führen. Verwenden Sie stattdessen "string.Equals(string, StringComparison)", um Vergleiche ohne Beachtung der Groß-/Kleinschreibung durchzuführen. Der Wechsel zu einer Überladung, die einen "StringComparison" akzeptiert, kann geringfügige Verhaltensänderungen verursachen. Daher ist es wichtig, nach dem Anwenden des Vorschlags gründlich zu testen. Wenn kein kulturabhängiger Vergleich erforderlich ist, sollten Sie außerdem die Verwendung von "StringComparison.OrdinalIgnoreCase" in Betracht ziehen.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
         <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
-        <target state="needs-review-translation">Verwenden Sie lieber "string.Equals(string, StringComparison)", um einen Vergleich ohne Berücksichtigung der Groß-/Kleinschreibung durchzuführen</target>
+        <target state="translated">Verwenden Sie lieber "string.Equals(string, StringComparison)", um einen Vergleich ohne Berücksichtigung der Groß-/Kleinschreibung durchzuführen. Beachten Sie jedoch, dass dies zu geringfügigen Verhaltensänderungen führen kann. Stellen Sie daher sicher, dass Sie nach dem Anwenden des Vorschlags gründlich testen. Falls kein kulturabhängiger Vergleich erforderlich ist, sollten Sie "StringComparison.OrdinalIgnoreCase" verwenden.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3005,22 +3005,22 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">
         <source>Use 'SearchValues'</source>
-        <target state="new">Use 'SearchValues'</target>
+        <target state="translated">"SearchValues" verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesDescription">
         <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
-        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <target state="translated">Die Verwendung einer zwischengespeicherten SearchValues-Instanz ist effizienter als die direkte Übergabe von Werten an "IndexOfAny"/"ContainsAny".</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesMessage">
         <source>Use a cached 'SearchValues' instance for improved searching performance</source>
-        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <target state="translated">Verwenden sie eine zwischengespeicherte SearchValues-Instanz, um die Suchleistung zu verbessern.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesTitle">
         <source>Use a cached 'SearchValues' instance</source>
-        <target state="new">Use a cached 'SearchValues' instance</target>
+        <target state="translated">Zwischengespeicherte SearchValues-Instanz verwenden</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">
