@@ -470,7 +470,55 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
-            outputDirectory.Should().NotHaveFile("hostfxr.dll"); // This file will only appear if SelfContained. 
+            outputDirectory.Should().NotHaveFile($"hostfxr{FileNameSuffixes.CurrentPlatform.DynamicLib}"); // This file will only appear if SelfContained.
+        }
+
+        [Fact]
+        public void It_builds_using_regular_apphost_with_PublishSingleFile()
+        {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+            var project = new TestProject()
+            {
+                IsExe = true,
+                TargetFrameworks = tfm,
+                AdditionalProperties = {
+                    { "PublishSingleFile", "true"},
+                    { "SelfContained", "true" } }
+            };
+            var asset = _testAssetsManager.CreateTestProject(project);
+
+            // Validate apphost is used, not singlefilehost
+            var command = new GetValuesCommand(Log,
+                Path.Combine(asset.Path, project.Name),
+                project.TargetFrameworks,
+                "AllItemsFullPathWithTargetPath",
+                GetValuesCommand.ValueType.Item);
+            command.DependsOnTargets = "GetCopyToOutputDirectoryItems";
+            command.MetadataNames.Add("TargetPath");
+            command.Execute().Should().Pass();
+
+            var itemsWithTargetPaths = command.GetValuesWithMetadata();
+            itemsWithTargetPaths.Should().NotContain((i) => i.value.EndsWith($"singlefilehost{Constants.ExeSuffix}"));
+            itemsWithTargetPaths.Should().Contain((i) =>
+                i.value.EndsWith($"apphost{Constants.ExeSuffix}")
+                && i.metadata["TargetPath"] == $"{project.Name}{Constants.ExeSuffix}");
+
+            // Validate it builds and runs
+            var buildCommand = new BuildCommand(asset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            string exePath = Path.Combine(
+                buildCommand.GetOutputDirectory(tfm, runtimeIdentifier: EnvironmentInfo.GetCompatibleRid(tfm)).FullName,
+                $"{project.Name}{Constants.ExeSuffix}");
+            new RunExeCommand(Log, exePath)
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("Hello World!");
         }
 
         [Theory]
