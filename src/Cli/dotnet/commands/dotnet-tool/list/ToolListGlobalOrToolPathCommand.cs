@@ -54,20 +54,18 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 toolPath = new DirectoryPath(toolPathOption);
             }
 
-            var table = new PrintableTable<IToolPackage>();
-
-            table.AddColumn(
-                LocalizableStrings.PackageIdColumn,
-                p => p.Id.ToString());
-            table.AddColumn(
-                LocalizableStrings.VersionColumn,
-                p => p.Version.ToNormalizedString());
-            table.AddColumn(
-                LocalizableStrings.CommandsColumn,
-                p => string.Join(CommandDelimiter, p.Commands.Select(c => c.Name)));
-
             var packageEnumerable = GetPackages(toolPath, packageId);
-            table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
+
+            var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption)?.Trim();
+            if (json.Equals(formatValue, StringComparison.OrdinalIgnoreCase))
+            {
+                PrintJson(packageEnumerable);
+            }
+            else
+            {
+                PrintTable(packageEnumerable);
+            }
+
             if (packageId.HasValue && !packageEnumerable.Any())
             {
                 // return 1 if target package was not found
@@ -106,6 +104,34 @@ namespace Microsoft.DotNet.Tools.Tool.List
                         ex.Message).Yellow());
                 return false;
             }
+        }
+
+        private static void PrintTable(IEnumerable<IToolPackage> packageEnumerable)
+        {
+            var table = new PrintableTable<IToolPackage>();
+
+            table.AddColumn(
+                LocalizableStrings.PackageIdColumn,
+                p => p.Id.ToString());
+            table.AddColumn(
+                LocalizableStrings.VersionColumn,
+                p => p.Version.ToNormalizedString());
+            table.AddColumn(
+                LocalizableStrings.CommandsColumn,
+                p => string.Join(CommandDelimiter, p.Commands.Select(c => c.Name)));
+
+            table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
+        }
+
+        private static void PrintJson(IEnumerable<IToolPackage> packageEnumerable)
+        {
+            var json = JsonSerializer.Serialize(packageEnumerable.Select(p => new
+            {
+                packageId = p.PackageId.ToString(),
+                version = p.Version.ToNormalizedString(),
+                commands = p.CommandNames.Select(c => c.Value)
+            }));
+            _reporter.WriteLine(json);
         }
     }
 }

@@ -23,6 +23,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
 
+        public static readonly CliOption<bool> ToolListFormatOption = ToolAppliedOption.ToolListFormatOption;
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -38,6 +40,8 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
             command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
             command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
+            // TODO: localized description
+            command.Options.Add(ToolListFormatOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
 
             command.SetAction((parseResult) => new ToolListCommand(parseResult).Execute());
 

@@ -30,14 +30,37 @@ namespace Microsoft.DotNet.Tools.Tool.List
 
         public override int Execute()
         {
-            var table = new PrintableTable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
             var packageIdArgument = _parseResult.GetValue(ToolListCommandParser.PackageIdArgument);
             PackageId? packageId = null;
             if (!string.IsNullOrWhiteSpace(packageIdArgument))
             {
                 packageId = new PackageId(packageIdArgument);
             }
+            var packageEnumerable = _toolManifestInspector.Inspect().Where(
+                (t) => PackageIdMatches(t.toolManifestPackage, packageId)
+            );
 
+            var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption)?.Trim();
+            if (json.Equals(formatValue, StringComparison.OrdinalIgnoreCase))
+            {
+                PrintJson(packageEnumerable);
+            }
+            else
+            {
+                PrintTable(packageEnumerable);
+            }
+
+            if (packageId.HasValue && !packageEnumerable.Any())
+            {
+                // return 1 if target package was not found
+                return 1;
+            }
+            return 0;
+        }
+
+        private static void PrintTable(IEnumerable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> packageEnumerable)
+        {
+            var table = new PrintableTable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
             table.AddColumn(
                 LocalizableStrings.PackageIdColumn,
                 p => p.toolManifestPackage.PackageId.ToString());
@@ -50,18 +73,19 @@ namespace Microsoft.DotNet.Tools.Tool.List
             table.AddColumn(
                 LocalizableStrings.ManifestFileColumn,
                 p => p.SourceManifest.Value);
-
-            var packageEnumerable = _toolManifestInspector.Inspect().Where(
-                 (t) => PackageIdMatches(t.toolManifestPackage, packageId)
-             );
             table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
+        }
 
-            if (packageId.HasValue && !packageEnumerable.Any())
+        private static void PrintJson(IEnumerable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> packageEnumerable)
+        {
+            var json = JsonSerializer.Serialize(packageEnumerable.Select(p => new
             {
-                // return 1 if target package was not found
-                return 1;
-            }
-            return 0;
+                packageId = p.toolManifestPackage.PackageId.ToString(),
+                version = p.toolManifestPackage.Version.ToNormalizedString(),
+                commands = p.toolManifestPackage.CommandNames.Select(c => c.Value),
+                manifest = p.SourceManifest.Value
+            }));
+            _reporter.WriteLine(json);
         }
 
         private bool PackageIdMatches(ToolManifestPackage package, PackageId? packageId)
