@@ -925,12 +925,12 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="translated">ConfigureAwaitOptions.SuppressThrowing se podporuje pouze u neobecných úloh, nikoli u Task&lt;TResult&gt;. Pokud ho chcete použít s task&lt;TResult&gt;, nejprve ho přetypujte na základní úlohu.</target>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
-        <target state="translated">ConfigureAwaitOptions.SuppressThrowing se podporuje pouze s neobecnou úlohou.</target>
+        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
@@ -1920,7 +1920,7 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="needs-review-translation">AsSpan je efektivnější než Substring. Substring provádí kopírování řetězce O(n), zatímco AsSpan ho neprovádí a má konstantní náklady.</target>
+        <target state="new">'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
@@ -2200,7 +2200,7 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsInvalidFormatMessage">
         <source>The format argument is not a valid format string</source>
-        <target state="new">The format argument is not a valid format string</target>
+        <target state="translated">Argument formátu není platný řetězec formátu.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideCorrectArgumentsToFormattingMethodsMessage">
@@ -2260,47 +2260,47 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons when using 'CompareTo', because they lead to an allocation. Instead, use 'StringComparer' to perform case-insensitive comparisons. Switching to using 'StringComparer' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'.</source>
-        <target state="needs-review-translation">Při použití CompareTo se vyhněte volání ToLower, ToUpper, ToLowerInvariant a ToUpperInvariant pro porovnávání řetězců bez rozlišení velikosti písmen, protože vedou k alokaci. Místo toho použijte StringComparer pro porovnávání bez ohledu na velikost písmen.</target>
+        <target state="translated">Vyhněte se volání „ToLower, ToUpper“, „ToLowerInvariant“ a „ToUpperInvariant“ k provádění porovnávání řetězců bez rozlišování velkých a malých písmen při použití „CompareTo“, protože vedou k přidělení. Místo toho k porovnání bez rozlišování malých a velkých písmen použijte „StringComparer“. Přechod na použití „StringComparer“ může způsobit drobné změny v chování, takže je důležité provést důkladné testování po použití návrhu. Pokud navíc není vyžadováno kulturní porovnání, zvažte použití „stringcomparer.OrdinalIgnoreCase“.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerMessage">
         <source>Prefer using 'StringComparer' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparer.OrdinalIgnoreCase'</source>
-        <target state="needs-review-translation">Preferovat použití StringComparer pro porovnávání bez rozlišování velkých a malých písmen</target>
+        <target state="translated">Pokud chcete provést porovnání bez rozlišování velkých a malých písmen, raději použijte „StringComparer“, ale mějte na paměti, že to může způsobit drobné změny v chování. Proto po použití návrhu nezapomeňte provést důkladné testování nebo pokud není vyžadováno kulturní porovnání, zvažte použití „stringcomparer.OrdinalIgnoreCase“.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparerStringComparisonCodeFixTitle">
         <source>Use the 'string.{0}(string, StringComparison)' overload</source>
-        <target state="needs-review-translation">Použijte přetížení string.{0}(string, StringComparison)</target>
+        <target state="translated">Použijte přetížení string.{0}(string, StringComparison)</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
-        <target state="new">Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons because they lead to an allocation. Instead, prefer calling the method overloads of 'Contains', 'IndexOf' and 'StartsWith' that take a 'StringComparison' enum value to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</target>
+        <target state="translated">Při provádění porovnávání řetězců bez rozlišování velkých a malých písmen se vyhněte volání „ToLower“, „ToUpper“, „ToLowerInvariant“ a „ToUpperInvariant“, protože vedou k přidělení. Místo toho upřednostňujte volání metody přetížení „Contains“, „IndexOf“ a „StartsWith“, která pro porovnání bez rozlišování malých a velkých písmen přijímají hodnotu výčtu „StringComparison“. Přechod na přetížení, které přijímá „StringComparison“, může způsobit drobné změny v chování, takže je důležité provést důkladné testování po použití návrhu. Pokud navíc není vyžadováno kulturní porovnání, zvažte použití „stringcomparison.OrdinalIgnoreCase“.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonMessage">
         <source>Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
-        <target state="new">Prefer the string comparison method overload of '{0}' that takes a 'StringComparison' enum value to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</target>
+        <target state="translated">Upřednostňujte metody přetížení porovnání řetězců „{0}“, které přebírá hodnotu výčtu „StringComparison“ k porovnání bez rozlišování velkých a malých písmen, ale mějte na paměti, že to může způsobit drobné změny chování. Proto po použití návrhu nezapomeňte provést důkladné testování nebo pokud není vyžadováno kulturní porovnání, zvažte použití metody „StringComparison.OrdinalIgnoreCase“.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringComparisonTitle">
         <source>Use the 'StringComparison' method overloads to perform case-insensitive string comparisons</source>
-        <target state="needs-review-translation">Preferovat přetížení metody StringComparison pro porovnávání řetězců bez ohledu na velikost písmen.</target>
+        <target state="translated">Použijte metodu přetížení „StringComparison“ k porovnání řetězců bez rozlišování velkých a malých písmen</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsCodeFixTitle">
         <source>Use 'string.Equals(string, StringComparison)'</source>
-        <target state="needs-review-translation">Použijte string.Equals(string, StringComparison)</target>
+        <target state="translated">Použijte string.Equals(string, StringComparison)</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsDescription">
         <source>Avoid calling 'ToLower', 'ToUpper', 'ToLowerInvariant' and 'ToUpperInvariant' to perform case-insensitive string comparisons, as in 'string.ToLower() == string.ToLower()', because they lead to an allocation. Instead, use 'string.Equals(string, StringComparison)' to perform case-insensitive comparisons. Switching to using an overload that takes a 'StringComparison' might cause subtle changes in behavior, so it's important to conduct thorough testing after applying the suggestion. Additionally, if a culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'.</source>
-        <target state="needs-review-translation">Vyhněte se volání ToLower, ToUpper, ToLowerInvariant a ToUpperInvariant k provádění porovnávání řetězců bez rozlišování velkých a malých písmen, jako v string.ToLower() == string.ToLower(), protože vedou k přidělení. Místo toho použijte string.Equals(string, StringComparison) pro porovnání bez rozlišování malých a velkých písmen.</target>
+        <target state="translated">Vyhněte se volání „ToLower“, „ToUpper“, „ToLowerInvariant“ a „ToUpperInvariant“ k provádění porovnávání řetězců bez rozlišování velkých a malých písmen, jako v „string.ToLower() == string.ToLower()“, protože vedou k přidělení. Místo toho pro porovnání bez rozlišování malých a velkých písmen použijte „string.Equals(string, StringComparison)“. Přechod na přetížení, které přijímá „StringComparison“, může způsobit drobné změny v chování, takže je důležité provést důkladné testování po použití návrhu. Pokud navíc není vyžadováno kulturní porovnání, zvažte použití „stringcomparison.OrdinalIgnoreCase“.</target>
         <note />
       </trans-unit>
       <trans-unit id="RecommendCaseInsensitiveStringEqualsMessage">
         <source>Prefer using 'string.Equals(string, StringComparison)' to perform a case-insensitive comparison, but keep in mind that this might cause subtle changes in behavior, so make sure to conduct thorough testing after applying the suggestion, or if culturally sensitive comparison is not required, consider using 'StringComparison.OrdinalIgnoreCase'</source>
-        <target state="needs-review-translation">Preferujte použití string.Equals(string, StringComparison) pro porovnání bez rozlišování velkých a malých písmen</target>
+        <target state="translated">Pro porovnání bez rozlišování velkých a malých písmen preferujte použití „string.Equals(string, StringComparison)“, ale mějte na paměti, že to může způsobit drobné změny v chování. Proto nezapomeňte provést důkladné testování po použití návrhu nebo pokud není vyžadováno kulturní porovnání, zvažte použití „stringComparison.OrdinalIgnoreCase“.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveRedundantCall">
@@ -3005,22 +3005,22 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="UseSearchValuesCodeFixTitle">
         <source>Use 'SearchValues'</source>
-        <target state="new">Use 'SearchValues'</target>
+        <target state="translated">Používat SearchValues</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesDescription">
         <source>Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</source>
-        <target state="new">Using a cached 'SearchValues' instance is more efficient than passing values to 'IndexOfAny'/'ContainsAny' directly.</target>
+        <target state="translated">Použití instance SearchValues uložené v mezipaměti je efektivnější než přímé předávání hodnot do funkcí IndexOfAny nebo ContainsAny.</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesMessage">
         <source>Use a cached 'SearchValues' instance for improved searching performance</source>
-        <target state="new">Use a cached 'SearchValues' instance for improved searching performance</target>
+        <target state="translated">Používat instanci SearchValues v mezipaměti pro lepší výkon vyhledávání</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSearchValuesTitle">
         <source>Use a cached 'SearchValues' instance</source>
-        <target state="new">Use a cached 'SearchValues' instance</target>
+        <target state="translated">Používat instanci SearchValues v mezipaměti</target>
         <note />
       </trans-unit>
       <trans-unit id="UseSecureCookiesASPNetCoreDescription">
