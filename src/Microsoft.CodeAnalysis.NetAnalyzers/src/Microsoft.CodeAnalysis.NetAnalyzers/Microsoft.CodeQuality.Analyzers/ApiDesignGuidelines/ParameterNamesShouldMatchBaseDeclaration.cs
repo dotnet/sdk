@@ -114,6 +114,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 IParameterSymbol currentParameter = methodSymbol.Parameters[i];
                 IParameterSymbol bestMatchParameter = bestMatch.Parameters[i];
+                if (bestMatchParameter.OriginalDefinition.Type is ITypeParameterSymbol)
+                {
+                    continue;
+                }
 
                 if (currentParameter.Name != bestMatchParameter.Name)
                 {
