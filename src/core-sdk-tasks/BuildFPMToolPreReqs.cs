@@ -101,6 +101,7 @@ namespace Microsoft.DotNet.Build.Tasks
             //      -a : architecture  --JSON
             //      -d : is for all dependent packages. This can be used multiple times to specify the dependencies of the package.   --JSON
             //      --rpm-os : the operating system to target this rpm  --Static
+            //      --rpm-digest : rpm digest algorithm  --Static
             //      --rpm-changelog : the changelog from FILEPATH contents  --ARG
             //      --rpm-summary : it is the RPM summary that shows in the Title   --JSON
             //      --description : it is the description for the package   --JSON
@@ -157,6 +158,7 @@ namespace Microsoft.DotNet.Build.Tasks
             }
 
             parameters.Add("--rpm-os linux");
+            parameters.Add("--rpm-digest sha256");
             parameters.Add(string.Concat("--rpm-changelog ",
                 EscapeArg(Path.Combine(InputDir, "templates", "changelog")))); // Changelog File
             parameters.Add(string.Concat("--rpm-summary ", EscapeArg(configJson.Short_Description)));
