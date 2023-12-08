@@ -295,7 +295,11 @@ namespace Microsoft.NET.Build.Tests
                 .CopyTestAsset("NetCoreCsharpAppReferenceCppCliLib")
                 .WithSource();
 
-            testAsset = WithProperties(testAsset, ("EnableManagedPackageReferenceSupport", "true"));
+            var intDir = Path.Combine(testAsset.Path, "NETCoreCppCliTest", "IntDir");
+
+            testAsset = WithProperties(testAsset,
+                ("EnableManagedPackageReferenceSupport", "true"),
+                ("IntermediateOutputPath", intDir));
 
             CreateGitFiles(testAsset.Path, "https://github.com/org/repo");
 
@@ -306,15 +310,34 @@ namespace Microsoft.NET.Build.Tests
 
             buildCommand.Execute("-p:Platform=x64").Should().Pass();
 
-            var outputDir = Path.Combine(testAsset.Path, "NETCoreCppCliTest", "x64", "Debug");
-            var sourceLinkFilePath = Path.Combine(outputDir, "NETCoreCppCliTest.sourcelink.json");
+            var sourceLinkFilePath = Path.Combine(intDir, "NETCoreCppCliTest.sourcelink.json");
             var actualContent = File.ReadAllText(sourceLinkFilePath, Encoding.UTF8);
             var expectedPattern = Path.Combine(testAsset.Path, "*").Replace("\\", "\\\\");
             var expectedSourceLink = $$$"""{"documents":{"{{{expectedPattern}}}":"https://raw.githubusercontent.com/org/repo/1200000000000000000000000000000000000000/*"}}""";
             Assert.Equal(expectedSourceLink, actualContent);
 
+            var outputDir = Path.Combine(testAsset.Path, "NETCoreCppCliTest", "x64", "Debug");
             var pdbText = File.ReadAllText(Path.Combine(outputDir, "NETCoreCppCliTest.pdb"), Encoding.UTF8);
             Assert.Contains(expectedSourceLink, pdbText);
+        }
+
+        [FullMSBuildOnlyFact]
+        public void LegacyDesktopWpf()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("DesktopWpf")
+                .WithSource();
+
+            CreateGitFiles(testAsset.Path, "https://github.com/org/repo");
+
+            var buildCommand = new BuildCommand(testAsset, relativePathToProject: "FxWpf")
+            {
+                WorkingDirectory = Path.Combine(testAsset.Path, "FxWpf")
+            };
+
+            buildCommand.Execute().Should().Pass();
+
+            Assert.True(File.Exists(Path.Combine(testAsset.Path, "obj", "net472", "MainWindow.g.cs")));
         }
     }
 }
