@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
             );
 
             var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption)?.Trim();
-            if (json.Equals(formatValue, StringComparison.OrdinalIgnoreCase))
+            if ("json".Equals(formatValue, StringComparison.OrdinalIgnoreCase))
             {
                 PrintJson(packageEnumerable);
             }

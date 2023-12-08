@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
             var packageEnumerable = GetPackages(toolPath, packageId);
 
             var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption)?.Trim();
-            if (json.Equals(formatValue, StringComparison.OrdinalIgnoreCase))
+            if ("json".Equals(formatValue, StringComparison.OrdinalIgnoreCase))
             {
                 PrintJson(packageEnumerable);
             }
@@ -127,9 +127,9 @@ namespace Microsoft.DotNet.Tools.Tool.List
         {
             var json = System.Text.Json.JsonSerializer.Serialize(packageEnumerable.Select(p => new
             {
-                packageId = p.PackageId.ToString(),
+                packageId = p.Id.ToString(),
                 version = p.Version.ToNormalizedString(),
-                commands = p.CommandNames.Select(c => c.Value)
+                commands = p.Commands.Select(c => c.Name)
             }));
             _reporter.WriteLine(json);
         }
