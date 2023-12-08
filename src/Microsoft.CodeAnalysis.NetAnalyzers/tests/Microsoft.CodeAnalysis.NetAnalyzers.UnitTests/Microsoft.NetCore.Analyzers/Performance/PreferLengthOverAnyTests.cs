@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.PreferLengthCountIsEmptyOverAnyAnalyzer,
@@ -253,6 +254,71 @@ public class MyCollection {
 }";
 
             return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
+        public Task WhenInExpressionTree_NoDiagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Collections.Generic;
+                                using System.Linq;
+                                using System.Linq.Expressions;
+
+                                public class Tests {
+                                    public void M() {
+                                        var array = new int[0];
+                                        Evaluate(() => array.Any());
+                                    }
+                                
+                                    private void Evaluate(Expression<Func<bool>> expression)
+                                    {
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
+        public Task WhenInFunc_Diagnostic()
+        {
+            const string code = """
+                                using System;
+                                using System.Collections.Generic;
+                                using System.Linq;
+                                using System.Linq.Expressions;
+
+                                public class Tests {
+                                    public void M() {
+                                        var array = new int[0];
+                                        Evaluate(() => {|#0:array.Any()|});
+                                    }
+                                
+                                    private void Evaluate(Func<bool> func)
+                                    {
+                                    }
+                                }
+                                """;
+            const string fixedCode = """
+                                using System;
+                                using System.Collections.Generic;
+                                using System.Linq;
+                                using System.Linq.Expressions;
+
+                                public class Tests {
+                                    public void M() {
+                                        var array = new int[0];
+                                        Evaluate(() => array.Length != 0);
+                                    }
+                                
+                                    private void Evaluate(Func<bool> func)
+                                    {
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
     }
 }
