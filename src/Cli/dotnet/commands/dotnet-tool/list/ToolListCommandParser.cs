@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
 
-        public static readonly CliOption<bool> ToolListFormatOption = ToolAppliedOption.ToolListFormatOption;
+        public static readonly CliOption<string> ToolListFormatOption = ToolAppliedOption.ToolListFormatOption;
 
         private static readonly CliCommand Command = ConstructCommand();
 
