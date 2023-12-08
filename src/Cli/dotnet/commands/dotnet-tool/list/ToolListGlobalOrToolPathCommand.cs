@@ -125,7 +125,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
 
         private static void PrintJson(IEnumerable<IToolPackage> packageEnumerable)
         {
-            var json = JsonSerializer.Serialize(packageEnumerable.Select(p => new
+            var json = System.Text.Json.JsonSerializer.Serialize(packageEnumerable.Select(p => new
             {
                 packageId = p.PackageId.ToString(),
                 version = p.Version.ToNormalizedString(),

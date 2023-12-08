@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
 
         private static void PrintJson(IEnumerable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> packageEnumerable)
         {
-            var json = JsonSerializer.Serialize(packageEnumerable.Select(p => new
+            var json = System.Text.Json.JsonSerializer.Serialize(packageEnumerable.Select(p => new
             {
                 packageId = p.toolManifestPackage.PackageId.ToString(),
                 version = p.toolManifestPackage.Version.ToNormalizedString(),
