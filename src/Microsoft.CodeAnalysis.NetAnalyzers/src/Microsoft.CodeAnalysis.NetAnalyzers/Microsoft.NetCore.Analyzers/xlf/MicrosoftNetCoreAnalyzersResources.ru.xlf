@@ -1619,7 +1619,7 @@ Widening and user defined conversions are not supported with generic types.</sou
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
-        <source>Use CreateEncryptor with the default IV </source>
+        <source>Use CreateEncryptor with the default IV</source>
         <target state="translated">Используйте CreateEncryptor с вектором инициализации по умолчанию. </target>
         <note />
       </trans-unit>

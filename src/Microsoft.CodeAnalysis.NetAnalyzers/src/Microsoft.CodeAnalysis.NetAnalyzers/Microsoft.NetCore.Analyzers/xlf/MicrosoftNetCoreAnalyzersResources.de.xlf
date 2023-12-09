@@ -1619,7 +1619,7 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
-        <source>Use CreateEncryptor with the default IV </source>
+        <source>Use CreateEncryptor with the default IV</source>
         <target state="translated">CreateEncryptor mit Standard-Initialisierungsvektoren verwenden</target>
         <note />
       </trans-unit>

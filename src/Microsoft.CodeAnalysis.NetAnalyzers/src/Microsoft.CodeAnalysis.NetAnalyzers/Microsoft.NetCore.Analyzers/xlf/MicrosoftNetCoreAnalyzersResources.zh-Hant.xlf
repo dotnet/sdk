@@ -1619,7 +1619,7 @@ Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isi
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
-        <source>Use CreateEncryptor with the default IV </source>
+        <source>Use CreateEncryptor with the default IV</source>
         <target state="translated">使用具有預設 IV 的 CreateEncryptor </target>
         <note />
       </trans-unit>

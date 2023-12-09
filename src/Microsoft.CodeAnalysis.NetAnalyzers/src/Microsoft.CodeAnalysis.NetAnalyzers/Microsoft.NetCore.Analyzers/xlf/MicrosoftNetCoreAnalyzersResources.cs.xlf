@@ -1619,7 +1619,7 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
-        <source>Use CreateEncryptor with the default IV </source>
+        <source>Use CreateEncryptor with the default IV</source>
         <target state="translated">Použít CreateEncryptor s výchozím inicializačním vektorem </target>
         <note />
       </trans-unit>

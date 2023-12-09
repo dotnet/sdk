@@ -1155,7 +1155,7 @@
     <value>Symmetric encryption uses non-default initialization vector, which could be potentially repeatable</value>
   </data>
   <data name="MaybeUseCreateEncryptorWithNonDefaultIV" xml:space="preserve">
-    <value>Use CreateEncryptor with the default IV </value>
+    <value>Use CreateEncryptor with the default IV</value>
   </data>
   <data name="MaybeUseCreateEncryptorWithNonDefaultIVMessage" xml:space="preserve">
     <value>The non-default initialization vector, which can be potentially repeatable, is used in the encryption. Ensure use the default one.</value>
