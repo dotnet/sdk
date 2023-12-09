@@ -34,7 +34,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
         internal const string StringIndexOfMethodName = "IndexOf";
         internal const string StringStartsWithMethodName = "StartsWith";
         internal const string StringCompareToMethodName = "CompareTo";
-        internal const string StringComparerCompareMethodName = "Compare";
         internal const string StringEqualsMethodName = "Equals";
         internal const string StringParameterName = "value";
         internal const string StringComparisonParameterName = "comparisonType";
@@ -211,12 +210,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return;
             }
 
+            ParameterInfo[] stringStringComparisonParameters = {
+                ParameterInfo.GetParameterInfo(stringType),
+                ParameterInfo.GetParameterInfo(stringComparisonType)
+            };
+            IMethodSymbol? containsStringWithStringComparisonMethod
+                = stringType.GetMembers(StringContainsMethodName).OfType<IMethodSymbol>().GetFirstOrDefaultMemberWithParameterInfos(stringStringComparisonParameters);
+
             // a.ToLower().Method(b.ToLower())
             context.RegisterOperationAction(context =>
             {
                 IInvocationOperation invocation = (IInvocationOperation)context.Operation;
                 AnalyzeInvocation(context, invocation, stringType,
-                    containsStringMethod, startsWithStringMethod, compareToStringMethod,
+                    containsStringMethod, containsStringWithStringComparisonMethod, startsWithStringMethod, compareToStringMethod,
                     indexOfStringMethod, indexOfStringInt32Method, indexOfStringInt32Int32Method);
             }, OperationKind.Invocation);
 
@@ -230,13 +236,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
         }
 
         private static void AnalyzeInvocation(OperationAnalysisContext context, IInvocationOperation invocation, INamedTypeSymbol stringType,
-            IMethodSymbol containsStringMethod, IMethodSymbol startsWithStringMethod, IMethodSymbol compareToStringMethod,
+            IMethodSymbol containsStringMethod, IMethodSymbol? containsStringWithStringComparisonMethod, IMethodSymbol startsWithStringMethod, IMethodSymbol compareToStringMethod,
             IMethodSymbol indexOfStringMethod, IMethodSymbol indexOfStringInt32Method, IMethodSymbol indexOfStringInt32Int32Method)
         {
             IMethodSymbol diagnosableMethod = invocation.TargetMethod;
 
             DiagnosticDescriptor? chosenRule;
-            if (diagnosableMethod.Equals(containsStringMethod) ||
+            if (diagnosableMethod.Equals(containsStringMethod) && containsStringWithStringComparisonMethod is not null ||
                 diagnosableMethod.Equals(startsWithStringMethod) ||
                 diagnosableMethod.Equals(indexOfStringMethod) ||
                 diagnosableMethod.Equals(indexOfStringInt32Method) ||
