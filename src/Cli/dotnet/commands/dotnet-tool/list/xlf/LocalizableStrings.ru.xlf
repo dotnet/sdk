@@ -76,7 +76,7 @@
       </trans-unit>
       <trans-unit id="ToolListFormatOptionDescription">
         <source>Specifies the output format, use json for JSON output format</source>
-        <target state="translated">Specifies the output format, use json for JSON output format</target>
+        <target state="new">Specifies the output format, use json for JSON output format</target>
         <note />
       </trans-unit>
     </body>
