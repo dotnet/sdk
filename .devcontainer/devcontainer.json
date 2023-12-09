@@ -1,0 +1,33 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v8.0/containers/dotnet
+{
+  "name": "dotnet",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      // The VARIANT here must align with a dotnet container image that
+      // is publicly available on https://mcr.microsoft.com/v2/vscode/devcontainers/dotnet/tags/list.
+      // We'll default to `latest` as the default. Generally, the .NET version that is baked
+      // into the image by default doesn't matter since we end up installing our own
+      // local version and using that by default in the container environment.
+      "VARIANT": "latest"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "EditorConfig.EditorConfig",
+        "DavidAnson.vscode-markdownlint"
+      ]
+    }
+  },
+  // Use 'postCreateCommand' to run commands after the container is created.
+  "onCreateCommand": "bash -i ${containerWorkspaceFolder}/.devcontainer/scripts/container-creation.sh",
+  // Add the locally installed dotnet to the path to ensure that it is activated
+  // This is needed so that things like the C# extension can resolve the correct SDK version
+  "remoteEnv": {
+    "PATH": "${containerWorkspaceFolder}/.dotnet:${containerEnv:PATH}",
+    "DOTNET_MULTILEVEL_LOOKUP": "0"
+  }
+}
