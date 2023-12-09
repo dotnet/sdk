@@ -23,13 +23,6 @@ namespace Microsoft.DotNet.Tools.Tool.Common
             Arity = ArgumentArity.ZeroOrOne
         };
 
-        public static CliOption<string> ToolListFormatOption = new("--format")
-        {
-            // TODO: need to be localized
-            HelpName = Install.LocalizableStrings.ToolPathOptionName,
-            Arity = ArgumentArity.ZeroOrOne
-        };
-
         internal static void EnsureNoConflictGlobalLocalToolPathOption(
             ParseResult parseResult,
             string message)

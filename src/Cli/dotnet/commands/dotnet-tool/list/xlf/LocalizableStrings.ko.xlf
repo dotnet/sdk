@@ -74,6 +74,11 @@
         <target state="translated">나열할 도구를 포함하는 디렉터리입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolListFormatOptionDescription">
+        <source>Specifies the output format, use json for JSON output format</source>
+        <target state="translated">Specifies the output format, use json for JSON output format</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
