@@ -50,15 +50,15 @@ namespace Microsoft.DotNet.Build.Tasks
 
             var ns = projectXml.Root.Name.Namespace;
 
-            var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();
-
-            var isNETServicing = IsNETServicing(propertyGroup.Element(ns + "NETCoreSdkVersion").Value);
+            var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();            
 
             propertyGroup.Element(ns + "NETCoreSdkVersion").Value = newSDKVersion;
 
             var originalBundledNETCoreAppPackageVersion =
                 propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
             propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value = microsoftNETCoreAppRefPackageVersion;
+
+            var isNETServicing = IsNETServicing(originalBundledNETCoreAppPackageVersion);
 
             void CheckAndReplaceElement(XElement element)
             {
@@ -122,9 +122,9 @@ namespace Microsoft.DotNet.Build.Tasks
         /// so there is no need to replace them.
         /// </summary>
         /// <returns></returns>
-        private static bool IsNETServicing(string sdkVersion)
+        private static bool IsNETServicing(string netVersion)
         {
-            var parsedSdkVersion = NuGet.Versioning.NuGetVersion.Parse(sdkVersion);
+            var parsedSdkVersion = NuGet.Versioning.NuGetVersion.Parse(netVersion);
 
             return parsedSdkVersion.IsPrerelease;
         }
