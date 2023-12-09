@@ -1,3 +1,3 @@
-# full tag list: https://mcr.microsoft.com/v2/vscode/devcontainers/dotnet/tags/list
+# https://github.com/devcontainers/images/tree/main/src/dotnet
 ARG VARIANT="8.0"
-FROM mcr.microsoft.com/vscode/devcontainers/dotnet:${VARIANT}
+FROM mcr.microsoft.com/devcontainers/dotnet:${VARIANT}
