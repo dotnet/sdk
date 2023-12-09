@@ -17,7 +17,7 @@
       <PkgInstallDirectory>/usr/local/share/dotnet</PkgInstallDirectory>
       <x64EmulationPkgInstallDirectory>/usr/local/share/dotnet/x64</x64EmulationPkgInstallDirectory>
 
-      <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)packaging/osx/clisdk</SdkPkgSourcesRootDirectory>
+      <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)../packaging/osx</SdkPkgSourcesRootDirectory>
       <SdkPkgScriptsDirectory>$(SdkPkgSourcesRootDirectory)/scripts</SdkPkgScriptsDirectory>
       <SdkPkgScriptTemplateFile>$(SdkPkgScriptsDirectory)/postinstall</SdkPkgScriptTemplateFile>
       <SdkPkgDestinationScriptsDirectory>$(PkgIntermediateDirectory)/scripts</SdkPkgDestinationScriptsDirectory>

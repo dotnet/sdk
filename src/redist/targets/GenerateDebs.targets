@@ -109,12 +109,12 @@
 
     <!-- debian_config.json -->
     <PropertyGroup>
-      <DebianConfigTemplateFile>$(MSBuildThisFileDirectory)packaging/deb/dotnet-debian_config.json</DebianConfigTemplateFile>
+      <DebianConfigTemplateFile>$(MSBuildThisFileDirectory)../packaging/deb/dotnet-debian_config.json</DebianConfigTemplateFile>
       <DebianConfigJsonFile>$(LayoutDirectory)debian_config.json</DebianConfigJsonFile>
     </PropertyGroup>
 
     <PropertyGroup>
-      <DebianPostinstTemplateFile>$(MSBuildThisFileDirectory)packaging/deb/postinst</DebianPostinstTemplateFile>
+      <DebianPostinstTemplateFile>$(MSBuildThisFileDirectory)../packaging/deb/postinst</DebianPostinstTemplateFile>
       <DebianPostinstFile>$(LayoutDirectory)debian/postinst</DebianPostinstFile>
     </PropertyGroup>
 

@@ -14,31 +14,32 @@
     <PropertyGroup>
       <CombinedFrameworkSdkHostBundleEngineName>$(ArtifactsTmpDir)/$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)-engine.exe</CombinedFrameworkSdkHostBundleEngineName>
 
-      <SdkGenerateMsiPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatemsi.ps1</SdkGenerateMsiPowershellScript>
-      <SdkPlaceholderGenerateMsiPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatesdkplaceholdermsi.ps1</SdkPlaceholderGenerateMsiPowershellScript>
-      <SdkStableFileIdForApphostTransform>$(MSBuildThisFileDirectory)packaging/windows/clisdk/stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
-      <SdkGenerateBundlePowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatebundle.ps1</SdkGenerateBundlePowershellScript>
-      <GenerateNupkgPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatenupkg.ps1</GenerateNupkgPowershellScript>
+      <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)../packaging/windows</SdkPkgSourcesRootDirectory>
+      <SdkGenerateMsiPowershellScript>$(SdkPkgSourcesRootDirectory)/generatemsi.ps1</SdkGenerateMsiPowershellScript>
+      <SdkPlaceholderGenerateMsiPowershellScript>$(SdkPkgSourcesRootDirectory)/generatesdkplaceholdermsi.ps1</SdkPlaceholderGenerateMsiPowershellScript>
+      <SdkStableFileIdForApphostTransform>$(SdkPkgSourcesRootDirectory)/stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
+      <SdkGenerateBundlePowershellScript>$(SdkPkgSourcesRootDirectory)/generatebundle.ps1</SdkGenerateBundlePowershellScript>
+      <GenerateNupkgPowershellScript>$(SdkPkgSourcesRootDirectory)/generatenupkg.ps1</GenerateNupkgPowershellScript>
 
       <FinalizerExe>$(ArtifactsDir)bin/finalizer/$(Architecture)/$(Configuration)/bin/finalizer.exe</FinalizerExe>
 
-      <ToolsetInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.NetCore.Toolset.nuspec</ToolsetInstallerNuspecFile>
+      <ToolsetInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.Toolset.nuspec</ToolsetInstallerNuspecFile>
       <ToolsetInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.Toolset.$(Architecture).$(FullNugetVersion).nupkg</ToolsetInstallerNupkgFile>
-      <SdkPlaceholderInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.NetCore.SdkPlaceholder.nuspec</SdkPlaceholderInstallerNuspecFile>
+      <SdkPlaceholderInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.SdkPlaceholder.nuspec</SdkPlaceholderInstallerNuspecFile>
       <SdkPlaceholderInstallerNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.NetCore.SdkPlaceholder.$(Architecture).$(FullNugetVersion).nupkg</SdkPlaceholderInstallerNupkgFile>
-      <VSToolsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Tools.Net.Core.SDK.nuspec</VSToolsNuspecFile>
+      <VSToolsNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Tools.Net.Core.SDK.nuspec</VSToolsNuspecFile>
       <VSToolsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</VSToolsNupkgFile>
 
       <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/$(Configuration)</SdkResolverLayoutPath>
-      <VSToolsResolverNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Tools.Net.Core.SDK.Resolver.nuspec</VSToolsResolverNuspecFile>
+      <VSToolsResolverNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Tools.Net.Core.SDK.Resolver.nuspec</VSToolsResolverNuspecFile>
       <VSToolsResolverNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.Resolver.nupkg</VSToolsResolverNupkgFile>
 
-      <SdkMSBuildExtensionsNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.nuspec</SdkMSBuildExtensionsNuspecFile>
+      <SdkMSBuildExtensionsNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.nuspec</SdkMSBuildExtensionsNuspecFile>
       <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
 
       <VSTemplateLocatorLayoutPath>$(ArtifactsDir)bin/VSTemplateLocator/Debug</VSTemplateLocatorLayoutPath>
-      <VSTemplateLocatorNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
+      <VSTemplateLocatorNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
       <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
 
       <!-- Temp directory for light command layouts -->
@@ -172,7 +173,7 @@
     <CreateLightCommandPackageDrop
       LightCommandWorkingDir="$(LightCommandObjDir)"
       OutputFolder="$(LightCommandPackagesDir)"
-      AdditionalBasePaths="$(MSBuildThisFileDirectory)packaging\windows\clisdk"
+      AdditionalBasePaths="$(SdkPkgSourcesRootDirectory)"
       NoLogo="true"
       Cultures="en-us"
       InstallerFile="$(SdkMSIInstallerFile)"
@@ -212,7 +213,7 @@
       InstallerFile="$(SdkPlaceholderMSIInstallerFile)"
       WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
       WixSrcFiles="@(SdkPlaceholdMsiWixSrcFiles)"
-      AdditionalBasePaths="$(MSBuildThisFileDirectory)packaging/windows/clisdk">
+      AdditionalBasePaths="$(SdkPkgSourcesRootDirectory)">
       <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
   </Target>
@@ -256,7 +257,7 @@
 
   <Target Name="SetupTemplatesMsis">
     <PropertyGroup>
-      <TemplatesGenerateMsiPowershellScript>$(MSBuildThisFileDirectory)packaging/windows/clisdk/generatetemplatesmsi.ps1</TemplatesGenerateMsiPowershellScript>
+      <TemplatesGenerateMsiPowershellScript>$(SdkPkgSourcesRootDirectory)/generatetemplatesmsi.ps1</TemplatesGenerateMsiPowershellScript>
     </PropertyGroup>
 
     <ItemGroup>
@@ -384,7 +385,7 @@
       InstallerFile="$(CombinedFrameworkSdkHostMSIInstallerFile)"
       WixExtensions="WixBalExtension;WixUtilExtension;WixTagExtension"
       WixSrcFiles="@(BundleMsiWixSrcFiles)"
-      AdditionalBasePaths="$(MSBuildThisFileDirectory)packaging/windows/clisdk">
+      AdditionalBasePaths="$(SdkPkgSourcesRootDirectory)">
       <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
     </CreateLightCommandPackageDrop>
   </Target>
@@ -442,7 +443,7 @@
 
   <Target Name="SetupTemplatesNupkgs">
     <PropertyGroup>
-      <TemplatesInstallerNuspecFile>$(MSBuildThisFileDirectory)packaging/windows/clisdk/VS.Redist.Common.NetCore.Templates.nuspec</TemplatesInstallerNuspecFile>
+      <TemplatesInstallerNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.NetCore.Templates.nuspec</TemplatesInstallerNuspecFile>
     </PropertyGroup>
 
     <ItemGroup>

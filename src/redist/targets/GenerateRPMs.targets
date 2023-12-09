@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <RpmConfigJsonName>rpm_config.json</RpmConfigJsonName>
-    <TemplatesDir>$(MSBuildThisFileDirectory)packaging/rpm/templates</TemplatesDir>
-    <ScriptsDir>$(MSBuildThisFileDirectory)packaging/rpm/scripts</ScriptsDir>
+    <TemplatesDir>$(MSBuildThisFileDirectory)../packaging/rpm/templates</TemplatesDir>
+    <ScriptsDir>$(MSBuildThisFileDirectory)../packaging/rpm/scripts</ScriptsDir>
     <AfterInstallHostScriptName>after_install_host.sh</AfterInstallHostScriptName>
   </PropertyGroup>
 
@@ -225,7 +225,7 @@
       <!-- Need to acquire manpage files from CLI repo: https://github.com/dotnet/cli/issues/10266 -->
       <ManPagesDir>$(RepoRoot)/Documentation/manpages</ManPagesDir>
       <EndToEndTestProject>$(RepoRoot)/test/EndToEnd/EndToEnd.csproj</EndToEndTestProject>
-      <ConfigJsonFile>$(MSBuildThisFileDirectory)packaging/rpm/dotnet-config.json</ConfigJsonFile>
+      <ConfigJsonFile>$(MSBuildThisFileDirectory)../packaging/rpm/dotnet-config.json</ConfigJsonFile>
       <RpmIntermediatesDir>$(IntermediateOutputPath)$(SdkRpmPackageName)/$(RpmPackageVersion)</RpmIntermediatesDir>
       <RpmTestResultsXmlFile>$(RpmIntermediatesDir)/rpm-testResults.xml</RpmTestResultsXmlFile>
       <RpmInstalledDirectory>/usr/share/dotnet</RpmInstalledDirectory>

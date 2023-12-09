@@ -86,12 +86,12 @@ src/fsharp/setup/resources/eula/*.rtf
 
 # False positive
 src/installer/src/core-sdk-tasks/BuildFPMToolPreReqs.cs|json
-src/installer/src/redist/targets/packaging/osx/clisdk/resources/en.lproj/welcome.html|cecill-c
+src/installer/src/redist/packaging/osx/resources/en.lproj/welcome.html|cecill-c
 src/installer/THIRD-PARTY-NOTICES|proprietary-license
 
 # Configuration, doesn't apply to source directly
 src/installer/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
-src/installer/src/redist/targets/packaging/**/*.json
+src/installer/src/redist/packaging/**/*.json
 
 #
 # msbuild
