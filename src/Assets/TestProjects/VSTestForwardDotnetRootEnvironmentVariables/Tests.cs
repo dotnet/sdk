@@ -13,7 +13,7 @@ namespace TestNamespace
         [TestMethod]
         public void TestForwardDotnetRootEnvironmentVariables()
         {
-            // This project is compiled, and executed by the tests in "src/Tests/dotnet-test.Tests/GivenDotnetTestForwardDotnetRootEnvironmentVariables.cs"
+            // This project is compiled, and executed by the tests in "test/dotnet-test.Tests/GivenDotnetTestForwardDotnetRootEnvironmentVariables.cs"
             foreach (DictionaryEntry env in Environment.GetEnvironmentVariables())
             {
                 if (env.Key.ToString().Contains("VSTEST_WINAPPHOST_"))
