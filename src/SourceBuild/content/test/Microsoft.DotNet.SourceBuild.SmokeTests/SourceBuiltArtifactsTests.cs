@@ -56,7 +56,7 @@ public class SourceBuiltArtifactsTests : SdkTests
             DirectoryInfo sdkDir = new DirectoryInfo(Path.Combine(outputDir, "sdk"));
             string sdkVersionPath = sdkDir.GetFiles(".version", SearchOption.AllDirectories).Single().FullName;
             string[] sdkVersionLines = File.ReadAllLines(Path.Combine(outputDir, sdkVersionPath));
-            string expectedSdkVersion = sdkVersionLines[1];
+            string expectedSdkVersion = sdkVersionLines[3];  // Get the unique, non-stable, SDK version
 
             Assert.Equal(expectedSdkVersion, sdkVersion);
         }
