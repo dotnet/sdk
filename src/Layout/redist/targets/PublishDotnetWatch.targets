@@ -14,12 +14,17 @@
         To reduce the size of the SDK, we use the compiler dependencies that are located in the `Roslyn/bincore` location
         instead of shipping our own copies in the dotnet-watch tool. These assemblies will be resolved by path in the
         dotnet-watch executable.
+
+        We make an exception for the Microsoft.CodeAnalysis binaries deployed with the MSBuildWorkspace BuildHosts, since those don't
+        have any logic to pick up Roslyn from another location. Those can be addressed a different way which tracked in
+        https://github.com/dotnet/roslyn/issues/70945.
       -->
       <_DotnetWatchInputFile Include="@(_DotnetWatchBuildOutput)"
-                             Condition="'%(Filename)' != 'Microsoft.CodeAnalysis' and
-                                        '%(Filename)' != 'Microsoft.CodeAnalysis.resources' and
-                                        '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp' and 
-                                        '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp.resources'"/>
+                             Condition="('%(Filename)' != 'Microsoft.CodeAnalysis' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.resources' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp.resources') or
+                                        $([MSBuild]::ValueOrDefault('%(FullPath)', '').Contains('BuildHost'))" />
     </ItemGroup>
   </Target>
 

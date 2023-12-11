@@ -280,7 +280,7 @@ dotnet_diagnostic.IDE0200.severity = none
 dotnet_diagnostic.IDE0240.severity = warning
 
 # Additional rules for template engine source code
-[src/**{Microsoft.TemplateEngine.*,dotnet-new?*}/**.cs]
+[{src,test}/**{Microsoft.TemplateEngine.*,dotnet-new?*}/**.cs]
 # Default analyzed API surface = 'public' (public APIs)
 dotnet_code_quality.api_surface = public
 # Provide ObsoleteAttribute message
@@ -445,7 +445,7 @@ dotnet_diagnostic.SA1642.severity = none
 dotnet_diagnostic.SA1649.severity = none
 
 # Disable some StyleCop rules for test common Program.cs that is linked to test project of template engine
-[src/Tests/Common/Program.cs]
+[test/Common/Program.cs]
 # Declare types in namespaces
 dotnet_diagnostic.CA1050.severity = none
 # Elements should be documented
@@ -456,7 +456,7 @@ dotnet_diagnostic.SA1601.severity = none
 dotnet_diagnostic.SA1633.severity = none
 
 # Additional rules for test source code for template engine
-[src/Tests/{Microsoft.TemplateEngine.*,dotnet-new.Tests}/**.cs]
+[test/{Microsoft.TemplateEngine.*,dotnet-new.Tests}/**.cs]
 # Test methods should not be skipped
 dotnet_diagnostic.xUnit1004.severity = warning
 # Elements should appear in the correct order
@@ -506,5 +506,5 @@ dotnet_diagnostic.IDE0040.severity = warning
 [*.txt]
 insert_final_newline = false
 
-[src/Tests/dotnet-new.Tests/**/Approvals/**]
+[test/dotnet-new.Tests/**/Approvals/**]
 trim_trailing_whitespace = false

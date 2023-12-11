@@ -174,7 +174,12 @@ namespace Microsoft.DotNet.Watcher
             var projectGraph = TryReadProject(projectFile, options);
 
             bool enableHotReload;
-            if (options.NoHotReload)
+            if (options.Command != "run")
+            {
+                _reporter.Verbose($"Command '{options.Command}' does not support Hot Reload.");
+                enableHotReload = false;
+            }
+            else if (options.NoHotReload)
             {
                 _reporter.Verbose("Hot Reload disabled by command line switch.");
                 enableHotReload = false;

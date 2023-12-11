@@ -18,7 +18,7 @@ REM use build env to have stage 0 dotnet on the PATH
 .\artifacts\sdk-build-env.bat
 
 REM run the special test target CreateLocalHelixTestLayout. To have the test layout created on disk.
-dotnet msbuild /restore /t:CreateLocalHelixTestLayout .\src\Tests\UnitTests.proj /p:creator=dotnetsdkdev  /p:_CustomHelixTargetQueue=Windows.Server.Amd64.VS2019.Pre.Open /bl
+dotnet msbuild /restore /t:CreateLocalHelixTestLayout .\test\UnitTests.proj /p:creator=dotnetsdkdev  /p:_CustomHelixTargetQueue=Windows.Server.Amd64.VS2019.Pre.Open /bl
 ```
 
 Copy the result of `artifacts\bin\localHelixTestLayout` to another directory or VM. For example to `C:\helix\localHelixTestLayout`. See "Folders under localHelixTestLayout" for the content. This is _correlation_ payload in helix term.
@@ -26,7 +26,7 @@ Copy the result of `artifacts\bin\localHelixTestLayout` to another directory or 
 Publish the test project you want to repro. For example Microsoft.NET.Build.Tests.
 
 ```cmd
-dotnet publish src\Tests\Microsoft.NET.Build.Tests\
+dotnet publish test\Microsoft.NET.Build.Tests\
 ```
 
 The output is in `artifacts\bin\Tests\Microsoft.NET.Build.Tests\Debug\publish`. Copy this folder to another directory or VM. For example `C:\helix\payload-dir`. This is the "workitem payload" in helix term.
@@ -64,4 +64,4 @@ Due to Helix long path problem. The folders under localHelixTestLayout all have 
 
 - New test environment variable introduced has not been reflected in RunTestsOnHelix.cmd.
 
-- To test out changes to the Helix tasks, you can run the unit test project directly: `dotnet -t:Test .\src\Tests\UnitTests.proj /p:_CustomHelixTargetQueue=foo /bl` It won't be able to push the files into helix but it will let you view what helix work items are getting created.
+- To test out changes to the Helix tasks, you can run the unit test project directly: `dotnet -t:Test .\test\UnitTests.proj /p:_CustomHelixTargetQueue=foo /bl` It won't be able to push the files into helix but it will let you view what helix work items are getting created.
