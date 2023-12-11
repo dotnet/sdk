@@ -2,6 +2,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.RecommendCaseInsensitiveStringComparisonAnalyzer,
@@ -368,6 +369,66 @@ class C
 }}";
 
             await VerifyFixCSharpAsync(originalCode, originalCode);
+        }
+
+        [Fact, WorkItem(7053, "https://github.com/dotnet/roslyn-analyzers/issues/7053")]
+        public Task Net48_Contains_NoDiagnostic()
+        {
+            const string code = """
+                                using System;
+
+                                class C
+                                {
+                                    void M(string s)
+                                    {
+                                        s.ToUpperInvariant().Contains("ABC");
+                                    }
+                                }
+                                """;
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net48.Default,
+                MarkupOptions = MarkupOptions.UseFirstDescriptor
+            }.RunAsync();
+        }
+
+        [Theory, WorkItem(7053, "https://github.com/dotnet/roslyn-analyzers/issues/7053")]
+        [InlineData("StartsWith")]
+        [InlineData("IndexOf")]
+        public Task Net48_Diagnostic(string method)
+        {
+            var code = $$"""
+                         using System;
+
+                         class C
+                         {
+                             void M(string s)
+                             {
+                                 [|s.ToUpperInvariant().{{method}}("ABC")|];
+                             }
+                         }
+                         """;
+            var fixedCode = $$"""
+                              using System;
+
+                              class C
+                              {
+                                  void M(string s)
+                                  {
+                                      s.{{method}}("ABC", StringComparison.InvariantCultureIgnoreCase);
+                                  }
+                              }
+                              """;
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net48.Default,
+                MarkupOptions = MarkupOptions.UseFirstDescriptor
+            }.RunAsync();
         }
 
         private async Task VerifyNoDiagnosticCSharpAsync(string originalSource)
