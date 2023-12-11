@@ -1620,7 +1620,7 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
         <source>Use CreateEncryptor with the default IV</source>
-        <target state="translated">Usa CreateEncryptor con il vettore di inizializzazione predefinito </target>
+        <target state="new">Use CreateEncryptor with the default IV</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">

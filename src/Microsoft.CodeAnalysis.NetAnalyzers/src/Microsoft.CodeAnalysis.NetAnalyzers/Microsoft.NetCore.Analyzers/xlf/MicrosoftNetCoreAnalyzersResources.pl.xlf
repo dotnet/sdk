@@ -1620,7 +1620,7 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
         <source>Use CreateEncryptor with the default IV</source>
-        <target state="translated">Użyj metody CreateEncryptor z domyślnym wektorem inicjowania</target>
+        <target state="new">Use CreateEncryptor with the default IV</target>
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIVMessage">
