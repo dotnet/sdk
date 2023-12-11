@@ -4,7 +4,6 @@
   </PropertyGroup>
   <ItemGroup>
     <BundledManifests Include="Microsoft.NET.Sdk.Android" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinAndroidWorkloadManifestVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
-    <BundledManifests Include="Microsoft.NET.Sdk.Aspire" FeatureBand="$(AspireFeatureBand)" Version="$(AspireWorkloadManifestVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <BundledManifests Include="Microsoft.NET.Sdk.iOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinIOSWorkloadManifestVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <BundledManifests Include="Microsoft.NET.Sdk.MacCatalyst" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacCatalystWorkloadManifestVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <BundledManifests Include="Microsoft.NET.Sdk.macOS" FeatureBand="$(MauiFeatureBand)" Version="$(XamarinMacOSWorkloadManifestVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
@@ -19,6 +18,7 @@
     <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net6" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net7" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net8" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Aspire" FeatureBand="$(AspireFeatureBand)" Version="$(AspireWorkloadManifestVersion)" />
   </ItemGroup>
 
   <!-- Calculate NuGet package IDs for bundled manifests -->

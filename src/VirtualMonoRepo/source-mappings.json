@@ -61,6 +61,13 @@
             ]
         },
         {
+            "name": "aspire",
+            "defaultRemote": "https://github.com/dotnet/aspire",
+            "exclude": [
+                "src/Aspire.Dashboard/**/*"
+            ]
+        },
+        {
             "name": "aspnetcore",
             "defaultRemote": "https://github.com/dotnet/aspnetcore",
             "exclude": [
