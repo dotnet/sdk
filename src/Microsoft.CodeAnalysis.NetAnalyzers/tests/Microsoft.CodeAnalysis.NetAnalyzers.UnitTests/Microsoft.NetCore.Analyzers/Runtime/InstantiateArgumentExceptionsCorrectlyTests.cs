@@ -593,6 +593,35 @@ End Class");
                End Class");
         }
 
+        [Fact, WorkItem(6863, "https://github.com/dotnet/roslyn-analyzers/issues/6863")]
+        public async Task ArgumentException_MessageStartWithParameterNameFollowedByPunctuation_DoesNotWarnAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+                public class Class
+                {
+                    public void Test1(string first)
+                    {
+                        throw new System.ArgumentException(""first.Length is incorrect"", nameof(first));
+                    }
+
+                    public void Test2(string first)
+                    {
+                        throw new System.ArgumentException(""first[0] is incorrect"", nameof(first));
+                    }
+                }");
+
+            await VerifyVB.VerifyAnalyzerAsync(@"
+               Public Class [MyClass]
+                   Public Sub Test1(first As String)
+                       Throw New System.ArgumentException(""first.Length is incorrect"", NameOf(first))
+                   End Sub
+
+                   Public Sub Test2(first As String)
+                       Throw New System.ArgumentException(""first(0) is incorrect"", NameOf(first))
+                   End Sub
+               End Class");
+        }
+
         [Fact]
         public async Task ArgumentException_GenericParameterName_DoesNotWarnAsync()
         {

@@ -150,15 +150,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             string stringArgument,
             OperationAnalysisContext context)
         {
-            bool matchesParameter = MatchesParameter(targetSymbol, creation, stringArgument);
-
-            if (IsMessage(parameter) && matchesParameter)
+            if (IsMessage(parameter) && MatchesParameterStrict(targetSymbol, creation, stringArgument))
             {
                 var dictBuilder = ImmutableDictionary.CreateBuilder<string, string?>();
                 dictBuilder.Add(MessagePosition, parameter.Ordinal.ToString(CultureInfo.InvariantCulture));
                 return context.Operation.CreateDiagnostic(RuleIncorrectMessage, dictBuilder.ToImmutable(), targetSymbol.Name, stringArgument, parameter.Name, creation.Type!.Name);
             }
-            else if (HasParameters(targetSymbol) && IsParameterName(parameter) && !matchesParameter)
+
+            if (HasParameters(targetSymbol) && IsParameterName(parameter) && !MatchesParameterRelax(targetSymbol, creation, stringArgument))
             {
                 // Allow argument exceptions in accessors to use the associated property symbol name.
                 if (!MatchesAssociatedSymbol(targetSymbol, stringArgument))
@@ -202,9 +201,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return false;
         }
 
-        private static bool MatchesParameter(ISymbol? symbol, IObjectCreationOperation creation, string stringArgumentValue)
+        private static bool MatchesParameterStrict(ISymbol? symbol, IObjectCreationOperation creation, string stringArgumentValue)
         {
-            if (MatchesParameterCore(symbol, stringArgumentValue))
+            return MatchesParameterCore(symbol, creation, stringArgumentValue, strict: true);
+        }
+
+        private static bool MatchesParameterRelax(ISymbol? symbol, IObjectCreationOperation creation, string stringArgumentValue)
+        {
+            return MatchesParameterCore(symbol, creation, stringArgumentValue, strict: false);
+        }
+
+        private static bool MatchesParameterCore(ISymbol? symbol, IObjectCreationOperation creation, string stringArgumentValue, bool strict)
+        {
+            if (MatchesParameterCore(symbol, stringArgumentValue, strict))
             {
                 return true;
             }
@@ -224,7 +233,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         break;
                 }
 
-                if (symbol != null && MatchesParameterCore(symbol, stringArgumentValue))
+                if (symbol != null && MatchesParameterCore(symbol, stringArgumentValue, strict))
                 {
                     return true;
                 }
@@ -235,7 +244,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return false;
         }
 
-        private static bool MatchesParameterCore(ISymbol? symbol, string stringArgumentValue)
+        private static bool MatchesParameterCore(ISymbol? symbol, string stringArgumentValue, bool strict)
         {
             foreach (IParameterSymbol parameter in symbol.GetParameters())
             {
@@ -245,13 +254,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return true;
                 }
 
-                // If the string argument begins with the parameter name followed by punctuation, it's also considered a match.
-                // e.g. "arg.Length", "arg[0]", etc.
-                if (stringArgumentValue.Length > parameter.Name.Length &&
-                    stringArgumentValue.StartsWith(parameter.Name, StringComparison.Ordinal) &&
-                    char.IsPunctuation(stringArgumentValue, parameter.Name.Length))
+                if (!strict)
                 {
-                    return true;
+                    // If the string argument begins with the parameter name followed by punctuation, it's also considered a match.
+                    // e.g. "arg.Length", "arg[0]", etc.
+                    if (stringArgumentValue.Length > parameter.Name.Length &&
+                        stringArgumentValue.StartsWith(parameter.Name, StringComparison.Ordinal) &&
+                        char.IsPunctuation(stringArgumentValue, parameter.Name.Length))
+                    {
+                        return true;
+                    }
                 }
             }
 
