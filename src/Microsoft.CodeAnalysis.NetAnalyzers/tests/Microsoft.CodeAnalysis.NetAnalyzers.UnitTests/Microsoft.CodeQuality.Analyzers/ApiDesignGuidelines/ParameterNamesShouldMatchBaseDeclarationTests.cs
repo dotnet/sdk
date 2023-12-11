@@ -612,6 +612,66 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                           End Class");
         }
 
+        [Fact]
+        public Task DontWarnWhenImplementingGenericParameterInInterface()
+        {
+            const string code = """
+                                public interface IService<TEntity>
+                                {
+                                    void Update(TEntity entity);
+                                }
+                                
+                                public class User {}
+                                
+                                public class UserService : IService<User>
+                                {
+                                    public void Update(User user) {}
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public Task DontWarnWhenImplementingGenericParameterInBaseClass()
+        {
+            const string code = """
+                                public class BaseService<TEntity>
+                                {
+                                    public virtual void Update(TEntity entity) {}
+                                }
+
+                                public class User {}
+
+                                public class UserService : BaseService<User>
+                                {
+                                    public override void Update(User user) {}
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact]
+        public Task DontWarnWhenImplementingGenericParameterInAbstractBaseClass()
+        {
+            const string code = """
+                                public abstract class BaseService<TEntity>
+                                {
+                                    public abstract void Update(TEntity entity);
+                                }
+
+                                public class User {}
+
+                                public class UserService : BaseService<User>
+                                {
+                                    public override void Update(User user) {}
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string violatingMember, string violatingParameter, string baseParameter, string baseMember)
 #pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic()
