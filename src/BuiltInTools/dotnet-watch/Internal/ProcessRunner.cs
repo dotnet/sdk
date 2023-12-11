@@ -65,8 +65,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 stopwatch.Start();
                 process.Start();
 
-                var args = processSpec.EscapedArguments ?? string.Join(" ", processSpec.Arguments ?? Array.Empty<string>());
-                _reporter.Verbose($"Started '{processSpec.Executable}' '{args}' with process id {process.Id}", emoji: "🚀");
+                _reporter.Verbose($"Started '{processSpec.Executable}' with arguments '{processSpec.GetArgumentsDisplay()}': process id {process.Id}", emoji: "🚀");
 
                 if (readOutput)
                 {
