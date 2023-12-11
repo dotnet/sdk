@@ -235,7 +235,7 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "sln", "add", "ConsoleApp\\ConsoleApp.csproj")
+        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("ConsoleApp", "ConsoleApp.csproj"))
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
@@ -246,7 +246,7 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "sln", "add", "WebApp\\WebApp.csproj")
+        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("WebApp", "WebApp.csproj"))
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
