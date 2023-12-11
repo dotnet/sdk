@@ -6159,7 +6159,7 @@
         },
         "CA5402": {
           "id": "CA5402",
-          "shortDescription": "Use CreateEncryptor with the default IV ",
+          "shortDescription": "Use CreateEncryptor with the default IV",
           "fullDescription": "Symmetric encryption should always use a non-repeatable initialization vector to prevent dictionary attacks.",
           "defaultLevel": "warning",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5402",

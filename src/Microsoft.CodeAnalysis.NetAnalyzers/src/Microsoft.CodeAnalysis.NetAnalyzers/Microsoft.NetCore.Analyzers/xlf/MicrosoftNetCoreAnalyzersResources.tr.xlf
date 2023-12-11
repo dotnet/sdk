@@ -1619,7 +1619,7 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <note />
       </trans-unit>
       <trans-unit id="MaybeUseCreateEncryptorWithNonDefaultIV">
-        <source>Use CreateEncryptor with the default IV </source>
+        <source>Use CreateEncryptor with the default IV</source>
         <target state="translated">Varsayılan IV ile CreateEncryptor kullan</target>
         <note />
       </trans-unit>
