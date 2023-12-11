@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-environment-variables" "7" "2022-09-19" "" ".NET Documentation"
+.TH "dotnet-environment-variables" "7" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH NAME
 .PP
@@ -23,9 +23,9 @@ dotnet-environment-variables - .NET environment variables
 .PP
 \f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .PP
-In this article, you\[cq]ll learn about the environment variables used by .NET SDK, .NET CLI, and .NET runtime.
+In this article, you\[cq]ll learn about the environment variables used by .NET.
 Some environment variables are used by the .NET runtime, while others are only used by the .NET SDK and .NET CLI.
-Some environment variables are used by all.
+Some environment variables are used by all three components.
 .SS .NET runtime environment variables
 .SS \f[V]DOTNET_SYSTEM_NET_HTTP_*\f[R]
 .PP
@@ -257,9 +257,35 @@ By default trace information is accumulated in a circular buffer and the content
 .PP
 Specifies the location of the .NET runtimes, if they are not installed in the default location.
 The default location on Windows is \f[V]C:\[rs]Program Files\[rs]dotnet\f[R].
-The default location on Linux and macOS is \f[V]/usr/local/share/dotnet\f[R].
+The default location on macOS is \f[V]/usr/local/share/dotnet\f[R].
+The default location on Linux varies depending on distro and installment method.
+The default location on Ubuntu 22.04 is \f[V]/usr/share/dotnet\f[R] (when installed from \f[V]packages.microsoft.com\f[R]) or \f[V]/usr/lib/dotnet\f[R] (when installed from Jammy feed).
+For more information, see the following resources:
+.IP \[bu] 2
+Troubleshoot app launch failures
+.IP \[bu] 2
+GitHub issue dotnet/core#7699 (https://github.com/dotnet/core/issues/7699)
+.IP \[bu] 2
+GitHub issue dotnet/runtime#79237 (https://github.com/dotnet/runtime/issues/79237)
+.PP
 This environment variable is used only when running apps via generated executables (apphosts).
 \f[V]DOTNET_ROOT(x86)\f[R] is used instead when running a 32-bit executable on a 64-bit OS.
+.SS \f[V]DOTNET_HOST_PATH\f[R]
+.PP
+Specifies the absolute path to a \f[V]dotnet\f[R] host (\f[V]dotnet.exe\f[R] on Windows, \f[V]dotnet\f[R] on Linux and macOS) that was used to launch the currently-running \f[V]dotnet\f[R] process.
+This is used by the .NET SDK to help tools that run during .NET SDK commands ensure they use the same \f[V]dotnet\f[R] runtime for any child \f[V]dotnet\f[R] processes they create for the duration of the command.
+Tools and MSBuild Tasks within the SDK that invoke binaries via the \f[V]dotnet\f[R] host are expected to honor this environment variable to ensure a consistent experience.
+.PP
+Tools that invoke \f[V]dotnet\f[R] during an SDK command should use the following algorithm to locate it:
+.IP \[bu] 2
+if \f[V]DOTNET_HOST_PATH\f[R] is set, use that value directly
+.IP \[bu] 2
+otherwise, rely on \f[V]dotnet\f[R] via the system\[cq]s \f[V]PATH\f[R]
+.RS
+.PP
+\f[V]DOTNET_HOST_PATH\f[R] is not a general solution for locating the \f[V]dotnet\f[R] host.
+It is only intended to be used by tools that are invoked by the .NET SDK.
+.RE
 .SS \f[V]NUGET_PACKAGES\f[R]
 .PP
 The global packages folder.
@@ -323,6 +349,10 @@ For more information, see the \f[V]--roll-forward\f[R] option for the \f[V]dotne
 Disables minor version roll forward, if set to \f[V]0\f[R].
 This setting is superseded in .NET Core 3.0 by \f[V]DOTNET_ROLL_FORWARD\f[R].
 The new settings should be used instead.
+.SS \f[V]DOTNET_CLI_FORCE_UTF8_ENCODING\f[R]
+.PP
+Forces the use of UTF-8 encoding in the console, even for older versions of Windows 10 that don\[cq]t fully support UTF-8.
+For more information, see SDK no longer changes console encoding when finished.
 .SS \f[V]DOTNET_CLI_UI_LANGUAGE\f[R]
 .PP
 Sets the language of the CLI UI using a locale value such as \f[V]en-us\f[R].
@@ -366,8 +396,12 @@ For more information, see Advertising manifests.
 .SS \f[V]DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS\f[R]
 .PP
 Specifies the minimum number of hours between background downloads of advertising manifests for workloads.
-Default is \f[V]24\f[R] - no more frequently than once a day.
+The default is \f[V]24\f[R], which is no more frequently than once a day.
 For more information, see Advertising manifests.
+.SS \f[V]DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT\f[R]
+.PP
+Specifies whether .NET SDK local tools search for tool manifest files in the root folder on Windows.
+The default is \f[V]false\f[R].
 .SS \f[V]COREHOST_TRACE\f[R]
 .PP
 Controls diagnostics tracing from the hosting components, such as \f[V]dotnet.exe\f[R], \f[V]hostfxr\f[R], and \f[V]hostpolicy\f[R].
