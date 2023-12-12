@@ -27,6 +27,16 @@
         <target state="translated">Użyj bieżącego środowiska uruchomieniowego jako docelowego środowiska uruchomieniowego.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdFrameworkArgument">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdFrameworkOptionDescription">
+        <source>The target framework to restore for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to restore for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoHttpCacheOptionDescription">
         <source>Disable Http Caching for packages.</source>
         <target state="new">Disable Http Caching for packages.</target>

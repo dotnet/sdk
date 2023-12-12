@@ -17,6 +17,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { }, "")]
         [InlineData(new string[] { "-s", "<source>" }, "-property:RestoreSources=<source>")]
         [InlineData(new string[] { "--source", "<source>" }, "-property:RestoreSources=<source>")]
+        [InlineData(new string[] { "--framework", "<tfm>" }, @"-property:TargetFramework=<tfm>")]
         [InlineData(new string[] { "-s", "<source0>", "-s", "<source1>" }, "-property:RestoreSources=<source0>%3B<source1>")]
         [InlineData(new string[] { "-r", "<runtime>" }, "-property:RuntimeIdentifiers=<runtime>")]
         [InlineData(new string[] { "-r", "linux-amd64" }, "-property:RuntimeIdentifiers=linux-x64")]

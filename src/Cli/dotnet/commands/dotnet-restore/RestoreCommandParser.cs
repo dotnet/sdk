@@ -25,6 +25,13 @@ namespace Microsoft.DotNet.Cli
         }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
         .AllowSingleArgPerToken();
 
+        public static readonly CliOption<string> FrameworkOption = new ForwardedOption<string>("--framework")
+        {
+            Description = LocalizableStrings.CmdFrameworkOptionDescription,
+            HelpName = LocalizableStrings.CmdFrameworkArgument
+        }.ForwardAsSingle(o => $"-property:TargetFramework={o}")
+        .AddCompletions(Complete.TargetFrameworksFromProjectFile);
+
         private static IEnumerable<CliOption> FullRestoreOptions() =>
             ImplicitRestoreOptions(true, true, true, true).Concat(
                 new CliOption[] {
@@ -60,6 +67,7 @@ namespace Microsoft.DotNet.Cli
             var command = new DocumentedCommand("restore", DocsLink, LocalizableStrings.AppFullName);
 
             command.Arguments.Add(SlnOrProjectArgument);
+            command.Options.Add(FrameworkOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
 
             foreach (var option in FullRestoreOptions())

@@ -135,6 +135,12 @@
   <data name="CmdSourceOptionDescription" xml:space="preserve">
     <value>The NuGet package source to use for the restore.</value>
   </data>
+  <data name="CmdFrameworkArgument" xml:space="preserve">
+    <value>FRAMEWORK</value>
+  </data>
+  <data name="CmdFrameworkOptionDescription" xml:space="preserve">
+    <value>The target framework to restore for. The target framework must also be specified in the project file.</value>
+  </data>
   <data name="CmdRuntimeOption" xml:space="preserve">
     <value>RUNTIME_IDENTIFIER</value>
   </data>
