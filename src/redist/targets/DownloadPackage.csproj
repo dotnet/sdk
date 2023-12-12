@@ -1,21 +1,16 @@
-<Project DefaultTargets="Restore">
-  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+<Project Sdk="Microsoft.Build.NoTargets" DefaultTargets="Restore">
 
   <PropertyGroup>
-    <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <ResolveAssemblyReferencesSilent>true</ResolveAssemblyReferencesSilent>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Use PackageDownload since we don't need to reference the package. -->
     <PackageDownload Include="$(PackageToRestore)" Version="[$(PackageVersionToRestore)]" />
-  </ItemGroup>
-
-  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
-
-  <!-- Eliminate any package references injected by arcade, we only want to download a single package -->
-  <ItemGroup>
+    <!-- Eliminate any package references injected by arcade, since we only want to download a single package. -->
     <PackageReference Remove="@(PackageReference)" />
   </ItemGroup>
+
 </Project>
