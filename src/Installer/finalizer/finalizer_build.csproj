@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets">
+﻿<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <Target Name="GenerateSdkVersionFile" BeforeTargets="CoreCompile" DependsOnTargets="GenerateNativeVersionFile" />
-  
+
   <!-- This target needs to run before the native project reference is built. -->
   <Target Name="CopyWixSdk" AfterTargets="Restore" BeforeTargets="Build">
     <ItemGroup>
