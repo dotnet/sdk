@@ -79,34 +79,34 @@
       <Sha>e09a44f74f22b5f0e88613aa31e79f62a3d32a04</Sha>
       <SourceBuild RepoName="format" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.9.0-3.23611.5">
+    <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.9.0-3.23611.6">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d3520d726f7c0c5ec4ed6be5c4824464eccf3eba</Sha>
+      <Sha>c7435855692f7a6a85daad50048762fe4d738bdb</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.9.0-3.23611.5">
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.9.0-3.23611.6">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d3520d726f7c0c5ec4ed6be5c4824464eccf3eba</Sha>
+      <Sha>c7435855692f7a6a85daad50048762fe4d738bdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.9.0-3.23611.5">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.9.0-3.23611.6">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d3520d726f7c0c5ec4ed6be5c4824464eccf3eba</Sha>
+      <Sha>c7435855692f7a6a85daad50048762fe4d738bdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.9.0-3.23611.5">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.9.0-3.23611.6">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d3520d726f7c0c5ec4ed6be5c4824464eccf3eba</Sha>
+      <Sha>c7435855692f7a6a85daad50048762fe4d738bdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.9.0-3.23611.5">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Features" Version="4.9.0-3.23611.6">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d3520d726f7c0c5ec4ed6be5c4824464eccf3eba</Sha>
+      <Sha>c7435855692f7a6a85daad50048762fe4d738bdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.9.0-3.23611.5">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.9.0-3.23611.6">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d3520d726f7c0c5ec4ed6be5c4824464eccf3eba</Sha>
+      <Sha>c7435855692f7a6a85daad50048762fe4d738bdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.9.0-3.23611.5">
+    <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.9.0-3.23611.6">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>d3520d726f7c0c5ec4ed6be5c4824464eccf3eba</Sha>
+      <Sha>c7435855692f7a6a85daad50048762fe4d738bdb</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="9.0.0-alpha.1.23611.3">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
