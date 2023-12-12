@@ -1,0 +1,127 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Tue, 12 Dec 2023 09:47:37 -0600
+Subject: [PATCH] Use NetCurrent instead of net8.0
+
+Backport: https://github.com/dotnet/roslyn/pull/71229
+---
+ .../Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.csproj      | 2 +-
+ src/CodeStyle/Tools/CodeStyleConfigFileGenerator.csproj       | 2 +-
+ .../Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.vbproj | 2 +-
+ .../BoundTreeGenerator/CompilersBoundTreeGenerator.csproj     | 2 +-
+ .../CSharpErrorFactsGenerator.csproj                          | 2 +-
+ .../Source/CSharpSyntaxGenerator/CSharpSyntaxGenerator.csproj | 4 ++--
+ .../VisualBasicErrorFactsGenerator.vbproj                     | 2 +-
+ .../VisualBasicSyntaxGenerator.vbproj                         | 2 +-
+ 8 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/src/CodeStyle/CSharp/CodeFixes/Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.csproj b/src/CodeStyle/CSharp/CodeFixes/Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.csproj
+index c89a8cf4c11..a443f463427 100644
+--- a/src/CodeStyle/CSharp/CodeFixes/Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.csproj
++++ b/src/CodeStyle/CSharp/CodeFixes/Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes.csproj
+@@ -31,7 +31,7 @@
+       <DotNetExecutable Condition="'$(DotNetExecutable)' == ''">$(DotNetRoot)dotnet</DotNetExecutable>
+     </PropertyGroup>
+ 
+-    <Exec Command='"$(DotNetExecutable)" "$(ArtifactsBinDir)CodeStyleConfigFileGenerator\$(Configuration)\net8.0\CodeStyleConfigFileGenerator.dll" "CSharp" "$(CSharpCodeStyleFixesArtifactsBinDir)" "$(CSharpCodeStyleTargetsFileName)" "$(CodeStyleAnalyzerArtifactsBinDir)\Microsoft.CodeAnalysis.CodeStyle.dll;$(CSharpCodeStyleAnalyzerArtifactsBinDir)\Microsoft.CodeAnalysis.CSharp.CodeStyle.dll"' />
++    <Exec Command='"$(DotNetExecutable)" "$(ArtifactsBinDir)CodeStyleConfigFileGenerator\$(Configuration)\$(NetCurrent)\CodeStyleConfigFileGenerator.dll" "CSharp" "$(CSharpCodeStyleFixesArtifactsBinDir)" "$(CSharpCodeStyleTargetsFileName)" "$(CodeStyleAnalyzerArtifactsBinDir)\Microsoft.CodeAnalysis.CodeStyle.dll;$(CSharpCodeStyleAnalyzerArtifactsBinDir)\Microsoft.CodeAnalysis.CSharp.CodeStyle.dll"' />
+ 
+     <ItemGroup>
+       <_File Include="$(CSharpCodeStyleAnalyzerArtifactsBinDir)\Microsoft.CodeAnalysis.CSharp.CodeStyle.dll" TargetDir="analyzers/dotnet/cs" />
+diff --git a/src/CodeStyle/Tools/CodeStyleConfigFileGenerator.csproj b/src/CodeStyle/Tools/CodeStyleConfigFileGenerator.csproj
+index f5fc7205ca2..d014b53081c 100644
+--- a/src/CodeStyle/Tools/CodeStyleConfigFileGenerator.csproj
++++ b/src/CodeStyle/Tools/CodeStyleConfigFileGenerator.csproj
+@@ -1,7 +1,7 @@
+ ﻿<Project Sdk="Microsoft.NET.Sdk">  
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>$(NetCurrent)</TargetFramework>
+     <NonShipping>true</NonShipping>
+     <UseAppHost>false</UseAppHost>
+     <IsShipping>false</IsShipping>
+diff --git a/src/CodeStyle/VisualBasic/CodeFixes/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.vbproj b/src/CodeStyle/VisualBasic/CodeFixes/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.vbproj
+index da7b22020e7..2970771349a 100644
+--- a/src/CodeStyle/VisualBasic/CodeFixes/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.vbproj
++++ b/src/CodeStyle/VisualBasic/CodeFixes/Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Fixes.vbproj
+@@ -31,7 +31,7 @@
+       <DotNetExecutable Condition="'$(DotNetExecutable)' == ''">$(DotNetRoot)dotnet</DotNetExecutable>
+     </PropertyGroup>
+ 
+-    <Exec Command='"$(DotNetExecutable)" "$(ArtifactsBinDir)CodeStyleConfigFileGenerator\$(Configuration)\net8.0\CodeStyleConfigFileGenerator.dll" "VisualBasic" "$(VisualBasicCodeStyleFixesArtifactsBinDir)" "$(VisualBasicCodeStyleTargetsFileName)" "$(CodeStyleAnalyzerArtifactsBinDir)\Microsoft.CodeAnalysis.CodeStyle.dll;$(VisualBasicCodeStyleAnalyzerArtifactsBinDir)\Microsoft.CodeAnalysis.VisualBasic.CodeStyle.dll"' />
++    <Exec Command='"$(DotNetExecutable)" "$(ArtifactsBinDir)CodeStyleConfigFileGenerator\$(Configuration)\$(NetCurrent)\CodeStyleConfigFileGenerator.dll" "VisualBasic" "$(VisualBasicCodeStyleFixesArtifactsBinDir)" "$(VisualBasicCodeStyleTargetsFileName)" "$(CodeStyleAnalyzerArtifactsBinDir)\Microsoft.CodeAnalysis.CodeStyle.dll;$(VisualBasicCodeStyleAnalyzerArtifactsBinDir)\Microsoft.CodeAnalysis.VisualBasic.CodeStyle.dll"' />
+ 
+     <ItemGroup>
+       <_File Include="$(VisualBasicCodeStyleAnalyzerArtifactsBinDir)\Microsoft.CodeAnalysis.VisualBasic.CodeStyle.dll" TargetDir="analyzers/dotnet/vb" />
+diff --git a/src/Tools/Source/CompilerGeneratorTools/Source/BoundTreeGenerator/CompilersBoundTreeGenerator.csproj b/src/Tools/Source/CompilerGeneratorTools/Source/BoundTreeGenerator/CompilersBoundTreeGenerator.csproj
+index 6ee9d977752..56b24937c1b 100644
+--- a/src/Tools/Source/CompilerGeneratorTools/Source/BoundTreeGenerator/CompilersBoundTreeGenerator.csproj
++++ b/src/Tools/Source/CompilerGeneratorTools/Source/BoundTreeGenerator/CompilersBoundTreeGenerator.csproj
+@@ -5,7 +5,7 @@
+     <OutputType>Exe</OutputType>
+     <RootNamespace>Roslyn.Compilers.Internal.BoundTreeGenerator</RootNamespace>
+     <AssemblyName>BoundTreeGenerator</AssemblyName>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>$(NetCurrent)</TargetFramework>
+     <IsShipping>false</IsShipping>
+   </PropertyGroup>
+ </Project>
+\ No newline at end of file
+diff --git a/src/Tools/Source/CompilerGeneratorTools/Source/CSharpErrorFactsGenerator/CSharpErrorFactsGenerator.csproj b/src/Tools/Source/CompilerGeneratorTools/Source/CSharpErrorFactsGenerator/CSharpErrorFactsGenerator.csproj
+index 63446bef0f8..8b32c86f32a 100644
+--- a/src/Tools/Source/CompilerGeneratorTools/Source/CSharpErrorFactsGenerator/CSharpErrorFactsGenerator.csproj
++++ b/src/Tools/Source/CompilerGeneratorTools/Source/CSharpErrorFactsGenerator/CSharpErrorFactsGenerator.csproj
+@@ -4,7 +4,7 @@
+   <PropertyGroup>
+     <OutputType>Exe</OutputType>
+     <RootNamespace>Roslyn.Compilers.CSharp.Internal.CSharpErrorFactsGenerator</RootNamespace>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>$(NetCurrent)</TargetFramework>
+     <IsShipping>false</IsShipping>
+   </PropertyGroup>
+ </Project>
+\ No newline at end of file
+diff --git a/src/Tools/Source/CompilerGeneratorTools/Source/CSharpSyntaxGenerator/CSharpSyntaxGenerator.csproj b/src/Tools/Source/CompilerGeneratorTools/Source/CSharpSyntaxGenerator/CSharpSyntaxGenerator.csproj
+index 9f8b8b05f26..6f59c13265d 100644
+--- a/src/Tools/Source/CompilerGeneratorTools/Source/CSharpSyntaxGenerator/CSharpSyntaxGenerator.csproj
++++ b/src/Tools/Source/CompilerGeneratorTools/Source/CSharpSyntaxGenerator/CSharpSyntaxGenerator.csproj
+@@ -3,9 +3,9 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup>
+     <RootNamespace>CSharpSyntaxGenerator</RootNamespace>
+-    <!-- We build this against net8.0 to build the console app version, and against netstandard2.0 for
++    <!-- We build this against $(NetCurrent) to build the console app version, and against netstandard2.0 for
+          the Source Generator version. -->
+-    <TargetFrameworks>net8.0;netstandard2.0</TargetFrameworks>
++    <TargetFrameworks>$(NetCurrent);netstandard2.0</TargetFrameworks>
+     <OutputType Condition="'$(TargetFramework)' != 'netstandard2.0'">Exe</OutputType>
+     <RuntimeIdentifiers>$(RoslynPortableRuntimeIdentifiers)</RuntimeIdentifiers>
+     <IsShipping>false</IsShipping>
+diff --git a/src/Tools/Source/CompilerGeneratorTools/Source/VisualBasicErrorFactsGenerator/VisualBasicErrorFactsGenerator.vbproj b/src/Tools/Source/CompilerGeneratorTools/Source/VisualBasicErrorFactsGenerator/VisualBasicErrorFactsGenerator.vbproj
+index a0f43f33de2..440aa28e6d4 100644
+--- a/src/Tools/Source/CompilerGeneratorTools/Source/VisualBasicErrorFactsGenerator/VisualBasicErrorFactsGenerator.vbproj
++++ b/src/Tools/Source/CompilerGeneratorTools/Source/VisualBasicErrorFactsGenerator/VisualBasicErrorFactsGenerator.vbproj
+@@ -6,7 +6,7 @@
+     <StartupObject></StartupObject>
+     <RootNamespace>Microsoft.CodeAnalysis.VisualBasic.Internal.VBErrorFactsGenerator</RootNamespace>
+     <AssemblyName>VBErrorFactsGenerator</AssemblyName>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>$(NetCurrent)</TargetFramework>
+     <IsShipping>false</IsShipping>
+   </PropertyGroup>
+ </Project>
+\ No newline at end of file
+diff --git a/src/Tools/Source/CompilerGeneratorTools/Source/VisualBasicSyntaxGenerator/VisualBasicSyntaxGenerator.vbproj b/src/Tools/Source/CompilerGeneratorTools/Source/VisualBasicSyntaxGenerator/VisualBasicSyntaxGenerator.vbproj
+index 1cd0dc4b549..91cc5f2a4ec 100644
+--- a/src/Tools/Source/CompilerGeneratorTools/Source/VisualBasicSyntaxGenerator/VisualBasicSyntaxGenerator.vbproj
++++ b/src/Tools/Source/CompilerGeneratorTools/Source/VisualBasicSyntaxGenerator/VisualBasicSyntaxGenerator.vbproj
+@@ -7,7 +7,7 @@
+     <RootNamespace>Microsoft.CodeAnalysis.VisualBasic.Internal.VBSyntaxGenerator</RootNamespace>
+     <AssemblyName>VBSyntaxGenerator</AssemblyName>
+     <OptionStrict>Off</OptionStrict>
+-    <TargetFramework>net8.0</TargetFramework>
++    <TargetFramework>$(NetCurrent)</TargetFramework>
+     <IsShipping>false</IsShipping>
+   </PropertyGroup>
+   <ItemGroup>
