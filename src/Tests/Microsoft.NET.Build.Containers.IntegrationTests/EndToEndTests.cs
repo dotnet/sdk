@@ -209,6 +209,87 @@ public class EndToEndTests : IDisposable
         return publishDirectory;
     }
 
+    [DockerAvailableFact]
+    public async Task EndToEnd_MultiProjectSolution()
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
+        DirectoryInfo newSolutionDir = new(Path.Combine(TestSettings.TestArtifactsDirectory, $"CreateNewImageTest_EndToEnd_MultiProjectSolution"));
+
+        if (newSolutionDir.Exists)
+        {
+            newSolutionDir.Delete(recursive: true);
+        }
+
+        newSolutionDir.Create();
+
+        // Create solution with projects
+        new DotnetNewCommand(_testOutput, "sln", "-n", nameof(EndToEnd_MultiProjectSolution))
+            .WithVirtualHive()
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetNewCommand(_testOutput, "console", "-n", "ConsoleApp")
+            .WithVirtualHive()
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("ConsoleApp", "ConsoleApp.csproj"))
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetNewCommand(_testOutput, "web", "-n", "WebApp")
+            .WithVirtualHive()
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("WebApp", "WebApp.csproj"))
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        // Add 'EnableSdkContainerSupport' property to the ConsoleApp and set TFM
+        using (FileStream stream = File.Open(Path.Join(newSolutionDir.FullName, "ConsoleApp", "ConsoleApp.csproj"), FileMode.Open, FileAccess.ReadWrite))
+        {
+            XDocument document = await XDocument.LoadAsync(stream, LoadOptions.None, CancellationToken.None);
+            document
+                .Descendants()
+                .First(e => e.Name.LocalName == "PropertyGroup")?
+                .Add(new XElement("EnableSdkContainerSupport", "true"));
+            document
+                .Descendants()
+                .First(e => e.Name.LocalName == "TargetFramework")
+                .Value = ToolsetInfo.CurrentTargetFramework;
+
+            stream.SetLength(0);
+            await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
+        }
+
+        // Set TFM for WebApp
+        using (FileStream stream = File.Open(Path.Join(newSolutionDir.FullName, "WebApp", "WebApp.csproj"), FileMode.Open, FileAccess.ReadWrite))
+        {
+            XDocument document = await XDocument.LoadAsync(stream, LoadOptions.None, CancellationToken.None);
+            document
+                .Descendants()
+                .First(e => e.Name.LocalName == "TargetFramework")
+                .Value = ToolsetInfo.CurrentTargetFramework;
+
+            stream.SetLength(0);
+            await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
+        }
+
+        // Publish
+        CommandResult commandResult = new DotnetCommand(_testOutput, "publish", "/t:PublishContainer")
+            .WithWorkingDirectory(newSolutionDir.FullName)
+            .Execute();
+
+        commandResult.Should().Pass();
+        commandResult.Should().HaveStdOutContaining("Pushed image 'webapp:latest'");
+        commandResult.Should().HaveStdOutContaining("Pushed image 'consoleapp:latest'");
+    }
 
     [DockerAvailableTheory()]
     [InlineData("webapi", false)]
@@ -443,7 +524,8 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
             $"/p:RuntimeFrameworkVersion=8.0.0-preview.3.23174.8",
-            $"/p:ContainerImageTag={imageTag}")
+            $"/p:ContainerImageTag={imageTag}",
+            "/bl:E:\\test.binlog")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
