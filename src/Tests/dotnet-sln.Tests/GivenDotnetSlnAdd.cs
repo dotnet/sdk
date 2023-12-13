@@ -609,6 +609,33 @@ EndGlobal
 
         }
 
+        [Fact]
+        public void WhenNestedDuplicateProjectIsAddedToASolutionFolder()
+        {
+             var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndCsprojInSubDirVSErrors")
+                .WithSource()
+                .Path;
+            string projectToAdd;
+            CommandResult cmd;
+
+            projectToAdd = Path.Combine("Base", "Second", "TestCollision.csproj");
+            cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute($"sln", "App.sln", "add", projectToAdd);
+            cmd.Should().Fail()
+                .And.HaveStdErrContaining("TestCollision")
+                .And.HaveStdErrContaining("Base");
+
+            projectToAdd = Path.Combine("Base", "Second", "Third",  "Second.csproj");
+            cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute($"sln", "App.sln", "add", projectToAdd);
+            cmd.Should().Fail()
+                .And.HaveStdErrContaining("Second")
+                .And.HaveStdErrContaining("Base");
+        }
+
         [Theory]
         [InlineData("TestAppWithSlnAndCsprojFiles")]
         [InlineData("TestAppWithSlnAnd472CsprojFiles")]
