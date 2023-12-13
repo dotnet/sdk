@@ -399,7 +399,7 @@
                   DestinationPath="%(DownloadDestination)" />
 
     <ItemGroup>
-      <BundledLayoutPackageDownloadProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+      <BundledLayoutPackageDownloadProject Include="$(MSBuildThisFileDirectory)..\projects\DownloadPackage.csproj">
         <Properties>
           PackageToRestore=%(BundledLayoutPackage.PackageName);
           PackageVersionToRestore=%(BundledLayoutPackage.PackageVersion);
@@ -515,7 +515,7 @@
     <MakeDir Directories="$(AppHostRestorePath)" />
 
     <ItemGroup>
-      <AppHostTemplateDownloadPackageProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+      <AppHostTemplateDownloadPackageProject Include="$(MSBuildThisFileDirectory)..\projects\DownloadPackage.csproj">
         <Properties>
           PackageToRestore=$(NETCoreAppHostPackageName);
           PackageVersionToRestore=$(MicrosoftNETCoreAppHostPackageVersion);
@@ -526,10 +526,7 @@
       </AppHostTemplateDownloadPackageProject>
     </ItemGroup>
 
-    <MSBuild
-      BuildInParallel="False"
-      Projects="@(AppHostTemplateDownloadPackageProject)">
-    </MSBuild>
+    <MSBuild BuildInParallel="False" Projects="@(AppHostTemplateDownloadPackageProject)" />
 
     <PropertyGroup>
       <AppHostExecutableName>AppHost$(ExeExtension)</AppHostExecutableName>

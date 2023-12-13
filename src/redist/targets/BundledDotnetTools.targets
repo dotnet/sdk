@@ -23,7 +23,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <BundledToolLayoutProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+      <BundledToolLayoutProject Include="$(MSBuildThisFileDirectory)..\projects\DownloadPackage.csproj">
         <!-- For this unique RestoreProjectStyle, see: https://aka.ms/global-tools-nuget -->
         <Properties>
           PackageToRestore=$(PackageToRestore);

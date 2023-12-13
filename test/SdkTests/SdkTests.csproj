@@ -11,14 +11,12 @@
     <NoStdLib>true</NoStdLib>
     <ProducesNoOutput>true</ProducesNoOutput>
   </PropertyGroup>
-  
+
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <LanguageTargets>$(MSBuildToolsPath)\Microsoft.CSharp.targets</LanguageTargets>
-
     <IsPackable>false</IsPackable>
-
     <DeterministicSourcePaths>false</DeterministicSourcePaths>
     <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
   </PropertyGroup>
@@ -46,9 +44,8 @@
   </ItemGroup>
 
   <Target Name="GetRuntimesToInstall">
-    <ReadLinesFromFile File="/etc/os-release"
-                       Condition="'$(OS)' != 'Windows_NT'">
-      <Output TaskParameter="Lines" PropertyName="OsReleaseContents"/>
+    <ReadLinesFromFile File="/etc/os-release" Condition="'$(OS)' != 'Windows_NT'">
+      <Output TaskParameter="Lines" PropertyName="OsReleaseContents" />
     </ReadLinesFromFile>
 
     <!-- Set OsReleaseContents to Windows to make later comparisons easier -->
@@ -66,30 +63,31 @@
       <RuntimeVersionToInstall Include="7.0.0" />
       <RuntimeVersionToInstall Include="8.0.0-rc.2.23479.6" />
     </ItemGroup>
-    
   </Target>
 
   <Target Name="SetupLayoutWithPreviousRuntimes" DependsOnTargets="GetRuntimesToInstall">
     <ItemGroup>
-      <LayoutFilesToCopyToDotnetToTest Include="$(RedistLayoutPath)**"/>
+      <LayoutFilesToCopyToDotnetToTest Include="$(RedistLayoutPath)**" />
       <LayoutFilesToCopyToDotnetToTest>
         <DestinationPath>$(DotnetToTestPath)%(RecursiveDir)%(Filename)%(Extension)</DestinationPath>
       </LayoutFilesToCopyToDotnetToTest>
     </ItemGroup>
+
     <Copy SourceFiles="@(LayoutFilesToCopyToDotnetToTest)"
           DestinationFiles="@(LayoutFilesToCopyToDotnetToTest->'%(DestinationPath)')"
-          SkipUnchangedFiles="true"/>
+          SkipUnchangedFiles="true" />
 
     <MSBuild Projects="$(MSBuildProjectFullPath)"
          Targets="InstallRuntimeToLayout"
          Properties="RuntimeVersionToInstall=%(RuntimeVersionToInstall.Identity)"
-         BuildInParallel="false"/>
+         BuildInParallel="false" />
   </Target>
 
   <Target Name="InstallRuntimeToLayout">
     <PropertyGroup>
       <RuntimeTargetDirectory>$(DotnetToTestPath)shared\Microsoft.NETCore.App\$(RuntimeVersionToInstall)</RuntimeTargetDirectory>
     </PropertyGroup>
+
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
       <!-- Set TLS1.2 explicitly before running this. If TLS1.2 isnt' enabled by default this command may fail in some
            scenarios.  Waiting on a fix to dotnet-install.ps1 to fix this in the right place. -->
@@ -102,6 +100,7 @@
       <InstallRuntimeCommand Condition="'$(Architecture)' != ''">$(InstallRuntimeCommand) -Architecture '$(Architecture)'</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) }"</InstallRuntimeCommand>
     </PropertyGroup>
+
     <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
       <InstallRuntimeCommand>/bin/bash</InstallRuntimeCommand>
       <InstallRuntimeCommand>$(InstallRuntimeCommand) "$(DotNetRoot)dotnet-install.sh"</InstallRuntimeCommand>
@@ -113,8 +112,7 @@
 
     <Exec Command="$(InstallRuntimeCommand)"
           Condition="!Exists($(RuntimeTargetDirectory))"
-          IgnoreStandardErrorWarningFormat="true"
-          />
+          IgnoreStandardErrorWarningFormat="true" />
   </Target>
 
   <Target Name="RunSdkTests" DependsOnTargets="SetupLayoutWithPreviousRuntimes">
@@ -122,8 +120,7 @@
     <!-- Isolate test working directory from higher-level Directory.Build files -->
     <Copy SourceFiles="$(RepoRoot)TestAssets\Directory.Build.props;$(RepoRoot)TestAssets\Directory.Build.targets"
           DestinationFolder="$(TestExecutionDirectory)"
-          SkipUnchangedFiles="true"
-          />
+          SkipUnchangedFiles="true" />
 
     <!-- Set up NuGet feeds -->
     <PropertyGroup>
@@ -138,9 +135,7 @@
       </NugetConfigContents>
     </PropertyGroup>
 
-    <WriteLinesToFile File="$(GeneratedNuGetConfig)"
-                  Lines="$(NugetConfigContents)"
-                  Overwrite="true" />
+    <WriteLinesToFile File="$(GeneratedNuGetConfig)" Lines="$(NugetConfigContents)" Overwrite="true" />
 
     <!-- Allow test list to be overridden with ToolTestName property -->
     <ItemGroup Condition="'$(ToolTestName)' != ''">
@@ -153,13 +148,10 @@
         <AdditionalProperties>ToolTestName=%(SdkTest.Identity)</AdditionalProperties>
       </TestProjectToRun>
     </ItemGroup>
-    
-    <MSBuild Projects="@(TestProjectToRun)"
-             Targets="RunTestsAsTool"
-             BuildInParallel="true"
-             />
+
+    <MSBuild Projects="@(TestProjectToRun)" Targets="RunTestsAsTool" BuildInParallel="true" />
   </Target>
-  
+
   <Target Name="RunTestsAsTool">
     <PropertyGroup>
       <ToolCommandName>testSdk$(ToolTestName)</ToolCommandName>
@@ -169,7 +161,6 @@
 
     <RemoveDir Directories="$(TestLocalToolFolder)" />
     <MakeDir Directories="$(TestLocalToolFolder)" />
-
     <MakeDir Directories="$(ArtifactsTestResultsDir)" />
 
     <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
@@ -180,26 +171,21 @@
     <PropertyGroup Condition="'$(OS)' != 'Windows_NT'">
       <ToolRunPrefix>$(ToolRunPrefix)unset MSBuildSDKsPath DOTNET_HOST_PATH DOTNET_INSTALLDIR &amp;&amp; </ToolRunPrefix>
     </PropertyGroup>
-    
+
     <Exec Command="$(ToolRunPrefix)$(RedistLayoutPath)dotnet new tool-manifest"
-      WorkingDirectory="$(TestLocalToolFolder)"
-      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"
-      IgnoreStandardErrorWarningFormat="true" />
+          WorkingDirectory="$(TestLocalToolFolder)"
+          EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"
+          IgnoreStandardErrorWarningFormat="true" />
 
     <PropertyGroup>
       <SdkTestPackageVersion>$(MicrosoftNETSdkPackageVersion)</SdkTestPackageVersion>
-      
       <InstallToolCommand>$(RedistLayoutPath)dotnet tool install --local $(ToolCommandName)</InstallToolCommand>
       <InstallToolCommand>$(InstallToolCommand) --version $(SdkTestPackageVersion)</InstallToolCommand>
     </PropertyGroup>
-    
+
     <Exec Command="$(ToolRunPrefix)$(InstallToolCommand)"
       WorkingDirectory="$(TestLocalToolFolder)"
-      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
-
-    <!--<Exec Command="$(ToolRunPrefix)dotnet tool restore"
-      WorkingDirectory="$(TestLocalToolFolder)"
-      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>-->
+      EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)" />
 
     <PropertyGroup>
       <ResultsXmlPath>$(ArtifactsTestResultsDir)$(TestProjectName).xml</ResultsXmlPath>
@@ -216,32 +202,31 @@
       <TestArgs>$(TestArgs) -testList SdkIntegrationTests</TestArgs>
     </PropertyGroup>
 
-
     <PropertyGroup Condition="('$(OS)' == 'Windows_NT') And ('$(Architecture)' == 'x86')">
       <!-- Add list of tests to skip on x86 -->
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipx86.xml"</TestArgs>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(IslinuxPortable)' == 'true' ">
+    <PropertyGroup Condition=" $(IslinuxPortable)' == 'true'">
       <!-- Add list of tests to skip on Linux Portable -->
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipPortableLinux.xml"</TestArgs>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" $([MSBuild]::IsOSPlatform('LINUX')) ">
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('LINUX'))">
       <!-- Add list of tests to skip on Linux Portable -->
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipLinux.xml"</TestArgs>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" $([MSBuild]::IsOSPlatform('OSX')) ">
+    <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
       <!-- Add list of tests to skip on Linux Portable -->
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipOSX.xml"</TestArgs>
     </PropertyGroup>
 
     <Exec Command="$(ToolRunPrefix)$(RedistLayoutPath)dotnet tool run $(ToolCommandName) -- $(TestArgs)"
           WorkingDirectory="$(TestLocalToolFolder)"
-          EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"/>
+          EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)" />
   </Target>
-  
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <!-- Remove items which light up build logic which could generate warnings / errors -->
@@ -253,11 +238,6 @@
     <SwrFile Remove="@(SwrFile)" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <TargetPath></TargetPath>
-    <!-- Prevent projects referencing this from trying to pass us to the compiler -->
-  </PropertyGroup>
-
   <Target Name="CoreCompile" />
   <!-- Prevent Csc from being called -->
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />
@@ -266,12 +246,10 @@
   <!-- Group always attempts resolve runtime, regardless of <CopyNuGetImplementations>-->
   <Target Name="GetReferenceAssemblyPaths" />
   <!-- Don't go looking for framework reference assemblies-->
-  <Target Name="GetFrameworkPaths"  />
-  <!-- ^ -->
-
+  <Target Name="GetFrameworkPaths" />
   <Target Name="GetBuildVersion" />
   <!-- For Packages projects, which use GetNuGetPackageVersionEx which depends on GetBuildVersion -->
   <Target Name="Pack" />
-
   <Target Name="Test" DependsOnTargets="RunSdkTests" />
+
 </Project>

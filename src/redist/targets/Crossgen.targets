@@ -17,7 +17,7 @@
 
     <!-- Download the runtime package with the crossgen executable in it -->
     <ItemGroup>
-      <CrossGenDownloadPackageProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+      <CrossGenDownloadPackageProject Include="$(MSBuildThisFileDirectory)..\projects\DownloadPackage.csproj">
         <Properties>
           PackageToRestore=$(RuntimeNETCrossgenPackageName);
           PackageVersionToRestore=$(MicrosoftNETCoreAppRuntimePackageVersion);
@@ -26,9 +26,7 @@
       </CrossGenDownloadPackageProject>
     </ItemGroup>
 
-    <MSBuild
-      BuildInParallel="False"
-      Projects="@(CrossGenDownloadPackageProject)">
+    <MSBuild BuildInParallel="False" Projects="@(CrossGenDownloadPackageProject)">
     </MSBuild>
 
     <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
