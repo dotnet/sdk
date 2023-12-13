@@ -209,6 +209,10 @@ class Program
         [InlineData($"--framework {ToolsetInfo.CurrentTargetFramework} --framework net451", $"[{ToolsetInfo.CurrentTargetFramework}]", null)]
         [InlineData($"--framework {ToolsetInfo.CurrentTargetFramework}", $"[{ToolsetInfo.CurrentTargetFramework}]", "[net451]")]
         [InlineData("--framework net451", "[net451]", "[netcoreapp3.0]")]
+        [InlineData($"-f {ToolsetInfo.CurrentTargetFramework} -f net451", "[net451]", null)]
+        [InlineData($"-f {ToolsetInfo.CurrentTargetFramework} -f net451", $"[{ToolsetInfo.CurrentTargetFramework}]", null)]
+        [InlineData($"-f {ToolsetInfo.CurrentTargetFramework}", $"[{ToolsetInfo.CurrentTargetFramework}]", "[net451]")]
+        [InlineData("-f net451", "[net451]", "[netcoreapp3.0]")]
         public void ItListsValidFrameworks(string args, string shouldInclude, string shouldntInclude)
         {
             var testAssetName = "MSBuildAppWithMultipleFrameworks";
