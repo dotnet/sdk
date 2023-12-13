@@ -54,12 +54,12 @@ namespace Microsoft.DotNet.Cli.Utils
 
             _argsToForward = argsToForward;
             string tlpDefault = TerminalLoggerDefault;
-            /* TODO: Consider to enable it for dotnet 9+ SDK
-            if (!string.IsNullOrWhiteSpace(tlpDefault))
+            // new for .NET 9 - default TL to auto (aka enable in non-CI scenarios)
+            if (string.IsNullOrWhiteSpace(tlpDefault))
             {
                 tlpDefault = "auto";
             }
-            */
+
             if (!string.IsNullOrWhiteSpace(tlpDefault))
             {
                 _argsToForward = _argsToForward.Concat(new[] { $"-tlp:default={tlpDefault}" });
