@@ -394,7 +394,7 @@
       </UrisToDownload>
     </ItemGroup>
 
-    <DownloadFile Condition=" '@(UrisToDownload)' != '' and %(ShouldDownload)"
+    <DownloadFile Condition="'@(UrisToDownload)' != '' and %(ShouldDownload)"
                   Uris="@(UrisToDownload)"
                   DestinationPath="%(DownloadDestination)" />
 
@@ -403,16 +403,12 @@
         <Properties>
           PackageToRestore=%(BundledLayoutPackage.PackageName);
           PackageVersionToRestore=%(BundledLayoutPackage.PackageVersion);
-          TargetFramework=%(BundledLayoutPackage.TargetFramework);
-          LayoutPackageDescription=%(BundledLayoutPackage.Identity)
+          TargetFramework=%(BundledLayoutPackage.TargetFramework)
         </Properties>
       </BundledLayoutPackageDownloadProject>
     </ItemGroup>
 
-    <MSBuild
-      BuildInParallel="False"
-      Projects="@(BundledLayoutPackageDownloadProject)">
-    </MSBuild>
+    <MSBuild BuildInParallel="False" Projects="@(BundledLayoutPackageDownloadProject)" />
 
     <ItemGroup>
       <!-- Use lowercase package name in package path -->

@@ -16,22 +16,35 @@
   </ItemGroup>
 
   <Target Name="LayoutBundledTools" DependsOnTargets="SetupBundledComponents">
+    <PropertyGroup>
+      <PackageToRestore>%(BundledDotnetTool.Identity)</PackageToRestore>
+      <PackageVersionToRestore>%(BundledDotnetTool.Version)</PackageVersionToRestore>
+      <RestoredToolRoot>$([System.IO.Path]::GetFullPath('$(NuGetPackageRoot)/$(PackageToRestore)/$(PackageVersionToRestore)'))</RestoredToolRoot>
+    </PropertyGroup>
+
     <ItemGroup>
-      <BundledToolLayoutProject Include="$(MSBuildThisFileDirectory)LayoutTool.csproj">
+      <BundledToolLayoutProject Include="$(MSBuildThisFileDirectory)DownloadPackage.csproj">
+        <!-- For this unique RestoreProjectStyle, see: https://aka.ms/global-tools-nuget -->
         <Properties>
-          PackageToRestore=%(BundledDotnetTool.Identity);
-          PackageVersionToRestore=%(BundledDotnetTool.Version);
-          RestoreProjectStyle=DotnetToolReference;
+          PackageToRestore=$(PackageToRestore);
+          PackageVersionToRestore=$(PackageVersionToRestore);
           TargetFramework=$(TargetFramework);
-          LayoutFolder=$(SdkOutputDirectory)DotnetTools/
+          RestoreProjectStyle=DotnetToolReference
         </Properties>
       </BundledToolLayoutProject>
     </ItemGroup>
 
-    <MSBuild
-        BuildInParallel="False"
-        Projects="@(BundledToolLayoutProject)">
-    </MSBuild>
+    <MSBuild BuildInParallel="False" Projects="@(BundledToolLayoutProject)" />
+
+    <ItemGroup>
+      <BundledToolFiles Include="$(RestoredToolRoot)\**\*.*" />
+      <BundledToolFiles Remove="$(RestoredToolRoot)\*.*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(BundledToolFiles)"
+          DestinationFiles="@(BundledToolFiles->'$(SdkOutputDirectory)DotnetTools/$(PackageToRestore)\$(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          Condition="'$(PackageToRestore)' != ''" />
   </Target>
 
 </Project>

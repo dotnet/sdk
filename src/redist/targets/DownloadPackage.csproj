@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <!-- Use PackageDownload since we don't need to reference the package. -->
+    <!-- The square brackets for the version constrain restoration to only use that exact version. -->
+    <!-- See: https://learn.microsoft.com/en-us/nuget/concepts/package-versioning#floating-version-resolutions -->
     <PackageDownload Include="$(PackageToRestore)" Version="[$(PackageVersionToRestore)]" />
     <!-- Eliminate any package references injected by arcade, since we only want to download a single package. -->
     <PackageReference Remove="@(PackageReference)" />
