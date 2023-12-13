@@ -54,22 +54,22 @@
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndCodeFixTitle">
         <source>Remove redundant length argument</source>
-        <target state="new">Remove redundant length argument</target>
+        <target state="translated">Usuń argument długości nadmiarowej</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndDescription">
         <source>An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</source>
-        <target state="new">An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</target>
+        <target state="translated">Wyraźne obliczenie długości może być podatne na błędy i można go uniknąć podczas wycinania do końca bufora.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndMessage">
         <source>'{0}' uses a redundant length calculation that can be removed</source>
-        <target state="new">'{0}' uses a redundant length calculation that can be removed</target>
+        <target state="translated">„{0}” używa nadmiarowego obliczenia długości, które można usunąć</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndTitle">
         <source>Avoid redundant length argument</source>
-        <target state="new">Avoid redundant length argument</target>
+        <target state="translated">Unikaj argumentu długości nadmiarowej</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsMessage">
@@ -359,22 +359,22 @@
       </trans-unit>
       <trans-unit id="MakeTypesInternalCodeFixTitle">
         <source>Make the public type internal</source>
-        <target state="new">Make the public type internal</target>
+        <target state="translated">Ustaw typ publiczny jako wewnętrzny</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalDescription">
         <source>Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</source>
-        <target state="new">Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</target>
+        <target state="translated">W przeciwieństwie do biblioteki klas, interfejs API aplikacji nie jest zwykle przywoływany publicznie, więc typy mogą być oznaczone jako wewnętrzne.</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalMessage">
         <source>Because an application's API isn't typically referenced from outside the assembly, types can be made internal</source>
-        <target state="new">Because an application's API isn't typically referenced from outside the assembly, types can be made internal</target>
+        <target state="translated">Ze względu na to, że interfejs API aplikacji nie jest zwykle odwoływany spoza zespołu, typy mogą być wewnętrzne</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalTitle">
         <source>Consider making public types internal</source>
-        <target state="new">Consider making public types internal</target>
+        <target state="translated">Rozważ wprowadzenie typów publicznych jako wewnętrznych</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
