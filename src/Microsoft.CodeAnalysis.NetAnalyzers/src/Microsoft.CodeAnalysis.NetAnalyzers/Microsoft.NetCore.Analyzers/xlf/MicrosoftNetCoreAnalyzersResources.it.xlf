@@ -925,12 +925,12 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <target state="translated">L'opzione ConfigureAwaitOptions.SuppressThrowing è supportata solo con l’attività non generica, non con l'attività&lt;TResult&gt;.  Per usarlo con un oggetto Task&lt;TResult&gt;, eseguire prima il cast all'attività di base.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</target>
+        <target state="translated">L'opzione ConfigureAwaitOptions.SuppressThrowing è supportata solo con l’attività non generica</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
@@ -1920,7 +1920,7 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="new">'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
+        <target state="translated">'AsSpan' è più efficiente di 'Substring'. 'Substring' esegue una copia della stringa O(n), mentre 'AsSpan' non la esegue e ha un costo costante.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
@@ -2215,17 +2215,17 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
         <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</source>
-        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</target>
+        <target state="translated">La proprietà "MaxResponseHeadersLength" viene misurata in kilobyte, non in byte. Ciò significa che il valore specificato verrà moltiplicato per 1024 e il risultato potrebbe essere troppo alto rispetto al valore desiderato.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
         <source>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</source>
-        <target state="new">Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</target>
+        <target state="translated">Assicurarsi che il valore '{0}' sia specificato correttamente. Questo valore viene misurato in kilobyte e non in byte.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">
         <source>Set 'MaxResponseHeadersLength' properly</source>
-        <target state="new">Set 'MaxResponseHeadersLength' properly</target>
+        <target state="translated">Impostare 'MaxResponseHeadersLength' correttamente</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">

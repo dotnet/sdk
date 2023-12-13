@@ -925,12 +925,12 @@ Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing 選項只支援非一般工作，不支援 Task&lt;TResult&gt;。若要與 Task&lt;TResult&gt; 一起使用，請先強制型轉到基本任務。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing 選項只支援非一般工作</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
@@ -965,7 +965,7 @@ Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="DoNotUseCountWhenAnyCanBeUsedTitle">
         <source>Do not use Count() or LongCount() when Any() can be used</source>
-        <target state="translated">不要在可使用 Any() 時使用 Count() 或 LongCount()</target>
+        <target state="translated">若可以使用 Any()，就不要使用 Count() 來提高效能</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseCreateEncryptorWithNonDefaultIVDescription">
@@ -1920,7 +1920,7 @@ Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="new">'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
+        <target state="translated">'AsSpan' 比 'Substring' 更有效率。'Substring' 會執行 O(n) 字串複製，而 'AsSpan' 不會且有固定成本。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
@@ -2215,17 +2215,17 @@ Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
         <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</source>
-        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</target>
+        <target state="translated">屬性 'MaxResponseHeadersLength' 以 KB 為單位測量，不是以位元組為單位。這表示提供的值會乘以 1024，結果可能太高於您要的值。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
         <source>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</source>
-        <target state="new">Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</target>
+        <target state="translated">請確定已正確提供 '{0}' 值。此值以 KB 為單位，而不是以位元組為單位。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">
         <source>Set 'MaxResponseHeadersLength' properly</source>
-        <target state="new">Set 'MaxResponseHeadersLength' properly</target>
+        <target state="translated">正確設定 'MaxResponseHeadersLength'</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">

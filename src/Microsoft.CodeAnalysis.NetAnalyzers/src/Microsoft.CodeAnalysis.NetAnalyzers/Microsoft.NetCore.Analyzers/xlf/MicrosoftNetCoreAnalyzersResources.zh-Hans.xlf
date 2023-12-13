@@ -925,12 +925,12 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingDescription">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task, not a Task&lt;TResult&gt;.  To use it with a Task&lt;TResult&gt;, first cast to the base Task.</target>
+        <target state="translated">ConfigureAwaitOptions.SuppressThrowing 选项仅支持用于非泛型任务，不可用于 Task&lt;TResult&gt;。若要将它用于 Task&lt;TResult&gt;，请先强制转换为基本任务。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingMessage">
         <source>The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</source>
-        <target state="new">The ConfigureAwaitOptions.SuppressThrowing option is only supported with the non-generic Task</target>
+        <target state="translated">只有非泛型任务才支持 ConfigureAwaitOptions.SuppressThrowing 选项</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseConfigureAwaitWithSuppressThrowingTitle">
@@ -1920,7 +1920,7 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringDescription">
         <source>'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</source>
-        <target state="new">'AsSpan' is more efficient than 'Substring'. 'Substring' performs an O(n) string copy, while 'AsSpan' does not and has a constant cost.</target>
+        <target state="translated">“AsSpan”比“Substring”效率更高。“Substring”执行 O(n) 字符串复制，而“AsSpan”不执行且具有固定成本。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferAsSpanOverSubstringMessage">
@@ -2215,17 +2215,17 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
         <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</source>
-        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</target>
+        <target state="translated">属性“MaxResponseHeadersLength”以千字节而不是字节为单位进行测量。这意味着提供的值将乘以 1024，结果可能比预期值高很多。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
         <source>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</source>
-        <target state="new">Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</target>
+        <target state="translated">确保正确提供值“{0}”。此值以千字节而不是字节为单位进行测量。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">
         <source>Set 'MaxResponseHeadersLength' properly</source>
-        <target state="new">Set 'MaxResponseHeadersLength' properly</target>
+        <target state="translated">正确设置“MaxResponseHeadersLength”</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvidePublicParameterlessSafeHandleConstructorDescription">
