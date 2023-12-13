@@ -139,7 +139,7 @@
     <value>Workload update failed: {0}</value>
   </data>
   <data name="WorkloadHistoryRecordNonIntegerId" xml:space="preserve">
-    <value>The ID of a workload history record should be a positive integer.</value>
+    <value>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</value>
   </data>
   <data name="FromPreviousSdkOptionDescription" xml:space="preserve">
     <value>Include workloads installed with earlier SDK versions in update.</value>
@@ -160,6 +160,6 @@
     <value>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</value>
   </data>
   <data name="HistoryManifestOnlyOptionDescription" xml:space="preserve">
-    <value>Update workload manifests without updating the installed workloads.</value>
+    <value>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</value>
   </data>
 </root>

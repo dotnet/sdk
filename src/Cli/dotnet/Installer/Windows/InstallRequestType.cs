@@ -64,5 +64,10 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Removes an install state file.
         /// </summary>
         RemoveInstallStateFile,
+
+        /// <summary>
+        /// Writes a workload history record.
+        /// </summary>
+        WriteWorkloadHistoryFile,
     }
 }

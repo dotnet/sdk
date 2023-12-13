@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
         public override int Execute()
         {
             WorkloadHistoryRecorder recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller);
-            recorder.HistoryRecord.CommandName = "uninstall";
+            recorder.HistoryRecord.CommandName = "repair";
 
             try
             {

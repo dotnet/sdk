@@ -103,6 +103,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Deleted install state file for {request.SdkFeatureBand}.");
                             break;
 
+                        case InstallRequestType.WriteWorkloadHistoryFile:
+                            WriteWorkloadHistoryRecord(request.ProductCode, request.PackagePath);
+                            Dispatcher.ReplySuccess("Created workload history file.");
+                            break;
+
                         default:
                             throw new InvalidOperationException($"Unknown message request: {(int)request.RequestType}");
                     }

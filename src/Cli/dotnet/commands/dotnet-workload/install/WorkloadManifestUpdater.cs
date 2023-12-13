@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -72,10 +73,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return new WorkloadManifestUpdater(reporter, workloadResolver, nugetPackageDownloader, userProfileDir, workloadRecordRepo, installer);
         }
 
-        public async Task UpdateAdvertisingManifestsAsync(bool includePreviews, DirectoryPath? offlineCache = null, IEnumerable<WorkloadManifestInfo> manifests = null)
+        public async Task UpdateAdvertisingManifestsAsync(bool includePreviews, DirectoryPath? offlineCache = null)
         {
             // this updates all the manifests 
-            manifests ??= _workloadResolver.GetInstalledManifests();
+            var manifests = _workloadResolver.GetInstalledManifests();
             await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(manifest, includePreviews, offlineCache))).ConfigureAwait(false);
             WriteUpdatableWorkloadsFile();
         }
@@ -179,6 +180,31 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryRecord record)
+        {
+            WorkloadHistoryState state = record.StateAfterCommand;
+
+            var currentWorkloadState = WorkloadRollbackInfo.FromManifests(_workloadResolver.GetInstalledManifests());
+
+            var versionUpdates = new List<ManifestVersionUpdate>();
+
+            foreach (KeyValuePair<string, string> m in state.ManifestVersions)
+            {
+                var manifestId = new ManifestId(m.Key);
+                var featureBandAndVersion = m.Value.Split('/');
+                var currentVersionInformation = GetInstalledManifestVersion(manifestId, throwIfNotFound: false);
+                var band = currentVersionInformation?.Band;
+                versionUpdates.Add(new ManifestVersionUpdate(
+                    manifestId,
+                    currentVersionInformation?.Version,
+                    band?.ToString(),
+                    new ManifestVersion(featureBandAndVersion[0]),
+                    featureBandAndVersion[1]));
+            }
+
+            return versionUpdates;
+        }
+
         public IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads)
         {
             try
@@ -199,22 +225,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             var manifestRollbackContents = ParseRollbackDefinitionFile(rollbackDefinitionFilePath, _sdkFeatureBand);
             if (recorder is not null)
             {
-                recorder.HistoryRecord.RollbackFileContents = manifestRollbackContents.ToDictionary(w => w.id.ToString(), w => $"{w.version}/{w.featureBand}");
+                recorder.HistoryRecord.RollbackFileContents = manifestRollbackContents.ToDictionaryForJson();
             }
 
-            var unrecognizedManifestIds = manifestRollbackContents.Where(rollbackManifest => !currentManifestIds.Contains(rollbackManifest.Item1));
+            var unrecognizedManifestIds = manifestRollbackContents.ManifestVersions.Where(rollbackManifest => !currentManifestIds.Contains(rollbackManifest.Id));
             if (unrecognizedManifestIds.Any())
             {
                 _reporter.WriteLine(string.Format(LocalizableStrings.RollbackDefinitionContainsExtraneousManifestIds, rollbackDefinitionFilePath, string.Join(" ", unrecognizedManifestIds)).Yellow());
-                manifestRollbackContents = manifestRollbackContents.Where(rollbackManifest => currentManifestIds.Contains(rollbackManifest.Item1));
+                manifestRollbackContents = (WorkloadRollbackInfo)manifestRollbackContents.ManifestVersions.Where(rollbackManifest => currentManifestIds.Contains(rollbackManifest.Item1));
             }
 
-            var manifestUpdates = manifestRollbackContents
+            var manifestUpdates = manifestRollbackContents.ManifestVersions
                 .Select(manifest =>
                 {
-                    var installedManifestInfo = GetInstalledManifestVersion(manifest.id);
-                    return new ManifestVersionUpdate(manifest.id, installedManifestInfo.Version, installedManifestInfo.Band.ToString(),
-                        manifest.version, manifest.featureBand.ToString());
+                    var installedManifestInfo = GetInstalledManifestVersion(manifest.Id);
+                    return new ManifestVersionUpdate(manifest.Id, installedManifestInfo.Version, installedManifestInfo.Band.ToString(),
+                        manifest.Version, manifest.FeatureBand.ToString());
                 });
 
             return manifestUpdates;
@@ -431,7 +457,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        internal static IEnumerable<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ParseRollbackDefinitionFile(string rollbackDefinitionFilePath, SdkFeatureBand featureBand)
+        internal static WorkloadRollbackInfo ParseRollbackDefinitionFile(string rollbackDefinitionFilePath, SdkFeatureBand featureBand)
         {
             string fileContent;
 
@@ -451,7 +477,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
 
-            return WorkloadRollbackInfo.FromJson(fileContent, featureBand).ManifestVersions;
+            return WorkloadRollbackInfo.FromJson(fileContent, featureBand);
         }
 
         private bool BackgroundUpdatesAreDisabled() => bool.TryParse(_getEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE), out var disableEnvVar) && disableEnvVar;

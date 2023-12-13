@@ -7,9 +7,7 @@ using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.History;
-using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -30,6 +28,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public IWorkloadResolver WorkloadResolver { get; set; }
 
         public int ExitCode => 0;
+        public SdkFeatureBand SdkFeatureBand => new("8.0.200");
 
         public MockPackWorkloadInstaller(string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
             IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, List<WorkloadHistoryRecord> records = null)
@@ -133,12 +132,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return packs.Select(p => new WorkloadDownload(p.ResolvedPackageId, p.ResolvedPackageId, p.Version));
         }
 
-        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord)
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)
         {
             HistoryRecords.Add(workloadHistoryRecord);
         }
 
-        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords()
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
         {
             return HistoryRecords;
         }
@@ -184,9 +183,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             WorkloadResolver = workloadResolver;
         }
 
-        public string GetFailingWorkload() => InstallationRecordRepository.FailingWorkload;
-
-        IEnumerable<WorkloadHistoryRecord> IInstaller.GetWorkloadHistoryRecords() => HistoryRecords;
+        public string GetFailingWorkloadFromTest() => InstallationRecordRepository.FailingWorkload;
     }
 
     internal class MockInstallationRecordRepository : IWorkloadInstallationRecordRepository

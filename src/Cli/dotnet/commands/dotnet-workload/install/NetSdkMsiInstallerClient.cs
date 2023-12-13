@@ -35,6 +35,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly string _dependent;
 
         public int ExitCode => Restart ? unchecked((int)Error.SUCCESS_REBOOT_REQUIRED) : unchecked((int)Error.SUCCESS);
+        public SdkFeatureBand SdkFeatureBand => _sdkFeatureBand;
 
         public NetSdkMsiInstallerClient(InstallElevationContextBase elevationContext,
             ISetupLogger logger,
@@ -184,7 +185,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public string GetFailingWorkload() => null;
+        public string GetFailingWorkloadFromTest() => null;
 
         public void DeleteInstallState(SdkFeatureBand sdkFeatureBand) =>
             RemoveInstallStateFile(sdkFeatureBand);
@@ -554,23 +555,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        string GetWorkloadHistoryDirectory()
-        {
-            return Path.Combine(Environment.GetEnvironmentVariable("PROGRAMDATA"), "dotnet", "workloads", _sdkFeatureBand.ToString(), "history");
-        }
-
-        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord)
-        {
-            var historyDirectory = GetWorkloadHistoryDirectory();
-            Directory.CreateDirectory(historyDirectory);
-            string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
-            File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
-        }
-
-        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords()
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
         {
             List<WorkloadHistoryRecord> historyRecords = new();
-            var workloadHistoryDirectory = GetWorkloadHistoryDirectory();
+            var workloadHistoryDirectory = GetWorkloadHistoryDirectory(sdkFeatureBand.ToString());
 
             if (!Directory.Exists(workloadHistoryDirectory))
             {

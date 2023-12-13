@@ -28,8 +28,8 @@
         <note />
       </trans-unit>
       <trans-unit id="HistoryManifestOnlyOptionDescription">
-        <source>Update workload manifests without updating the installed workloads.</source>
-        <target state="new">Update workload manifests without updating the installed workloads.</target>
+        <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
+        <target state="new">Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -63,8 +63,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadHistoryRecordNonIntegerId">
-        <source>The ID of a workload history record should be a positive integer.</source>
-        <target state="new">The ID of a workload history record should be a positive integer.</target>
+        <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
+        <target state="new">The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

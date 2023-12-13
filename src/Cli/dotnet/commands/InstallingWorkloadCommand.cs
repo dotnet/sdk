@@ -93,15 +93,16 @@ namespace Microsoft.DotNet.Workloads.Workload
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
         }
 
-        protected internal void UpdateInstallState(bool createDefaultJson, IEnumerable<ManifestVersionUpdate> manifestVersionUpdates, string failingWorkload)
+        protected internal void UpdateInstallState(bool createDefaultJson, IEnumerable<ManifestVersionUpdate> manifestVersionUpdates)
         {
-            if (failingWorkload is not null)
+            var failingWorkloadForTests = _workloadInstaller.GetFailingWorkloadFromTest();
+            if (failingWorkloadForTests is not null)
             {
                 foreach (ManifestVersionUpdate update in manifestVersionUpdates)
                 {
-                    if (update.ManifestId.ToString().Equals(failingWorkload))
+                    if (update.ManifestId.ToString().Equals(failingWorkloadForTests))
                     {
-                        throw new Exception($"Failing workload: {failingWorkload}");
+                        throw new Exception($"Failing workload: {failingWorkloadForTests}");
                     }
                 }
             }
@@ -216,9 +217,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         protected void PrintDownloadLink(IEnumerable<string> packageUrls)
         {
-            Reporter.WriteLine("==allPackageLinksJsonOutputStart==");
             Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
-            Reporter.WriteLine("==allPackageLinksJsonOutputEnd==");
         }
 
         protected IEnumerable<WorkloadId> GetInstalledWorkloads(bool fromPreviousSdk)
@@ -286,14 +285,12 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public static readonly CliOption<string> FromHistoryOption = new("--from-history")
         {
-            Description = Update.LocalizableStrings.FromHistoryOptionDescription,
-            Hidden = true
+            Description = Update.LocalizableStrings.FromHistoryOptionDescription
         };
 
         public static readonly CliOption<string> HistoryManifestOnlyOption = new("--manifests-only")
         {
-            Description = Update.LocalizableStrings.HistoryManifestOnlyOptionDescription,
-            Hidden = true
+            Description = Update.LocalizableStrings.HistoryManifestOnlyOptionDescription
         };
 
         public static readonly CliOption<string> ConfigOption = new("--configfile")

@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
                                 .DeleteWorkloadInstallationRecord(workloadId, featureBand);
                         }
 
-                        WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+                        _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
                         Reporter.WriteLine();
                         Reporter.WriteLine(string.Format(LocalizableStrings.UninstallSucceeded, string.Join(" ", _workloadIds)));

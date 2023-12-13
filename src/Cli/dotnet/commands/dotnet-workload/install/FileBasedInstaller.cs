@@ -35,6 +35,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly RestoreActionConfig _restoreActionConfig;
 
         public int ExitCode => 0;
+        public SdkFeatureBand SdkFeatureBand => _sdkFeatureBand;
 
         public FileBasedInstaller(IReporter reporter,
             SdkFeatureBand sdkFeatureBand,
@@ -86,7 +87,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return packs;
         }
 
-        public string GetFailingWorkload() => null;
+        public string GetFailingWorkloadFromTest() => null;
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
@@ -504,7 +505,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return Path.Combine(_workloadMetadataDir, _sdkFeatureBand.ToString(), "history");
         }
 
-        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord)
+        public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)
         {
             var historyDirectory = GetWorkloadHistoryDirectory();
             Directory.CreateDirectory(historyDirectory);
@@ -512,7 +513,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
         }
 
-        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords()
+        public IEnumerable<WorkloadHistoryRecord> GetWorkloadHistoryRecords(string sdkFeatureBand)
         {
             List<WorkloadHistoryRecord> historyRecords = new();
 

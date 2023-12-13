@@ -73,19 +73,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             try
             {
-                var manifestRollbacks = usedRollback ? WorkloadManifestUpdater.ParseRollbackDefinitionFile(_fromRollbackDefinition, _sdkFeatureBand) : null;
-
-                if (usedRollback)
-                {
-                    var rollbackContents = new Dictionary<string, string>();
-                    foreach (var (id, version, featureBand) in manifestRollbacks)
-                    {
-                        rollbackContents[id.ToString()] = $"{version}/{featureBand}";
-                    }
-
-                    recorder.HistoryRecord.RollbackFileContents = rollbackContents;
-                }
-
                 if (_printDownloadLinkOnly)
                 {
                     Reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
@@ -109,7 +96,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         var existingWorkloads = GetInstalledWorkloads(false);
                         var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
 
-                        recorder.Run(() => DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait());
+                        DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
                     }
                     catch (Exception e)
                     {
@@ -133,7 +120,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                 _skipManifestUpdate,
                                 _includePreviews,
                                 string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption),
-                                manifestRollbacks);
+                                recorder);
                         }
                         catch (Exception e)
                         {
@@ -156,7 +143,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             bool skipManifestUpdate = false,
             bool includePreviews = false,
             DirectoryPath? offlineCache = null,
-            IEnumerable<(ManifestId, ManifestVersion, SdkFeatureBand)> rollbackContents = null)
+            WorkloadHistoryRecorder recorder = null)
         {
             Reporter.WriteLine();
 
@@ -193,7 +180,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
                 manifestsToUpdate = useRollback ?
-                    _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, null) :
+                    _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, recorder) :
                     _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
 
@@ -259,7 +246,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                     }
 
-                    UpdateInstallState(usingRollback, manifestsToUpdate, installer.GetFailingWorkload());
+                    UpdateInstallState(usingRollback, manifestsToUpdate);
                 },
                 rollback: () =>
                 {

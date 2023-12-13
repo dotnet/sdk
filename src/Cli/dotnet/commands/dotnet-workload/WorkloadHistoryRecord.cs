@@ -29,6 +29,8 @@ namespace Microsoft.DotNet.Workloads.Workload.History
     {
         public Dictionary<string, string> ManifestVersions { get; set; }
 
+        public string WorkloadSetVersion { get; set; }
+
         public List<string> InstalledWorkloads { get; set; }
 
         public bool Equals(WorkloadHistoryState other)
@@ -37,6 +39,7 @@ namespace Microsoft.DotNet.Workloads.Workload.History
             {
                 return false;
             }
+
             foreach (var manifestId in ManifestVersions.Keys)
             {
                 if (!other.ManifestVersions.TryGetValue(manifestId, out string otherManifestVersion) ||
@@ -44,6 +47,12 @@ namespace Microsoft.DotNet.Workloads.Workload.History
                 {
                     return false;
                 }
+            }
+
+            if ((WorkloadSetVersion is not null && !WorkloadSetVersion.Equals(other.WorkloadSetVersion)) ||
+                (WorkloadSetVersion is null && other.WorkloadSetVersion is not null))
+            {
+                return false;
             }
 
             return new HashSet<string>(InstalledWorkloads).SetEquals(other.InstalledWorkloads);
@@ -55,6 +64,7 @@ namespace Microsoft.DotNet.Workloads.Workload.History
             {
                 return Equals(otherState);
             }
+
             return false;
         }
 
@@ -66,6 +76,8 @@ namespace Microsoft.DotNet.Workloads.Workload.History
                 hc.Add(kvp.Key);
                 hc.Add(kvp.Value);
             }
+
+            hc.Add(WorkloadSetVersion);
 
             foreach (var workload in InstalledWorkloads)
             {

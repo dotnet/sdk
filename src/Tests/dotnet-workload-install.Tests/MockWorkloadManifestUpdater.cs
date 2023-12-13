@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -20,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             _manifestUpdates = manifestUpdates ?? new List<ManifestUpdateWithWorkloads>();
         }
 
-        public Task UpdateAdvertisingManifestsAsync(bool includePreview, DirectoryPath? cachePath = null, IEnumerable<WorkloadManifestInfo> manifests = null)
+        public Task UpdateAdvertisingManifestsAsync(bool includePreview, DirectoryPath? cachePath = null)
         {
             UpdateAdvertisingManifestsCallCount++;
             return Task.CompletedTask;
@@ -30,6 +31,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             CalculateManifestUpdatesCallCount++;
             return _manifestUpdates;
+        }
+
+        public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryRecord record)
+        {
+            throw new NotImplementedException();
         }
 
         public ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId, bool throwIfNotFound = true)

@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.Workloads.Workload.History
         private readonly IInstaller _workloadInstaller;
         private IWorkloadResolver _workloadResolver;
         private readonly ReleaseVersion _sdkVersion;
+        private readonly SdkFeatureBand _sdkFeatureBand;
 
         public WorkloadHistoryCommand(
             ParseResult parseResult,
@@ -33,17 +34,17 @@ namespace Microsoft.DotNet.Workloads.Workload.History
             var userProfileDir = creationResult.UserProfileDir;
             _sdkVersion = creationResult.SdkVersion;
             _workloadResolver = creationResult.WorkloadResolver;
-            var sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
+            _sdkFeatureBand = new SdkFeatureBand(_sdkVersion);
 
             _workloadInstaller = workloadInstaller ??
-                                 WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand,
+                                 WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, _sdkFeatureBand,
                                      _workloadResolver, Verbosity, userProfileDir, VerifySignatures, PackageDownloader, dotnetDir, TempDirectoryPath,
                                      packageSourceLocation: null, _parseResult.ToRestoreActionConfig());
         }
 
         public override int Execute()
         {
-            var displayRecords = WorkloadHistoryDisplay.ProcessWorkloadHistoryRecords(_workloadInstaller.GetWorkloadHistoryRecords());
+            var displayRecords = WorkloadHistoryDisplay.ProcessWorkloadHistoryRecords(_workloadInstaller.GetWorkloadHistoryRecords(_sdkFeatureBand.ToString()));
 
             if (!displayRecords.Any())
             {

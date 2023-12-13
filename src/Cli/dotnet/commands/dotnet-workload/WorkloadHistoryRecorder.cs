@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Text.Json;
 using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -44,7 +45,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 HistoryRecord.StateAfterCommand = GetWorkloadState();
                 HistoryRecord.TimeCompleted = DateTimeOffset.Now;
 
-                _workloadInstaller.WriteWorkloadHistoryRecord(HistoryRecord);
+                _workloadInstaller.WriteWorkloadHistoryRecord(HistoryRecord, _workloadInstaller.SdkFeatureBand.ToString());
             }
         }
 

@@ -172,6 +172,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
+        // The useInstallStateOnly flag indicates that, when performing garbage collection, we should not follow the normal logic of
+        // starting at manifest roots and following them to complete the closure. This means that the install state file has already
+        // been overwritten with exactly the set of manifests we want, and we want to keep only manifests in that list. Note that we
+        // keep the baseline manifests regardless.
         public IEnumerable<ReadableWorkloadManifest> GetManifests(bool useInstallStateOnly = false)
         {
             //  Scan manifest directories
