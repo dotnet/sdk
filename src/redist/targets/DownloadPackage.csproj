@@ -1,3 +1,4 @@
+<!-- This project is used in GenerateLayout.targets and BundledDotnetTools.targets to download NuGet packages. -->
 <Project Sdk="Microsoft.Build.NoTargets" DefaultTargets="Restore">
 
   <PropertyGroup>
@@ -8,6 +9,7 @@
 
   <ItemGroup>
     <!-- Use PackageDownload since we don't need to reference the package. -->
+    <!-- See: https://learn.microsoft.com/en-us/nuget/consume-packages/packagedownload-functionality -->
     <!-- The square brackets for the version constrain restoration to only use that exact version. -->
     <!-- See: https://learn.microsoft.com/en-us/nuget/concepts/package-versioning#floating-version-resolutions -->
     <PackageDownload Include="$(PackageToRestore)" Version="[$(PackageVersionToRestore)]" />
