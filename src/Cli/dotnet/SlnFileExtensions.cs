@@ -6,6 +6,7 @@ using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Sln.Internal;
 using Microsoft.DotNet.Cli.Utils;
+using System.Collections.Generic;
 
 namespace Microsoft.DotNet.Tools.Common
 {
@@ -115,7 +116,7 @@ namespace Microsoft.DotNet.Tools.Common
                                                                    && p.TypeGuid == ProjectTypeGuids.SolutionFolderGuid).FirstOrDefault();
                     if (duplicateProject != null)
                     {
-                       // Try making a new folder for the project to put it under so we can still add it despite there being one with the same name already in the parent folder
+                        // Try making a new folder for the project to put it under so we can still add it despite there being one with the same name already in the parent folder
                         slnFile.AddSolutionFolders(slnProject, new List<string>() { Path.GetDirectoryName(relativeProjectPath) });
                     }
                 }
@@ -258,12 +259,6 @@ namespace Microsoft.DotNet.Tools.Common
                     return;
                 }
 
-                string solutionFoldersWithDuplicateProjects = GetSolutionFolderWithDuplicateProject(slnFile, slnProject, solutionFolders, nestedProjectsSection);
-                if (!string.IsNullOrEmpty(solutionFoldersWithDuplicateProjects))
-                {
-                    throw new GracefulException(CommonLocalizableStrings.SolutionFolderAlreadyContainsProject, slnFile.FullPath, slnProject.Name, solutionFoldersWithDuplicateProjects);
-                }
-
                 string parentDirGuid = null;
                 var solutionFolderHierarchy = string.Empty;
                 foreach (var dir in solutionFolders)
@@ -275,6 +270,12 @@ namespace Microsoft.DotNet.Tools.Common
                     }
                     else
                     {
+
+                        if(HasDuplicateNameForSameValueOfNestedProjects(nestedProjectsSection, dir, parentDirGuid, slnFile.Projects))
+                        {
+                            throw new GracefulException(CommonLocalizableStrings.SolutionFolderAlreadyContainsProject, slnFile.FullPath, slnProject.Name, slnFile.Projects.FirstOrDefault(p => p.Id == parentDirGuid).Name);
+                        }
+
                         var solutionFolder = new SlnProject
                         {
                             Id = Guid.NewGuid().ToString("B").ToUpper(),
@@ -292,22 +293,29 @@ namespace Microsoft.DotNet.Tools.Common
                         parentDirGuid = solutionFolder.Id;
                     }
                 }
-
+                if (HasDuplicateNameForSameValueOfNestedProjects(nestedProjectsSection, slnProject.Name, parentDirGuid, slnFile.Projects))
+                {
+                    throw new GracefulException(CommonLocalizableStrings.SolutionFolderAlreadyContainsProject, slnFile.FullPath, slnProject.Name, slnFile.Projects.FirstOrDefault(p => p.Id == parentDirGuid).Name);
+                }
                 nestedProjectsSection.Properties[slnProject.Id] = parentDirGuid;
             }
         }
 
-        private static string GetSolutionFolderWithDuplicateProject(SlnFile slnFile, SlnProject slnProject, IList<string> solutionFolders, SlnSection nestedProjectsSection)
+        private static bool HasDuplicateNameForSameValueOfNestedProjects(SlnSection nestedProjectsSection, string name, string value, IList<SlnProject> projects)
         {
-            var duplicateProjects = slnFile.Projects.Where(p => string.Equals(p.Name, slnProject.Name, StringComparison.OrdinalIgnoreCase)
-                                            && p.TypeGuid != ProjectTypeGuids.SolutionFolderGuid).ToList();
+            foreach (var property in nestedProjectsSection.Properties)
+            {
+                if (property.Value == value)
+                {
+                    var existingProject = projects.FirstOrDefault(p => p.Id == property.Key);
 
-            var existingSolutionFoldersIds = slnFile.GetSolutionFoldersThatContainProjectsInItsHierarchy(nestedProjectsSection.Properties, duplicateProjects);
-
-            var existingSolutionFolders = slnFile.Projects.Where(f => existingSolutionFoldersIds.Contains(f.Id)
-                                            && f.TypeGuid == ProjectTypeGuids.SolutionFolderGuid).Select(f => f.Name).ToList();
-
-            return existingSolutionFolders.Intersect(solutionFolders).FirstOrDefault();
+                    if (existingProject != null && existingProject.Name == name)
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         private static IDictionary<string, string> GetSolutionFolderPaths(
@@ -325,7 +333,7 @@ namespace Microsoft.DotNet.Tools.Common
                 {
                     id = nestedProjects[id];
                     var parentSlnProject = solutionFolderProjects.Where(p => p.Id == id).SingleOrDefault();
-                    if(parentSlnProject == null) // see: https://github.com/dotnet/sdk/pull/28811
+                    if (parentSlnProject == null) // see: https://github.com/dotnet/sdk/pull/28811
                         throw new GracefulException(CommonLocalizableStrings.CorruptSolutionProjectFolderStructure, slnFile.FullPath, id);
                     path = Path.Combine(parentSlnProject.FilePath, path);
                 }
@@ -479,7 +487,8 @@ namespace Microsoft.DotNet.Tools.Common
         private static HashSet<string> GetSolutionFoldersThatContainProjectsInItsHierarchy(
             this SlnFile slnFile,
             SlnPropertySet nestedProjects,
-            IEnumerable<SlnProject> projectsToSearchFor = null)
+            IEnumerable<SlnProject> projectsToSearchFor = null,
+            bool stopAtOne = false)
         {
             var solutionFoldersInUse = new HashSet<string>();
 
@@ -488,7 +497,8 @@ namespace Microsoft.DotNet.Tools.Common
             {
                 nonSolutionFolderProjects = slnFile.Projects.GetProjectsNotOfType(
                     ProjectTypeGuids.SolutionFolderGuid);
-            } else
+            }
+            else
             {
                 nonSolutionFolderProjects = projectsToSearchFor;
             }
@@ -500,6 +510,10 @@ namespace Microsoft.DotNet.Tools.Common
                 {
                     id = nestedProjects[id];
                     solutionFoldersInUse.Add(id);
+                    if (stopAtOne)
+                    {
+                        break;
+                    }
                 }
             }
 
