@@ -1,4 +1,9 @@
-<!-- This project is used in GenerateLayout.targets and BundledDotnetTools.targets to download NuGet packages. -->
+<!--
+  This project is used to download NuGet packages in the following targets files:
+    BundledDotnetTools.targets
+    Crossgen.targets
+    GenerateLayout.targets
+-->
 <Project Sdk="Microsoft.Build.NoTargets" DefaultTargets="Restore">
 
   <PropertyGroup>
