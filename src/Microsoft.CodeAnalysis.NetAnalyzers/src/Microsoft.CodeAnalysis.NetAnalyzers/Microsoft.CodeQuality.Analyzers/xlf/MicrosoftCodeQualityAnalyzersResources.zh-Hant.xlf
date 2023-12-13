@@ -54,22 +54,22 @@
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndCodeFixTitle">
         <source>Remove redundant length argument</source>
-        <target state="new">Remove redundant length argument</target>
+        <target state="translated">移除冗余的長度引數</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndDescription">
         <source>An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</source>
-        <target state="new">An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</target>
+        <target state="translated">明確長度計算可能會造成錯誤，而可在切入緩衝區結尾時避免。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndMessage">
         <source>'{0}' uses a redundant length calculation that can be removed</source>
-        <target state="new">'{0}' uses a redundant length calculation that can be removed</target>
+        <target state="translated">'{0}' 使用可移除的冗余長度計算</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndTitle">
         <source>Avoid redundant length argument</source>
-        <target state="new">Avoid redundant length argument</target>
+        <target state="translated">避免冗余的長度引數</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsMessage">
@@ -359,22 +359,22 @@
       </trans-unit>
       <trans-unit id="MakeTypesInternalCodeFixTitle">
         <source>Make the public type internal</source>
-        <target state="new">Make the public type internal</target>
+        <target state="translated">將公用類型設為內部</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalDescription">
         <source>Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</source>
-        <target state="new">Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</target>
+        <target state="translated">與類別庫不同，應用程式的 API 通常不會公開參照，因此可將類型標示為內部。</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalMessage">
         <source>Because an application's API isn't typically referenced from outside the assembly, types can be made internal</source>
-        <target state="new">Because an application's API isn't typically referenced from outside the assembly, types can be made internal</target>
+        <target state="translated">因為應用程式的 API 通常不是從組件外部參考，所以可以將類型設定為內部</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalTitle">
         <source>Consider making public types internal</source>
-        <target state="new">Consider making public types internal</target>
+        <target state="translated">請考慮將公用類型設為內部</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">

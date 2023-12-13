@@ -54,22 +54,22 @@
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndCodeFixTitle">
         <source>Remove redundant length argument</source>
-        <target state="new">Remove redundant length argument</target>
+        <target state="translated">冗長な長さの引数を削除します</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndDescription">
         <source>An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</source>
-        <target state="new">An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</target>
+        <target state="translated">明示的な長さの計算ではエラーが発生しやすくなる可能性があり、バッファーの末尾にスライスする場合は回避できます。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndMessage">
         <source>'{0}' uses a redundant length calculation that can be removed</source>
-        <target state="new">'{0}' uses a redundant length calculation that can be removed</target>
+        <target state="translated">'{0}' では、削除できる冗長な長さの計算を使用しています</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndTitle">
         <source>Avoid redundant length argument</source>
-        <target state="new">Avoid redundant length argument</target>
+        <target state="translated">冗長な長さの引数を回避します</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsMessage">
@@ -359,22 +359,22 @@
       </trans-unit>
       <trans-unit id="MakeTypesInternalCodeFixTitle">
         <source>Make the public type internal</source>
-        <target state="new">Make the public type internal</target>
+        <target state="translated">パブリック型を内部にする</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalDescription">
         <source>Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</source>
-        <target state="new">Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</target>
+        <target state="translated">クラス ライブラリとは異なり、アプリケーションの API は通常は公開参照されないため、型を内部としてマークできます。</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalMessage">
         <source>Because an application's API isn't typically referenced from outside the assembly, types can be made internal</source>
-        <target state="new">Because an application's API isn't typically referenced from outside the assembly, types can be made internal</target>
+        <target state="translated">アプリケーションの API は通常、アセンブリの外部から参照されていないため、型を内部にできます</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalTitle">
         <source>Consider making public types internal</source>
-        <target state="new">Consider making public types internal</target>
+        <target state="translated">パブリック型を内部にすることを検討してください</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">

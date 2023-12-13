@@ -54,22 +54,22 @@
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndCodeFixTitle">
         <source>Remove redundant length argument</source>
-        <target state="new">Remove redundant length argument</target>
+        <target state="translated">Yedekli uzunluk bağımsız değişkenini kaldırma</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndDescription">
         <source>An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</source>
-        <target state="new">An explicit length calculation can be error-prone and can be avoided when slicing to end of the buffer.</target>
+        <target state="translated">Açık uzunluk hesaplaması hataya açık olabileceğinden arabellek sonuna dilimlerken bundan kaçınılabilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndMessage">
         <source>'{0}' uses a redundant length calculation that can be removed</source>
-        <target state="new">'{0}' uses a redundant length calculation that can be removed</target>
+        <target state="translated">'{0}', kaldırılabilecek yedekli bir uzunluk hesaplaması kullanır</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidLengthCalculationWhenSlicingToEndTitle">
         <source>Avoid redundant length argument</source>
-        <target state="new">Avoid redundant length argument</target>
+        <target state="translated">Yedekli uzunluk bağımsız değişkenini önleme</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidMultipleEnumerationsMessage">
@@ -359,22 +359,22 @@
       </trans-unit>
       <trans-unit id="MakeTypesInternalCodeFixTitle">
         <source>Make the public type internal</source>
-        <target state="new">Make the public type internal</target>
+        <target state="translated">Genel türü dahili yapma</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalDescription">
         <source>Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</source>
-        <target state="new">Unlike a class library, an application's API isn't typically referenced publicly, so types can be marked internal.</target>
+        <target state="translated">Sınıf kitaplığından farklı olarak, uygulamanın API'sine genel olarak başvurulamadığından türler dahili olarak işaretlenebilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalMessage">
         <source>Because an application's API isn't typically referenced from outside the assembly, types can be made internal</source>
-        <target state="new">Because an application's API isn't typically referenced from outside the assembly, types can be made internal</target>
+        <target state="translated">Bir uygulamanın API'sine genellikle derlemenin dışından başvurulmadığından türler dahili olarak kullanılabilir</target>
         <note />
       </trans-unit>
       <trans-unit id="MakeTypesInternalTitle">
         <source>Consider making public types internal</source>
-        <target state="new">Consider making public types internal</target>
+        <target state="translated">Genel türleri dahili hale getirmeyi düşünün</target>
         <note />
       </trans-unit>
       <trans-unit id="MarkAttributesWithAttributeUsageCodeFix">
