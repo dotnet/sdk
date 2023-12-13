@@ -45,8 +45,8 @@ namespace Microsoft.DotNet.Cli.Utils
                 { "DOTNET_HOST_PATH", GetDotnetPath() },
             };
 
-        private readonly IEnumerable<string> _msbuildRequiredParameters =
-            new List<string> { "-maxcpucount", "-verbosity:m" };
+        private readonly List<string> _msbuildRequiredParameters =
+            [ "-maxcpucount", "-verbosity:m" ];
 
         public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null)
         {
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
             if (!string.IsNullOrWhiteSpace(tlpDefault))
             {
-                _argsToForward = _argsToForward.Concat(new[] { $"-tlp:default={tlpDefault}" });
+                _msbuildRequiredParameters.Add($"-tlp:default={tlpDefault}");
             }
 
             MSBuildPath = msbuildPath ?? defaultMSBuildPath;

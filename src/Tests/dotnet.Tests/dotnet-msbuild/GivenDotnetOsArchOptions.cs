@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
-        const string ExpectedPrefix = "-maxcpucount -verbosity:m";
+        const string ExpectedPrefix = "-maxcpucount -verbosity:m -tlp:default=auto";
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
