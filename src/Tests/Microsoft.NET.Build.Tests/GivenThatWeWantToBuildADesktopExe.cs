@@ -33,6 +33,32 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void RuntimeIdentifiersInferredCorrectly(bool useRidGraph)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "AutoRuntimeIdentifierTest",
+                TargetFrameworks = "net6",
+                IsExe = true,
+            };
+
+            testProject.AdditionalProperties.Add("UseRidGraph", useRidGraph.ToString());
+
+            testProject.RecordProperties("RuntimeIdentifier");
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+
+            new DotnetBuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name))
+               .Execute()
+               .Should()
+               .Pass();
+
+            testProject.GetPropertyValues(testAsset.TestRoot, "net6")["RuntimeIdentifier"].Should().Be(useRidGraph ? "win7-x64" : "win-x64");
+        }
+
         //  Windows only because default RuntimeIdentifier only applies when current OS is Windows
         [WindowsOnlyTheory]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", false, "AnyCPU")]
