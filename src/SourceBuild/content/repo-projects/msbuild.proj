@@ -10,7 +10,6 @@
     <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) $(OutputVersionArgs)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:DotNetCoreSdkDir=$(DotNetCliToolDir)</BuildCommandArgs>
     <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
   </PropertyGroup>
 
