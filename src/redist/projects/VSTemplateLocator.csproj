@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
     <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
@@ -6,7 +6,6 @@
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
-    <AssemblyName>UNUSED</AssemblyName>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
@@ -18,7 +17,7 @@
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
-  <Target Name="GenerateLayout"  Condition=" '$(OS)' == 'Windows_NT' " BeforeTargets="AfterBuild">
+  <Target Name="GenerateLayout"  Condition="'$(OS)' == 'Windows_NT'" BeforeTargets="AfterBuild">
     <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(OutputPath)" />
 
     <RemoveDir Directories="$(OutputPath)" />

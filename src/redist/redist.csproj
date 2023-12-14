@@ -20,10 +20,6 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="targets\DownloadPackage.csproj" />
-  </ItemGroup>
-
   <Import Project="targets\BuildCoreSdkTasks.targets" />
   <Import Project="targets\GetRuntimeInformation.targets" />
   <Import Project="targets\SetBuildDefaults.targets" />
