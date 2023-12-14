@@ -119,9 +119,6 @@
     <EnvironmentVariables Include="DeterministicSourcePaths=false" Condition="'$(DeterministicBuildOptOut)' == 'true'" />
 
     <EnvironmentVariables Include="SourceRoot=$(ProjectDirectory)" />
-
-    <!-- https://github.com/dotnet/source-build/issues/3081 -->
-    <EnvironmentVariables Include="CheckEolTargetFramework=false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
