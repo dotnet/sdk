@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommandErrorMessage">
         <source>Could not execute because the specified command or file was not found.</source>
-        <target state="new">Could not execute because the specified command or file was not found.</target>
+        <target state="translated">Nebylo možné provést, protože zadaný příkaz nebo soubor nebyl nalezen.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
@@ -37,11 +37,10 @@
   * You misspelled a built-in dotnet command.
   * You intended to execute a .NET program, but {0} does not exist.
   * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</source>
-        <target state="needs-review-translation">Spuštění nebylo úspěšné, protože zadaný příkaz nebo soubor se nenašly.
-Mezi možné příčiny patří toto:
-  * V integrovaném příkazu dotnet je překlep.
+        <target state="translated">Možné důvody:
+  * Chybně jste napsali integrovaný příkaz dotnet.
   * Chtěli jste spustit program .NET, ale {0} neexistuje.
-  * Chtěli jste spustit globální nástroj, ale v proměnné PATH se nepovedlo najít spustitelný soubor s předponou dotnet s tímto názvem.</target>
+  * Chtěli jste spustit nástroj global, ale v cestě PATH nebyl nalezen spustitelný soubor s předponou dotnet s tímto názvem.</target>
         <note />
       </trans-unit>
       <trans-unit id="WaitingForDebuggerToAttach">

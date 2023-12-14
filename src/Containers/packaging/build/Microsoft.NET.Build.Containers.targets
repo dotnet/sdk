@@ -184,14 +184,27 @@
   <PropertyGroup>
     <PublishContainerDependsOn>
       _ContainerVerifySDKVersion;
-      ComputeContainerConfig
+      ComputeContainerConfig;
+      _CheckContainersPackage
     </PublishContainerDependsOn>
   </PropertyGroup>
 
-  <!-- TODO: change this comparison to include $(EnableSdkContainerSupport) == true when console apps Import the Publish SDK -->
+  <Target Name="_CheckContainersPackage" AfterTargets="Build">
+    <PropertyGroup>
+      <ContainersPackageIdentity>Microsoft.NET.Build.Containers</ContainersPackageIdentity>
+    </PropertyGroup>
+    <ItemGroup>
+      <ContainersPackage Include="@(PackageReference)" Condition="'%(Identity)' == '$(ContainersPackageIdentity)'"/>
+    </ItemGroup>
+    <Warning Text="Microsoft.NET.Build.Containers NuGet package is explicitly referenced. Consider removing the package reference to Microsoft.NET.Build.Containers as it is now part of .NET SDK." Condition="'@(ContainersPackage)' != ''" />
+    <PropertyGroup>
+      <EnableSdkContainerSupport Condition="'@(ContainersPackage)' != ''">true</EnableSdkContainerSupport>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="PublishContainer"
     DependsOnTargets="$(PublishContainerDependsOn)"
-    Condition="'$(IsPublishable)' == 'true'">
+    Condition="'$(IsPublishable)' == 'true' AND '$(EnableSdkContainerSupport)' == 'true'">
 
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
