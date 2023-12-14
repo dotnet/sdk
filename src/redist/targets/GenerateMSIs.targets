@@ -30,7 +30,8 @@
       <VSToolsNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Tools.Net.Core.SDK.nuspec</VSToolsNuspecFile>
       <VSToolsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</VSToolsNupkgFile>
 
-      <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/$(Configuration)</SdkResolverLayoutPath>
+      <!-- Hard-coded to Debug since this project is not in the SLN, so it won't pick up $(Configuration) on build. The configuration is irrelevant since this project only creates a package. -->
+      <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/Debug</SdkResolverLayoutPath>
       <VSToolsResolverNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Tools.Net.Core.SDK.Resolver.nuspec</VSToolsResolverNuspecFile>
       <VSToolsResolverNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.Resolver.nupkg</VSToolsResolverNupkgFile>
 
@@ -38,6 +39,7 @@
       <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
 
+      <!-- Hard-coded to Debug since this project is not in the SLN, so it won't pick up $(Configuration) on build. The configuration is irrelevant since this project only creates a package. -->
       <VSTemplateLocatorLayoutPath>$(ArtifactsDir)bin/VSTemplateLocator/Debug</VSTemplateLocatorLayoutPath>
       <VSTemplateLocatorNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
       <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
