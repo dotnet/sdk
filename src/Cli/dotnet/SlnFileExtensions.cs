@@ -486,22 +486,13 @@ namespace Microsoft.DotNet.Tools.Common
 
         private static HashSet<string> GetSolutionFoldersThatContainProjectsInItsHierarchy(
             this SlnFile slnFile,
-            SlnPropertySet nestedProjects,
-            IEnumerable<SlnProject> projectsToSearchFor = null,
-            bool stopAtOne = false)
+            SlnPropertySet nestedProjects)
         {
             var solutionFoldersInUse = new HashSet<string>();
 
             IEnumerable<SlnProject> nonSolutionFolderProjects;
-            if (projectsToSearchFor == null)
-            {
-                nonSolutionFolderProjects = slnFile.Projects.GetProjectsNotOfType(
-                    ProjectTypeGuids.SolutionFolderGuid);
-            }
-            else
-            {
-                nonSolutionFolderProjects = projectsToSearchFor;
-            }
+            nonSolutionFolderProjects = slnFile.Projects.GetProjectsNotOfType(
+                 ProjectTypeGuids.SolutionFolderGuid);
 
             foreach (var nonSolutionFolderProject in nonSolutionFolderProjects)
             {
@@ -510,10 +501,6 @@ namespace Microsoft.DotNet.Tools.Common
                 {
                     id = nestedProjects[id];
                     solutionFoldersInUse.Add(id);
-                    if (stopAtOne)
-                    {
-                        break;
-                    }
                 }
             }
 
