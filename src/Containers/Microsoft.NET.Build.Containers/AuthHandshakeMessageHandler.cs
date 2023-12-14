@@ -31,6 +31,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// Valid characters for this clientID are in the unicode range <see href="https://wintelguy.com/unicode_character_lookup.pl/?str=20-7E">20-7E</see>
     /// </remarks>
     private const string ClientID = "netsdkcontainers";
+    private const string BasicAuthScheme = "Basic";
+    private const string BearerAuthScheme = "Bearer";
 
     private sealed record AuthInfo(string Realm, string? Service, string? Scope);
 
@@ -62,18 +64,28 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         }
 
         AuthenticationHeaderValue header = authenticateHeader.First();
-        if (header is { Scheme: "Bearer" or "Basic", Parameter: string bearerArgs })
+
+        if (header.Scheme is not null)
         {
             scheme = header.Scheme;
-            var keyValues = ParseBearerArgs(bearerArgs);
-
-            var result = scheme switch
+            var keyValues = ParseBearerArgs(header.Parameter);
+            if (keyValues is null)
             {
-                "Bearer" => TryParseBearerAuthInfo(keyValues, out bearerAuthInfo),
-                "Basic" => TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, out bearerAuthInfo),
-                _ => false
-            };
-            return result;
+                return false;
+            }
+
+            if (header.Scheme.Equals(BasicAuthScheme, StringComparison.OrdinalIgnoreCase))
+            {
+                return TryParseBasicAuthInfo(keyValues, msg.RequestMessage!.RequestUri!, out bearerAuthInfo);
+            }
+            else if (header.Scheme.Equals(BearerAuthScheme, StringComparison.OrdinalIgnoreCase))
+            {
+                return TryParseBearerAuthInfo(keyValues, out bearerAuthInfo);
+            }
+            else
+            {
+                return false;
+            }
         }
         return false;
 
@@ -101,8 +113,12 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             return true;
         }
 
-        static Dictionary<string, string> ParseBearerArgs(string bearerHeaderArgs)
+        static Dictionary<string, string>? ParseBearerArgs(string? bearerHeaderArgs)
         {
+            if (bearerHeaderArgs is null)
+            {
+                return null;
+            }
             Dictionary<string, string> keyValues = new();
             foreach (Match match in BearerParameterSplitter().Matches(bearerHeaderArgs))
             {
@@ -121,10 +137,12 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     private sealed record TokenResponse(string? token, string? access_token, int? expires_in, DateTimeOffset? issued_at)
     {
         public string ResolvedToken => token ?? access_token ?? throw new ArgumentException(Resource.GetString(nameof(Strings.InvalidTokenResponse)));
-        public DateTimeOffset ResolvedExpiration {
-            get {
-                var issueTime = issued_at ?? DateTimeOffset.UtcNow; // per spec, if no issued_at use the current time
-                var validityDuration = expires_in ?? 60; // per spec, if no expires_in use 60 seconds
+        public DateTimeOffset ResolvedExpiration
+        {
+            get
+            {
+                var issueTime = this.issued_at ?? DateTimeOffset.UtcNow; // per spec, if no issued_at use the current time
+                var validityDuration = this.expires_in ?? 60; // per spec, if no expires_in use 60 seconds
                 var expirationTime = issueTime.AddSeconds(validityDuration);
                 return expirationTime;
             }
@@ -154,12 +172,12 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             privateRepoCreds = await GetLoginCredentials(registry).ConfigureAwait(false);
         }
 
-        if (scheme is "Basic")
+        if (scheme.Equals(BasicAuthScheme, StringComparison.OrdinalIgnoreCase))
         {
-            var authValue = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
-            return new (authValue, DateTimeOffset.MaxValue);
+            var authValue = new AuthenticationHeaderValue(BasicAuthScheme, Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
+            return new(authValue, DateTimeOffset.MaxValue);
         }
-        else if (scheme is "Bearer")
+        else if (scheme.Equals(BearerAuthScheme, StringComparison.OrdinalIgnoreCase))
         {
             Debug.Assert(bearerAuthInfo is not null);
 
@@ -226,7 +244,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         TokenResponse? tokenResponse = JsonSerializer.Deserialize<TokenResponse>(postResponse.Content.ReadAsStream(cancellationToken));
         if (tokenResponse is { } tokenEnvelope)
         {
-            var authValue = new AuthenticationHeaderValue("Bearer", tokenResponse.ResolvedToken);
+            var authValue = new AuthenticationHeaderValue(BearerAuthScheme, tokenResponse.ResolvedToken);
             return (authValue, tokenResponse.ResolvedExpiration);
         }
         else
@@ -242,39 +260,39 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// </summary>
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryTokenGetAsync(DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, CancellationToken cancellationToken)
     {
-            // this doesn't seem to be called out in the spec, but actual username/password auth information should be converted into Basic auth here,
-            // even though the overall Scheme we're authenticating for is Bearer
-            var header = privateRepoCreds.Username == "<token>"
-                            ? new AuthenticationHeaderValue("Bearer", privateRepoCreds.Password)
-                            : new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
-            var builder = new UriBuilder(new Uri(bearerAuthInfo.Realm));
+        // this doesn't seem to be called out in the spec, but actual username/password auth information should be converted into Basic auth here,
+        // even though the overall Scheme we're authenticating for is Bearer
+        var header = privateRepoCreds.Username == "<token>"
+                        ? new AuthenticationHeaderValue(BearerAuthScheme, privateRepoCreds.Password)
+                        : new AuthenticationHeaderValue(BasicAuthScheme, Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
+        var builder = new UriBuilder(new Uri(bearerAuthInfo.Realm));
 
-            _logger.LogTrace("Attempting to authenticate on {uri} using GET.", bearerAuthInfo.Realm);
-            var queryDict = System.Web.HttpUtility.ParseQueryString("");
-            if (bearerAuthInfo.Service is string svc)
-            {
-                queryDict["service"] = svc;
-            }
-            if (bearerAuthInfo.Scope is string s)
-            {
-                queryDict["scope"] = s;
-            }
-            builder.Query = queryDict.ToString();
-            var message = new HttpRequestMessage(HttpMethod.Get, builder.ToString());
-            message.Headers.Authorization = header;
+        _logger.LogTrace("Attempting to authenticate on {uri} using GET.", bearerAuthInfo.Realm);
+        var queryDict = System.Web.HttpUtility.ParseQueryString("");
+        if (bearerAuthInfo.Service is string svc)
+        {
+            queryDict["service"] = svc;
+        }
+        if (bearerAuthInfo.Scope is string s)
+        {
+            queryDict["scope"] = s;
+        }
+        builder.Query = queryDict.ToString();
+        var message = new HttpRequestMessage(HttpMethod.Get, builder.ToString());
+        message.Headers.Authorization = header;
 
-            using var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
-            if (!tokenResponse.IsSuccessStatusCode)
-            {
-                throw new UnableToAccessRepositoryException(_registryName);
-            }
+        using var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
+        if (!tokenResponse.IsSuccessStatusCode)
+        {
+            throw new UnableToAccessRepositoryException(_registryName);
+        }
 
-            TokenResponse? token = JsonSerializer.Deserialize<TokenResponse>(tokenResponse.Content.ReadAsStream(cancellationToken));
-            if (token is null)
-            {
-                throw new ArgumentException(Resource.GetString(nameof(Strings.CouldntDeserializeJsonToken)));
-            }
-            return (new AuthenticationHeaderValue("Bearer", token.ResolvedToken), token.ResolvedExpiration);
+        TokenResponse? token = JsonSerializer.Deserialize<TokenResponse>(tokenResponse.Content.ReadAsStream(cancellationToken));
+        if (token is null)
+        {
+            throw new ArgumentException(Resource.GetString(nameof(Strings.CouldntDeserializeJsonToken)));
+        }
+        return (new AuthenticationHeaderValue(BearerAuthScheme, token.ResolvedToken), token.ResolvedExpiration);
     }
 
     private static async Task<DockerCredentials> GetLoginCredentials(string registry)

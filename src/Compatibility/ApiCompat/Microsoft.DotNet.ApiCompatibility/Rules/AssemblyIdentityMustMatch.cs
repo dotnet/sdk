@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     leftMetadata,
                     rightMetadata,
                     DiagnosticIds.MatchingAssemblyDoesNotExist,
-                    string.Format(Resources.AssemblyNameDoesNotExist, rightMetadata, left.Identity.Name),
+                    string.Format(Resources.AssemblyNameDoesNotExist, left.Identity.Name, rightMetadata),
                     DifferenceType.Added,
                     left.Identity.GetDisplayName()));
                 return;

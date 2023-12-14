@@ -30,6 +30,16 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
+        /// The contents of the install state file. Each element corresponds to a single line of
+        /// the JSON file to be written.
+        /// </summary>
+        public string[] InstallStateContents
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// The path of the MSI log file to generate when installing, uninstalling or repairing a specific MSI.
         /// </summary>
         public string LogFile

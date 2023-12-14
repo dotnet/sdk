@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-list" "1" "2022-10-24" "" ".NET Documentation"
+.TH "dotnet-tool-list" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet tool list
 .PP
@@ -32,6 +32,8 @@ dotnet tool list --tool-path <PATH>
 
 dotnet tool list --local
 
+dotnet tool list [<PACKAGE_ID>]
+
 dotnet tool list
 
 dotnet tool list -h|--help
@@ -39,7 +41,7 @@ dotnet tool list -h|--help
 .fi
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet tool list\f[R] command provides a way for you to list all .NET global, tool-path, or local tools installed on your machine.
+The \f[V]dotnet tool list\f[R] command provides a way for you to list .NET global, tool-path, or local tools installed on your machine.
 The command lists the package name, version installed, and the tool command.
 To use the command, you specify one of the following:
 .IP \[bu] 2
@@ -48,6 +50,18 @@ To list global tools installed in the default location, use the \f[V]--global\f[
 To list global tools installed in a custom location, use the \f[V]--tool-path\f[R] option.
 .IP \[bu] 2
 To list local tools, use the \f[V]--local\f[R] option or omit the \f[V]--global\f[R], \f[V]--tool-path\f[R], and \f[V]--local\f[R] options.
+.IP \[bu] 2
+To list a specific tool, use the optional \f[V]PACKAGE_ID\f[R] argument.
+.SH ARGUMENTS
+.IP \[bu] 2
+\f[B]\f[VB]PACKAGE_ID\f[B]\f[R]
+.RS 2
+.PP
+Lists the tool that has the supplied package ID if the tool is installed.
+Can be used in conjunction with options.
+Provides a way to check if a specific tool was installed.
+The command returns 1 if no tool with the specified package ID is found; returns 0 otherwise.
+.RE
 .SH OPTIONS
 .IP \[bu] 2
 \f[B]\f[VB]-g|--global\f[B]\f[R]
@@ -104,6 +118,18 @@ Lists the global tools from a specific Linux/macOS directory.
 .RS 2
 .PP
 Lists all local tools available in the current directory.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]dotnet tool list -g dotnetsay\f[B]\f[R]
+.RS 2
+.PP
+Lists the global tool with the package id dotnetsay (https://www.nuget.org/packages/dotnetsay/)
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]dotnet tool list dotnetsay\f[B]\f[R]
+.RS 2
+.PP
+Lists the local tool with the package id dotnetsay (https://www.nuget.org/packages/dotnetsay/)
 .RE
 .SH SEE ALSO
 .IP \[bu] 2

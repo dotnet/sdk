@@ -17,7 +17,10 @@ namespace Microsoft.DotNet.Cli
 {
     public static class Parser
     {
-        public static readonly CliRootCommand RootCommand = new();
+        public static readonly CliRootCommand RootCommand = new()
+        {
+            Directives = { new DiagramDirective(), new SuggestDirective() }
+        };
 
         internal static Dictionary<CliOption, Dictionary<CliCommand, string>> HelpDescriptionCustomizations = new();
 
@@ -162,9 +165,7 @@ namespace Microsoft.DotNet.Cli
         public static CliConfiguration Instance { get; } = new(ConfigureCommandLine(RootCommand))
         {
             EnableDefaultExceptionHandler = false,
-            EnableParseErrorReporting = true,
             EnablePosixBundling = false,
-            Directives = { new DiagramDirective(), new SuggestDirective() },
             ResponseFileTokenReplacer = TokenPerLine
         };
 
