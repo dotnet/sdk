@@ -18,8 +18,7 @@ trigger:
 pr: none
 
 stages:
-- ${{ if ne(variables['Build.Reason'], 'Schedule') }}:
-  - template: templates/stages/vmr-scan.yml
+- template: templates/stages/vmr-scan.yml
 
 - template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
   parameters:

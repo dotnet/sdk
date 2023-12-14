@@ -1,0 +1,23 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Mon, 4 Dec 2023 11:03:10 -0600
+Subject: [PATCH] Update MSBuild ref dependency
+
+Backport: https://github.com/dotnet/roslyn/pull/71069
+---
+ eng/Versions.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 618bcbcbe5b..cc204cbb20c 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -32,7 +32,7 @@
+     <MicrosoftVisualStudioLanguageServerProtocolPackagesVersion>17.8.9-preview</MicrosoftVisualStudioLanguageServerProtocolPackagesVersion>
+     <MicrosoftVisualStudioShellPackagesVersion>17.8.36711</MicrosoftVisualStudioShellPackagesVersion>
+     <!-- The version of MSBuild that we reference for things depending on MSBuildWorkspace -->
+-    <RefOnlyMicrosoftBuildPackagesVersion>16.10.0</RefOnlyMicrosoftBuildPackagesVersion>
++    <RefOnlyMicrosoftBuildPackagesVersion>17.3.2</RefOnlyMicrosoftBuildPackagesVersion>
+     <!-- The version of MSBuild that matches the version of MSBuild.StructuredLogger for apps using MSBuild as a regular API -->
+     <MicrosoftBuildPackagesVersion>17.5.0</MicrosoftBuildPackagesVersion>
+     <!-- The version of Roslyn we build Source Generators against that are built in this

@@ -36,10 +36,9 @@ public class BasicScenarioTests : SdkTests
                 // R2R is not supported on Mono (see https://github.com/dotnet/runtime/issues/88419#issuecomment-1623762676)
                 DotNetActions.Build | DotNetActions.Run | (DotNetHelper.ShouldPublishComplex() ? DotNetActions.None : DotNetActions.PublishComplex) | (helper.IsMonoRuntime ? DotNetActions.None : DotNetActions.PublishR2R));
             yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.ClassLib, DotNetActions.Build | DotNetActions.Publish);
-            // TODO: Uncomment when test templates are updated to net9.0: https://github.com/dotnet/source-build/issues/3668
-            // yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.XUnit,    DotNetActions.Test);
-            // yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.NUnit,    DotNetActions.Test);
-            // yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.MSTest,   DotNetActions.Test);
+            yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.XUnit,    DotNetActions.Test);
+            yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.NUnit,    DotNetActions.Test);
+            yield return new(nameof(BasicScenarioTests), language, DotNetTemplate.MSTest,   DotNetActions.Test);
         }
     }
 }
