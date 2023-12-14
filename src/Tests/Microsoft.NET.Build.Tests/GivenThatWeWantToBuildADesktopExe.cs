@@ -50,7 +50,6 @@ namespace Microsoft.NET.Build.Tests
             testProject.RecordProperties("RuntimeIdentifier");
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
-
             new DotnetBuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name))
                .Execute()
                .Should()
