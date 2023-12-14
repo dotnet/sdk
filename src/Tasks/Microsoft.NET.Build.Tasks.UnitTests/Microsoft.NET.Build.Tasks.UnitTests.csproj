@@ -30,12 +30,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" />
-    <ProjectReference Include="..\..\Tests\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\..\..\test\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\..\Tests\Common\Program.UnitTests.cs" />
+    <Compile Include="..\..\..\test\Common\Program.UnitTests.cs" />
   </ItemGroup>
 
   <ItemGroup>

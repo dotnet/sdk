@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-dev-certs" "1" "2022-10-10" "" ".NET Documentation"
+.TH "dotnet-dev-certs" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet dev-certs
 .PP
@@ -171,8 +171,10 @@ The file format is independent of the file name extension.
 For example, if you specify \f[V]--format pfx\f[R] and \f[V]--export-path ./cert.pem\f[R], you\[cq]ll get a file named \f[I]cert.pem\f[R] in \f[V]PFX\f[R] format.
 .PP
 For information about the effect of this option when used with \f[V]--password\f[R], \f[V]--no-password\f[R], or without either of those options, see \[en]export-path earlier in this article.
+.RE
 .IP \[bu] 2
 \f[B]\f[VB]-i|--import <PATH>\f[B]\f[R]
+.RS 2
 .PP
 Imports the provided HTTPS development certificate into the local machine.
 Requires that you also specify the \f[V]--clean\f[R] option, which clears out any existing HTTPS developer certificates.

@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-pack" "1" "2022-10-10" "" ".NET Documentation"
+.TH "dotnet-pack" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet pack
 .PP
@@ -49,7 +49,7 @@ If you want to generate a package that contains the debug symbols, you have two 
 \f[V]--include-source\f[R] - it creates the symbols package with a \f[V]src\f[R] folder inside containing the source files.
 .PP
 NuGet dependencies of the packed project are added to the \f[I].nuspec\f[R] file, so they\[cq]re properly resolved when the package is installed.
-If the packed project has references to other projects, the other projects are not included in the package.
+If the packed project has references to other projects, the other projects aren\[cq]t included in the package.
 Currently, you must have a package per project if you have project-to-project dependencies.
 .PP
 By default, \f[V]dotnet pack\f[R] builds the project first.
@@ -164,6 +164,13 @@ Doesn\[cq]t display the startup banner or the copyright message.
 .RS 2
 .PP
 Places the built packages in the directory specified.
+.IP \[bu] 2
+\&.NET 7.0.200 SDK
+.RS 2
+.PP
+In the 7.0.200 SDK, if you specify the \f[V]--output\f[R] option when running this command on a solution, the CLI will emit an error.
+This is a regression and was fixed in 7.0.201 and later versions of the .NET SDK.
+.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--runtime <RUNTIME_IDENTIFIER>\f[B]\f[R]

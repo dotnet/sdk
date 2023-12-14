@@ -455,6 +455,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             HelpBuilder.Default.CommandArgumentsSection()(context);
             context.Output.WriteLine();
             HelpBuilder.Default.OptionsSection()(context);
+            context.Output.WriteLine();
             HelpBuilder.Default.SubcommandsSection()(context);
             context.Output.WriteLine();
         }

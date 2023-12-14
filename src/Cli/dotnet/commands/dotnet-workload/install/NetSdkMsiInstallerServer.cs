@@ -93,6 +93,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Updated dependent '{request.Dependent}' for provider key '{request.ProviderKeyName}'");
                             break;
 
+                        case InstallRequestType.WriteInstallStateFile:
+                            WriteInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand), request.InstallStateContents);
+                            Dispatcher.ReplySuccess($"Created install state file for {request.SdkFeatureBand}.");
+                            break;
+
+                        case InstallRequestType.RemoveInstallStateFile:
+                            RemoveInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand));
+                            Dispatcher.ReplySuccess($"Deleted install state file for {request.SdkFeatureBand}.");
+                            break;
+
                         default:
                             throw new InvalidOperationException($"Unknown message request: {(int)request.RequestType}");
                     }
