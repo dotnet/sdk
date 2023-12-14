@@ -119,9 +119,6 @@
     <EnvironmentVariables Include="DeterministicSourcePaths=false" Condition="'$(DeterministicBuildOptOut)' == 'true'" />
 
     <EnvironmentVariables Include="SourceRoot=$(ProjectDirectory)" />
-
-    <!-- https://github.com/dotnet/source-build/issues/3081 -->
-    <EnvironmentVariables Include="CheckEolTargetFramework=false" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
@@ -168,6 +165,7 @@
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:PreviouslySourceBuiltNupkgCacheDir="$(PrebuiltSourceBuiltPackagesPath)"</StandardSourceBuildArgs>
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:SourceBuildUseMonoRuntime=$(SourceBuildUseMonoRuntime)</StandardSourceBuildArgs>
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:DotNetBuildVertical=$(DotNetBuildVertical)</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:CrossBuild=$(CrossBuild)</StandardSourceBuildArgs>
 
     <StandardSourceBuildCommand>$(ProjectDirectory)\build$(ShellExtension)</StandardSourceBuildCommand>
   </PropertyGroup>
