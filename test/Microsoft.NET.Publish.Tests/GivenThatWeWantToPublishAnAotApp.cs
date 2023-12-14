@@ -135,7 +135,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
-                .Execute($"/p:UseCurrentRuntimeIdentifier=true")
+                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
                 .Should().Pass();
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework, projectConfiguration);
@@ -186,7 +186,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
-                .Execute($"/p:UseCurrentRuntimeIdentifier=true")
+                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
                 .Should().Pass();
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework, projectConfiguration);
@@ -230,7 +230,7 @@ namespace Microsoft.NET.Publish.Tests
                 .WithProjectChanges(project => AddRuntimeConfigOption(project));
 
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute($"/p:UseCurrentRuntimeIdentifier=true")
+            buildCommand.Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
                 .Should().Pass();
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
@@ -276,7 +276,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
-                .Execute($"/p:UseCurrentRuntimeIdentifier=true")
+                .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
                 .Should().Pass()
             // Having an explicit package reference will generate a warning
             .And.HaveStdOutContaining("warning")
@@ -325,7 +325,7 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
-                .Execute($"/p:RuntimeIdentifier={rid}")
+                .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
                 .Should().Pass();
 
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
@@ -356,7 +356,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
-                    .Execute($"/p:RuntimeIdentifier={rid}")
+                    .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
                     .Should().Pass();
                 var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
                 var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
@@ -390,7 +390,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
-                    .Execute($"/p:RuntimeIdentifier={rid}")
+                    .Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true")
                     .Should().Pass()
                 // Having an explicit package reference will generate a warning
                 .And.HaveStdOutContaining("warning")
@@ -449,7 +449,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 publishCommand
-                    .Execute($"/p:UseCurrentRuntimeIdentifier=true")
+                    .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
                     .Should().Fail()
                     .And.HaveStdOutContaining("error NETSDK1207:");
             }
@@ -473,7 +473,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 publishCommand
-                    .Execute($"/p:UseCurrentRuntimeIdentifier=true")
+                    .Execute($"/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
                     .Should().Fail()
                     .And.HaveStdOutContaining("error NETSDK1207:");
             }
@@ -497,7 +497,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 publishCommand
-                    .Execute($"/p:RuntimeIdentifier={unsupportedTargetRid}")
+                    .Execute($"/p:RuntimeIdentifier={unsupportedTargetRid}", "/p:SelfContained=true")
                     .Should().Fail()
                     .And.HaveStdOutContaining("error NETSDK1203:");
             }
@@ -520,7 +520,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 publishCommand
-                    .Execute($"/p:RuntimeIdentifier={supportedTargetRid}")
+                    .Execute($"/p:RuntimeIdentifier={supportedTargetRid}", "/p:SelfContained=true")
                     .Should().Fail()
                     .And.HaveStdOutContaining("error NETSDK1204:");
             }
@@ -614,7 +614,7 @@ namespace Microsoft.NET.Publish.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
-            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}");
+            var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true");
             if (shouldFail) {
                 result.Should().Fail()
                     .And.HaveStdOutContaining(Strings.AotUnsupportedTargetFramework);
@@ -707,6 +707,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
+            testProject.AdditionalProperties["SelfContained"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
@@ -750,6 +751,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "false";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
+            testProject.AdditionalProperties["SelfContained"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
@@ -784,6 +786,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
             testProject.AdditionalProperties["PublishAot"] = "true";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
+            testProject.AdditionalProperties["SelfContained"] = "true";
             testProject.AdditionalProperties["NativeLib"] = "Static";
             testProject.SelfContained = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -922,7 +925,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 DependsOnTargets = "WriteIlcRspFileForCompilation"
             };
-            ilcToolsPathCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
+            ilcToolsPathCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true").Should().Pass();
             var ilcToolsPath = ilcToolsPathCommand.GetValues()[0];
             var ilcVersion = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(ilcToolsPath)));
             ilcVersion.Should().Be(expectedVersion);

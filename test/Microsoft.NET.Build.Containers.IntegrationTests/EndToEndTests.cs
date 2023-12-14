@@ -235,7 +235,7 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "sln", "add", "ConsoleApp\\ConsoleApp.csproj")
+        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("ConsoleApp", "ConsoleApp.csproj"))
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
@@ -246,7 +246,7 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(_testOutput, "sln", "add", "WebApp\\WebApp.csproj")
+        new DotnetCommand(_testOutput, "sln", "add", Path.Combine("WebApp", "WebApp.csproj"))
             .WithWorkingDirectory(newSolutionDir.FullName)
             .Execute()
             .Should().Pass();
@@ -524,7 +524,8 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
             $"/p:RuntimeFrameworkVersion=8.0.0-preview.3.23174.8",
-            $"/p:ContainerImageTag={imageTag}")
+            $"/p:ContainerImageTag={imageTag}",
+            "/bl:E:\\test.binlog")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
