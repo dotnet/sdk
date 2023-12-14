@@ -168,6 +168,7 @@
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:PreviouslySourceBuiltNupkgCacheDir="$(PrebuiltSourceBuiltPackagesPath)"</StandardSourceBuildArgs>
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:SourceBuildUseMonoRuntime=$(SourceBuildUseMonoRuntime)</StandardSourceBuildArgs>
     <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:DotNetBuildVertical=$(DotNetBuildVertical)</StandardSourceBuildArgs>
+    <StandardSourceBuildArgs>$(StandardSourceBuildArgs) /p:CrossBuild=$(CrossBuild)</StandardSourceBuildArgs>
 
     <StandardSourceBuildCommand>$(ProjectDirectory)\build$(ShellExtension)</StandardSourceBuildCommand>
   </PropertyGroup>
