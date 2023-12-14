@@ -347,7 +347,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             using var peReader = new PEReader(stream);
 
             MetadataReader reader = peReader.GetMetadataReader();
-            return reader.CustomAttributes.Select(attrHandle => reader.GetCustomAttribute(attrHandle))
+            return reader.CustomAttributes
+                    .Select(attrHandle => reader.GetCustomAttribute(attrHandle))
                     .Any(attr => IsAttributeSbrp(reader, attr));
         }
 
@@ -357,13 +358,23 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
 
             if (attr.Constructor.Kind == HandleKind.MemberReference)
             {
-                MemberReference mref = reader.GetMemberReference((MemberReferenceHandle)attr.Constructor);
-
+                var mref = reader.GetMemberReference((MemberReferenceHandle)attr.Constructor);
                 if (mref.Parent.Kind == HandleKind.TypeReference)
                 {
-                    TypeReference tref = reader.GetTypeReference((TypeReferenceHandle)mref.Parent);
+                    var tref = reader.GetTypeReference((TypeReferenceHandle)mref.Parent);
                     attributeType = $"{reader.GetString(tref.Namespace)}.{reader.GetString(tref.Name)}";
                 }
+                else if (mref.Parent.Kind == HandleKind.TypeDefinition)
+                {
+                    var tdef = reader.GetTypeDefinition((TypeDefinitionHandle)mref.Parent);
+                    attributeType = $"{reader.GetString(tdef.Namespace)}.{reader.GetString(tdef.Name)}";
+                }
+            }
+            else if (attr.Constructor.Kind == HandleKind.MethodDefinition)
+            {
+                var mdef = reader.GetMethodDefinition((MethodDefinitionHandle)attr.Constructor);
+                var tdef = reader.GetTypeDefinition(mdef.GetDeclaringType());
+                attributeType = $"{reader.GetString(tdef.Namespace)}.{reader.GetString(tdef.Name)}";
             }
 
             if (attributeType == SbrpAttributeType)
@@ -371,7 +382,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
                 var decodedValue = attr.DecodeValue(DummyAttributeTypeProvider.Instance);
                 try
                 {
-                    return decodedValue.FixedArguments[0].Value.ToString() == "source" && decodedValue.FixedArguments[1].Value.ToString() == "source-build-reference-packages";
+                    return decodedValue.FixedArguments[0].Value?.ToString() == "source" && decodedValue.FixedArguments[1].Value?.ToString() == "source-build-reference-packages";
                 }
                 catch
                 {
