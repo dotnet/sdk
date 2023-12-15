@@ -41,6 +41,7 @@
     <PackageVersion Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" />
     <PackageVersion Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
     <PackageVersion Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)" />
+    <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftNETStringToolsPackageVersion)" />
     <PackageVersion Include="Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="Microsoft.NETCore.Targets" Version="2.1.0" />
     <PackageVersion Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="$(MicrosoftTemplateEngineAuthoringTemplateVerifierVersion)" />
