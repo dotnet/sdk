@@ -320,7 +320,7 @@
   <Target Name="CopyInnerBuildRestoredPackages"
           AfterTargets="Package">
     <ItemGroup>
-      <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/source-build/self/package-cache/**/*" />
+      <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/sb/package-cache/**/*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_InnerPackageCacheFiles)"
