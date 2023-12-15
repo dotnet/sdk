@@ -98,13 +98,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Created install state file for {request.SdkFeatureBand}.");
                             break;
 
-                        case InstallRequestType.RemoveInstallStateFile:
-                            RemoveInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand));
+                        case InstallRequestType.RemoveManifestsFromInstallStateFile:
+                            RemoveManifestsFromInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand));
                             Dispatcher.ReplySuccess($"Deleted install state file for {request.SdkFeatureBand}.");
                             break;
 
                         case InstallRequestType.AdjustWorkloadMode:
-                            UpdateInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.ProductCode);
+                            UpdateInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.WorkloadMode);
                             string newMode = request.ProductCode.Equals("true", StringComparison.OrdinalIgnoreCase) ? "workload sets" : "loose manifests";
                             Dispatcher.ReplySuccess($"Updated install mode to use {newMode}.");
                             break;

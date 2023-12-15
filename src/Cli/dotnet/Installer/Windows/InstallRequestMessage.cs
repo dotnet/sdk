@@ -121,6 +121,14 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
+        /// The new mode to use: workloadset or loosemanifests
+        /// </summary>
+        public bool WorkloadMode
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// Converts a deserialized array of bytes into an <see cref="InstallRequestMessage"/>.
         /// </summary>
         /// <param name="bytes">The array of bytes to convert.</param>

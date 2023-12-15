@@ -458,7 +458,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             
             if (File.Exists(path))
             {
-                File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", File.Exists(path) ? File.ReadAllText(path) : null, lines: null));
+                var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
+                installStateContents.Manifests = null;
+                File.WriteAllText(path, installStateContents.ToString());
             }
         }
 
@@ -466,14 +468,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", File.Exists(path) ? File.ReadAllText(path) : null, lines: manifestContents));
+            var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
+            installStateContents.Manifests = manifestContents;
+            File.WriteAllText(path, installStateContents.ToString());
         }
 
-        public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("useWorkloadSets", File.Exists(path) ? File.ReadAllText(path) : null, singleValue: newMode));
+            var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
+            installStateContents.UseWorkloadSets = newMode;
+            File.WriteAllText(path, installStateContents.ToString());
         }
 
         /// <summary>

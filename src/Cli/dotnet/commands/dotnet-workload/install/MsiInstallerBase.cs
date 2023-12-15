@@ -283,7 +283,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="logFile">Full path of the log file</param>
         /// <returns>Error code indicating the result of the operation</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        protected void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        protected void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
         {
             Elevate();
 
@@ -292,15 +292,15 @@ namespace Microsoft.DotNet.Installer.Windows
                 string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
-
-                File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("useWorkloadSets", File.Exists(path) ? File.ReadAllText(path) : null, singleValue: newMode));
+                var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
+                installStateContents.UseWorkloadSets = newMode;
+                File.WriteAllText(path, installStateContents.ToString());
 
                 SecurityUtils.SecureFile(path);
             }
             else if (IsClient)
             {
-                InstallResponseMessage response = Dispatcher.SendMsiRequest(InstallRequestType.AdjustWorkloadMode,
-                    null, null, newMode);
+                InstallResponseMessage response = Dispatcher.SendUpdateWorkloadModeRequest(sdkFeatureBand, newMode);
                 ExitOnFailure(response, "Failed to update install mode.");
             }
             else
@@ -531,10 +531,10 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// Deletes install state file for the specified feature band.
+        /// Deletes manifests from the install state file for the specified feature band.
         /// </summary>
         /// <param name="sdkFeatureBand">The feature band of the install state file.</param>
-        protected void RemoveInstallStateFile(SdkFeatureBand sdkFeatureBand)
+        protected void RemoveManifestsFromInstallStateFile(SdkFeatureBand sdkFeatureBand)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
 
@@ -548,11 +548,16 @@ namespace Microsoft.DotNet.Installer.Windows
 
             if (IsElevated)
             {
-                File.Delete(path);
+                if (File.Exists(path))
+                {
+                    var installStateContents = InstallStateContents.FromString(File.ReadAllText(path));
+                    installStateContents.Manifests = null;
+                    File.WriteAllText(path, installStateContents.ToString());
+                }
             }
             else if (IsClient)
             {
-                InstallResponseMessage response = Dispatcher.SendRemoveInstallStateFileRequest(sdkFeatureBand);
+                InstallResponseMessage response = Dispatcher.SendRemoveManifestsFromInstallStateFileRequest(sdkFeatureBand);
                 ExitOnFailure(response, $"Failed to remove install state file: {path}");
             }
         }
@@ -572,7 +577,9 @@ namespace Microsoft.DotNet.Installer.Windows
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
 
-                File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", initialContent: File.Exists(path) ? File.ReadAllText(path) : null, lines: manifestContents));
+                var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
+                installStateContents.Manifests = manifestContents;
+                File.WriteAllText(path, installStateContents.ToString());
 
                 SecurityUtils.SecureFile(path);
             }

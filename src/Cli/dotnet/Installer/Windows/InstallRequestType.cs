@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// Removes an install state file.
         /// </summary>
-        RemoveInstallStateFile,
+        RemoveManifestsFromInstallStateFile,
 
         /// <summary>
         /// Changes the workload mode

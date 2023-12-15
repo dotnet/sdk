@@ -86,12 +86,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 if (_workloadSetMode.Equals("workloadset", StringComparison.OrdinalIgnoreCase))
                 {
-                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, "true");
+                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
                 }
                 else if (_workloadSetMode.Equals("loosemanifest", StringComparison.OrdinalIgnoreCase) ||
                          _workloadSetMode.Equals("auto", StringComparison.OrdinalIgnoreCase))
                 {
-                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, "false");
+                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
                 }
                 else
                 {

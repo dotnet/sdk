@@ -183,7 +183,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         }
 
         public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand) =>
-            RemoveInstallStateFile(sdkFeatureBand);
+            RemoveManifestsFromInstallStateFile(sdkFeatureBand);
 
         public new void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents) =>
             SaveInstallStateManifestVersions(sdkFeatureBand, manifestContents);
@@ -1081,6 +1081,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, string newMode) => UpdateInstallMode(sdkFeatureBand, newMode);
+        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode) => UpdateInstallMode(sdkFeatureBand, newMode);
     }
 }
