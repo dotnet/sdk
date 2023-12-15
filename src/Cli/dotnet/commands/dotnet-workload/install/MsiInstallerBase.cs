@@ -283,7 +283,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="logFile">Full path of the log file</param>
         /// <returns>Error code indicating the result of the operation</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        protected void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        protected void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
         {
             Elevate();
 
@@ -561,8 +561,8 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Writes the contents of the install state JSON file.
         /// </summary>
         /// <param name="sdkFeatureBand">The path of the isntall state file to write.</param>
-        /// <param name="jsonLines">The contents of the JSON file, formatted as a single line.</param>
-        protected void WriteInstallStateFile(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
+        /// <param name="manifestContents">The contents of the JSON file, formatted as a single line.</param>
+        protected void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
             Elevate();
@@ -572,13 +572,13 @@ namespace Microsoft.DotNet.Installer.Windows
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
 
-                File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", initialContent: File.Exists(path) ? File.ReadAllText(path) : null, lines: jsonLines));
+                File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", initialContent: File.Exists(path) ? File.ReadAllText(path) : null, lines: manifestContents));
 
                 SecurityUtils.SecureFile(path);
             }
             else if (IsClient)
             {
-                InstallResponseMessage respone = Dispatcher.SendWriteInstallStateFileRequest(sdkFeatureBand, jsonLines);
+                InstallResponseMessage respone = Dispatcher.SendSaveInstallStateManifestVersions(sdkFeatureBand, manifestContents);
                 ExitOnFailure(respone, $"Failed to write install state file: {path}");
             }
         }

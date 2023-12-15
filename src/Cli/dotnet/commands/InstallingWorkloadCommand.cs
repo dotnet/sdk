@@ -103,6 +103,10 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 json.Root.AsObject()[key] = singleValue;
             }
+            else if (lines is null)
+            {
+                json.AsObject().Remove(key, out var _);
+            }
             else
             {
                 var newObj = new JsonObject();

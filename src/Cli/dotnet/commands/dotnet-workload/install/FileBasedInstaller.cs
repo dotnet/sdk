@@ -452,24 +452,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         }
 
-        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand)
+        public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             
             if (File.Exists(path))
             {
-                File.Delete(path);
+                File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", File.Exists(path) ? File.ReadAllText(path) : null, lines: null));
             }
         }
 
-        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
+        public void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", File.Exists(path) ? File.ReadAllText(path) : null, lines: jsonLines));
+            File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", File.Exists(path) ? File.ReadAllText(path) : null, lines: manifestContents));
         }
 
-        public void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));

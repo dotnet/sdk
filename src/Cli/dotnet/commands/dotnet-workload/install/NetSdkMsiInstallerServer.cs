@@ -93,8 +93,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Updated dependent '{request.Dependent}' for provider key '{request.ProviderKeyName}'");
                             break;
 
-                        case InstallRequestType.WriteInstallStateFile:
-                            WriteInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand), request.InstallStateContents);
+                        case InstallRequestType.SaveInstallStateManifestVersions:
+                            SaveInstallStateManifestVersions(new SdkFeatureBand(request.SdkFeatureBand), request.InstallStateContents);
                             Dispatcher.ReplySuccess($"Created install state file for {request.SdkFeatureBand}.");
                             break;
 
@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             break;
 
                         case InstallRequestType.AdjustWorkloadMode:
-                            AdjustInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.ProductCode);
+                            UpdateInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.ProductCode);
                             string newMode = request.ProductCode.Equals("true", StringComparison.OrdinalIgnoreCase) ? "workload sets" : "loose manifests";
                             Dispatcher.ReplySuccess($"Updated install mode to use {newMode}.");
                             break;

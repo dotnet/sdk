@@ -86,12 +86,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 if (_workloadSetMode.Equals("workloadset", StringComparison.OrdinalIgnoreCase))
                 {
-                    _workloadInstaller.AdjustInstallMode(_sdkFeatureBand, "true");
+                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, "true");
                 }
                 else if (_workloadSetMode.Equals("loosemanifest", StringComparison.OrdinalIgnoreCase) ||
                          _workloadSetMode.Equals("auto", StringComparison.OrdinalIgnoreCase))
                 {
-                    _workloadInstaller.AdjustInstallMode(_sdkFeatureBand, "false");
+                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, "false");
                 }
                 else
                 {
@@ -176,11 +176,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     if (useRollback)
                     {
-                        _workloadInstaller.WriteInstallState(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
+                        _workloadInstaller.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
                     else
                     {
-                        _workloadInstaller.DeleteInstallState(sdkFeatureBand);
+                        _workloadInstaller.RemoveManifestsFromInstallState(sdkFeatureBand);
                     }
                 },
                 rollback: () =>

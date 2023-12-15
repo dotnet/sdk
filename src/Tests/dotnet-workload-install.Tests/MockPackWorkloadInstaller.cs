@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
-        public void AdjustInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
+        public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, string newMode)
         {
             throw new NotImplementedException();
         }
@@ -165,20 +165,20 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             WorkloadResolver = workloadResolver;
         }
 
-        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand)
+        public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             if (File.Exists(path))
             {
-                File.Delete(path);
+                File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", File.Exists(path) ? File.ReadAllText(path) : null, lines: null));
             }
         }
 
-        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> jsonLines)
+        public void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", lines: jsonLines));
+            File.WriteAllText(path, InstallingWorkloadCommand.AdjustInstallState("manifests", lines: manifestContents));
         }
     }
 
