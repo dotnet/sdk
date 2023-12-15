@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             var parsedSdkVersion = NuGet.Versioning.NuGetVersion.Parse(netVersion);
 
-            return parsedSdkVersion.IsPrerelease;
+            return !parsedSdkVersion.IsPrerelease;
         }
     }
 }
