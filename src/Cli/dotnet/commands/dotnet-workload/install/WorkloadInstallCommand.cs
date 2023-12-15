@@ -229,11 +229,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (usingRollback)
                     {
-                        installer.WriteInstallState(_dotnetPath, sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
-                    }
-                    else
-                    {
-                        installer.DeleteInstallState(_dotnetPath, sdkFeatureBand);
+                        installer.WriteInstallState(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
                 },
                 rollback: () =>
