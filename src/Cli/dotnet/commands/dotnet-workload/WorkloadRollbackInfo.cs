@@ -39,6 +39,9 @@ namespace Microsoft.DotNet.Workloads.Workload
             return JsonSerializer.Serialize(ToDictionaryForJson(), new JsonSerializerOptions() { WriteIndented = true });
         }
 
-
+        public void Where(Func<(ManifestId, ManifestVersion, SdkFeatureBand), bool> selector)
+        {
+            ManifestVersions = ManifestVersions.Where(selector);
+        }
     }
 }

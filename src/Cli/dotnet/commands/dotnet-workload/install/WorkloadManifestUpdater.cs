@@ -232,7 +232,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             if (unrecognizedManifestIds.Any())
             {
                 _reporter.WriteLine(string.Format(LocalizableStrings.RollbackDefinitionContainsExtraneousManifestIds, rollbackDefinitionFilePath, string.Join(" ", unrecognizedManifestIds)).Yellow());
-                manifestRollbackContents = (WorkloadRollbackInfo)manifestRollbackContents.ManifestVersions.Where(rollbackManifest => currentManifestIds.Contains(rollbackManifest.Item1));
+                manifestRollbackContents.Where(rollbackManifest => currentManifestIds.Contains(rollbackManifest.Item1));
             }
 
             var manifestUpdates = manifestRollbackContents.ManifestVersions
