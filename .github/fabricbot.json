@@ -189,53 +189,6 @@
       "capabilityId": "IssueResponder",
       "subCapability": "PullRequestResponder",
       "version": "1.0",
-      "id": "jD6WDRtWPw12Nxv4J9blI",
-      "config": {
-        "conditions": {
-          "operator": "and",
-          "operands": [
-            {
-              "name": "isActivitySender",
-              "parameters": {
-                "user": "dotnet-maestro[bot]"
-              }
-            },
-            {
-              "name": "isAction",
-              "parameters": {
-                "action": "opened"
-              }
-            },
-            {
-              "name": "bodyContains",
-              "parameters": {
-                "bodyPattern": "Updates sdk.version"
-              }
-            }
-          ]
-        },
-        "eventType": "pull_request",
-        "eventNames": [
-          "pull_request",
-          "issues",
-          "project_card"
-        ],
-        "taskName": "Require PR approval before merging SDK change",
-        "actions": [
-          {
-            "name": "requestChangesPullRequest",
-            "parameters": {
-              "comment": "This PR changes the .NET SDK version. Review required from before merging."
-            }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "trigger",
-      "capabilityId": "IssueResponder",
-      "subCapability": "PullRequestResponder",
-      "version": "1.0",
       "id": "oxst8BvJCMSxlF_Kgj6PL",
       "config": {
         "conditions": {
