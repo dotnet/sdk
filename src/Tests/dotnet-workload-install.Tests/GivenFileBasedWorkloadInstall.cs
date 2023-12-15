@@ -43,8 +43,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             installer.UpdateInstallMode(sdkFeatureBand, true);
             var installState = InstallStateContents.FromString(File.ReadAllText(path));
-            installState.Manifests.Should().BeNull();
-            installState.UseWorkloadSets.Should().BeTrue();
+            installState.manifests.Should().BeNull();
+            installState.useWorkloadSets.Should().BeTrue();
 
             installer.SaveInstallStateManifestVersions(sdkFeatureBand, new Dictionary<string, string>()
             {
@@ -52,19 +52,19 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 { "third", "fourth" },
             });
             installState = InstallStateContents.FromString(File.ReadAllText(path));
-            installState.Manifests.Count.Should().Be(2);
-            installState.Manifests["first"].Should().Be("second");
-            installState.Manifests["third"].Should().Be("fourth");
-            installState.UseWorkloadSets.Should().BeTrue();
+            installState.manifests.Count.Should().Be(2);
+            installState.manifests["first"].Should().Be("second");
+            installState.manifests["third"].Should().Be("fourth");
+            installState.useWorkloadSets.Should().BeTrue();
 
             installer.UpdateInstallMode(sdkFeatureBand, false);
             installState = InstallStateContents.FromString(File.ReadAllText(path));
-            installState.UseWorkloadSets.Should().BeFalse();
+            installState.useWorkloadSets.Should().BeFalse();
 
             installer.RemoveManifestsFromInstallState(sdkFeatureBand);
             installState = InstallStateContents.FromString(File.ReadAllText(path));
-            installState.Manifests.Should().BeNull();
-            installState.UseWorkloadSets.Should().BeFalse();
+            installState.manifests.Should().BeNull();
+            installState.useWorkloadSets.Should().BeFalse();
         }
 
         [Fact]

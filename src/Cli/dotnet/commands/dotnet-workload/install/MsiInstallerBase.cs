@@ -293,7 +293,7 @@ namespace Microsoft.DotNet.Installer.Windows
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
                 var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
-                installStateContents.UseWorkloadSets = newMode;
+                installStateContents.useWorkloadSets = newMode;
                 File.WriteAllText(path, installStateContents.ToString());
 
                 SecurityUtils.SecureFile(path);
@@ -551,7 +551,7 @@ namespace Microsoft.DotNet.Installer.Windows
                 if (File.Exists(path))
                 {
                     var installStateContents = InstallStateContents.FromString(File.ReadAllText(path));
-                    installStateContents.Manifests = null;
+                    installStateContents.manifests = null;
                     File.WriteAllText(path, installStateContents.ToString());
                 }
             }
@@ -578,7 +578,7 @@ namespace Microsoft.DotNet.Installer.Windows
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
 
                 var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
-                installStateContents.Manifests = manifestContents;
+                installStateContents.manifests = manifestContents;
                 File.WriteAllText(path, installStateContents.ToString());
 
                 SecurityUtils.SecureFile(path);

@@ -6,10 +6,10 @@ namespace Microsoft.DotNet.Workloads.Workload
     internal class InstallStateContents
     {
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public bool? UseWorkloadSets { get; set; }
+        public bool? useWorkloadSets { get; set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-        public Dictionary<string, string> Manifests { get; set; }
+        public Dictionary<string, string> manifests { get; set; }
 
         public static InstallStateContents FromString(string contents)
         {
