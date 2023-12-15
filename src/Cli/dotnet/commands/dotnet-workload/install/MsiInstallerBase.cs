@@ -499,7 +499,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="sdkFeatureBand">The feature band of the install state file.</param>
         protected void RemoveInstallStateFile(SdkFeatureBand sdkFeatureBand)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null), "default.json");
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
 
             if (!File.Exists(path))
             {
@@ -527,7 +527,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="jsonLines">The contents of the JSON file, formatted as a single line.</param>
         protected void WriteInstallStateFile(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null), "default.json");
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
             Elevate();
 
             if (IsElevated)
