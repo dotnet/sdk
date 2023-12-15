@@ -95,31 +95,6 @@ namespace Microsoft.DotNet.Workloads.Workload
             WorkloadSet.FromManifests(
                     manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
                     ).ToDictionaryForJson();
-        
-        public static string AdjustInstallState(string key, string initialContent = null, string singleValue = null, Dictionary<string, string> lines = null)
-        {
-            var json = JsonNode.Parse(initialContent ?? "{}");
-            if (singleValue is not null)
-            {
-                json.Root.AsObject()[key] = singleValue;
-            }
-            else if (lines is null)
-            {
-                json.AsObject().Remove(key, out var _);
-            }
-            else
-            {
-                var newObj = new JsonObject();
-                foreach (var line in lines)
-                {
-                    newObj[line.Key] = line.Value;
-                }
-
-                json[key] = newObj;
-            }
-
-            return json.ToJsonString(new JsonSerializerOptions { WriteIndented = true });
-        }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)
         {
