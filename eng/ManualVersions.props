@@ -1,0 +1,20 @@
+<Project>
+
+<!--
+  The following properties (unlike those in version.props) are maintained manually. So
+  when there is a merge conflict, the highest version should generally be chosen, rather
+  than keeping what's in the branch, which is the usual strategy with version.props merge
+  conflicts.
+
+  Basically: In this file, choose the highest version when resolving merge conflicts.
+ -->
+  <PropertyGroup>
+    <MicrosoftWindowsSDKNETRef10_0_17763PackageVersion>10.0.17763.31</MicrosoftWindowsSDKNETRef10_0_17763PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_18362PackageVersion>10.0.18362.31</MicrosoftWindowsSDKNETRef10_0_18362PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_19041PackageVersion>10.0.19041.31</MicrosoftWindowsSDKNETRef10_0_19041PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_20348PackageVersion>10.0.20348.31</MicrosoftWindowsSDKNETRef10_0_20348PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_22000PackageVersion>10.0.22000.31</MicrosoftWindowsSDKNETRef10_0_22000PackageVersion>
+    <MicrosoftWindowsSDKNETRef10_0_22621PackageVersion>10.0.22621.31</MicrosoftWindowsSDKNETRef10_0_22621PackageVersion>
+  </PropertyGroup>
+
+</Project>
