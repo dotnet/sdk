@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Framework;
+
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToBuildADesktopExe : SdkTest
@@ -33,29 +36,49 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Theory]
+        [WindowsOnlyTheory]
         [InlineData(true)]
         [InlineData(false)]
         public void RuntimeIdentifiersInferredCorrectly(bool useRidGraph)
         {
-            var testProject = new TestProject()
+            var netSdkDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Debug", "Sdks", "Microsoft.NET.Sdk");
+            var projectContents = @$"
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
+    <UseRidGraph>{useRidGraph}</UseRidGraph>
+    <MicrosoftNETBuildTasksAssembly>{Path.Combine(netSdkDirectory, "tools", "net472")}</MicrosoftNETBuildTasksAssembly>
+    <HasRuntimeOutput>true</HasRuntimeOutput>
+  </PropertyGroup>
+
+  <Import Project=""{Path.Combine(netSdkDirectory, "targets", "Microsoft.NET.RuntimeIdentifierInference.targets")}"" />
+</Project>";
+
+            var fileLocation = Path.GetTempFileName();
+
+            try
             {
-                Name = "AutoRuntimeIdentifierTest",
-                TargetFrameworks = "net6",
-                IsExe = true,
+                File.WriteAllText(fileLocation, projectContents);
+
+                var loggers = new List<ILogger>
+            {
+                new global::Microsoft.Build.Logging.ConsoleLogger(LoggerVerbosity.Detailed)
             };
 
-            testProject.AdditionalProperties.Add("UseRidGraph", useRidGraph.ToString());
+                var collection = new ProjectCollection(null, loggers, ToolsetDefinitionLocations.Default);
 
-            testProject.RecordProperties("RuntimeIdentifier");
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+                var project = collection.LoadProject(fileLocation, new Dictionary<string, string>(), null);
 
-            new DotnetBuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name))
-               .Execute()
-               .Should()
-               .Pass();
-
-            testProject.GetPropertyValues(testAsset.TestRoot, "net6")["RuntimeIdentifier"].Should().Be(useRidGraph ? "win7-x64" : "win-x64");
+                project.GetPropertyValue("RuntimeIdentifier").Should().Be(useRidGraph ? "win7-x86" : "win-x86");
+            }
+            finally
+            {
+                if (File.Exists(fileLocation))
+                {
+                    File.Delete(fileLocation);
+                }
+            }
         }
 
         //  Windows only because default RuntimeIdentifier only applies when current OS is Windows
