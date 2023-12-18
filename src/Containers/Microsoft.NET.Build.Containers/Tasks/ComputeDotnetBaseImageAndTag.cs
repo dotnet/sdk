@@ -75,7 +75,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     public string? ComputedContainerBaseImage { get; private set; }
 
     private bool IsAspNetCoreProject => FrameworkReferences.Length > 0 && FrameworkReferences.Any(x => x.ItemSpec.Equals("Microsoft.AspnetCore.App", StringComparison.Ordinal));
-    private bool IsMuslRID => TargetRuntimeIdentifier.StartsWith("linux-musl", StringComparison.Ordinal);
+    private bool IsMuslRid => TargetRuntimeIdentifier.StartsWith("linux-musl", StringComparison.Ordinal);
     private bool IsBundledRuntime => IsSelfContained;
     private bool NeedsNightlyImages => IsAotPublished;
     private bool AllowsExperimentalTagInference => String.IsNullOrEmpty(ContainerFamily);
@@ -133,7 +133,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
             {
                 if (!versionAllowsUsingAOTAndExtrasImages)
                 {
-                    tag += IsMuslRID switch
+                    tag += IsMuslRid switch
                     {
                         true => "-alpine",
                         false => "" // TODO: should we default here to chiseled iamges for < 8 apps?
@@ -144,7 +144,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                 else
                 {
                     // chose the base OS
-                    tag += IsMuslRID switch
+                    tag += IsMuslRid switch
                     {
                         true => "-alpine",
                         // default to chiseled for AOT, non-musl Apps
