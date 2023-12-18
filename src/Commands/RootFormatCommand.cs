@@ -2,6 +2,7 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.CommandLine.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,10 +31,8 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             return formatCommand;
         }
 
-        private class FormatCommandDefaultHandler : CliAction
+        private class FormatCommandDefaultHandler : AsynchronousCliAction
         {
-            public override int Invoke(ParseResult parseResult) => InvokeAsync(parseResult, CancellationToken.None).GetAwaiter().GetResult();
-
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {
                 var formatOptions = parseResult.ParseVerbosityOption(FormatOptions.Instance);

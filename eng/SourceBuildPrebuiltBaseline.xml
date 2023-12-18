@@ -3,8 +3,6 @@
 
 <UsageData>
   <IgnorePatterns>
-    <UsagePattern IdentityGlob="Microsoft.SourceBuild.Intermediate.*/*" />
-
     <!-- This is a transitive dependency from Microsoft.CodeAnalysis.
          This version does not have source build intermediate.
          When a newer version is picked up, the intermediate should be utilized. -->
