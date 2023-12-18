@@ -64,11 +64,12 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             try
             {
+                var picker = new RidGraphManifestPicker(RuntimeIdentifierGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     BaseImageName,
                     BaseImageTag,
                     ContainerRuntimeIdentifier,
-                    RuntimeIdentifierGraphPath,
+                    picker,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (RepositoryNotFoundException)

@@ -7,8 +7,48 @@ using NuGet.RuntimeModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.NET.Build.Containers;
+
+internal interface IManifestPicker {
+    public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier);
+}
+
+internal sealed class RidGraphManifestPicker : IManifestPicker
+{
+    private readonly RuntimeGraph _runtimeGraph;
+
+    public RidGraphManifestPicker(string runtimeIdentifierGraphPath)
+    {
+        _runtimeGraph = GetRuntimeGraphForDotNet(runtimeIdentifierGraphPath);
+    }
+    public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> ridManifestDict, string runtimeIdentifier)
+    {
+        var bestManifestRid = GetBestMatchingRid(_runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
+        if (bestManifestRid is null) {
+            return null;
+        }
+        return ridManifestDict[bestManifestRid];
+    }
+
+    private static string? GetBestMatchingRid(RuntimeGraph runtimeGraph, string runtimeIdentifier, IEnumerable<string> availableRuntimeIdentifiers)
+    {
+        HashSet<string> availableRids = new HashSet<string>(availableRuntimeIdentifiers, StringComparer.Ordinal);
+        foreach (var candidateRuntimeIdentifier in runtimeGraph.ExpandRuntime(runtimeIdentifier))
+        {
+            if (availableRids.Contains(candidateRuntimeIdentifier))
+            {
+                return candidateRuntimeIdentifier;
+            }
+        }
+
+        return null;
+    }
+
+    private static RuntimeGraph GetRuntimeGraphForDotNet(string ridGraphPath) => JsonRuntimeFormat.ReadRuntimeGraph(ridGraphPath);
+
+}
 
 internal sealed class Registry
 {
@@ -102,7 +142,7 @@ internal sealed class Registry
     /// </summary>
     private bool SupportsParallelUploads => !IsAmazonECRRegistry && _settings.ParallelUploadEnabled;
 
-    public async Task<ImageBuilder> GetImageManifestAsync(string repositoryName, string reference, string runtimeIdentifier, string runtimeIdentifierGraphPath, CancellationToken cancellationToken)
+    public async Task<ImageBuilder> GetImageManifestAsync(string repositoryName, string reference, string runtimeIdentifier, IManifestPicker manifestPicker, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using HttpResponseMessage initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
@@ -118,7 +158,7 @@ internal sealed class Registry
                 reference,
                 await initialManifestResponse.Content.ReadFromJsonAsync<ManifestListV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
                 runtimeIdentifier,
-                runtimeIdentifierGraphPath,
+                manifestPicker,
                 cancellationToken).ConfigureAwait(false),
             var unknownMediaType => throw new NotImplementedException(Resource.FormatString(
                 nameof(Strings.UnknownMediaType),
@@ -126,6 +166,18 @@ internal sealed class Registry
                 reference,
                 BaseUri,
                 unknownMediaType))
+        };
+    }
+
+    internal async Task<ManifestListV2?> GetManifestListAsync(string repositoryName, string reference, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using HttpResponseMessage initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
+
+        return initialManifestResponse.Content.Headers.ContentType?.MediaType switch
+        {
+            SchemaTypes.DockerManifestListV2 => await initialManifestResponse.Content.ReadFromJsonAsync<ManifestListV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
+            _ => null
         };
     }
 
@@ -141,33 +193,8 @@ internal sealed class Registry
         return new ImageBuilder(manifest, new ImageConfig(configDoc), _logger);
     }
 
-    private async Task<ImageBuilder> PickBestImageFromManifestListAsync(
-        string repositoryName,
-        string reference,
-        ManifestListV2 manifestList,
-        string runtimeIdentifier,
-        string runtimeIdentifierGraphPath,
-        CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        var runtimeGraph = GetRuntimeGraphForDotNet(runtimeIdentifierGraphPath);
-        var ridManifestDict = GetManifestsByRid(manifestList);
-        var bestManifestRid = GetBestMatchingRid(runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
-        if (bestManifestRid is null) {
-            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
-        }
-        PlatformSpecificManifest matchingManifest = ridManifestDict[bestManifestRid];
-        using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
-
-        cancellationToken.ThrowIfCancellationRequested();
-
-        return await ReadSingleImageAsync(
-            repositoryName,
-            await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
-            cancellationToken).ConfigureAwait(false);
-    }
-
-    IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(ManifestListV2 manifestList)
+    
+    private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(ManifestListV2 manifestList)
     {
         var ridDict = new Dictionary<string, PlatformSpecificManifest>();
         foreach (var manifest in manifestList.manifests) {
@@ -179,21 +206,7 @@ internal sealed class Registry
 
         return ridDict;
     }
-
-    private static string? GetBestMatchingRid(RuntimeGraph runtimeGraph, string runtimeIdentifier, IEnumerable<string> availableRuntimeIdentifiers)
-    {
-        HashSet<string> availableRids = new HashSet<string>(availableRuntimeIdentifiers, StringComparer.Ordinal);
-        foreach (var candidateRuntimeIdentifier in runtimeGraph.ExpandRuntime(runtimeIdentifier))
-        {
-            if (availableRids.Contains(candidateRuntimeIdentifier))
-            {
-                return candidateRuntimeIdentifier;
-            }
-        }
-
-        return null;
-    }
-
+    
     private static string? CreateRidForPlatform(PlatformInformation platform)
     {
         // we only support linux and windows containers explicitly, so anything else we should skip past.
@@ -225,7 +238,32 @@ internal sealed class Registry
         return $"{osPart}{versionPart ?? ""}-{platformPart}";
     }
 
-    private static RuntimeGraph GetRuntimeGraphForDotNet(string ridGraphPath) => JsonRuntimeFormat.ReadRuntimeGraph(ridGraphPath);
+
+    private async Task<ImageBuilder> PickBestImageFromManifestListAsync(
+        string repositoryName,
+        string reference,
+        ManifestListV2 manifestList,
+        string runtimeIdentifier,
+        IManifestPicker manifestPicker,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var ridManifestDict = GetManifestsByRid(manifestList);
+        if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is PlatformSpecificManifest matchingManifest)
+        {
+            using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            return await ReadSingleImageAsync(
+                repositoryName,
+                await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                cancellationToken).ConfigureAwait(false);
+        } else 
+        {
+            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
+        }
+    }
 
     /// <summary>
     /// Ensure a blob associated with <paramref name="repository"/> from the registry is available locally.
