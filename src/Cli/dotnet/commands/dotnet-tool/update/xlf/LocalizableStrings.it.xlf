@@ -48,8 +48,8 @@
         <note />
       </trans-unit>
       <trans-unit id="UpdateLocalToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}).</target>
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this updated.</source>
+        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this updated.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
