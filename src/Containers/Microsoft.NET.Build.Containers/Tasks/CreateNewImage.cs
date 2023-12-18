@@ -33,7 +33,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     {
         try
         {
-            Task.Run(() => ExecuteAsync(_cancellationTokenSource.Token)).ContinueWith(t => t).GetAwaiter().GetResult();
+            Task.Run(() => ExecuteAsync(_cancellationTokenSource.Token)).GetAwaiter().GetResult();
         }
         catch (TaskCanceledException ex)
         {
