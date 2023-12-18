@@ -2,18 +2,14 @@ resources:
 - repo: self
   clean: true
 
-# The variables `_DotNetArtifactsCategory` and `_DotNetValidationArtifactsCategory` are required for proper publishing of build artifacts. See https://github.com/dotnet/roslyn/pull/38259
-variables:
-  - name: _DotNetArtifactsCategory
-    value: .NETCore
-  - name: _DotNetValidationArtifactsCategory
-    value: .NETCoreValidation
-
 # Branches that trigger a build on commit
 trigger:
 - main
 - release/*
 - internal/release/*
+
+variables:
+- group: AzureDevOps-Artifact-Feeds-Pats
 
 stages:
 - stage: build
@@ -35,15 +31,20 @@ stages:
         feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
       condition: and(succeeded(), ne(variables['SignType'], ''))
 
+    - task: PowerShell@2
+      displayName: Setup Private Feeds Credentials
+      inputs:
+        filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+        arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+      env:
+        Token: $(dn-bot-dnceng-artifact-feeds-rw)
+
     - script: eng\common\CIBuild.cmd
                 -configuration $(BuildConfiguration)
                 /p:OfficialBuildId=$(Build.BuildNumber)
                 /p:VisualStudioDropName=$(VisualStudioDropName)
                 /p:DotNetSignType=$(SignType)
-                /p:DotNetSymbolServerTokenMsdl=$(microsoft-symbol-server-pat)
-                /p:DotNetSymbolServerTokenSymWeb=$(symweb-symbol-server-pat)
                 /p:DotNetFinalVersionKind=$(_additionalBuildArgs)
-                /p:DotNetArtifactsCategory=$(_DotNetArtifactsCategory)
                 /p:DotnetPublishUsingPipelines=true
       displayName: Build
 
@@ -121,6 +122,13 @@ stages:
     steps:
       - task: CodeQL3000Init@0
         displayName: CodeQL Initialize
+      - task: PowerShell@2
+        displayName: Setup Private Feeds Credentials
+        inputs:
+          filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
+          arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+        env:
+          Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - script: eng\common\cibuild.cmd
           -configuration Release
           -prepareMachine
@@ -138,8 +146,6 @@ stages:
       dependsOn:
         - OfficialBuild
         - Source_Build_Managed
-      pool:
-        vmImage: windows-2019
 
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
   - template: eng\common\templates\post-build\post-build.yml

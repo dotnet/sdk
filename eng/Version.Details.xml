@@ -5,8 +5,8 @@
          Adding an explicit dependency to make sure the latest version is used instead of the SBRP
          one under source build. -->
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>488a8a3521610422e8fbe22d5cc66127f3dce3dc</Sha>
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis" Version="4.9.0-1.23520.1">
       <Uri>https://github.com/dotnet/roslyn</Uri>
