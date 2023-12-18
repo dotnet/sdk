@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-format", "src\dotnet
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-format.UnitTests", "tests\dotnet-format.UnitTests.csproj", "{4F181F8B-534F-48A6-A28B-0D11F5AEFF55}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-format.Performance", "perf\dotnet-format.Performance.csproj", "{9E6BD2C1-9E04-428A-B960-BE1B786CA910}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-format.Performance", "perf\dotnet-format.PerformanceTests.csproj", "{9E6BD2C1-9E04-428A-B960-BE1B786CA910}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

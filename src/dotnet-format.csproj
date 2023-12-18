@@ -52,7 +52,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="dotnet-format.UnitTests" />
-    <InternalsVisibleTo Include="dotnet-format.Performance" />
+    <InternalsVisibleTo Include="dotnet-format.PerformanceTests" />
   </ItemGroup>
 
   <ItemGroup>

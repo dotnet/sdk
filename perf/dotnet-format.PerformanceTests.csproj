@@ -7,10 +7,11 @@
     <Configuration>Release</Configuration>
     <!-- Copy nuget assemblies to build directory. -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-
     <!-- Always run on the latest runtime installed. -->
     <RollForward>LatestMajor</RollForward>
-    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+    <!-- Tell arcade to not reference the Microsoft.NET.Test.Sdk or bring any xunit targets in. -->
+    <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <TestRunnerName>BenchmarkDotNet</TestRunnerName>
   </PropertyGroup>
 
   <ItemGroup>
