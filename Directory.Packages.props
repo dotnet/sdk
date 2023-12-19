@@ -29,7 +29,9 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Css.Parser" Version="$(MicrosoftCssParserVersion)" />
     <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
+    <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Installer.Windows.Security.TestData" Version="$(MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion)" />
+    <PackageVersion Include="Microsoft.DotNet.SignCheck" Version="$(ArcadeSdkVersion)" />
     <PackageVersion Include="Microsoft.DotNet.XUnitExtensions" Version="$(MicrosoftDotNetXUnitExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.FileProviders.Abstractions" Version="$(MicrosoftNETCoreAppRefPackageVersion)" />
@@ -76,6 +78,9 @@
     <PackageVersion Include="runtime.linux-musl-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
+    <PackageVersion Include="runtime.win-x86.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
+    <PackageVersion Include="runtime.win-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
+    <PackageVersion Include="runtime.win-arm64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
     <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <PackageVersion Include="System.Collections.Specialized" Version="$(SystemCollectionsSpecializedPackageVersion)" />

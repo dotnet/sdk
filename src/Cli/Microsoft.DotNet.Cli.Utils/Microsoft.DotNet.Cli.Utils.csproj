@@ -53,5 +53,7 @@
     <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
+  <Target Name="UpdateXlf" />
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
