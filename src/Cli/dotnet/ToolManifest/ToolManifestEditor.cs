@@ -396,7 +396,7 @@ namespace Microsoft.DotNet.ToolManifest
                             writer.WriteStringValue(toolCommandName);
                         }
                         writer.WriteEndArray();
-                        writer.WriteString(JsonPropertyRollForward, tool.RollForward.ToString());
+                        writer.WriteBoolean(JsonPropertyRollForward, tool.RollForward);
                         writer.WriteEndObject();
                     }
 
