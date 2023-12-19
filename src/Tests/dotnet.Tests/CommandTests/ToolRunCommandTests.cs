@@ -40,8 +40,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var parseResult = Parser.Instance.Parse($"dotnet tool run $TOOLCOMMAND$ --roll-forward Major");
 
-            var toolRunCommand = new ToolRunCommand(
-            parseResult);
+            var toolRunCommand = new ToolRunCommand(parseResult);
 
             (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("dotnet-a");
             IEnumerable<string> testForwardArgument = Enumerable.Empty<string>();
