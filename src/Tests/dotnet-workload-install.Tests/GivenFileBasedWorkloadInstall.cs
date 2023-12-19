@@ -35,12 +35,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var sdkFeatureBand = new SdkFeatureBand(stringFeatureBand);
             var path = Path.Combine(dotnetRoot, "metadata", "workloads", stringFeatureBand, "InstallState", "default.json");
 
-            // The install state shouldn't exist, but delete it in case it wasn't cleaned up properly from the last run.
-            if (File.Exists(path))
-            {
-                File.Delete(path);
-            }
-
             installer.UpdateInstallMode(sdkFeatureBand, true);
             var installState = InstallStateContents.FromString(File.ReadAllText(path));
             installState.Manifests.Should().BeNull();
@@ -51,6 +45,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 { "first", "second" },
                 { "third", "fourth" },
             });
+
             installState = InstallStateContents.FromString(File.ReadAllText(path));
             installState.Manifests.Count.Should().Be(2);
             installState.Manifests["first"].Should().Be("second");
@@ -60,6 +55,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             installer.UpdateInstallMode(sdkFeatureBand, false);
             installState = InstallStateContents.FromString(File.ReadAllText(path));
             installState.UseWorkloadSets.Should().BeFalse();
+            installState.Manifests.Count.Should().Be(2);
 
             installer.RemoveManifestsFromInstallState(sdkFeatureBand);
             installState = InstallStateContents.FromString(File.ReadAllText(path));

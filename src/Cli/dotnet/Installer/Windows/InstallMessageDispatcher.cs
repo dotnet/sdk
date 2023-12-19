@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Installer.Windows
             {
                 RequestType = InstallRequestType.SaveInstallStateManifestVersions,
                 SdkFeatureBand = sdkFeatureBand.ToString(),
-                InstallStateContents = manifestContents
+                InstallStateManifestVersions = manifestContents
             });
         }
 
@@ -189,7 +189,7 @@ namespace Microsoft.DotNet.Installer.Windows
             {
                 RequestType = InstallRequestType.AdjustWorkloadMode,
                 SdkFeatureBand = sdkFeatureBand.ToString(),
-                WorkloadMode = newMode,
+                UseWorkloadSets = newMode,
             });
         }
     }

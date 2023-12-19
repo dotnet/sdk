@@ -18,7 +18,11 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         public override string ToString()
         {
-            return JsonSerializer.Serialize<InstallStateContents>(this, new JsonSerializerOptions() { WriteIndented = true });
+            return JsonSerializer.Serialize<InstallStateContents>(this, new JsonSerializerOptions()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                WriteIndented = true,
+            });
         }
     }
 }
