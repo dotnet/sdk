@@ -41,18 +41,44 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(false)]
         public void RuntimeIdentifiersInferredCorrectly(bool useRidGraph)
         {
-            var netSdkDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Debug", "Sdks", "Microsoft.NET.Sdk");
+            Func<string, string, string> findAssembly = (a, b) => default;
+            findAssembly = (string path, string file) =>
+            {
+                var dir = new DirectoryInfo(path);
+                foreach (var folder in dir.GetDirectories())
+                {
+                    var ret = findAssembly(folder.FullName, file);
+                    if (ret is not null)
+                    {
+                        return ret;
+                    }
+                }
+
+                foreach (var f in dir.GetFiles())
+                {
+                    if (Path.GetFileName(f.FullName).Equals(file, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return f.FullName;
+                    }
+                }
+
+                return null;
+            };
+
+            var rootDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..");
+            string microsoftNetBuildTasksAssembly = findAssembly(rootDirectory, "Microsoft.NET.Build.Tasks.dll");
+            string ridInferenceTargets = findAssembly(rootDirectory, "Microsoft.NET.RuntimeIdentifierInference.targets");
             var projectContents = @$"
 <Project>
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <UseRidGraph>{useRidGraph}</UseRidGraph>
-    <MicrosoftNETBuildTasksAssembly>{Path.Combine(netSdkDirectory, "tools", "net472")}</MicrosoftNETBuildTasksAssembly>
+    <MicrosoftNETBuildTasksAssembly>{microsoftNetBuildTasksAssembly}</MicrosoftNETBuildTasksAssembly>
     <HasRuntimeOutput>true</HasRuntimeOutput>
   </PropertyGroup>
 
-  <Import Project=""{Path.Combine(netSdkDirectory, "targets", "Microsoft.NET.RuntimeIdentifierInference.targets")}"" />
+  <Import Project=""{ridInferenceTargets}"" />
 </Project>";
 
             var fileLocation = Path.GetTempFileName();
