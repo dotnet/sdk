@@ -171,7 +171,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             if (File.Exists(path))
             {
                 var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
-                installStateContents.manifests = null;
+                installStateContents.Manifests = null;
                 File.WriteAllText(path, installStateContents.ToString());
             }
         }
@@ -181,7 +181,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
-            installStateContents.manifests = manifestContents;
+            installStateContents.Manifests = manifestContents;
             File.WriteAllText(path, installStateContents.ToString());
         }
     }
