@@ -935,7 +935,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 DependsOnTargets = "WriteIlcRspFileForCompilation"
             };
-            ilcReferenceCommand.Execute($"/p:RuntimeIdentifier={rid}").Should().Pass();
+            ilcReferenceCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true").Should().Pass();
             var ilcReference = ilcReferenceCommand.GetValues();
             var corelibReference = ilcReference.Where(r => Path.GetFileName(r).Equals("System.Private.CoreLib.dll")).Single();
             var ilcReferenceVersion = Path.GetFileName(Path.GetDirectoryName(Path.GetDirectoryName(corelibReference)));
