@@ -577,7 +577,7 @@ namespace Microsoft.DotNet.Installer.Windows
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
 
-                var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
+                var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
                 installStateContents.Manifests = manifestContents;
                 File.WriteAllText(path, installStateContents.ToString());
 
