@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             RemoveManifestsFromInstallStateFile(sdkFeatureBand);
 
         public new void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents) =>
-            SaveInstallStateManifestVersions(sdkFeatureBand, manifestContents);
+            base.SaveInstallStateManifestVersions(sdkFeatureBand, manifestContents);
 
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care
