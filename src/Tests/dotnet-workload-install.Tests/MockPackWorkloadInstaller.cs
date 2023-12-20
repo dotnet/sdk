@@ -9,6 +9,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -25,6 +26,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public bool FailingGarbageCollection;
         private readonly string FailingPack;
         List<WorkloadHistoryRecord> HistoryRecords = new();
+        private string _dotnetDir;
 
         public IWorkloadResolver WorkloadResolver { get; set; }
 
@@ -32,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public SdkFeatureBand SdkFeatureBand => new("8.0.200");
 
         public MockPackWorkloadInstaller(string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
-            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, List<WorkloadHistoryRecord> records = null)
+            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, List<WorkloadHistoryRecord> records = null, string dotnetDir = null)
         {
             InstallationRecordRepository = new MockInstallationRecordRepository(failingWorkload, installedWorkloads);
             FailingRollback = failingRollback;
@@ -40,6 +42,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             FailingPack = failingPack;
             FailingGarbageCollection = failingGarbageCollection;
             HistoryRecords = records ?? HistoryRecords;
+            _dotnetDir = dotnetDir ?? new Muxer().MuxerPath;
         }
 
         IEnumerable<PackInfo> GetPacksForWorkloads(IEnumerable<WorkloadId> workloadIds)
@@ -188,6 +191,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             WorkloadResolver = workloadResolver;
         }
+
+        public string GetFailingWorkloadFromTest() => InstallationRecordRepository.FailingWorkload;
 
         public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {

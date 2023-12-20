@@ -243,7 +243,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         UpdateInstalledWorkloadsFromHistory(sdkFeatureBand, context, offlineCache);
                     }
 
-                    UpdateInstallState(shouldUpdateInstallState, manifestsToUpdate);
+                    if (shouldUpdateInstallState)
+                    {
+                        _workloadInstaller.SaveInstallStateManifestVersions(_sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
+                    }
+                    else
+                    {
+                        _workloadInstaller.RemoveManifestsFromInstallState(_sdkFeatureBand);
+                    }
+
                     if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
                     {
                         _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion, useInstallStateOnly: true), offlineCache);
