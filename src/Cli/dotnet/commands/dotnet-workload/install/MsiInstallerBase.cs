@@ -534,7 +534,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Deletes manifests from the install state file for the specified feature band.
         /// </summary>
         /// <param name="sdkFeatureBand">The feature band of the install state file.</param>
-        protected void RemoveManifestsFromInstallStateFile(SdkFeatureBand sdkFeatureBand)
+        public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
 
@@ -567,7 +567,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// </summary>
         /// <param name="sdkFeatureBand">The path of the isntall state file to write.</param>
         /// <param name="manifestContents">The contents of the JSON file, formatted as a single line.</param>
-        protected void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
+        public void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
             Elevate();
