@@ -52,6 +52,11 @@
         <target state="translated">Nie można pobrać pakietów aktualizacji pakietów roboczych do pamięci podręcznej: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
+        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
+        <target state="new">Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">Pomyślnie zaktualizowano manifesty reklam.</target>
