@@ -111,9 +111,6 @@
 
     <EnvironmentVariables Include="SourceRoot=$(ProjectDirectory)" />
 
-    <!-- https://github.com/dotnet/source-build/issues/3081 -->
-    <EnvironmentVariables Include="CheckEolTargetFramework=false" />
-
     <!-- https://github.com/dotnet/source-build/issues/3752 -->
     <EnvironmentVariables Include="SuppressSymbolPackageFormatValidation=true" />
   </ItemGroup>
