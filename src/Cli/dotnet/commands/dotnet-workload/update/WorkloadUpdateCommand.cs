@@ -22,6 +22,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private readonly bool _printRollbackDefinitionOnly;
         private readonly bool _fromPreviousSdk;
         private WorkloadHistoryRecord _workloadHistoryState;
+        private readonly string _workloadSetMode;
 
         public WorkloadUpdateCommand(
             ParseResult parseResult,
@@ -39,6 +40,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);
             _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
             _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);
+            _workloadSetMode = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetMode);
 
             _workloadInstaller = _workloadInstallerFromConstructor ?? WorkloadInstallerFactory.GetWorkloadInstaller(Reporter,
                                 _sdkFeatureBand, _workloadResolver, Verbosity, _userProfileDir, VerifySignatures, PackageDownloader,
@@ -109,6 +111,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 {
                     var manifestInfo = WorkloadRollbackInfo.FromManifests(_workloadResolver.GetInstalledManifests());
                     Reporter.WriteLine(manifestInfo.ToJson());
+                }
+                else if (!string.IsNullOrWhiteSpace(_workloadSetMode))
+                {
+                    if (_workloadSetMode.Equals("workloadset", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+                    }
+                    else if (_workloadSetMode.Equals("loosemanifest", StringComparison.OrdinalIgnoreCase) ||
+                            _workloadSetMode.Equals("auto", StringComparison.OrdinalIgnoreCase))
+                    {
+                        _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
+                    }
+                    else
+                    {
+                        throw new GracefulException(string.Format(LocalizableStrings.WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto, _workloadSetMode), isUserError: true);
+                    }
                 }
                 else
                 {

@@ -362,6 +362,11 @@
         <target state="translated">RUTA DE ACCESO</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetMode">
+        <source>Control whether future workload operations should use workload sets or loose manifests.</source>
+        <target state="new">Control whether future workload operations should use workload sets or loose manifests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
         <target state="translated">Hay actualizaciones de carga de trabajo disponibles. Ejecute "dotnet workload list" para obtener más información.</target>

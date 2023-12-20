@@ -93,19 +93,25 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Updated dependent '{request.Dependent}' for provider key '{request.ProviderKeyName}'");
                             break;
 
-                        case InstallRequestType.WriteInstallStateFile:
-                            WriteInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand), request.InstallStateContents);
+                        case InstallRequestType.SaveInstallStateManifestVersions:
+                            SaveInstallStateManifestVersions(new SdkFeatureBand(request.SdkFeatureBand), request.InstallStateManifestVersions);
                             Dispatcher.ReplySuccess($"Created install state file for {request.SdkFeatureBand}.");
                             break;
 
-                        case InstallRequestType.RemoveInstallStateFile:
-                            RemoveInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand));
+                        case InstallRequestType.RemoveManifestsFromInstallStateFile:
+                            RemoveManifestsFromInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand));
                             Dispatcher.ReplySuccess($"Deleted install state file for {request.SdkFeatureBand}.");
                             break;
 
                         case InstallRequestType.WriteWorkloadHistoryFile:
                             WriteWorkloadHistoryRecord(request.ProductCode, request.PackagePath);
                             Dispatcher.ReplySuccess("Created workload history file.");
+                            break;
+
+                        case InstallRequestType.AdjustWorkloadMode:
+                            UpdateInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.UseWorkloadSets);
+                            string newMode = request.ProductCode.Equals("true", StringComparison.OrdinalIgnoreCase) ? "workload sets" : "loose manifests";
+                            Dispatcher.ReplySuccess($"Updated install mode to use {newMode}.");
                             break;
 
                         default:

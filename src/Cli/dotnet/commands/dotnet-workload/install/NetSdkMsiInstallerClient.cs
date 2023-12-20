@@ -187,11 +187,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public string GetFailingWorkloadFromTest() => null;
 
-        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand) =>
-            RemoveInstallStateFile(sdkFeatureBand);
+        public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand) =>
+            RemoveManifestsFromInstallStateFile(sdkFeatureBand);
 
-        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines) =>
-            WriteInstallStateFile(sdkFeatureBand, jsonLines);
+        public new void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents) =>
+            SaveInstallStateManifestVersions(sdkFeatureBand, manifestContents);
 
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care
@@ -1115,9 +1115,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 finally
                 {
-                    ((TimestampedFileLogger)Log).Dispose();
+                    if (Log is IDisposable tfl)
+                    {
+                        tfl.Dispose();
+                    }
                 }
             }
         }
+
+        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode) => UpdateInstallMode(sdkFeatureBand, newMode);
     }
 }

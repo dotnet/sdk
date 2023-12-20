@@ -187,6 +187,11 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
             builder.AppendSwitchIfNotNull("--container-user ", ContainerUser);
         }
 
+        if (!string.IsNullOrWhiteSpace(ArchiveOutputPath))
+        {
+            builder.AppendSwitchIfNotNull("--archiveoutputpath ", ArchiveOutputPath);
+        }
+
         return builder.ToString();
 
         void AppendSwitchIfNotNullSantized(CommandLineBuilder builder, string commandArgName, string propertyName, ITaskItem[] value)
