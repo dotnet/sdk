@@ -217,8 +217,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             transaction.Run(
                 action: context =>
                 {
-                    bool rollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-
                     foreach (var manifestUpdate in manifestsToUpdate)
                     {
                         if (manifestUpdate.NewFeatureBand != null && manifestUpdate.NewVersion != null &&
@@ -226,7 +224,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                             !manifestUpdate.ExistingVersion.Equals(manifestUpdate.NewVersion) ||
                             !manifestUpdate.ExistingFeatureBand.ToString().Equals(manifestUpdate.NewFeatureBand)))
                         {
-                            _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, rollback);
+                            _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, shouldUpdateInstallState);
                         }
                     }
 

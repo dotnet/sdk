@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             break;
 
                         case InstallRequestType.RemoveManifestsFromInstallStateFile:
-                            RemoveManifestsFromInstallStateFile(new SdkFeatureBand(request.SdkFeatureBand));
+                            RemoveManifestsFromInstallState(new SdkFeatureBand(request.SdkFeatureBand));
                             Dispatcher.ReplySuccess($"Deleted install state file for {request.SdkFeatureBand}.");
                             break;
 
