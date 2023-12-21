@@ -161,11 +161,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             transaction.Run(
                 action: context =>
                 {
-                    bool rollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-
                     foreach (var manifestUpdate in manifestsToUpdate)
                     {
-                        _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, rollback);
+                        _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, useRollback);
                     }
 
                     _workloadResolver.RefreshWorkloadManifests();

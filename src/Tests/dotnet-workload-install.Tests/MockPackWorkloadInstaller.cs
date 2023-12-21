@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var installStateContents = InstallStateContents.FromString(File.Exists(path) ? File.ReadAllText(path) : "{}");
+            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
             installStateContents.Manifests = manifestContents;
             File.WriteAllText(path, installStateContents.ToString());
         }

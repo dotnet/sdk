@@ -182,12 +182,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand) =>
-            RemoveManifestsFromInstallStateFile(sdkFeatureBand);
-
-        public new void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents) =>
-            SaveInstallStateManifestVersions(sdkFeatureBand, manifestContents);
-
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care
         /// about dependents that match the SDK host we're running under. For example, an x86 SDK should not be
