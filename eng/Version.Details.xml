@@ -51,18 +51,18 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>2406616d0e3a31d80b326e27c156955bfa41c791</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.9.0-preview-23618-08">
+    <Dependency Name="Microsoft.Build" Version="17.9.0">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>82d381eb23290d50936683719bda333461af9528</Sha>
+      <Sha>e514b5973d09e1b8fe4e2cb154e4b680efc135ec</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.9.0-preview-23618-08">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.9.0-preview-23621-04">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>82d381eb23290d50936683719bda333461af9528</Sha>
+      <Sha>e514b5973d09e1b8fe4e2cb154e4b680efc135ec</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.9.0-preview-23618-08">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.9.0-preview-23621-04">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>82d381eb23290d50936683719bda333461af9528</Sha>
+      <Sha>e514b5973d09e1b8fe4e2cb154e4b680efc135ec</Sha>
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.200-beta.23618.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
