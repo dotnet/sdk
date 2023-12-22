@@ -10,6 +10,7 @@ using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Cli.Utils;
+using System.Reflection;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -42,7 +43,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             FailingPack = failingPack;
             FailingGarbageCollection = failingGarbageCollection;
             HistoryRecords = records ?? HistoryRecords;
-            _dotnetDir = dotnetDir ?? new Muxer().MuxerPath;
+            _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
         }
 
         IEnumerable<PackInfo> GetPacksForWorkloads(IEnumerable<WorkloadId> workloadIds)

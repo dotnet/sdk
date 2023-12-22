@@ -15,10 +15,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public int CalculateManifestUpdatesCallCount = 0;
         public int GetManifestPackageDownloadsCallCount = 0;
         private readonly IEnumerable<ManifestUpdateWithWorkloads> _manifestUpdates;
+        private IWorkloadResolver _resolver;
 
-        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null)
+        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null, IWorkloadResolver resolver = null)
         {
             _manifestUpdates = manifestUpdates ?? new List<ManifestUpdateWithWorkloads>();
+            _resolver = resolver;
         }
 
         public Task UpdateAdvertisingManifestsAsync(bool includePreview, DirectoryPath? cachePath = null)
@@ -35,12 +37,40 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesFromHistory(WorkloadHistoryRecord record)
         {
-            throw new NotImplementedException();
+            var currentManifests = _resolver?.GetInstalledManifests() ??
+                _manifestUpdates?.Select(mu => new WorkloadManifestInfo(
+                    mu.ManifestUpdate.ManifestId.ToString(),
+                    mu.ManifestUpdate.ExistingVersion.ToString(),
+                    "manifestDir",
+                    mu.ManifestUpdate.ExistingFeatureBand));
+
+            foreach (var manifest in record.StateAfterCommand.ManifestVersions)
+            {
+                var featureBandAndVersion = manifest.Value.Split('/');
+                var currentManifest = currentManifests.FirstOrDefault(m => m.Id.Equals(manifest.Key));
+                if (currentManifest is null)
+                {
+                    yield return new ManifestVersionUpdate(new ManifestId(manifest.Key), null, null, new ManifestVersion(featureBandAndVersion[0]), featureBandAndVersion[1]);
+                }
+                else
+                {
+                    yield return new ManifestVersionUpdate(new ManifestId(manifest.Key), new ManifestVersion(currentManifest.Version), currentManifest.ManifestFeatureBand, new ManifestVersion(featureBandAndVersion[0]), featureBandAndVersion[1]);
+                }
+            }
         }
 
         public ManifestVersionWithBand GetInstalledManifestVersion(ManifestId manifestId, bool throwIfNotFound = true)
         {
-            var update = _manifestUpdates.FirstOrDefault(u => u.ManifestUpdate.ManifestId.Equals(manifestId))?.ManifestUpdate;
+            if (_resolver is not null)
+            {
+                var manifest = _resolver.GetInstalledManifests().FirstOrDefault(m => m.Id.Equals(manifestId.ToString()));
+                if (manifest is not null)
+                {
+                    return new ManifestVersionWithBand(new ManifestVersion(manifest.Version), new SdkFeatureBand(manifest.ManifestFeatureBand));
+                }
+            }
+
+            var update = _manifestUpdates?.FirstOrDefault(u => u.ManifestUpdate.ManifestId.Equals(manifestId))?.ManifestUpdate;
             if (update is null)
             {
                 return null;

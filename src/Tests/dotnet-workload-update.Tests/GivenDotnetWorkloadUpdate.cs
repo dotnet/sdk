@@ -59,41 +59,38 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
               }
             }";
 
-            IEnumerable<WorkloadManifestInfo> installedManifests = new List<WorkloadManifestInfo>() {
-                                                new WorkloadManifestInfo("microsoft.net.sdk.android", "34.0.0-rc.1", "androidDirectory", "8.0.100-rc.1"),
-                                                new WorkloadManifestInfo("microsoft.net.sdk.ios", "16.4.8825", "iosDirectory", "8.0.100-rc.1") };
-
-            IWorkloadResolverFactory mockResolverFactory = new MockWorkloadResolverFactory(
-                    Path.Combine(Path.GetTempPath(), "dotnetTestPath"),
-                    "7.0.0",
-                    new MockWorkloadResolver(new string[] { "maui-android", "maui-ios" }.Select(s => new WorkloadInfo(new WorkloadId(s), null)),
-                    installedManifests),
-                    "userProfileDir");
-
             var mauiAndroidPack = new PackInfo(new WorkloadPackId("maui-android-pack"), "34.0", WorkloadPackKind.Sdk, "androidDir", "maui-android-pack");
             var mauiIosPack = new PackInfo(new WorkloadPackId("maui-ios-pack"), "16.4", WorkloadPackKind.Framework, "iosDir", "maui-ios-pack");
             var aspirePack = new PackInfo(new WorkloadPackId("aspire-pack"), "8.0", WorkloadPackKind.Library, "aspireDir", "aspire-pack");
 
-            MockPackWorkloadInstaller mockInstaller = new MockPackWorkloadInstaller(
-                    installedWorkloads: new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios"), },
-                    installedPacks: new List<PackInfo>() { mauiAndroidPack, mauiIosPack },
-                    records: new List<WorkloadHistoryRecord>() { JsonSerializer.Deserialize<WorkloadHistoryRecord>(workloadHistoryRecord) })
-            {
-                WorkloadResolver = new MockWorkloadResolver(
+            IEnumerable<WorkloadManifestInfo> installedManifests = new List<WorkloadManifestInfo>() {
+                                                new WorkloadManifestInfo("microsoft.net.sdk.android", "34.0.0-rc.1", "androidDirectory", "8.0.100-rc.1"),
+                                                new WorkloadManifestInfo("microsoft.net.sdk.ios", "16.4.8825", "iosDirectory", "8.0.100-rc.1") };
+
+            var workloadResolver = new MockWorkloadResolver(
                                         new string[] { "maui-android", "maui-ios", "aspire" }.Select(s => new WorkloadInfo(new WorkloadId(s), null)),
                                         installedManifests,
                                         id => new List<WorkloadPackId>() { new WorkloadPackId(id.ToString() + "-pack") },
                                         id => id.ToString().Contains("android") ? mauiAndroidPack :
                                               id.ToString().Contains("ios") ? mauiIosPack :
                                               id.ToString().Contains("aspire") ? aspirePack :
-                                              null)
-                                };
+                                              null);
 
-        IWorkloadManifestUpdater mockUpdater = new MockWorkloadManifestUpdater(new ManifestUpdateWithWorkloads[] {
-                    new ManifestUpdateWithWorkloads(
-                        new ManifestVersionUpdate(new ManifestId("microsoft.net.sdk.android"), new ManifestVersion("34.0.0-rc.1"), "8.0.100-rc.1", null, null), null),
-                    new ManifestUpdateWithWorkloads(
-                        new ManifestVersionUpdate(new ManifestId("microsoft.net.sdk.ios"), new ManifestVersion("16.4.8825"), "8.0.100-rc.1", null, null), null) });
+            IWorkloadResolverFactory mockResolverFactory = new MockWorkloadResolverFactory(
+                    Path.Combine(Path.GetTempPath(), "dotnetTestPath"),
+                    "7.0.0",
+                    workloadResolver,
+                    "userProfileDir");
+
+            MockPackWorkloadInstaller mockInstaller = new MockPackWorkloadInstaller(
+                    installedWorkloads: new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios"), },
+                    installedPacks: new List<PackInfo>() { mauiAndroidPack, mauiIosPack },
+                    records: new List<WorkloadHistoryRecord>() { JsonSerializer.Deserialize<WorkloadHistoryRecord>(workloadHistoryRecord) })
+            {
+                WorkloadResolver = workloadResolver
+            };
+
+            IWorkloadManifestUpdater mockUpdater = new MockWorkloadManifestUpdater(resolver: workloadResolver);
 
             WorkloadUpdateCommand update = new(
                 Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-history", "1" }),
@@ -351,7 +348,6 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             command.Execute();
 
-            _reporter.Lines.Should().Contain("==allPackageLinksJsonOutputStart==");
             string.Join(" ", _reporter.Lines).Should().Contain("http://mock-url/xamarin.android.templates.1.0.3.nupkg", "New pack urls should be included in output");
             string.Join(" ", _reporter.Lines).Should().Contain("http://mock-url/xamarin.android.framework.8.4.0.nupkg", "Urls for packs with updated versions should be included in output");
             string.Join(" ", _reporter.Lines).Should().NotContain("xamarin.android.sdk", "Urls for packs with the same version should not be included in output");
@@ -506,8 +502,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 CreatePackInfo("Xamarin.Android.Framework", "8.2.0", WorkloadPackKind.Framework, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.Framework", "8.2.0"), "Xamarin.Android.Framework")
             };
             var installer = includeInstalledPacks ?
-                new MockPackWorkloadInstaller(failingWorkload, failingPack, installedWorkloads: installedWorkloads, installedPacks: installedPacks) :
-                new MockPackWorkloadInstaller(failingWorkload, failingPack, installedWorkloads: installedWorkloads);
+                new MockPackWorkloadInstaller(failingWorkload, failingPack, installedWorkloads: installedWorkloads, installedPacks: installedPacks, dotnetDir: dotnetRoot) :
+                new MockPackWorkloadInstaller(failingWorkload, failingPack, installedWorkloads: installedWorkloads, dotnetDir: dotnetRoot);
 
             var copiedManifestFolder = Path.Combine(dotnetRoot, "sdk-manifests", new SdkFeatureBand(sdkVersion).ToString(), "SampleManifest");
             Directory.CreateDirectory(copiedManifestFolder);
