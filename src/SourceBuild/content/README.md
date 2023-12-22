@@ -160,11 +160,7 @@ To enable full offline source-building of the VMR, we have no other choice than 
 
 ### Detailed list
 
-<!-- component list beginning -->
-
-> Auto-generated list of components will go here
-
-<!-- component list end -->
+The full list of components synchronized into the VMR is [here (Components.md)](./Components.md).
 
 The repository also contains a [JSON manifest](https://github.com/dotnet/dotnet/blob/main/src/source-manifest.json) listing all components in a machine-readable format.
 
