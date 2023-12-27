@@ -65,6 +65,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenManifestInspectorItPrintsJson()
+        {
+            _defaultToolListLocalCommand.Execute();
+            _reporter.Lines.Count.Should().Be(1);
+            _reporter.Lines.Should().Contain(l => l.Contains("\"packageId\""));
+            _reporter.Lines.Should().Contain(l => l.Contains("2.1.4"));
+            _reporter.Lines.Should().Contain(l => l.Contains(_testManifestPath));
+            _reporter.Lines.Should().Contain(l => l.Contains("\"commands\""));
+            _reporter.Lines.Should().Contain(l => l.Contains("package-name"));
+            _reporter.Lines.Should().Contain(l => l.Contains("foo.bar"));
+            _reporter.Lines.Should().Contain(l => l.Contains("1.0.8"));
+            _reporter.Lines.Should().Contain(l => l.Contains("\"manifest\""));
+            _reporter.Lines.Should().Contain(l => l.Contains("foo-bar"));
+        }
+
+        [Fact]
         public void GivenManifestInspectorWhenCalledFromRedirectCommandItPrintsTheTable()
         {
             var command = new ToolListCommand(result: _parseResult,
@@ -109,7 +125,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             return command;
         }
 
-        private class FakeManifestInspector : IToolManifestInspector
+        private sealed class FakeManifestInspector : IToolManifestInspector
         {
             private readonly IReadOnlyCollection<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>
                 ToToReturn;
