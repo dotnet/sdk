@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         private void RunOnTypeSymbol(ITypeSymbol? left, ITypeSymbol? right, MetadataInformation leftMetadata, MetadataInformation rightMetadata, IList<CompatDifference> differences)
         {
             // check if left and right both are struct
-            if (left != null && right != null)
+            if (left != null && right != null && left.TypeKind == TypeKind.Struct && right.TypeKind == TypeKind.Struct)
             {
                 // check if left and right both are public
                 if (left.DeclaredAccessibility == Accessibility.Public && right.DeclaredAccessibility == Accessibility.Public)
