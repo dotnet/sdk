@@ -98,9 +98,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
                 var generator = editor.Generator;
 
-                var tryGetValueAccess = generator.MemberAccessExpression(containsKeyAccess.Expression, TryGetValue);
-                var keyArgument = containsKeyInvocation.ArgumentList.Arguments.FirstOrDefault();
-
                 // Roslyn has reducers that are run after a code action is applied, one of which will
                 // simplify a TypeSyntax to `var` if the user prefers that. So we generate TypeSyntax, add
                 // simplifier annotation, and then let Roslyn decide whether to keep TypeSyntax or convert it to var.
@@ -119,13 +116,16 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     typeSyntax = IdentifierName(Var);
                 }
 
-                var outArgument = generator.Argument(RefKind.Out,
+                var outArgument = (ArgumentSyntax)generator.Argument(RefKind.Out,
                     DeclarationExpression(
                         typeSyntax,
                         SingleVariableDesignation(Identifier(Value))
                     )
                 );
-                var tryGetValueInvocation = generator.InvocationExpression(tryGetValueAccess, keyArgument, outArgument);
+
+                var tryGetValueInvocation = containsKeyInvocation
+                    .ReplaceNode(containsKeyAccess.Name, IdentifierName(TryGetValue).WithTriviaFrom(containsKeyAccess.Name))
+                    .AddArgumentListArguments(outArgument);
                 editor.ReplaceNode(containsKeyInvocation, tryGetValueInvocation);
 
                 var identifierName = (IdentifierNameSyntax)generator.IdentifierName(Value);
