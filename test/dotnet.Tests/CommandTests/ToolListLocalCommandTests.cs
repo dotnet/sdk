@@ -67,7 +67,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void GivenManifestInspectorItPrintsJson()
         {
-            _defaultToolListLocalCommand.Execute();
+            new ToolListLocalCommand(
+                Parser.Instance.Parse("dotnet tool list --format json"),
+                _toolManifestInspector,
+                _reporter).Execute();
             _reporter.Lines.Count.Should().Be(1);
             _reporter.Lines.Should().Contain(l => l.Contains("\"packageId\""));
             _reporter.Lines.Should().Contain(l => l.Contains("2.1.4"));
