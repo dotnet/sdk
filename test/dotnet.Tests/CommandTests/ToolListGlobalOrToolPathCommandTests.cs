@@ -195,14 +195,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             versionedData.Should().NotBeNull();
             versionedData.Version.Should().Be(1);
             versionedData.Data.Length.Should().Be(2);
+            
+            // another tool should be the first one, since there's OrderBy by PackageId
+            versionedData.Data[0].PackageId.Should().Be("another.tool");
+            versionedData.Data[0].Version.Should().Be("2.7.3");
+            versionedData.Data[0].Commands[0].Should().Be("bar");
 
-            versionedData.Data[0].PackageId.Should().Be("test.tool");
-            versionedData.Data[0].Version.Should().Be("1.3.5-preview");
-            versionedData.Data[0].Commands[0].Should().Be("foo");
-
-            versionedData.Data[1].PackageId.Should().Be("another.tool");
-            versionedData.Data[1].Version.Should().Be("2.7.3");
-            versionedData.Data[1].Commands[0].Should().Be("bar");
+            versionedData.Data[1].PackageId.Should().Be("test.tool");
+            versionedData.Data[1].Version.Should().Be("1.3.5-preview");
+            versionedData.Data[1].Commands[0].Should().Be("foo");
         }
 
         [Fact]
