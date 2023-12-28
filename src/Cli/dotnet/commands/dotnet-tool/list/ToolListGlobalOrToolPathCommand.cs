@@ -127,11 +127,11 @@ namespace Microsoft.DotNet.Tools.Tool.List
         {
             var jsonData = new VersionedDataContract<ToolListJsonContract[]>()
             {
-                Data = packageEnumerable.Select(p => new
+                Data = packageEnumerable.Select(p => new ToolListJsonContract
                 {
                     PackageId = p.Id.ToString(),
                     Version = p.Version.ToNormalizedString(),
-                    Commands = p.Commands.Select(c => c.Name).ToArray()
+                    Commands = p.Commands.Select(c => c.Name.Value).ToArray()
                 }).ToArray()
             };
             var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
