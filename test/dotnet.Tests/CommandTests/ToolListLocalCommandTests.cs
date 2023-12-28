@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
@@ -72,15 +73,21 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _toolManifestInspector,
                 _reporter).Execute();
             _reporter.Lines.Count.Should().Be(1);
-            _reporter.Lines.Should().Contain(l => l.Contains("\"packageId\""));
-            _reporter.Lines.Should().Contain(l => l.Contains("2.1.4"));
-            _reporter.Lines.Should().Contain(l => l.Contains(_testManifestPath));
-            _reporter.Lines.Should().Contain(l => l.Contains("\"commands\""));
-            _reporter.Lines.Should().Contain(l => l.Contains("package-name"));
-            _reporter.Lines.Should().Contain(l => l.Contains("foo.bar"));
-            _reporter.Lines.Should().Contain(l => l.Contains("1.0.8"));
-            _reporter.Lines.Should().Contain(l => l.Contains("\"manifest\""));
-            _reporter.Lines.Should().Contain(l => l.Contains("foo-bar"));
+
+            var versionedData = JsonSerializer.Deserialize<VersionedDataContract<LocalToolListJsonContract[]>>(_reporter.Lines[0]);
+            versionedData.Should().NotBeNull();
+            versionedData.Version.Should().Be(1);
+            versionedData.Data.Length.Should().Be(2);
+
+            versionedData.Data[0].PackageId.Should().Be("package.Id");
+            versionedData.Data[0].Version.Should().Be("2.1.4");
+            versionedData.Data[0].Commands[0].Should().Be("package-name");
+            versionedData.Data[0].Manifest.Should().Be(_testManifestPath);
+
+            versionedData.Data[1].PackageId.Should().Be("foo.bar");
+            versionedData.Data[1].Version.Should().Be("1.0.8");
+            versionedData.Data[1].Commands[0].Should().Be("foo-bar");
+            versionedData.Data[1].Manifest.Should().Be(_testManifestPath);
         }
 
         [Fact]
