@@ -83,14 +83,18 @@ namespace Microsoft.DotNet.Tools.Tool.List
 
         private void PrintJson(IEnumerable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> packageEnumerable)
         {
-            var json = System.Text.Json.JsonSerializer.Serialize(packageEnumerable.Select(p => new
+            var jsonData = new VersionedDataContract<LocalToolListJsonContract[]>()
             {
-                packageId = p.toolManifestPackage.PackageId.ToString(),
-                version = p.toolManifestPackage.Version.ToNormalizedString(),
-                commands = p.toolManifestPackage.CommandNames.Select(c => c.Value),
-                manifest = p.SourceManifest.Value
-            }));
-            _reporter.WriteLine(json);
+                Data = packageEnumerable.Select(p => new LocalToolListJsonContract
+                {
+                    PackageId = p.toolManifestPackage.PackageId.ToString(),
+                    Version = p.toolManifestPackage.Version.ToNormalizedString(),
+                    Commands = p.toolManifestPackage.CommandNames.Select(c => c.Value).ToArray(),
+                    Manifest = p.SourceManifest.Value
+                }).ToArray()
+            };
+            var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
+            _reporter.WriteLine(jsonText);
         }
     }
 }

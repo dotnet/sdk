@@ -125,13 +125,17 @@ namespace Microsoft.DotNet.Tools.Tool.List
 
         private void PrintJson(IEnumerable<IToolPackage> packageEnumerable)
         {
-            var json = System.Text.Json.JsonSerializer.Serialize(packageEnumerable.Select(p => new
+            var jsonData = new VersionedDataContract<ToolListJsonContract[]>()
             {
-                packageId = p.Id.ToString(),
-                version = p.Version.ToNormalizedString(),
-                commands = p.Commands.Select(c => c.Name)
-            }));
-            _reporter.WriteLine(json);
+                Data = packageEnumerable.Select(p => new
+                {
+                    PackageId = p.Id.ToString(),
+                    Version = p.Version.ToNormalizedString(),
+                    Commands = p.Commands.Select(c => c.Name).ToArray()
+                }).ToArray()
+            };
+            var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
+            _reporter.WriteLine(jsonText);
         }
     }
 }
