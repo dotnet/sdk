@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             versionedData.Version.Should().Be(1);
             versionedData.Data.Length.Should().Be(2);
 
-            versionedData.Data[0].PackageId.Should().Be("package.Id");
+            versionedData.Data[0].PackageId.Should().Be("package.id");
             versionedData.Data[0].Version.Should().Be("2.1.4");
             versionedData.Data[0].Commands[0].Should().Be("package-name");
             versionedData.Data[0].Manifest.Should().Be(_testManifestPath);
