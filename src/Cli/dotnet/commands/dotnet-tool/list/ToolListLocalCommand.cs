@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 (t) => PackageIdMatches(t.toolManifestPackage, packageId)
             );
 
-            var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption)?.Trim();
+            var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption);
             if ("json".Equals(formatValue, StringComparison.OrdinalIgnoreCase))
             {
                 PrintJson(packageEnumerable);
