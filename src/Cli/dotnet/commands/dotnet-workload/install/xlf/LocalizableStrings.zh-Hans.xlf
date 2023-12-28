@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetMode">
         <source>Control whether future workload operations should use workload sets or loose manifests.</source>
-        <target state="new">Control whether future workload operations should use workload sets or loose manifests.</target>
+        <target state="translated">控制未来的工作负载操作应该使用工作负载集还是松散清单。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
