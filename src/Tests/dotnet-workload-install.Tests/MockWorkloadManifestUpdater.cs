@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return Task.CompletedTask;
         }
 
-        public IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates()
+        public IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates(bool useWorkloadSets)
         {
             CalculateManifestUpdatesCallCount++;
             return _manifestUpdates;

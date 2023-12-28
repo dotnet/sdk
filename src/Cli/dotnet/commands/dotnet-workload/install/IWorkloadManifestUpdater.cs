@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
 
-        IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates();
+        IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates(bool useWorkloadSets);
 
         IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath);
 

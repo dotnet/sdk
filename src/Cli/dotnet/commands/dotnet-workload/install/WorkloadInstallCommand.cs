@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
                 manifestsToUpdate = useRollback ?
                     _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+                    _workloadManifestUpdater.CalculateManifestUpdates(_workloadInstaller.GetWorkloadInstallMode(_sdkFeatureBand)).Select(m => m.ManifestUpdate);
             }
 
             InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);

@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
             var manifestsToUpdate = useRollback ?
                 _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+                _workloadManifestUpdater.CalculateManifestUpdates(_workloadInstaller.GetWorkloadInstallMode(_sdkFeatureBand)).Select(m => m.ManifestUpdate);
 
             UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, offlineCache);
 
