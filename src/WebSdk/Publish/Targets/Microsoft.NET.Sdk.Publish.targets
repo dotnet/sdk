@@ -170,16 +170,6 @@ Copyright (C) Microsoft Corporation. All rights reserved.
           Condition=" '$(DeployOnBuild)' == 'true' " >
   </Target>
 
-  <Target Name="CheckContainersPackage" AfterTargets="Build" Condition="'$(EnableSdkContainerSupport)' == 'true'">
-    <PropertyGroup>
-      <ContainersPackageIdentity>Microsoft.NET.Build.Containers</ContainersPackageIdentity>
-    </PropertyGroup>
-    <ItemGroup>
-      <ContainersPackage Include="@(PackageReference)" Condition="'%(Identity)' == '$(ContainersPackageIdentity)'"/>
-    </ItemGroup>
-    <Warning Text="Microsoft.NET.Build.Containers NuGet package is explicitly referenced. Consider removing the package reference to Microsoft.NET.Build.Containers as it is now part of .NET SDK." Condition="'@(ContainersPackage)' != ''" />
-  </Target>
-
   <PropertyGroup>
     <CorePublishDependsOn>
       $(_DotNetPublishComputeFiles);

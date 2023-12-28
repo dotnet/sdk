@@ -193,11 +193,11 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    portablePlatform = "linux";
+                    portablePlatform = "win";
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    portablePlatform = "win";
+                    portablePlatform = "linux";
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {

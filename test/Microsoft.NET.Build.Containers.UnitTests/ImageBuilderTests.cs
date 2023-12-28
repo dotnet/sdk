@@ -605,6 +605,7 @@ public class ImageBuilderTests
     [Fact]
     public void WhenMultipleUrlSourcesAreSetOnlyAspnetcoreUrlsIsUsed()
     {
+        int[] expected = [12345];
         var builder = FromBaseImageConfig($$"""
         {
             "architecture": "amd64",
@@ -641,7 +642,7 @@ public class ImageBuilderTests
         Assert.NotNull(result);
         var portsObject = result["config"]?["ExposedPorts"]?.AsObject();
         var assignedPorts = portsObject?.AsEnumerable().Select(portString => int.Parse(portString.Key.Split('/')[0])).ToArray();
-        Assert.Equal([12345], assignedPorts);
+        Assert.Equal(expected, assignedPorts);
     }
 
     private ImageBuilder FromBaseImageConfig(string baseImageConfig, [CallerMemberName] string testName = "")
