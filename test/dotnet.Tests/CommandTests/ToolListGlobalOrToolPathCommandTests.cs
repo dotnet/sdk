@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.Count.Should().Be(1);
             
-            var versionedData = JsonSerializer.Deserialize<VersionedDataContract<ToolListJsonContract[]>>(_reporter.Lines[0]);
+            var versionedData = System.Text.Json.JsonSerializer.Deserialize<VersionedDataContract<ToolListJsonContract[]>>(_reporter.Lines[0]);
             versionedData.Should().NotBeNull();
             versionedData.Version.Should().Be(1);
             versionedData.Data.Length.Should().Be(2);
