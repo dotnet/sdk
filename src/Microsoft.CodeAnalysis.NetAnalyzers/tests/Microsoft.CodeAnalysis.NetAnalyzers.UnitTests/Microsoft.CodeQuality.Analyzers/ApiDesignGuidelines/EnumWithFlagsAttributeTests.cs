@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Globalization;
 using System.Threading.Tasks;
@@ -564,6 +564,47 @@ End Enum
                 GetCA2217BasicResultAt(3, 13, "NonSimpleFlagEnumClass", "4, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 131072, 262144, 524288, 1048576, 2097152, 4194304, 8388608, 16777216, 33554432, 67108864, 134217728, 268435456, 536870912, 1073741824, 2147483648, 4294967296, 8589934592, 17179869184, 34359738368, 68719476736, 137438953472, 274877906944, 549755813888, 1099511627776, 2199023255552, 4398046511104, 8796093022208, 17592186044416, 35184372088832, 70368744177664, 140737488355328, 281474976710656, 562949953421312, 1125899906842624, 2251799813685248, 4503599627370496, 9007199254740992, 18014398509481984, 36028797018963968, 72057594037927936, 144115188075855872, 288230376151711744, 576460752303423488, 1152921504606846976, 2305843009213693952, 4611686018427387904, 9223372036854775808"),
                 GetCA2217BasicResultAt(13, 13, "BitValuesClass", "4"),
                 GetCA2217BasicResultAt(22, 13, "LabelsClass", "2"));
+        }
+
+        [Fact, WorkItem(6982, "https://github.com/dotnet/roslyn-analyzers/issues/6982")]
+        public async Task CSharp_EnumWithFlagsAttributes_MembersShareValueAsync()
+        {
+            var code = @"{0}
+public enum MembersShareValueEnumClass
+{{
+    One,
+    Tow,
+    Three,
+    Two = Tow
+}}
+";
+            // Verify no CA1027: Mark enums with FlagsAttribute
+            string codeWithoutFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: false);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithoutFlags);
+
+            // Verify no CA2217: Do not mark enums with FlagsAttribute
+            string codeWithFlags = GetCSharpCode_EnumWithFlagsAttributes(code, hasFlags: true);
+            await VerifyCS.VerifyAnalyzerAsync(codeWithFlags);
+        }
+
+        [Fact, WorkItem(6982, "https://github.com/dotnet/roslyn-analyzers/issues/6982")]
+        public async Task VisualBasic_EnumWithFlagsAttributes_MembersShareValueAsync()
+        {
+            string code = @"{0}
+Public Enum MembersShareValueEnumClass
+	One
+	Tow
+	Three
+    Two = Tow
+End Enum
+";
+            // Verify no CA1027: Mark enums with FlagsAttribute
+            string codeWithoutFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: false);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithoutFlags);
+
+            // Verify no CA2217: Do not mark enums with FlagsAttribute
+            string codeWithFlags = GetBasicCode_EnumWithFlagsAttributes(code, hasFlags: true);
+            await VerifyVB.VerifyAnalyzerAsync(codeWithFlags);
         }
 
         private static DiagnosticResult GetCA1027CSharpResultAt(int line, int column, string enumTypeName)

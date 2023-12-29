@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -124,7 +124,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             bool first = true;
             ulong previous = 0;
-            foreach (ulong element in list.OrderBy(t => t))
+            foreach (ulong element in list.Distinct().OrderBy(t => t))
             {
                 if (first)
                 {
