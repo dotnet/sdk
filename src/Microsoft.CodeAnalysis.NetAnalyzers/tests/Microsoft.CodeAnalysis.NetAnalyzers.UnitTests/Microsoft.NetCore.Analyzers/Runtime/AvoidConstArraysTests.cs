@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Test.Utilities;
 using Xunit;
@@ -1020,6 +1021,36 @@ public class MyClass
             {
                 TestCode = source,
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(7111, "https://github.com/dotnet/roslyn-analyzers/issues/7111")]
+        public Task TopLevelStatements_Diagnostic()
+        {
+            const string source = """
+                                  using System;
+
+                                  _ = "a".Split([|new[] { "1", "2" }|], StringSplitOptions.None);
+                                  """;
+            const string fixedSource = """
+                                       using System;
+                                       
+                                       _ = "a".Split(separator, StringSplitOptions.None);
+
+                                       partial class Program
+                                       {
+                                           private static readonly string[] separator = new[] { "1", "2" };
+                                       }
+                                       """;
+            return new VerifyCS.Test
+            {
+                TestCode = source,
+                FixedCode = fixedSource,
+                LanguageVersion = LanguageVersion.CSharp9,
+                TestState =
+                {
+                    OutputKind = OutputKind.ConsoleApplication
+                }
             }.RunAsync();
         }
     }
