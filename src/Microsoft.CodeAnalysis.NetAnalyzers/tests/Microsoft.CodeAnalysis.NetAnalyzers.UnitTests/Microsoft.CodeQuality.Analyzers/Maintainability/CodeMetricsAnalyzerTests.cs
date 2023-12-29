@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
@@ -18,8 +18,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.UnitTests
     {
         #region CA1501: Avoid excessive inheritance
 
-        [Fact]
-        public async Task CA1501_CSharp_VerifyDiagnosticAsync()
+        [Theory]
+        [InlineData("\r\n")]
+        [InlineData("\r")]
+        [InlineData("\n")]
+        public async Task CA1501_CSharp_VerifyDiagnosticAsync(string lineEndings)
         {
             var source = @"
 class BaseClass { }
@@ -31,7 +34,7 @@ class FifthDerivedClass : FourthDerivedClass { }
 
 // This class violates the rule.
 class SixthDerivedClass : FifthDerivedClass { }
-";
+".ReplaceLineEndings(lineEndings);
             DiagnosticResult[] expected = new[] {
                  GetCSharpCA1501ExpectedDiagnostic(10, 7, "SixthDerivedClass", 6, 6, "FifthDerivedClass, FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass")};
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
