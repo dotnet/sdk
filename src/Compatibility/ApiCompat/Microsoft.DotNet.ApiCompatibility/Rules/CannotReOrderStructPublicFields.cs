@@ -6,6 +6,9 @@ using Microsoft.DotNet.ApiSymbolExtensions;
 
 namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
+    /// <summary>
+    /// This rule validates that order of struct fields is maintained.
+    /// </summary>
     public class CannotReOrderStructPublicFields : IRule
     {
         public CannotReOrderStructPublicFields(IRuleRegistrationContext context)
