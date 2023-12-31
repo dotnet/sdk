@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 new EnumsMustMatch(settings, context),
                 new MembersMustExist(settings, context),
                 new CannotChangeVisibility(settings, context),
-                new CannotReOrderStructPublicProperties(context)
+                new CannotReOrderStructPublicFields(context)
             };
 
             if (enableRuleAttributesMustMatch)

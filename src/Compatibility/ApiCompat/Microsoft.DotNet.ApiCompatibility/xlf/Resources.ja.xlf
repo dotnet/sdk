@@ -92,6 +92,11 @@
         <target state="translated">'{0}' の可視性が '{1}' から '{2}' に拡張されました。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotReOrderStructPublicProperties">
+        <source>Public fields order have been changed in '{0}'.</source>
+        <target state="new">Public fields order have been changed in '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotReduceVisibility">
         <source>Visibility of '{0}' reduced from '{1}' to '{2}'.</source>
         <target state="translated">'{0}' の可視性が '{1}' から '{2}' に縮小されました。</target>

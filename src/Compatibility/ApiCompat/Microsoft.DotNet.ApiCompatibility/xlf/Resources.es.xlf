@@ -92,6 +92,11 @@
         <target state="translated">Visibilidad de '{0}' expandida de '{1}' a '{2}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotReOrderStructPublicProperties">
+        <source>Public fields order have been changed in '{0}'.</source>
+        <target state="new">Public fields order have been changed in '{0}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotReduceVisibility">
         <source>Visibility of '{0}' reduced from '{1}' to '{2}'.</source>
         <target state="translated">Visibilidad de '{0}' reducida de '{1}' a '{2}'.</target>
