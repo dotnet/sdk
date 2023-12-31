@@ -6,6 +6,11 @@
     <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildCommandArgs>
 
+    <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</OverrideTargetRid>
+
     <!-- Propagate RID set in source-build to sdk repo -->
     <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
     <_baseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))</_baseOS>
@@ -13,7 +18,7 @@
     <_targetPortableArch>$(Platform)</_targetPortableArch>
     <_targetPortableArch Condition="'$(OverrideTargetArch)' != ''">$(OverrideTargetArch)</_targetPortableArch>
     <BuildCommandArgs>$(BuildCommandArgs) /p:PortableRid=$(_baseOS)-$(_targetPortableArch)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:TargetRid=$(TargetRid)</BuildCommandArgs>
+    <BuildCommandArgs>$(BuildCommandArgs) /p:TargetRid=$(OverrideTargetRid)</BuildCommandArgs>
 
     <!-- Just like mono, arm does not support NativeAot -->
     <BuildCommandArgs Condition="'$(BuildArchitecture)' == 'arm'">$(BuildCommandArgs) /p:NativeAotSupported=false</BuildCommandArgs>

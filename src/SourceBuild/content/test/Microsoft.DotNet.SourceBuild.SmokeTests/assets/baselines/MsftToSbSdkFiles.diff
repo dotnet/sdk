@@ -45,14 +45,6 @@ index ------------
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/analyzers/
 @@ ------------ @@
- ./packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.XPath.XDocument.dll
- ./sdk-manifests/
- ./sdk-manifests/x.y.z/
--./sdk-manifests/x.y.z/
- ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/
- ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/x.y.z/
- ./sdk-manifests/x.y.z/microsoft.net.workload.emscripten.current/x.y.z/WorkloadManifest.json
-@@ ------------ @@
  ./sdk/x.y.z/.version
  ./sdk/x.y.z/AppHostTemplate/
  ./sdk/x.y.z/AppHostTemplate/apphost

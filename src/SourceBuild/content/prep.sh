@@ -174,6 +174,7 @@ function BootstrapArtifacts {
 # Check for the version of dotnet to install
 if [ "$installDotnet" == true ]; then
   echo "  Installing dotnet..."
+  use_installed_dotnet_cli=false
   (source ./eng/common/tools.sh && InitializeDotNetCli true)
 
   # TODO: Remove once runtime dependency is gone (https://github.com/dotnet/runtime/issues/93666)
