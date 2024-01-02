@@ -1,0 +1,26 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Optimize>true</Optimize>
+    <Configuration>Release</Configuration>
+    <!-- Copy nuget assemblies to build directory. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <!-- Always run on the latest runtime installed. -->
+    <RollForward>LatestMajor</RollForward>
+    <!-- Tell arcade to not reference the Microsoft.NET.Test.Sdk or bring any xunit targets in. -->
+    <ExcludeMicrosoftNetTestSdk>true</ExcludeMicrosoftNetTestSdk>
+    <TestRunnerName>BenchmarkDotNet</TestRunnerName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="BenchmarkDotNet.Annotations" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\dotnet-format.csproj" />
+  </ItemGroup>
+
+</Project>

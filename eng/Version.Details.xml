@@ -74,10 +74,12 @@
       <Sha>0c489541068f311e23b582410c1df3ff86f1d526</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="dotnet-format" Version="9.0.461803">
-      <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>2c2d58cb25064036f853d76e7b6aff7bb7d38401</Sha>
-      <SourceBuild RepoName="format" ManagedOnly="true" />
+    <!-- Microsoft.CodeAnalysis.Workspaces.MSBuild transitively references M.Bcl.AsyncInterfaces.
+         Adding an explicit dependency to make sure the latest version is used instead of the SBRP
+         one under source build. -->
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
+      <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.9.0-3.23629.3">
       <Uri>https://github.com/dotnet/roslyn</Uri>
@@ -330,6 +332,10 @@
       <Uri>https://github.com/dotnet/command-line-api</Uri>
       <Sha>a045dd54a4c44723c215d992288160eb1401bb7f</Sha>
     </Dependency>
+    <Dependency Name="System.CommandLine.Rendering" Version="0.4.0-alpha.23407.1">
+      <Uri>https://github.com/dotnet/command-line-api</Uri>
+      <Sha>a045dd54a4c44723c215d992288160eb1401bb7f</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.440701">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
       <Sha>a045dd54a4c44723c215d992288160eb1401bb7f</Sha>
@@ -385,6 +391,15 @@
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
       <SourceBuild RepoName="symreader" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.0-alpha.1.23529.4">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>e5c631d28b985b773b28d0cb2346f49a92bd41dd</Sha>
+      <SourceBuild RepoName="runtime" />
+    </Dependency>
+    <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0">
+      <Uri>https://github.com/dotnet/symreader</Uri>
+      <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
     <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-alpha.1.24052.1">
