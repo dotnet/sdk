@@ -142,11 +142,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics
 
                 var metricsAnalysisContext = new CodeMetricsAnalysisContext(compilationContext.Compilation, compilationContext.CancellationToken,
                     namedType => IsConfiguredToSkipFromInheritanceCount(namedType, compilationContext, tree));
-                var computeTask = CodeAnalysisMetricData.ComputeAsync(metricsAnalysisContext);
-                computeTask.Wait(compilationContext.CancellationToken);
+                var codeAnalysisMetricData = CodeAnalysisMetricData.ComputeSynchronously(metricsAnalysisContext);
 
                 // Analyze code metrics tree and report diagnostics.
-                analyzeMetricsData(computeTask.Result);
+                analyzeMetricsData(codeAnalysisMetricData);
 
                 void analyzeMetricsData(CodeAnalysisMetricData codeAnalysisMetricData)
                 {

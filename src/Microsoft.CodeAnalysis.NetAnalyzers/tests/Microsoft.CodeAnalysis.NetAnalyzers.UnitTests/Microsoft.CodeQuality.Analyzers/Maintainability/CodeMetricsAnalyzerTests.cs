@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
@@ -18,8 +18,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.UnitTests
     {
         #region CA1501: Avoid excessive inheritance
 
-        [Fact]
-        public async Task CA1501_CSharp_VerifyDiagnosticAsync()
+        [Theory]
+        [InlineData("\r\n")]
+        [InlineData("\r")]
+        [InlineData("\n")]
+        public async Task CA1501_CSharp_VerifyDiagnosticAsync(string lineEndings)
         {
             var source = @"
 class BaseClass { }
@@ -31,7 +34,7 @@ class FifthDerivedClass : FourthDerivedClass { }
 
 // This class violates the rule.
 class SixthDerivedClass : FifthDerivedClass { }
-";
+".ReplaceLineEndings(lineEndings);
             DiagnosticResult[] expected = new[] {
                  GetCSharpCA1501ExpectedDiagnostic(10, 7, "SixthDerivedClass", 6, 6, "FifthDerivedClass, FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass")};
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
@@ -615,6 +618,85 @@ class C
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(4,10): warning CA1502: 'M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
                 GetCSharpCA1502ExpectedDiagnostic(4, 10, "M", 28, 26)};
+            await VerifyCS.VerifyAnalyzerAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task CA1502_CSharp_VerifyDiagnosticInPropertyAsync()
+        {
+            var source = @"
+class C
+{
+    bool b;
+
+    bool M
+    {
+        get
+        {
+            // Default threshold = 25
+            var x = b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b;
+            return x;
+        }
+        set
+        {
+            // Default threshold = 25
+            var x = b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b;
+        }
+    }
+}
+";
+            DiagnosticResult[] expected = new[]
+            {
+                // Test0.cs(8,9): warning CA1502: 'get_M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
+                GetCSharpCA1502ExpectedDiagnostic(8, 9, "get_M", 28, 26),
+                // Test0.cs(17,9): warning CA1502: 'set_M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
+                GetCSharpCA1502ExpectedDiagnostic(17, 9, "set_M", 28, 26),
+            };
+            await VerifyCS.VerifyAnalyzerAsync(source, expected);
+        }
+
+        [Fact]
+        public async Task CA1502_CSharp_VerifyDiagnosticInEventAsync()
+        {
+            var source = @"
+class C
+{
+    bool b;
+
+    event System.EventHandler M
+    {
+        add
+        {
+            // Default threshold = 25
+            var x = b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b;
+        }
+        remove
+        {
+            // Default threshold = 25
+            var x = b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b &&
+                b && b && b && b && b && b && b;
+        }
+    }
+}
+";
+            DiagnosticResult[] expected = new[]
+            {
+                // Test0.cs(8,9): warning CA1502: 'add_M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
+                GetCSharpCA1502ExpectedDiagnostic(8, 9, "add_M", 28, 26),
+                // Test0.cs(16,9): warning CA1502: 'remove_M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
+                GetCSharpCA1502ExpectedDiagnostic(16, 9, "remove_M", 28, 26),
+            };
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
