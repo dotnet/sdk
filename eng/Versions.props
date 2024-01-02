@@ -57,6 +57,7 @@
     <MicrosoftExtensionsDependencyModelVersion>$(MicrosoftExtensionsDependencyModelPackageVersion)</MicrosoftExtensionsDependencyModelVersion>
     <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-alpha.1.24052.1</MicrosoftExtensionsLoggingAbstractionsVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-alpha.1.24052.1</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>9.0.0-alpha.1.23529.4</MicrosoftExtensionsFileSystemGlobbingVersion>
     <MicrosoftExtensionsLoggingVersion>9.0.0-alpha.1.24052.1</MicrosoftExtensionsLoggingVersion>
     <MicrosoftNETILLinkTasksPackageVersion>9.0.0-alpha.1.24052.1</MicrosoftNETILLinkTasksPackageVersion>
     <SystemServiceProcessServiceControllerVersion>9.0.0-alpha.1.24052.1</SystemServiceProcessServiceControllerVersion>
@@ -91,8 +92,19 @@
     <SystemResourcesExtensionsPackageVersion>9.0.0-alpha.1.24052.1</SystemResourcesExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Dependencies from https://github.com/dotnet/format -->
-    <dotnetformatVersion>9.0.461803</dotnetformatVersion>
+    <!-- Dependencies from dotnet-format -->
+    <SystemCommandLineRenderingVersion>0.4.0-alpha.23407.1</SystemCommandLineRenderingVersion>
+    <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
+    <MicrosoftBuildVersion>17.3.2</MicrosoftBuildVersion>
+    <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
+    <MicrosoftCodeAnalysisVersion>4.9.0-1.23520.1</MicrosoftCodeAnalysisVersion>
+    <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalyzerTestingVersion>
+    <MicrosoftDiaSymReaderVersion>2.0.0</MicrosoftDiaSymReaderVersion>
+    <MicrosoftBuildLocatorVersion>1.6.10</MicrosoftBuildLocatorVersion>
+    <MicrosoftVisualStudioCompositionVersion>17.4.16</MicrosoftVisualStudioCompositionVersion>
+    <!-- External dependendencies from dotnet-format-->
+    <BenchmarkDotNetVersion>0.13.5</BenchmarkDotNetVersion>
+    <BenchmarkDotNetAnnotationsVersion>0.13.5</BenchmarkDotNetAnnotationsVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
