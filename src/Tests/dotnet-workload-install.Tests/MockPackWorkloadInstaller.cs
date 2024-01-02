@@ -184,8 +184,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             installStateContents.Manifests = manifestContents;
             File.WriteAllText(path, installStateContents.ToString());
         }
-
-        public bool GetWorkloadInstallMode(SdkFeatureBand sdkFeatureBand) => throw new NotImplementedException();
     }
 
     internal class MockInstallationRecordRepository : IWorkloadInstallationRecordRepository

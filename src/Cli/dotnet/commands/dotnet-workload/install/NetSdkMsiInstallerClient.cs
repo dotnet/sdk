@@ -1076,7 +1076,5 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         }
 
         void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode) => UpdateInstallMode(sdkFeatureBand, newMode);
-
-        public bool GetWorkloadInstallMode(SdkFeatureBand sdkFeatureBand) => GetInstallMode(sdkFeatureBand);
     }
 }

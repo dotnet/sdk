@@ -702,12 +702,5 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         }
 
         private bool IsSingleFilePack(PackInfo packInfo) => packInfo.Kind.Equals(WorkloadPackKind.Library) || packInfo.Kind.Equals(WorkloadPackKind.Template);
-
-        public bool GetWorkloadInstallMode(SdkFeatureBand sdkFeatureBand)
-        {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
-            return installStateContents.UseWorkloadSets ?? false;
-        }
     }
 }

@@ -96,6 +96,13 @@ namespace Microsoft.DotNet.Workloads.Workload
                     manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
                     ).ToDictionaryForJson();
 
+        public static bool GetInstallStateMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
+            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            return installStateContents.UseWorkloadSets ?? false;
+        }
+
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)
         {
             List<WorkloadDownload> ret = new();

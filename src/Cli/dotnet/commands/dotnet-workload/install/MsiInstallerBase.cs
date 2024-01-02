@@ -309,13 +309,6 @@ namespace Microsoft.DotNet.Installer.Windows
             }
         }
 
-        protected bool GetInstallMode(SdkFeatureBand sdkFeatureBand)
-        {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
-            return installStateContents.UseWorkloadSets ?? false;
-        }
-
         /// <summary>
         /// Installs the specified MSI.
         /// </summary>
