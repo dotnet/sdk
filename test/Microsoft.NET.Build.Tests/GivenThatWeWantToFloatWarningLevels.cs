@@ -156,7 +156,7 @@ namespace Microsoft.NET.Build.Tests
             buildResult.StdErr.Should().Be(string.Empty);
         }
 
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.NextTargetFrameworkVersion)]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM, string nextTFMVersionNumber)
         {
