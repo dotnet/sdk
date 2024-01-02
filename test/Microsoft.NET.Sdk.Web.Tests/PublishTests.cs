@@ -82,7 +82,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: projectName + targetFramework);
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            publishCommand.Execute().Should().Pass();
+            publishCommand.Execute("/p:SelfContained=true").Should().Pass();
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework);
             buildProperties["PublishTrimmed"].Should().Be("true");
