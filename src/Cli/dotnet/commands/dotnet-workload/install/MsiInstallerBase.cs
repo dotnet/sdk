@@ -383,7 +383,7 @@ namespace Microsoft.DotNet.Installer.Windows
 
         internal protected string GetWorkloadHistoryDirectory(string sdkFeatureBand)
         {
-            return Path.Combine(Environment.GetEnvironmentVariable("PROGRAMDATA"), "dotnet", "workloads", sdkFeatureBand.ToString(), "history");
+            return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "dotnet", "workloads", sdkFeatureBand.ToString(), "history");
         }
 
         public void WriteWorkloadHistoryRecord(WorkloadHistoryRecord workloadHistoryRecord, string sdkFeatureBand)

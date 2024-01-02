@@ -120,11 +120,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return InstallationRecordRepository;
         }
 
-        public void RemoveWorkloadManifest(string featureBand, string manifestId, string version, DirectoryPath? offlineCache)
-        {
-            throw new NotImplementedException();
-        }
-
         public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false)
         {
             InstalledManifests.Add((manifestUpdate, offlineCache));

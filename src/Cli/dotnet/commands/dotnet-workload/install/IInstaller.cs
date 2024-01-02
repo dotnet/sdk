@@ -24,8 +24,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false);
 
-        void RemoveWorkloadManifest(string featureBand, string manifestId, string version, DirectoryPath? offlineCache);
-
         IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository();
 
         IEnumerable<WorkloadDownload> GetDownloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, bool includeInstalledItems);
