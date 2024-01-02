@@ -145,7 +145,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions
             {
                 if (source is string s)
                 {
-                    return ParserExtensions.DoubleTryParseСurrentOrInvariant(s, out result);
+                    return ParserExtensions.DoubleTryParseCurrentOrInvariant(s, out result);
                 }
 
                 result = 0;

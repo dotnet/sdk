@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// true when <paramref name="stringValue"/> can be parsed in current or invariant culture.
         /// false when <paramref name="stringValue"/> cannot be parsed in current or invariant culture.
         /// </returns>
-        public static bool DoubleTryParseСurrentOrInvariant(string? stringValue, out double doubleValue)
+        public static bool DoubleTryParseCurrentOrInvariant(string? stringValue, out double doubleValue)
         {
             if (double.TryParse(stringValue, NumberStyles.Float, CultureInfo.CurrentCulture, out doubleValue))
             {

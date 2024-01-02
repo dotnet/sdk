@@ -64,7 +64,7 @@ Microsoft.TemplateEngine.Utils.InMemoryFileSystem.ReadAllBytes(string! path) -> 
 Microsoft.TemplateEngine.Utils.InMemoryFileSystem.ReadAllText(string! path) -> string!
 Microsoft.TemplateEngine.Utils.InMemoryFileSystem.SetFileAttributes(string! file, System.IO.FileAttributes attributes) -> void
 Microsoft.TemplateEngine.Utils.InMemoryFileSystem.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
-Microsoft.TemplateEngine.Utils.InMemoryFileSystem.WatchFileChanges(string! filepath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
+Microsoft.TemplateEngine.Utils.InMemoryFileSystem.WatchFileChanges(string! filePath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
 Microsoft.TemplateEngine.Utils.InMemoryFileSystem.WriteAllText(string! path, string! value) -> void
 Microsoft.TemplateEngine.Utils.InstallRequestPathResolution
 Microsoft.TemplateEngine.Utils.ListExtensions
@@ -98,7 +98,7 @@ Microsoft.TemplateEngine.Utils.PhysicalFileSystem.ReadAllBytes(string! path) -> 
 Microsoft.TemplateEngine.Utils.PhysicalFileSystem.ReadAllText(string! path) -> string!
 Microsoft.TemplateEngine.Utils.PhysicalFileSystem.SetFileAttributes(string! file, System.IO.FileAttributes attributes) -> void
 Microsoft.TemplateEngine.Utils.PhysicalFileSystem.SetLastWriteTimeUtc(string! file, System.DateTime lastWriteTimeUtc) -> void
-Microsoft.TemplateEngine.Utils.PhysicalFileSystem.WatchFileChanges(string! filepath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
+Microsoft.TemplateEngine.Utils.PhysicalFileSystem.WatchFileChanges(string! filePath, System.IO.FileSystemEventHandler! fileChanged) -> System.IDisposable!
 Microsoft.TemplateEngine.Utils.PhysicalFileSystem.WriteAllText(string! path, string! value) -> void
 Microsoft.TemplateEngine.Utils.RangeVersionSpecification
 Microsoft.TemplateEngine.Utils.RangeVersionSpecification.IsEndInclusive.get -> bool
@@ -196,8 +196,8 @@ Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.Version.get -> string!
 Microsoft.TemplateEngine.Utils.DefaultTemplateEngineHost.VirtualizeDirectory(string! path) -> void
 Microsoft.TemplateEngine.Utils.DirectedGraph<T>
 Microsoft.TemplateEngine.Utils.DirectedGraph<T>.DirectedGraph(System.Collections.Generic.Dictionary<T, System.Collections.Generic.HashSet<T>!>! dependenciesMap) -> void
-Microsoft.TemplateEngine.Utils.DirectedGraph<T>.GetDependands(System.Collections.Generic.IEnumerable<T>! vertices) -> System.Collections.Generic.IEnumerable<T>!
-Microsoft.TemplateEngine.Utils.DirectedGraph<T>.GetSubGraphDependandOnVertices(System.Collections.Generic.IReadOnlyList<T>! vertices, bool includeSeedVertices = false) -> Microsoft.TemplateEngine.Utils.DirectedGraph<T>!
+Microsoft.TemplateEngine.Utils.DirectedGraph<T>.GetDependents(System.Collections.Generic.IEnumerable<T>! vertices) -> System.Collections.Generic.IEnumerable<T>!
+Microsoft.TemplateEngine.Utils.DirectedGraph<T>.GetSubGraphDependentOnVertices(System.Collections.Generic.IReadOnlyList<T>! vertices, bool includeSeedVertices = false) -> Microsoft.TemplateEngine.Utils.DirectedGraph<T>!
 Microsoft.TemplateEngine.Utils.DirectedGraph<T>.HasCycle(out System.Collections.Generic.IReadOnlyList<T>! cycle) -> bool
 Microsoft.TemplateEngine.Utils.DirectedGraph<T>.TryGetTopologicalSort(out System.Collections.Generic.IReadOnlyList<T>! sortedElements) -> bool
 Microsoft.TemplateEngine.Utils.EngineInitializationException.EngineInitializationException(string! message, string! settingsItem) -> void
@@ -252,7 +252,7 @@ static Microsoft.TemplateEngine.Utils.MultiValueParameter.MultiValueSeparators.g
 static Microsoft.TemplateEngine.Utils.MultiValueParameter.TryPerformMultiValueEqual(object! x, object! y, out bool result) -> bool
 static Microsoft.TemplateEngine.Utils.ParameterSetDataExtensions.ToParameterSetData(this Microsoft.TemplateEngine.Abstractions.IParameterSet! parameterSet) -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterSetData!
 static Microsoft.TemplateEngine.Utils.ParserExtensions.ConvertToDoubleCurrentOrInvariant(object! value) -> double
-static Microsoft.TemplateEngine.Utils.ParserExtensions.DoubleTryParseСurrentOrInvariant(string? stringValue, out double doubleValue) -> bool
+static Microsoft.TemplateEngine.Utils.ParserExtensions.DoubleTryParseCurrentOrInvariant(string? stringValue, out double doubleValue) -> bool
 static Microsoft.TemplateEngine.Utils.RuntimeValueUtil.TryGetRuntimeValue(this Microsoft.TemplateEngine.Abstractions.IParameterSet! parameters, Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, string! name, out object? value, bool skipEnvironmentVariableSearch = false) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.IsValidMultiValueParameterValue(this string! value) -> bool
 static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.TokenizeMultiValueParameter(this string! literal) -> System.Collections.Generic.IReadOnlyList<string!>!

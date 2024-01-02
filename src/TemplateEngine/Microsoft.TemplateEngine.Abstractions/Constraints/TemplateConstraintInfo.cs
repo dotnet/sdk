@@ -6,12 +6,12 @@ using System;
 namespace Microsoft.TemplateEngine.Abstractions.Constraints
 {
     /// <summary>
-    /// Represents information about template constraint defintion in template cache <see cref="ITemplateInfo"/>.
+    /// Represents information about template constraint definition in template cache <see cref="ITemplateInfo"/>.
     /// </summary>
     public class TemplateConstraintInfo
     {
         /// <summary>
-        /// Creates instance of the clase.
+        /// Creates a new instance of <see cref="TemplateConstraintInfo"/>.
         /// </summary>
         /// <param name="type">Constraint type, matches the type defined in <see cref="ITemplateConstraint"/> implementation and template.json.</param>
         /// <param name="args">Arguments for constraint evaluation.</param>
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Abstractions.Constraints
         public string Type { get; }
 
         /// <summary>
-        /// Gets the constraint argumens.
+        /// Gets the constraint arguments.
         /// </summary>
         public string? Args { get; }
     }

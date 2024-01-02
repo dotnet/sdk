@@ -75,9 +75,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             PrintOverlappingIdentityWarning(logger, templateDeduplicationDictionary);
         }
 
-        public TemplateCache(JObject? contentJobject)
+        public TemplateCache(JObject? contentJObject)
         {
-            if (contentJobject != null && contentJobject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken? versionToken))
+            if (contentJObject != null && contentJObject.TryGetValue(nameof(Version), StringComparison.OrdinalIgnoreCase, out JToken? versionToken))
             {
                 Version = versionToken.ToString();
             }
@@ -90,13 +90,13 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                 return;
             }
 
-            Locale = contentJobject.TryGetValue(nameof(Locale), StringComparison.OrdinalIgnoreCase, out JToken? localeToken)
+            Locale = contentJObject.TryGetValue(nameof(Locale), StringComparison.OrdinalIgnoreCase, out JToken? localeToken)
                 ? localeToken.ToString()
                 : string.Empty;
 
             var mountPointInfo = new Dictionary<string, DateTime>();
 
-            if (contentJobject.TryGetValue(nameof(MountPointsInfo), StringComparison.OrdinalIgnoreCase, out JToken? mountPointInfoToken) && mountPointInfoToken is IDictionary<string, JToken> dict)
+            if (contentJObject.TryGetValue(nameof(MountPointsInfo), StringComparison.OrdinalIgnoreCase, out JToken? mountPointInfoToken) && mountPointInfoToken is IDictionary<string, JToken> dict)
             {
                 foreach (var entry in dict)
                 {
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
             List<TemplateInfo> templateList = new List<TemplateInfo>();
 
-            if (contentJobject.TryGetValue(nameof(TemplateInfo), StringComparison.OrdinalIgnoreCase, out JToken? templateInfoToken) && templateInfoToken is JArray arr)
+            if (contentJObject.TryGetValue(nameof(TemplateInfo), StringComparison.OrdinalIgnoreCase, out JToken? templateInfoToken) && templateInfoToken is JArray arr)
             {
                 foreach (JToken entry in arr)
                 {

@@ -25,19 +25,19 @@ namespace Microsoft.TemplateEngine.Edge
 
         string IBindSymbolSource.DisplayName => LocalizableStrings.EnvironmentVariablesBindSource_Name;
 
-        Task<string?> IBindSymbolSource.GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindname, CancellationToken cancellationToken)
+        Task<string?> IBindSymbolSource.GetBoundValueAsync(IEngineEnvironmentSettings settings, string bindName, CancellationToken cancellationToken)
         {
             settings.Host.Logger.LogDebug(
                 "[{0}]: Retrieving bound value for '{1}'.",
                 nameof(EnvironmentVariablesBindSource),
-                bindname);
+                bindName);
 
-            string? result = settings.Environment.GetEnvironmentVariable(bindname);
+            string? result = settings.Environment.GetEnvironmentVariable(bindName);
 
             settings.Host.Logger.LogDebug(
         "[{0}]: Retrieved bound value for '{1}': '{2}'.",
         nameof(EnvironmentVariablesBindSource),
-        bindname,
+        bindName,
         result ?? "<null>");
             return Task.FromResult(result);
         }

@@ -69,10 +69,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 closeCommentToken);
 
             IReadOnlyList<IToken> start = new[] { Tokens.OpenConditionExpression.ToToken(processorState.Encoding) };
-            return new Impl(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, _id, _initialState);
+            return new Implementation(this, start, structureTrie, closeConditionTrie, scanBackTrie, mapping, _id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly ITokenTrie _closeConditionTrie;
             private readonly InlineMarkupConditional _definition;
@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly ITokenTrie _scanBackTrie;
             private readonly ITokenTrie _structureTrie;
 
-            internal Impl(InlineMarkupConditional definition, IReadOnlyList<IToken> tokens, ITokenTrie structureTrie, ITokenTrie closeConditionTrie, ITokenTrie scanBackTrie, MarkupTokenMapping mapping, string? id, bool initialState)
+            internal Implementation(InlineMarkupConditional definition, IReadOnlyList<IToken> tokens, ITokenTrie structureTrie, ITokenTrie closeConditionTrie, ITokenTrie scanBackTrie, MarkupTokenMapping mapping, string? id, bool initialState)
             {
                 _definition = definition;
                 Id = id;

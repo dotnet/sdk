@@ -37,16 +37,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 return null!;
             }
 
-            return new Impl(token, replaceWith, _id, _initialState);
+            return new Implementation(token, replaceWith, _id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly byte[] _replacement;
             private readonly IToken _token;
             private readonly string? _id;
 
-            public Impl(IToken token, byte[] replaceWith, string? id, bool initialState)
+            public Implementation(IToken token, byte[] replaceWith, string? id, bool initialState)
             {
                 _replacement = replaceWith;
                 _token = token;

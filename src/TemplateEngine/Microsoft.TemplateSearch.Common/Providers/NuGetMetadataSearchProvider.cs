@@ -50,7 +50,7 @@ namespace Microsoft.TemplateSearch.Common.Providers
         }
 
         /// <summary>
-        /// Test constructor allowing override search cache uris.
+        /// Test constructor allowing override search cache Uris.
         /// </summary>
         internal NuGetMetadataSearchProvider(
             ITemplateSearchProviderFactory factory,

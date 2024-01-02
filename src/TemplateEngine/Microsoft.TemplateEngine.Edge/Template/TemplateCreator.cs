@@ -377,7 +377,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                         template.Generator, _logger, !inputParameters.ContinueOnMismatchedConditionsEvaluation, out paramsWithInvalidValues))
                 {
                     _logger.LogInformation(
-                        "Parameters conditions ('IsEnbaled', 'IsRequired') evaluation supplied by host didn't match validation against internal evaluation for following parameters: [{0}]. Host requested to continue in such case: {1}",
+                        "Parameters conditions ('IsEnabled', 'IsRequired') evaluation supplied by host didn't match validation against internal evaluation for following parameters: [{0}]. Host requested to continue in such case: {1}",
                         paramsWithInvalidValues.ToCsvString(),
                         inputParameters.ContinueOnMismatchedConditionsEvaluation);
 

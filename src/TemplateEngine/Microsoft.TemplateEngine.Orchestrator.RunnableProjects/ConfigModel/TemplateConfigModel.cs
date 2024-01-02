@@ -410,7 +410,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         /// <param name="content">The stream containing template configuration in JSON format.</param>
         /// <param name="logger">The logger to use for reporting errors/messages.</param>
-        /// <param name="filename">The filepath of template configuration (optional, used for logging).</param>
+        /// <param name="filename">The file path of template configuration (optional, used for logging).</param>
         public static TemplateConfigModel FromStream(Stream content, ILogger? logger = null, string? filename = null)
         {
             using (TextReader tr = new StreamReader(content, System.Text.Encoding.UTF8, true))
@@ -424,7 +424,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         /// </summary>
         /// <param name="content">The string containing template configuration in JSON format.</param>
         /// <param name="logger">The logger to use for reporting errors/messages.</param>
-        /// <param name="filename">The filepath of template configuration (optional, used for logging).</param>
+        /// <param name="filename">The file path of template configuration (optional, used for logging).</param>
         public static TemplateConfigModel FromString(string content, ILogger? logger = null, string? filename = null)
         {
             if (string.IsNullOrWhiteSpace(content))
@@ -550,9 +550,9 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
 
             // setup the forms defined by the template configuration.
             // if any have the same name as a default, the default is overridden.
-            IReadOnlyDictionary<string, JToken> templateDefinedforms = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
+            IReadOnlyDictionary<string, JToken> templateDefinedForms = source.ToJTokenDictionary(StringComparer.OrdinalIgnoreCase, nameof(Forms));
 
-            foreach (KeyValuePair<string, JToken> form in templateDefinedforms)
+            foreach (KeyValuePair<string, JToken> form in templateDefinedForms)
             {
                 if (form.Value is JObject o)
                 {

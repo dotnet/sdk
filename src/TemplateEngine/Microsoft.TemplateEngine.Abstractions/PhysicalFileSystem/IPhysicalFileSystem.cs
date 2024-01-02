@@ -107,7 +107,7 @@ namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
         /// Creates new <see cref="FileSystemWatcher"/> which monitors specified path and on any changes calls <paramref name="fileChanged"/> callback.
         /// To stop watching dispose returned object.
         /// </remarks>
-        IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged);
+        IDisposable WatchFileChanges(string filePath, FileSystemEventHandler fileChanged);
 
         /// <summary>
         /// Gets the last write time for the <paramref name="file"/> in UTC.
@@ -126,7 +126,7 @@ namespace Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem
         void SetLastWriteTimeUtc(string file, DateTime lastWriteTimeUtc);
 
         /// <summary>
-        /// If target is a subpath of relativeTo a relative bath from relativeTo to subpath will be returned.
+        /// If target is a sub-path of relativeTo a relative bath from relativeTo to sub-path will be returned.
         /// </summary>
         /// <param name="target">Path to be converted to relative if possible.</param>
         /// <param name="relativeTo">Base of the relative path to be returned.</param>

@@ -35,12 +35,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             foreach (JToken entry in jArray)
             {
-                if (entry is not JObject jobj)
+                if (entry is not JObject jObj)
                 {
                     throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ArrayShouldContainObjects, generatedSymbolConfig.VariableName, CasesPropertyName), generatedSymbolConfig.VariableName);
                 }
-                string? condition = jobj.ToString(CasesConditionPropertyName);
-                string? value = jobj.ToString(CasesValuePropertyName)
+                string? condition = jObj.ToString(CasesConditionPropertyName);
+                string? value = jObj.ToString(CasesValuePropertyName)
                     ?? throw new TemplateAuthoringException(
                         string.Format(
                             LocalizableStrings.MacroConfig_Exception_MissingValueProperty,

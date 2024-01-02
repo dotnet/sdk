@@ -86,16 +86,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 }
             }
 
-            return new Impl(this, tokens, currentTarget, _initialState);
+            return new Implementation(this, tokens, currentTarget, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly PhasedOperation _definition;
             private readonly IReadOnlyList<SpecializedPhase> _entryPoints;
             private SpecializedPhase? _currentPhase;
 
-            public Impl(PhasedOperation definition, IReadOnlyList<IToken> config, IReadOnlyList<SpecializedPhase> entryPoints, bool initialState)
+            public Implementation(PhasedOperation definition, IReadOnlyList<IToken> config, IReadOnlyList<SpecializedPhase> entryPoints, bool initialState)
             {
                 _definition = definition;
                 Tokens = config;

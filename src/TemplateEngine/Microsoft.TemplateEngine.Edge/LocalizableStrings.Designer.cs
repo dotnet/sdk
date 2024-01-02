@@ -99,9 +99,9 @@ namespace Microsoft.TemplateEngine.Edge {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; should not contain empty items.
         /// </summary>
-        internal static string Constaint_Error_ArgumentHasEmptyString {
+        internal static string Constraint_Error_ArgumentHasEmptyString {
             get {
-                return ResourceManager.GetString("Constaint_Error_ArgumentHasEmptyString", resourceCulture);
+                return ResourceManager.GetString("Constraint_Error_ArgumentHasEmptyString", resourceCulture);
             }
         }
         
@@ -469,20 +469,11 @@ namespace Microsoft.TemplateEngine.Edge {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The requested package {0} has vulnerabilities..
-        /// </summary>
-        internal static string NuGetInstaller_InstallResult_Error_VulnerablePackage {
-            get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_VulnerablePackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Failed to download {0} from {1}..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_DownloadFailed {
+        internal static string NuGetInstaller_InstallResult_Error_DownloadFailed {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_DownloadFailed", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_DownloadFailed", resourceCulture);
             }
         }
         
@@ -490,72 +481,72 @@ namespace Microsoft.TemplateEngine.Edge {
         ///   Looks up a localized string similar to Failed to install the package {0}.
         ///Details: {1}..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_InstallGeneric {
+        internal static string NuGetInstaller_InstallResult_Error_InstallGeneric {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_InstallGeneric", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_InstallGeneric", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The install request {0} cannot be processed by installer {1}..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_InstallRequestNotSupported {
+        internal static string NuGetInstaller_InstallResult_Error_InstallRequestNotSupported {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_InstallRequestNotSupported", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_InstallRequestNotSupported", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The NuGet package {0} is invalid..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_InvalidPackage {
+        internal static string NuGetInstaller_InstallResult_Error_InvalidPackage {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_InvalidPackage", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_InvalidPackage", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The configured NuGet sources are invalid: {0}..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_InvalidSources {
+        internal static string NuGetInstaller_InstallResult_Error_InvalidSources {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_InvalidSources", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_InvalidSources", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to No NuGet sources are configured..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_InvalidSources_None {
+        internal static string NuGetInstaller_InstallResult_Error_InvalidSources_None {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_InvalidSources_None", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_InvalidSources_None", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The operation was cancelled..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_OperationCancelled {
+        internal static string NuGetInstaller_InstallResult_Error_OperationCancelled {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_OperationCancelled", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_OperationCancelled", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} was not found in NuGet feeds {1}..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_PackageNotFound {
+        internal static string NuGetInstaller_InstallResult_Error_PackageNotFound {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_PackageNotFound", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_PackageNotFound", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to The package {0} is not supported by installer {1}..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_PackageNotSupported {
+        internal static string NuGetInstaller_InstallResult_Error_PackageNotSupported {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_PackageNotSupported", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_PackageNotSupported", resourceCulture);
             }
         }
         
@@ -563,9 +554,9 @@ namespace Microsoft.TemplateEngine.Edge {
         ///   Looks up a localized string similar to Failed to uninstall the package {0}.
         ///Details: {1}..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_UninstallGeneric {
+        internal static string NuGetInstaller_InstallResult_Error_UninstallGeneric {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_UninstallGeneric", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_UninstallGeneric", resourceCulture);
             }
         }
         
@@ -573,9 +564,18 @@ namespace Microsoft.TemplateEngine.Edge {
         ///   Looks up a localized string similar to Failed to check the update for the package {0}.
         ///Details: {1}..
         /// </summary>
-        internal static string NuGetInstaller_InstallResut_Error_UpdateCheckGeneric {
+        internal static string NuGetInstaller_InstallResult_Error_UpdateCheckGeneric {
             get {
-                return ResourceManager.GetString("NuGetInstaller_InstallResut_Error_UpdateCheckGeneric", resourceCulture);
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_UpdateCheckGeneric", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The requested package {0} has vulnerabilities..
+        /// </summary>
+        internal static string NuGetInstaller_InstallResult_Error_VulnerablePackage {
+            get {
+                return ResourceManager.GetString("NuGetInstaller_InstallResult_Error_VulnerablePackage", resourceCulture);
             }
         }
         

@@ -54,9 +54,9 @@ namespace Microsoft.TemplateEngine.Utils
             return TryParseVersionString(version, out _);
         }
 
-        // tries to parse a version into 4 int parts, zero-padding on the rght if needed.
+        // tries to parse a version into 4 int parts, zero-padding on the right if needed.
         // more than 4 parts, return false.
-        // Unparse-able, return false.
+        // Not parse-able, return false.
         private static bool TryParseVersionString(string version, out int[]? parsed)
         {
             if (string.IsNullOrEmpty(version))

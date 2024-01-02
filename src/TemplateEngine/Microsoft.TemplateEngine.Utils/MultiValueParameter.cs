@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 if (x is MultiValueParameter mv && y is string sv)
                 {
-                    result = MultivalueEquals(mv, sv);
+                    result = MultiValueEquals(mv, sv);
                     return true;
                 }
             }
@@ -58,7 +58,7 @@ namespace Microsoft.TemplateEngine.Utils
             {
                 if (y is MultiValueParameter mv && x is string sv)
                 {
-                    result = MultivalueEquals(mv, sv);
+                    result = MultiValueEquals(mv, sv);
                     return true;
                 }
             }
@@ -98,7 +98,7 @@ namespace Microsoft.TemplateEngine.Utils
             return set1.SetEquals(set2);
         }
 
-        private static bool MultivalueEquals(MultiValueParameter mv, string comparand)
+        private static bool MultiValueEquals(MultiValueParameter mv, string comparand)
         {
             foreach (string s in mv.Values)
             {

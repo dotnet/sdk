@@ -24,14 +24,14 @@ namespace Microsoft.TemplateEngine.Core.Operations
 
         public IOperation GetOperation(Encoding encoding, IProcessorState processor)
         {
-            return new Impl(processor, _id, _initialState);
+            return new Implementation(processor, _id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly string? _id;
 
-            public Impl(IProcessorState processor, string? id, bool initialState)
+            public Implementation(IProcessorState processor, string? id, bool initialState)
             {
                 Tokens = processor.EncodingConfig.VariableKeys;
                 _id = id;

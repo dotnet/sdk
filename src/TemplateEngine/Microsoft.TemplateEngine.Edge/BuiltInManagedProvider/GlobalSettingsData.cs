@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
 {
     /// <summary>
-    /// Used just to serialize/deserilize data to/from settings.json file.
+    /// Used just to serialize/deserialize data to/from settings.json file.
     /// </summary>
     internal sealed class GlobalSettingsData
     {

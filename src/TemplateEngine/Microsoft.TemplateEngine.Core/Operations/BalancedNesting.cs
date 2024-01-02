@@ -45,10 +45,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
             IToken realEndToken = _realEndToken.ToToken(encoding);
             IToken pseudoEndToken = _pseudoEndToken.ToToken(encoding);
 
-            return new Impl(startToken, realEndToken, pseudoEndToken, _id, _resetFlag, _initialState);
+            return new Implementation(startToken, realEndToken, pseudoEndToken, _id, _resetFlag, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             // the order they're added to this.Tokens in the constructor must be the same as this!
             private const int StartTokenIndex = 0;
@@ -57,19 +57,19 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private const int PseudoEndTokenIndex = 2;
             private readonly IToken _startToken;
             private readonly IToken _realEndToken;
-            private readonly IToken _psuedoEndToken;
+            private readonly IToken _pseudoEndToken;
             private readonly string? _id;
             private readonly string? _resetFlag;
             private int _depth;
 
-            public Impl(IToken start, IToken realEnd, IToken pseudoEnd, string? id, string? resetFlag, bool initialState)
+            public Implementation(IToken start, IToken realEnd, IToken pseudoEnd, string? id, string? resetFlag, bool initialState)
             {
                 _startToken = start;
                 _realEndToken = realEnd;
-                _psuedoEndToken = pseudoEnd;
+                _pseudoEndToken = pseudoEnd;
                 _id = id;
                 _resetFlag = resetFlag;
-                Tokens = new[] { _startToken, _realEndToken, _psuedoEndToken };
+                Tokens = new[] { _startToken, _realEndToken, _pseudoEndToken };
                 _depth = 0;
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;
             }
@@ -83,7 +83,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             public int HandleMatch(IProcessorState processor, int bufferLength, ref int currentBufferPosition, int token)
             {
                 // check if this operation has been reset. If so, set _depth = 0
-                // this fixes the reset problem, but not the trailing unbalanced pseduo comment problem, i.e. it won't turn this:
+                // this fixes the reset problem, but not the trailing unbalanced pseudo comment problem, i.e. it won't turn this:
                 //      <!-- <!-- comment -- >
                 // into this:
                 //      <!-- <!-- comment -->
@@ -114,7 +114,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 if (_depth == 0 && token == PseudoEndTokenIndex)
                 {
                     processor.WriteToTarget(_realEndToken.Value, _realEndToken.Start, _realEndToken.Length);
-                    return _psuedoEndToken.Length;  // the source buffer needs to skip over this token.
+                    return _pseudoEndToken.Length;  // the source buffer needs to skip over this token.
                 }
                 else
                 {

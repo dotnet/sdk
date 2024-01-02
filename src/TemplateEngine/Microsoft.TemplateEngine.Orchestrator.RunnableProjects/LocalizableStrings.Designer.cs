@@ -440,7 +440,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &apos;{0}&apos; was not processed due to the next issues in dependencises: &apos;{1}&apos;..
+        ///   Looks up a localized string similar to &apos;{0}&apos; was not processed due to the next issues in dependencies: &apos;{1}&apos;..
         /// </summary>
         internal static string MacroProcessing_Warning_DependencyErrors {
             get {

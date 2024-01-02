@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
                    ?? AttemptBooleanComparison(left, right)
                    ?? AttemptVersionComparison(left, right)
                    ?? AttemptMultiValueComparison(left, right)
-                   ?? AttemptLexographicComparison(left, right)
+                   ?? AttemptLexicographicComparison(left, right)
                    ?? AttemptComparableComparison(left, right)
                    ?? 0;
         }
@@ -236,7 +236,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
             return null;
         }
 
-        private static int? AttemptLexographicComparison(object? left, object? right)
+        private static int? AttemptLexicographicComparison(object? left, object? right)
         {
             if (left is not string ls || right is not string rs)
             {

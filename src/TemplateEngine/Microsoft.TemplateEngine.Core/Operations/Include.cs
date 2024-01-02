@@ -41,16 +41,16 @@ namespace Microsoft.TemplateEngine.Core.Operations
             IToken endTokenBytes = EndToken.ToToken(encoding);
             TokenTrie endTokenMatcher = new TokenTrie();
             endTokenMatcher.AddToken(endTokenBytes);
-            return new Impl(tokenBytes, endTokenMatcher, this, _id, _initialState);
+            return new Implementation(tokenBytes, endTokenMatcher, this, _id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly Include _source;
             private readonly ITokenTrie _endTokenMatcher;
             private readonly string? _id;
 
-            public Impl(IToken token, ITokenTrie endTokenMatcher, Include source, string? id, bool initialState)
+            public Implementation(IToken token, ITokenTrie endTokenMatcher, Include source, string? id, bool initialState)
             {
                 Tokens = new[] { token };
                 _source = source;

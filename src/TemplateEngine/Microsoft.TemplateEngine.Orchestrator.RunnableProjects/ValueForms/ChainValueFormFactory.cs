@@ -6,7 +6,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
-    internal class ChainValueFormFactory : DependantValueFormFactory<IReadOnlyList<string>>
+    internal class ChainValueFormFactory : DependentValueFormFactory<IReadOnlyList<string>>
     {
         internal const string FormIdentifier = "chain";
 

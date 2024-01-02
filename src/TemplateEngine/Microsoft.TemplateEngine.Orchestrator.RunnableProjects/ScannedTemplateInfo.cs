@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     /// <summary>
     /// This class represent the template discovered during scanning. It is not ready to be run.
-    /// It also returns information about all the localizations available for the template and all host files avaialble for the template.
+    /// It also returns information about all the localizations available for the template and all host files available for the template.
     /// Before running the template the caller should select localization and host file to use.
     /// Use <see cref="RunnableProjectConfig"/> to load template for running.
     /// </summary>

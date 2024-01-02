@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Utils
         private static readonly DirectedGraph<T> Empty = new(new Dictionary<T, HashSet<T>>());
 
         private readonly Dictionary<T, HashSet<T>> _dependenciesMap;
-        private readonly Lazy<Dictionary<T, HashSet<T>>> _dependantsMap;
+        private readonly Lazy<Dictionary<T, HashSet<T>>> _dependentsMap;
         private readonly IReadOnlyList<T> _vertices;
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Utils
         {
             _dependenciesMap = DeepCopy(dependenciesMap);
             _vertices = GetVertices(_dependenciesMap);
-            _dependantsMap = new Lazy<Dictionary<T, HashSet<T>>>(() => GetDependandsMap(_dependenciesMap, _vertices));
+            _dependentsMap = new Lazy<Dictionary<T, HashSet<T>>>(() => GetDependentsMap(_dependenciesMap, _vertices));
         }
 
         internal IReadOnlyDictionary<T, HashSet<T>> DependenciesMap => _dependenciesMap;
@@ -54,18 +54,18 @@ namespace Microsoft.TemplateEngine.Utils
             }
 
             Queue<T> noDependenciesQueue = new(inDegreeLookup.Where(kp => kp.Value == 0).Select(kp => kp.Key));
-            var dependantsMap = _dependantsMap.Value;
+            var dependentsMap = _dependentsMap.Value;
 
             while (noDependenciesQueue.Count != 0)
             {
                 T item = noDependenciesQueue.Dequeue();
                 result.Add(item);
 
-                foreach (T dependant in dependantsMap[item])
+                foreach (T dependent in dependentsMap[item])
                 {
-                    if (--inDegreeLookup[dependant] == 0)
+                    if (--inDegreeLookup[dependent] == 0)
                     {
-                        noDependenciesQueue.Enqueue(dependant);
+                        noDependenciesQueue.Enqueue(dependent);
                     }
                 }
             }
@@ -74,10 +74,10 @@ namespace Microsoft.TemplateEngine.Utils
             return result.Count == _vertices.Count;
         }
 
-        public IEnumerable<T> GetDependands(IEnumerable<T> vertices)
+        public IEnumerable<T> GetDependents(IEnumerable<T> vertices)
         {
-            var dependantsMap = _dependantsMap.Value;
-            return vertices.Select(v => dependantsMap[v]).SelectMany(v => v);
+            var dependentsMap = _dependentsMap.Value;
+            return vertices.Select(v => dependentsMap[v]).SelectMany(v => v);
         }
 
         /// <summary>
@@ -90,7 +90,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// If set to false, (some of) the given nodes may still be part of output graph, in case they transitively depend on any node from input set.
         /// </param>
         /// <returns></returns>
-        public DirectedGraph<T> GetSubGraphDependandOnVertices(IReadOnlyList<T> vertices, bool includeSeedVertices = false)
+        public DirectedGraph<T> GetSubGraphDependentOnVertices(IReadOnlyList<T> vertices, bool includeSeedVertices = false)
         {
             // Short circuit for empty graphs
             if (IsEmpty || vertices.Count == 0)
@@ -98,21 +98,21 @@ namespace Microsoft.TemplateEngine.Utils
                 return Empty;
             }
 
-            HashSet<T> dependantVertices = includeSeedVertices ? new HashSet<T>(vertices) : new HashSet<T>();
-            Queue<T> directDependants = new(vertices);
-            var dependantsMap = _dependantsMap.Value;
+            HashSet<T> dependentVertices = includeSeedVertices ? new HashSet<T>(vertices) : new HashSet<T>();
+            Queue<T> directDependents = new(vertices);
+            var dependentsMap = _dependentsMap.Value;
 
-            while (directDependants.Count > 0)
+            while (directDependents.Count > 0)
             {
-                T parent = directDependants.Dequeue();
-                if (dependantsMap.ContainsKey(parent))
+                T parent = directDependents.Dequeue();
+                if (dependentsMap.ContainsKey(parent))
                 {
-                    directDependants.AddRange(dependantsMap[parent].Where(dependantVertices.Add));
+                    directDependents.AddRange(dependentsMap[parent].Where(dependentVertices.Add));
                 }
             }
 
-            return _dependenciesMap.Where(p => dependantVertices.Contains(p.Key))
-                .ToDictionary(p => p.Key, p => new HashSet<T>(p.Value.Where(dependantVertices.Contains)));
+            return _dependenciesMap.Where(p => dependentVertices.Contains(p.Key))
+                .ToDictionary(p => p.Key, p => new HashSet<T>(p.Value.Where(dependentVertices.Contains)));
         }
 
         /// <summary>
@@ -148,18 +148,18 @@ namespace Microsoft.TemplateEngine.Utils
         private static IReadOnlyList<T> GetVertices(Dictionary<T, HashSet<T>> dependenciesMap)
             => dependenciesMap.Keys.Union(dependenciesMap.Values.SelectMany(v => v)).Distinct().ToList();
 
-        private static Dictionary<T, HashSet<T>> GetDependandsMap(Dictionary<T, HashSet<T>> dependenciesMap, IReadOnlyList<T> vertices)
+        private static Dictionary<T, HashSet<T>> GetDependentsMap(Dictionary<T, HashSet<T>> dependenciesMap, IReadOnlyList<T> vertices)
         {
-            var dependantsMap = vertices.ToDictionary(v => v, v => new HashSet<T>());
+            var dependentsMap = vertices.ToDictionary(v => v, v => new HashSet<T>());
             foreach (KeyValuePair<T, HashSet<T>> keyValuePair in dependenciesMap)
             {
                 foreach (T dependency in keyValuePair.Value!)
                 {
-                    _ = dependantsMap[dependency].Add(keyValuePair.Key);
+                    _ = dependentsMap[dependency].Add(keyValuePair.Key);
                 }
             }
 
-            return dependantsMap;
+            return dependentsMap;
         }
 
         private static Dictionary<T, HashSet<T>> DeepCopy(Dictionary<T, HashSet<T>> dependenciesMap)

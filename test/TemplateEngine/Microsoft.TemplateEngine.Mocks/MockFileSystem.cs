@@ -76,7 +76,7 @@ namespace Microsoft.TemplateEngine.Mocks
         {
             if (!_files.TryGetValue(path, out FileSystemFile file))
             {
-                throw new Exception($"File {path} does no texist");
+                throw new Exception($"File {path} does not exist");
             }
 
             MemoryStream s = new MemoryStream(file.Data);

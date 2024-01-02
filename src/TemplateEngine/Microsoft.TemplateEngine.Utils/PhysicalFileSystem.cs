@@ -126,9 +126,9 @@ namespace Microsoft.TemplateEngine.Utils
             return resultPath;
         }
 
-        public IDisposable WatchFileChanges(string filepath, FileSystemEventHandler fileChanged)
+        public IDisposable WatchFileChanges(string filePath, FileSystemEventHandler fileChanged)
         {
-            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(filepath), Path.GetFileName(filepath));
+            FileSystemWatcher watcher = new FileSystemWatcher(Path.GetDirectoryName(filePath), Path.GetFileName(filePath));
             watcher.Changed += fileChanged;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.EnableRaisingEvents = true;

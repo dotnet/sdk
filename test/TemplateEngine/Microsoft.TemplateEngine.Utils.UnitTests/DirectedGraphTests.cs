@@ -215,7 +215,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [MemberData(nameof(DirectedGraphSubgraphData))]
         public void GetSubGraphDependandOnVerticesTests(Dictionary<int, HashSet<int>> dependencies, IReadOnlyList<int> vertices, bool includeSeedVertices, Dictionary<int, HashSet<int>> expectedResult)
         {
-            var result = new DirectedGraph<int>(dependencies).GetSubGraphDependandOnVertices(vertices, includeSeedVertices);
+            var result = new DirectedGraph<int>(dependencies).GetSubGraphDependentOnVertices(vertices, includeSeedVertices);
             TestAreEquivalent(result, expectedResult);
         }
 

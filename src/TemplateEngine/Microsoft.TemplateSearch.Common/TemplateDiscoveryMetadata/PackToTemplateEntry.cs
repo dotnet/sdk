@@ -10,10 +10,10 @@ namespace Microsoft.TemplateSearch.Common
     [Obsolete("The class is deprecated. Use TemplateSearchCache instead to create search cache data.")]
     internal class PackToTemplateEntry
     {
-        internal PackToTemplateEntry(string version, List<TemplateIdentificationEntry> templateinfo)
+        internal PackToTemplateEntry(string version, List<TemplateIdentificationEntry> templateIdentificationEntry)
         {
             Version = version;
-            TemplateIdentificationEntry = templateinfo;
+            TemplateIdentificationEntry = templateIdentificationEntry;
         }
 
         [JsonProperty]

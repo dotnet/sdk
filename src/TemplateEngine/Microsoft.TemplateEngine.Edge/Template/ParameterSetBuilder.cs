@@ -252,7 +252,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             // Get the transitive closure of parameters that need to be recalculated, based on the knowledge of params that
             IReadOnlyList<EvalData> disabledParameters = parameters.Where(p => p.IsEnabledConditionResult.HasValue && !p.IsEnabledConditionResult.Value).ToList();
             DirectedGraph<EvalData> parametersToRecalculate =
-                parametersDependenciesGraph.GetSubGraphDependandOnVertices(disabledParameters, includeSeedVertices: false);
+                parametersDependenciesGraph.GetSubGraphDependentOnVertices(disabledParameters, includeSeedVertices: false);
 
             // Second traversal - for transitive dependencies of parameters that need to be disabled
             if (parametersToRecalculate.TryGetTopologicalSort(out IReadOnlyList<EvalData> orderedParameters))

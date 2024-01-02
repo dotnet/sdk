@@ -10,7 +10,7 @@ using Microsoft.TemplateEngine.Abstractions.Parameters;
 namespace Microsoft.TemplateEngine.Edge.Template;
 
 /// <summary>
-/// Datamodel for passing data into the <see cref="TemplateCreator"/>.
+/// Data model for passing data into the <see cref="TemplateCreator"/>.
 /// </summary>
 public class InputDataSet : IReadOnlyDictionary<ITemplateParameter, InputParameterData>
 {
@@ -29,7 +29,7 @@ public class InputDataSet : IReadOnlyDictionary<ITemplateParameter, InputParamet
 
     /// <summary>
     /// Creates new instance of the <see cref="InputDataSet"/> type.
-    /// To be used to convert legacy parameters dictionaries into this datamodel.
+    /// To be used to convert legacy parameters dictionaries into this data model.
     /// </summary>
     /// <param name="templateInfo"></param>
     public InputDataSet(ITemplateInfo templateInfo)
@@ -38,7 +38,7 @@ public class InputDataSet : IReadOnlyDictionary<ITemplateParameter, InputParamet
 
     /// <summary>
     /// Creates new instance of the <see cref="InputDataSet"/> type.
-    /// To be used to convert legacy parameters dictionaries into this datamodel.
+    /// To be used to convert legacy parameters dictionaries into this data model.
     /// </summary>
     /// <param name="templateInfo"></param>
     /// <param name="inputParameters"></param>
