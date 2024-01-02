@@ -23,6 +23,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
     public sealed class AvoidConstArraysFixer : CodeFixProvider
     {
+        private const int GlobalStatementKind = 8841;
+
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(AvoidConstArraysAnalyzer.RuleId);
 
         private static readonly ImmutableArray<string> s_collectionMemberEndings = ImmutableArray.Create("array", "collection", "enumerable", "list");
@@ -53,9 +55,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             ISymbol enclosingSymbol = model.GetEnclosingSymbol(node.SpanStart, cancellationToken)!;
             INamedTypeSymbol containingType = enclosingSymbol.ContainingType;
             HashSet<string> identifiers = new(containingType.MemberNames);
+            bool isTopLevelStatements = false;
             if (enclosingSymbol is IMethodSymbol method)
             {
                 identifiers.AddRange(method.Parameters.Select(p => p.Name));
+                isTopLevelStatements = method.IsTopLevelStatementsEntryPointMethod();
             }
 
             IMethodBodyOperation? containingMethod = arrayArgument.GetAncestor<IMethodBodyOperation>(OperationKind.MethodBody);
@@ -86,26 +90,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 newMember = newMember.FormatForExtraction(methodContext.Syntax);
             }
 
-            ISymbol? lastFieldOrPropertySymbol = containingType.GetMembers().LastOrDefault(x => x is IFieldSymbol or IPropertySymbol);
-            if (lastFieldOrPropertySymbol is not null)
+            if (isTopLevelStatements)
             {
-                var span = lastFieldOrPropertySymbol.Locations.First().SourceSpan;
-                if (root.FullSpan.Contains(span))
+                SyntaxNode partialClass = generator.ClassDeclaration(
+                    "Program",
+                    modifiers: DeclarationModifiers.Partial,
+                    members: new[] { newMember });
+
+                var globalStatement = root.DescendantNodes().First(n => n.RawKind == GlobalStatementKind);
+                editor.InsertAfter(globalStatement, partialClass);
+            }
+            else
+            {
+                ISymbol? lastFieldOrPropertySymbol = containingType.GetMembers().LastOrDefault(x => x is IFieldSymbol or IPropertySymbol);
+                if (lastFieldOrPropertySymbol is not null)
                 {
-                    // Insert after fields or properties
-                    SyntaxNode lastFieldOrPropertyNode = root.FindNode(span);
-                    editor.InsertAfter(generator.GetDeclaration(lastFieldOrPropertyNode), newMember);
+                    var span = lastFieldOrPropertySymbol.Locations.First().SourceSpan;
+                    if (root.FullSpan.Contains(span))
+                    {
+                        // Insert after fields or properties
+                        SyntaxNode lastFieldOrPropertyNode = root.FindNode(span);
+                        editor.InsertAfter(generator.GetDeclaration(lastFieldOrPropertyNode), newMember);
+                    }
+                    else if (methodContext != null)
+                    {
+                        // Span not found
+                        editor.InsertBefore(methodContext.Syntax, newMember);
+                    }
                 }
                 else if (methodContext != null)
                 {
-                    // Span not found
+                    // No fields or properties, insert right before the containing method for simplicity
                     editor.InsertBefore(methodContext.Syntax, newMember);
                 }
-            }
-            else if (methodContext != null)
-            {
-                // No fields or properties, insert right before the containing method for simplicity
-                editor.InsertBefore(methodContext.Syntax, newMember);
             }
 
             // Replace argument with a reference to our new member
