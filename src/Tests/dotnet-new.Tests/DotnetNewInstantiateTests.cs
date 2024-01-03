@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should()
                 .ExitWith(0)
                 .And.NotHaveStdErr()
-                .And.HaveStdOutContaining("The template \"ASP.NET Core Web App\" was created successfully.");
+                .And.HaveStdOutContaining("The template \"ASP.NET Core Web App (Razor Pages)\" was created successfully.");
 
             new DotnetNewCommand(_log, "razor", "-o", "razor")
                 .WithCustomHive(home)
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should()
                 .ExitWith(0)
                 .And.NotHaveStdErr()
-                .And.HaveStdOutContaining("The template \"ASP.NET Core Web App\" was created successfully.");
+                .And.HaveStdOutContaining("The template \"ASP.NET Core Web App (Razor Pages)\" was created successfully.");
         }
 
         [Fact]
