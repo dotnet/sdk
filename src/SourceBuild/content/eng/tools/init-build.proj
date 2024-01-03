@@ -6,7 +6,6 @@
   <Import Project="$(GitInfoAllRepoPropsFile)" />
 
   <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="MarkAndCatalogPackages" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
 
   <ItemGroup>
     <BuildTasksTarget Include="Restore;Build;InstallResolver" />
@@ -120,10 +119,6 @@
          non-windows systems: https://github.com/NuGet/Home/issues/13121. -->
     <Exec Command="chmod 755 git-clone-to-dir.sh"
       WorkingDirectory="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/tools/SourceBuild/" />
-
-    <ReplaceTextInFile InputFile="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/tools/SourceBuild/SourceBuildArcadeTools.targets"
-      OldText="%3CReadSourceBuildIntermediateNupkgDependencies"
-      NewText="%3CReadSourceBuildIntermediateNupkgDependencies Condition=&quot;'%24%28DotNetBuildOffline%29' != 'true'&quot;" />
 
     <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker
          dev turnaround for Preview 6 -->
