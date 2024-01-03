@@ -31,7 +31,19 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     public override bool Execute()
     {
-        return Task.Run(() => ExecuteAsync(_cancellationTokenSource.Token)).GetAwaiter().GetResult();
+        try
+        {
+            Task.Run(() => ExecuteAsync(_cancellationTokenSource.Token)).GetAwaiter().GetResult();
+        }
+        catch (TaskCanceledException ex)
+        {
+            Log.LogWarningFromException(ex);
+        }
+        catch (OperationCanceledException ex)
+        {
+            Log.LogWarningFromException(ex);
+        }
+        return !Log.HasLoggedErrors;
     }
 
     internal async Task<bool> ExecuteAsync(CancellationToken cancellationToken)
@@ -64,11 +76,12 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             try
             {
+                var picker = new RidGraphManifestPicker(RuntimeIdentifierGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     BaseImageName,
                     BaseImageTag,
                     ContainerRuntimeIdentifier,
-                    RuntimeIdentifierGraphPath,
+                    picker,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (RepositoryNotFoundException)

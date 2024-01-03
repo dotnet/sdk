@@ -20,6 +20,8 @@ internal static class ToolsetUtils
         return lastWrittenSdk.GetFiles("RuntimeIdentifierGraph.json").Single().FullName;
     }
 
+    internal static IManifestPicker RidGraphManifestPicker { get; } = new RidGraphManifestPicker(GetRuntimeGraphFilePath());
+
     /// <summary>
     /// Gets path to built Microsoft.NET.Build.Containers.*.nupkg prepared for tests.
     /// </summary>
