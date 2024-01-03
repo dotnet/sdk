@@ -21,12 +21,5 @@
     <RepositoryReference Include="source-build-externals" />
   </ItemGroup>
 
-  <Target Name="SetArcadeSdkDir"
-          BeforeTargets="Build">
-    <ItemGroup>
-      <EnvironmentVariables Include="ArcadeSdkDir=$(SourceBuiltSdksDir)%(UseSourceBuiltSdkOverride.Identity)/" />
-    </ItemGroup>
-  </Target>
-
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
