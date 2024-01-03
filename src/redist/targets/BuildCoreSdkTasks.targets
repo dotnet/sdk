@@ -40,6 +40,5 @@
   <UsingTask TaskName="TarGzFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="UpdateRuntimeConfig" AssemblyFile="$(CoreSdkTaskDll)" />
   <UsingTask TaskName="ZipFileCreateFromDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
-  <UsingTask TaskName="ZipFileExtractToDirectory" AssemblyFile="$(CoreSdkTaskDll)" />
 
 </Project>
