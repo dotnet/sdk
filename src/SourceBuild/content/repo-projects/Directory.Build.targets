@@ -14,7 +14,6 @@
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageVersionsProps" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageUsageData" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageReports" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
 
   <Target Name="BuildRepoReferences" Condition="'@(RepositoryReference)' != '' and '$(SkipRepoReferences)' != 'true'">
@@ -272,10 +271,10 @@
         <_NupkgDestinationPath Condition="$([System.String]::Copy(%(_BuiltIntermediatePackages.Identity)).Contains('source-build-reference-packages'))">$(ReferencePackagesDir)</_NupkgDestinationPath>
     </PropertyGroup>
 
-    <ZipFileExtractToDirectory Condition="'@(_BuiltIntermediatePackages)' != ''"
-                            SourceArchive="%(_BuiltIntermediatePackages.Identity)"
-                            DestinationDirectory="$(SourceBuiltPackagesPath)extractArtifacts/%(_BuiltIntermediatePackages.FileName)/"
-                            OverwriteDestination="true" />
+    <Unzip SourceFiles="@(_BuiltIntermediatePackages)"
+           DestinationFolder="$(SourceBuiltPackagesPath)extractArtifacts/%(_BuiltIntermediatePackages.FileName)/"
+           SkipUnchangedFiles="true"
+           Condition="'@(_BuiltIntermediatePackages)' != ''" />
 
     <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
       <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
@@ -439,17 +438,18 @@
         Id="%(BuiltSdkPackageOverride.Identity)" />
     </ItemGroup>
 
-    <ZipFileExtractToDirectory SourceArchive="%(_ToolPackage.Identity)"
-                               DestinationDirectory="$(SourceBuiltSdksDir)%(_ToolPackage.Id)\"
-                               OverwriteDestination="true" />
+    <Unzip SourceFiles="%(_ToolPackage.Identity)"
+           DestinationFolder="$(SourceBuiltSdksDir)%(_ToolPackage.Id)\"
+           SkipUnchangedFiles="true" />
+
     <ItemGroup>
       <ExtractedToolFiles Include="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/**/*netcore*/*.dll" />
     </ItemGroup>
 
     <Copy SourceFiles="@(ExtractedToolFiles)" DestinationFolder="$(SourceBuiltSdksDir)/" />
 
-    <!-- TODO: When unpacking using ZipFileExtractToDirectory, this executable file has the wrong
-         permissions.  See https://github.com/dotnet/source-build/issues/2259 -->
+    <!-- When unpacking, this executable file has the wrong permissions on
+         non-windows systems: https://github.com/NuGet/Home/issues/13121. -->
     <Exec Command="chmod 755 git-clone-to-dir.sh"
       Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' "
       WorkingDirectory="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/tools/SourceBuild/" />
