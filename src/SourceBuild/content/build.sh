@@ -236,13 +236,7 @@ if [[ $arcadeSdkLine =~ $versionPattern ]]; then
   export SOURCE_BUILT_SDK_DIR_ARCADE=$packagesRestoredDir/ArcadeBootstrapPackage/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
 fi
 
-sourceLinkLine=$(grep -m 1 'MicrosoftSourceLinkCommonVersion' "$packageVersionsPath")
-versionPattern="<MicrosoftSourceLinkCommonVersion>(.*)</MicrosoftSourceLinkCommonVersion>"
-if [[ $sourceLinkLine =~ $versionPattern ]]; then
-  export SOURCE_LINK_BOOTSTRAP_VERSION=${BASH_REMATCH[1]}
-fi
-
-echo "Found bootstrap SDK $SDK_VERSION, bootstrap Arcade $ARCADE_BOOTSTRAP_VERSION, bootstrap SourceLink $SOURCE_LINK_BOOTSTRAP_VERSION"
+echo "Found bootstrap SDK $SDK_VERSION, bootstrap Arcade $ARCADE_BOOTSTRAP_VERSION"
 
 export DOTNET_CLI_TELEMETRY_OPTOUT=1
 export NUGET_PACKAGES=$packagesRestoredDir/
