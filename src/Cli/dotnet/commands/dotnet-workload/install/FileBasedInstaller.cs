@@ -509,7 +509,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
         {
-            return new PackageId($"{manifestId}.Manifest-{featureBand}");
+            if (manifestId.ToString().Equals("Microsoft.NET.Workloads"))
+            {
+                return new PackageId($"{manifestId}.{featureBand}");
+            }
+            else
+            {
+                return new PackageId($"{manifestId}.Manifest-{featureBand}");
+            }
         }
 
         public async Task ExtractManifestAsync(string nupkgPath, string targetPath)

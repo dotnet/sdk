@@ -555,7 +555,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
         {
-            return new PackageId($"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
+            if (manifestId.ToString().Equals("Microsoft.NET.Workloads"))
+            {
+                return new PackageId($"{manifestId}.{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
+            }
+            else
+            {
+                return new PackageId($"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
+            }
         }
 
         private static object _msiAdminInstallLock = new();

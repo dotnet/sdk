@@ -70,7 +70,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
             else if (_adManifestOnlyOption)
             {
-                _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption)).Wait();
+                _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
+                    _includePreviews,
+                    GetInstallStateMode(_sdkFeatureBand, _dotnetPath),
+                    string.IsNullOrWhiteSpace(_fromCacheOption) ?
+                        null :
+                        new DirectoryPath(_fromCacheOption))
+                    .Wait();
                 Reporter.WriteLine();
                 Reporter.WriteLine(LocalizableStrings.WorkloadUpdateAdManifestsSucceeded);
             }
@@ -120,13 +126,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
 
             var workloadIds = GetUpdatableWorkloads();
-            _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
+            var useWorkloadSets = GetInstallStateMode(_sdkFeatureBand, _dotnetPath);
+            _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
 
             var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
             var manifestsToUpdate = useRollback ?
                 _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                _workloadManifestUpdater.CalculateManifestUpdates(GetInstallStateMode(_sdkFeatureBand, _dotnetPath)).Select(m => m.ManifestUpdate);
+                _workloadManifestUpdater.CalculateManifestUpdates(useWorkloadSets).Select(m => m.ManifestUpdate);
 
             UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, offlineCache);
 

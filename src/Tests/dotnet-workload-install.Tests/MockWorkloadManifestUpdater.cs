@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             _manifestUpdates = manifestUpdates ?? new List<ManifestUpdateWithWorkloads>();
         }
 
-        public Task UpdateAdvertisingManifestsAsync(bool includePreview, DirectoryPath? cachePath = null)
+        public Task UpdateAdvertisingManifestsAsync(bool includePreview, bool useWorkloadSets = false, DirectoryPath? cachePath = null)
         {
             UpdateAdvertisingManifestsCallCount++;
             return Task.CompletedTask;

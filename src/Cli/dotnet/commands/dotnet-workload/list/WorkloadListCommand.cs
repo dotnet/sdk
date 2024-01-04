@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -12,6 +13,7 @@ using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
+using Product = Microsoft.DotNet.Cli.Utils.Product;
 
 namespace Microsoft.DotNet.Workloads.Workload.List
 {
@@ -110,8 +112,9 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
         internal IEnumerable<UpdateAvailableEntry> GetUpdateAvailable(IEnumerable<WorkloadId> installedList)
         {
+            // This was an internal partner ask, and they do not need to support workload sets.
+            var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestUpdates(useWorkloadSets: false);
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews).Wait();
-            var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestUpdates();
 
             foreach ((ManifestVersionUpdate manifestUpdate, WorkloadCollection workloads) in manifestsToUpdate)
             {

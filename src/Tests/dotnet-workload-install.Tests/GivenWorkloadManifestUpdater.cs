@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installationRepo = new MockInstallationRecordRepository();
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, userProfileDir: Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot));
 
-            var manifestUpdates = manifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+            var manifestUpdates = manifestUpdater.CalculateManifestUpdates(false).Select(m => m.ManifestUpdate);
             manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates);
         }
 
@@ -193,7 +193,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installationRepo = new MockInstallationRecordRepository();
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, userProfileDir: Path.Combine(testDir, ".dotnet"), installationRepo, new MockPackWorkloadInstaller(dotnetRoot));
 
-            var manifestUpdates = manifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+            var manifestUpdates = manifestUpdater.CalculateManifestUpdates(false).Select(m => m.ManifestUpdate);
             manifestUpdates.Should().BeEquivalentTo(expectedManifestUpdates);
         }
 
@@ -558,7 +558,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var installationRepo = new MockInstallationRecordRepository();
             var installer = new MockPackWorkloadInstaller(dotnetRoot);
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, installer);
-            manifestUpdater.UpdateAdvertisingManifestsAsync(false, new DirectoryPath(offlineCache)).Wait();
+            manifestUpdater.UpdateAdvertisingManifestsAsync(false, false, new DirectoryPath(offlineCache)).Wait();
 
             // We should have chosen the higher version manifest package to install/ extract
             installer.ExtractCallParams.Count().Should().Be(1);

@@ -72,12 +72,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return new WorkloadManifestUpdater(reporter, workloadResolver, nugetPackageDownloader, userProfileDir, workloadRecordRepo, installer);
         }
 
-        public async Task UpdateAdvertisingManifestsAsync(bool includePreviews, DirectoryPath? offlineCache = null)
+        public async Task UpdateAdvertisingManifestsAsync(bool includePreviews, bool useWorkloadSets = false, DirectoryPath? offlineCache = null)
         {
-            // this updates all the manifests 
-            var manifests = _workloadResolver.GetInstalledManifests();
-            await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(manifest, includePreviews, offlineCache))).ConfigureAwait(false);
-            WriteUpdatableWorkloadsFile();
+            if (useWorkloadSets)
+            {
+                await UpdateAdvertisingManifestAsync(new WorkloadManifestInfo("Microsoft.NET.Workloads", null, null, _sdkFeatureBand.ToString()), includePreviews, offlineCache);
+            }
+            else
+            {
+                // this updates all the manifests 
+                var manifests = _workloadResolver.GetInstalledManifests();
+                await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(manifest, includePreviews, offlineCache))).ConfigureAwait(false);
+                WriteUpdatableWorkloadsFile();
+            }
         }
 
         public async static Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
