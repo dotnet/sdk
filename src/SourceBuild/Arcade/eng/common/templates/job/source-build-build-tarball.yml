@@ -123,19 +123,24 @@ jobs:
       set -x
       df -h
 
-      networkArgs=
+      customRunArgs=
       customBuildArgs=
       if [[ '$(_RunOnline)' == 'true' ]]; then
         customBuildArgs='--online'
       else
-        networkArgs='--network none'
+        customRunArgs='--network none'
+      fi
+
+      # See https://github.com/dotnet/source-build/issues/3712
+      if [[ '$(_OverrideDistroDisablingSha1)' == 'true' ]]; then
+        customRunArgs="$customRunArgs -e OPENSSL_ENABLE_SHA1_SIGNATURES=1"
       fi
 
       if [[ '$(_EnablePoison)' == 'true' ]]; then
         customBuildArgs="$customBuildArgs --poison"
       fi
 
-      docker run --rm -v $(tarballDir):/tarball -w /tarball ${networkArgs} $(_Container) ./build.sh --clean-while-building ${customBuildArgs} $(additionalBuildArgs)
+      docker run --rm -v $(tarballDir):/tarball -w /tarball ${customRunArgs} $(_Container) ./build.sh --clean-while-building ${customBuildArgs} $(additionalBuildArgs)
     displayName: Build Tarball
 
   - ${{ if ne(variables['System.TeamProject'], 'public') }}:
