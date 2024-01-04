@@ -35,8 +35,8 @@ namespace Microsoft.DotNet.Installer.Windows.Security
             // We don't use X509Chain because it doesn't support verifying the specific policy and because we defer
             // that to the WinTrust provider as it performs timestamp and revocation checks.
             HCERTCHAINENGINE HCCE_LOCAL_MACHINE = (HCERTCHAINENGINE)0x01;
-            CERT_CHAIN_PARA* pChainPara = stackalloc CERT_CHAIN_PARA[1];
-            CERT_CHAIN_CONTEXT* pChainContext = stackalloc CERT_CHAIN_CONTEXT[1];
+            CERT_CHAIN_PARA pChainPara = default;
+            CERT_CHAIN_CONTEXT pChainContext = default;
             CERT_CONTEXT* pCertContext = (CERT_CONTEXT*)certificate.Handle;
             uint dwFlags = 0;
 
