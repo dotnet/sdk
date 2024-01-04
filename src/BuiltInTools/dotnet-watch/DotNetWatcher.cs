@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Watcher
                     currentRunCancellationSource.Token))
                 using (var fileSetWatcher = new FileSetWatcher(fileSet, _reporter))
                 {
-                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{string.Join(" ", processSpec.Arguments)}'");
+                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{processSpec.GetArgumentsDisplay()}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
 
                     _reporter.Output("Started", emoji: "🚀");

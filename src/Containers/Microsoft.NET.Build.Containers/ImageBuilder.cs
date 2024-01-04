@@ -110,7 +110,7 @@ internal sealed class ImageBuilder
     /// <summary>
     /// Sets the USER for the image.
     /// </summary>
-    internal void SetUser(string user) => _baseImageConfig.SetUser(user);
+    internal void SetUser(string user, bool isExplicitUserInteraction = true) => _baseImageConfig.SetUser(user, isExplicitUserInteraction);
 
     internal static (string[] entrypoint, string[] cmd) DetermineEntrypointAndCmd(
         string[] entrypoint,
@@ -227,7 +227,7 @@ internal sealed class ImageBuilder
         if (_baseImageConfig.EnvironmentVariables.TryGetValue(EnvironmentVariables.APP_UID, out string? appUid))
         {
             _logger.LogTrace("Setting user from APP_UID environment variable");
-            SetUser(appUid);
+            SetUser(appUid, isExplicitUserInteraction: false);
         }
     }
 
