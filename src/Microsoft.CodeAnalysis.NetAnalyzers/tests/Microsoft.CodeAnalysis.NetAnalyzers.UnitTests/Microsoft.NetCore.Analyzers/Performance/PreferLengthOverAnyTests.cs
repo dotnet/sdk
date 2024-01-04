@@ -275,7 +275,7 @@ public class MyCollection {
                                     {
                                     }
                                 }
-                                """;
+                """;
 
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
@@ -299,7 +299,7 @@ public class MyCollection {
                                     {
                                     }
                                 }
-                                """;
+                """;
             const string fixedCode = """
                                 using System;
                                 using System.Collections.Generic;
@@ -316,7 +316,7 @@ public class MyCollection {
                                     {
                                     }
                                 }
-                                """;
+                """;
 
             return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
