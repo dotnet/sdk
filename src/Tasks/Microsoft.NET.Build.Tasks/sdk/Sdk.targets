@@ -11,6 +11,20 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <!-- Set the SdkAnalysisLevel for downstream targets to use -->
+  <PropertyGroup Label="SdkAnalysisLevel" Condition="'$(SdkAnalysisLevel)' == ''">
+    <!-- Slightly tricky stuff here - since we need to handle prerelease versions in our splitting we need
+         to split by two items - we can't just pass the items into Split(params string array) because MSBuild doesn't create the array.
+         So we need MSBuild to create the array for us. -->
+    <_SdkVersionDelimiters>.;-</_SdkVersionDelimiters>
+    <_SdkVersionDelimitersArray>$(_SdkVersionDelimiters.Split(`;`))</_SdkVersionDelimitersArray>
+    <_CurrentSDKMajor>$(NETCoreSdkVersion.Split($(_SdkVersionDelimitersArray))[0])</_CurrentSDKMajor>
+    <_CurrentSDKMinor>$(NETCoreSdkVersion.Split($(_SdkVersionDelimitersArray))[1])</_CurrentSDKMinor>
+    <!-- Once we get the patch version, take the hundreths-place and expand to a multiple of 100. -->
+    <_CurrentSDKFeature>$(NETCoreSdkVersion.Split($(_SdkVersionDelimitersArray))[2][0])00</_CurrentSDKFeature>
+    <SdkAnalysisLevel>$(_CurrentSDKMajor).$(_CurrentSDKMinor).$(_CurrentSDKFeature)</SdkAnalysisLevel>
+  </PropertyGroup>
+
   <!-- Using the same property as Microsoft.CSharp.targets and presumably Microsoft.VisualBasic.targets here -->
   <PropertyGroup Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">
     <IsCrossTargetingBuild>true</IsCrossTargetingBuild>
