@@ -36,32 +36,34 @@ namespace Microsoft.DotNet.Installer.Windows.Security
             // that to the WinTrust provider as it performs timestamp and revocation checks.
             HCERTCHAINENGINE HCCE_LOCAL_MACHINE = (HCERTCHAINENGINE)0x01;
             CERT_CHAIN_PARA pChainPara = default;
-            CERT_CHAIN_CONTEXT pChainContext = default;
+            CERT_CHAIN_CONTEXT* pChainContext = default;
             CERT_CONTEXT* pCertContext = (CERT_CONTEXT*)certificate.Handle;
             uint dwFlags = 0;
 
-            if (!CertGetCertificateChain(HCCE_LOCAL_MACHINE, pCertContext, null, default, pChainPara, dwFlags, null, &pChainContext))
+            try
+            {
+                if (!CertGetCertificateChain(HCCE_LOCAL_MACHINE, pCertContext, null, default, &pChainPara, dwFlags, null, &pChainContext))
+                {
+                    throw new CryptographicException(Marshal.GetPInvokeErrorMessage(Marshal.GetLastWin32Error()));
+                }
+
+                CERT_CHAIN_POLICY_PARA policyCriteria = default;
+                CERT_CHAIN_POLICY_STATUS policyStatus = default;
+
+                policyCriteria.cbSize = (uint)sizeof(CERT_CHAIN_POLICY_PARA);
+                policyCriteria.dwFlags = (CERT_CHAIN_POLICY_FLAGS)MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
+
+                if (!CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_MICROSOFT_ROOT, pChainContext, &policyCriteria, &policyStatus))
+                {
+                    throw new CryptographicException(string.Format(LocalizableStrings.UnableToCheckCertificateChainPolicy, nameof(CERT_CHAIN_POLICY_MICROSOFT_ROOT)));
+                }
+
+                return (int)policyStatus.dwError;
+            }
+            finally
             {
                 CertFreeCertificateChain(pChainContext);
-                throw new CryptographicException(Marshal.GetPInvokeErrorMessage(Marshal.GetLastWin32Error()));
             }
-
-            CERT_CHAIN_POLICY_PARA policyCriteria = default;
-            CERT_CHAIN_POLICY_STATUS policyStatus = default;
-
-            policyCriteria.cbSize = (uint)sizeof(CERT_CHAIN_POLICY_PARA);
-            policyCriteria.dwFlags = (CERT_CHAIN_POLICY_FLAGS)MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
-
-            if (!CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_MICROSOFT_ROOT, pChainContext, &policyCriteria, &policyStatus))
-            {
-                CertFreeCertificateChain(pChainContext);
-                // CertVerifyCertificateChainPolicy always returns true, even if the policy check fails. It only returns
-                // false if the policy could not be checked.
-                throw new CryptographicException(string.Format(LocalizableStrings.UnableToCheckCertificateChainPolicy, nameof(CERT_CHAIN_POLICY_MICROSOFT_ROOT)));
-            }
-
-            CertFreeCertificateChain(pChainContext);
-            return (int)policyStatus.dwError;
         }
 
         /// <summary>
@@ -76,45 +78,38 @@ namespace Microsoft.DotNet.Installer.Windows.Security
         /// </remarks>
         internal static unsafe int IsAuthenticodeSigned(string path, bool allowOnlineRevocationChecks = true)
         {
-            WINTRUST_FILE_INFO* fileInfo = stackalloc WINTRUST_FILE_INFO[1];
-            WINTRUST_DATA* trustData = stackalloc WINTRUST_DATA[1];
-
             fixed (char* p = Path.GetFullPath(path))
             {
-                fileInfo[0].pcwszFilePath = p;
-                fileInfo[0].cbStruct = (uint)sizeof(WINTRUST_FILE_INFO);
-                fileInfo[0].hFile = (HANDLE)IntPtr.Zero;
-                fileInfo[0].pgKnownSubject = null;
+                WINTRUST_FILE_INFO fileInfo = new()
+                {
+                    pcwszFilePath = p,
+                    cbStruct = (uint)sizeof(WINTRUST_FILE_INFO),
+                };
 
                 Guid policyGuid = WINTRUST_ACTION_GENERIC_VERIFY_V2;
 
                 WINTRUST_DATA trustData = new()
                 {
                     cbStruct = (uint)sizeof(WINTRUST_DATA),
-                    pPolicyCallbackData = null,
-                    pSIPClientData = null,
                     dwUIChoice = WINTRUST_DATA_UICHOICE.WTD_UI_NONE,
                     fdwRevocationChecks = WINTRUST_DATA_REVOCATION_CHECKS.WTD_REVOKE_WHOLECHAIN,
                     dwUnionChoice = WINTRUST_DATA_UNION_CHOICE.WTD_CHOICE_FILE,
                     dwStateAction = WINTRUST_DATA_STATE_ACTION.WTD_STATEACTION_VERIFY,
-                    hWVTStateData = (HANDLE)IntPtr.Zero,
-                    pwszURLReference = null,
                     dwProvFlags = WINTRUST_DATA_PROVIDER_FLAGS.WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT,
                 };
 
                 if (!allowOnlineRevocationChecks)
                 {
-                    trustData[0].dwProvFlags |= WINTRUST_DATA_PROVIDER_FLAGS.WTD_CACHE_ONLY_URL_RETRIEVAL;
+                    trustData.dwProvFlags |= WINTRUST_DATA_PROVIDER_FLAGS.WTD_CACHE_ONLY_URL_RETRIEVAL;
                 }
 
-                trustData[0].dwUIContext = 0;
-                trustData[0].Anonymous.pFile = fileInfo;
+                trustData.Anonymous.pFile = &fileInfo;
 
-                int lstatus = WinVerifyTrust((HWND)IntPtr.Zero, ref policyGuid, trustData);
+                int lstatus = WinVerifyTrust((HWND)IntPtr.Zero, ref policyGuid, &trustData);
 
                 // Release the hWVTStateData handle, but return the original status.
-                trustData[0].dwStateAction = WINTRUST_DATA_STATE_ACTION.WTD_STATEACTION_CLOSE;
-                _ = WinVerifyTrust((HWND)IntPtr.Zero, ref policyGuid, trustData);
+                trustData.dwStateAction = WINTRUST_DATA_STATE_ACTION.WTD_STATEACTION_CLOSE;
+                _ = WinVerifyTrust((HWND)IntPtr.Zero, ref policyGuid, &trustData);
 
                 return lstatus;
             }
