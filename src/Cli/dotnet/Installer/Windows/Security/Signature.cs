@@ -88,16 +88,19 @@ namespace Microsoft.DotNet.Installer.Windows.Security
 
                 Guid policyGuid = WINTRUST_ACTION_GENERIC_VERIFY_V2;
 
-                trustData[0].cbStruct = (uint)sizeof(WINTRUST_DATA);
-                trustData[0].pPolicyCallbackData = null;
-                trustData[0].pSIPClientData = null;
-                trustData[0].dwUIChoice = WINTRUST_DATA_UICHOICE.WTD_UI_NONE;
-                trustData[0].fdwRevocationChecks = WINTRUST_DATA_REVOCATION_CHECKS.WTD_REVOKE_WHOLECHAIN;
-                trustData[0].dwUnionChoice = WINTRUST_DATA_UNION_CHOICE.WTD_CHOICE_FILE;
-                trustData[0].dwStateAction = WINTRUST_DATA_STATE_ACTION.WTD_STATEACTION_VERIFY;
-                trustData[0].hWVTStateData = (HANDLE)IntPtr.Zero;
-                trustData[0].pwszURLReference = null;
-                trustData[0].dwProvFlags = WINTRUST_DATA_PROVIDER_FLAGS.WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT;
+                WINTRUST_DATA trustData = new()
+                {
+                    cbStruct = (uint)sizeof(WINTRUST_DATA),
+                    pPolicyCallbackData = null,
+                    pSIPClientData = null,
+                    dwUIChoice = WINTRUST_DATA_UICHOICE.WTD_UI_NONE,
+                    fdwRevocationChecks = WINTRUST_DATA_REVOCATION_CHECKS.WTD_REVOKE_WHOLECHAIN,
+                    dwUnionChoice = WINTRUST_DATA_UNION_CHOICE.WTD_CHOICE_FILE,
+                    dwStateAction = WINTRUST_DATA_STATE_ACTION.WTD_STATEACTION_VERIFY,
+                    hWVTStateData = (HANDLE)IntPtr.Zero,
+                    pwszURLReference = null,
+                    dwProvFlags = WINTRUST_DATA_PROVIDER_FLAGS.WTD_REVOCATION_CHECK_CHAIN_EXCLUDE_ROOT,
+                };
 
                 if (!allowOnlineRevocationChecks)
                 {
