@@ -52,13 +52,13 @@ namespace Microsoft.DotNet.Build.Tasks
 
             var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();
 
-            var isSDKServicing = IsSDKServicing(propertyGroup.Element(ns + "NETCoreSdkVersion").Value);
-
             propertyGroup.Element(ns + "NETCoreSdkVersion").Value = newSDKVersion;
 
             var originalBundledNETCoreAppPackageVersion =
                 propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
             propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value = microsoftNETCoreAppRefPackageVersion;
+
+            var isSDKServicing = IsSDKServicing(originalBundledNETCoreAppPackageVersion);
 
             void CheckAndReplaceElement(XElement element)
             {
@@ -126,7 +126,7 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             var parsedSdkVersion = NuGet.Versioning.NuGetVersion.Parse(sdkVersion);
 
-            return parsedSdkVersion.Patch % 100 != 0;
+            return !parsedSdkVersion.IsPrerelease;
         }
     }
 }
