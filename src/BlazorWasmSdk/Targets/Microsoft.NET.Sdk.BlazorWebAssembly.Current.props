@@ -32,9 +32,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TrimMode Condition="'$(TrimMode)' == ''">link</TrimMode>
     <TrimmerRemoveSymbols Condition="'$(TrimmerRemoveSymbols)' == ''">false</TrimmerRemoveSymbols>
 
+    <!-- Disable accelerated builds in Visual Studio -->
+    <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
+
     <!-- Static web assets defaults -->
     <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">/</StaticWebAssetBasePath>
-    <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Root</StaticWebAssetProjectMode>    
+    <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Root</StaticWebAssetProjectMode>
     <StaticWebAssetsGetPublishAssetsTargets>ComputeFilesToPublish;GetCurrentProjectPublishStaticWebAssetItems</StaticWebAssetsGetPublishAssetsTargets>
     <StaticWebAssetsAdditionalPublishProperties>$(StaticWebAssetsAdditionalPublishProperties);BuildProjectReferences=false;ResolveAssemblyReferencesFindRelatedSatellites=true;_PublishingBlazorWasmProject=true</StaticWebAssetsAdditionalPublishProperties>
     <StaticWebAssetsAdditionalPublishPropertiesToRemove>$(StaticWebAssetsAdditionalPublishPropertiesToRemove);NoBuild;RuntimeIdentifier</StaticWebAssetsAdditionalPublishPropertiesToRemove>
