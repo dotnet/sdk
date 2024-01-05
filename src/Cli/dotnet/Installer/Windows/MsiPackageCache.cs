@@ -1,22 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.IO.Pipes;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
-using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Utils;
 #if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Installer.Windows.Security;
-using Microsoft.DotNet.Workloads.Workload;
-using Windows.Win32.Security.Cryptography;
-
 #endif
 using Microsoft.DotNet.Workloads.Workload;
 using Newtonsoft.Json;
-using Windows.Win32;
 
 namespace Microsoft.DotNet.Installer.Windows
 {
