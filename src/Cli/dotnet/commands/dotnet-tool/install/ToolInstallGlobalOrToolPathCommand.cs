@@ -16,6 +16,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
@@ -114,66 +115,76 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 TransactionScopeOption.Required,
                 TimeSpan.Zero))
             {
-                if (oldPackageNullable != null)
+                try
                 {
-                    RunWithHandlingUninstallError(() =>
+                    if (oldPackageNullable != null)
                     {
-                        foreach (RestoredCommand command in oldPackageNullable.Commands)
+                        RunWithHandlingUninstallError(() =>
                         {
-                            shellShimRepository.RemoveShim(command.Name);
+                            foreach (RestoredCommand command in oldPackageNullable.Commands)
+                            {
+                                shellShimRepository.RemoveShim(command.Name);
+                            }
+
+                            toolPackageUninstaller.Uninstall(oldPackageNullable.PackageDirectory);
+                        });
+                    }
+
+                    RunWithHandlingInstallError(() =>
+                    {
+                        IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
+                        new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
+                            packageId: _packageId,
+                            versionRange: versionRange,
+                            targetFramework: _framework,
+                            verbosity: _verbosity,
+                            isGlobalTool: true
+                        );
+
+                        EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
+
+                        NuGetFramework framework;
+                        if (string.IsNullOrEmpty(_framework) && newInstalledPackage.Frameworks.Count() > 0)
+                        {
+                            framework = newInstalledPackage.Frameworks
+                                .Where(f => f.Version < (new NuGetVersion(Product.Version)).Version)
+                                .MaxBy(f => f.Version);
+                        }
+                        else
+                        {
+                            framework = string.IsNullOrEmpty(_framework) ?
+                                null :
+                                NuGetFramework.Parse(_framework);
+                        }
+                        string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
+
+                        foreach (RestoredCommand command in newInstalledPackage.Commands)
+                        {
+                            shellShimRepository.CreateShim(command.Executable, command.Name, newInstalledPackage.PackagedShims);
                         }
 
-                        toolPackageUninstaller.Uninstall(oldPackageNullable.PackageDirectory);
+                        foreach (string w in newInstalledPackage.Warnings)
+                        {
+                            _reporter.WriteLine(w.Yellow());
+                        }
+                        if (_global)
+                        {
+                            _environmentPathInstruction.PrintAddPathInstructionIfPathDoesNotExist();
+                        }
+
+                        PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
                     });
+
+                    scope.Complete();
                 }
-
-                RunWithHandlingInstallError(() =>
+                catch (Exception)
                 {
-                    IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
-                    new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
-                        packageId: _packageId,
-                        versionRange: versionRange,
-                        targetFramework: _framework,
-                        verbosity: _verbosity,
-                        isGlobalTool: true
-                    );
-
-                    EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
-
-                    NuGetFramework framework;
-                    if (string.IsNullOrEmpty(_framework) && newInstalledPackage.Frameworks.Count() > 0)
-                    {
-                        framework = newInstalledPackage.Frameworks
-                            .Where(f => f.Version < (new NuGetVersion(Product.Version)).Version)
-                            .MaxBy(f => f.Version);
-                    }
-                    else
-                    {
-                        framework = string.IsNullOrEmpty(_framework) ?
-                            null :
-                            NuGetFramework.Parse(_framework);
-                    }
-                    string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
-
-                    foreach (RestoredCommand command in newInstalledPackage.Commands)
-                    {
-                        shellShimRepository.CreateShim(command.Executable, command.Name, newInstalledPackage.PackagedShims);
-                    }
-
-                    foreach (string w in newInstalledPackage.Warnings)
-                    {
-                        _reporter.WriteLine(w.Yellow());
-                    }
-                    if (_global)
-                    {
-                        _environmentPathInstruction.PrintAddPathInstructionIfPathDoesNotExist();
-                    }
-
-                    PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
-                });
-
-                scope.Complete();
-            }
+                    // Log the exception or perform other error handling if needed.
+                    // Rollback the transaction to ensure consistency.
+                    scope.Dispose();
+                    throw;
+                }
+            } 
             return 0;
         }
 
