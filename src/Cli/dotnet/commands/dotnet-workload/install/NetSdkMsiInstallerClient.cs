@@ -182,12 +182,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand) =>
-            RemoveInstallStateFile(sdkFeatureBand);
-
-        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines) =>
-            WriteInstallStateFile(sdkFeatureBand, jsonLines);
-
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care
         /// about dependents that match the SDK host we're running under. For example, an x86 SDK should not be
@@ -1073,9 +1067,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 finally
                 {
-                    ((TimestampedFileLogger)Log).Dispose();
+                    if (Log is IDisposable tfl)
+                    {
+                        tfl.Dispose();
+                    }
                 }
             }
         }
+
+        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode) => UpdateInstallMode(sdkFeatureBand, newMode);
     }
 }

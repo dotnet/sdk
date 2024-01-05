@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId}");
+            var command = CreateUpdateCommand($"-g {_packageId} --verbosity minimal");
 
             command.Execute();
 
@@ -158,7 +158,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId} --version 1.0.5-*");
+            var command = CreateUpdateCommand($"-g {_packageId} --version 1.0.5-* --verbosity minimal");
 
             command.Execute();
 
@@ -173,7 +173,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId} --prerelease");
+            var command = CreateUpdateCommand($"-g {_packageId} --prerelease  --verbosity minimal");
 
             command.Execute();
 
@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId}");
+            var command = CreateUpdateCommand($"-g {_packageId} --verbosity minimal");
 
             command.Execute();
 
@@ -223,7 +223,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion}").Execute();
             _reporter.Lines.Clear();
 
-            var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPreviewPackageVersion}");
+            var command = CreateUpdateCommand($"-g {_packageId} --version {HigherPreviewPackageVersion} --verbosity minimal");
 
             command.Execute();
 

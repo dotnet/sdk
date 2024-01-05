@@ -46,6 +46,11 @@ namespace Microsoft.DotNet.Watcher.Tests
             return line.Substring(expectedPrefix.Length);
         }
 
+        public Task<string> AssertOutputLine(Predicate<string> predicate, Predicate<string> failure = null)
+            => Process.GetOutputLineAsync(
+                success: predicate,
+                failure: failure ?? new Predicate<string>(line => line.Contains(WatchErrorOutputEmoji, StringComparison.Ordinal)));
+
         public async Task AssertOutputLineEquals(string expectedLine)
             => Assert.Equal("", await AssertOutputLineStartsWith(expectedLine));
 

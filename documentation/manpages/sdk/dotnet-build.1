@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-build" "1" "2022-10-21" "" ".NET Documentation"
+.TH "dotnet-build" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet build
 .PP
@@ -28,10 +28,14 @@ dotnet-build - Builds a project and all of its dependencies.
 \f[C]
 dotnet build [<PROJECT>|<SOLUTION>] [-a|--arch <ARCHITECTURE>]
     [-c|--configuration <CONFIGURATION>] [-f|--framework <FRAMEWORK>]
+    [--disable-build-servers]
     [--force] [--interactive] [--no-dependencies] [--no-incremental]
     [--no-restore] [--nologo] [--no-self-contained] [--os <OS>]
-    [-o|--output <OUTPUT_DIRECTORY>] [-r|--runtime <RUNTIME_IDENTIFIER>]
-    [--self-contained [true|false]] [--source <SOURCE>] [--use-current-runtime, --ucr [true|false]]
+    [-o|--output <OUTPUT_DIRECTORY>]
+    [-p|--property:<PROPERTYNAME>=<VALUE>]
+    [-r|--runtime <RUNTIME_IDENTIFIER>]
+    [--self-contained [true|false]] [--source <SOURCE>]
+    [--tl [auto|on|off]] [--use-current-runtime, --ucr [true|false]]
     [-v|--verbosity <LEVEL>] [--version-suffix <VERSION_SUFFIX>]
 
 dotnet build -h|--help
@@ -135,6 +139,15 @@ Defines the build configuration.
 The default for most projects is \f[V]Debug\f[R], but you can override the build configuration settings in your project.
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]--disable-build-servers\f[B]\f[R]
+.RS 2
+.PP
+Forces the command to ignore any persistent build servers.
+This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
+A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
+Available since .NET 7 SDK.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
 .RS 2
 .PP
@@ -203,6 +216,14 @@ Available since .NET 6 SDK.
 Directory in which to place the built binaries.
 If not specified, the default path is \f[V]./bin/<configuration>/<framework>/\f[R].
 For projects with multiple target frameworks (via the \f[V]TargetFrameworks\f[R] property), you also need to define \f[V]--framework\f[R] when you specify this option.
+.IP \[bu] 2
+\&.NET 7.0.200 SDK and later
+.RS 2
+.PP
+If you specify the \f[V]--output\f[R] option when running this command on a solution, the CLI will emit a warning (an error in 7.0.200) due to the unclear semantics of the output path.
+The \f[V]--output\f[R] option is disallowed because all outputs of all built projects would be copied into the specified directory, which isn\[cq]t compatible with multi-targeted projects, as well as projects that have different versions of direct and transitive dependencies.
+For more information, see Solution-level \f[V]--output\f[R] option no longer valid for build-related commands.
+.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--os <OS>\f[B]\f[R]
@@ -213,6 +234,20 @@ This is a shorthand syntax for setting the Runtime Identifier (RID), where the p
 For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--os linux\f[R] sets the RID to \f[V]linux-x64\f[R].
 If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
 Available since .NET 6.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-p|--property:<PROPERTYNAME>=<VALUE>\f[B]\f[R]
+.RS 2
+.PP
+Sets one or more MSBuild properties.
+Specify multiple properties delimited by semicolons or by repeating the option:
+.IP
+.nf
+\f[C]
+--property:<NAME1>=<VALUE1>;<NAME2>=<VALUE2>
+--property:<NAME1>=<VALUE1> --property:<NAME2>=<VALUE2>
+\f[R]
+.fi
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-r|--runtime <RUNTIME_IDENTIFIER>\f[B]\f[R]
@@ -229,7 +264,7 @@ If not specified, the default is to build for the current OS and architecture.
 .PP
 Publishes the .NET runtime with the application so the runtime doesn\[cq]t need to be installed on the target machine.
 The default is \f[V]true\f[R] if a runtime identifier is specified.
-Available since .NET 6 SDK.
+Available since .NET 6.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--source <SOURCE>\f[B]\f[R]
@@ -238,13 +273,43 @@ Available since .NET 6 SDK.
 The URI of the NuGet package source to use during the restore operation.
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]--tl [auto|on|off]\f[B]\f[R]
+.RS 2
+.PP
+Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
+The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
+\f[V]on\f[R] skips the environment check and enables terminal logging.
+\f[V]off\f[R] skips the environment check and uses the default console logger.
+.PP
+The terminal logger shows you the restore phase followed by the build phase.
+During each phase, the currently building projects appear at the bottom of the terminal.
+Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
+You can search this information to learn more about the build.
+When a project is finished building, a single \[lq]build completed\[rq] section is written for that captures:
+.IP \[bu] 2
+The name of the built project
+.IP \[bu] 2
+The target framework (if multi-targeted)
+.IP \[bu] 2
+The status of that build
+.IP \[bu] 2
+The primary output of that build (which is hyperlinked)
+.IP \[bu] 2
+Any diagnostics generated for that project
+.PP
+This option is available starting in .NET 8.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
 .RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]minimal\f[R].
-For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
+By default, MSBuild displays warnings and errors at all verbosity levels.
+To exclude warnings, use \f[V]/property:WarningLevel=0\f[R].
+For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity> and WarningLevel.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--use-current-runtime, --ucr [true|false]\f[B]\f[R]

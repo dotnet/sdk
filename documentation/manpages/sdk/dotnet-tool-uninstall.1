@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-uninstall" "1" "2022-10-10" "" ".NET Documentation"
+.TH "dotnet-tool-uninstall" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet tool uninstall
 .PP
@@ -28,7 +28,7 @@ dotnet-tool-uninstall - Uninstalls the specified .NET tool from your machine.
 \f[C]
 dotnet tool uninstall <PACKAGE_NAME> -g|--global
 
-dotnet tool uninstall <PACKAGE_NAME> --tool-path <PATH>
+dotnet tool uninstall <PACKAGE_NAME> --tool-path <PATH> [--tool-manifest <PATH>]
 
 dotnet tool uninstall <PACKAGE_NAME>
 
@@ -76,6 +76,14 @@ Specifies the location where to uninstall the tool.
 PATH can be absolute or relative.
 Can\[cq]t be combined with the \f[V]--global\f[R] option.
 Omitting both \f[V]--global\f[R] and \f[V]--tool-path\f[R] specifies that the tool to be removed is a local tool.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--tool-manifest <PATH>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the manifest file that the tool is to be removed from.
+PATH can be absolute or relative.
+Can\[cq]t be combined with the \f[V]--global\f[R] option.
 .RE
 .SH EXAMPLES
 .IP \[bu] 2

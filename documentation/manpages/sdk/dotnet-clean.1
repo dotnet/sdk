@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-clean" "1" "2022-10-10" "" ".NET Documentation"
+.TH "dotnet-clean" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet clean
 .PP
@@ -89,6 +89,14 @@ Doesn\[cq]t display the startup banner or the copyright message.
 .PP
 The directory that contains the build artifacts to clean.
 Specify the \f[V]-f|--framework <FRAMEWORK>\f[R] switch with the output directory switch if you specified the framework when the project was built.
+.IP \[bu] 2
+\&.NET 7.0.200 SDK and later
+.RS 2
+.PP
+If you specify the \f[V]--output\f[R] option when running this command on a solution, the CLI will emit a warning (an error in 7.0.200) due to the unclear semantics of the output path.
+The \f[V]--output\f[R] option is disallowed because all outputs of all built projects would be copied into the specified directory, which isn\[cq]t compatible with multi-targeted projects, as well as projects that have different versions of direct and transitive dependencies.
+For more information, see Solution-level \f[V]--output\f[R] option no longer valid for build-related commands.
+.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-r|--runtime <RUNTIME_IDENTIFIER>\f[B]\f[R]

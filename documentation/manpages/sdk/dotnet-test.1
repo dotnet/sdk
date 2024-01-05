@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-test" "1" "2022-11-11" "" ".NET Documentation"
+.TH "dotnet-test" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet test
 .PP
@@ -114,7 +114,7 @@ If not specified, the effect is the same as using the \f[V]DIRECTORY\f[R] argume
 .IP \[bu] 2
 Starting in .NET 7: switch \f[V]-a\f[R] to alias \f[V]--arch\f[R] instead of \f[V]--test-adapter-path\f[R]
 .IP \[bu] 2
-Starting in .NET 7: switch \f[V]-r\f[R] to alias \f[V]--runtime\f[R] instead of \f[V]--results-dir\f[R]
+Starting in .NET 7: switch \f[V]-r\f[R] to alias \f[V]--runtime\f[R] instead of \f[V]--results-directory\f[R]
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--test-adapter-path <ADAPTER_PATH>\f[B]\f[R]
@@ -231,10 +231,10 @@ The default for most projects is \f[V]Debug\f[R], but you can override the build
 Enables data collector for the test run.
 For more information, see Monitor and analyze test run (https://aka.ms/vstest-collect).
 .PP
-On Windows (x86, x64 and Arm64), Linux (x64) and macOS (x64), you can collect code coverage by using the \f[V]--collect \[dq]Code Coverage\[dq]\f[R] option.
-For more information, see Use code coverage and Customize code coverage analysis.
+For example you can collect code coverage by using the \f[V]--collect \[dq]Code Coverage\[dq]\f[R] option.
+For more information, see Use code coverage, Customize code coverage analysis, and GitHub issue dotnet/docs#34479 (https://github.com/dotnet/docs/issues/34479).
 .PP
-To collect code coverage on any platform that is supported by .NET Core, install Coverlet (https://github.com/coverlet-coverage/coverlet/blob/master/README.md) and use the \f[V]--collect \[dq]XPlat Code Coverage\[dq]\f[R] option.
+To collect code coverage you can also use Coverlet (https://github.com/coverlet-coverage/coverlet/blob/master/README.md) by using the \f[V]--collect \[dq]XPlat Code Coverage\[dq]\f[R] option.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-d|--diag <LOG_FILE>\f[B]\f[R]
@@ -263,7 +263,8 @@ The target framework must also be specified in the project file.
 \f[B]\f[VB]--filter <EXPRESSION>\f[B]\f[R]
 .RS 2
 .PP
-Filters out tests in the current project using the given expression.
+Filters tests in the current project using the given expression.
+Only tests that match the filter expression are run.
 For more information, see the Filter option details section.
 For more information and examples on how to use selective unit test filtering, see Running selective unit tests.
 .RE
@@ -285,10 +286,21 @@ Available since .NET Core 3.0 SDK.
 \f[B]\f[VB]-l|--logger <LOGGER>\f[B]\f[R]
 .RS 2
 .PP
-Specifies a logger for test results.
-Unlike MSBuild, \f[V]dotnet test\f[R] doesn\[cq]t accept abbreviations: instead of \f[V]-l \[dq]console;v=d\[dq]\f[R] use \f[V]-l \[dq]console;verbosity=detailed\[dq]\f[R].
-Specify the parameter multiple times to enable multiple loggers.
-For more information, see Reporting test results (https://github.com/Microsoft/vstest-docs/blob/main/docs/report.md), Switches for loggers, and the examples later in this article.
+Specifies a logger for test results and optionally switches for the logger.
+Specify this parameter multiple times to enable multiple loggers.
+For more information, see Reporting test results (https://github.com/microsoft/vstest/blob/main/docs/report.md#available-test-loggers), Switches for loggers, and the examples later in this article.
+.PP
+In order to pass command-line switches to the logger:
+.IP \[bu] 2
+Use the full name of the switch, not the abbreviated form (for example, \f[V]verbosity\f[R] instead of \f[V]v\f[R]).
+.IP \[bu] 2
+Omit any leading dashes.
+.IP \[bu] 2
+Replace the space separating each switch with a semicolon \f[V];\f[R].
+.IP \[bu] 2
+If the switch has a value, replace the colon separator between that switch and its value with the equals sign \f[V]=\f[R].
+.PP
+For example, \f[V]-v:detailed --consoleLoggerParameters:ErrorsOnly\f[R] would become \f[V]verbosity=detailed;consoleLoggerParameters=ErrorsOnly\f[R].
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--no-build\f[B]\f[R]
@@ -319,6 +331,14 @@ If not specified, the default path is \f[V]./bin/<configuration>/<framework>/\f[
 For projects with multiple target frameworks (via the \f[V]TargetFrameworks\f[R] property), you also need to define \f[V]--framework\f[R] when you specify this option.
 \f[V]dotnet test\f[R] always runs tests from the output directory.
 You can use <xref:System.AppDomain.BaseDirectory%2A?displayProperty=nameWithType> to consume test assets in the output directory.
+.IP \[bu] 2
+\&.NET 7.0.200 SDK and later
+.RS 2
+.PP
+If you specify the \f[V]--output\f[R] option when running this command on a solution, the CLI will emit a warning (an error in 7.0.200) due to the unclear semantics of the output path.
+The \f[V]--output\f[R] option is disallowed because all outputs of all built projects would be copied into the specified directory, which isn\[cq]t compatible with multi-targeted projects, as well as projects that have different versions of direct and transitive dependencies.
+For more information, see Solution-level \f[V]--output\f[R] option no longer valid for build-related commands.
+.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--os <OS>\f[B]\f[R]
@@ -640,4 +660,4 @@ Frameworks and Targets
 .IP \[bu] 2
 \&.NET Runtime Identifier (RID) catalog
 .IP \[bu] 2
-Passing runsettings arguments through commandline (https://github.com/Microsoft/vstest-docs/blob/main/docs/RunSettingsArguments.md)
+Passing runsettings arguments through commandline (https://github.com/microsoft/vstest/blob/main/docs/RunSettingsArguments.md)

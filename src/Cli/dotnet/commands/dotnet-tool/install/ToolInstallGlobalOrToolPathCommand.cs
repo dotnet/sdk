@@ -170,12 +170,16 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     _environmentPathInstruction.PrintAddPathInstructionIfPathDoesNotExist();
                 }
 
-                _reporter.WriteLine(
-                    string.Format(
-                        LocalizableStrings.InstallationSucceeded,
-                        string.Join(", ", package.Commands.Select(c => c.Name)),
-                        package.Id,
-                        package.Version.ToNormalizedString()).Green());
+                if (!_verbosity.IsQuiet())
+                {
+                    _reporter.WriteLine(
+                        string.Format(
+                            LocalizableStrings.InstallationSucceeded,
+                            string.Join(", ", package.Commands.Select(c => c.Name)),
+                            package.Id,
+                            package.Version.ToNormalizedString()).Green());
+                }
+
                 return 0;
             }
             catch (Exception ex) when (InstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
