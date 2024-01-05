@@ -640,7 +640,6 @@
   </Target>
 
   <Target Name="GetProjectDirectory" Outputs="$(ProjectDirectory)" />
-  <Target Name="GetOfficialBuildId" Outputs="$(OfficialBuildId)" />
   <Target Name="GetRepositoryReferences" Outputs="@(RepositoryReference)" />
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.targets, $(MSBuildThisFileDirectory)..))" />
