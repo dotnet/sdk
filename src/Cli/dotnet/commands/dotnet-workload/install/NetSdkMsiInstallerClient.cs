@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
-            Log?.LogMessage($"Executing: {Windows.GetProcessCommandLine()}, PID: {CurrentProcess.Id}, PPID: {ParentProcess.Id}");
+            Log?.LogMessage($"Executing: {Microsoft.DotNet.Cli.Utils.Windows.GetProcessCommandLine()}, PID: {CurrentProcess.Id}, PPID: {ParentProcess.Id}");
             Log?.LogMessage($"{nameof(IsElevated)}: {IsElevated}");
             Log?.LogMessage($"{nameof(Is64BitProcess)}: {Is64BitProcess}");
             Log?.LogMessage($"{nameof(RebootPending)}: {RebootPending}");
@@ -181,12 +181,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 throw;
             }
         }
-
-        public void DeleteInstallState(SdkFeatureBand sdkFeatureBand) =>
-            RemoveInstallStateFile(sdkFeatureBand);
-
-        public void WriteInstallState(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines) =>
-            WriteInstallStateFile(sdkFeatureBand, jsonLines);
 
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care
@@ -1080,5 +1074,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
         }
+
+        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode) => UpdateInstallMode(sdkFeatureBand, newMode);
     }
 }

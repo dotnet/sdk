@@ -3,8 +3,11 @@
 
 using System.CommandLine;
 using System.IO;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -88,23 +91,10 @@ namespace Microsoft.DotNet.Workloads.Workload
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
         }
 
-        protected IEnumerable<string> GetInstallStateContents(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
-            ToJsonEnumerable(WorkloadSet.FromManifests(
+        protected static Dictionary<string, string> GetInstallStateContents(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
+            WorkloadSet.FromManifests(
                     manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
-                    ).ToDictionaryForJson());
-
-        private IEnumerable<string> ToJsonEnumerable(Dictionary<string, string> dict)
-        {
-            yield return "{";
-            yield return "\"manifests\": {";
-            foreach (KeyValuePair<string, string> line in dict)
-            {
-                yield return $"\"{line.Key}\": \"{line.Value}\",";
-            }
-            yield return "}";
-            yield return "}";
-            yield break;
-        }
+                    ).ToDictionaryForJson();
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null,
             IReporter reporter = null, INuGetPackageDownloader packageDownloader = null)
@@ -208,6 +198,12 @@ namespace Microsoft.DotNet.Workloads.Workload
 
     internal static class InstallingWorkloadCommandParser
     {
+        public static readonly CliOption<string> WorkloadSetMode = new("--mode")
+        {
+            Description = Strings.WorkloadSetMode,
+            Hidden = true
+        };
+
         public static readonly CliOption<bool> PrintDownloadLinkOnlyOption = new("--print-download-link-only")
         {
             Description = Strings.PrintDownloadLinkOnlyDescription,

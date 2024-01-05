@@ -362,6 +362,11 @@
         <target state="translated">路径</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetMode">
+        <source>Control whether future workload operations should use workload sets or loose manifests.</source>
+        <target state="translated">控制未来的工作负载操作应该使用工作负载集还是松散清单。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
         <target state="translated">有可用的工作负载更新。有关详细信息，请运行 `dotnet workload list`。</target>

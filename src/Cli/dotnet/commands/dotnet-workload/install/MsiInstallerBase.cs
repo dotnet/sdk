@@ -1,9 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
@@ -101,7 +104,7 @@ namespace Microsoft.DotNet.Installer.Windows
             bool verifySignatures, IReporter reporter = null) : base(elevationContext, logger, verifySignatures)
         {
             Cache = new MsiPackageCache(elevationContext, logger, verifySignatures);
-            RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, VerifySignatures);
+            RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, verifySignatures);
             UpdateAgent = new WindowsUpdateAgent(logger);
             Reporter = reporter;
         }
@@ -270,6 +273,40 @@ namespace Microsoft.DotNet.Installer.Windows
             }
 
             throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+        }
+
+        /// <summary>
+        /// Instructs future workload operations to use workload sets or loose manifests, per newMode.
+        /// </summary>
+        /// <param name="sdkFeatureBand">The feature band to update</param>
+        /// <param name="newMode">Where to use loose manifests or workload sets</param>
+        /// <param name="logFile">Full path of the log file</param>
+        /// <returns>Error code indicating the result of the operation</returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        protected void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
+        {
+            Elevate();
+
+            if (IsElevated)
+            {
+                string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
+                // Create the parent folder for the state file and set up all required ACLs
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
+                var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+                installStateContents.UseWorkloadSets = newMode;
+                File.WriteAllText(path, installStateContents.ToString());
+
+                SecurityUtils.SecureFile(path);
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendUpdateWorkloadModeRequest(sdkFeatureBand, newMode);
+                ExitOnFailure(response, "Failed to update install mode.");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
         }
 
         /// <summary>
@@ -494,12 +531,12 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// Deletes install state file for the specified feature band.
+        /// Deletes manifests from the install state file for the specified feature band.
         /// </summary>
         /// <param name="sdkFeatureBand">The feature band of the install state file.</param>
-        protected void RemoveInstallStateFile(SdkFeatureBand sdkFeatureBand)
+        public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null), "default.json");
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
 
             if (!File.Exists(path))
             {
@@ -511,11 +548,16 @@ namespace Microsoft.DotNet.Installer.Windows
 
             if (IsElevated)
             {
-                File.Delete(path);
+                if (File.Exists(path))
+                {
+                    var installStateContents = InstallStateContents.FromString(File.ReadAllText(path));
+                    installStateContents.Manifests = null;
+                    File.WriteAllText(path, installStateContents.ToString());
+                }
             }
             else if (IsClient)
             {
-                InstallResponseMessage response = Dispatcher.SendRemoveInstallStateFileRequest(sdkFeatureBand);
+                InstallResponseMessage response = Dispatcher.SendRemoveManifestsFromInstallStateFileRequest(sdkFeatureBand);
                 ExitOnFailure(response, $"Failed to remove install state file: {path}");
             }
         }
@@ -524,10 +566,10 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Writes the contents of the install state JSON file.
         /// </summary>
         /// <param name="sdkFeatureBand">The path of the isntall state file to write.</param>
-        /// <param name="jsonLines">The contents of the JSON file, formatted as a single line.</param>
-        protected void WriteInstallStateFile(SdkFeatureBand sdkFeatureBand, IEnumerable<string> jsonLines)
+        /// <param name="manifestContents">The contents of the JSON file, formatted as a single line.</param>
+        public void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
         {
-            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, null), "default.json");
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
             Elevate();
 
             if (IsElevated)
@@ -535,13 +577,15 @@ namespace Microsoft.DotNet.Installer.Windows
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
 
-                File.WriteAllLines(path, jsonLines);
+                var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+                installStateContents.Manifests = manifestContents;
+                File.WriteAllText(path, installStateContents.ToString());
 
                 SecurityUtils.SecureFile(path);
             }
             else if (IsClient)
             {
-                InstallResponseMessage respone = Dispatcher.SendWriteInstallStateFileRequest(sdkFeatureBand, jsonLines);
+                InstallResponseMessage respone = Dispatcher.SendSaveInstallStateManifestVersions(sdkFeatureBand, manifestContents);
                 ExitOnFailure(respone, $"Failed to write install state file: {path}");
             }
         }
