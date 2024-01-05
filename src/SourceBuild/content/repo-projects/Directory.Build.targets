@@ -1,4 +1,4 @@
-<Project InitialTargets="SetNuGetPackagesEnvironment">
+<Project>
 
   <ItemGroup>
     <EnvironmentVariables Include="LatestCommit=$(GitCommitHash)" />
@@ -510,18 +510,6 @@
           WorkingDirectory="$(ProjectDirectory)"
           EnvironmentVariables="@(EnvironmentVariables)"
           IgnoreStandardErrorWarningFormat="true" />
-  </Target>
-
-  <Target Name="SetNuGetPackagesEnvironment" Condition="'$(ArchiveDownloadedPackages)' == 'true'">
-    <PropertyGroup>
-      <LocalNuGetPackagesRootForRepository>$(LocalNuGetPackagesRoot)$(RepositoryName)/</LocalNuGetPackagesRootForRepository>
-    </PropertyGroup>
-
-    <MakeDir Directories="$(LocalNuGetPackagesRootForRepository)" />
-
-    <ItemGroup>
-      <EnvironmentVariables Include="NUGET_PACKAGES=$(LocalNuGetPackagesRootForRepository)" />
-    </ItemGroup>
   </Target>
 
   <Target Name="SetSourceBuiltSdkOverrides"
