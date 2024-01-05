@@ -141,7 +141,7 @@ namespace Microsoft.NET.Build.Tests
             outputPathValue.Trim().Should().NotContain("\\\\");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.9.0.61803")]
         public void OuterBuildImportsUserFile()
         {
             var testProject = new TestProject()
