@@ -91,6 +91,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
+        public string InstallWorkloadSet(string path) => throw new NotImplementedException();
+
         public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null) => throw new NotImplementedException();
 
         public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)

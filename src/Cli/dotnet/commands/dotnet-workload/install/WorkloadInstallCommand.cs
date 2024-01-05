@@ -160,10 +160,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 var useWorkloadSets = GetInstallStateMode(_sdkFeatureBand, _dotnetPath);
                 useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
+                string workloadSetLocation = null;
+                if (useWorkloadSets)
+                {
+                    workloadSetLocation = InstallWorkloadSet();
+                }
+
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
-                manifestsToUpdate = useRollback ?
-                    _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                    _workloadManifestUpdater.CalculateManifestUpdates(useWorkloadSets).Select(m => m.ManifestUpdate);
+                manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                    useWorkloadSets ? _workloadManifestUpdater.CalculateManifestRollbacks(workloadSetLocation) :
+                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
 
             InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);

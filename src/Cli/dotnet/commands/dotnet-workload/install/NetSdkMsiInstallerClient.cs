@@ -182,6 +182,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        public string InstallWorkloadSet(string path) => throw new NotImplementedException();
+
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care
         /// about dependents that match the SDK host we're running under. For example, an x86 SDK should not be

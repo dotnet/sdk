@@ -164,39 +164,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        private Dictionary<ManifestId, (ManifestVersionWithBand, WorkloadCollection)> GetManifestVersionsFromWorkloadSet()
-        {
-            return null;
-        }
-
-        public IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates(bool useWorkloadSets)
+        public IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates()
         {
             var currentManifestIds = GetInstalledManifestIds();
-            Dictionary<ManifestId, (ManifestVersionWithBand, WorkloadCollection)> manifestsFromSet = null;
-            if (useWorkloadSets)
-            {
-                manifestsFromSet = GetManifestVersionsFromWorkloadSet();
-                if (manifestsFromSet is null)
-                {
-                    // Fall back to loose manifests? Consult with team.
-                    useWorkloadSets = false;
-                }
-            }
-
             foreach (var manifestId in currentManifestIds)
             {
-                (ManifestVersionWithBand, WorkloadCollection)? advertisingInfo = null;
-                if (useWorkloadSets)
-                {
-                    // This out parameter only takes the non-nullable type, but as a value type, it has to be nullable if it may be null, as it is if it is absent.
-                    manifestsFromSet.TryGetValue(manifestId, out var advertInfo);
-                    advertisingInfo = advertInfo;
-                }
-                else
-                {
-                    advertisingInfo = GetAdvertisingManifestVersionAndWorkloads(manifestId);
-                }
-
+                var advertisingInfo = GetAdvertisingManifestVersionAndWorkloads(manifestId);
                 if (advertisingInfo == null)
                 {
                     continue;

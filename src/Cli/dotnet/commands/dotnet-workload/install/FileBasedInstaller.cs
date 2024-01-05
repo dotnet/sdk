@@ -85,6 +85,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return packs;
         }
 
+        public string InstallWorkloadSet(string path)
+        {
+            string workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", "version", ".workloadset.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(workloadSetPath));
+            File.Copy(Path.Combine(path, "workloadset.json"), workloadSetPath);
+            return workloadSetPath;
+        }
+
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
             var packInfos = GetPacksInWorkloads(workloadIds);
@@ -509,7 +517,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
         {
-            if (manifestId.ToString().Equals("Microsoft.NET.Workloads"))
+            if (manifestId.ToString().Equals("Microsoft.NET.Workloads", StringComparison.OrdinalIgnoreCase))
             {
                 return new PackageId($"{manifestId}.{featureBand}");
             }

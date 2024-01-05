@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         internal IEnumerable<UpdateAvailableEntry> GetUpdateAvailable(IEnumerable<WorkloadId> installedList)
         {
             // This was an internal partner ask, and they do not need to support workload sets.
-            var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestUpdates(useWorkloadSets: false);
+            var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestUpdates();
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews).Wait();
 
             foreach ((ManifestVersionUpdate manifestUpdate, WorkloadCollection workloads) in manifestsToUpdate)
