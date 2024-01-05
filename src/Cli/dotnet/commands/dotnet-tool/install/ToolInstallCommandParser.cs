@@ -82,6 +82,19 @@ namespace Microsoft.DotNet.Cli
         {
             CliCommand command = new("install", LocalizableStrings.CommandDescription);
 
+            AddCommandOptions(command);
+
+            command.Options.Add(ArchitectureOption);
+            command.Options.Add(CreateManifestIfNeededOption);
+            command.Options.Add(AllowPackageDowngradeOption);
+
+            command.SetAction((parseResult) => new ToolInstallCommand(parseResult).Execute());
+
+            return command;
+        }
+
+        public static CliCommand AddCommandOptions(CliCommand command)
+        {
             command.Arguments.Add(PackageIdArgument);
             command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
             command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
@@ -97,13 +110,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
             command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
             command.Options.Add(VerbosityOption);
-            command.Options.Add(ArchitectureOption);
-            command.Options.Add(CreateManifestIfNeededOption);
-            command.Options.Add(AllowPackageDowngradeOption);
-
-            command.SetAction((parseResult) => new ToolInstallCommand(parseResult).Execute());
-
             return command;
-        }
+        } 
     }
 }
