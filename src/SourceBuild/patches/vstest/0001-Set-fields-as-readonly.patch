@@ -1,0 +1,51 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Fri, 5 Jan 2024 09:29:48 -0600
+Subject: [PATCH] Set fields as readonly
+
+Backport: https://github.com/microsoft/vstest/pull/4795
+---
+ .../DesignMode/DesignModeClient.cs                              | 2 +-
+ .../ObjectModel/TestRun.cs                                      | 2 +-
+ .../ObjectModel/TestType.cs                                     | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/Microsoft.TestPlatform.Client/DesignMode/DesignModeClient.cs b/src/Microsoft.TestPlatform.Client/DesignMode/DesignModeClient.cs
+index 4c1966a0..0657d284 100644
+--- a/src/Microsoft.TestPlatform.Client/DesignMode/DesignModeClient.cs
++++ b/src/Microsoft.TestPlatform.Client/DesignMode/DesignModeClient.cs
+@@ -655,7 +655,7 @@ public class DesignModeClient : IDesignModeClient
+     #region IDisposable Support
+ 
+     private bool _isDisposed; // To detect redundant calls
+-    private bool _isForwardingOutput;
++    private readonly bool _isForwardingOutput;
+ 
+     protected virtual void Dispose(bool disposing)
+     {
+diff --git a/src/Microsoft.TestPlatform.Extensions.TrxLogger/ObjectModel/TestRun.cs b/src/Microsoft.TestPlatform.Extensions.TrxLogger/ObjectModel/TestRun.cs
+index 228f5f2d..4bae23dd 100644
+--- a/src/Microsoft.TestPlatform.Extensions.TrxLogger/ObjectModel/TestRun.cs
++++ b/src/Microsoft.TestPlatform.Extensions.TrxLogger/ObjectModel/TestRun.cs
+@@ -30,7 +30,7 @@ internal sealed class TestRun
+     //
+     // The summary parsing code is in XmlTestReader.ReadTestRunSummary.
+     [StoreXmlSimpleField("@id")]
+-    private Guid _id;
++    private readonly Guid _id;
+ 
+     [StoreXmlSimpleField("@name")]
+     private string _name;
+diff --git a/src/Microsoft.TestPlatform.Extensions.TrxLogger/ObjectModel/TestType.cs b/src/Microsoft.TestPlatform.Extensions.TrxLogger/ObjectModel/TestType.cs
+index fece20eb..a5e00b4a 100644
+--- a/src/Microsoft.TestPlatform.Extensions.TrxLogger/ObjectModel/TestType.cs
++++ b/src/Microsoft.TestPlatform.Extensions.TrxLogger/ObjectModel/TestType.cs
+@@ -13,7 +13,7 @@ namespace Microsoft.TestPlatform.Extensions.TrxLogger.ObjectModel;
+ internal sealed class TestType : IXmlTestStore
+ {
+     [StoreXmlSimpleField(".")]
+-    private Guid _typeId;
++    private readonly Guid _typeId;
+ 
+     public TestType(Guid id)
+     {
