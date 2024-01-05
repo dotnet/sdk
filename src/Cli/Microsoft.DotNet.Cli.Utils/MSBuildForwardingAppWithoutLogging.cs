@@ -19,6 +19,10 @@ namespace Microsoft.DotNet.Cli.Utils
         private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
         private static readonly string TerminalLoggerDefault = Env.GetEnvironmentVariable("DOTNET_CLI_CONFIGURE_MSBUILD_TERMINAL_LOGGER");
 
+        public static string MSBuildVersion
+        {
+            get => Microsoft.Build.Evaluation.ProjectCollection.DisplayVersion;
+        }
         private const string MSBuildExeName = "MSBuild.dll";
 
         private const string SdksDirectoryName = "Sdks";
@@ -39,14 +43,14 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables =
             new Dictionary<string, string>
-            {
+        {
                 { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? AppContext.BaseDirectory },
                 { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
                 { "DOTNET_HOST_PATH", GetDotnetPath() },
             };
 
         private readonly IEnumerable<string> _msbuildRequiredParameters =
-            new List<string> { "-maxcpucount", "-verbosity:m" };
+            new List<string> { "-maxcpucount", "-verbosity:m", "-nologo" };
 
         public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null)
         {
