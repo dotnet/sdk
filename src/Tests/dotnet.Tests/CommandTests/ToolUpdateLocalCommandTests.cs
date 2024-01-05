@@ -311,6 +311,29 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _manifestFilePath));
         }
 
+        [Fact]
+        public void GivenFeedVersionIsLowerWithDowngradeFlagRunPackageIdItShouldSucceeds()
+        {
+            _reporter.Clear();
+
+            ParseResult parseResult
+                = Parser.Instance.Parse(
+                    $"dotnet tool update {_packageIdA.ToString()} --allow-downgrade");
+
+            _toolRestoreCommand.Execute();
+            _mockFeed.Packages.Single().Version = "0.9.0";
+
+            ToolUpdateLocalCommand toolUpdateLocalCommand = new ToolUpdateLocalCommand(
+                parseResult,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            toolUpdateLocalCommand.Execute().Should().Be(0);
+        }
+
         private void AssertUpdateSuccess(FilePath? manifestFile = null, NuGetVersion packageVersion = null)
         {
             packageVersion ??= _packageNewVersionA;
