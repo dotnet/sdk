@@ -32,6 +32,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
 
+        public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -44,6 +46,7 @@ namespace Microsoft.DotNet.Cli
             CliCommand command = new("update", LocalizableStrings.CommandDescription);
 
             ToolInstallCommandParser.AddCommandOptions(command);
+            command.Options.Add(AllowPackageDowngradeOption);
 
             command.SetAction((parseResult) => new ToolUpdateCommand(parseResult).Execute());
 
