@@ -10,10 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EnvironmentVariables Include="DotNetPackageVersionPropsPath=" />
-  </ItemGroup>
-
-  <ItemGroup>
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="roslyn" />
   </ItemGroup>
