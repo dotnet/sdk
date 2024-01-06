@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli.Utils
         {
             string defaultMSBuildPath = GetMSBuildExePath();
 
-            _argsToForward = includeLogo ? ["-nologo", ..argsToForward] : argsToForward;
+            _argsToForward = includeLogo ? argsToForward : ["-nologo", ..argsToForward];
             string tlpDefault = TerminalLoggerDefault;
             /* TODO: Consider to enable it for dotnet 9+ SDK
             if (!string.IsNullOrWhiteSpace(tlpDefault))

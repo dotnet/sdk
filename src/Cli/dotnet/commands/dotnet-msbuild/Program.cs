@@ -10,10 +10,9 @@ namespace Microsoft.DotNet.Tools.MSBuild
     {
         public MSBuildCommand
             (IEnumerable<string> msbuildArgs,
-            string msbuildPath = null,
-            bool includeLogo = false
+            string msbuildPath = null
             )
-             : base(msbuildArgs, msbuildPath, includeLogo)
+             : base(msbuildArgs, msbuildPath, includeLogo: true)
         {
         }
 
@@ -34,7 +33,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
 
             MSBuildCommand command = new MSBuildCommand(
                 msbuildArgs,
-                msbuildPath);
+                msbuildPath: msbuildPath);
             return command;
         }
 
