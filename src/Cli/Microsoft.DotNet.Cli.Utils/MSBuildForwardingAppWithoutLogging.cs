@@ -50,13 +50,13 @@ namespace Microsoft.DotNet.Cli.Utils
             };
 
         private readonly IEnumerable<string> _msbuildRequiredParameters =
-            new List<string> { "-maxcpucount", "-verbosity:m", "-nologo" };
+            new List<string> { "-maxcpucount", "-verbosity:m" };
 
-        public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null)
+        public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null, bool includeLogo = false)
         {
             string defaultMSBuildPath = GetMSBuildExePath();
 
-            _argsToForward = argsToForward;
+            _argsToForward = includeLogo ? ["-nologo", ..argsToForward] : argsToForward;
             string tlpDefault = TerminalLoggerDefault;
             /* TODO: Consider to enable it for dotnet 9+ SDK
             if (!string.IsNullOrWhiteSpace(tlpDefault))
