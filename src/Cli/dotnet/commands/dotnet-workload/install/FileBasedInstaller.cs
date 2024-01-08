@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -32,6 +33,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly FileBasedInstallationRecordRepository _installationRecordRepository;
         private readonly PackageSourceLocation _packageSourceLocation;
         private readonly RestoreActionConfig _restoreActionConfig;
+        private string workloadSetRollbackContents;
 
         public int ExitCode => 0;
 
@@ -89,8 +91,26 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             string workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(path, "version.txt")), ".workloadset.json");
             Directory.CreateDirectory(Path.GetDirectoryName(workloadSetPath));
+            if (File.Exists(workloadSetPath))
+            {
+                workloadSetRollbackContents = File.ReadAllText(workloadSetPath);
+            }
+
             File.Copy(Path.Combine(path, "workloadset.json"), workloadSetPath);
             return workloadSetPath;
+        }
+
+        public void RollBackWorkloadSetInstallation()
+        {
+            string workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(path, "version.txt")), ".workloadset.json");
+            if (workloadSetRollbackContents is null)
+            {
+                File.Delete(workloadSetPath);
+            }
+            else
+            {
+                File.WriteAllText(workloadSetPath, workloadSetRollbackContents);
+            }
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)

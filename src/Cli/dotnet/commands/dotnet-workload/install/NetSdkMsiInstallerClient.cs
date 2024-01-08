@@ -183,6 +183,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         }
 
         public string InstallWorkloadSet(string path) => throw new NotImplementedException();
+        public void RollBackWorkloadSetInstallation() => throw new NotImplementedException();
 
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care

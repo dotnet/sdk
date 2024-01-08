@@ -228,7 +228,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 },
                 rollback: () =>
                 {
-                    //  Nothing to roll back at this level, InstallWorkloadManifest and InstallWorkloadPacks handle the transaction rollback
+                    //  InstallWorkloadManifest and InstallWorkloadPacks handle the transaction rollback
+                    _workloadInstaller.RollBackWorkloadSetInstallation();
                 });
         }
 
