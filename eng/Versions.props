@@ -24,7 +24,7 @@
   </PropertyGroup>
   <!-- Production Dependencies -->
   <PropertyGroup>
-    <MicrosoftWebXdtPackageVersion>9.0.0-preview.24054.1</MicrosoftWebXdtPackageVersion>
+    <MicrosoftWebXdtPackageVersion>9.0.0-preview.24058.1</MicrosoftWebXdtPackageVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <MicrosoftExtensionsDependencyModelVersion>2.1.0-preview2-26306-03</MicrosoftExtensionsDependencyModelVersion>
     <MicrosoftApplicationInsightsPackageVersion>2.21.0</MicrosoftApplicationInsightsPackageVersion>
