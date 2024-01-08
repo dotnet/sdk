@@ -35,10 +35,10 @@
     </ItemGroup>
 
     <MakeDir Directories="$(SourceBuildReferencePackagesDestination)" />
-    <ZipFileExtractToDirectory Condition="'@(SourceBuildReferencePackagesIntermediatePackage)' != ''"
-                            SourceArchive="%(SourceBuildReferencePackagesIntermediatePackage.Identity)"
-                            DestinationDirectory="$(SourceBuildReferencePackagesDestination)extractArtifacts/"
-                            OverwriteDestination="true" />
+    <Unzip SourceFiles="@(SourceBuildReferencePackagesIntermediatePackage)"
+           DestinationFolder="$(SourceBuildReferencePackagesDestination)extractArtifacts"
+           SkipUnchangedFiles="true"
+           Condition="'@(SourceBuildReferencePackagesIntermediatePackage)' != ''" />
 
     <ItemGroup>
       <SourceBuildReferencePackagesNupkgFiles Include="$(SourceBuildReferencePackagesDestination)extractArtifacts/**/*.nupkg" />

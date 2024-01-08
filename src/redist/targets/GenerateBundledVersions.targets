@@ -343,7 +343,7 @@
 
       <ILCompilerSupportedRids Include="@(Net80ILCompilerSupportedRids)" />
 
-      <NativeAOTRuntimePackRids Include="
+      <Net80NativeAOTRuntimePackRids Include="
           ios-arm64;
           iossimulator-arm64;
           iossimulator-x64;
@@ -356,6 +356,19 @@
           linux-bionic-x64;
           osx-arm64;
           osx-x64;
+          "
+          />
+
+      <NativeAOTRuntimePackRids Include="
+          @(Net80NativeAOTRuntimePackRids);
+          linux-x64;
+          linux-arm64;
+          linux-musl-x64;
+          linux-musl-arm64;
+          win-x64;
+          win-arm64;
+          browser-wasm;
+          wasi-wasm;
           "
           />
 
@@ -622,7 +635,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       RuntimeFrameworkName="Microsoft.NETCore.App"
                       LatestRuntimeFrameworkVersion="$(_NET80RuntimePackVersion)"
                       RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
-                      RuntimePackRuntimeIdentifiers="@(NativeAOTRuntimePackRids, '%3B')"
+                      RuntimePackRuntimeIdentifiers="@(Net80NativeAOTRuntimePackRids, '%3B')"
                       RuntimePackLabels="NativeAOT"
                       />
 

@@ -6,8 +6,6 @@
   <Import Project="$(GitInfoAllRepoPropsFile)" />
 
   <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="MarkAndCatalogPackages" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
 
   <ItemGroup>
     <BuildTasksTarget Include="Restore;Build;InstallResolver" />
@@ -113,18 +111,14 @@
           DependsOnTargets="UnpackTarballs;BuildXPlatTasks"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(CompletedSemaphorePath)ExtractToolPackage.complete">
-    <ZipFileExtractToDirectory SourceArchive="$(PrebuiltSourceBuiltPackagesPath)Microsoft.DotNet.Arcade.Sdk.$(ARCADE_BOOTSTRAP_VERSION).nupkg"
-                               DestinationDirectory="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/"
-                               OverwriteDestination="true" />
+    <Unzip SourceFiles="$(PrebuiltSourceBuiltPackagesPath)Microsoft.DotNet.Arcade.Sdk.$(ARCADE_BOOTSTRAP_VERSION).nupkg"
+           DestinationFolder="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)"
+           SkipUnchangedFiles="true" />
 
-    <!-- TODO: When unpacking using ZipFileExtractToDirectory, this executable file has the wrong
-         permissions.  See https://github.com/dotnet/source-build/issues/2259 -->
+    <!-- When unpacking, this executable file has the wrong permissions on
+         non-windows systems: https://github.com/NuGet/Home/issues/13121. -->
     <Exec Command="chmod 755 git-clone-to-dir.sh"
       WorkingDirectory="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/tools/SourceBuild/" />
-
-    <ReplaceTextInFile InputFile="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/tools/SourceBuild/SourceBuildArcadeTools.targets"
-      OldText="%3CReadSourceBuildIntermediateNupkgDependencies"
-      NewText="%3CReadSourceBuildIntermediateNupkgDependencies Condition=&quot;'%24%28DotNetBuildOffline%29' != 'true'&quot;" />
 
     <!-- Allow overriding of Arcade targets for SourceBuild to enable quicker
          dev turnaround for Preview 6 -->

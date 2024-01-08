@@ -1,6 +1,6 @@
 {
   "tools": {
-    "dotnet": "9.0.100-alpha.1.23603.1"
+    "dotnet": "9.0.100-alpha.1.24055.2"
   },
   "msbuild-sdks": {
     "Microsoft.Build.Traversal": "2.0.2",

@@ -1,9 +1,4 @@
-<Project InitialTargets="SetNuGetPackagesEnvironment">
-
-  <ItemGroup>
-    <EnvironmentVariables Include="LatestCommit=$(GitCommitHash)" />
-    <EnvironmentVariables Include="OfficialBuildId=$(OfficialBuildId)" />
-  </ItemGroup>
+<Project>
 
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="AddSourceToNuGetConfig" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReadNuGetPackageInfos" />
@@ -14,7 +9,6 @@
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageVersionsProps" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageUsageData" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageReports" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ZipFileExtractToDirectory" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReplaceTextInFile" />
 
   <Target Name="BuildRepoReferences" Condition="'@(RepositoryReference)' != '' and '$(SkipRepoReferences)' != 'true'">
@@ -126,13 +120,7 @@
     <ItemGroup>
       <_CurrentSourceBuiltPackages Include="$(SourceBuiltPackagesPath)*.nupkg"
                                    Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
-
-      <!-- TODO: Remove Remove System.Drawing.Common exclusion once previous source-build artifacts have been updated to no longer include it.
-           System.Drawing.Common is excluded in response to https://github.com/dotnet/runtime/pull/83356 in order to avoid rebuilts and 
-           bootstrap issues as a result.  This wouldn't be an in the future once Runtime onboards to the per repo pvp feature
-           (https://github.com/dotnet/source-build/issues/3043). -->
-      <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" 
-                                           Exclude="$(PrebuiltSourceBuiltPackagesPath)System.Drawing.Common*.nupkg" />
+      <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
     </ItemGroup>
 
     <Error Condition="'$(PackageVersionPropsFlowType)' != 'AllPackages' and '$(PackageVersionPropsFlowType)' != 'DependenciesOnly'"
@@ -272,10 +260,10 @@
         <_NupkgDestinationPath Condition="$([System.String]::Copy(%(_BuiltIntermediatePackages.Identity)).Contains('source-build-reference-packages'))">$(ReferencePackagesDir)</_NupkgDestinationPath>
     </PropertyGroup>
 
-    <ZipFileExtractToDirectory Condition="'@(_BuiltIntermediatePackages)' != ''"
-                            SourceArchive="%(_BuiltIntermediatePackages.Identity)"
-                            DestinationDirectory="$(SourceBuiltPackagesPath)extractArtifacts/%(_BuiltIntermediatePackages.FileName)/"
-                            OverwriteDestination="true" />
+    <Unzip SourceFiles="@(_BuiltIntermediatePackages)"
+           DestinationFolder="$(SourceBuiltPackagesPath)extractArtifacts/%(_BuiltIntermediatePackages.FileName)/"
+           SkipUnchangedFiles="true"
+           Condition="'@(_BuiltIntermediatePackages)' != ''" />
 
     <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
       <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
@@ -320,7 +308,7 @@
   <Target Name="CopyInnerBuildRestoredPackages"
           AfterTargets="Package">
     <ItemGroup>
-      <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/source-build/self/package-cache/**/*" />
+      <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/sb/package-cache/**/*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_InnerPackageCacheFiles)"
@@ -439,17 +427,18 @@
         Id="%(BuiltSdkPackageOverride.Identity)" />
     </ItemGroup>
 
-    <ZipFileExtractToDirectory SourceArchive="%(_ToolPackage.Identity)"
-                               DestinationDirectory="$(SourceBuiltSdksDir)%(_ToolPackage.Id)\"
-                               OverwriteDestination="true" />
+    <Unzip SourceFiles="%(_ToolPackage.Identity)"
+           DestinationFolder="$(SourceBuiltSdksDir)%(_ToolPackage.Id)\"
+           SkipUnchangedFiles="true" />
+
     <ItemGroup>
       <ExtractedToolFiles Include="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/**/*netcore*/*.dll" />
     </ItemGroup>
 
     <Copy SourceFiles="@(ExtractedToolFiles)" DestinationFolder="$(SourceBuiltSdksDir)/" />
 
-    <!-- TODO: When unpacking using ZipFileExtractToDirectory, this executable file has the wrong
-         permissions.  See https://github.com/dotnet/source-build/issues/2259 -->
+    <!-- When unpacking, this executable file has the wrong permissions on
+         non-windows systems: https://github.com/NuGet/Home/issues/13121. -->
     <Exec Command="chmod 755 git-clone-to-dir.sh"
       Condition=" '%(_ToolPackage.Id)' == 'Microsoft.DotNet.Arcade.Sdk' "
       WorkingDirectory="$(SourceBuiltSdksDir)%(_ToolPackage.Id)/tools/SourceBuild/" />
@@ -503,25 +492,6 @@
     <Message Importance="High" Text="  -> %(_JustSourceBuiltPackageInfos.PackageId) %(_JustSourceBuiltPackageInfos.PackageVersion)" />
 
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)EnsurePackagesCreated.complete" Overwrite="true" />
-  </Target>
-
-  <Target Name="Clean" Condition="'$(CleanCommand)' != ''" >
-    <Exec Command="$(CleanCommand) /v:$(LogVerbosity) $(RedirectRepoOutputToLog)"
-          WorkingDirectory="$(ProjectDirectory)"
-          EnvironmentVariables="@(EnvironmentVariables)"
-          IgnoreStandardErrorWarningFormat="true" />
-  </Target>
-
-  <Target Name="SetNuGetPackagesEnvironment" Condition="'$(ArchiveDownloadedPackages)' == 'true'">
-    <PropertyGroup>
-      <LocalNuGetPackagesRootForRepository>$(LocalNuGetPackagesRoot)$(RepositoryName)/</LocalNuGetPackagesRootForRepository>
-    </PropertyGroup>
-
-    <MakeDir Directories="$(LocalNuGetPackagesRootForRepository)" />
-
-    <ItemGroup>
-      <EnvironmentVariables Include="NUGET_PACKAGES=$(LocalNuGetPackagesRootForRepository)" />
-    </ItemGroup>
   </Target>
 
   <Target Name="SetSourceBuiltSdkOverrides"
@@ -652,7 +622,6 @@
   </Target>
 
   <Target Name="GetProjectDirectory" Outputs="$(ProjectDirectory)" />
-  <Target Name="GetOfficialBuildId" Outputs="$(OfficialBuildId)" />
   <Target Name="GetRepositoryReferences" Outputs="@(RepositoryReference)" />
 
   <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.targets, $(MSBuildThisFileDirectory)..))" />
