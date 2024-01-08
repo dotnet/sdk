@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public string InstallWorkloadSet(string path)
         {
-            string workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", "version", ".workloadset.json");
+            string workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(path, "version.txt")), ".workloadset.json");
             Directory.CreateDirectory(Path.GetDirectoryName(workloadSetPath));
             File.Copy(Path.Combine(path, "workloadset.json"), workloadSetPath);
             return workloadSetPath;

@@ -272,9 +272,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             string packagePath = null;
             var manifestId = new ManifestId(manifest.Id);
+            SdkFeatureBand? currentFeatureBand = null;
             try
             {
-                SdkFeatureBand? currentFeatureBand = null;
                 var fallbackFeatureBand = new SdkFeatureBand(manifest.ManifestFeatureBand);
                 // The bands should be checked in the order defined here.
                 SdkFeatureBand[] bands = [_sdkFeatureBand, fallbackFeatureBand];
@@ -316,6 +316,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 // add file that contains the advertised manifest feature band so GetAdvertisingManifestVersionAndWorkloads will use correct feature band, regardless of if rollback occurred or not
                 File.WriteAllText(Path.Combine(adManifestPath, "AdvertisedManifestFeatureBand.txt"), currentFeatureBand.ToString());
+
+                if (manifest.Id.Equals("Microsoft.NET.Workloads"))
+                {
+                    var fileName = Path.GetFileNameWithoutExtension(packagePath);
+                    var band = _sdkFeatureBand.ToString();
+
+                    // The format is Microsoft.NET.Workloads.featureBand.version, so this skips past the band and the '.' afterwards to get the version
+                    var version = fileName.Substring(fileName.IndexOf(band) + band.Length + 1);
+                    File.WriteAllText(Path.Combine(adManifestPath, "version.txt"), version);
+                }
 
                 if (_displayManifestUpdates)
                 {
