@@ -9,5 +9,9 @@
     <RepositoryReference Include="runtime" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EnvironmentVariables Include="LatestCommit=$(GitCommitHash)" />
+  </ItemGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
