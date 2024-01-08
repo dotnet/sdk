@@ -27,7 +27,7 @@
       </trans-unit>
       <trans-unit id="Constraint_Error_ArgumentHasEmptyString">
         <source>'{0}' should not contain empty items</source>
-        <target state="new">'{0}' should not contain empty items</target>
+        <target state="translated">'{0}' に空の項目を含めることはできません</target>
         <note>{0} is JSON configuration for constraint</note>
       </trans-unit>
       <trans-unit id="Constraint_Error_ArgumentsNotSpecified">
@@ -234,63 +234,63 @@
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_DownloadFailed">
         <source>Failed to download {0} from {1}.</source>
-        <target state="new">Failed to download {0} from {1}.</target>
+        <target state="translated">{1} からの {0} のダウンロードに失敗しました。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_InstallGeneric">
         <source>Failed to install the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to install the package {0}.
-Details: {1}.</target>
+        <target state="translated">パッケージ {0} をインストールできませんでした。
+詳細: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_InstallRequestNotSupported">
         <source>The install request {0} cannot be processed by installer {1}.</source>
-        <target state="new">The install request {0} cannot be processed by installer {1}.</target>
+        <target state="translated">インストール要求 {0} をインストーラー {1} で処理できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_InvalidPackage">
         <source>The NuGet package {0} is invalid.</source>
-        <target state="new">The NuGet package {0} is invalid.</target>
+        <target state="translated">NuGet パッケージ {0} が無効です。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_InvalidSources">
         <source>The configured NuGet sources are invalid: {0}.</source>
-        <target state="new">The configured NuGet sources are invalid: {0}.</target>
+        <target state="translated">構成済みの NuGet ソースが無効です: {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_InvalidSources_None">
         <source>No NuGet sources are configured.</source>
-        <target state="new">No NuGet sources are configured.</target>
+        <target state="translated">構成された NuGet ソースがありません。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_OperationCancelled">
         <source>The operation was cancelled.</source>
-        <target state="new">The operation was cancelled.</target>
+        <target state="translated">処理が取り消されました。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_PackageNotFound">
         <source>{0} was not found in NuGet feeds {1}.</source>
-        <target state="new">{0} was not found in NuGet feeds {1}.</target>
+        <target state="translated">{0} が NuGet フィード {1} で見つかりません。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_PackageNotSupported">
         <source>The package {0} is not supported by installer {1}.</source>
-        <target state="new">The package {0} is not supported by installer {1}.</target>
+        <target state="translated">このパッケージ {0}はインストーラー {1} でサポートされていません</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_UninstallGeneric">
         <source>Failed to uninstall the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to uninstall the package {0}.
-Details: {1}.</target>
+        <target state="translated">パッケージ {0} をアンインストールできませんでした。
+詳細: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_UpdateCheckGeneric">
         <source>Failed to check the update for the package {0}.
 Details: {1}.</source>
-        <target state="new">Failed to check the update for the package {0}.
-Details: {1}.</target>
+        <target state="translated">パッケージ {0} の更新プログラムを確認できませんでした。
+詳細: {1}。</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_VulnerablePackage">
