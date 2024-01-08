@@ -1,10 +1,5 @@
 <Project>
 
-  <ItemGroup>
-    <EnvironmentVariables Include="LatestCommit=$(GitCommitHash)" />
-    <EnvironmentVariables Include="OfficialBuildId=$(OfficialBuildId)" />
-  </ItemGroup>
-
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="AddSourceToNuGetConfig" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReadNuGetPackageInfos" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="RemoveInternetSourcesFromNuGetConfig" />
