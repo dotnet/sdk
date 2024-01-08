@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         private readonly string _explicitManifestFile;
         private readonly bool _createManifestIfNeeded;
-        private readonly bool _rollForward;
+        private readonly bool _allowRollForward;
 
         public ToolInstallLocalCommand(
             ParseResult parseResult,
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
             _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader);
-            _rollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
+            _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
         }
 
         public override int Execute()
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version,
                 toolDownloadedPackage.Commands.Select(c => c.Name).ToArray(),
-                _rollForward);
+                _allowRollForward);
 
             _localToolsResolverCache.SaveToolPackage(
                 toolDownloadedPackage,

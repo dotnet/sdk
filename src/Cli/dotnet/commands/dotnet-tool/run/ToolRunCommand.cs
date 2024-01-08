@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Tools.Tool.Run
         private readonly string _toolCommandName;
         private readonly LocalToolsCommandResolver _localToolsCommandResolver;
         private readonly IEnumerable<string> _forwardArgument;
-        public bool _rollForward;
+        public bool _allowRollForward;
         private readonly ToolManifestFinder _toolManifest;
 
         public ToolRunCommand(
@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Tools.Tool.Run
             _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
             _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
             _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
-            _rollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
+            _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
             _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
         }
 
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Tool.Run
             {
                 if (toolManifestPackage.RollForward)
                 {
-                    _rollForward = true;
+                    _allowRollForward = true;
                 }
             }
 
@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Tools.Tool.Run
             {
                 // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
                 CommandName = $"dotnet-{_toolCommandName}",
-                CommandArguments = (_rollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(_forwardArgument)
+                CommandArguments = (_allowRollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(_forwardArgument)
             });
             if (commandspec == null)
             {

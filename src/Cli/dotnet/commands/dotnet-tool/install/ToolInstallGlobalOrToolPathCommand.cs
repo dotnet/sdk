@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string _toolPath;
         private readonly string _architectureOption;
         private IEnumerable<string> _forwardRestoreArguments;
-        private readonly bool _rollForward;
+        private readonly bool _allowRollForward;
 
         public ToolInstallGlobalOrToolPathCommand(
             ParseResult parseResult,
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
             nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreAction);
             _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
-            _rollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
+            _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
 
             _reporter = (reporter ?? Reporter.Output);
             _errorReporter = (reporter ?? Reporter.Error);
@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         targetFramework: _framework,
                         verbosity: _verbosity,
                         isGlobalTool: true,
-                        isGlobalToolRollForward: _rollForward
+                        isGlobalToolRollForward: _allowRollForward
                     );
 
                     NuGetFramework framework;
