@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Cli
             Description = CommonLocalizableStrings.ArchitectureOptionDescription
         };
 
-        public static readonly CliOption<bool> RollForwardOption = new("--roll-forward")
+        public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
         {
             Description = LocalizableStrings.RollForwardOptionDescription
         };

@@ -48,11 +48,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var result = localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
                 CommandName = "dotnet-a",
-                CommandArguments = (toolRunCommand._rollForward != null ? new List<string> { "--roll-forward", toolRunCommand._rollForward } : Enumerable.Empty<string>()).Concat(testForwardArgument)
+                CommandArguments = (toolRunCommand._rollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(testForwardArgument)
             });
 
             result.Should().NotBeNull();
-            result.Args.Should().Contain("--roll-forward", toolRunCommand._rollForward, fakeExecutable.Value);
+            result.Args.Should().Contain("--roll-forward", "Major", fakeExecutable.Value);
         }
 
         private (FilePath, LocalToolsCommandResolver) DefaultSetup(string toolCommand)
