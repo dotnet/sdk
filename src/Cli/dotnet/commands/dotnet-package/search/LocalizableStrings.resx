@@ -120,8 +120,20 @@
   <data name="CommandDescription" xml:space="preserve">
     <value>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</value>
   </data>
+  <data name="ConfigFileArgumentName" xml:space="preserve">
+    <value>ConfigFile</value>
+  </data>
+  <data name="ConfigFileDescription" xml:space="preserve">
+    <value>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior</value>
+  </data>
   <data name="ExactMatchDescription" xml:space="preserve">
     <value>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</value>
+  </data>
+  <data name="FormatArgumentName" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="FormatDescription" xml:space="preserve">
+    <value>Format the output accordingly. Either `table`, or `json`. The default value is `table`.</value>
   </data>
   <data name="InteractiveDescription" xml:space="preserve">
     <value>Stop and wait for user input or action (for example to complete authentication).</value>
@@ -152,5 +164,11 @@
   </data>
   <data name="TakeDescription" xml:space="preserve">
     <value>Number of results to return. Default 20.</value>
+  </data>
+  <data name="VerbosityArgumentName" xml:space="preserve">
+    <value>Verbosity</value>
+  </data>
+  <data name="VerbosityDescription" xml:space="preserve">
+    <value>Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`</value>
   </data>
 </root>

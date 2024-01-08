@@ -7,9 +7,29 @@
         <target state="new">Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ConfigFileArgumentName">
+        <source>ConfigFile</source>
+        <target state="new">ConfigFile</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigFileDescription">
+        <source>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior</source>
+        <target state="new">The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ExactMatchDescription">
         <source>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</source>
         <target state="new">Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatArgumentName">
+        <source>Format</source>
+        <target state="new">Format</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatDescription">
+        <source>Format the output accordingly. Either `table`, or `json`. The default value is `table`.</source>
+        <target state="new">Format the output accordingly. Either `table`, or `json`. The default value is `table`.</target>
         <note />
       </trans-unit>
       <trans-unit id="InteractiveDescription">
@@ -60,6 +80,16 @@
       <trans-unit id="TakeDescription">
         <source>Number of results to return. Default 20.</source>
         <target state="new">Number of results to return. Default 20.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityArgumentName">
+        <source>Verbosity</source>
+        <target state="new">Verbosity</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="VerbosityDescription">
+        <source>Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`</source>
+        <target state="new">Display this amount of details in the output: `normal`, `minimal`, `detailed`. The default is `normal`</target>
         <note />
       </trans-unit>
     </body>
