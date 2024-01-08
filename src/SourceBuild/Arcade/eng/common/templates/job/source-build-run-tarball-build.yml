@@ -11,7 +11,7 @@ parameters:
   # -----------------------------------------------------------------------------------------------
   alpine317Container: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.17
   centOSStream8Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8
-  centOSStream9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9-20220107135047-4cd394c
+  centOSStream9Container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
   debian11Arm64Container: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-arm64v8
   fedora38Container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38
   ubuntu2004Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04
@@ -41,6 +41,7 @@ jobs:
         _Container: ${{ parameters.centOSStream8Container }}
         _EnablePoison: false
         _ExcludeOmniSharpTests: true
+        _OverrideDistroDisablingSha1: false
         _RunOnline: true
         _WithPreviousSDK: false
       CentOSStream8-Offline:
@@ -56,6 +57,7 @@ jobs:
           _Container: ${{ parameters.alpine317Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: true
+          _OverrideDistroDisablingSha1: false
           _RunOnline: false
           _WithPreviousSDK: false
         CentOSStream8-WithPreviousSDK:
@@ -70,6 +72,7 @@ jobs:
           _Container: ${{ parameters.centOSStream9Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
+          _OverrideDistroDisablingSha1: true
           _RunOnline: false
           _WithPreviousSDK: false
         Fedora38-Offline:
@@ -77,6 +80,7 @@ jobs:
           _Container: ${{ parameters.fedora38Container }}
           _EnablePoison: true
           _ExcludeOmniSharpTests: false
+          _OverrideDistroDisablingSha1: false
           _RunOnline: false
           _WithPreviousSDK: false
         Ubuntu2004-Offline:
@@ -84,6 +88,7 @@ jobs:
           _Container: ${{ parameters.ubuntu2004Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
+          _OverrideDistroDisablingSha1: false
           _RunOnline: false
           _WithPreviousSDK: false
     name: Build_Tarball_x64
@@ -108,6 +113,7 @@ jobs:
           _Container: ${{ parameters.debian11Arm64Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
+          _OverrideDistroDisablingSha1: false
           _RunOnline: false
           _WithPreviousSDK: false
       name: Build_Tarball_arm64
@@ -129,6 +135,7 @@ jobs:
           _Container: ${{ parameters.fedora38Container }}
           _EnablePoison: false
           _ExcludeOmniSharpTests: false
+          _OverrideDistroDisablingSha1: false
           _RunOnline: false
           _WithPreviousSDK: false
       name: Build_Tarball_x64_Using_Previous
