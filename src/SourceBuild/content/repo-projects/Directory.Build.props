@@ -46,10 +46,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GitCommitDateNoDashes>$(GitCommitDate.Replace('-', ''))</GitCommitDateNoDashes>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <DotNetBuildVertical Condition="'$(DotNetBuildVertical)' == ''">false</DotNetBuildVertical>
   </PropertyGroup>
 

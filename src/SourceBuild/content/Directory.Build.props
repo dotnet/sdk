@@ -137,18 +137,12 @@
     <ProjectAssetsJsonArchiveFile>$(PackageReportDir)all-project-assets-json-files.zip</ProjectAssetsJsonArchiveFile>
     <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
     <PoisonedReportFile>$(PackageReportDir)poisoned.txt</PoisonedReportFile>
-    <ConflictingPackageReportDir>$(BaseOutputPath)conflict-report/</ConflictingPackageReportDir>
     <PrebuiltBurndownDataFile>$(PackageReportDir)PrebuiltBurndownData.csv</PrebuiltBurndownDataFile>
     <ExternalTarballsDir>$(PrereqsPackagesDir)archive/</ExternalTarballsDir>
     <ReferencePackagesDir>$(PrereqsPackagesDir)reference/</ReferencePackagesDir>
     <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
     <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>
-    <SourceBuiltArtifactsTarballUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/</SourceBuiltArtifactsTarballUrl>
-    <ArchiveArtifactsTextFileName>archiveArtifacts.txt</ArchiveArtifactsTextFileName>
-    <ArchiveArtifactsTextFile>$(ExternalTarballsDir)$(ArchiveArtifactsTextFileName)</ArchiveArtifactsTextFile>
     <BaselineDataFile>$(ToolsDir)prebuilt-baseline.xml</BaselineDataFile>
-    <!--Exclude tests that are failing for test enabled projects like - corefx -->
-    <TestExclusionsDir>$(ProjectDir)test/exclusions/</TestExclusionsDir>
     <SmokeTestsDir>$(ProjectDir)test/Microsoft.DotNet.SourceBuild.SmokeTests/</SmokeTestsDir>
   </PropertyGroup>
 
