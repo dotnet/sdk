@@ -505,13 +505,6 @@
     <WriteLinesToFile File="$(RepoCompletedSemaphorePath)EnsurePackagesCreated.complete" Overwrite="true" />
   </Target>
 
-  <Target Name="Clean" Condition="'$(CleanCommand)' != ''" >
-    <Exec Command="$(CleanCommand) /v:$(LogVerbosity) $(RedirectRepoOutputToLog)"
-          WorkingDirectory="$(ProjectDirectory)"
-          EnvironmentVariables="@(EnvironmentVariables)"
-          IgnoreStandardErrorWarningFormat="true" />
-  </Target>
-
   <Target Name="SetSourceBuiltSdkOverrides"
           BeforeTargets="Build"
           Condition="'@(UseSourceBuiltSdkOverride)' != ''">

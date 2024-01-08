@@ -5,8 +5,6 @@
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
-    <CleanCommand>$(ProjectDirectory)/clean$(ShellExtension)</CleanCommand>
-
     <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
     <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</OverrideTargetRid>
     <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</OverrideTargetRid>
