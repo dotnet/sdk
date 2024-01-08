@@ -1,5 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
-   <PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
     <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
@@ -33,7 +34,6 @@
   <Import Project="targets\GenerateLayout.targets" />
   <Import Project="targets\GenerateMSBuildExtensions.targets" />
   <Import Project="targets\FileExtensions.targets" />
-  
   <Import Project="targets\GenerateArchives.targets" />
   <Import Project="targets\GenerateMSIs.targets" />
   <Import Project="targets\LinuxNativeInstallerDependencyVersions.targets" />
@@ -42,4 +42,5 @@
   <Import Project="targets\GeneratePKG.targets" />
   <Import Project="targets\GenerateInstallers.targets" />
   <Import Project="targets\Badge.targets" />
+
 </Project>
