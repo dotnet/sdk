@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -102,15 +101,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void RollBackWorkloadSetInstallation()
         {
-            string workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(path, "version.txt")), ".workloadset.json");
-            if (workloadSetRollbackContents is null)
-            {
-                File.Delete(workloadSetPath);
-            }
-            else
-            {
-                File.WriteAllText(workloadSetPath, workloadSetRollbackContents);
-            }
+            // We don't really need to worry about uninstalling workload sets for file-based installations, since they're side-by-side.
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
