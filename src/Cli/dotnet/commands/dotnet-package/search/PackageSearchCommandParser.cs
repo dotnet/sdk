@@ -49,6 +49,23 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.PrereleaseDescription
         }.ForwardAs("--prerelease");
 
+        public static readonly CliOption<string> ConfigFile = new ForwardedOption<string>("--configfile")
+        {
+            Description = LocalizableStrings.ConfigFileDescription,
+            HelpName = LocalizableStrings.ConfigFileArgumentName
+        }.ForwardAsMany(o => new[] { "--configfile", o });
+
+        public static readonly CliOption<string> Format = new ForwardedOption<string>("--format")
+        {
+            Description = LocalizableStrings.FormatDescription,
+            HelpName = LocalizableStrings.FormatArgumentName
+        }.ForwardAsMany(o => new[] { "--format", o });
+
+        public static readonly CliOption<string> Verbosity = new ForwardedOption<string>("--verbosity")
+        {
+            Description = LocalizableStrings.VerbosityDescription,
+            HelpName = LocalizableStrings.VerbosityArgumentName
+        }.ForwardAsMany(o => new[] { "--verbosity", o });
 
         private static readonly CliCommand Command = ConstructCommand();
 
@@ -68,6 +85,9 @@ namespace Microsoft.DotNet.Cli
             searchCommand.Options.Add(ExactMatch);
             searchCommand.Options.Add(Interactive);
             searchCommand.Options.Add(Prerelease);
+            searchCommand.Options.Add(ConfigFile);
+            searchCommand.Options.Add(Format);
+            searchCommand.Options.Add(Verbosity);
 
             searchCommand.SetAction((parseResult) => {
                 var command = new PackageSearchCommand(parseResult);
