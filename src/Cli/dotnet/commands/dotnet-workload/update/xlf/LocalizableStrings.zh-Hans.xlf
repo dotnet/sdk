@@ -57,6 +57,11 @@
         <target state="translated">dotnet 工作负载更新的 --mode 参数的参数“{0}”无效。仅支持“workloadset”、“loosemanifest”和“auto”模式。</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload set.</source>
+        <target state="new">Update to the specified workload set.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">成功更新广告清单。</target>

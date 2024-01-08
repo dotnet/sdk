@@ -144,6 +144,9 @@
   <data name="FromPreviousSdkOptionDescription" xml:space="preserve">
     <value>Include workloads installed with earlier SDK versions in update.</value>
   </data>
+  <data name="WorkloadSetVersionOptionDescription" xml:space="preserve">
+    <value>Update to the specified workload set.</value>
+  </data>
   <data name="NoWorkloadsToUpdate" xml:space="preserve">
     <value>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</value>
   </data>

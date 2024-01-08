@@ -48,5 +48,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync() => throw new NotImplementedException();
         public IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads) => throw new NotImplementedException();
         public void DeleteUpdatableWorkloadsFile() { }
+
+        public void DownloadWorkloadSet(string version, DirectoryPath? offlineCache) => throw new NotImplementedException();
     }
 }

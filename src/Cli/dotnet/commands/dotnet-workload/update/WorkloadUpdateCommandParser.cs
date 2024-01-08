@@ -12,6 +12,11 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly CliOption<string> TempDirOption = WorkloadInstallCommandParser.TempDirOption;
 
+        public static readonly CliOption<string> WorkloadSetVersionOption = new("--version")
+        {
+            Description = LocalizableStrings.WorkloadSetVersionOptionDescription
+        };
+
         public static readonly CliOption<bool> FromPreviousSdkOption = new("--from-previous-sdk")
         {
             Description = LocalizableStrings.FromPreviousSdkOptionDescription

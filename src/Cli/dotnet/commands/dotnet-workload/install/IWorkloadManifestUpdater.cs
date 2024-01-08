@@ -21,6 +21,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads);
 
         void DeleteUpdatableWorkloadsFile();
+
+        void DownloadWorkloadSet(string version, DirectoryPath? offlineCache);
     }
 
     internal record ManifestUpdateWithWorkloads(ManifestVersionUpdate ManifestUpdate, WorkloadCollection Workloads);

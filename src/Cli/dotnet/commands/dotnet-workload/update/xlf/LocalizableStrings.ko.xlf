@@ -57,6 +57,11 @@
         <target state="translated">dotnet 워크로드 업데이트의 --mode 인수에 대한 "{0}" 인수가 잘못되었습니다. "workloadset", "loosemanifest", "auto" 모드만 지원됩니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload set.</source>
+        <target state="new">Update to the specified workload set.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">알림 매니페스트를 업데이트했습니다.</target>

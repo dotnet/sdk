@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private readonly bool _printRollbackDefinitionOnly;
         private readonly bool _fromPreviousSdk;
         private readonly string _workloadSetMode;
+        private readonly string _workloadSetVersion;
 
         public WorkloadUpdateCommand(
             ParseResult parseResult,
@@ -34,6 +35,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                   tempDirPath: tempDirPath)
 
         {
+            _workloadSetVersion = parseResult.GetValue(WorkloadUpdateCommandParser.WorkloadSetVersionOption);
             _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);
             _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
             _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);
@@ -108,7 +110,25 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 try
                 {
-                    UpdateWorkloads(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
+                    DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+                    {
+                        UpdateWorkloads(_includePreviews, offlineCache);
+                    }
+                    else
+                    {
+                        // Ensure workload set mode is set to 'workloadset'
+                        // Do not skip checking the mode first, as setting it triggers
+                        // an admin authorization popup for MSI-based installs.
+                        if (!GetInstallStateMode(_sdkFeatureBand, _dotnetPath))
+                        {
+                            _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+                        }
+
+                        _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
+                        var workloadSetLocation = InstallWorkloadSet();
+                        CalculateManifestUpdatesAndUpdateWorkloads(false, true, workloadSetLocation, offlineCache);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -125,9 +145,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         {
             Reporter.WriteLine();
 
-            var workloadIds = GetUpdatableWorkloads();
             var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-            var useWorkloadSets = !useRollback && GetInstallStateMode(_sdkFeatureBand, _dotnetPath);
+            var useWorkloadSets = GetInstallStateMode(_sdkFeatureBand, _dotnetPath);
+
+            if (useRollback && useWorkloadSets)
+            {
+                // Rollback files are only for loose manifests. Update the mode to be loose manifests.
+                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
+                useWorkloadSets = false;
+            }
+
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
 
             string workloadSetLocation = null;
@@ -136,6 +163,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 workloadSetLocation = InstallWorkloadSet();
             }
 
+            CalculateManifestUpdatesAndUpdateWorkloads(useRollback, useWorkloadSets, workloadSetLocation, offlineCache);
+        }
+
+        private void CalculateManifestUpdatesAndUpdateWorkloads(bool useRollback, bool useWorkloadSets, string workloadSetLocation, DirectoryPath? offlineCache)
+        {
+            var workloadIds = GetUpdatableWorkloads();
             var manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
                 useWorkloadSets ? _workloadManifestUpdater.CalculateManifestRollbacks(workloadSetLocation) :
                 _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
