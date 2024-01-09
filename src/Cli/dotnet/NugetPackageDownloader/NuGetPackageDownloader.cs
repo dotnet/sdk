@@ -81,6 +81,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false,
             bool includeUnlisted = false,
             DirectoryPath? downloadFolder = null,
+            VerbosityOptions verbosity = VerbosityOptions.quiet,
             PackageSourceMapping packageSourceMapping = null)
         {
             CancellationToken cancellationToken = CancellationToken.None;
@@ -125,19 +126,22 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         packageVersion.ToNormalizedString()));
             }
 
-            VerifySigning(nupkgPath);
+            VerifySigning(nupkgPath, verbosity);
 
             return nupkgPath;
         }
 
-        private void VerifySigning(string nupkgPath)
+        private void VerifySigning(string nupkgPath, VerbosityOptions verbosity)
         {
             if (!_verifySignatures)
             {
                 if (!_validationMessagesDisplayed)
                 {
-                    _reporter.WriteLine(
-                        LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                    if (!verbosity.IsQuiet())
+                    {
+                        _reporter.WriteLine(
+                            LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                    }
                     _validationMessagesDisplayed = true;
                 }
 

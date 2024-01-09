@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false,
             bool includeUnlisted = false,
             DirectoryPath? downloadFolder = null,
+            VerbosityOptions verbosity = VerbosityOptions.quiet,
             PackageSourceMapping packageSourceMapping = null);
 
         Task<string> GetPackageUrl(PackageId packageId,
