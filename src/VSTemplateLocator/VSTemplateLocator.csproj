@@ -12,9 +12,9 @@
 
   <ItemGroup>
     <PackageReference Include="microsoft.dotnet.templateLocator" Version="$(MicrosoftDotnetTemplateLocatorPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true"/>
-    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" Version="$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" Version="$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
