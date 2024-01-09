@@ -426,6 +426,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenRunWithPackageIdWithQuietItShouldShowNoSignatureVerifySigningMessage()
+        {
+            var result = Parser.Instance.Parse($"dotnet tool install -g {PackageId}");
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                result,
+                _createToolPackageStoresAndDownloader,
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            _reporter.Lines.Should().NotContain(string.Format(Cli.NuGetPackageDownloader.LocalizableStrings.NuGetPackageSignatureVerificationSkipped).Green());
+        }
+
+        [Fact]
         public void WhenRunWithPrereleaseAndPackageVersionItShouldThrow()
         {
             IToolPackageDownloader toolToolPackageDownloader = GetToolToolPackageDownloaderWithPreviewInFeed();
@@ -469,26 +485,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     }
                 });
             return toolToolPackageDownloader;
-        }
-
-        [Fact]
-        public void WhenRunWithPackageIdWithQuietItShouldShowNoSignatureVerifySigningMessage()
-        {
-            var parseResultQuiet = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --verbosity quiet");
-            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
-                parseResultQuiet,
-                _createToolPackageStoresAndDownloader,
-                _createShellShimRepository,
-                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
-                _reporter);
-
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
-
-            _reporter
-                .Lines
-                .Should()
-                .NotContain(string.Format(
-                    Cli.NuGetPackageDownloader.LocalizableStrings.NuGetPackageSignatureVerificationSkipped).Green());
         }
 
         [Fact]
