@@ -15,12 +15,12 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Theory]
-        [InlineData(null, "netcoreapp2.1")]
-        [InlineData("true", "netcoreapp2.1")]
-        [InlineData("false", "netcoreapp2.1")]
-        [InlineData(null, "netcoreapp2.2")]
-        [InlineData("true", "netcoreapp2.2")]
-        [InlineData("false", "netcoreapp2.2")]
+        [InlineData(null, "net6.0")]
+        [InlineData("true", "net6.0")]
+        [InlineData("false", "net6.0")]
+        [InlineData(null, "net7.0")]
+        [InlineData("true", "net7.0")]
+        [InlineData("false", "net7.0")]
         [InlineData(null, ToolsetInfo.CurrentTargetFramework)]
         [InlineData("true", ToolsetInfo.CurrentTargetFramework)]
         [InlineData("false", ToolsetInfo.CurrentTargetFramework)]
@@ -112,7 +112,7 @@ namespace Microsoft.NET.Publish.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdOutContaining(Strings.FrameworkDependentAppHostRequiresVersion21.Replace("“", "\"").Replace("”", "\""));
+                .HaveStdOutContaining(Strings.FrameworkDependentAppHostRequiresVersion21.Replace("ï¿½", "\"").Replace("ï¿½", "\""));
         }
     }
 }
