@@ -95,7 +95,6 @@
       <_NETStandardLibraryPackageVersion>$(NETStandardLibraryRefPackageVersion)</_NETStandardLibraryPackageVersion>
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
       
-      <!-- TODO: Once .NET 8.0.X has released, update these version numbers to 8.0.$(VersionFeature80) -->
       <_NET80RuntimePackVersion>8.0.$(VersionFeature80)</_NET80RuntimePackVersion>
       <_NET80TargetingPackVersion>8.0.$(VersionFeature80)</_NET80TargetingPackVersion>
       <_NET80WebAssemblyPackVersion>8.0.$(VersionFeature80)</_NET80WebAssemblyPackVersion>
