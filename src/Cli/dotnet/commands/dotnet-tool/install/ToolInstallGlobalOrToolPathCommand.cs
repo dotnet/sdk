@@ -115,75 +115,66 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 TransactionScopeOption.Required,
                 TimeSpan.Zero))
             {
-                try
+                if (oldPackageNullable != null)
                 {
-                    if (oldPackageNullable != null)
+                    RunWithHandlingUninstallError(() =>
                     {
-                        RunWithHandlingUninstallError(() =>
+                        foreach (RestoredCommand command in oldPackageNullable.Commands)
                         {
-                            foreach (RestoredCommand command in oldPackageNullable.Commands)
-                            {
-                                shellShimRepository.RemoveShim(command.Name);
-                            }
+                            shellShimRepository.RemoveShim(command.Name);
+                        }
 
-                            toolPackageUninstaller.Uninstall(oldPackageNullable.PackageDirectory);
-                        });
+                        toolPackageUninstaller.Uninstall(oldPackageNullable.PackageDirectory);
+                    });
+                }
+
+                RunWithHandlingInstallError(() =>
+                {
+                    IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
+                    new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
+                        packageId: _packageId,
+                        versionRange: versionRange,
+                        targetFramework: _framework,
+                        verbosity: _verbosity,
+                        isGlobalTool: true
+                    );
+
+                    EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
+
+                    NuGetFramework framework;
+                    if (string.IsNullOrEmpty(_framework) && newInstalledPackage.Frameworks.Count() > 0)
+                    {
+                        framework = newInstalledPackage.Frameworks
+                            .Where(f => f.Version < (new NuGetVersion(Product.Version)).Version)
+                            .MaxBy(f => f.Version);
+                    }
+                    else
+                    {
+                        framework = string.IsNullOrEmpty(_framework) ?
+                            null :
+                            NuGetFramework.Parse(_framework);
+                    }
+                    string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
+
+                    foreach (RestoredCommand command in newInstalledPackage.Commands)
+                    {
+                        shellShimRepository.CreateShim(command.Executable, command.Name, newInstalledPackage.PackagedShims);
                     }
 
-                    RunWithHandlingInstallError(() =>
+                    foreach (string w in newInstalledPackage.Warnings)
                     {
-                        IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
-                        new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
-                            packageId: _packageId,
-                            versionRange: versionRange,
-                            targetFramework: _framework,
-                            verbosity: _verbosity,
-                            isGlobalTool: true
-                        );
+                        _reporter.WriteLine(w.Yellow());
+                    }
+                    if (_global)
+                    {
+                        _environmentPathInstruction.PrintAddPathInstructionIfPathDoesNotExist();
+                    }
 
-                        EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
+                    PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
+                });
 
-                        NuGetFramework framework;
-                        if (string.IsNullOrEmpty(_framework) && newInstalledPackage.Frameworks.Count() > 0)
-                        {
-                            framework = newInstalledPackage.Frameworks
-                                .Where(f => f.Version < (new NuGetVersion(Product.Version)).Version)
-                                .MaxBy(f => f.Version);
-                        }
-                        else
-                        {
-                            framework = string.IsNullOrEmpty(_framework) ?
-                                null :
-                                NuGetFramework.Parse(_framework);
-                        }
-                        string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
-
-                        foreach (RestoredCommand command in newInstalledPackage.Commands)
-                        {
-                            shellShimRepository.CreateShim(command.Executable, command.Name, newInstalledPackage.PackagedShims);
-                        }
-
-                        foreach (string w in newInstalledPackage.Warnings)
-                        {
-                            _reporter.WriteLine(w.Yellow());
-                        }
-                        if (_global)
-                        {
-                            _environmentPathInstruction.PrintAddPathInstructionIfPathDoesNotExist();
-                        }
-
-                        PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
-                    });
-
-                    scope.Complete();
-                }
-                catch (Exception)
-                {
-                    // Log the exception or perform other error handling if needed.
-                    // Rollback the transaction to ensure consistency.
-                    scope.Dispose();
-                    throw;
-                }
+                scope.Complete();
+                
             } 
             return 0;
         }
