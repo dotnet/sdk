@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- Tasks are multitargeted to support building in VS and with desktop MSBuild -->
-    <TaskTargetFramework>$(CoreSdkTargetFramework)</TaskTargetFramework>
+    <TaskTargetFramework>$(SdkTargetFramework)</TaskTargetFramework>
     <TaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</TaskTargetFramework>
 
     <CoreSdkTaskDll>$(ArtifactsDir)bin\core-sdk-tasks\$(Configuration)\$(TaskTargetFramework)\core-sdk-tasks.dll</CoreSdkTaskDll>
