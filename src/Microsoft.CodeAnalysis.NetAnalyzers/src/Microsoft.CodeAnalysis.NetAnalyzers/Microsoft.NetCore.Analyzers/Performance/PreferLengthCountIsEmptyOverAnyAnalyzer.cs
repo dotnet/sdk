@@ -76,6 +76,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 var typeProvider = WellKnownTypeProvider.GetOrCreate(ctx.Compilation);
                 var iEnumerable = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsIEnumerable);
                 var iEnumerableOfT = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsGenericIEnumerable1);
+                var linqExpressionType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
                 var anyMethod = typeProvider
                     .GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable)
                     ?.GetMembers(AnyText)
@@ -83,14 +84,19 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     .FirstOrDefault(m => m.IsExtensionMethod && m.Parameters.Length == 1);
                 if (iEnumerable is not null && iEnumerableOfT is not null && anyMethod is not null)
                 {
-                    ctx.RegisterOperationAction(c => OnInvocationAnalysis(c, iEnumerable, iEnumerableOfT, anyMethod), OperationKind.Invocation);
+                    ctx.RegisterOperationAction(c => OnInvocationAnalysis(c, iEnumerable, iEnumerableOfT, anyMethod, linqExpressionType), OperationKind.Invocation);
                 }
             });
         }
 
-        private static void OnInvocationAnalysis(OperationAnalysisContext context, INamedTypeSymbol iEnumerable, INamedTypeSymbol iEnumerableOfT, IMethodSymbol anyMethod)
+        private static void OnInvocationAnalysis(OperationAnalysisContext context, INamedTypeSymbol iEnumerable, INamedTypeSymbol iEnumerableOfT, IMethodSymbol anyMethod, INamedTypeSymbol? linqExpressionType)
         {
             var invocation = (IInvocationOperation)context.Operation;
+            if (invocation.IsWithinExpressionTree(linqExpressionType))
+            {
+                return;
+            }
+
             var originalMethod = invocation.TargetMethod.OriginalDefinition;
             if (originalMethod.MethodKind == MethodKind.ReducedExtension)
             {
