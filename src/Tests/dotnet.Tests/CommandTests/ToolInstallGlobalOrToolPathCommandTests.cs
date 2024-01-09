@@ -472,6 +472,26 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void WhenRunWithPackageIdWithQuietItShouldShowNoSignatureVerifySigningMessage()
+        {
+            var parseResultQuiet = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --verbosity quiet");
+            var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
+                parseResultQuiet,
+                _createToolPackageStoresAndDownloader,
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+
+            _reporter
+                .Lines
+                .Should()
+                .NotContain(string.Format(
+                    Cli.NuGetPackageDownloader.LocalizableStrings.NuGetPackageSignatureVerificationSkipped).Green());
+        }
+
+        [Fact]
         public void WhenRunWithoutAMatchingRangeItShouldFail()
         {
             ParseResult result = Parser.Instance.Parse($"dotnet tool install -g {PackageId} --version [5.0,10.0]");
