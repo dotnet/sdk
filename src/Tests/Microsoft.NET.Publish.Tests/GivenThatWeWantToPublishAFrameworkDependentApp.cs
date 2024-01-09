@@ -46,14 +46,6 @@ namespace Microsoft.NET.Publish.Tests
                 msbuildArgs.Add($"/p:UseAppHost={useAppHost}");
             }
 
-            if (System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.OSX) &&
-                targetFramework == "netcoreapp2.1")
-            {
-                //  .NET Core 2.1.0 packages don't support latest versions of OS X, so roll forward to the
-                //  latest patch which does
-                msbuildArgs.Add("/p:TargetLatestRuntimePatch=true");
-            }
-
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
                 .Execute(msbuildArgs.ToArray())
