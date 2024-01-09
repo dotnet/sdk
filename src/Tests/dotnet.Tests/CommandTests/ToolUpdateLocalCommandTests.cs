@@ -318,7 +318,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             ParseResult parseResult
                 = Parser.Instance.Parse(
-                    $"dotnet tool update {_packageIdA.ToString()} --allow-downgrade");
+                    $"dotnet tool update {_packageIdA.ToString()} --version 0.9.0 --allow-downgrade");
 
             _toolRestoreCommand.Execute();
             _mockFeed.Packages.Single().Version = "0.9.0";
