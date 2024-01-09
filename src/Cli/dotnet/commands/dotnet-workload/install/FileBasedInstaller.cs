@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
-using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -451,6 +450,36 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 DeleteAllWorkloadInstallationRecords();
             }
 
+        }
+
+        public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
+            
+            if (File.Exists(path))
+            {
+                var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+                installStateContents.Manifests = null;
+                File.WriteAllText(path, installStateContents.ToString());
+            }
+        }
+
+        public void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            installStateContents.Manifests = manifestContents;
+            File.WriteAllText(path, installStateContents.ToString());
+        }
+
+        public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            installStateContents.UseWorkloadSets = newMode;
+            File.WriteAllText(path, installStateContents.ToString());
         }
 
         /// <summary>

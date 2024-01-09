@@ -238,4 +238,7 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
   <data name="RollForwardOptionDescription" xml:space="preserve">
     <value>Roll forward to framework version of Major.</value>
   </data>
+  <data name="AllowPackageDowngradeOptionDescription" xml:space="preserve">
+    <value>Allow package downgrade when installing a .NET tool package.</value>
+  </data>
 </root>

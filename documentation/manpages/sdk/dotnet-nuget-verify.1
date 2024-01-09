@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-verify" "1" "2022-11-08" "" ".NET Documentation"
+.TH "dotnet-nuget-verify" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet nuget verify
 .PP
@@ -42,7 +42,8 @@ The \f[V]dotnet nuget verify\f[R] command verifies a signed NuGet package.
 .RS
 .PP
 This command requires a certificate root store that is valid for both code signing and timestamping.
-See NuGet signed package verification for details.
+Also, this command may not be supported on some combinations of operating system and .NET SDK.
+For more information, see NuGet signed package verification.
 .RE
 .SH ARGUMENTS
 .IP \[bu] 2

@@ -32,5 +32,9 @@
     <UsagePattern IdentityGlob="System.Diagnostics.EventLog/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Reflection.MetadataLoadContext/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.ProtectedData/*7.0.0*" />
+
+    <!-- (Don't include this for 9.0) Allow 8.0.2xx and higher to use any version of DockerCredsProvider since source build
+         is only applicable to 8.0.1xx. -->
+    <UsagePattern IdentityGlob="Valleysoft.DockerCredsProvider/*" />
   </IgnorePatterns>
 </UsageData>
