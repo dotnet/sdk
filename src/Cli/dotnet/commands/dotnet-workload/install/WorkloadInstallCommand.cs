@@ -249,6 +249,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         installer.GetWorkloadInstallationRecordRepository()
                             .DeleteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                     }
+
+                    installer.RollBackWorkloadSetInstallation();
                 });
 
         }

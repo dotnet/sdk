@@ -98,7 +98,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public void RollBackWorkloadSetInstallation()
         {
             // We don't really need to worry about uninstalling workload sets for file-based installations, since they're side-by-side.
-            PathUtility.DeleteFileAndEmptyParents(workloadSetPath);
+            if (workloadSetPath is not null)
+            {
+                PathUtility.DeleteFileAndEmptyParents(workloadSetPath);
+            }
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
