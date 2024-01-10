@@ -19,7 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SelfContained>true</SelfContained>
     <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
 
-    <!-- Disable accelerated builds in Visual Studio -->
+    <!-- Disable accelerated builds in Visual Studio as the Wasm SDK needs to post process the outputs from the build and the feature won't work as expected. -->
     <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
 
     <_WasmSdkImportsMicrosoftNETSdkPublish Condition="'$(UsingMicrosoftNETSdkPublish)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkPublish>
