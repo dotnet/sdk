@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Installer.Windows
             bool verifySignatures, IReporter reporter = null) : base(elevationContext, logger, verifySignatures)
         {
             Cache = new MsiPackageCache(elevationContext, logger, verifySignatures);
-            RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, VerifySignatures);
+            RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, verifySignatures);
             UpdateAgent = new WindowsUpdateAgent(logger);
             Reporter = reporter;
         }
