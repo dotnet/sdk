@@ -206,9 +206,9 @@ namespace Microsoft.DotNet.ToolManifest
                                 serializableLocalToolSinglePackage.Commands = commands.ToArray();
                             }
 
-                            if (toolJson.Value.TryGetStringValue(JsonPropertyRollForward, out var rollForwardJson))
+                            if (toolJson.Value.TryGetBooleanValue(JsonPropertyRollForward, out var rollForwardJson))
                             {
-                                serializableLocalToolSinglePackage.RollForward = bool.Parse(rollForwardJson);
+                                serializableLocalToolSinglePackage.RollForward = rollForwardJson;
                             }
 
                             serializableLocalToolsManifest.Tools.Add(serializableLocalToolSinglePackage);
