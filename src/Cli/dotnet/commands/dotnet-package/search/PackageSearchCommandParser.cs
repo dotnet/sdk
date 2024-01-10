@@ -26,13 +26,13 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.TakeDescription,
             HelpName = LocalizableStrings.TakeArgumentName
-        }.ForwardAsMany(o => new [] { "--take", o });
+        }.ForwardAsSingle(o => $"--take:{o}");
 
         public static readonly CliOption<string> Skip = new ForwardedOption<string>("--skip")
         {
             Description = LocalizableStrings.SkipDescription,
             HelpName = LocalizableStrings.SkipArgumentName
-        }.ForwardAsMany(o => new[] { "--skip", o });
+        }.ForwardAsSingle(o => $"--skip:{o}");
 
         public static readonly CliOption<bool> ExactMatch = new ForwardedOption<bool>("--exact-match")
         {
@@ -53,19 +53,19 @@ namespace Microsoft.DotNet.Cli
         {
             Description = LocalizableStrings.ConfigFileDescription,
             HelpName = LocalizableStrings.ConfigFileArgumentName
-        }.ForwardAsMany(o => new[] { "--configfile", o });
+        }.ForwardAsSingle(o => $"--configfile:{o}");
 
         public static readonly CliOption<string> Format = new ForwardedOption<string>("--format")
         {
             Description = LocalizableStrings.FormatDescription,
             HelpName = LocalizableStrings.FormatArgumentName
-        }.ForwardAsMany(o => new[] { "--format", o });
+        }.ForwardAsSingle(o => $"--format:{o}");
 
         public static readonly CliOption<string> Verbosity = new ForwardedOption<string>("--verbosity")
         {
             Description = LocalizableStrings.VerbosityDescription,
             HelpName = LocalizableStrings.VerbosityArgumentName
-        }.ForwardAsMany(o => new[] { "--verbosity", o });
+        }.ForwardAsSingle(o => $"--verbosity:{o}");
 
         private static readonly CliCommand Command = ConstructCommand();
 
