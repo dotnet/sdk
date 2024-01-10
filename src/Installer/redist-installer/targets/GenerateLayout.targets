@@ -259,13 +259,6 @@
         <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopTargetingPackBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedWindowsDesktopTargetingPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
-
-      <BundledLayoutComponent Include="ToolsetArchive">
-        <BaseUrl>$(PublicBaseURL)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</BaseUrl>
-        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(PublicBaseURL)</BaseUrl>
-        <DownloadFileName>dotnet-toolset-internal-$(MicrosoftDotnetToolsetInternalPackageVersion).zip</DownloadFileName>
-        <RelativeLayoutPath>sdk/$(Version)</RelativeLayoutPath>
-      </BundledLayoutComponent>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
@@ -456,6 +449,27 @@
           DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
           SkipUnchangedFiles="true"
           />
+
+    <!-- From Version.targets in SDK redist -->
+    <PropertyGroup>
+      <ArtifactNameSdk>dotnet-toolset-internal</ArtifactNameSdk>
+      <ArtifactNameSdkLanguagePack>dotnet-toolset-langpack</ArtifactNameSdkLanguagePack>
+    </PropertyGroup>
+
+    <!-- From GenerateLayout.targets in SDK redist -->
+    <PropertyGroup>
+      <LayoutDirectory>$(ArtifactsBinDir)redist\$(Configuration)\layouts\</LayoutDirectory>
+      <SdkLayoutOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdk)\</SdkLayoutOutputDirectory>
+      <SdkLanguagePackOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdkLanguagePack)\</SdkLanguagePackOutputDirectory>
+    </PropertyGroup>
+
+    <!-- https://github.com/dotnet/msbuild/issues/5881#issuecomment-802492423 -->
+    <ItemGroup>
+      <DotnetToolsetInternalSource Include="$(SdkLayoutOutputDirectory)**\*" />
+      <DotnetToolsetInternalDestination Include="@(DotnetToolsetInternalSource->'$(RedistLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(DotnetToolsetInternalSource)" DestinationFiles="@(DotnetToolsetInternalDestination)" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="RetargetTools">

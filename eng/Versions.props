@@ -414,12 +414,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/sdk -->
-    <MicrosoftDotNetCommonItemTemplatesPackageVersion>9.0.100-alpha.1.23559.2</MicrosoftDotNetCommonItemTemplatesPackageVersion>
+    <!-- <MicrosoftDotNetCommonItemTemplatesPackageVersion>9.0.100-alpha.1.23559.2</MicrosoftDotNetCommonItemTemplatesPackageVersion>
     <MicrosoftNETSdkPackageVersion>9.0.100-alpha.1.23559.2</MicrosoftNETSdkPackageVersion>
     <MicrosoftDotNetMSBuildSdkResolverPackageVersion>9.0.100-alpha.1.23559.2</MicrosoftDotNetMSBuildSdkResolverPackageVersion>
     <MicrosoftNETBuildExtensionsPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftNETBuildExtensionsPackageVersion>
     <MicrosoftDotnetToolsetInternalPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetToolsetInternalPackageVersion>
-    <MicrosoftDotnetTemplateLocatorPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetTemplateLocatorPackageVersion>
+    <MicrosoftDotnetTemplateLocatorPackageVersion>$(MicrosoftNETSdkPackageVersion)</MicrosoftDotnetTemplateLocatorPackageVersion> -->
   </PropertyGroup>
   <Import Project="$(RepositoryEngineeringDir)ManualVersions.props" />
 </Project>
