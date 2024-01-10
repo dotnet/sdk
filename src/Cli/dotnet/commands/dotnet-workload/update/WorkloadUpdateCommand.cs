@@ -151,6 +151,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             if (useRollback && useWorkloadSets)
             {
                 // Rollback files are only for loose manifests. Update the mode to be loose manifests.
+                // TODO: add message explaining this (to Reporter)
                 _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
                 useWorkloadSets = false;
             }

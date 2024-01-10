@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             if (useWorkloadSets)
             {
-                await UpdateAdvertisingManifestAsync(new WorkloadManifestInfo("Microsoft.NET.Workloads", null, null, _sdkFeatureBand.ToString()), includePreviews, offlineCache);
+                await UpdateManifestWithVersionAsync("Microsoft.NET.Workloads", includePreviews, _sdkFeatureBand, null, offlineCache);
             }
             else
             {
