@@ -172,7 +172,6 @@
       WorkingDirectory="$(TarballRepoSourceDir)"
       Condition="$(IsRootRepo) != 'true'" />
 
-    
     <Exec
       Command="git submodule update --init --recursive --depth 1"
       WorkingDirectory="$(TarballRepoSourceDir)" />
