@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
-using System.Security;
-using System.Security.Cryptography.X509Certificates;
+#if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Installer.Windows.Security;
-using Microsoft.Win32.Msi;
+#endif
+using Microsoft.DotNet.Workloads.Workload;
 using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Installer.Windows
@@ -17,6 +17,10 @@ namespace Microsoft.DotNet.Installer.Windows
     internal class MsiPackageCache : InstallerBase
     {
         /// <summary>
+        /// Determines whether revocation checks can go online.
+        /// </summary>
+        private bool _allowOnlineRevocationChecks;
+        
         /// The root directory of the package cache where MSI workload packs are stored.
         /// </summary>
         public readonly string PackageCacheRoot;
@@ -27,6 +31,7 @@ namespace Microsoft.DotNet.Installer.Windows
             PackageCacheRoot = string.IsNullOrWhiteSpace(packageCacheRoot)
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "dotnet", "workloads")
                 : packageCacheRoot;
+            _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
         }
 
         /// <summary>
@@ -139,58 +144,36 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// Verifies the AuthentiCode signature of an MSI package if the executing command itself is running
-        /// from a signed module.
+        /// Verifies that an MSI package contains an Authenticode signature that terminates in a trusted Microsoft root certificate.
         /// </summary>
         /// <param name="msiPath">The path of the MSI to verify.</param>
         private void VerifyPackageSignature(string msiPath)
         {
             if (VerifySignatures)
             {
-                bool isAuthentiCodeSigned = AuthentiCode.IsSigned(msiPath);
-
-                // Need to capture the error now as other OS calls might change the last error.
-                uint lastError = !isAuthentiCodeSigned ? unchecked((uint)Marshal.GetLastWin32Error()) : Error.SUCCESS;
-
-                bool isTrustedOrganization = AuthentiCode.IsSignedByTrustedOrganization(msiPath, AuthentiCode.TrustedOrganizations);
-
-                if (isAuthentiCodeSigned && isTrustedOrganization)
+                // MSI and authenticode verification only applies to Windows. NET only supports Win7 and later.
+#if !DOT_NET_BUILD_FROM_SOURCE
+#pragma warning disable CA1416
+                unsafe
                 {
-                    Log?.LogMessage($"Successfully verified AuthentiCode signature for {msiPath}.");
+                    int result = Signature.IsAuthenticodeSigned(msiPath, _allowOnlineRevocationChecks);
+
+                    if (result != 0)
+                    {
+                        ExitOnError((uint)result, $"Failed to verify Authenticode signature, package: {msiPath}, allow online revocation checks: {_allowOnlineRevocationChecks}");
+                    }
+
+                    result = Signature.HasMicrosoftTrustedRoot(msiPath);
+
+                    if (result != 0)
+                    {
+                        ExitOnError((uint)result, $"Failed to verify the Authenticode signature terminates in a trusted Microsoft root certificate. Package: {msiPath}");
+                    }
+
                 }
-                else
-                {
-                    // Summarize the failure and then report additional details.
-                    Log?.LogMessage($"Failed to verify signature for {msiPath}. AuthentiCode signed: {isAuthentiCodeSigned}, Trusted organization: {isTrustedOrganization}.");
-                    IEnumerable<X509Certificate2> certificates = AuthentiCode.GetCertificates(msiPath);
-
-                    // Dump all the certificates if there are any.
-                    if (certificates.Any())
-                    {
-                        Log?.LogMessage($"Certificate(s):");
-
-                        foreach (X509Certificate2 certificate in certificates)
-                        {
-                            Log?.LogMessage($"       Subject={certificate.Subject}");
-                            Log?.LogMessage($"        Issuer={certificate.Issuer}");
-                            Log?.LogMessage($"    Not before={certificate.NotBefore}");
-                            Log?.LogMessage($"     Not after={certificate.NotAfter}");
-                            Log?.LogMessage($"    Thumbprint={certificate.Thumbprint}");
-                            Log?.LogMessage($"     Algorithm={certificate.SignatureAlgorithm.FriendlyName}");
-                        }
-                    }
-
-                    if (!isAuthentiCodeSigned)
-                    {
-                        // If it was a WinTrust failure, we can exit using that error code and include a proper message from the OS.
-                        ExitOnError(lastError, $"Failed to verify authenticode signature for {msiPath}.");
-                    }
-
-                    if (!isTrustedOrganization)
-                    {
-                        throw new SecurityException(string.Format(LocalizableStrings.AuthentiCodeNoTrustedOrg, msiPath));
-                    }
-                }
+                Log?.LogMessage($"Successfully verified Authenticode signature for {msiPath}");
+#pragma warning restore CA1416
+#endif
             }
             else
             {
