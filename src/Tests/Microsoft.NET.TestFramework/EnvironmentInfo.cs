@@ -218,6 +218,165 @@ namespace Microsoft.NET.TestFramework
 
             return true;
         }
+
+        public static bool SupportsTargetFrameworkDemo(string targetFramework)
+        {
+            NuGetFramework nugetFramework = null;
+            try
+            {
+                nugetFramework = NuGetFramework.Parse(targetFramework);
+            }
+            catch
+            {
+                return false;
+            }
+
+            if (nugetFramework == null)
+            {
+                return false;
+            }
+
+            if (OperatingSystem.IsWindows())
+            {
+                return true;
+            }
+
+            if (OperatingSystem.IsLinux())
+            {
+                var osRelease = File.ReadAllLines("/etc/os-release");
+                string osId = osRelease
+                    .First(line => line.StartsWith("ID=", StringComparison.OrdinalIgnoreCase))
+                    .Substring("ID=".Length)
+                    .Trim('\"', '\'');
+
+                string versionString = osRelease
+                    .First(line => line.StartsWith("VERSION_ID=", StringComparison.OrdinalIgnoreCase))
+                    .Substring("VERSION_ID=".Length)
+                    .Trim('\"', '\'');
+                if (osId.Equals("alpine", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (nugetFramework.Version < new Version(2, 1, 0, 0))
+                    {
+                        return false;
+                    }
+                }
+                else if (Version.TryParse(versionString, out Version osVersion))
+                {
+                    if (osId.Equals("fedora", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (osVersion.Major <= 27)
+                        {
+                            if (nugetFramework.Version < new Version(2, 1, 0, 0))
+                            {
+                                throw new ArgumentException($"osVersion: '{osVersion.Major}', nugetFramework: '{nugetFramework}'");
+                            }
+                            else
+                            {
+                                throw new ArgumentException($"osVersion: '{osVersion.Major}', nugetFramework: '{nugetFramework}'");
+                            }
+                        }
+                        else if (osVersion.Major == 28)
+                        {
+                            if (nugetFramework.Version < new Version(2, 1, 0, 0))
+                            {
+                                throw new ArgumentException($"osVersion: '{osVersion.Major}', nugetFramework: '{nugetFramework}'");
+                            }
+                            else
+                            {
+                                throw new ArgumentException($"osVersion: '{osVersion.Major}', nugetFramework: '{nugetFramework}'");
+                            }
+                        }
+                        else if (osVersion.Major >= 29)
+                        {
+                            if (nugetFramework.Version < new Version(2, 2, 0, 0))
+                            {
+                                throw new ArgumentException($"osVersion: '{osVersion.Major}', nugetFramework: '{nugetFramework}'");
+                            }
+                            else
+                            {
+                                throw new ArgumentException($"osVersion: '{osVersion.Major}', nugetFramework: '{nugetFramework}'");
+                            }
+                        }
+                    }
+                    else if (osId.Equals("rhel", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (osVersion.Major == 6)
+                        {
+                            if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    else if (osId.Equals("ubuntu", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (osVersion > new Version(16, 04))
+                        {
+                            if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                //  .NET Core 1.1 - 10.11, 10.12
+                //  .NET Core 2.0 - 10.12+
+                //  .NET Core 2.1 - 10.12-10.15
+                //  .NET 5 <= 11.0
+                //  .NET 6 <= 12
+                //  .NET 7 <= 13
+                Version osVersion = Environment.OSVersion.Version;
+                if (osVersion <= new Version(10, 11))
+                {
+                    if (nugetFramework.Version >= new Version(2, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
+                else if (osVersion == new Version(10, 12))
+                {
+                    if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
+                else if (osVersion > new Version(10, 12) && osVersion <= new Version(10, 15))
+                {
+                    //  .NET Core 2.0 is out of support, and doesn't seem to work with OS X 10.14
+                    //  (it finds no assets for the RID), even though the support page says "10.12+"
+                    if (nugetFramework.Version < new Version(2, 1, 0, 0))
+                    {
+                        return false;
+                    }
+                }
+                else if (osVersion == new Version(11, 0))
+                {
+                    if (nugetFramework.Version < new Version(5, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
+                else if (osVersion == new Version(12, 0))
+                {
+                    if (nugetFramework.Version < new Version(6, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
+                else if (osVersion > new Version(12, 0))
+                {
+                    if (nugetFramework.Version < new Version(7, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
     }
 }
 
