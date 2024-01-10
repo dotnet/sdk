@@ -34,6 +34,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public int ExitCode => Restart ? unchecked((int)Error.SUCCESS_REBOOT_REQUIRED) : unchecked((int)Error.SUCCESS);
 
+        private string _newWorkloadSetPath;
+        private string _previousWorkloadSetVersion;
+
         public NetSdkMsiInstallerClient(InstallElevationContextBase elevationContext,
             ISetupLogger logger,
             bool verifySignatures,
@@ -184,6 +187,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public string InstallWorkloadSet(string path)
         {
+            return ModifyWorkloadSet(path, InstallAction.Install);
+        }
+
+        public void RollBackWorkloadSetInstallation()
+        {
+            if (_newWorkloadSetPath is not null)
+            {
+                ModifyWorkloadSet(_newWorkloadSetPath, InstallAction.Uninstall);
+                if (_previousWorkloadSetVersion is not null)
+                {
+                    File.WriteAllText(Path.Combine(_newWorkloadSetPath, "version.txt"), _previousWorkloadSetVersion);
+                    ModifyWorkloadSet(_newWorkloadSetPath, InstallAction.Repair);
+                }
+            }
+        }
+
+        private string ModifyWorkloadSet(string path, InstallAction installAction)
+        {
             ReportPendingReboot();
 
             // Rolling back a manifest update after a successful install is essentially a downgrade, which is blocked so we have to
@@ -201,65 +222,23 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, null);
             VerifyPackage(msi);
             DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
-            InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion, out IEnumerable<string> relatedProducts);
 
-            // If we've detected a downgrade, it's possible we might be doing a rollback after the manifests were updated,
-            // but another error occurred. In this case we need to try and uninstall the upgrade and then install the lower
-            // version of the MSI. The downgrade can also be a deliberate rollback.
-            if (plannedAction == InstallAction.Downgrade && state == DetectState.Absent)
+            if (installAction == InstallAction.Install)
             {
-                // The provider keys for manifest packages are stable across feature bands so we retain dependents during upgrades.
-                DependencyProvider depProvider = new DependencyProvider(msi.Manifest.ProviderKeyName);
-
-                // Try and remove the SDK dependency, but ignore any remaining dependencies since
-                // we want to force the removal of the old version. The remaining dependencies and the provider
-                // key won't be removed.
-                UpdateDependent(InstallRequestType.RemoveDependent, msi.Manifest.ProviderKeyName, _dependent);
-
-                // Since we don't have records for manifests, we need to try and retrieve the ProductCode of
-                // the newer MSI that's installed that we want to remove using its dependency provider.
-                string productCode = depProvider.ProductCode;
-
-                if (string.IsNullOrWhiteSpace(productCode))
-                {
-                    // We don't know the MSI package that wrote this provider key, so if the ProductCode is missing
-                    // we can't do anything else.
-                    Log?.LogMessage($"Failed to retrieve the ProductCode for provider: {depProvider.ProviderKeyName}.");
-                    return null;
-                }
-
-                Log?.LogMessage($"Found ProductCode {productCode} registered against provider, {depProvider.ProviderKeyName}.");
-
-                // This is a best effort. If for some reason the manifest installers were fixed, for example, manually
-                // adding additional upgrade paths to work around previous faulty authoring, we may have multiple related
-                // products. The best we can do is to check for at least one match and remove it and then try the rollback.
-                if (!relatedProducts.Contains(productCode, StringComparer.OrdinalIgnoreCase))
-                {
-                    Log?.LogMessage($"Cannot rollback manifest. ProductCode does not match any detected related products.");
-                    return null;
-                }
-
-                string logFile = GetMsiLogName(productCode, InstallAction.Uninstall);
-                uint error = UninstallMsi(productCode, logFile, ignoreDependencies: true);
-
-                ExitOnError(error, "Failed to uninstall manifest package.");
-
-                // Detect the package again and fall through to the original execution. If that fails, then there's nothing
-                // we could have done.
-                Log?.LogMessage("Replanning manifest package.");
-                state = DetectPackage(msi, out Version _);
-                plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion, out IEnumerable<string> _);
+                // If we are installing the workload set, record its version and the previous version so that we can roll back if necessary.
+                _newWorkloadSetPath = path;
+                _previousWorkloadSetVersion = installedVersion.ToString();
             }
+
+            InstallAction plannedAction = PlanPackage(msi, state, installAction, installedVersion, out IEnumerable<string> relatedProducts);
 
             ExecutePackage(msi, plannedAction, msiPackageId);
 
             // Update the reference count against the MSI.
             UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
 
-            return null;
+            return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", version, "workloadset.json");
         }
-
-        public void RollBackWorkloadSetInstallation() => throw new NotImplementedException();
 
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care

@@ -13,7 +13,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-
+using PathUtility = Microsoft.DotNet.Tools.Common.PathUtility;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly FileBasedInstallationRecordRepository _installationRecordRepository;
         private readonly PackageSourceLocation _packageSourceLocation;
         private readonly RestoreActionConfig _restoreActionConfig;
-        private string workloadSetRollbackContents;
+        private string workloadSetPath;
 
         public int ExitCode => 0;
 
@@ -88,12 +88,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public string InstallWorkloadSet(string path)
         {
-            string workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(path, "version.txt")), ".workloadset.json");
+            workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(path, "version.txt")), "workloadset.json");
             Directory.CreateDirectory(Path.GetDirectoryName(workloadSetPath));
-            if (File.Exists(workloadSetPath))
-            {
-                workloadSetRollbackContents = File.ReadAllText(workloadSetPath);
-            }
 
             File.Copy(Path.Combine(path, "workloadset.json"), workloadSetPath);
             return workloadSetPath;
@@ -102,6 +98,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public void RollBackWorkloadSetInstallation()
         {
             // We don't really need to worry about uninstalling workload sets for file-based installations, since they're side-by-side.
+            PathUtility.DeleteFileAndEmptyParents(workloadSetPath);
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
