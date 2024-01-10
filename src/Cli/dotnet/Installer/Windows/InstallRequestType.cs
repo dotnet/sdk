@@ -58,11 +58,16 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <summary>
         /// Creates an install state file.
         /// </summary>
-        WriteInstallStateFile,
+        SaveInstallStateManifestVersions,
 
         /// <summary>
         /// Removes an install state file.
         /// </summary>
-        RemoveInstallStateFile,
+        RemoveManifestsFromInstallStateFile,
+
+        /// <summary>
+        /// Changes the workload mode
+        /// </summary>
+        AdjustWorkloadMode,
     }
 }

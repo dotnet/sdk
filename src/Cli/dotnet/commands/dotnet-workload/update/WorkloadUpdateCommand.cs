@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private readonly bool _adManifestOnlyOption;
         private readonly bool _printRollbackDefinitionOnly;
         private readonly bool _fromPreviousSdk;
+        private readonly string _workloadSetMode;
 
         public WorkloadUpdateCommand(
             ParseResult parseResult,
@@ -38,6 +39,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
             _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);
             var resolvedReporter = _printDownloadLinkOnly || _printRollbackDefinitionOnly ? NullReporter.Instance : Reporter;
+            _workloadSetMode = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetMode);
 
             _workloadInstaller = _workloadInstallerFromConstructor ?? WorkloadInstallerFactory.GetWorkloadInstaller(resolvedReporter,
                                 _sdkFeatureBand, _workloadResolver, Verbosity, _userProfileDir, VerifySignatures, PackageDownloader,
@@ -85,6 +87,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 var workloadSet = WorkloadSet.FromManifests(_workloadResolver.GetInstalledManifests());
                 Reporter.WriteLine(workloadSet.ToJson());
+            }
+            else if (!string.IsNullOrWhiteSpace(_workloadSetMode))
+            {
+                if (_workloadSetMode.Equals("workloadset", StringComparison.OrdinalIgnoreCase))
+                {
+                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+                }
+                else if (_workloadSetMode.Equals("loosemanifest", StringComparison.OrdinalIgnoreCase) ||
+                         _workloadSetMode.Equals("auto", StringComparison.OrdinalIgnoreCase))
+                {
+                    _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
+                }
+                else
+                {
+                    throw new GracefulException(string.Format(LocalizableStrings.WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto, _workloadSetMode), isUserError: true);
+                }
             }
             else
             {
@@ -150,11 +168,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             transaction.Run(
                 action: context =>
                 {
-                    bool rollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-
                     foreach (var manifestUpdate in manifestsToUpdate)
                     {
-                        _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, rollback);
+                        _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, useRollback);
                     }
 
                     _workloadResolver.RefreshWorkloadManifests();
@@ -165,11 +181,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
                     if (useRollback)
                     {
-                        _workloadInstaller.WriteInstallState(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
+                        _workloadInstaller.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
                     else
                     {
-                        _workloadInstaller.DeleteInstallState(sdkFeatureBand);
+                        _workloadInstaller.RemoveManifestsFromInstallState(sdkFeatureBand);
                     }
                 },
                 rollback: () =>
