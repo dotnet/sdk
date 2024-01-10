@@ -174,7 +174,7 @@
 
     
     <Exec
-      Command="git -c http.https://dnceng@dev.azure.com/.extraheader='AUTHORIZATION: bearer $(AzDoPat)' submodule update --init --recursive"
+      Command="git submodule update --init --recursive --depth 1"
       WorkingDirectory="$(TarballRepoSourceDir)" />
 
     <Exec
