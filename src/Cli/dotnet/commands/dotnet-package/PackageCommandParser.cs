@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal class PackageCommandParser
     {
-        public static readonly string DocsLink = "https://aka.ms/dotnet-package";
+        private const string DocsLink = "https://aka.ms/dotnet-package";
 
         public static CliCommand GetCommand()
         {
