@@ -3,13 +3,15 @@
 ### Usage: $0 [options]
 ###
 ### Options:
+###   --ci                         Set when running on CI server
 ###   --clean-while-building       Cleans each repo after building (reduces disk space usage)
+###   --configuration              Build configuration [Default: Release]
 ###   --online                     Build using online sources
 ###   --poison                     Build with poisoning checks
+###   --release-manifest <FILE>    A JSON file, an alternative source of Source Link metadata
 ###   --run-smoke-test             Don't build; run smoke tests
 ###   --source-repository <URL>    Source Link repository URL, required when building from tarball
 ###   --source-version <SHA>       Source Link revision, required when building from tarball
-###   --release-manifest <FILE>    A JSON file, an alternative source of Source Link metadata
 ###   --use-mono-runtime           Output uses the mono runtime
 ###   --with-packages <DIR>        Use the specified directory of previously-built packages
 ###   --with-sdk <DIR>             Use the SDK in the specified directory for bootstrapping
@@ -27,6 +29,10 @@ function print_help () {
 }
 
 MSBUILD_ARGUMENTS=("-flp:v=detailed")
+MSBUILD_ARGUMENTS=("--tl:off")
+# TODO: Make it possible to invoke this script for non source build use cases
+MSBUILD_ARGUMENTS+=("/p:DotNetBuildFromSource=true")
+MSBUILD_ARGUMENTS+=("/p:DotNetBuildVertical=false")
 CUSTOM_PACKAGES_DIR=''
 alternateTarget=false
 runningSmokeTests=false
@@ -39,6 +45,7 @@ CUSTOM_SDK_DIR=''
 sourceRepository=''
 sourceVersion=''
 releaseManifest=''
+configuration='Release'
 
 while :; do
   if [ $# -le 0 ]; then
@@ -47,8 +54,14 @@ while :; do
 
   lowerI="$(echo "$1" | awk '{print tolower($0)}')"
   case $lowerI in
+    --ci)
+      MSBUILD_ARGUMENTS+=( "-p:ContinuousIntegrationBuild=true")
+      ;;
     --clean-while-building)
       MSBUILD_ARGUMENTS+=( "-p:CleanWhileBuilding=true")
+      ;;
+    --configuration)
+      configuration="$2"
       ;;
     --online)
       MSBUILD_ARGUMENTS+=( "-p:BuildWithOnlineSources=true")
@@ -113,6 +126,8 @@ while :; do
   esac
   shift
 done
+
+MSBUILD_ARGUMENTS+=("/p:Configuration=$configuration")
 
 # For build purposes, we need to make sure we have all the SourceLink information
 if [ "$alternateTarget" != "true" ]; then
@@ -191,7 +206,7 @@ if [ -d "$CUSTOM_SDK_DIR" ]; then
   export SDK_VERSION=$("$CUSTOM_SDK_DIR/dotnet" --version)
   export CLI_ROOT="$CUSTOM_SDK_DIR"
   export _InitializeDotNetCli="$CLI_ROOT/dotnet"
-  export CustomDotNetSdkDir="$CLI_ROOT"
+  export DOTNET_INSTALL_DIR="$CLI_ROOT"
   echo "Using custom bootstrap SDK from '$CLI_ROOT', version '$SDK_VERSION'"
 else
   sdkLine=$(grep -m 1 'dotnet' "$SCRIPT_ROOT/global.json")
@@ -251,16 +266,12 @@ LogDateStamp=$(date +"%m%d%H%M%S")
 
 if [ "$alternateTarget" == "true" ]; then
   export NUGET_PACKAGES=$NUGET_PACKAGES/smoke-tests
-  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/Debug/BuildTests_$LogDateStamp.binlog" -flp:"LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_$LogDateStamp.log" -clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
+  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/$configuration/BuildTests_$LogDateStamp.binlog" -flp:"LogFile=$SCRIPT_ROOT/artifacts/log/$configuration/BuildTests_$LogDateStamp.log" -clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
 else
-  # BuildXPlatTasks uses NetCurrent but that is not set since Arcade isn't used here.
-  # Bootstrap NetCurrent by deriving it from the installed .NET CLI version.
-  netCurrent="$($CLI_ROOT/dotnet --version | while IFS='.' read major minor _; do echo "net$major.$minor"; done)"
-
-  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/eng/tools/init-build.proj" -p:NetCurrent=$netCurrent -bl:"$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog" -flp:LogFile="$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log" -t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
+  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/eng/tools/init-build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/$configuration/BuildMSBuildSdkResolver_$LogDateStamp.binlog" -flp:LogFile="$SCRIPT_ROOT/artifacts/log/$configuration/BuildMSBuildSdkResolver_$LogDateStamp.log" -t:ExtractToolPackage,BuildMSBuildSdkResolver ${MSBUILD_ARGUMENTS[@]} "$@"
 
   # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
   "$CLI_ROOT/dotnet" build-server shutdown
 
-  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/Debug/Build_$LogDateStamp.binlog" -flp:"LogFile=$SCRIPT_ROOT/artifacts/logs/Build_$LogDateStamp.log" ${MSBUILD_ARGUMENTS[@]} "$@"
+  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/$configuration/Build_$LogDateStamp.binlog" -flp:"LogFile=$SCRIPT_ROOT/artifacts/log/$configuration/Build_$LogDateStamp.log" ${MSBUILD_ARGUMENTS[@]} "$@"
 fi
