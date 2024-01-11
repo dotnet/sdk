@@ -16,6 +16,7 @@
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="NuGet.Packaging" />
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataLoadContextVersion)" />
     <PackageReference Include="WindowsAzure.Storage" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <PackageReference Include="System.Net.Http" />
   </ItemGroup>

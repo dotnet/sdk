@@ -1,14 +1,14 @@
 <Project>
 
   <PropertyGroup>
-    <VersionSvgTemplate>$(RepoRoot)/resources/images/version_badge.svg</VersionSvgTemplate>
+    <VersionSvgTemplate>$(RepoRoot)src\Installer\redist-installer\version_badge.svg</VersionSvgTemplate>
   </PropertyGroup>
 
   <Target Name="GenerateVersionBadge"
           Condition="'$(PgoInstrument)' != 'true'"
           DependsOnTargets="SetBadgeProps"
           BeforeTargets="AfterBuild">
-    <Message Text="$(VersionBadge)"  />
+    <Message Text="$(VersionBadge)" />
 
     <ReplaceFileContents
       InputFiles="$(VersionSvgTemplate)"
