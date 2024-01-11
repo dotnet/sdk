@@ -360,7 +360,7 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(_InnerPackageCacheFiles)"
-          DestinationFiles="$(PackagesDir)%(RecursiveDir)%(Filename)%(Extension)"
+          DestinationFiles="$(NuGetPackageRoot)%(RecursiveDir)%(Filename)%(Extension)"
           Condition=" '@(_InnerPackageCacheFiles)' != '' " />
   </Target>
 
@@ -394,8 +394,8 @@
          and then delete all expanded files and the nupkg from the package cache so the next time
          the package is used, it will reload the source-built version -->
     <ItemGroup>
-      <_FilesToCopy Include="$(PackagesDir)$([System.String]::copy('%(_BuiltPackageInfos.PackageId)').ToLowerInvariant())/%(_BuiltPackageInfos.PackageVersion)/**/*.nupkg" />
-      <_FilesToDelete Include="$(PackagesDir)$([System.String]::copy('%(_BuiltPackageInfos.PackageId)').ToLowerInvariant())/%(_BuiltPackageInfos.PackageVersion)/**/*.*" />
+      <_FilesToCopy Include="$(NuGetPackageRoot)$([System.String]::copy('%(_BuiltPackageInfos.PackageId)').ToLowerInvariant())/%(_BuiltPackageInfos.PackageVersion)/**/*.nupkg" />
+      <_FilesToDelete Include="$(NuGetPackageRoot)$([System.String]::copy('%(_BuiltPackageInfos.PackageId)').ToLowerInvariant())/%(_BuiltPackageInfos.PackageVersion)/**/*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(PreviouslyRestoredPackagesPath)$(RepositoryName)/" />
@@ -548,7 +548,7 @@
     <Copy SourceFiles="@(PackageVersionPropsSnapshotFiles)" DestinationFolder="$(PackageReportDir)snapshots/" />
 
     <ItemGroup>
-      <AllRestoredPackageFiles Include="$(PackagesDir)**/*.nupkg" />
+      <AllRestoredPackageFiles Include="$(NuGetPackageRoot)**/*.nupkg" />
 
       <!-- Only contains packages when building. -->
       <TarballPrebuiltPackageFiles Include="$(PrebuiltPackagesPath)*.nupkg" />
@@ -558,7 +558,7 @@
       <ReferencePackageFiles Include="$(ReferencePackagesDir)**/*.nupkg" />
 
       <!-- Check all RIDs from all restored Microsoft.NETCore.Platforms packages. -->
-      <PlatformsRuntimeJsonFiles Include="$(PackagesDir)microsoft.netcore.platforms/*/PortableRuntimeIdentifierGraph.json" />
+      <PlatformsRuntimeJsonFiles Include="$(NuGetPackageRoot)microsoft.netcore.platforms/*/PortableRuntimeIdentifierGraph.json" />
 
       <!-- Add some other potential top-level project directories for a more specific report. -->
       <ProjectDirectories Include="$(SourceBuiltSdksDir);$(TasksDir);$(ArtifactsObjDir)" />

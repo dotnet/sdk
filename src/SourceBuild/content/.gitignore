@@ -1,5 +1,4 @@
 /.dotnet
-/.packages
 /artifacts
 /eng/tools/**/bin
 /eng/tools/**/obj
