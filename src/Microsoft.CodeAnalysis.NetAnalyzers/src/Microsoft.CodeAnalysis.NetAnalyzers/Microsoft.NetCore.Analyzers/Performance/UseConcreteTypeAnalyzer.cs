@@ -326,7 +326,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 if (toType.TypeKind is not TypeKind.Class and not TypeKind.Array and not TypeKind.Struct)
                 {
-                    // we only deal with classes or arrays
+                    // we only deal with classes, arrays, or structs
                     return;
                 }
 
