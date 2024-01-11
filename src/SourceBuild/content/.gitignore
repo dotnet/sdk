@@ -1,4 +1,5 @@
 /.dotnet
+/.packages
 /artifacts
 /eng/tools/**/bin
 /eng/tools/**/obj
@@ -8,3 +9,4 @@
 /test/Microsoft.DotNet.SourceBuild.SmokeTests/bin
 /test/Microsoft.DotNet.SourceBuild.SmokeTests/obj
 /test/Microsoft.DotNet.SourceBuild.SmokeTests/TestResults
+*.binlog
