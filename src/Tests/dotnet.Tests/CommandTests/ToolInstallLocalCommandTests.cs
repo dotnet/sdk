@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             ParseResult parseResult =
                 Parser.Instance.Parse(
-                    $"dotnet tool install {_packageIdA.ToString()} --roll-forward");
+                    $"dotnet tool install {_packageIdA.ToString()} --allow-roll-forward");
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
@@ -172,7 +172,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             installLocalCommand.Execute().Should().Be(0);
             _fileSystem.File.ReadAllText(_manifestFilePath).Should()
-                .Contain("\"rollForward\": \"True\"");
+                .Contain("\"rollForward\": true");
         }
 
         [Fact]
@@ -192,7 +192,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             installLocalCommand.Execute().Should().Be(0);
             _fileSystem.File.ReadAllText(_manifestFilePath).Should()
-                .Contain("\"rollForward\": \"False\"");
+                .Contain("\"rollForward\": false");
         }
 
         [Fact]
