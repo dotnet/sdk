@@ -9,8 +9,12 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="nuget-client" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <!-- https://github.com/dotnet/source-build/issues/3798 -->
+    <RepositoryReference Include="wpf" Condition="'$(TargetOS)' == 'windows'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
   </ItemGroup>
 
 </Project>

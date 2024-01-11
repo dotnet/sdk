@@ -1,20 +1,17 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LocalNuGetPackageCacheDirectory>$(BaseIntermediatePath)source-build-reference-package-cache</LocalNuGetPackageCacheDirectory>
-
-    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:MicrosoftNetCoreIlasmPackageRuntimeId=$(NETCoreSdkRuntimeIdentifier)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:LocalNuGetPackageCacheDirectory=$(LocalNuGetPackageCacheDirectory)</BuildCommandArgs>
-
-    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
-
     <!-- SBRP builds before Arcade so it also needs the bootstrap Arcade version -->
     <UseBootstrapArcade>true</UseBootstrapArcade>
+
+    <LocalNuGetPackageCacheDirectory>$(ArtifactsObjDir)source-build-reference-package-cache</LocalNuGetPackageCacheDirectory>
+
+    <BuildArgs>$(BuildArgs) /p:MicrosoftNetCoreIlasmPackageRuntimeId=$(NETCoreSdkRuntimeIdentifier)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:LocalNuGetPackageCacheDirectory=$(LocalNuGetPackageCacheDirectory)</BuildArgs>
   </PropertyGroup>
 
-  <Target Name="AddLocalNuGetPackageCacheDirectory" BeforeTargets="Build">
+  <Target Name="AddLocalNuGetPackageCacheDirectory"
+          BeforeTargets="Build">
     <MakeDir Condition="'$(LocalNuGetPackageCacheDirectory)' != ''"
              Directories="$(LocalNuGetPackageCacheDirectory)" />
 
@@ -24,5 +21,4 @@
       SourcePath="$(LocalNuGetPackageCacheDirectory)" />
   </Target>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
