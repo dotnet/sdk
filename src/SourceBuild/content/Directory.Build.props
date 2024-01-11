@@ -21,6 +21,8 @@
   <PropertyGroup Label="CalculateArch">
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant)</BuildArchitecture>
     <HostArchitecture Condition="'$(HostArchitecture)' == ''">$(BuildArchitecture)</HostArchitecture>
+
+    <!-- When building on non-x64 architectures, there may be no cross-compilation available, select a target architecture that is the same as the build. -->
     <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'arm'">arm</TargetArchitecture>
     <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'armv6'">armv6</TargetArchitecture>
     <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'armel'">armel</TargetArchitecture>
@@ -28,9 +30,10 @@
     <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'loongarch64'">loongarch64</TargetArchitecture>
     <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 's390x'">s390x</TargetArchitecture>
     <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'ppc64le'">ppc64le</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(TargetsMobile)' == 'true'">x64</TargetArchitecture>
+
     <TargetArchitecture Condition="'$(OverrideTargetRid)' != ''">$(OverrideTargetRid.Substring($(OverrideTargetRid.LastIndexOf('-'))).TrimStart('-'))</TargetArchitecture>
     <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
+
     <Platform Condition="'$(Platform)' == '' and '$(InferPlatformFromTargetArchitecture)' == 'true'">$(TargetArchitecture)</Platform>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
   </PropertyGroup>
@@ -59,6 +62,9 @@
        Keep in sync with props/targets in the Arcade.Sdk. -->
   <PropertyGroup Condition="'$(_SuppressSdkImports)' == 'true' or '$(SkipArcadeSdkImport)' == 'true'">
     <!-- RepoLayout.props -->
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' != ''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)'))</NuGetPackageRoot>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(NUGET_PACKAGES)' != ''">$([MSBuild]::NormalizeDirectory('$(NUGET_PACKAGES)'))</NuGetPackageRoot>
+
     <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::NormalizeDirectory('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'global.json'))'))</RepoRoot>
 
     <!-- Respect environment variable for the .NET install directory if set; otherwise, use the repo default location -->
@@ -136,18 +142,16 @@
     <SrcDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'src'))</SrcDir>
     <ToolsDir>$([MSBuild]::NormalizeDirectory('$(RepositoryEngineeringDir)', 'tools'))</ToolsDir>
     <TasksDir>$([MSBuild]::NormalizeDirectory('$(ToolsDir)', 'tasks'))</TasksDir>
-    <PrereqsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'prereqs'))</PrereqsDir>
-    <KeysDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'keys'))</KeysDir>
     <RepoProjectsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'repo-projects'))</RepoProjectsDir>
 
-    <PrereqsPackagesDir>$(PrereqsDir)/packages/</PrereqsPackagesDir>
-    <PackagesDir Condition="'$(NuGetPackageRoot)' != ''">$(NuGetPackageRoot)</PackagesDir>
-    <PackagesDir Condition="'$(PackagesDir)' == ''">$(PrereqsPackagesDir)restored/</PackagesDir>
+    <PrereqsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'prereqs'))</PrereqsDir>
+    <KeysDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'keys'))</KeysDir>
+    <PrereqsPackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'packages'))</PrereqsPackagesDir>
 
     <!-- When SB mode, the initial arcade is unzipped to a the "ArcadeBootStrap" dir.
          When running in VBPOC, the bootstrap package is the arcade restored at the beginning of the build. -->
-    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildFromSource)' == 'true'">$(PackagesDir)ArcadeBootstrapPackage/</ArcadeBootstrapPackageDir>
-    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildFromSource)' != 'true'">$(PackagesDir)</ArcadeBootstrapPackageDir>
+    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildFromSource)' == 'true'">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'ArcadeBootstrapPackage'))</ArcadeBootstrapPackageDir>
+    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildFromSource)' != 'true'">$(NuGetPackageRoot)</ArcadeBootstrapPackageDir>
 
     <!-- Collapsed output and intermediate path folders that are architecture and configuration specific. -->
     <CollapsedOutputPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', '$(TargetArchitecture)', '$(Configuration)'))</CollapsedOutputPath>
