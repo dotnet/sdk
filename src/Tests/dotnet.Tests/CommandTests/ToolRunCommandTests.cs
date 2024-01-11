@@ -17,28 +17,18 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 {
     public class ToolRunCommandTests: SdkTest
     {
-        private readonly IFileSystem _fileSystem;
         private const string ManifestFilename = "dotnet-tools.json";
-        private readonly string _testDirectoryRoot;
         private DirectoryPath _nugetGlobalPackagesFolder;
-        private readonly LocalToolsResolverCache _localToolsResolverCache;
 
         public ToolRunCommandTests(ITestOutputHelper log) : base(log)
         {
-            _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
-            string temporaryDirectory = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
-            _localToolsResolverCache = new LocalToolsResolverCache(
-                _fileSystem,
-                new DirectoryPath(Path.Combine(temporaryDirectory, "cache")));
-            _testDirectoryRoot = _fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
-
         }
 
         [Fact]
         public void WhenRunWithRollForwardOptionItShouldIncludeRollForwardInNativeHost()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool run $TOOLCOMMAND$ --roll-forward Major");
+            var parseResult = Parser.Instance.Parse($"dotnet tool run $TOOLCOMMAND$ --allow-roll-forward");
 
             var toolRunCommand = new ToolRunCommand(parseResult);
 
@@ -57,16 +47,26 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         private (FilePath, LocalToolsCommandResolver) DefaultSetup(string toolCommand)
         {
+            var testDirectoryRoot = _testAssetsManager.CreateTestDirectory();
+            var fileSystem = new FileSystemWrapper();
             NuGetVersion packageVersionA = NuGetVersion.Parse("1.0.4");
-            _fileSystem.File.WriteAllText(Path.Combine(_testDirectoryRoot, ManifestFilename),
+
+            fileSystem.File.WriteAllText(Path.Combine(testDirectoryRoot.Path, ManifestFilename),
                 _jsonContent.Replace("$TOOLCOMMAND$", toolCommand));
             ToolManifestFinder toolManifest =
-                new ToolManifestFinder(new DirectoryPath(_testDirectoryRoot), _fileSystem, new FakeDangerousFileDetector());
+                new ToolManifestFinder(new DirectoryPath(testDirectoryRoot.Path), fileSystem, new FakeDangerousFileDetector());
             ToolCommandName toolCommandNameA = new ToolCommandName(toolCommand);
             FilePath fakeExecutable = _nugetGlobalPackagesFolder.WithFile("fakeExecutable.dll");
-            _fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
-            _fileSystem.File.CreateEmptyFile(fakeExecutable.Value);
-            _localToolsResolverCache.Save(
+
+            fileSystem.Directory.CreateDirectory(_nugetGlobalPackagesFolder.Value);
+            fileSystem.File.CreateEmptyFile(fakeExecutable.Value);
+
+            string temporaryDirectory = fileSystem.Directory.CreateTemporaryDirectory().DirectoryPath;
+            var localToolsResolverCache = new LocalToolsResolverCache(
+                fileSystem,
+                new DirectoryPath(Path.Combine(temporaryDirectory, "cache")));
+
+            localToolsResolverCache.Save(
                 new Dictionary<RestoredCommandIdentifier, RestoredCommand>
                 {
                     [new RestoredCommandIdentifier(
@@ -80,8 +80,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var localToolsCommandResolver = new LocalToolsCommandResolver(
                 toolManifest,
-                _localToolsResolverCache,
-                _fileSystem);
+                localToolsResolverCache,
+                fileSystem);
 
             return (fakeExecutable, localToolsCommandResolver);
         }
