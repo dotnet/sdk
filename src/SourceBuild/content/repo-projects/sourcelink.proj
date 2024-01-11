@@ -1,18 +1,15 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <BuildCommand>$(StandardSourceBuildCommand) $(StandardSourceBuildArgs)</BuildCommand>
-
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
-    <!-- TODO:  Remove once dotnet/sourcelink#964 is resolved -->
+    <!-- TODO: Remove once dotnet/sourcelink#964 is resolved. -->
     <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <ItemGroup>
+    <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
