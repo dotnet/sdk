@@ -3,9 +3,7 @@
     "dotnet": "9.0.100-alpha.1.24055.2"
   },
   "msbuild-sdks": {
-    "Microsoft.Build.Traversal": "2.0.2",
-    "Microsoft.NET.Sdk.IL": "3.0.0-preview-27107-01",
-    "Microsoft.DotNet.Arcade.Sdk": "6.0.0-beta.21304.1",
-    "Yarn.MSBuild": "1.15.2"
+    "Microsoft.Build.NoTargets": "3.7.0",
+    "Microsoft.DotNet.Arcade.Sdk": "9.0.0-beta.24058.6"
   }
 }
