@@ -4,7 +4,6 @@
     <VersionPrefix>0.1.0</VersionPrefix>
     <PreReleaseVersionLabel>alpha.1</PreReleaseVersionLabel>
   </PropertyGroup>
-
   <PropertyGroup>
     <!--
       Building .NET from source depends on several archives, depending on the branch's current
@@ -26,5 +25,7 @@
     <PrivateSourceBuiltSdkVersion>9.0.100-alpha.1.24055.1</PrivateSourceBuiltSdkVersion>
     <PrivateSourceBuiltArtifactsVersion>9.0.100-alpha.1.24055.1</PrivateSourceBuiltArtifactsVersion>
     <PrivateSourceBuiltPrebuiltsVersion>0.1.0-9.0.100-6</PrivateSourceBuiltPrebuiltsVersion>
+    <!-- msbuild -->
+    <MicrosoftBuildVersion>15.7.179</MicrosoftBuildVersion>
   </PropertyGroup>
 </Project>
