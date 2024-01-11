@@ -26,3 +26,9 @@ msdia140*.dll
 
 ;; Javascript files aren't signed
 *.js
+
+;; Installer exclusions
+*apphost.exe;;Template, DO-NOT-SIGN, https://github.com/dotnet/core-setup/pull/7549
+*singlefilehost.exe;;Template, DO-NOT-SIGN, https://github.com/dotnet/core-setup/pull/7549
+*comhost.dll;;Template, DO-NOT-SIGN, https://github.com/dotnet/core-setup/pull/7549
+*apphosttemplateapphostexe.exe;;Template, DO-NOT-SIGN, https://github.com/dotnet/core-setup/pull/7549
