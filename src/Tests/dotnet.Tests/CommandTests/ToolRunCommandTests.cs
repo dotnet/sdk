@@ -15,7 +15,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolRunCommandTests 
+    public class ToolRunCommandTests: SdkTest
     {
         private readonly IFileSystem _fileSystem;
         private const string ManifestFilename = "dotnet-tools.json";
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private DirectoryPath _nugetGlobalPackagesFolder;
         private readonly LocalToolsResolverCache _localToolsResolverCache;
 
-        public ToolRunCommandTests() 
+        public ToolRunCommandTests(ITestOutputHelper log) : base(log)
         {
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
             _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
