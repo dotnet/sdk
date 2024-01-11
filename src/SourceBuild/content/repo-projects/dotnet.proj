@@ -26,10 +26,10 @@
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
-    <RepositoryReference Include="aspnetcore" />
     <RepositoryReference Include="xdt" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn-analyzers" />
+    <RepositoryReference Include="aspnetcore" />
     <RepositoryReference Include="razor" />
     <RepositoryReference Include="deployment-tools" />
     <RepositoryReference Include="format" />
