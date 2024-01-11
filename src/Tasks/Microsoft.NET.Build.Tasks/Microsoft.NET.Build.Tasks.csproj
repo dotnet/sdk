@@ -71,9 +71,9 @@
         the same System.Reflection.Metadata assembly and their types can unify. See the following link for the MSBuild binding redirect config.
           https://github.com/dotnet/msbuild/blob/5d102ae37163fc1f22610bb433c3ab9a2fff91f0/src/MSBuild/app.config#L59
     -->
-    <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutablePackageVersion)" />
-    <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataVersion)" />
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="7.0.0" />
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="7.0.0" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="7.0.0" />
   </ItemGroup>
 
   <!-- These are loaded from the CLI's copy on .NET Core, we don't need to duplicate them on disk -->
