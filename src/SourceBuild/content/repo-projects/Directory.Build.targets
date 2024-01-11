@@ -17,8 +17,8 @@
     <ProjectAssetsJsonArchiveFile>$(PackageReportDir)all-project-assets-json-files.zip</ProjectAssetsJsonArchiveFile>
     <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
 
-    <!-- TODO: Remove when current builds of roslyn and aspire got ingested into installer. -->
-    <UpdateEngCommonFiles Condition="'$(UpdateEngCommonFiles)' == '' and ('$(RepositoryName)' == 'roslyn' or '$(RepositoryName)' == 'aspire')">true</UpdateEngCommonFiles>
+    <!-- TODO: Remove when current builds of roslyn got ingested into installer. -->
+    <UpdateEngCommonFiles Condition="'$(UpdateEngCommonFiles)' == '' and '$(RepositoryName)' == 'roslyn'">true</UpdateEngCommonFiles>
   </PropertyGroup>
 
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="AddSourceToNuGetConfig" />
