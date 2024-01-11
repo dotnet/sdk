@@ -58,7 +58,7 @@
       VmrPath="$(VmrDir)"
       TmpPath="$(TmpDir)"
       InstallerPath="$(RepoRoot)"
-      ReadmeTemplatePath="$(MSBuildThisFileDirectory)/README.template.md"
+      ComponentTemplatePath="$(MSBuildThisFileDirectory)/Component.template.md"
       TpnTemplatePath="$(MSBuildThisFileDirectory)/THIRD-PARTY-NOTICES.template.txt"
       SourceMappingsPath="$(MSBuildThisFileDirectory)/source-mappings.json" />
 
