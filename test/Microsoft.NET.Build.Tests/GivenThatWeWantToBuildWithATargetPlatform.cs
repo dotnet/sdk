@@ -90,5 +90,82 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining("NETSDK1139");
         }
+
+        [Fact]
+        public void It_fails_if_targetplatformversion_is_historical()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "It_fails_if_targetplatform_version_is_historical",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+
+            string DirectoryBuildTargetsContent = $@"
+<Project>
+  <ItemGroup>
+    <SdkSupportedTargetPlatformVersion Include=""111.0"" OrGreaterHistoricalValue=""true"" />
+    <SdkSupportedTargetPlatformVersion Include=""222.0"" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetPlatformVersion>111.0</TargetPlatformVersion>
+    <TargetPlatformIdentifier>ios</TargetPlatformIdentifier>
+    <TargetPlatformSupported>true</TargetPlatformSupported>
+  </PropertyGroup>
+</Project>
+";
+
+            File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.targets"), DirectoryBuildTargetsContent);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1140")
+                .And
+                .HaveStdOutContaining("111.0 is not a valid TargetPlatformVersion")
+                .And
+                .HaveStdOutContaining("222.0");
+        }
+
+        [Fact]
+        public void It_fails_if_targetplatformversion_is_invalid()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "It_fails_if_targetplatformversion_is_invalid",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+
+            string DirectoryBuildTargetsContent = $@"
+<Project>
+  <ItemGroup>
+    <SdkSupportedTargetPlatformVersion Include=""222.0"" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetPlatformVersion>111.0</TargetPlatformVersion>
+    <TargetPlatformIdentifier>ios</TargetPlatformIdentifier>
+    <TargetPlatformSupported>true</TargetPlatformSupported>
+  </PropertyGroup>
+</Project>
+";
+
+            File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.targets"), DirectoryBuildTargetsContent);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1140")
+                .And
+                .HaveStdOutContaining("111.0 is not a valid TargetPlatformVersion")
+                .And
+                .HaveStdOutContaining("222.0");
+        }
     }
 }
