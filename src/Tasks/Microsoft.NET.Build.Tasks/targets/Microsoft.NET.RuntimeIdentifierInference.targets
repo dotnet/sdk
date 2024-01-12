@@ -78,10 +78,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
 
-  <!-- Edit SelfContained to match the value of PublishSelfContained if we are publishing.
-       This Won't affect t:/Publish (because of _IsPublishing), and also won't override a global SelfContained property.-->
-  <PropertyGroup Condition="'$(_IsPublishing)' == 'true' and ('$(PublishSelfContained)' == 'true' or '$(PublishSelfContained)' == 'false')">
-    <SelfContained>$(PublishSelfContained)</SelfContained>
+  <PropertyGroup Condition="''$(SelfContained)' == 'true' or '$(SelfContained)' == 'false'">
+    <PublishSelfContained Condition="'$(PublishSelfContained)' == ''">$(SelfContained)</PublishSelfContained>
   </PropertyGroup>
 
   <!-- Automatically infer the RuntimeIdentifier for properties that require it.
@@ -98,13 +96,10 @@ Copyright (c) .NET Foundation. All rights reserved.
                  '$(_IsExecutable)' == 'true' and '$(IsTestProject)' != 'true' and
                  '$(IsRidAgnostic)' != 'true' and
                  (
-                   '$(SelfContained)' == 'true' or
-                   ('$(_IsPublishing)' == 'true' and
-                      (
-                        '$(PublishReadyToRun)' == 'true' or
-                        '$(PublishSingleFile)' == 'true' or
-                        '$(PublishAot)' == 'true'
-                      )
+                   '$(PublishSelfContained)' == 'true' or
+                   '$(PublishReadyToRun)' == 'true' or
+                   '$(PublishSingleFile)' == 'true' or
+                   '$(PublishAot)' == 'true'
                    )
                  )">true</UseCurrentRuntimeIdentifier>
   </PropertyGroup>
