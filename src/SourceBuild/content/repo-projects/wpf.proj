@@ -3,13 +3,13 @@
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="runtime" />
-    <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="winforms" />
   </ItemGroup>
 
 </Project>

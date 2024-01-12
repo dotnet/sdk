@@ -1,65 +1,60 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Build arguments -->
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
     <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'osx'">osx-$(TargetArchitecture)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'freebsd'">freebsd-$(TargetArchitecture)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</OverrideTargetRid>
 
     <_platformIndex>$(NETCoreSdkRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
     <RuntimeOS>$(NETCoreSdkRuntimeIdentifier.Substring(0, $(_platformIndex)))</RuntimeOS>
 
     <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
-    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))-$(Platform)</BaseOS>
+    <BaseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))-$(TargetArchitecture)</BaseOS>
 
     <PortableBuild Condition="'$(PortableBuild)' == ''">false</PortableBuild>
     <BuildNonPortable>true</BuildNonPortable>
     <BuildNonPortable Condition="'$(PortableBuild)' == 'true'">false</BuildNonPortable>
 
-    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
-    <BuildCommandArgs Condition="'$(OverrideTargetArch)' != ''">$(BuildCommandArgs) --arch $(OverrideTargetArch)</BuildCommandArgs>
-    <BuildCommandArgs Condition="'$(OverrideTargetOS)' != ''">$(BuildCommandArgs) --os $(OverrideTargetOS)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:TargetRid=$(OverrideTargetRid)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:RuntimeOS=$(RuntimeOS)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:BaseOS=$(BaseOS)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:PortableBuild=$(PortableBuild)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:SourceBuildNonPortable=$(BuildNonPortable)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildCommandArgs>
-    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+    <!-- Use the repo root build script -->
+    <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
+
+    <BuildArgs Condition="'$(OverrideTargetArch)' != ''">$(BuildArgs) $(FlagParameterPrefix)arch $(OverrideTargetArch)</BuildArgs>
+    <BuildArgs Condition="'$(OverrideTargetOS)' != ''">$(BuildArgs) $(FlagParameterPrefix)os $(OverrideTargetOS)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:TargetRid=$(OverrideTargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:SourceBuildNonPortable=$(BuildNonPortable)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
   </PropertyGroup>
 
-  <!-- SDK Overrides -->
   <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(ArcadeCoreFxTestingOverride)" />
-    <UseSourceBuiltSdkOverride Include="@(ArcadePackagingOverride)" />
-    <UseSourceBuiltSdkOverride Include="@(ArcadeTargetFrameworkOverride)" />
-    <UseSourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="cecil" />
+    <RepositoryReference Include="symreader" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
   </ItemGroup>
 
   <ItemGroup>
+    <SourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_X" Version="%24(MicrosoftCodeAnalysisVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_4" Version="%24(MicrosoftCodeAnalysisVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_LatestVS" Version="%24(MicrosoftCodeAnalysisVersion)" />
   </ItemGroup>
 
-  <!-- Repository References -->
-  <ItemGroup>
-      <RepositoryReference Include="arcade" />
-      <RepositoryReference Include="cecil" />
-      <RepositoryReference Include="symreader" />
-      <RepositoryReference Include="source-build-externals" />
-  </ItemGroup>
-
-  <Target Name="SetOutputList" AfterTargets="Package" BeforeTargets="GatherBuiltPackages">
+  <Target Name="SetOutputList"
+          AfterTargets="Package"
+          BeforeTargets="GatherBuiltPackages">
     <ItemGroup>
       <PackagesOutputList Include="$(ShippingPackagesOutput)" />
       <PackagesOutputList Include="$(NonShippingPackagesOutput)" />
     </ItemGroup>
   </Target>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

@@ -1,21 +1,16 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildCommandArgs>
-    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
-
-    <!-- we need to use a prebuilt Arcade to build Arcade -->
+    <!-- Use a prebuilt Arcade to build Arcade -->
     <UseBootstrapArcade>true</UseBootstrapArcade>
-    <IsToolingProject>true</IsToolingProject>
   </PropertyGroup>
 
   <ItemGroup>
+    <RepositoryReference Include="source-build-reference-packages" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
     <BuiltSdkPackageOverride Include="@(ArcadeSdkOverride)" />
-    <BuiltSdkPackageOverride Include="@(ArcadeCoreFxTestingOverride)" />
-    <BuiltSdkPackageOverride Include="@(ArcadePackagingOverride)" />
-    <BuiltSdkPackageOverride Include="@(ArcadeTargetFrameworkOverride)" />
     <BuiltSdkPackageOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
   </ItemGroup>
 
@@ -28,5 +23,4 @@
     <ExtraPackageVersionPropsPackageInfo Include="NuGetVersion" Version="%24(NuGetPackagingVersion)" />
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

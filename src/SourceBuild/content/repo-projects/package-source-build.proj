@@ -1,29 +1,21 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <ProjectDirectory>$(SubmoduleDirectory)$(RepositoryName)/</ProjectDirectory>
-    <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
-    <IncludedPackageVersionPropsFile>$(CurrentSourceBuiltPackageVersionPropsPath)</IncludedPackageVersionPropsFile>
+    <!-- This is a wrapper project that doesn't build anything. -->
+    <IsUtilityProject>true</IsUtilityProject>
+    <!-- Need to set to false to calculate RepositoryCommit. -->
     <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
-
-    <!--
-      The default PackageVersionPropsFlowType behavior (DependenciesOnly) triggers logic that looks for a Version.Details.xml file.
-      Setting the type to AllPackages will skip that logic.
-    -->
-    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
   </PropertyGroup>
 
   <ItemGroup>
-    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="installer" />
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-
-  <Target Name="RepoBuild"
+  <Target Name="CustomRepoBuild"
+          AfterTargets="RepoBuild"
           DependsOnTargets="DetermineMicrosoftSourceBuildIntermediateInstallerVersion">
     <!-- Copy PVP to packages dir in order to package them together -->
-    <Copy SourceFiles="$(IncludedPackageVersionPropsFile)" DestinationFiles="$(SourceBuiltPackagesPath)PackageVersions.props" />
+    <Copy SourceFiles="$(CurrentSourceBuiltPackageVersionPropsPath)" DestinationFiles="$(SourceBuiltPackagesPath)PackageVersions.props" />
 
     <!-- Expand SBRP intermediate package into separate folder and remove intermediate package -->
     <PropertyGroup>
@@ -34,7 +26,6 @@
       <SourceBuildReferencePackagesIntermediatePackage Include="$(SourceBuiltPackagesPath)$(SBRPIntermediateWildcard)"/>
     </ItemGroup>
 
-    <MakeDir Directories="$(SourceBuildReferencePackagesDestination)" />
     <Unzip SourceFiles="@(SourceBuildReferencePackagesIntermediatePackage)"
            DestinationFolder="$(SourceBuildReferencePackagesDestination)extractArtifacts"
            SkipUnchangedFiles="true"
@@ -54,7 +45,7 @@
       Directories="$(SourceBuildReferencePackagesDestination)extractArtifacts/" />
 
     <PropertyGroup>
-      <SourceBuiltTarballName>$(OutputPath)$(SourceBuiltArtifactsTarballName).$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid).tar.gz</SourceBuiltTarballName>
+      <SourceBuiltTarballName>$(CollapsedOutputPath)$(SourceBuiltArtifactsTarballName).$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid)$(ArchiveExtension)</SourceBuiltTarballName>
       <SourceBuiltVersionFileName>.version</SourceBuiltVersionFileName>
     </PropertyGroup>
 
@@ -68,6 +59,7 @@
       Lines="@(VersionFileContent)"
       Overwrite="true" />
 
+    <MakeDir Directories="$(CollapsedOutputPath)" />
     <Exec Command="tar --numeric-owner --exclude='Microsoft.SourceBuild.Intermediate.*.nupkg' -czf $(SourceBuiltTarballName) $(SourceBuiltVersionFileName) *.nupkg *.props SourceBuildReferencePackages/"
           WorkingDirectory="$(SourceBuiltPackagesPath)" />
 

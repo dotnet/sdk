@@ -1,47 +1,49 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.Build.NoTargets">
 
-  <Target Name="Build">
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="GenerateGraphViz"
+          AfterTargets="Build">
     <ItemGroup>
-      <AllRepoProjects
-        Include="$(ProjectDir)repo-projects\*.proj"
-        Exclude="$(ProjectDir)repo-projects\dotnet.proj" />
+      <RepoProject Include="$(RepoProjectsDir)*.proj"
+                   Exclude="$(RepoProjectsDir)dotnet.proj;
+                            $(RepoProjectsDir)package-source-build.proj" />
     </ItemGroup>
 
-    <MSBuild
-      Projects="@(AllRepoProjects)"
-      Targets="GetRepositoryReferences">
-      <Output TaskParameter="TargetOutputs" ItemName="RepoReferences" />
+    <MSBuild Projects="@(RepoProject)"
+             Targets="GetRepositoryReferences">
+      <Output TaskParameter="TargetOutputs" ItemName="RepoReference" />
     </MSBuild>
 
     <ItemGroup>
-      <RepoLink Include="%(RepoReferences.MSBuildSourceProjectFile)" SourceRepo="%(RepoReferences.Identity)" />
+      <RepoLink Include="%(RepoReference.MSBuildSourceProjectFile)" SourceRepo="%(RepoReference.Identity)" />
       <RepoLink TargetRepo="%(Filename)" />
       <RepoLink Text="&quot;%(SourceRepo)&quot; -> &quot;%(TargetRepo)&quot;" />
     </ItemGroup>
 
     <PropertyGroup>
-      <GraphVizFile>$(BaseIntermediatePath)graphviz.dot</GraphVizFile>
-      <GraphVizPngFile>$(BaseIntermediatePath)graphviz.png</GraphVizPngFile>
+      <GraphVizFile>$(BaseIntermediateOutputPath)graphviz.dot</GraphVizFile>
+      <GraphVizPngFile>$(BaseIntermediateOutputPath)graphviz.png</GraphVizPngFile>
       <GraphVizContent>digraph {
 graph [ dpi = 150 ]
 @(RepoLink -> '%(Text)')
 }</GraphVizContent>
     </PropertyGroup>
 
-    <WriteLinesToFile
-      Lines="$(GraphVizContent)"
-      File="$(GraphVizFile)"
-      Overwrite="True" />
+    <WriteLinesToFile Lines="$(GraphVizContent)"
+                      File="$(GraphVizFile)"
+                      Overwrite="True" />
 
-    <Message Importance="High" Text="$(MSBuildProjectName) -> $(GraphVizFile)" />
+    <Message Text="$(MSBuildProjectName) -> $(GraphVizFile)" Importance="High" />
 
-    <Exec
-      Condition="'$(GraphVizDir)' != ''"
-      Command="$([MSBuild]::NormalizePath('$(GraphVizDir)', 'dot')) $(GraphVizFile) -Tpng:cairo -o $(GraphVizPngFile)" />
+    <Exec Command="$([MSBuild]::NormalizePath('$(GraphVizDir)', 'dot')) $(GraphVizFile) -Tpng:cairo -o $(GraphVizPngFile)"
+          Condition="'$(GraphVizDir)' != ''" />
 
-    <Message Condition="'$(GraphVizDir)' != ''" Importance="High" Text="$(MSBuildProjectName) -> $(GraphVizPngFile)" />
+    <Message Text="$(MSBuildProjectName) -> $(GraphVizPngFile)"
+             Importance="High"
+             Condition="'$(GraphVizDir)' != ''" />
   </Target>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

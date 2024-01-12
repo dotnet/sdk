@@ -1,23 +1,26 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'osx'">osx-$(TargetArchitecture)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'freebsd'">freebsd-$(TargetArchitecture)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</OverrideTargetRid>
 
     <_platformIndex>$(OverrideTargetRid.LastIndexOf('-'))</_platformIndex>
     <TargetOS>$(OverrideTargetRid.Substring(0, $(_platformIndex)))</TargetOS>
     <TargetArch>$(OverrideTargetRid.Substring($(_platformIndex)))</TargetArch>
 
-    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:PackageRid=$(OverrideTargetRid)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:AssetManifestOS=$(TargetOS)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:PlatformName=$(TargetArch)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:ForceBuildManifestOnly=true</BuildCommandArgs>
-    <BuildCommand>$(StandardSourceBuildCommand) $(BuildCommandArgs)</BuildCommand>
+    <!-- Use the repo root build script -->
+    <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
+
+    <BuildArgs>$(BuildArgs) /p:PackageRid=$(OverrideTargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:AssetManifestOS=$(TargetOS)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PlatformName=$(TargetArch)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:ForceBuildManifestOnly=true</BuildArgs>
   </PropertyGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+  </ItemGroup>
+
 </Project>

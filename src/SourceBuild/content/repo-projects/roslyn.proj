@@ -1,32 +1,41 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:TreatWarningsAsErrors=false</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:ApplyPartialNgenOptimization=false</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:EnablePartialNgenOptimization=false</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:PublishWindowsPdb=false</BuildCommandArgs>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <!-- Roslyn's build.cmd adds -build automatically. On non-windows, use the default -->
+    <BuildActions Condition="'$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore</BuildActions>
+    <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
+    <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
+
+    <!-- Use the repo root build script -->
+    <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
+
+    <!-- roslyn by default builds with desktop msbuild (xcopy-msbuild) -->
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)msbuildEngine dotnet</BuildArgs>
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSkipApplyOptimizationData true</BuildArgs>
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSourceBranchName placeholder</BuildArgs>
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialVisualStudioDropAccessToken placeholder</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:TreatWarningsAsErrors=false</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:ApplyPartialNgenOptimization=false</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:EnablePartialNgenOptimization=false</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PublishWindowsPdb=false</BuildArgs>
     <!-- UsingToolMicrosoftNetCompilers=false introduces a prebuilt so we'll have to turn back on after our bootstrap SDK has native integer support -->
     <!-- issue: https://github.com/dotnet/source-build/issues/1719 -->
-    <BuildCommandArgs>$(BuildCommandArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:RepoRoot=$(ProjectDirectory)</BuildCommandArgs>
-
-    <BuildCommand>$(ProjectDirectory)build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
-
-    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
-    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
     <RepositoryReference Include="runtime" />
   </ItemGroup>
 
   <ItemGroup>
-    <UseSourceBuiltSdkOverride Include="@(WindowsDesktopSdkOverride)" />
+    <SourceBuiltSdkOverride Include="@(WindowsDesktopSdkOverride)" Condition="'$(DotNetBuildFromSource)' == 'true'" />
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
