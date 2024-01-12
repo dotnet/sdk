@@ -186,7 +186,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNotSupportedException),
                     compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemArgumentException)),
 
-                new MethodCategory(IsGetHashCodeInterfaceImplementation, true,
+                new MethodCategory(IsGetHashCodeInterfaceImplementation, false,
                     HasAllowedExceptionsRule,
                     compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemArgumentException)),
 
@@ -281,7 +281,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// <returns></returns>
         private static bool IsGetHashCodeInterfaceImplementation(IMethodSymbol method, Compilation compilation)
         {
-            if (method.Name != WellKnownMemberNames.ObjectGetHashCode)
+            if (method.Name != WellKnownMemberNames.ObjectGetHashCode &&
+                method.ExplicitInterfaceImplementations.Length == 0)
             {
                 return false;
             }
