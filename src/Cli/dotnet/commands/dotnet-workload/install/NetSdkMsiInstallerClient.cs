@@ -363,57 +363,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
             VerifyPackage(msi);
             DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
-            InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion, out IEnumerable<string> relatedProducts);
-
-            // If we've detected a downgrade, it's possible we might be doing a rollback after the manifests were updated,
-            // but another error occurred. In this case we need to try and uninstall the upgrade and then install the lower
-            // version of the MSI. The downgrade can also be a deliberate rollback.
-            if (plannedAction == InstallAction.Downgrade && isRollback && state == DetectState.Absent)
-            {
-                Log?.LogMessage($"Rolling back manifest update.");
-
-                // The provider keys for manifest packages are stable across feature bands so we retain dependents during upgrades.
-                DependencyProvider depProvider = new DependencyProvider(msi.Manifest.ProviderKeyName);
-
-                // Try and remove the SDK dependency, but ignore any remaining dependencies since
-                // we want to force the removal of the old version. The remaining dependencies and the provider
-                // key won't be removed.
-                UpdateDependent(InstallRequestType.RemoveDependent, msi.Manifest.ProviderKeyName, _dependent);
-
-                // Since we don't have records for manifests, we need to try and retrieve the ProductCode of
-                // the newer MSI that's installed that we want to remove using its dependency provider.
-                string productCode = depProvider.ProductCode;
-
-                if (string.IsNullOrWhiteSpace(productCode))
-                {
-                    // We don't know the MSI package that wrote this provider key, so if the ProductCode is missing
-                    // we can't do anything else.
-                    Log?.LogMessage($"Failed to retrieve the ProductCode for provider: {depProvider.ProviderKeyName}.");
-                    return;
-                }
-
-                Log?.LogMessage($"Found ProductCode {productCode} registered against provider, {depProvider.ProviderKeyName}.");
-
-                // This is a best effort. If for some reason the manifest installers were fixed, for example, manually
-                // adding additional upgrade paths to work around previous faulty authoring, we may have multiple related
-                // products. The best we can do is to check for at least one match and remove it and then try the rollback.
-                if (!relatedProducts.Contains(productCode, StringComparer.OrdinalIgnoreCase))
-                {
-                    Log?.LogMessage($"Cannot rollback manifest. ProductCode does not match any detected related products.");
-                    return;
-                }
-
-                string logFile = GetMsiLogName(productCode, InstallAction.Uninstall);
-                uint error = UninstallMsi(productCode, logFile, ignoreDependencies: true);
-
-                ExitOnError(error, "Failed to uninstall manifest package.");
-
-                // Detect the package again and fall through to the original execution. If that fails, then there's nothing
-                // we could have done.
-                Log?.LogMessage("Replanning manifest package.");
-                state = DetectPackage(msi, out Version _);
-                plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion, out IEnumerable<string> _);
-            }
+            InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
 
             ExecutePackage(msi, plannedAction, msiPackageId);
 
@@ -433,7 +383,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     MsiPayload msi = GetCachedMsiPayload(aquirableMsi.NuGetPackageId, aquirableMsi.NuGetPackageVersion, offlineCache);
                     VerifyPackage(msi);
                     DetectState state = DetectPackage(msi, out Version installedVersion);
-                    InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Repair, installedVersion, out _);
+                    InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Repair, installedVersion);
                     ExecutePackage(msi, plannedAction, aquirableMsi.NuGetPackageId);
 
                     // Update the reference count against the MSI.
@@ -465,7 +415,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         MsiPayload msi = GetCachedMsiPayload(msiToInstall.NuGetPackageId, msiToInstall.NuGetPackageVersion, offlineCache);
                         VerifyPackage(msi);
                         DetectState state = DetectPackage(msi, out Version installedVersion);
-                        InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion, out _);
+                        InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
                         if (plannedAction == InstallAction.Install)
                         {
                             shouldRollBackPack = true;
@@ -517,7 +467,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 // Make sure the MSI is actually installed.
                 DetectState state = DetectPackage(msi, out Version installedVersion);
-                InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Uninstall, installedVersion, out _);
+                InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Uninstall, installedVersion);
 
                 // The previous steps would have logged the final action. If the verdict is not to uninstall we can exit.
                 if (plannedAction == InstallAction.Uninstall)
@@ -687,31 +637,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         /// <param name="state">The detected state of the package.</param>
         /// <param name="requestedAction">The requested action to perform.</param>
         /// <returns>The action that will be performed.</returns>
-        private InstallAction PlanPackage(MsiPayload msi, DetectState state, InstallAction requestedAction, Version installedVersion, out IEnumerable<string> relatedProductCodes)
+        private InstallAction PlanPackage(MsiPayload msi, DetectState state, InstallAction requestedAction, Version installedVersion)
         {
             InstallAction plannedAction = InstallAction.None;
-            HashSet<string> relatedProducts = new();
 
             Log?.LogMessage($"PlanPackage: Begin, name: {msi.Name}, version: {msi.ProductVersion}, state: {state}, installed version: {installedVersion?.ToString() ?? "n/a"}, requested: {requestedAction}.");
 
-            // Manifest packages should support major upgrades (both the ProductCode and ProductVersion should be different) while
-            // workload packs should always be SxS (ProductCode and Upgrade should be different for each version).
-            //
-            // We cannot discount someone generating a minor update (ProductCode remains unchanged, but ProductVersion changes),
-            // so we'll detect downgrades and minor updates. For more details, see https://docs.microsoft.com/en-us/windows/win32/msi/minor-upgrades.
+            // Manifest packages, workload packs, and workload sets should now always be SxS (ProductCode and Upgrade should be different for each version).
             if (state == DetectState.Present)
             {
                 if (msi.ProductVersion < installedVersion)
                 {
-                    Log?.LogMessage($"PlanPackage: Downgrade detected, installed version: {installedVersion}, requested version: {msi.ProductVersion}.");
-                    plannedAction = InstallAction.Downgrade;
-                    state = DetectState.Superseded;
+                    throw new WorkloadException($"PlanPackage: Downgrade detected, installed version: {installedVersion}, requested version: {msi.ProductVersion}.");
                 }
                 else if (msi.ProductVersion > installedVersion)
                 {
-                    Log?.LogMessage($"PlanPackage: Minor update detected, installed version: {installedVersion}, requested version: {msi.ProductVersion}.");
-                    plannedAction = InstallAction.MinorUpdate;
-                    state = DetectState.Obsolete;
+                    throw new WorkloadException($"PlanPackage: Minor update detected, installed version: {installedVersion}, requested version: {msi.ProductVersion}.");
                 }
                 else
                 {
@@ -727,84 +668,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     : InstallAction.None;
             }
 
-            // If we know the MSI is absent, there are only three outcomes when executing the package:
-            //   1. We'll just do a clean install if we don't find related products so we're either brand new or SxS.
-            //   2. We'll perform a major upgrade.
-            //   3. We'll trigger a downgrade and likely an error since most MSIs detect and block downgrades.
-            //
-            // We'll process the related product information to make a determination. This is similar to what the FindRelatedProducts
-            // action does when an MSI is executed.
-            foreach (RelatedProduct relatedProduct in msi.RelatedProducts)
-            {
-                foreach (string relatedProductCode in WindowsInstaller.FindRelatedProducts(relatedProduct.UpgradeCode))
-                {
-                    // Ignore potentially detecting ourselves.
-                    if (string.Equals(relatedProductCode, msi.ProductCode, StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    // Check whether the related product is installed and retrieve its version to determine
-                    // how we're related.
-                    uint error = WindowsInstaller.GetProductInfo(relatedProductCode, InstallProperty.VERSIONSTRING, out string relatedVersionValue);
-
-                    // Continue searching if the related product is not installed.
-                    if (error == Error.UNKNOWN_PRODUCT || error == Error.UNKNOWN_PROPERTY)
-                    {
-                        continue;
-                    }
-
-                    ExitOnError(error, $"PlanPackage: Failed to retrieve version for related product: ProductCode: {relatedProductCode}.");
-
-                    // Parse the version, but don't try to catch any errors. If the version is invalid we want to fail
-                    // because we can't compare invalid versions to see whether it's excluded by the VersionMin and VersionMax
-                    // columns from the Upgrade table.
-                    Version relatedVersion = Version.Parse(relatedVersionValue);
-
-                    if (relatedProduct.ExcludesMinVersion(relatedVersion) || relatedProduct.ExcludesMaxVersion(relatedVersion))
-                    {
-                        continue;
-                    }
-
-                    // Check if the related product contains a matching language code (LCID). If we don't have any languages,
-                    // all languages are detectable as related and we can ignore the msidbUpgradeAttributesLanguagesExclusive flag.
-                    if (relatedProduct.Languages.Any())
-                    {
-                        string relatedLanguage = "0";
-                        error = WindowsInstaller.GetProductInfo(relatedProductCode, InstallProperty.LANGUAGE, out relatedLanguage);
-
-                        if (int.TryParse(relatedLanguage, out int lcid))
-                        {
-                            if (relatedProduct.ExcludesLanguage(lcid))
-                            {
-                                continue;
-                            }
-                        }
-                        else
-                        {
-                            Log?.LogMessage($"PlanPackage: Failed to read Language property for related product, ProductCode: {relatedProductCode}. The related product will be skipped.");
-                            continue;
-                        }
-                    }
-
-                    relatedProducts.Add(relatedProductCode);
-                    plannedAction = InstallAction.MajorUpgrade;
-
-                    if (relatedProduct.Attributes.HasFlag(UpgradeAttributes.OnlyDetect) && (state == DetectState.Absent))
-                    {
-                        // If we're not installed, but detect-only related, it's very likely that
-                        // that we'd trigger a downgrade launch condition. We can't know for sure, but
-                        // generally that's the most common use for detect-only entries.
-                        plannedAction = InstallAction.Downgrade;
-                    }
-
-                    Log?.LogMessage($"PlanPackage: Detected related product, ProductCode: {relatedProductCode}, version: {relatedVersion}, attributes: {relatedProduct.Attributes}, planned action: {plannedAction}.");
-                }
-            }
-
             Log?.LogMessage($"PlanPackage: Completed, name: {msi.Name}, version: {msi.ProductVersion}, state: {state}, installed version: {installedVersion?.ToString() ?? "n/a"}, requested: {requestedAction}, planned: {plannedAction}.");
 
-            relatedProductCodes = relatedProducts.Select(p => p);
             return plannedAction;
         }
 
@@ -927,9 +792,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             switch (action)
             {
-                case InstallAction.MinorUpdate:
                 case InstallAction.Install:
-                case InstallAction.MajorUpgrade:
                     error = ExecuteWithProgress(String.Format(LocalizableStrings.MsiProgressInstall, name), () => InstallMsi(msi.MsiPath, logFile));
                     ExitOnError(error, $"Failed to install {msi.Payload}.");
                     break;
@@ -945,7 +808,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     break;
 
                 case InstallAction.None:
-                case InstallAction.Downgrade:
                 default:
                     break;
             }
