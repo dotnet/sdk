@@ -11,7 +11,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
-    public class ResolvePackageFileConflicts : TaskWithAssemblyResolveHooks
+    public class ResolvePackageFileConflicts : TaskBase
     {
         private HashSet<ITaskItem> referenceConflicts = new();
         private HashSet<ITaskItem> analyzerConflicts = new();
