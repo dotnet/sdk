@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.CommandFactory
             _fileSystem = fileSystem ?? new FileSystemWrapper();
         }
 
-        public CommandSpec ResolveStrict(CommandResolverArguments arguments)
+        public CommandSpec ResolveStrict(CommandResolverArguments arguments, bool allowRollForward = false)
         {
             if (arguments == null || string.IsNullOrWhiteSpace(arguments.CommandName))
             {
@@ -40,7 +41,7 @@ namespace Microsoft.DotNet.CommandFactory
             }
 
             var resolveResult = GetPackageCommandSpecUsingMuxer(arguments,
-                new ToolCommandName(arguments.CommandName.Substring(LeadingDotnetPrefix.Length)));
+                new ToolCommandName(arguments.CommandName.Substring(LeadingDotnetPrefix.Length)), allowRollForward);
 
             return resolveResult;
         }
@@ -73,12 +74,15 @@ namespace Microsoft.DotNet.CommandFactory
         }
 
         private CommandSpec GetPackageCommandSpecUsingMuxer(CommandResolverArguments arguments,
-            ToolCommandName toolCommandName)
+            ToolCommandName toolCommandName, bool allowRollForward = false)
         {
             if (!_toolManifest.TryFind(toolCommandName, out var toolManifestPackage))
             {
                 return null;
             }
+
+            var commandArgument = (allowRollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(arguments.CommandArguments); 
+            arguments.CommandArguments = commandArgument;
 
             if (_localToolsResolverCache.TryLoad(
                 new RestoredCommandIdentifier(

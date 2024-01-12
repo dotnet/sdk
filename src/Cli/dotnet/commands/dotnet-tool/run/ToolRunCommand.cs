@@ -33,20 +33,14 @@ namespace Microsoft.DotNet.Tools.Tool.Run
 
         public override int Execute()
         {
-            if (_toolManifest.TryFind(new ToolCommandName(_toolCommandName), out var toolManifestPackage))
-            {
-                if (toolManifestPackage.RollForward)
-                {
-                    _allowRollForward = true;
-                }
-            }
-
-                CommandSpec commandspec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
+            CommandSpec commandspec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
             {
                 // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
                 CommandName = $"dotnet-{_toolCommandName}",
-                CommandArguments = (_allowRollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(_forwardArgument)
-            });
+                CommandArguments = _forwardArgument,
+
+            }, _allowRollForward); ;
+
             if (commandspec == null)
             {
                 throw new GracefulException(
