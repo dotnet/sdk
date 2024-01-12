@@ -65,6 +65,17 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                             "--certificate-store-location", "CurrentUser",
                             "--certificate-subject-name", "CE40881FF5F0AD3E58965DA20A9F57",
                             "--certificate-password", "PlaceholderPassword"}, 0)]
+        [InlineData(new[] { "package", "search", "nuget"}, 0)]
+        [InlineData(new[] { "package", "search", "nuget",
+                                   "--source", "https://api.nuget.org/v3/index.json",
+                                   "--take", "10",
+                                   "--skip", "5",
+                                   "--prerelease",
+                                   "--exact-match",
+                                   "--interactive",
+                                   "--verbosity", "detailed",
+                                   "--format", "json"}, 0)]
+
         public void ItPassesCommandIfSupported(string[] inputArgs, int result)
         {
             // Arrange
