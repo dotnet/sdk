@@ -129,8 +129,9 @@
   <Target Name="UpdateEngCommonFiles"
           Condition="'$(UpdateEngCommonFiles)' == 'true' or '$(DotNetBuildVertical)' == 'true'"
           BeforeTargets="Build">
+    <!-- We assume that the eng/common files in Arcade are most up-to-date. -->
     <ItemGroup>
-      <OrchestratorEngCommonFile Include="$(RepositoryEngineeringDir)common\**\*" />
+      <OriginEngCommonFile Include="$(RepoRoot)src\arcade\eng\common\**\*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(OrchestratorEngCommonFile)"
