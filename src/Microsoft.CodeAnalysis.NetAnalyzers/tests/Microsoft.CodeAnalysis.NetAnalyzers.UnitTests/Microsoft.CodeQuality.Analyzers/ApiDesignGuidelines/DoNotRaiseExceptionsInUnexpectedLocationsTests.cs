@@ -316,6 +316,24 @@ public class C : IEquatable<C>
         }
 
         [Fact]
+        public async Task CSharpIEquatableEqualsAsExplicitInterfaceImplementationWithExceptionsAsync()
+        {
+            var code = @"
+using System;
+
+public class C : IEquatable<C>
+{
+    bool IEquatable<C>.Equals(C obj)
+    {
+        throw new Exception();
+    }
+}
+";
+            await VerifyCS.VerifyAnalyzerAsync(code,
+                GetCSharpNoExceptionsResultAt(8, 9, "System.IEquatable<C>.Equals", "Exception"));
+        }
+
+        [Fact]
         public async Task BasicIEquatableEqualsExceptionsAsync()
         {
             var code = @"
@@ -331,6 +349,24 @@ End Class
 
             await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(7, 9, "Equals", "Exception"));
+        }
+
+        [Fact]
+        public async Task BasicIEquatableEqualsAsExplicitInterfaceImplementationExceptionsAsync()
+        {
+            var code = @"
+Imports System
+
+Public Class C
+    Implements IEquatable(Of C)
+    Private Function Equals(obj As C) As Boolean Implements IEquatable(Of C).Equals
+        Throw New Exception()
+    End Function
+End Class
+";
+
+            await VerifyVB.VerifyAnalyzerAsync(code,
+                GetBasicNoExceptionsResultAt(7, 9, "Equals", "Exception"));
         }
 
         [Fact]

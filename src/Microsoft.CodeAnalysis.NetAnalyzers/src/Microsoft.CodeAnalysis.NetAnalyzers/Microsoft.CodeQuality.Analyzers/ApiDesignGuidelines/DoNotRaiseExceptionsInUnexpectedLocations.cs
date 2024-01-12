@@ -190,7 +190,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     HasAllowedExceptionsRule,
                     compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemArgumentException)),
 
-                new MethodCategory(IsEqualsOverrideOrInterfaceImplementation, true,
+                new MethodCategory(IsEqualsOverrideOrInterfaceImplementation, false,
                     NoAllowedExceptionsRule),
 
                 new MethodCategory(IsComparisonOperator, true,
@@ -243,7 +243,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         /// </summary>
         private static bool IsEqualsInterfaceImplementation(IMethodSymbol method, Compilation compilation)
         {
-            if (method.Name != WellKnownMemberNames.ObjectEquals)
+            if (method.Name != WellKnownMemberNames.ObjectEquals &&
+                method.ExplicitInterfaceImplementations.Length == 0)
             {
                 return false;
             }
