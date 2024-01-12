@@ -78,7 +78,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
 
-  <PropertyGroup Condition="''$(SelfContained)' == 'true' or '$(SelfContained)' == 'false'">
+  <PropertyGroup Condition="'$(SelfContained)' == 'true' or '$(SelfContained)' == 'false'">
     <PublishSelfContained Condition="'$(PublishSelfContained)' == ''">$(SelfContained)</PublishSelfContained>
   </PropertyGroup>
 
@@ -100,7 +100,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                    '$(PublishReadyToRun)' == 'true' or
                    '$(PublishSingleFile)' == 'true' or
                    '$(PublishAot)' == 'true'
-                   )
                  )">true</UseCurrentRuntimeIdentifier>
   </PropertyGroup>
 
