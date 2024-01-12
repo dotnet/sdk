@@ -4,13 +4,13 @@
     <TargetFrameworks>$(NetToolCurrent);$(NetFrameworkToolCurrent)</TargetFrameworks>
   </PropertyGroup>
 
-  <!-- Exclude files that depend on Microsoft.Build.Framework and Microsoft.Build.Utilities.Core. These will be included by users of this package. -->
+  <!-- Exclude files that depend on Microsoft.Build.Framework and Microsoft.Build.Utilities.Core. These should be manually included by other projects. -->
   <PropertyGroup>
     <DefaultItemExcludes>$(DefaultItemExcludes);Logging\MSBuildLog.cs</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="Runtime" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

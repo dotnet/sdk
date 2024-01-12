@@ -59,11 +59,12 @@ public static class ContainerBuilder
         {
             try
             {
+                var ridGraphPicker = new RidGraphManifestPicker(ridGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     baseImageName,
                     baseImageTag,
                     containerRuntimeIdentifier,
-                    ridGraphPath,
+                    ridGraphPicker,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (RepositoryNotFoundException)

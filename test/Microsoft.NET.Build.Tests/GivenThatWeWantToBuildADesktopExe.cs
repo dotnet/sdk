@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Framework;
+
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToBuildADesktopExe : SdkTest
@@ -33,12 +36,83 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
+        [WindowsOnlyTheory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void RuntimeIdentifiersInferredCorrectly(bool useRidGraph)
+        {
+            Func<string, string, string> findAssembly = (a, b) => default;
+            findAssembly = (string path, string file) =>
+            {
+                var dir = new DirectoryInfo(path);
+                foreach (var folder in dir.GetDirectories())
+                {
+                    var ret = findAssembly(folder.FullName, file);
+                    if (ret is not null)
+                    {
+                        return ret;
+                    }
+                }
+
+                foreach (var f in dir.GetFiles())
+                {
+                    if (Path.GetFileName(f.FullName).Equals(file, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return f.FullName;
+                    }
+                }
+
+                return null;
+            };
+
+            var rootDirectory = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..");
+            string microsoftNetBuildTasksAssembly = findAssembly(rootDirectory, "Microsoft.NET.Build.Tasks.dll");
+            string ridInferenceTargets = findAssembly(rootDirectory, "Microsoft.NET.RuntimeIdentifierInference.targets");
+            var projectContents = @$"
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
+    <UseRidGraph>{useRidGraph}</UseRidGraph>
+    <MicrosoftNETBuildTasksAssembly>{microsoftNetBuildTasksAssembly}</MicrosoftNETBuildTasksAssembly>
+    <HasRuntimeOutput>true</HasRuntimeOutput>
+  </PropertyGroup>
+
+  <Import Project=""{ridInferenceTargets}"" />
+</Project>";
+
+            var fileLocation = Path.GetTempFileName();
+
+            try
+            {
+                File.WriteAllText(fileLocation, projectContents);
+
+                var loggers = new List<ILogger>
+            {
+                new global::Microsoft.Build.Logging.ConsoleLogger(LoggerVerbosity.Detailed)
+            };
+
+                var collection = new ProjectCollection(null, loggers, ToolsetDefinitionLocations.Default);
+
+                var project = collection.LoadProject(fileLocation, new Dictionary<string, string>(), null);
+
+                project.GetPropertyValue("RuntimeIdentifier").Should().Be(useRidGraph ? "win7-x86" : "win-x86");
+            }
+            finally
+            {
+                if (File.Exists(fileLocation))
+                {
+                    File.Delete(fileLocation);
+                }
+            }
+        }
+
         //  Windows only because default RuntimeIdentifier only applies when current OS is Windows
         [WindowsOnlyTheory]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", false, "AnyCPU")]
         [InlineData("Microsoft.DiasymReader.Native/1.7.0", true, "x86")]
-        [InlineData("SQLite/3.13.0", false, "x86")]
-        [InlineData("SQLite/3.13.0", true, "x86")]
+        [InlineData("Libuv/1.10.0", false, "x86")]
+        [InlineData("Libuv/1.10.0", true, "x86")]
 
         public void PlatformTargetInferredCorrectly(string packageToReference, bool referencePlatformPackage, string expectedPlatform)
         {

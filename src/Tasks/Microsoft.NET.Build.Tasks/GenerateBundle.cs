@@ -6,7 +6,7 @@ using Microsoft.NET.HostModel.Bundle;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateBundle : TaskWithAssemblyResolveHooks
+    public class GenerateBundle : TaskBase
     {
         [Required]
         public ITaskItem[] FilesToBundle { get; set; }

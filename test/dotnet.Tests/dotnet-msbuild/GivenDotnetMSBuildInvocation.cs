@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetMSBuildInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private const string ExpectedPrefix = "-maxcpucount -verbosity:m";
+        private const string ExpectedPrefix = "-maxcpucount -verbosity:m -tlp:default=auto";
         private static readonly string WorkingDirectory = TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetPackInvocation));
 
         [Theory]

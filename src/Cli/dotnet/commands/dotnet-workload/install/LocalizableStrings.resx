@@ -183,6 +183,9 @@
   <data name="PrintDownloadLinkOnlyDescription" xml:space="preserve">
     <value>Only print the list of links to download without downloading.</value>
   </data>
+  <data name="WorkloadSetMode" xml:space="preserve">
+    <value>Control whether future workload operations should use workload sets or loose manifests.</value>
+  </data>
   <data name="DownloadToCacheOptionDescription" xml:space="preserve">
     <value>Download packages needed to install a workload to a folder that can be used for offline installation.</value>
   </data>
