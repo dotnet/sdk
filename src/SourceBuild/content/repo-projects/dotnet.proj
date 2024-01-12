@@ -1,14 +1,8 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
-
-    <!--
-      The default PackageVersionPropsFlowType behavior (DependenciesOnly) triggers logic that looks for a Version.Details.xml file.
-      Setting the type to AllPackages will skip that logic.
-    -->
-    <PackageVersionPropsFlowType>AllPackages</PackageVersionPropsFlowType>
+    <!-- This is a wrapper project that doesn't build anything. -->
+    <IsUtilityProject>true</IsUtilityProject>
   </PropertyGroup>
 
   <!-- This project file serves a couple of purpose.
@@ -18,7 +12,7 @@
 
   <ItemGroup>
     <!-- Toolsets -->
-    <RepositoryReference Include="source-build-reference-packages" />
+    <RepositoryReference Include="source-build-reference-packages" Condition="'$(DotNetBuildFromSource)' == 'true'" />
     <RepositoryReference Include="arcade" />
 
     <!-- Product Repos -->
@@ -28,9 +22,10 @@
     <RepositoryReference Include="emsdk" />
     <RepositoryReference Include="cecil" />
     <RepositoryReference Include="symreader" />
-    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
     <RepositoryReference Include="xdt" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn-analyzers" />
@@ -48,15 +43,10 @@
     <RepositoryReference Include="installer" />
 
     <!-- Package source-build artifacts -->
-    <RepositoryReference Include="package-source-build" />
+    <RepositoryReference Include="package-source-build" Condition="'$(DotNetBuildFromSource)' == 'true'" />
 
     <!-- Testing. -->
     <RepositoryReference Include="scenario-tests" />
-
   </ItemGroup>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-
-  <Target Name="RepoBuild" />
 
 </Project>

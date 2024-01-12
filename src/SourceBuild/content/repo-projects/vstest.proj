@@ -1,18 +1,16 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:SemanticVersioningV1=true</BuildCommandArgs>
-    <BuildCommand>$(ProjectDirectory)\eng\common\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
     <DeterministicBuildOptOut>true</DeterministicBuildOptOut>
+
+    <BuildArgs>$(BuildArgs) /p:SemanticVersioningV1=true</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
+    <RepositoryReference Include="arcade" />
     <RepositoryReference Include="diagnostics" />
     <RepositoryReference Include="runtime" />
-    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

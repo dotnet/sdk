@@ -2,19 +2,22 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <SourceBuildMSBuildSdkResolverPath>$(DotNetSdkResolversDir)$(MSBuildProjectName)\$(MSBuildProjectName).dll</SourceBuildMSBuildSdkResolverPath>
   </PropertyGroup>
 
   <Target Name="InstallResolver">
+    <PropertyGroup>
+      <SourceBuildMSBuildSdkResolverPath>$([MSBuild]::NormalizePath('$(DotNetRoot)', 'sdk', '$(NETCoreSdkVersion)', 'SdkResolvers', '$(MSBuildProjectName)', '$(MSBuildProjectName).dll'))</SourceBuildMSBuildSdkResolverPath>
+    </PropertyGroup>
+
     <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(SourceBuildMSBuildSdkResolverPath)" />
-    <Message Importance="High" Text="Adding resolver to SDK: $(MSBuildProjectName) -> $(SourceBuildMSBuildSdkResolverPath)" />
+    <Message Text="Adding resolver to SDK: $(MSBuildProjectName) -> $(SourceBuildMSBuildSdkResolverPath)" Importance="High"  />
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" Version="15.7.179" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="15.7.179" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.7.179" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.7.179" />
+    <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
   </ItemGroup>
 
 </Project>
