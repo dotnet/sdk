@@ -428,6 +428,24 @@ public abstract class TestObject<T2> : IEquatable<TestObject<T2>>, IComparable<T
 ");
         }
 
+        [Fact, WorkItem(7126, "https://github.com/dotnet/roslyn-analyzers/issues/7126")]
+        public async Task CSharp_CA1000_ShouldNotGenerate_VirtualMember()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+public interface ITestInterface<T>
+{
+    static abstract string AbstractMember { get; }
+
+    static virtual string VirtualMember => """";
+}
+",
+DiagnosticResult.CompilerError("CS8703").WithSpan(4, 28, 4, 42).WithArguments("abstract", "7.3", "11.0"),
+DiagnosticResult.CompilerError("CS8919").WithSpan(4, 45, 4, 48),
+DiagnosticResult.CompilerError("CS8703").WithSpan(6, 27, 6, 40).WithArguments("virtual", "7.3", "11.0"),
+DiagnosticResult.CompilerError("CS8919").WithSpan(6, 44, 6, 46)
+);
+        }
+
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
 #pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic().WithLocation(line, column);

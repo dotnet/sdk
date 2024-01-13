@@ -55,6 +55,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         return;
                     }
 
+                    // Virtual members on generic types can't be called directly, so they don't suffer the problem this analyzer exists to prevent.
+                    if (symbol.IsAbstract || symbol.IsVirtual)
+                    {
+                        return;
+                    }
+
                     symbolAnalysisContext.ReportDiagnostic(symbol.CreateDiagnostic(Rule, symbol.Name));
                 }, SymbolKind.Method, SymbolKind.Property);
         }
