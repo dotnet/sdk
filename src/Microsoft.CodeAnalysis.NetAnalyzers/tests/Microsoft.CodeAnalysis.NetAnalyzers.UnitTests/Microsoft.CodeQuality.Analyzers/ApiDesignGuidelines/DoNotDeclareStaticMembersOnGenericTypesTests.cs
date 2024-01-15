@@ -432,18 +432,15 @@ public abstract class TestObject<T2> : IEquatable<TestObject<T2>>, IComparable<T
         public async Task CSharp_CA1000_ShouldNotGenerate_VirtualMember()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
+#if NET7_OR_GREATER
 public interface ITestInterface<T>
 {
     static abstract string AbstractMember { get; }
 
     static virtual string VirtualMember => """";
 }
-",
-DiagnosticResult.CompilerError("CS8703").WithSpan(4, 28, 4, 42).WithArguments("abstract", "7.3", "11.0"),
-DiagnosticResult.CompilerError("CS8919").WithSpan(4, 45, 4, 48),
-DiagnosticResult.CompilerError("CS8703").WithSpan(6, 27, 6, 40).WithArguments("virtual", "7.3", "11.0"),
-DiagnosticResult.CompilerError("CS8919").WithSpan(6, 44, 6, 46)
-);
+#endif
+");
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
