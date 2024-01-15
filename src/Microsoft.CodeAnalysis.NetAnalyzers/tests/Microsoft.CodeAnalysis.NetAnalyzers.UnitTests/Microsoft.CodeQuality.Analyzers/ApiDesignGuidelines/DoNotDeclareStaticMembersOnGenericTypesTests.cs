@@ -433,7 +433,7 @@ public abstract class TestObject<T2> : IEquatable<TestObject<T2>>, IComparable<T
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
 #if NET7_OR_GREATER
-public interface ITestInterface<T>
+public interface ITestInterface
 {
     static abstract string AbstractMember { get; }
 
