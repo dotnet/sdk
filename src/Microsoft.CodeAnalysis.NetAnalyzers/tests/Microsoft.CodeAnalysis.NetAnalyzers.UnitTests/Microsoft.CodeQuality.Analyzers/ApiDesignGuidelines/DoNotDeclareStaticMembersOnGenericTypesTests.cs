@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -435,7 +435,7 @@ public abstract class TestObject<T2> : IEquatable<TestObject<T2>>, IComparable<T
 #if NET7_OR_GREATER
 public interface ITestInterface<T>
 {
-    static abstract string AbstractMember { get; }
+    static abstract T AbstractMember { get; }
 
     static virtual string VirtualMember => """";
 }
