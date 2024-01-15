@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Cli
             EnableDefaultExceptionHandler = false,
             EnableParseErrorReporting = true,
             EnablePosixBundling = false,
-            Directives = { new DiagramDirective(), new SuggestDirective() },
+            Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() },
             ResponseFileTokenReplacer = TokenPerLine
         };
 
