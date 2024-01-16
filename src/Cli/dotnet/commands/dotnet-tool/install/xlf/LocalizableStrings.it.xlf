@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="AllowPackageDowngradeOptionDescription">
         <source>Allow package downgrade when installing a .NET tool package.</source>
-        <target state="new">Allow package downgrade when installing a .NET tool package.</target>
+        <target state="translated">Consente il downgrade del pacchetto durante l'installazione di un pacchetto di strumenti .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="CreateManifestIfNeededOptionDescription">
