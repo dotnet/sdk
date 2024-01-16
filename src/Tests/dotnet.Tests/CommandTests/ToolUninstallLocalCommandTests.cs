@@ -212,7 +212,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""commands"": [
         ""t-rex""
       ],
-      ""rollForward"": ""False""
+      ""rollForward"": false
     }
   }
 }";
