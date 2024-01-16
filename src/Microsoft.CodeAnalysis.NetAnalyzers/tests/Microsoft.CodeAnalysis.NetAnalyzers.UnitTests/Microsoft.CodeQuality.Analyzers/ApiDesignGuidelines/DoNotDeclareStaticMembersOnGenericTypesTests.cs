@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
@@ -426,6 +426,28 @@ public abstract class TestObject<T2> : IEquatable<TestObject<T2>>, IComparable<T
     }
 }
 ");
+        }
+
+        [Fact, WorkItem(7126, "https://github.com/dotnet/roslyn-analyzers/issues/7126")]
+        public async Task CSharp_CA1000_ShouldNotGenerate_VirtualMember()
+        {
+            string code = @"
+public interface ITestInterface<T>
+{
+    static abstract T AbstractMember { get; }
+
+    static virtual string VirtualMember => """";
+}
+";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
+                TestState =
+                {
+                    Sources = { code },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+                }
+            }.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
