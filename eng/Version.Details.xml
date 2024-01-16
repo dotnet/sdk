@@ -121,11 +121,11 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>d504a7b7dab277712646747e9f5cce0d9507245e</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="6.3.3-rc.3">
+    <Dependency Name="NuGet.Build.Tasks" Version="6.3.4-rc.2">
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
       <Sha>5e444458a8c4a2dac9806fc1d387b7f157669540</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.3.3-rc.3">
+    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.3.4-rc.2">
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
       <Sha>5e444458a8c4a2dac9806fc1d387b7f157669540</Sha>
     </Dependency>
