@@ -4,9 +4,9 @@
     <!-- Microsoft.CodeAnalysis.Workspaces.MSBuild transitively references M.Bcl.AsyncInterfaces.
          Adding an explicit dependency to make sure the latest version is used instead of the SBRP
          one under source build. -->
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
-      <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="9.0.0-alpha.1.24064.3">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>6f9d6569684cc17015aa6fc5f9d9a5f7580ade97</Sha>
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis" Version="4.9.0-3.23629.3">
       <Uri>https://github.com/dotnet/roslyn</Uri>
@@ -32,17 +32,17 @@
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-alpha.1.23611.1">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-alpha.1.24064.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>c28bec4d3d63849c9e60dee1e7174b9a180a7e55</Sha>
+      <Sha>6f9d6569684cc17015aa6fc5f9d9a5f7580ade97</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.0-alpha.1.23611.1">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.0-alpha.1.24064.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>c28bec4d3d63849c9e60dee1e7174b9a180a7e55</Sha>
+      <Sha>6f9d6569684cc17015aa6fc5f9d9a5f7580ade97</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.0-alpha.1.23611.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.0-alpha.1.24064.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>c28bec4d3d63849c9e60dee1e7174b9a180a7e55</Sha>
+      <Sha>6f9d6569684cc17015aa6fc5f9d9a5f7580ade97</Sha>
       <SourceBuild RepoName="runtime" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.505902">
