@@ -444,13 +444,8 @@ public interface ITestInterface<T>
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
                 TestState =
                 {
-                    Sources = { code }
-                },
-                ExpectedDiagnostics =
-                {
-                    // Warnings requiring .NET 7+
-                    DiagnosticResult.CompilerError("CS8919").WithSpan(4, 40, 4, 43),
-                    DiagnosticResult.CompilerError("CS8919").WithSpan(6, 44, 6, 46),
+                    Sources = { code },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net60
                 }
             }.RunAsync();
         }
