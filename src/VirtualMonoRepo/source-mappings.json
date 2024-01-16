@@ -160,7 +160,7 @@
                 "src/application-insights/**/NuGet.config",
                 "src/humanizer/samples/**/*.js",
                 "src/newtonsoft-json/**/NuGet.Config",
-                "src/spectre-console/docs/package.json",
+                "src/spectre-console/docs/**",
                 "src/spectre-console/examples/Console/Canvas/Mandelbrot.cs"
             ]
         },
