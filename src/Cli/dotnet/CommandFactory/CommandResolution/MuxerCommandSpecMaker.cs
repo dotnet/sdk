@@ -11,33 +11,23 @@ namespace Microsoft.DotNet.CommandFactory
             string commandPath,
             IEnumerable<string> commandArguments)
         {
-            var arguments = new List<string>();
-
             var muxer = new Muxer();
-
             var host = muxer.MuxerPath;
+
             if (host == null)
             {
                 throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
             }
-            IEnumerable<string> modifiedArguments = commandArguments;
 
-            // Add --roll-forward argument first if exists
-            if (commandArguments != null && commandArguments.Any(arg => arg.Equals("--roll-forward", StringComparison.OrdinalIgnoreCase)))
-            {
-                int index = commandArguments.ToList().IndexOf("--roll-forward");
-                arguments.Add(commandArguments.ElementAt(index));
-                arguments.Add(commandArguments.ElementAt(index + 1));
-                modifiedArguments = commandArguments.Where((element, i) => i != index && i != index + 1);
-            }
+            var previousArg = string.Empty;
 
-            arguments.Add(commandPath);
+            // Group the arguments by if the previous argument or the current argument is --roll-forward.
+            var argGroups = (commandArguments ?? [])
+                .GroupBy(a => previousArg.Equals("--roll-forward", StringComparison.OrdinalIgnoreCase)
+                | (previousArg = a).Equals("--roll-forward", StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
-            if (modifiedArguments != null)
-            {
-                arguments.AddRange(modifiedArguments);
-            }
-
+            string[] arguments = [..argGroups.Where(g => g.Key).SelectMany(g => g), commandPath, .. argGroups.Where(g => !g.Key).SelectMany(g => g)];
             return CreateCommandSpec(host, arguments);
         }
 
