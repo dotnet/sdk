@@ -46,21 +46,21 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""commands"": [
         ""t-rex""
       ],
-      ""rollForward"": ""False""
+      ""rollForward"": false
     },
     ""dotnetsay"": {
       ""version"": ""2.1.4"",
       ""commands"": [
         ""dotnetsay""
       ],
-      ""rollForward"": ""False""
+      ""rollForward"": false
     },
     ""new-tool"": {
       ""version"": ""3.0.0"",
       ""commands"": [
         ""newtool""
       ],
-      ""rollForward"": ""False""
+      ""rollForward"": false
     }
   }
 }");
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""commands"": [
         ""newtool""
       ],
-      ""rollForward"": ""False""
+      ""rollForward"": false
     }
   }
 }");
@@ -201,7 +201,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""commands"": [
         ""t-rex""
       ],
-      ""rollForward"": ""False""
+      ""rollForward"": false
     }
   }
 }");
@@ -288,14 +288,14 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""commands"": [
         ""t-rex3""
       ],
-      ""rollForward"": ""False""
+      ""rollForward"": false
     },
     ""dotnetsay"": {
       ""version"": ""2.1.4"",
       ""commands"": [
         ""dotnetsay""
       ],
-      ""rollForward"": ""False""
+      ""rollForward"": false
     }
   }
 }", "And original tools entry order is preserved.");
@@ -311,14 +311,14 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
       ""commands"": [
         ""t-rex""
       ],
-      ""rollForward"": ""False""
+      ""rollForward"": false
     },
     ""dotnetsay"": {
       ""version"": ""2.1.4"",
       ""commands"": [
         ""dotnetsay""
       ],
-      ""rollForward"": ""False""
+      ""rollForward"": false
     }
   }
 }";
