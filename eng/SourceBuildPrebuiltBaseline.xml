@@ -7,6 +7,10 @@
          This version does not have source build intermediate.
          When a newer version is picked up, the intermediate should be utilized. -->
     <UsagePattern IdentityGlob="Microsoft.CodeAnalysis.AnalyzerUtilities/*3.3.0*" />
+    <!-- Transitive dependency of Roslyn -->
+    <UsagePattern IdentityGlob="System.Collections.Immutable/8.0.0" />
+    <!-- Transitive dependency of Roslyn -->
+    <UsagePattern IdentityGlob="System.Reflection.Metadata/8.0.0" />
   </IgnorePatterns>
   <Usages>
     <Usage Id="System.Composition" Version="7.0.0" />
