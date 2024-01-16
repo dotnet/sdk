@@ -28,7 +28,7 @@ stages:
     - script: |
         set -e
         sha=`./.dotnet/dotnet darc vmr get-version --vmr "$(Build.SourcesDirectory)" installer`
-        echo "##vso[build.addbuildtag]installer-$sha"
+        echo "##vso[build.addbuildtag]$sha"
       displayName: Tag the build
       workingDirectory: $(Build.SourcesDirectory)/src/installer
 
