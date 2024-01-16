@@ -81,8 +81,12 @@ namespace Microsoft.DotNet.CommandFactory
                 return null;
             }
 
-            var commandArgument = (allowRollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(arguments.CommandArguments); 
-            arguments.CommandArguments = commandArgument;
+            if( arguments.CommandArguments != null)
+            {
+                var commandArgument = (allowRollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(arguments.CommandArguments);
+                arguments.CommandArguments = commandArgument;
+            }
+            
 
             if (_localToolsResolverCache.TryLoad(
                 new RestoredCommandIdentifier(
