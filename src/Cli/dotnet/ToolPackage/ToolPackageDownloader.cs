@@ -144,11 +144,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     }
                                        
                     CreateAssetFile(packageId, packageVersion, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
-
-                    if (isGlobalToolRollForward)
-                    {
-                        UpdateRuntimeConfig(packageId, packageVersion, toolDownloadDir);
-                    }
                     
                     DirectoryPath toolReturnPackageDirectory;
                     DirectoryPath toolReturnJsonParentDirectory;
@@ -168,10 +163,17 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                         toolReturnJsonParentDirectory = _localToolAssetDir;
                     }
 
-                    return new ToolPackageInstance(id: packageId,
+                    var toolPackageInstance = new ToolPackageInstance(id: packageId,
                                     version: packageVersion,
                                     packageDirectory: toolReturnPackageDirectory,
                                     assetsJsonParentDirectory: toolReturnJsonParentDirectory);
+
+                    if (isGlobalToolRollForward)
+                    {
+                        UpdateRuntimeConfig(toolPackageInstance);
+                    }
+
+                    return toolPackageInstance;
                 },
                 rollback: () =>
                 {
@@ -204,51 +206,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         }
 
         private static void UpdateRuntimeConfig(
-            PackageId packageId,
-            NuGetVersion packageVersion,
-            DirectoryPath toolDownloadDir
+            ToolPackageInstance toolPackageInstance
             )
         {
-            var toolsDirectory = Path.Combine(toolDownloadDir.ToString().Trim('"'), packageId.ToString(), packageVersion.ToString(), "tools");
-
-            // TBD: if roll forward all frameworks
-            string[] subDirectories = Directory.GetDirectories(toolsDirectory);
-            foreach (string subDirectory in subDirectories)
-            {
-                UpdateRuntimeConfigFile(subDirectory, packageId);
-            }
-        }
-
-        private static void UpdateRuntimeConfigFile(
-            string frameworkDir,
-            PackageId packageId
-            )
-        {
-            // Get the setting file
-            var settingFilePath = Path.Combine(frameworkDir, "any", "DotnetToolSettings.xml");
-            if (!File.Exists(settingFilePath))
-            {
-                throw new ToolPackageException(
-                    string.Format(
-                        CommonLocalizableStrings.ToolSettingsNotFound,
-                        packageId
-                        ));
-            }
-
-            // Get runtimeConfig file
-            string runtimeConfigFileFolder = null;
-            XDocument dotnetToolSettings = XDocument.Load(settingFilePath);
-            XElement commandElement = dotnetToolSettings.Descendants("Command").FirstOrDefault();
-            if (commandElement != null)
-            {
-                XAttribute entryPointAttribute = commandElement.Attribute("EntryPoint");
-                if (entryPointAttribute != null)
-                {
-                    runtimeConfigFileFolder = entryPointAttribute.Value;
-                }
-            }
-
-            var runtimeConfigFilePath = Path.Combine(Path.GetDirectoryName(settingFilePath), $"{Path.GetFileNameWithoutExtension(runtimeConfigFileFolder)}{".runtimeconfig.json"}");
+            var executableFilePath = toolPackageInstance.Commands[0].Executable;
+            var runtimeConfigFilePath = Path.ChangeExtension(executableFilePath.ToString(), ".runtimeconfig.json");
 
             // Update the runtimeconfig.json file
             string existingJson = File.ReadAllText(runtimeConfigFilePath);
