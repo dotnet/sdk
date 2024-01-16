@@ -316,6 +316,24 @@ public class C : IEquatable<C>
         }
 
         [Fact]
+        public async Task CSharpIEquatableEqualsAsExplicitInterfaceImplementationWithExceptionsAsync()
+        {
+            var code = @"
+using System;
+
+public class C : IEquatable<C>
+{
+    bool IEquatable<C>.Equals(C obj)
+    {
+        throw new Exception();
+    }
+}
+";
+            await VerifyCS.VerifyAnalyzerAsync(code,
+                GetCSharpNoExceptionsResultAt(8, 9, "System.IEquatable<C>.Equals", "Exception"));
+        }
+
+        [Fact]
         public async Task BasicIEquatableEqualsExceptionsAsync()
         {
             var code = @"
@@ -331,6 +349,24 @@ End Class
 
             await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicNoExceptionsResultAt(7, 9, "Equals", "Exception"));
+        }
+
+        [Fact]
+        public async Task BasicIEquatableEqualsAsExplicitInterfaceImplementationExceptionsAsync()
+        {
+            var code = @"
+Imports System
+
+Public Class C
+    Implements IEquatable(Of C)
+    Private Function Equals(obj As C) As Boolean Implements IEquatable(Of C).Equals
+        Throw New Exception()
+    End Function
+End Class
+";
+
+            await VerifyVB.VerifyAnalyzerAsync(code,
+                GetBasicNoExceptionsResultAt(7, 9, "Equals", "Exception"));
         }
 
         [Fact]
@@ -360,6 +396,32 @@ public class D : IHashCodeProvider
         }
 
         [Fact]
+        public async Task CSharpIHashCodeProviderGetHashCodeAsExplicitInterfaceImplementationAsync()
+        {
+            var code = @"
+using System;
+using System.Collections;
+public class C : IHashCodeProvider
+{
+    int IHashCodeProvider.GetHashCode(object obj)
+    {
+        throw new Exception();
+    }
+}
+
+public class D : IHashCodeProvider
+{
+    int IHashCodeProvider.GetHashCode(object obj)
+    {
+        throw new ArgumentException(""obj""); // this is fine.
+    }
+}
+";
+            await VerifyCS.VerifyAnalyzerAsync(code,
+                GetCSharpAllowedExceptionsResultAt(8, 9, "System.Collections.IHashCodeProvider.GetHashCode", "Exception"));
+        }
+
+        [Fact]
         public async Task BasicIHashCodeProviderGetHashCodeAsync()
         {
             var code = @"
@@ -382,6 +444,31 @@ End Class
 
             await VerifyVB.VerifyAnalyzerAsync(code,
                         GetBasicAllowedExceptionsResultAt(7, 9, "GetHashCode", "Exception"));
+        }
+
+        [Fact]
+        public async Task BasicIHashCodeProviderGetHashCodeAsExplicitInterfaceImplementationAsync()
+        {
+            var code = @"
+Imports System
+Imports System.Collections
+Public Class C
+    Implements IHashCodeProvider
+    Private Function GetHashCode(obj As Object) As Integer Implements IHashCodeProvider.GetHashCode
+        Throw New Exception()
+    End Function
+End Class
+
+Public Class D
+    Implements IHashCodeProvider
+    Private Function GetHashCode(obj As Object) As Integer Implements IHashCodeProvider.GetHashCode
+        Throw New ArgumentException() ' This is fine.
+    End Function
+End Class
+";
+
+            await VerifyVB.VerifyAnalyzerAsync(code,
+                GetBasicAllowedExceptionsResultAt(7, 9, "GetHashCode", "Exception"));
         }
 
         [Fact]
@@ -408,6 +495,29 @@ public class C : IEqualityComparer<C>
         }
 
         [Fact]
+        public async Task CSharpIEqualityComparerWithExplicitInterfaceImplementationsAsync()
+        {
+            var code = @"
+using System;
+using System.Collections.Generic;
+public class C : IEqualityComparer<C>
+{
+    bool IEqualityComparer<C>.Equals(C obj1, C obj2)
+    {
+        throw new Exception();
+    }
+    int IEqualityComparer<C>.GetHashCode(C obj)
+    {
+        throw new Exception();
+    }
+}
+";
+            await VerifyCS.VerifyAnalyzerAsync(code,
+                GetCSharpNoExceptionsResultAt(8, 9, "System.Collections.Generic.IEqualityComparer<C>.Equals", "Exception"),
+                GetCSharpAllowedExceptionsResultAt(12, 9, "System.Collections.Generic.IEqualityComparer<C>.GetHashCode", "Exception"));
+        }
+
+        [Fact]
         public async Task BasicIEqualityComparerAsync()
         {
             var code = @"
@@ -419,6 +529,28 @@ Public Class C
         Throw New Exception()
     End Function
     Public Function GetHashCode(obj As C) As Integer Implements IEqualityComparer(Of C).GetHashCode
+        Throw New Exception()
+    End Function
+End Class
+";
+
+            await VerifyVB.VerifyAnalyzerAsync(code,
+                GetBasicNoExceptionsResultAt(7, 9, "Equals", "Exception"),
+                GetBasicAllowedExceptionsResultAt(10, 9, "GetHashCode", "Exception"));
+        }
+
+        [Fact]
+        public async Task BasicIEqualityComparerWithExplicitInterfaceImplementationsAsync()
+        {
+            var code = @"
+Imports System
+Imports System.Collections.Generic
+Public Class C
+    Implements IEqualityComparer(Of C)
+    Private Function Equals(obj1 As C, obj2 As C) As Boolean Implements IEqualityComparer(Of C).Equals
+        Throw New Exception()
+    End Function
+    Private Function GetHashCode(obj As C) As Integer Implements IEqualityComparer(Of C).GetHashCode
         Throw New Exception()
     End Function
 End Class
