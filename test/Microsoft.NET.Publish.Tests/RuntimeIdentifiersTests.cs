@@ -267,7 +267,7 @@ namespace Microsoft.NET.Publish.Tests
         public void SomePublishPropertiesInferSelfContained(string property, bool useFrameworkDependentDefaultTargetFramework)
         {
             // Note: there is a bug with PublishAot I think where this test will fail for Aot if the testname is too long. Do not make it longer.
-            var tfm = useFrameworkDependentDefaultTargetFramework ? ToolsetInfo.CurrentTargetFramework : "net7.0"; // net 7 is the last non FDD default TFM at the time of this PR.
+            var tfm = useFrameworkDependentDefaultTargetFramework ? "net8.0" : "net7.0"; // net 7 is the last non FDD default TFM at the time of this PR.
             var testProject = new TestProject()
             {
                 IsExe = true,
