@@ -431,16 +431,28 @@ public abstract class TestObject<T2> : IEquatable<TestObject<T2>>, IComparable<T
         [Fact, WorkItem(7126, "https://github.com/dotnet/roslyn-analyzers/issues/7126")]
         public async Task CSharp_CA1000_ShouldNotGenerate_VirtualMember()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-#if NET7_OR_GREATER
+            string code = @"
 public interface ITestInterface<T>
 {
     static abstract T AbstractMember { get; }
 
     static virtual string VirtualMember => """";
 }
-#endif
-");
+";
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
+                TestState =
+                {
+                    Sources = { code }
+                },
+                ExpectedDiagnostics =
+                {
+                    // Warnings requiring .NET 7+
+                    DiagnosticResult.CompilerError("CS8919").WithSpan(4, 40, 4, 43),
+                    DiagnosticResult.CompilerError("CS8919").WithSpan(6, 44, 6, 46),
+                }
+            }.RunAsync();
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
