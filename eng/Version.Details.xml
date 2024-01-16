@@ -13,9 +13,9 @@
       <Sha>ebb588725e707db23d8723b633258e7eb918277b</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.23628.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="9.0.0-alpha.1.24059.3">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>6ff79a26cb695961c47881db70b0b58b9231bcba</Sha>
+      <Sha>6513a2c0cd7be2706742181af63d717a90cec5be</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23471.1">
