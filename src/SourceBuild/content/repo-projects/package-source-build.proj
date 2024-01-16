@@ -45,7 +45,7 @@
       Directories="$(SourceBuildReferencePackagesDestination)extractArtifacts/" />
 
     <PropertyGroup>
-      <SourceBuiltTarballName>$(CollapsedOutputPath)$(SourceBuiltArtifactsTarballName).$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid)$(ArchiveExtension)</SourceBuiltTarballName>
+      <SourceBuiltTarballName>$(SharedOutputPath)$(SourceBuiltArtifactsTarballName).$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid)$(ArchiveExtension)</SourceBuiltTarballName>
       <SourceBuiltVersionFileName>.version</SourceBuiltVersionFileName>
     </PropertyGroup>
 
@@ -59,7 +59,7 @@
       Lines="@(VersionFileContent)"
       Overwrite="true" />
 
-    <MakeDir Directories="$(CollapsedOutputPath)" />
+    <MakeDir Directories="$(SharedOutputPath)" />
     <Exec Command="tar --numeric-owner --exclude='Microsoft.SourceBuild.Intermediate.*.nupkg' -czf $(SourceBuiltTarballName) $(SourceBuiltVersionFileName) *.nupkg *.props SourceBuildReferencePackages/"
           WorkingDirectory="$(SourceBuiltPackagesPath)" />
 

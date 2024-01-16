@@ -124,14 +124,13 @@
 
   <!-- TODO: Remove when all repos use a consistent set of eng/common files: https://github.com/dotnet/source-build/issues/3710. -->
   <Target Name="UpdateEngCommonFiles"
-          Condition="'$(RepositoryName)' != 'arcade' and ('$(UpdateEngCommonFiles)' == 'true' or '$(DotNetBuildVertical)' == 'true')"
+          Condition="'$(UpdateEngCommonFiles)' == 'true' or '$(DotNetBuildVertical)' == 'true'"
           BeforeTargets="Build">
-    <!-- We assume that the eng/common files in Arcade are most up-to-date. -->
     <ItemGroup>
-      <OriginEngCommonFile Include="$(RepoRoot)src\arcade\eng\common\**\*" />
+      <OrchestratorEngCommonFile Include="$(RepositoryEngineeringDir)common\**\*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(OriginEngCommonFile)"
+    <Copy SourceFiles="@(OrchestratorEngCommonFile)"
           DestinationFolder="$(ProjectDirectory)eng\common\%(RecursiveDir)"
           SkipUnchangedFiles="true" />
   </Target>
@@ -541,7 +540,7 @@
           Outputs="$(BaseIntermediateOutputPath)WritePrebuiltUsageData.complete">
     <!-- Save the PVP snapshot of each build step to be evaluated while building the report. -->
     <ItemGroup>
-      <PackageVersionPropsSnapshotFiles Include="$(CollapsedIntermediatePath)PackageVersions.*.Snapshot.props" />
+      <PackageVersionPropsSnapshotFiles Include="$(SharedIntermediateOutputPath)PackageVersions.*.Snapshot.props" />
     </ItemGroup>
     <Copy SourceFiles="@(PackageVersionPropsSnapshotFiles)" DestinationFolder="$(PackageReportDir)snapshots/" />
 

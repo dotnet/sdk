@@ -31,6 +31,7 @@ function print_help () {
 MSBUILD_ARGUMENTS=("-flp:v=detailed")
 MSBUILD_ARGUMENTS=("--tl:off")
 # TODO: Make it possible to invoke this script for non source build use cases
+# https://github.com/dotnet/source-build/issues/3965
 MSBUILD_ARGUMENTS+=("/p:DotNetBuildFromSource=true")
 MSBUILD_ARGUMENTS+=("/p:DotNetBuildVertical=false")
 CUSTOM_PACKAGES_DIR=''
