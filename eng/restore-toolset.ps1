@@ -154,7 +154,7 @@ function CleanOutStage0ToolsetsAndRuntimes {
       Remove-Item (Join-Path $aspnetRuntimePath "$majorVersion.*") -Recurse
       Remove-Item (Join-Path $coreRuntimePath "$majorVersion.*") -Recurse
       Remove-Item (Join-Path $wdRuntimePath "$majorVersion.*") -Recurse
-      Remove-Item (Join-Path $sdkPath "$majorVersion.*") -Recurse
+      Remove-Item (Join-Path $sdkPath "*") -Recurse
       Remove-Item (Join-Path $dotnetRoot "packs") -Recurse
       Remove-Item (Join-Path $dotnetRoot "sdk-manifests") -Recurse
       Remove-Item (Join-Path $dotnetRoot "templates") -Recurse
