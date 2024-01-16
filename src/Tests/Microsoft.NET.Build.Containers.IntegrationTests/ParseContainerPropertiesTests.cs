@@ -12,6 +12,16 @@ namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
 public class ParseContainerPropertiesTests
 {
+
+    public static object _syncObject = new object();
+    private static bool SynchronizedBuild(Microsoft.Build.Execution.ProjectInstance project, string target, Microsoft.Build.Framework.ILogger logger)
+    {
+        lock (_syncObject)
+        {
+            return project.Build(target, new[] { logger });
+        }
+    }
+
     [Fact]
     public void Baseline()
     {
@@ -24,7 +34,7 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.True(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.True(SynchronizedBuild(instance, ComputeContainerConfig, logs));
 
         Assert.Equal("mcr.microsoft.com", instance.GetPropertyValue(ContainerBaseRegistry));
         Assert.Equal("dotnet/runtime", instance.GetPropertyValue(ContainerBaseName));
@@ -45,7 +55,7 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.True(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.True(SynchronizedBuild(instance, ComputeContainerConfig, logs));
 
         Assert.Equal("mcr.microsoft.com", instance.GetPropertyValue(ContainerBaseRegistry));
         Assert.Equal("dotnet-runtime", instance.GetPropertyValue(ContainerBaseName));
@@ -64,7 +74,7 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.True(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.True(SynchronizedBuild(instance, ComputeContainerConfig, logs));
         Assert.Contains(logs.Messages, m => m.Message?.Contains("'dotnet testimage' was not a valid container image name, it was normalized to 'dotnet-testimage'") == true);
     }
 
@@ -80,7 +90,7 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.False(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.False(SynchronizedBuild(instance, ComputeContainerConfig, logs));
 
         Assert.True(logs.Errors.Count > 0);
         Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2007);
@@ -99,7 +109,7 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.False(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.False(SynchronizedBuild(instance, ComputeContainerConfig, logs));
 
         Assert.True(logs.Errors.Count > 0);
         Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2008);
@@ -116,7 +126,7 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.False(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.False(SynchronizedBuild(instance, ComputeContainerConfig, logs));
 
         Assert.True(logs.Errors.Count > 0);
         Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2010);
@@ -134,7 +144,7 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.False(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.False(SynchronizedBuild(instance, ComputeContainerConfig, logs));
 
         Assert.True(logs.Errors.Count > 0);
         Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2005);
@@ -152,7 +162,7 @@ public class ParseContainerPropertiesTests
         });
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        Assert.False(instance.Build(new[] { ComputeContainerConfig }, new[] { logs }, null, out var outputs));
+        Assert.False(SynchronizedBuild(instance, ComputeContainerConfig, logs));
 
         Assert.True(logs.Errors.Count > 0);
         Assert.Equal(logs.Errors[0].Code, ErrorCodes.CONTAINER2005);
