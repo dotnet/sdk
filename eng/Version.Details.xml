@@ -74,9 +74,9 @@
       <Sha>e0b6646d26d31fe50da5563ac44a257cfd8d5322</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="dotnet-format" Version="9.0.506301">
+    <Dependency Name="dotnet-format" Version="9.0.506604">
       <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>4d2f4c52e9b7ec05c93f39470809f3f9df091da6</Sha>
+      <Sha>6cc40cb037ff6bb9e51a6291c0402f057989469e</Sha>
       <SourceBuild RepoName="format" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.10.0-1.24066.1">
