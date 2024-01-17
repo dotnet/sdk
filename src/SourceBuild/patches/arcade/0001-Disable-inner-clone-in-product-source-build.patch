@@ -1,0 +1,297 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Tue, 16 Jan 2024 21:26:06 +0000
+Subject: [PATCH] Disable inner-clone in product source-build
+
+---
+ .../tools/SourceBuild/AfterSourceBuild.proj   | 34 ++++++++-
+ .../SourceBuild/SourceBuildArcade.targets     | 71 ++++++++++++++++++-
+ .../SourceBuildArcadeBuild.targets            |  5 +-
+ .../SourceBuild/SourceBuildIntermediate.proj  | 56 ++-------------
+ 4 files changed, 111 insertions(+), 55 deletions(-)
+
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/AfterSourceBuild.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/AfterSourceBuild.proj
+index 31f544e6..0b56b22f 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/AfterSourceBuild.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/AfterSourceBuild.proj
+@@ -15,7 +15,8 @@
+           Condition="'$(ArcadeInnerBuildFromSource)' != 'true'"
+           DependsOnTargets="
+             ReportPrebuiltUsage;
+-            PackSourceBuildIntermediateNupkgs" />
++            PackSourceBuildIntermediateNupkgs;
++            CreateRepoManifest" />
+ 
+   <Target Name="WritePrebuiltUsageData">
+     <ItemGroup>
+@@ -26,7 +27,7 @@
+       <SourceBuiltPackageFiles Include="$(PreviouslySourceBuiltNupkgCacheDir)**/*.nupkg" Condition=" '$(PreviouslySourceBuiltNupkgCacheDir)' != '' " />
+ 
+       <!-- Add some other potential top-level project directories for a more specific report. -->
+-      <ProjectDirectories Include="$(CurrentRepoSourceBuildSourceDir)" />
++      <ProjectDirectories Include="$(CurrentRepoSourceBuildSourceDir)"  Condition="'$(UseInnerClone)' == 'true'" />
+       <!-- Finally, scan entire source-build, in case project.assets.json ends up in an unexpected place. -->
+       <ProjectDirectories Include="$(SourceBuildOutputDir)" />
+     </ItemGroup>
+@@ -117,11 +118,40 @@
+       DestinationFiles="$(SourceBuildIntermediateNupkgLicenseFile)" />
+   </Target>
+ 
++  <!--
++    In VMR build we create repo manifest.
++    SB orchestrator will parse the manifest and copy the artifacts to the right locations.
++
++    This can be removed once we enable standard repo assets manifests and SB orchestrator
++    starts using it - https://github.com/dotnet/source-build/issues/3970
++  -->
++  <Target Name="CreateRepoManifest"
++          Condition="'$(DotNetBuildFromSourceFlavor)' == 'Product'"
++          DependsOnTargets="
++            GetCategorizedIntermediateNupkgContents;
++            CreateRepoSymbolsArchive">
++    <PropertyGroup>
++      <RepoManifestFile>$(ArtifactsDir)RepoManifest.xml</RepoManifestFile>
++    </PropertyGroup>
++
++    <ItemGroup>
++      <RepoManifestLine Include='&lt;Build&gt;' />
++      <RepoManifestLine Include='&lt;Artifact Path="%(IntermediateNupkgFile.Identity)" /&gt;' />
++      <RepoManifestLine Include='&lt;/Build&gt;' />
++    </ItemGroup>
++
++    <WriteLinesToFile
++      File="$(RepoManifestFile)"
++      Lines="@(RepoManifestLine)"
++      Overwrite="true" />
++  </Target>
++
+   <!--
+     Create source-build intermediate NuGet package and supplemental intermediate NuGet packages (if
+     necessary) for dependency transport to downstream repos.
+   -->
+   <Target Name="PackSourceBuildIntermediateNupkgs"
++          Condition="'$(CreateIntermediatePackage)' == 'true'"
+           DependsOnTargets="
+             CopyIntermediateNupkgProjToProjectDirectory;
+             GetLicenseFileForIntermediateNupkgPack;
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcade.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcade.targets
+index 2d1a20d5..5d91b110 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcade.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcade.targets
+@@ -18,9 +18,19 @@
+   <Import Project="$(RepositoryEngineeringDir)SourceBuild.props" Condition="Exists('$(RepositoryEngineeringDir)SourceBuild.props')" />
+ 
+   <PropertyGroup>
++    <!--
++      Do not use inner-clone in full product source-build, unless explicitly requested,
++      i.e. for specific repos, like source-build-externals.
++    -->
++    <UseInnerClone Condition="'$(UseInnerClone)' == '' and '$(DotNetBuildFromSourceFlavor)' != 'Product'">true</UseInnerClone>
++
++    <!-- Do not create intermediate package in full product source-build. -->
++    <CreateIntermediatePackage Condition="'$(DotNetBuildFromSourceFlavor)' != 'Product'">true</CreateIntermediatePackage>
++
+     <!-- Prefer abbreviations to avoid long paths (breaks on Windows) -->
+     <SourceBuildOutputDir Condition="'$(SourceBuildOutputDir)' == ''">$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'sb'))</SourceBuildOutputDir>
+     <CurrentRepoSourceBuildSourceDir>$([MSBuild]::NormalizeDirectory('$(SourceBuildOutputDir)', 'src'))</CurrentRepoSourceBuildSourceDir>
++    <CurrentRepoSourceBuildSourceDir Condition="'$(UseInnerClone)' != 'true'">$(RepoRoot)</CurrentRepoSourceBuildSourceDir>
+     <CurrentRepoSourceBuildPackageCache>$([MSBuild]::NormalizeDirectory('$(SourceBuildOutputDir)', 'package-cache'))</CurrentRepoSourceBuildPackageCache>
+     <SourceBuildSelfPrebuiltReportDir>$([MSBuild]::NormalizeDirectory('$(SourceBuildOutputDir)', 'prebuilt-report'))</SourceBuildSelfPrebuiltReportDir>
+ 
+@@ -28,6 +38,8 @@
+       Keep artifacts/ inside source dir so that ancestor-based file lookups find the inner repo, not
+       the outer repo. The inner repo global.json and NuGet.config files may have been modified by
+       source-build, and we want projects inside the artifacts/ dir to respect that.
++
++      Inner-clone removal - in VMR use regular artifacts dir.
+     -->
+     <CurrentRepoSourceBuildArtifactsDir>$([MSBuild]::NormalizeDirectory('$(CurrentRepoSourceBuildSourceDir)', 'artifacts'))</CurrentRepoSourceBuildArtifactsDir>
+     <CurrentRepoSourceBuildArtifactsPackagesDir>$([MSBuild]::NormalizeDirectory('$(CurrentRepoSourceBuildArtifactsDir)', 'packages', '$(Configuration)'))</CurrentRepoSourceBuildArtifactsPackagesDir>
+@@ -106,8 +118,8 @@
+     <ItemGroup>
+       <IntermediateNupkgFile Include="@(IntermediateNupkgArtifactFile)" PackagePath="artifacts" />
+ 
+-      <!-- Report goes into the 'main' intermediate nupkg. -->
+-      <IntermediateNupkgFile Include="$(SourceBuildSelfPrebuiltReportDir)**\*" PackagePath="prebuilt-report" />
++      <!-- Report goes into the 'main' intermediate nupkg, if we're creating it. -->
++      <IntermediateNupkgFile Condition="'$(CreateIntermediatePackage)' == 'true'" Include="$(SourceBuildSelfPrebuiltReportDir)**\*" PackagePath="prebuilt-report" />
+     </ItemGroup>
+ 
+     <RemoveDuplicates Inputs="@(IntermediateNupkgFile)">
+@@ -118,6 +130,61 @@
+       <IntermediateNonShippingNupkgFile Include="@(IntermediatePackageFile)" Condition="$([System.Text.RegularExpressions.Regex]::Match(%(Identity),'[\\\\/]NonShipping[\\\\/]').Success)"/>
+       <SupplementalIntermediateNupkgCategory Include="%(IntermediatePackageFile.Category)" />
+     </ItemGroup>
++
++    <PropertyGroup>
++      <!-- The prefix needs to match what's defined in tarball source-build infra. Consider using a single property, in the future. -->
++      <NonShippingPackagesListPrefix>NonShipping.Packages.</NonShippingPackagesListPrefix>
++      <NonShippingPackagesList Condition="'@(IntermediateNonShippingNupkgFile)' != ''">$(CurrentRepoSourceBuildArtifactsPackagesDir)$(NonShippingPackagesListPrefix)$(GitHubRepositoryName).lst</NonShippingPackagesList>
++    </PropertyGroup>
++
++    <WriteLinesToFile
++      Condition="'$(NonShippingPackagesList)' != ''"
++      File="$(NonShippingPackagesList)"
++      Lines="@(IntermediateNonShippingNupkgFile->'%(Filename)%(Extension)')"
++      Overwrite="true" />
++  </Target>
++
++  <!--
++    Create symbols archive.
++
++    Conditioning out for Windows as the tar execution below doesn't work cross-plat.
++  -->
++  <Target Name="CreateRepoSymbolsArchive" Condition="'$(OS)' != 'Windows_NT'">
++    <PropertyGroup>
++      <SymbolsRoot>$(CurrentRepoSourceBuildArtifactsDir)</SymbolsRoot>
++      <!-- Fall back to repo root for source-build-externals or repos that don't have the regular SymbolsRoot as defined above -->
++      <SymbolsRoot Condition="!Exists('$(SymbolsRoot)') or '$(GitHubRepositoryName)' == 'source-build-externals'">$(RepoRoot)</SymbolsRoot>
++      <SymbolsArchiveLocation>$(CurrentRepoSourceBuildArtifactsPackagesDir)</SymbolsArchiveLocation>
++      <SymbolsArchiveLocation Condition="'$(GitHubRepositoryName)' == 'nuget-client' and '$(PackageOutputPath)' != ''">$([MSBuild]::EnsureTrailingSlash('$(PackageOutputPath)'))</SymbolsArchiveLocation>
++      <SymbolsList>$([MSBuild]::NormalizePath('$(SymbolsArchiveLocation)', 'symbols.lst'))</SymbolsList>
++      <SymbolsArchivePrefix>Symbols.</SymbolsArchivePrefix>
++      <!-- $(Version) and $(TargetRid) are only available when target is executed as part of intermediate package creation. -->
++      <SymbolsArchiveSuffix Condition="'$(CreateIntermediatePackage)' == 'true'">.$(Version).$(TargetRid)</SymbolsArchiveSuffix>
++      <SymbolsArchiveFile>$(SymbolsArchiveLocation)$(SymbolsArchivePrefix)$(GitHubRepositoryName)$(SymbolsArchiveSuffix)$(ArchiveExtension)</SymbolsArchiveFile>
++    </PropertyGroup>
++
++    <ItemGroup>
++      <AbsoluteSymbolPath Include="$(SymbolsRoot)**\obj\**\*.pdb" />
++      <AbsoluteSymbolPath Condition="'@(AbsoluteSymbolPath)' != ''">
++        <RelativePath>$([MSBuild]::MakeRelative($(SymbolsRoot), %(FullPath)))</RelativePath>
++      </AbsoluteSymbolPath>
++    </ItemGroup>
++
++    <WriteLinesToFile
++      File="$(SymbolsList)"
++      Lines="@(AbsoluteSymbolPath->'%(RelativePath)')"
++      Overwrite="true"
++      Condition="'@(AbsoluteSymbolPath)' != ''" />
++
++    <Exec Command="tar --numeric-owner -czf $(SymbolsArchiveFile) --files-from=$(SymbolsList)"
++          WorkingDirectory="$(SymbolsRoot)" Condition="Exists($(SymbolsList))" />
++    <Message Importance="High" Text="Packaged symbols to $(SymbolsArchiveFile)" Condition="Exists($(SymbolsList))" />
++
++    <ItemGroup>
++      <IntermediateNupkgFile Include="$(SymbolsArchiveFile)" PackagePath="artifacts" Condition="Exists($(SymbolsArchiveFile)) and '$(CreateIntermediatePackage)' != 'true'" />
++    </ItemGroup>
++
++    <Delete Files="$(SymbolsList)" Condition="Exists($(SymbolsList))" />
+   </Target>
+ 
+ </Project>
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeBuild.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeBuild.targets
+index 177a5267..18ab693c 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeBuild.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeBuild.targets
+@@ -11,6 +11,7 @@
+     <CurrentRepoSourceBuildBinlogFile>$([MSBuild]::NormalizePath('$(CurrentRepoSourceBuildArtifactsDir)', 'sourcebuild.binlog'))</CurrentRepoSourceBuildBinlogFile>
+ 
+     <InnerSourceBuildRepoRoot Condition="'$(InnerSourceBuildRepoRoot)' == ''">$(CurrentRepoSourceBuildSourceDir)</InnerSourceBuildRepoRoot>
++    <InnerSourceBuildRepoRoot Condition="'$(UseInnerClone)' != 'true'">$(RepoRoot)</InnerSourceBuildRepoRoot>
+ 
+     <CleanInnerSourceBuildRepoRoot Condition="'$(CleanInnerSourceBuildRepoRoot)' == ''">true</CleanInnerSourceBuildRepoRoot>
+ 
+@@ -112,7 +113,7 @@
+           DependsOnTargets="CopyInnerSourceBuildRepoRoot;CloneInnerSourceBuildRepoRoot">
+   </Target>
+ 
+-  <Target Name="CopyInnerSourceBuildRepoRoot" Condition=" '$(CopySrcInsteadOfClone)' == 'true' ">
++  <Target Name="CopyInnerSourceBuildRepoRoot" Condition=" '$(CopySrcInsteadOfClone)' == 'true' and '$(UseInnerClone)' == 'true' ">
+     <ItemGroup>
+       <SourceBuildFilesToCopy Include="$(RepoRoot)/**/*" />
+       <SourceBuildFilesToCopy Include="$(RepoRoot)/**/.*" />
+@@ -132,7 +133,7 @@
+     access to the git data, this also makes it easy to see what changes the source-build infra has
+     made, for diagnosis or exploratory purposes.
+   -->
+-  <Target Name="CloneInnerSourceBuildRepoRoot" Condition=" '$(CopySrcInsteadOfClone)' != 'true'">
++  <Target Name="CloneInnerSourceBuildRepoRoot" Condition=" '$(CopySrcInsteadOfClone)' != 'true' and '$(UseInnerClone)' == 'true' ">
+     <PropertyGroup>
+       <!--
+         By default, copy WIP. WIP copy helps with local machine dev work. Don't copy WIP if this is
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildIntermediate.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildIntermediate.proj
+index 5b20e23c..e120e38d 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildIntermediate.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildIntermediate.proj
+@@ -53,6 +53,7 @@
+   <Target Name="GetIntermediateNupkgArtifactFiles"
+           DependsOnTargets="
+             GetCategorizedIntermediateNupkgContents;
++            CreateRepoSymbolsArchive;
+             GetSupplementalIntermediateNupkgManifest;
+             GetSymbolsArchive;
+             GetNonShippingNupkgList"
+@@ -81,66 +82,23 @@
+   </Target>
+ 
+   <!--
+-    Create symbols archive and include it in the main intermediate nupkg, by default.
++    Include symbols archive in the main intermediate nupkg, by default.
+ 
+     Repos can select a different intermediate nupkg by defining 'SymbolsIntermediateNupkgCategory'
+     property in eng/SourceBuild.props.
+-
+-    Conditioning out for Windows as the tar execution below doesn't work cross-plat.
+   -->
+   <Target Name="GetSymbolsArchive"
+-    Condition="'$(SupplementalIntermediateNupkgCategory)' == '$(SymbolsIntermediateNupkgCategory)' and
+-               '$(OS)' != 'Windows_NT'">
+-    <PropertyGroup>
+-      <SymbolsRoot>$(CurrentRepoSourceBuildArtifactsDir)</SymbolsRoot>
+-      <!-- Fall back to repo root for source-build-externals or repos that don't have the regular SymbolsRoot as defined above -->
+-      <SymbolsRoot Condition="!Exists('$(SymbolsRoot)') or '$(GitHubRepositoryName)' == 'source-build-externals'">$(RepoRoot)</SymbolsRoot>
+-      <SymbolsArchiveLocation>$(CurrentRepoSourceBuildArtifactsPackagesDir)</SymbolsArchiveLocation>
+-      <SymbolsArchiveLocation Condition="'$(GitHubRepositoryName)' == 'nuget-client'">$(PackageOutputPath)</SymbolsArchiveLocation>
+-      <SymbolsList>$(SymbolsArchiveLocation)\symbols.lst</SymbolsList>
+-      <SymbolsArchivePrefix>Symbols.</SymbolsArchivePrefix>
+-      <SymbolsArchiveSuffix>.$(Version).$(TargetRid)</SymbolsArchiveSuffix>
+-      <SymbolsArchiveName>$(SymbolsArchiveLocation)$(SymbolsArchivePrefix)$(GitHubRepositoryName)$(SymbolsArchiveSuffix)$(ArchiveExtension)</SymbolsArchiveName>
+-    </PropertyGroup>
+-
+-    <ItemGroup>
+-      <AbsoluteSymbolPath Include="$(SymbolsRoot)\**\obj\**\*.pdb" />
+-      <AbsoluteSymbolPath Update="@(AbsoluteSymbolPath)" Condition="'@(AbsoluteSymbolPath)' != ''">
+-        <RelativePath>$([MSBuild]::MakeRelative($(SymbolsRoot), %(FullPath)))</RelativePath>
+-      </AbsoluteSymbolPath>
+-    </ItemGroup>
+-
+-    <WriteLinesToFile
+-      File="$(SymbolsList)"
+-      Lines="@(AbsoluteSymbolPath->'%(RelativePath)')"
+-      Overwrite="true"
+-      Condition="'@(AbsoluteSymbolPath)' != ''" />
++    Condition="'$(SupplementalIntermediateNupkgCategory)' == '$(SymbolsIntermediateNupkgCategory)' and '$(SymbolsArchiveFile)' != ''">
+ 
+-    <Exec Command="tar --numeric-owner -czf $(SymbolsArchiveName) --files-from=$(SymbolsList)"
+-          WorkingDirectory="$(SymbolsRoot)" Condition="Exists($(SymbolsList))" />
+-    <Message Importance="High" Text="Packaged symbols to $(SymbolsArchiveName)" Condition="Exists($(SymbolsArchiveName))" />
+-
+-    <ItemGroup Condition="Exists($(SymbolsArchiveName))">
+-      <Content Include="$(SymbolsArchiveName)" PackagePath="artifacts" />
++    <ItemGroup Condition="Exists($(SymbolsArchiveFile))">
++      <Content Include="$(SymbolsArchiveFile)" PackagePath="artifacts" />
+     </ItemGroup>
+-
+-    <Delete Files="$(SymbolsList)" Condition="Exists($(SymbolsList))" />
+   </Target>
+ 
+   <!-- Create a list of non-shipping packages and include it in the intermediate package. -->
+   <Target Name="GetNonShippingNupkgList"
+-          Condition="'@(IntermediateNonShippingNupkgFile)' != ''">
+-    <PropertyGroup>
+-      <!-- The prefix needs to match what's defined in tarball source-build infra. Consider using a single property, in the future. -->
+-      <NonShippingPackagesListPrefix>NonShipping.Packages.</NonShippingPackagesListPrefix>
+-      <NonShippingPackagesList>$(CurrentRepoSourceBuildArtifactsPackagesDir)$(NonShippingPackagesListPrefix)$(GitHubRepositoryName).lst</NonShippingPackagesList>
+-    </PropertyGroup>
+-
+-    <WriteLinesToFile
+-      File="$(NonShippingPackagesList)"
+-      Lines="@(IntermediateNonShippingNupkgFile->'%(Filename)%(Extension)')"
+-      Overwrite="true" />
+-
++          Condition="'$(NonShippingPackagesList)' != ''"
++          DependsOnTargets="GetCategorizedIntermediateNupkgContents">
+     <ItemGroup>
+       <!-- The list of non-shipping packages goes into the "main" intermediate nupkg. -->
+       <Content Include="$(NonShippingPackagesList)" PackagePath="." />

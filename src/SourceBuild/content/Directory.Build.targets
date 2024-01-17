@@ -2,17 +2,24 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
 
-  <Target Name="DetermineMicrosoftSourceBuildIntermediateInstallerVersion"
-          Condition="'$(DotNetBuildFromSource)' == 'true'">
-    <!-- Manually load the installer version from the PVP. -->
-    <XmlPeek XmlInputPath="$(SharedIntermediateOutputPath)PackageVersions.package-source-build.Current.props"
-             Query="msb:Project/msb:PropertyGroup/msb:MicrosoftSourceBuildIntermediateInstallerVersion/text()"
-             Namespaces="&lt;Namespace Prefix='msb' Uri='http://schemas.microsoft.com/developer/msbuild/2003'/&gt;">
-        <Output TaskParameter="Result" ItemName="MicrosoftSourceBuildIntermediateInstallerVersionItem" />
-    </XmlPeek>
+  <Target Name="DetermineSourceBuiltSdkVersion">
     <PropertyGroup>
-      <MicrosoftSourceBuildIntermediateInstallerVersion>@(MicrosoftSourceBuildIntermediateInstallerVersionItem)</MicrosoftSourceBuildIntermediateInstallerVersion>
-      <MicrosoftSourceBuildIntermediateInstallerVersion Condition="'$(MicrosoftSourceBuildIntermediateInstallerVersion)' == ''">$(installerOutputPackageVersion)</MicrosoftSourceBuildIntermediateInstallerVersion>
+      <SdkFilenamePrefix>dotnet-sdk-</SdkFilenamePrefix>
+    </PropertyGroup>
+    <ItemGroup>
+      <SdkTarballItem Include="$(SourceBuiltAssetsDir)$(SdkFilenamePrefix)*$(ArchiveExtension)" />
+    </ItemGroup>
+
+    <!--
+      Extract SDK version from SDK tarball filename.
+
+      Example:
+      dotnet-sdk-9.0.100-alpha.1.24057.1-fedora.38-x64.tar.gz
+      dotnet-sdk-<SdkVersion>-<TargetRid><ArchiveExtension>
+    -->
+    <PropertyGroup>
+      <SdkFilename>%(SdkTarballItem.Filename)%(SdkTarballItem.Extension)</SdkFilename>
+      <SourceBuiltSdkVersion>$(SdkFilename.Replace('$(SdkFilenamePrefix)','').Replace('-$(TargetRid)$(ArchiveExtension)',''))</SourceBuiltSdkVersion>
     </PropertyGroup>
   </Target>
 

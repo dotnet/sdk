@@ -16,6 +16,7 @@
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
     <ProjectAssetsJsonArchiveFile>$(PackageReportDir)all-project-assets-json-files.zip</ProjectAssetsJsonArchiveFile>
     <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
+    <RepoManifestFile>$([MSBuild]::NormalizePath('$(ProjectDirectory)', 'artifacts', 'RepoManifest.xml'))</RepoManifestFile>
   </PropertyGroup>
 
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="AddSourceToNuGetConfig" />
@@ -286,6 +287,76 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    Condition should be removed after source-build picks up version of Arcade that has
+    source-build infra changes for removal od inner-clone in VMR build. Until then some
+    repos will produce intermediate packages instead of repo manifest file.
+
+    https://github.com/dotnet/source-build/issues/3930
+  -->
+  <Target Name="CopyRepoArtifacts"
+          AfterTargets="Package"
+          Condition="Exists($(RepoManifestFile))"
+          Inputs="$(RepoManifestFile)"
+          Outputs="$(BaseIntermediateOutputPath)ArtifactsCopy.complete">
+    <XmlPeek XmlInputPath="$(RepoManifestFile)"
+             Query="Build/Artifact/@Path">
+        <Output TaskParameter="Result" ItemName="RepoManifestArtifact" />
+    </XmlPeek>
+
+    <ItemGroup>
+      <RepoManifestAsset Include="@(RepoManifestArtifact)" Condition="'%(Extension)' != '.nupkg'"/>
+      <RepoManifestPackage Include="@(RepoManifestArtifact)" Condition="'%(Extension)' == '.nupkg'"/>
+      <RepoManifestNonShippingPackage Include="@(RepoManifestPackage)" Condition="$([System.String]::Copy('%(Identity)').Contains('$([System.IO.Path]::DirectorySeparatorChar)NonShipping$([System.IO.Path]::DirectorySeparatorChar)'))"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_NupkgsDestination>$(SourceBuiltPackagesPath)</_NupkgsDestination>
+      <_NupkgsDestination Condition="'$(RepositoryName)' == 'source-build-reference-packages'">$(ReferencePackagesDir)</_NupkgsDestination>
+    </PropertyGroup>
+
+    <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,
+         clear it before copying the current SBRPs.  This ensures n-1 SBRPs aren't required to build the product repos. -->
+    <RemoveDir
+      Condition="'$(RepositoryName)' == 'source-build-reference-packages'"
+      Directories="$(ReferencePackagesDir)" />
+
+    <!-- Copy nupkgs -->
+    <Copy
+      Condition="'@(RepoManifestPackage)' != ''"
+      SourceFiles="@(RepoManifestPackage)"
+      DestinationFolder="$(_NupkgsDestination)" />
+
+    <!-- Copy assets -->
+    <Copy
+      Condition="'@(RepoManifestAsset)' != ''"
+      SourceFiles="@(RepoManifestAsset)"
+      DestinationFolder="$(SourceBuiltAssetsDir)" />
+
+    <!-- Generate non-shipping package list -->
+    <PropertyGroup>
+      <NonShippingPackagesList Condition="'@(RepoManifestNonShippingPackage)' != ''">$(PackageListsDir)$(NonShippingPackagesListPrefix)$(RepositoryName).lst</NonShippingPackagesList>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+      Condition="'$(NonShippingPackagesList)' != ''"
+      File="$(NonShippingPackagesList)"
+      Lines="@(RepoManifestNonShippingPackage->'%(Filename)%(Extension)')"
+      Overwrite="true" />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)ArtifactsCopy.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
+  </Target>
+
+  <!--
+    This target can be removed after source-build picks up version of Arcade that has
+    source-build infra changes for removal od inner-clone in VMR build. Until then the target
+    is needed for building source-build-reference-packages and arcade repos.
+
+    https://github.com/dotnet/source-build/issues/3930
+  -->
   <Target Name="ExtractIntermediatePackages"
           AfterTargets="Package"
           Inputs="$(MSBuildProjectFullPath)"
