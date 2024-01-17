@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             if (!skipManifestUpdate)
             {
                 var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-                if (File.Exists(installStateFilePath))
+                if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) && File.Exists(installStateFilePath) && InstallStateContents.FromString(File.ReadAllText(installStateFilePath)).Manifests is not null)
                 {
                     //  If there is a rollback state file, then we don't want to automatically update workloads when a workload is installed
                     //  To update to a new version, the user would need to run "dotnet workload update"
