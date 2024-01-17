@@ -63,21 +63,28 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     internal void ParseValue1(string addresses)
                     {
-                        IList<MailAddress> {|#0:result|} = ParseMultipleAddresses(addresses); // should be flagged by CA1859
+                        IList<MailAddress> {|#0:result|} = ParseMultipleAddresses(addresses);
 
                         var x = result[0];
                     }
-
                     internal void ParseValue2(string addresses)
                     {
-                        _field = ParseMultipleAddresses(addresses); // should be flagged by CA1859
+                        IList<MailAddress> {|#3:result|} = ParseMultipleAddresses(addresses);
+
+                #nullable enable
+                        var x = result?[0];
+                #nullable disable
+                    }
+                    internal void ParseValue3(string addresses)
+                    {
+                        _field = ParseMultipleAddresses(addresses);
 
                         var x = _field[0];
                     }
 
-                    internal void ParseValue3(string addresses)
+                    internal void ParseValue4(string addresses)
                     {
-                        Property = ParseMultipleAddresses(addresses); // should be flagged by CA1859
+                        Property = ParseMultipleAddresses(addresses);
 
                         var x = Property[0];
                     }
@@ -93,7 +100,10 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 .WithArguments("_field", "System.Collections.Generic.IList<MailAddress>", "System.Collections.Generic.List<MailAddress>"),
             VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
                 .WithLocation(2)
-                .WithArguments("Property", "System.Collections.Generic.IList<MailAddress>", "System.Collections.Generic.List<MailAddress>"));
+                .WithArguments("Property", "System.Collections.Generic.IList<MailAddress>", "System.Collections.Generic.List<MailAddress>"),
+            VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                .WithLocation(3)
+                .WithArguments("result", "System.Collections.Generic.IList<MailAddress>", "System.Collections.Generic.List<MailAddress>"));
         }
 
         [Fact]
