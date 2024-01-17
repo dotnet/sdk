@@ -25,8 +25,6 @@
     <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
     <!-- msbuild -->
     <MicrosoftBuildVersion>17.3.2</MicrosoftBuildVersion>
-    <!-- netstandard -->
-    <NETStandardLibraryVersion>2.0.3</NETStandardLibraryVersion>
     <!-- nuget -->
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->
     <NuGetVersion>6.9.0-preview.1.54</NuGetVersion>
@@ -39,10 +37,5 @@
     <MicrosoftExtensionsLoggingVersion>9.0.0-alpha.1.24064.3</MicrosoftExtensionsLoggingVersion>
     <!-- symreader -->
     <MicrosoftDiaSymReaderVersion>2.0.0</MicrosoftDiaSymReaderVersion>
-    <!-- external -->
-    <BenchmarkDotNetVersion>0.13.5</BenchmarkDotNetVersion>
-    <BenchmarkDotNetAnnotationsVersion>0.13.5</BenchmarkDotNetAnnotationsVersion>
-    <MicrosoftBuildLocatorVersion>1.6.10</MicrosoftBuildLocatorVersion>
-    <MicrosoftVisualStudioCompositionVersion>17.4.16</MicrosoftVisualStudioCompositionVersion>
   </PropertyGroup>
 </Project>

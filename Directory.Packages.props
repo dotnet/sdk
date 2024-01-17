@@ -8,11 +8,26 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="BenchmarkDotNet.Annotations" Version="$(BenchmarkDotNetAnnotationsVersion)" />
-    <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetVersion)" />
+    <!-- command-line-api -->
+    <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
+    <PackageVersion Include="System.CommandLine.Rendering" Version="$(SystemCommandLineRenderingVersion)" />
+
+    <!-- corefx -->
+    <PackageVersion Include="Microsoft.VisualBasic" Version="$(MicrosoftVisualBasicVersion)" />
+
+    <!-- msbuild -->
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
-    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorVersion)" />
-    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)"/>
+    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
+
+    <!-- nuget -->
+    <PackageVersion Include="NuGet.Common" Version="$(NuGetVersion)" />
+    <PackageVersion Include="NuGet.Configuration" Version="$(NuGetVersion)" />
+    <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetVersion)" />
+    <PackageVersion Include="NuGet.Packaging" Version="$(NuGetVersion)" />
+    <PackageVersion Include="NuGet.Protocol" Version="$(NuGetVersion)" />
+    <PackageVersion Include="NuGet.Versioning" Version="$(NuGetVersion)" />
+
+    <!-- roslyn -->
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalyzerTestingVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftCodeAnalysisVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisVersion)" />
@@ -23,20 +38,22 @@
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftCodeAnalysisVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler" Version="$(MicrosoftCodeAnalysisVersion)" />
-    <PackageVersion Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
+
+    <!-- runtime -->
     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />
-    <PackageVersion Include="Microsoft.VisualBasic" Version="$(MicrosoftVisualBasicVersion)" />
-    <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="$(MicrosoftVisualStudioCompositionVersion)" />
-    <PackageVersion Include="NETStandard.Library" Version="$(NETStandardLibraryVersion)" />
-    <PackageVersion Include="NuGet.Common" Version="$(NuGetVersion)" />
-    <PackageVersion Include="NuGet.Configuration" Version="$(NuGetVersion)" />
-    <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetVersion)" />
-    <PackageVersion Include="NuGet.Packaging" Version="$(NuGetVersion)" />
-    <PackageVersion Include="NuGet.Protocol" Version="$(NuGetVersion)" />
-    <PackageVersion Include="NuGet.Versioning" Version="$(NuGetVersion)" />
-    <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
-    <PackageVersion Include="System.CommandLine.Rendering" Version="$(SystemCommandLineRenderingVersion)" />
+
+    <!-- symreader -->
+    <PackageVersion Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
+  </ItemGroup>
+
+  <!-- Not updated via dependency flow. -->
+  <ItemGroup>
+    <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.13.5" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.13.5" />
+    <PackageVersion Include="DiffPlex" Version="1.6.3" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="1.6.10" />
+    <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="17.4.16" />
   </ItemGroup>
 
 </Project>
