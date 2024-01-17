@@ -143,6 +143,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     context.RegisterOperationAction(context => coll.HandleDeconstructionAssignment((IDeconstructionAssignmentOperation)context.Operation), OperationKind.DeconstructionAssignment);
                     context.RegisterOperationAction(context => coll.HandleFieldInitializer((IFieldInitializerOperation)context.Operation), OperationKind.FieldInitializer);
                     context.RegisterOperationAction(context => coll.HandlePropertyInitializer((IPropertyInitializerOperation)context.Operation), OperationKind.PropertyInitializer);
+                    context.RegisterOperationAction(context => coll.HandlePropertyReference((IPropertyReferenceOperation)context.Operation), OperationKind.PropertyReference);
                     context.RegisterOperationAction(context => coll.HandleVariableDeclarator((IVariableDeclaratorOperation)context.Operation), OperationKind.VariableDeclarator);
                     context.RegisterOperationAction(context => coll.HandleDeclarationExpression((IDeclarationExpressionOperation)context.Operation), OperationKind.DeclarationExpression);
                     context.RegisterOperationAction(context => coll.HandleReturn((IReturnOperation)context.Operation), OperationKind.Return);
@@ -323,9 +324,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }
 
-                if (toType.TypeKind is not TypeKind.Class and not TypeKind.Array)
+                if (toType.TypeKind is not TypeKind.Class and not TypeKind.Array and not TypeKind.Struct)
                 {
-                    // we only deal with classes or arrays
+                    // we only deal with classes, arrays, or structs
                     return;
                 }
 

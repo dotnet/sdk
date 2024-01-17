@@ -85,7 +85,70 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             /// <summary>
-            /// Identify fields/locals/params that are used as 'this' for a virtual dispatch.
+            /// Identify properties that are used as 'this' for a virtual dispatch.
+            /// </summary>
+            public void HandlePropertyReference(IPropertyReferenceOperation op)
+            {
+                if (op.Property.IsAbstract || op.Property.IsVirtual)
+                {
+                    if (op.Instance != null)
+                    {
+                        var targetMethod = op.Property.GetMethod ?? op.Property.SetMethod!;
+
+                        var instance = op.Instance;
+                        if (instance.Kind == OperationKind.ConditionalAccessInstance)
+                        {
+                            var parent = ((IConditionalAccessInstanceOperation)instance).GetConditionalAccess() ?? instance;
+                            if (parent != null)
+                            {
+                                instance = ((IConditionalAccessOperation)parent).Operation;
+                            }
+                        }
+
+                        switch (instance.Kind)
+                        {
+                            case OperationKind.FieldReference:
+                                {
+                                    var fieldRef = (IFieldReferenceOperation)instance;
+                                    if (CanUpgrade(fieldRef.Field))
+                                    {
+                                        RecordVirtualDispatch(fieldRef.Field, targetMethod);
+                                    }
+
+                                    break;
+                                }
+
+                            case OperationKind.PropertyReference:
+                                {
+                                    var propertyRef = (IPropertyReferenceOperation)instance;
+                                    if (CanUpgrade(propertyRef.Property, false))
+                                    {
+                                        RecordVirtualDispatch(propertyRef.Property, targetMethod);
+                                    }
+
+                                    break;
+                                }
+
+                            case OperationKind.LocalReference:
+                                {
+                                    var localRef = (ILocalReferenceOperation)instance;
+                                    RecordVirtualDispatch(localRef.Local, targetMethod);
+                                    break;
+                                }
+
+                            case OperationKind.ParameterReference:
+                                {
+                                    var parameterRef = (IParameterReferenceOperation)instance;
+                                    RecordVirtualDispatch(parameterRef.Parameter, targetMethod);
+                                    break;
+                                }
+                        }
+                    }
+                }
+            }
+
+            /// <summary>
+            /// Identify fields/properties/locals/params that are used as 'this' for a virtual dispatch.
             /// </summary>
             public void HandleInvocation(IInvocationOperation op)
             {
@@ -368,6 +431,17 @@ namespace Microsoft.NetCore.Analyzers.Performance
             {
                 switch (op?.Kind)
                 {
+                    case OperationKind.Await:
+                        {
+                            if (op.Type != null)
+                            {
+                                values.Add(op.Type);
+                            }
+
+                            return;
+
+                        }
+
                     case OperationKind.Literal:
                         {
                             if (op.HasNullConstantValue())

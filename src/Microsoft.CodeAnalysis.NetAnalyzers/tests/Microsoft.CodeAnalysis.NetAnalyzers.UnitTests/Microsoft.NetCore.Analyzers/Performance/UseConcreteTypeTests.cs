@@ -13,6 +13,123 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     public static partial class UseConcreteTypeTests
     {
         [Fact]
+        [WorkItem(6904, "https://github.com/dotnet/roslyn-analyzers/issues/6904")]
+        public static async Task AwaitBug()
+        {
+            await TestCSAsync(@"
+                using System.Threading.Tasks;
+
+                public class Class1
+                {
+                    private I Prop { get; set; } = new Impl1(); //<-- CA1859 
+
+                    public async Task Init()
+                    {
+                        Prop = await Task.FromResult<I>(new Impl2());
+                        Prop.M();
+                    }
+                }
+
+                internal interface I
+                {
+                    void M();
+                }
+
+                internal class Impl1 : I
+                {
+                    public void M() { }
+                }
+
+                internal class Impl2 : I
+                {
+                    public void M() { }
+                }
+            ");
+        }
+
+        [Fact]
+        [WorkItem(7078, "https://github.com/dotnet/roslyn-analyzers/issues/7078")]
+        public static async Task IndexerBug()
+        {
+            await TestCSAsync(@"
+                using System.Collections.Generic;
+
+                public struct MailAddress { }
+
+                public class C
+                {
+                    private IList<MailAddress> {|#1:_field|};
+                    private IList<MailAddress> {|#2:Property|} { get; set; }
+
+                    internal void ParseValue1(string addresses)
+                    {
+                        IList<MailAddress> {|#0:result|} = ParseMultipleAddresses(addresses);
+
+                        var x = result[0];
+                    }
+                    internal void ParseValue2(string addresses)
+                    {
+                        IList<MailAddress> {|#3:result|} = ParseMultipleAddresses(addresses);
+
+                #nullable enable
+                        var x = result?[0];
+                #nullable disable
+                    }
+                    internal void ParseValue3(string addresses)
+                    {
+                        _field = ParseMultipleAddresses(addresses);
+
+                        var x = _field[0];
+                    }
+
+                    internal void ParseValue4(string addresses)
+                    {
+                        Property = ParseMultipleAddresses(addresses);
+
+                        var x = Property[0];
+                    }
+
+                    internal static List<MailAddress> ParseMultipleAddresses(string data) => new();
+                }
+            ",
+            VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                .WithLocation(0)
+                .WithArguments("result", "System.Collections.Generic.IList<MailAddress>", "System.Collections.Generic.List<MailAddress>"),
+            VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                .WithLocation(1)
+                .WithArguments("_field", "System.Collections.Generic.IList<MailAddress>", "System.Collections.Generic.List<MailAddress>"),
+            VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                .WithLocation(2)
+                .WithArguments("Property", "System.Collections.Generic.IList<MailAddress>", "System.Collections.Generic.List<MailAddress>"),
+            VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                .WithLocation(3)
+                .WithArguments("result", "System.Collections.Generic.IList<MailAddress>", "System.Collections.Generic.List<MailAddress>"));
+        }
+
+        [Fact]
+        [WorkItem(7127, "https://github.com/dotnet/roslyn-analyzers/issues/7127")]
+        public static async Task ImmutableArrayBug()
+        {
+            await TestCSAsync(@"
+                using System.Collections.Generic;
+                using System.Collections.Immutable;
+
+                public class Class1
+                {
+                    private IEnumerable<int> {|#0:CreateImmutableArrayPrivately|}()
+                    {
+                        return new ImmutableArray<int>
+                        {
+                            1, 2, 3, 4
+                        };
+                    }
+                }
+            ", VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                .WithLocation(0)
+                .WithArguments("CreateImmutableArrayPrivately", "System.Collections.Generic.IEnumerable<int>", "System.Collections.Immutable.ImmutableArray<int>"));
+        }
+
+        [Fact]
         [WorkItem(6751, "https://github.com/dotnet/roslyn-analyzers/issues/6751")]
         public static async Task MultipleReturns()
         {
@@ -268,7 +385,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public static async Task ShouldNotTrigger_ValidatePublicSymbolUsage()
         {
             const string Source = @"
-                #nullable enable
+#nullable enable
 
                 using System;
                 using System.Collections.Generic;
@@ -382,7 +499,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public static async Task ShouldNotTrigger1()
         {
             const string Source = @"
-                #nullable enable
+#nullable enable
 
                 using System;
                 using System.Collections.Generic;
@@ -416,7 +533,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public static async Task ShouldNotTrigger2()
         {
             const string Source = @"
-                #nullable enable
+#nullable enable
 
                 using System.Collections.Generic;
 
@@ -458,7 +575,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public static async Task ShouldNotTrigger3()
         {
             const string Source = @"
-                #nullable enable
+#nullable enable
 
                 using System;
                 using System.IO;
@@ -489,7 +606,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public static async Task ShouldNotTrigger4()
         {
             const string Source = @"
-                #nullable enable
+#nullable enable
 
                 using System;
                 using System.IO;
@@ -520,7 +637,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public static async Task ShouldNotTrigger5()
         {
             const string Source = @"
-                #nullable enable
+#nullable enable
 
                 interface IFoo
                 {
@@ -652,7 +769,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public static async Task ShouldTrigger3()
         {
             const string Source = @"
-                #nullable enable
+#nullable enable
 
                 using System;
                 using System.IO;
@@ -683,7 +800,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public static async Task ShouldTrigger4()
         {
             const string Source = @"
-                #nullable enable
+#nullable enable
 
                 using System;
                 using System.IO;
@@ -757,7 +874,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public static async Task Conditional()
         {
             const string Source = @"
-            #nullable enable
+#nullable enable
             namespace Example
             {
                 public interface IFoo
