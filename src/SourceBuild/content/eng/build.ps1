@@ -38,8 +38,9 @@ function Build {
   InitializeToolset
 
   $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
+  $buildProj = Join-Path $RepoRoot 'build.proj'
 
-  MSBuild "$PSScriptRoot\build.proj" `
+  MSBuild $buildProj `
     $bl `
     --tl:off `
     /p:Configuration=$configuration `
