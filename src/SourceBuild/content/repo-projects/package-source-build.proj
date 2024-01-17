@@ -13,45 +13,32 @@
 
   <Target Name="CustomRepoBuild"
           AfterTargets="RepoBuild"
-          DependsOnTargets="DetermineMicrosoftSourceBuildIntermediateInstallerVersion">
+          DependsOnTargets="DetermineSourceBuiltSdkVersion">
     <!-- Copy PVP to packages dir in order to package them together -->
     <Copy SourceFiles="$(CurrentSourceBuiltPackageVersionPropsPath)" DestinationFiles="$(SourceBuiltPackagesPath)PackageVersions.props" />
 
-    <!-- Expand SBRP intermediate package into separate folder and remove intermediate package -->
     <PropertyGroup>
       <SourceBuildReferencePackagesDestination>$(SourceBuiltPackagesPath)SourceBuildReferencePackages/</SourceBuildReferencePackagesDestination>
-      <SBRPIntermediateWildcard>Microsoft.SourceBuild.Intermediate.source-build-reference-packages*.nupkg</SBRPIntermediateWildcard>
     </PropertyGroup>
-    <ItemGroup>
-      <SourceBuildReferencePackagesIntermediatePackage Include="$(SourceBuiltPackagesPath)$(SBRPIntermediateWildcard)"/>
-    </ItemGroup>
-
-    <Unzip SourceFiles="@(SourceBuildReferencePackagesIntermediatePackage)"
-           DestinationFolder="$(SourceBuildReferencePackagesDestination)extractArtifacts"
-           SkipUnchangedFiles="true"
-           Condition="'@(SourceBuildReferencePackagesIntermediatePackage)' != ''" />
 
     <ItemGroup>
-      <SourceBuildReferencePackagesNupkgFiles Include="$(SourceBuildReferencePackagesDestination)extractArtifacts/**/*.nupkg" />
+      <SourceBuildReferencePackagesNupkgFiles Include="$(ReferencePackagesDir)**/*.nupkg" />
     </ItemGroup>
 
+    <!-- Copy reference packages from ReferencePackagesDir to blob-feed reference packages path. -->
     <Copy
       Condition="'@(SourceBuildReferencePackagesNupkgFiles)' != ''"
       SourceFiles="@(SourceBuildReferencePackagesNupkgFiles)"
       DestinationFiles="@(SourceBuildReferencePackagesNupkgFiles -> '$(SourceBuildReferencePackagesDestination)%(Filename)%(Extension)')" />
 
-    <RemoveDir
-      Condition="Exists('$(SourceBuildReferencePackagesDestination)extractArtifacts/')"
-      Directories="$(SourceBuildReferencePackagesDestination)extractArtifacts/" />
-
     <PropertyGroup>
-      <SourceBuiltTarballName>$(SharedOutputPath)$(SourceBuiltArtifactsTarballName).$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid)$(ArchiveExtension)</SourceBuiltTarballName>
+      <SourceBuiltTarballName>$(SharedOutputPath)$(SourceBuiltArtifactsTarballName).$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</SourceBuiltTarballName>
       <SourceBuiltVersionFileName>.version</SourceBuiltVersionFileName>
     </PropertyGroup>
 
     <!-- Content of the .version file to include in the tarball -->
     <ItemGroup>
-      <VersionFileContent Include="$(RepositoryCommit);$(MicrosoftSourceBuildIntermediateInstallerVersion)" />
+      <VersionFileContent Include="$(RepositoryCommit);$(SourceBuiltSdkVersion)" />
     </ItemGroup>
 
     <WriteLinesToFile

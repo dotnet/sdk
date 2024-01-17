@@ -60,11 +60,11 @@
   <Target Name="RepackageSymbols"
           AfterTargets="Build"
           DependsOnTargets="
-            DetermineMicrosoftSourceBuildIntermediateInstallerVersion;
+            DetermineSourceBuiltSdkVersion;
             DiscoverSymbolsTarballs;
             ExtractSymbolsTarballs">
     <PropertyGroup>
-      <UnifiedSymbolsTarball>$(SharedOutputPath)dotnet-symbols-all-$(MicrosoftSourceBuildIntermediateInstallerVersion)-$(TargetRid)$(ArchiveExtension)</UnifiedSymbolsTarball>
+      <UnifiedSymbolsTarball>$(SharedOutputPath)dotnet-symbols-all-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</UnifiedSymbolsTarball>
     </PropertyGroup>
 
     <Exec Command="tar --numeric-owner -czf $(UnifiedSymbolsTarball) *"
@@ -84,7 +84,7 @@
 
     <PropertyGroup>
       <SdkSymbolsLayout>$(ArtifactsTmpDir)SdkSymbols</SdkSymbolsLayout>
-      <SdkSymbolsTarball>$(SharedOutputPath)dotnet-symbols-sdk-$(MicrosoftSourceBuildIntermediateInstallerVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
+      <SdkSymbolsTarball>$(SharedOutputPath)dotnet-symbols-sdk-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
       <SdkLayout>$(ArtifactsTmpDir)Sdk</SdkLayout>
       <SdkTarball>%(SdkTarballItem.Identity)</SdkTarball>
     </PropertyGroup>
@@ -214,10 +214,10 @@
   </Target>
 
   <Target Name="CreateSmokeTestPrereqsTarballIfPrereqsExist"
-          DependsOnTargets="DetermineMicrosoftSourceBuildIntermediateInstallerVersion"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
           Condition="'@(SmokeTestsPrereqs->Count())' != '0'">
     <PropertyGroup>
-      <SmokeTestPrereqsTarballName>$(SharedOutputPath)dotnet-smoke-test-prereqs.$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid)$(ArchiveExtension)</SmokeTestPrereqsTarballName>
+      <SmokeTestPrereqsTarballName>$(SharedOutputPath)dotnet-smoke-test-prereqs.$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</SmokeTestPrereqsTarballName>
       <SmokeTestsPrereqPackagesDir>$(SmokeTestsArtifactsDir)prereq-packages/</SmokeTestsPrereqPackagesDir>
     </PropertyGroup>
 
@@ -247,10 +247,10 @@
   </Target>
 
   <Target Name="CreatePrebuiltsTarballIfPrebuiltsExist"
-          DependsOnTargets="DetermineMicrosoftSourceBuildIntermediateInstallerVersion"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
           Condition="'@(PrebuiltFile->Count())' != '0'">
     <PropertyGroup>
-      <TarballFilePath>$(SharedOutputPath)$(SourceBuiltPrebuiltsTarballName).$(MicrosoftSourceBuildIntermediateInstallerVersion).$(TargetRid)$(ArchiveExtension)</TarballFilePath>
+      <TarballFilePath>$(SharedOutputPath)$(SourceBuiltPrebuiltsTarballName).$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</TarballFilePath>
       <TarballWorkingDir>$(ResultingPrebuiltPackagesDir)</TarballWorkingDir>
     </PropertyGroup>
 
