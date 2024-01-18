@@ -313,17 +313,17 @@
       <Sha>d71290db981c297b17054b64b2bc7c707a547545</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24066.1">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24067.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>09c7836fcd3fad64e1b7b3689ce2c89cc9cf4596</Sha>
+      <Sha>23ec029b47d68b1a80348c0dabc3bccf013c1fe6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.24066.1">
+    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.24067.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>09c7836fcd3fad64e1b7b3689ce2c89cc9cf4596</Sha>
+      <Sha>23ec029b47d68b1a80348c0dabc3bccf013c1fe6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.24066.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.24067.1">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>09c7836fcd3fad64e1b7b3689ce2c89cc9cf4596</Sha>
+      <Sha>23ec029b47d68b1a80348c0dabc3bccf013c1fe6</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta4.24059.2">
