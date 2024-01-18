@@ -46,7 +46,8 @@ namespace Microsoft.DotNet.ToolManifest
                    EqualityComparer<NuGetVersion>.Default.Equals(Version, other.Version) &&
                    CommandNamesEqual(other.CommandNames) &&
                    FirstEffectDirectory.Value.TrimEnd('/', '\\')
-                     .Equals(other.FirstEffectDirectory.Value.TrimEnd('/', '\\'), StringComparison.Ordinal);
+                     .Equals(other.FirstEffectDirectory.Value.TrimEnd('/', '\\'), StringComparison.Ordinal) &&
+                     RollForward.Equals(other.RollForward);
         }
 
         private bool CommandNamesEqual(ToolCommandName[] otherCommandNames)
@@ -66,7 +67,7 @@ namespace Microsoft.DotNet.ToolManifest
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(PackageId, Version, CommandNames);
+            return HashCode.Combine(PackageId, Version, CommandNames, RollForward);
         }
 
         public static bool operator ==(ToolManifestPackage tool1,
