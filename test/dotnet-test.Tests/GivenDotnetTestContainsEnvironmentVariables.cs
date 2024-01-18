@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var outputDll = Path.Combine(buildCommand.GetOutputDirectory(configuration: configuration).FullName, $"{TestAppName}.dll");
 
-            var result = new DotnetTestCommand(Log, disableNewOutput: true, EnvironmentVariables)
+            var result = new DotnetTestCommand(Log, disableNewOutput: false, EnvironmentVariables)
                 .Execute(outputDll, $"{ConsoleLoggerOutputDetailed[0]}:{ConsoleLoggerOutputDetailed[1]}");
 
             result.StartInfo.Arguments

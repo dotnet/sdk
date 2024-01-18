@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var outputDll = Path.Combine(buildCommand.GetOutputDirectory(configuration: configuration).FullName, $"{testAppName}.dll");
 
             // Call vstest
-            var result = new DotnetTestCommand(Log, disableNewOutput: true)
+            var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .Execute(outputDll, "--logger:console;verbosity=normal");
             if (!TestContext.IsLocalized())
             {

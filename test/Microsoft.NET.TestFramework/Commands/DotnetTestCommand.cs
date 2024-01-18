@@ -12,7 +12,6 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 Arguments.Add("--property:VsTestUseMSBuildOutput=false");
                 Arguments.Add("-tl:false");
-                Arguments.Add("--logger:console;verbosity=normal");
             }
             // Arguments.AddRange(args);
         }

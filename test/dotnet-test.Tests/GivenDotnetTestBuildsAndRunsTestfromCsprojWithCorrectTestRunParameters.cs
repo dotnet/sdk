@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var outputDll = Path.Combine(OutputPathCalculator.FromProject(testProjectDirectory).GetOutputDirectory(configuration: configuration), "VSTestTestRunParameters.dll");
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                         .Execute(ConsoleLoggerOutputNormal.Concat(new[] {
                                             outputDll,
                                             "--",
