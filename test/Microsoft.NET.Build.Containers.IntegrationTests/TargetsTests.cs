@@ -195,7 +195,7 @@ public class TargetsTests
     [InlineData("v9.0", "linux-x64", null)]
     [InlineData("v9.0", "win-x64", "ContainerUser")]
     [Theory]
-    public void CanComputeContainerUser(string tfm, string rid, string expectedUser)
+    public void CanComputeContainerUser(string tfm, string rid, string? expectedUser)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
