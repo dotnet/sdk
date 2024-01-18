@@ -89,8 +89,8 @@ Wenn Sie ein Manifest erstellen möchten, verwenden Sie "dotnet new tool-manifes
         <note />
       </trans-unit>
       <trans-unit id="RollForwardOptionDescription">
-        <source>Roll forward to framework version of Major.</source>
-        <target state="new">Roll forward to framework version of Major.</target>
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="new">Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
