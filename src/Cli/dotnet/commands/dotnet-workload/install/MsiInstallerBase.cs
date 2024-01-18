@@ -285,17 +285,21 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <exception cref="InvalidOperationException"></exception>
         protected void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
         {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
+            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            if (installStateContents.UseWorkloadSets == newMode)
+            {
+                return;
+            }
+
             Elevate();
 
             if (IsElevated)
             {
-                string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
-                var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
                 installStateContents.UseWorkloadSets = newMode;
                 File.WriteAllText(path, installStateContents.ToString());
-
                 SecurityUtils.SecureFile(path);
             }
             else if (IsClient)
