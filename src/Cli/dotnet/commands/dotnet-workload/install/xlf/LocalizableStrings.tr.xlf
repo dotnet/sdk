@@ -364,7 +364,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetMode">
         <source>Control whether future workload operations should use workload sets or loose manifests.</source>
-        <target state="new">Control whether future workload operations should use workload sets or loose manifests.</target>
+        <target state="translated">Gelecekteki iş yükü işlemlerinin iş yükü kümelerini mi yoksa gevşek bildirimleri mi kullanması gerektiğini kontrol edin.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

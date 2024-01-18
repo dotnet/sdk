@@ -69,7 +69,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
         <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="new">Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</target>
+        <target state="translated">Argomento non valido "{0}" per l'argomento --mode per l'aggiornamento del carico di lavoro dotnet. Le uniche modalità supportate sono "workloadset", "loosemanifest" e "auto".</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

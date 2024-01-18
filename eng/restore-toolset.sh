@@ -93,7 +93,7 @@ function CleanOutStage0ToolsetsAndRuntimes {
   local aspnetRuntimePath="$dotnetRoot/shared/Microsoft.AspNetCore.App/$majorVersion.*"
   local coreRuntimePath="$dotnetRoot/shared/Microsoft.NETCore.App/$majorVersion.*"
   local wdRuntimePath="$dotnetRoot/shared/Microsoft.WindowsDesktop.App/$majorVersion.*"
-  local sdkPath="$dotnetRoot/sdk/$majorVersion.*"
+  local sdkPath="$dotnetRoot/sdk/*"
 
   if [ -f "$versionPath" ]; then
     local lastInstalledSDK=$(cat $versionPath)
