@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Watcher
                     // when the solution captures state of the file after the changes has already been made.
                     await hotReload.InitializeAsync(context, cancellationToken);
 
-                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{string.Join(" ", processSpec.Arguments ?? Array.Empty<string>())}'");
+                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{processSpec.GetArgumentsDisplay()}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
 
                     _reporter.Output("Started", emoji: "🚀");
@@ -298,10 +298,28 @@ namespace Microsoft.DotNet.Watcher
             var project = context.FileSet?.Project;
             Debug.Assert(project != null);
 
+            // RunCommand property specifies the host to use to run the project.
+            // RunArguments then specifies the arguments to the host.
+            // Arguments to the executable should follow the host arguments.
+
             processSpec.Executable = project.RunCommand;
+
             if (!string.IsNullOrEmpty(project.RunArguments))
             {
-                processSpec.EscapedArguments = project.RunArguments;
+                var escapedArguments = project.RunArguments;
+
+                if (processSpec.EscapedArguments != null)
+                {
+                    escapedArguments += " " + processSpec.EscapedArguments;
+                }
+
+                if (processSpec.Arguments != null)
+                {
+                    escapedArguments += " " + CommandLineUtilities.JoinArguments(processSpec.Arguments);
+                }
+
+                processSpec.EscapedArguments = escapedArguments;
+                processSpec.Arguments = null;
             }
 
             if (!string.IsNullOrEmpty(project.RunWorkingDirectory))
