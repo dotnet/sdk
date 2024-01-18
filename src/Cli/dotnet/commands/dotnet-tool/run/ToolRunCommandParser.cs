@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Tool.Run;
+using Microsoft.DotNet.Tools.Tool.Install;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -22,7 +23,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
         {
-            Description = LocalizableStrings.RollForwardDescription
+            Description = Tools.Tool.Install.LocalizableStrings.RollForwardOptionDescription
         };
        
         private static readonly CliCommand Command = ConstructCommand();
