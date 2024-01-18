@@ -5,6 +5,7 @@ using System.CommandLine;
 
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.TemplateEngine.Core.Operations;
 
 namespace Microsoft.DotNet.Tools.Test
 {
@@ -62,8 +63,29 @@ namespace Microsoft.DotNet.Tools.Test
             string previousNodeWindowSetting = Environment.GetEnvironmentVariable(NodeWindowEnvironmentName);
             try
             {
-                Environment.SetEnvironmentVariable(NodeWindowEnvironmentName, "1");
-                int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId).Execute();
+                var properties = GetUserSpecifiedExplicitMSBuildProperties(parseResult);
+                var hasUserMSBuildOutputProperty = properties.TryGetValue("VsTestUseMSBuildOutput", out var propertyValue);
+                
+                string[] additionalBuildProperties;
+                if (!hasUserMSBuildOutputProperty)
+                {
+                    additionalBuildProperties = ["--property:VsTestUseMSBuildOutput=true"];
+                }
+                else if (propertyValue.ToLowerInvariant() == "true")
+                {
+
+                    // User specified the property themselves. Do nothing.
+                    additionalBuildProperties = Array.Empty<string>();
+                }
+                else
+                {
+                    // User explicitly disabled the new logger. Use workarounds needed for old logger.
+                    // Workaround for https://github.com/Microsoft/vstest/issues/1503
+                    Environment.SetEnvironmentVariable(NodeWindowEnvironmentName, "1");
+                    additionalBuildProperties = ["-nodereuse:false"];
+                }
+
+                int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute();
 
                 // We run post processing also if execution is failed for possible partial successful result to post process.
                 exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Instance);
@@ -115,19 +137,12 @@ namespace Microsoft.DotNet.Tools.Test
                 testSessionCorrelationId = $"{Environment.ProcessId}_{Guid.NewGuid()}";
             }
 
-            return FromParseResult(parseResult, settings, testSessionCorrelationId, msbuildPath);
+            return FromParseResult(parseResult, settings, testSessionCorrelationId, Array.Empty<string>(), msbuildPath);
         }
 
-        private static TestCommand FromParseResult(ParseResult result, string[] settings, string testSessionCorrelationId, string msbuildPath = null)
+        private static TestCommand FromParseResult(ParseResult result, string[] settings, string testSessionCorrelationId, string[] additionalBuildProperties, string msbuildPath = null)
         {
             result.ShowHelpOrErrorIfAppropriate();
-
-            var msbuildArgs = new List<string>()
-            {
-                "-target:VSTest",
-                "-nodereuse:false", // workaround for https://github.com/Microsoft/vstest/issues/1503
-                "-nologo"
-            };
 
             // Extra msbuild properties won't be parsed and so end up in the UnmatchedTokens list. In addition to those
             // properties, all the test settings properties are also considered as unmatched but we don't want to forward
@@ -142,6 +157,13 @@ namespace Microsoft.DotNet.Tools.Test
                     .Concat(unMatchedNonSettingsArgs); // all tokens that the test-parser doesn't explicitly track (minus the settings tokens)
 
             VSTestTrace.SafeWriteTrace(() => $"MSBuild args from forwarded options: {string.Join(", ", parsedArgs)}");
+
+            var msbuildArgs = new List<string>(additionalBuildProperties)
+            {
+                "-target:VSTest",
+                "-nologo",
+            };
+
             msbuildArgs.AddRange(parsedArgs);
 
             if (settings.Any())
@@ -275,6 +297,22 @@ namespace Microsoft.DotNet.Tools.Test
 
                 testCommand.EnvironmentVariable(name, value);
             }
+        }
+
+        /// <returns>A case-insensitive dictionary of any properties passed from the user and their values.</returns>
+        private static Dictionary<string, string> GetUserSpecifiedExplicitMSBuildProperties(ParseResult parseResult)
+        {
+            Dictionary<string, string> globalProperties = new(StringComparer.OrdinalIgnoreCase);
+            string[] globalPropEnumerable = parseResult.GetValue(CommonOptions.PropertiesOption);
+            foreach (var keyEqValString in globalPropEnumerable)
+            {
+                var propertyPairs = MSBuildPropertyParser.ParseProperties(keyEqValString);
+                foreach (var propertyKeyValue in propertyPairs)
+                {
+                    globalProperties[propertyKeyValue.key] = propertyKeyValue.value;
+                }
+            }
+            return globalProperties;
         }
     }
 }
