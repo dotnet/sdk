@@ -81,10 +81,9 @@ namespace Microsoft.DotNet.CommandFactory
                 return null;
             }
 
-            if( arguments.CommandArguments != null)
+            if( arguments.CommandArguments != null && allowRollForward)
             {
-                var commandArgument = (allowRollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(arguments.CommandArguments);
-                arguments.CommandArguments = commandArgument;
+                arguments.CommandArguments = ["--roll-forward", "Major", .. arguments.CommandArguments];
             }
             
 
