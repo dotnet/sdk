@@ -23,8 +23,8 @@ namespace Microsoft.DotNet.CommandFactory
 
             // Group the arguments by if the previous argument or the current argument is --roll-forward.
             var argGroups = (commandArguments ?? [])
-                .GroupBy(a => previousArg.Equals("--roll-forward", StringComparison.OrdinalIgnoreCase)
-                | (previousArg = a).Equals("--roll-forward", StringComparison.OrdinalIgnoreCase))
+                .GroupBy(a => previousArg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase)
+                | (previousArg = a).Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase))
                 .ToArray();
 
             string[] arguments = [..argGroups.Where(g => g.Key).SelectMany(g => g), commandPath, .. argGroups.Where(g => !g.Key).SelectMany(g => g)];
