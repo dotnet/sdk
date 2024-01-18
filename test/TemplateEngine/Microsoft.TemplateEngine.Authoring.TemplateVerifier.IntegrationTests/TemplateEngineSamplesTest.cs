@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
         public async void TemplateEngineSamplesProjectTest(
             string folderName,
             string shortName,
-            string[] args,
+            string[]? args,
             string caseDescription)
         {
             _log.LogInformation($"Template with {caseDescription}");
@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 
         private string GetSamplesTemplateLocation() => Path.Combine(CodeBaseRoot, "dotnet-template-samples", "content");
 
-        private (Dictionary<string, string?> Args, string ArgsScenarioName) GetTemplateArgs(string[] args)
+        private (Dictionary<string, string?> Args, string ArgsScenarioName) GetTemplateArgs(string[]? args)
         {
             var templateArgs = new Dictionary<string, string?>();
             StringBuilder sb = new StringBuilder();

@@ -289,7 +289,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
         [InlineData(null, false, null, "", false, null)]
         [InlineData(false, false, false, "", false, null)]
         [InlineData(true, false, true, "A,C", false, null)]
-        public async void InstantiateAsync_ConditionalParametersIsRequiredEvaluation(bool? a_val, bool? b_val, bool? c_val, string expectedOutput, bool instantiateShouldFail, string expectedErrorMessage)
+        public async void InstantiateAsync_ConditionalParametersIsRequiredEvaluation(bool? a_val, bool? b_val, bool? c_val, string expectedOutput, bool instantiateShouldFail, string? expectedErrorMessage)
         {
             //
             // Template content preparation
@@ -322,7 +322,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 sourceSnippet,
                 // To make the test data more compact we have left out the newlines - let's add them back here
                 expectedOutput.Length <= 2 ? expectedOutput : expectedOutput.Replace(",", $",{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}"),
-                expectedErrorMessage,
+                expectedErrorMessage!,
                 instantiateShouldFail,
                 parameters1: parameters);
         }
@@ -377,7 +377,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             string? b,
             string expectedOutput,
             bool instantiateShouldFail,
-            string expectedErrorMessage)
+            string? expectedErrorMessage)
         {
             //
             // Template content preparation
@@ -411,7 +411,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 TemplateConfigEnabledAndRequiredConditionsTogether,
                 sourceSnippet,
                 expectedOutput,
-                expectedErrorMessage,
+                expectedErrorMessage!,
                 instantiateShouldFail,
                 parameters1: parameters);
         }
@@ -449,7 +449,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             bool? a,
             string expectedOutput,
             bool instantiateShouldFail,
-            string expectedErrorMessage)
+            string? expectedErrorMessage)
         {
             //
             // Template content preparation
@@ -477,7 +477,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 TemplateConfigEnabledConditionInversed,
                 sourceSnippet,
                 expectedOutput,
-                expectedErrorMessage,
+                expectedErrorMessage!,
                 instantiateShouldFail,
                 parameters1: parameters);
         }
@@ -549,7 +549,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             string paramSnippet,
             string expectedOutput,
             bool instantiateShouldFail,
-            string expectedErrorMessage)
+            string? expectedErrorMessage)
         {
             //
             // Template content preparation
@@ -581,7 +581,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 TemplateConfigEnabledConditionEvaluationBehavior.Replace("##Enable_Param", paramSnippet),
                 sourceSnippet,
                 expectedOutput,
-                expectedErrorMessage,
+                expectedErrorMessage!,
                 instantiateShouldFail,
                 parameters1: new Dictionary<string, string?>());
         }

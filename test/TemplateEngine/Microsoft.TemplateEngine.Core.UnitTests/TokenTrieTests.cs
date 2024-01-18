@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         [InlineData("Hello There!", 1, 1, false, "Hello", " ", null)]
         [InlineData("Hello There!", 5, 6, true, null, " ", "There!")]
         [InlineData("Hello There!", 0, 6, true, "Hello", " ", "There!")]
-        public void VerifyTokenTrieLookArounds(string original, int checkPosition, int expectedPosition, bool success, string after, string value, string before)
+        public void VerifyTokenTrieLookArounds(string original, int checkPosition, int expectedPosition, bool success, string? after, string value, string? before)
         {
             byte[] data = Encoding.UTF8.GetBytes(original);
 
