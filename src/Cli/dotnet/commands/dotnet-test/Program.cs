@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-
+using System.Diagnostics;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Core.Operations;
 
 namespace Microsoft.DotNet.Tools.Test
@@ -303,13 +304,29 @@ namespace Microsoft.DotNet.Tools.Test
         private static Dictionary<string, string> GetUserSpecifiedExplicitMSBuildProperties(ParseResult parseResult)
         {
             Dictionary<string, string> globalProperties = new(StringComparer.OrdinalIgnoreCase);
-            string[] globalPropEnumerable = parseResult.GetValue(CommonOptions.PropertiesOption);
-            foreach (var keyEqValString in globalPropEnumerable)
+           IEnumerable<string> globalPropEnumerable = parseResult.UnmatchedTokens;
+            foreach (var unmatchedToken in globalPropEnumerable)
             {
-                var propertyPairs = MSBuildPropertyParser.ParseProperties(keyEqValString);
+                var propertyPairs = MSBuildPropertyParser.ParseProperties(unmatchedToken);
                 foreach (var propertyKeyValue in propertyPairs)
                 {
-                    globalProperties[propertyKeyValue.key] = propertyKeyValue.value;
+                    string propertyName;
+                    if (propertyKeyValue.key.StartsWith("--property:", StringComparison.OrdinalIgnoreCase)
+                        || propertyKeyValue.key.StartsWith("/property:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        propertyName = propertyKeyValue.key.RemovePrefix().Substring("property:".Length);
+                    }
+                    else if (propertyKeyValue.key.StartsWith("-p:", StringComparison.OrdinalIgnoreCase)
+                        || propertyKeyValue.key.StartsWith("/p:", StringComparison.OrdinalIgnoreCase))
+                    {
+                        propertyName = propertyKeyValue.key.RemovePrefix().Substring("p:".Length);
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                    globalProperties[propertyName] = propertyKeyValue.value;
                 }
             }
             return globalProperties;
