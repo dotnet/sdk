@@ -50,5 +50,16 @@ namespace Microsoft.DotNet.NativeWrapper
 
             return list.Entries;
         }
+
+        public static int InitializeForRuntimeConfig(string runtimeConfigPath)
+        {
+            var result = new SdkResolutionResult();
+
+            int errorCode = Interop.RunningOnWindows
+                ? Interop.Windows.hostfxr_initialize_for_runtime_config(runtimeConfigPath)
+                : Interop.Unix.hostfxr_initialize_for_runtime_config(runtimeConfigPath);
+
+            return errorCode;
+        }
     }
 }

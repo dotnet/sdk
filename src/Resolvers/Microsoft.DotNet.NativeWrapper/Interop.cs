@@ -152,14 +152,11 @@ namespace Microsoft.DotNet.NativeWrapper
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = UTF16)]
             internal delegate int hostfxr_initialize_for_runtime_config_fn(
                 string runtime_config_path,
-                IntPtr parameters,
                 out IntPtr host_context_handle);
 
             [DllImport(Constants.HostFxr, CharSet = UTF16, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
             internal static extern int hostfxr_initialize_for_runtime_config(
-                string runtime_config_path,
-                IntPtr parameters,
-                out IntPtr host_context_handle);
+                string runtime_config_path);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = UTF16)]
             internal delegate void hostfxr_get_available_sdks_result_fn(
@@ -194,14 +191,11 @@ namespace Microsoft.DotNet.NativeWrapper
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = UTF8)]
             internal delegate int hostfxr_initialize_for_runtime_config_fn(
                 string runtime_config_path,
-                IntPtr parameters,
                 out IntPtr host_context_handle);
 
             [DllImport(Constants.HostFxr, CharSet = UTF8, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
             internal static extern int hostfxr_initialize_for_runtime_config(
-                string runtime_config_path,
-                IntPtr parameters,
-                out IntPtr host_context_handle);
+                string runtime_config_path);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = UTF8)]
             internal delegate void hostfxr_get_available_sdks_result_fn(
