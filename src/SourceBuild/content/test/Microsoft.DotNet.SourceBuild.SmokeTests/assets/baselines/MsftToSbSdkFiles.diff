@@ -45,13 +45,6 @@ index ------------
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/
  ./packs/Microsoft.NETCore.App.Ref/x.y.z/analyzers/
 @@ ------------ @@
- ./sdk/x.y.z/.version
- ./sdk/x.y.z/AppHostTemplate/
- ./sdk/x.y.z/AppHostTemplate/apphost
--./sdk/x.y.z/containerize.deps.json
--./sdk/x.y.z/containerize.exe
--./sdk/x.y.z/containerize.runtimeconfig.json
- ./sdk/x.y.z/Containers/
  ./sdk/x.y.z/Containers/build/
  ./sdk/x.y.z/Containers/build/Microsoft.NET.Build.Containers.props
  ./sdk/x.y.z/Containers/build/Microsoft.NET.Build.Containers.targets
@@ -239,7 +232,6 @@ index ------------
 -./sdk/x.y.z/Containers/tasks/net472/System.Reflection.Metadata.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Reflection.MetadataLoadContext.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Runtime.CompilerServices.Unsafe.dll
--./sdk/x.y.z/Containers/tasks/net472/System.Security.AccessControl.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Security.Principal.Windows.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Text.Encodings.Web.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Text.Json.dll
@@ -278,14 +270,6 @@ index ------------
  ./sdk/x.y.z/Microsoft.Common.CrossTargeting.targets
  ./sdk/x.y.z/Microsoft.Common.CurrentVersion.targets
  ./sdk/x.y.z/Microsoft.Common.overridetasks
-@@ ------------ @@
- ./sdk/x.y.z/Microsoft.VisualBasic.CrossTargeting.targets
- ./sdk/x.y.z/Microsoft.VisualBasic.CurrentVersion.targets
- ./sdk/x.y.z/Microsoft.VisualBasic.targets
--./sdk/x.y.z/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
- ./sdk/x.y.z/Microsoft.VisualStudio.TestPlatform.Client.dll
- ./sdk/x.y.z/Microsoft.VisualStudio.TestPlatform.Common.dll
- ./sdk/x.y.z/Microsoft.VisualStudio.TestPlatform.ObjectModel.dll
 @@ ------------ @@
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/netx.y/
