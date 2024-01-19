@@ -30,23 +30,37 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             using RegistryKey installedManifestsKey = Registry.LocalMachine.OpenSubKey(@$"SOFTWARE\Microsoft\dotnet\InstalledManifests\{HostArchitecture}");
             if (installedManifestsKey != null)
             {
-                foreach (string manifestId in installedManifestsKey.GetSubKeyNames())
+                foreach (string manifestPackageId in installedManifestsKey.GetSubKeyNames())
                 {
-                    using RegistryKey manifestKey = installedManifestsKey.OpenSubKey(manifestId);
+                    const string ManifestSeparator = ".Manifest-";
+
+                    int separatorIndex = manifestPackageId.IndexOf(ManifestSeparator);
+                    if (separatorIndex < 0 || manifestPackageId.Length < separatorIndex + ManifestSeparator.Length + 1)
+                    {
+                        Log.LogMessage($"Found apparent manifest package ID '{manifestPackageId} which did not correctly parse into manifest ID and feature band.");
+                        continue;
+                    }
+
+                    string manifestId = manifestPackageId.Substring(0, separatorIndex);
+                    string manifestFeatureBand = manifestPackageId.Substring(separatorIndex + ManifestSeparator.Length);
+
+                    using RegistryKey manifestKey = installedManifestsKey.OpenSubKey(manifestPackageId);
                     foreach (string manifestVersion in manifestKey.GetSubKeyNames())
                     {
                         using RegistryKey manifestVersionKey = manifestKey.OpenSubKey(manifestVersion);
+
                         WorkloadManifestRecord record = new WorkloadManifestRecord
                         {
                             ManifestId = manifestId,
                             ManifestVersion = manifestVersion,
+                            ManifestFeatureBand = manifestFeatureBand,
                             ProductCode = (string)manifestVersionKey.GetValue("ProductCode"),
                             UpgradeCode = (string)manifestVersionKey.GetValue("UpgradeCode"),
                             ProductVersion = new Version((string)manifestVersionKey.GetValue("ProductVersion")),
                             ProviderKeyName = (string)manifestVersionKey.GetValue("DependencyProviderKey")
                         };
 
-                        Log.LogMessage($"Found workload manifest record, Id: {manifestId}, version: {manifestVersion}, ProductCode: {record.ProductCode}, provider key: {record.ProviderKeyName}");
+                        Log.LogMessage($"Found workload manifest record, Id: {manifestId}, version: {manifestVersion}, feature band: {manifestFeatureBand}, ProductCode: {record.ProductCode}, provider key: {record.ProviderKeyName}");
                         manifestRecords.Add(record);
                         discoveredManifests.Add((manifestId, manifestVersion));
                     }
@@ -138,8 +152,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                     var manifestRecord = new WorkloadManifestRecord();
                                     manifestRecord.ProductCode = relatedProductCodes[0];
                                     manifestRecord.UpgradeCode = upgradeCode;
-                                    manifestRecord.ManifestVersion = manifestVersion.ToString();
                                     manifestRecord.ManifestId = manifestID;
+                                    manifestRecord.ManifestVersion = manifestVersion.ToString();
+                                    manifestRecord.ManifestFeatureBand = manifestFeatureBand.ToString();
                                     manifestRecord.ProductVersion = installedVersion;
                                     manifestRecord.ProviderKeyName = dependencyProvider.ProviderKeyName;
 

@@ -39,6 +39,12 @@ namespace Microsoft.DotNet.Installer.Windows
             set;
         }
 
+        public string ManifestFeatureBand
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// The product code (GUID) of the workload manifest MSI.
         /// </summary>

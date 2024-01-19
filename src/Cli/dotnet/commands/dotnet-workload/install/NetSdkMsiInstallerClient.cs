@@ -8,10 +8,12 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32.Msi;
 using NuGet.Common;
+using NuGet.Packaging.Signing;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
@@ -97,6 +99,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return msis.ToList(); ;
         }
 
+        //  Wrap the setup logger in an IReporter so it can be passed to the garbage collector
+        private class SetupLogReporter : IReporter
+        {
+            private ISetupLogger _setupLogger;
+
+            public SetupLogReporter(ISetupLogger setupLogger)
+            {
+                _setupLogger = setupLogger;
+            }
+
+            //  SetupLogger doesn't have a way of writing a message that shouldn't include a newline.  So if this method is used a message may be split across multiple lines,
+            //  but that's probably better than not writing a message at all or throwing an exception
+            public void Write(string message) => _setupLogger.LogMessage(message);
+            public void WriteLine(string message) => _setupLogger.LogMessage(message);
+            public void WriteLine() => _setupLogger.LogMessage("");
+            public void WriteLine(string format, params object[] args) => _setupLogger.LogMessage(string.Format(format, args));
+        }
+
         /// <summary>
         /// Cleans up and removes stale workload packs.
         /// </summary>
@@ -108,38 +128,64 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 Log?.LogMessage($"Starting garbage collection.");
                 Log?.LogMessage($"Garbage Collection Mode: CleanAllPacks={cleanAllPacks}.");
 
+                var garbageCollector = new WorkloadGarbageCollector(DotNetHome, _sdkFeatureBand, RecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet, new SetupLogReporter(Log));
+                garbageCollector.Collect();
+
+
                 IEnumerable<SdkFeatureBand> installedFeatureBands = GetInstalledFeatureBands(Log);
-                IEnumerable<WorkloadId> installedWorkloads = RecordRepository.GetInstalledWorkloads(_sdkFeatureBand);
 
-                var installedPacks = installedWorkloads.SelectMany(workload => _workloadResolver.GetPacksInWorkload(workload))
-                    .Distinct();
+                List<WorkloadManifestRecord> manifestsToRemove = new();
 
-                var installedPackInfos = installedPacks.Select(pack => _workloadResolver.TryGetPackInfo(pack))
-                    .Where(pack => pack != null);
-
-                //  The same workload pack may be aliased from two different names, for example
-                //  Microsoft.NETCore.App.Runtime.Mono.android-arm is aliased from Microsoft.NETCore.App.Runtime.Mono.net6.android-arm and
-                //  from Microsoft.NETCore.App.Runtime.Mono.net6.android-arm64
-                HashSet<(WorkloadPackId id, string version)> expectedWorkloadPacks = new HashSet<(WorkloadPackId id, string version)>();
-                foreach (var expectedPack in installedPackInfos)
+                var installedWorkloadManifests = GetWorkloadManifestRecords();
+                foreach (var manifestRecord in installedWorkloadManifests)
                 {
-                    if (!expectedPack.Id.ToString().Equals(expectedPack.ResolvedPackageId, StringComparison.OrdinalIgnoreCase))
+                    DependencyProvider depProvider = new DependencyProvider(manifestRecord.ProviderKeyName);
+
+                    (bool shouldBeInstalled, string reason) shouldBeInstalled(SdkFeatureBand dependentFeatureBand)
                     {
-                        Log?.LogMessage($"Expected workload pack, ID: {expectedPack.ResolvedPackageId}, version: {expectedPack.Version}, aliased from: {expectedPack.Id}");
+                        if (!installedFeatureBands.Contains(dependentFeatureBand))
+                        {
+                            return (false, $"SDK feature band {dependentFeatureBand} does not match any installed feature bands.");
+                        }
+                        else if (dependentFeatureBand.Equals(_sdkFeatureBand))
+                        {
+                            if (garbageCollector.ManifestsToKeep.Contains((new ManifestId(manifestRecord.ManifestId), new ManifestVersion(manifestRecord.ManifestVersion), new SdkFeatureBand(manifestRecord.ManifestFeatureBand))))
+                            {
+                                return (true, $"the manifest is still needed for SDK feature band {dependentFeatureBand}.");
+                            }
+                            else
+                            {
+                                return (false, $"the manifest is no longer needed for SDK feature band {dependentFeatureBand}.");
+                            }
+                        }
+                        else
+                        {
+                            return (true, $"the manifest may still be needed for SDK feature band {dependentFeatureBand}, which is different than the current SDK feature band of {_sdkFeatureBand}");
+                        }
+                    }
+
+                    Log?.LogMessage($"Evaluating dependents for workload manifest, dependent: {depProvider}, ID: {manifestRecord.ManifestId}, Version: {manifestRecord.ManifestVersion}, Feature Band: {manifestRecord.ManifestFeatureBand}");
+                    UpdateDependentReferenceCounts(depProvider, shouldBeInstalled);
+
+                    // Recheck the registry to see if there are any remaining dependents. If not, we can
+                    // remove the workload manifest. We'll add it to the list and remove the packs at the end.
+                    IEnumerable<string> remainingDependents = depProvider.Dependents;
+
+                    if (remainingDependents.Any())
+                    {
+                        Log?.LogMessage($"{manifestRecord.ManifestId} {manifestRecord.ManifestVersion}/{manifestRecord.ManifestFeatureBand} will not be removed because other dependents remain: {string.Join(", ", remainingDependents)}.");
                     }
                     else
                     {
-                        Log?.LogMessage($"Expected workload pack, ID: {expectedPack.ResolvedPackageId}, version: {expectedPack.Version}.");
+                        manifestsToRemove.Add(manifestRecord);
+                        Log?.LogMessage($"Removing {manifestRecord.ManifestId} {manifestRecord.ManifestVersion}/{manifestRecord.ManifestFeatureBand} as no dependents remain.");
                     }
 
-                    expectedWorkloadPacks.Add((new WorkloadPackId(expectedPack.ResolvedPackageId), expectedPack.Version));
                 }
 
-                foreach (SdkFeatureBand installedFeatureBand in installedFeatureBands)
-                {
-                    Log?.LogMessage($"Installed feature band: {installedFeatureBand}");
-                }
+                RemoveWorkloadManifests(manifestsToRemove, offlineCache);
 
+                //  If aliased, the pack records here are the resolved pack from the alias
                 IEnumerable<WorkloadPackRecord> installedWorkloadPacks = GetWorkloadPackRecords();
 
                 List<WorkloadPackRecord> packsToRemove = new List<WorkloadPackRecord>();
@@ -151,7 +197,36 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     DependencyProvider depProvider = new DependencyProvider(packRecord.ProviderKeyName);
 
-                    UpdateDependentReferenceCounts(packRecord, depProvider, installedFeatureBands, expectedWorkloadPacks, cleanAllPacks);
+                    (bool shouldBeInstalled, string reason) shouldBeInstalled(SdkFeatureBand dependentFeatureBand)
+                    {
+                        if (!installedFeatureBands.Contains(dependentFeatureBand))
+                        {
+                            return (false, $"SDK feature band {dependentFeatureBand} does not match any installed feature bands.");
+                        }
+                        else if (cleanAllPacks)
+                        {
+                            return (false, "dotnet has been told to clean everything.");
+                        }
+                        else if (dependentFeatureBand.Equals(_sdkFeatureBand))
+                        {
+                            // If the current SDK feature band is listed as a dependent, we can validate
+                            // the workload packs against the expected pack IDs and versions to potentially remove it.
+                            if (packRecord.InstalledPacks.All(p => !garbageCollector.PacksToKeep.Contains((p.id, p.version.ToString()))))
+                            {
+                                //  None of the packs installed by this MSI are necessary any longer for this feature band, so we can remove the reference count
+                                return (false, "the pack record(s) do not match any expected packs.");
+                            }
+                            else
+                            {
+                                return (true, $"the packs are still needed. Mode: {cleanAllPacks} | Dependent band: {dependentFeatureBand} | SDK band: {_sdkFeatureBand}.");
+                            }
+                        }
+                        return (true, $"no conditions for removal were met. Mode: {cleanAllPacks} | Dependent band: {dependentFeatureBand} | SDK band: {_sdkFeatureBand}.");
+                    }
+
+
+                    Log?.LogMessage($"Evaluating dependents for workload pack, dependent: {depProvider}, MSI ID: {packRecord.MsiId}, MSI version: {packRecord.MsiNuGetVersion}");
+                    UpdateDependentReferenceCounts(depProvider, shouldBeInstalled);
 
                     // Recheck the registry to see if there are any remaining dependents. If not, we can
                     // remove the workload pack. We'll add it to the list and remove the packs at the end.
@@ -187,17 +262,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         /// about dependents that match the SDK host we're running under. For example, an x86 SDK should not be
         /// modifying the x64 MSI dependents. After this, decrement any dependents (registry keys) that should be removed.
         /// </summary>
-        /// <param name="packRecordToUpdate"></param>
         /// <param name="depProvider"></param>
-        /// <param name="installedFeatureBands"></param>
-        /// <param name="expectedWorkloadPacks"></param>
-        /// <param name="cleanAllPacks">If true, decrement reference counts for all CLI MSI workloads. Elsewise, only deference dependents for orphaned packs.</param>
+        /// <param name="shouldBeInstalledFunc">Function to determine whether a dependency record (reference count) for a feature band should be kept</param>
         private void UpdateDependentReferenceCounts(
-            WorkloadPackRecord packRecordToUpdate,
             DependencyProvider depProvider,
-            IEnumerable<SdkFeatureBand> installedFeatureBands,
-            HashSet<(WorkloadPackId id, string version)> expectedWorkloadPacks,
-            bool cleanAllPacks
+            Func<SdkFeatureBand, (bool shouldBeInstalled, string reason)> shouldBeInstalledFunc
             )
         {
             IEnumerable<string> sdkDependents = depProvider.Dependents
@@ -206,8 +275,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             foreach (string dependent in sdkDependents)
             {
-                Log?.LogMessage($"Evaluating dependent for workload pack, dependent: {dependent}, MSI ID: {packRecordToUpdate.MsiId}, MSI version: {packRecordToUpdate.MsiNuGetVersion}");
-
                 // Dependents created by the SDK should have 3 parts, for example, "Microsoft.NET.Sdk,6.0.100,x86".
                 string[] dependentParts = dependent.Split(',');
 
@@ -221,35 +288,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     SdkFeatureBand dependentFeatureBand = new SdkFeatureBand(dependentParts[1]);
 
-                    if (!installedFeatureBands.Contains(dependentFeatureBand))
+                    var (shouldBeInstalled, reason) = shouldBeInstalledFunc(dependentFeatureBand);
+                    if (shouldBeInstalled)
                     {
-                        Log?.LogMessage($"Removing dependent '{dependent}' from provider key '{depProvider.ProviderKeyName}' because its SDK feature band does not match any installed feature bands.");
-                        UpdateDependent(InstallRequestType.RemoveDependent, depProvider.ProviderKeyName, dependent);
-                    }
-                    else if (cleanAllPacks)
-                    {
-                        Log?.LogMessage($"Adding dependent '{dependent}' for removal as part as dotnet has been told to clean everything.");
-                        // VS will manage its own MSI packs, so no need to worry about decrementing too much here.
-                        UpdateDependent(InstallRequestType.RemoveDependent, depProvider.ProviderKeyName, dependent);
-                    }
-                    else if (dependentFeatureBand.Equals(_sdkFeatureBand))
-                    {
-                        // If the current SDK feature band is listed as a dependent, we can validate
-                        // the workload packs against the expected pack IDs and versions to potentially remove it.
-                        if (packRecordToUpdate.InstalledPacks.All(p => !expectedWorkloadPacks.Contains((p.id, p.version.ToString()))))
-                        {
-                            //  None of the packs installed by this MSI are necessary any longer for this feature band, so we can remove the reference count
-                            Log?.LogMessage($"Removing dependent '{dependent}' because the pack record(s) do not match any expected packs.");
-                            UpdateDependent(InstallRequestType.RemoveDependent, depProvider.ProviderKeyName, dependent);
-                        }
-                        else
-                        {
-                            Log?.LogMessage($"Dependent '{dependent}' was not removed as the packs are still needed. Mode: {cleanAllPacks} | Dependent band: {dependentFeatureBand} | SDK band: {_sdkFeatureBand}.");
-                        }
+                        Log?.LogMessage($"Dependent '{dependent}' was not removed because {reason}");
                     }
                     else
                     {
-                        Log?.LogMessage($"Dependent '{dependent}' was not removed. Mode: {cleanAllPacks} | Dependent band: {dependentFeatureBand} | SDK band: {_sdkFeatureBand}.");
+                        Log?.LogMessage($"Removing dependent '{dependent}' from provider key '{depProvider.ProviderKeyName}' because {reason}");
+                        UpdateDependent(InstallRequestType.RemoveDependent, depProvider.ProviderKeyName, dependent);
                     }
                 }
                 catch (Exception e)
@@ -257,6 +304,32 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     Log?.LogMessage($"{e.Message}");
                     Log?.LogMessage($"{e.StackTrace}");
                     continue;
+                }
+            }
+        }
+
+        private void RemoveWorkloadManifests(List<WorkloadManifestRecord> manifestToRemove, DirectoryPath? offlineCach)
+        {
+            foreach (WorkloadManifestRecord record in manifestToRemove)
+            {
+                DetectState state = DetectPackage(record.ProductCode, out Version _);
+                if (state == DetectState.Present)
+                {
+                    string msiNuGetPackageId = $"{record.ManifestId}.Manifest-{record.ManifestFeatureBand}.Msi.{HostArchitecture}";
+                    MsiPayload msi = GetCachedMsiPayload(msiNuGetPackageId, record.ManifestVersion, offlineCach);
+
+                    if (!string.Equals(record.ProductCode, msi.ProductCode, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Log?.LogMessage($"ProductCode mismatch! Cached package: {msi.ProductCode}, manifest record: {record.ProductCode}.");
+                        string logFile = GetMsiLogName(record.ProductCode, InstallAction.Uninstall);
+                        uint error = ExecuteWithProgress(String.Format(LocalizableStrings.MsiProgressUninstall, msiNuGetPackageId), () => UninstallMsi(record.ProductCode, logFile));
+                        ExitOnError(error, $"Failed to uninstall {msi.MsiPath}.");
+                    }
+                    else
+                    {
+                        VerifyPackage(msi);
+                        ExecutePackage(msi, InstallAction.Uninstall, msiNuGetPackageId);
+                    }
                 }
             }
         }

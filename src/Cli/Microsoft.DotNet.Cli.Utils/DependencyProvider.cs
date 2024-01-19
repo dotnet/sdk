@@ -175,6 +175,8 @@ namespace Microsoft.DotNet.Cli.Utils
             return providerKey?.GetValue(null) as string ?? null;
         }
 
+        public override string ToString() => ProviderKeyName;
+
         public static DependencyProvider GetFromProductCode(string productCode, bool allUsers = true)
         {
             var baseKey = allUsers ? Registry.LocalMachine : Registry.CurrentUser;
