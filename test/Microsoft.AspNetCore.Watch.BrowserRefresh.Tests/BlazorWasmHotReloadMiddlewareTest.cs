@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert
             AssertDeltas(deltas, middleware.Deltas);
-            Assert.NotEmpty(context.Response.Headers["ETag"]);
+            Assert.NotEqual(0, context.Response.Headers["ETag"].Count);
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert
             AssertDeltas(deltas, middleware.Deltas);
-            Assert.NotEmpty(context.Response.Headers["ETag"]);
+            Assert.NotEqual(0, context.Response.Headers["ETag"].Count);
         }
 
         [Fact]
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             // Assert
             deltas.AddRange(newDeltas);
             AssertDeltas(deltas, middleware.Deltas);
-            Assert.NotEmpty(context.Response.Headers["ETag"]);
+            Assert.NotEqual(0, context.Response.Headers["ETag"].Count);
         }
 
         [Fact]
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             Assert.Equal(
                 JsonSerializer.SerializeToUtf8Bytes(deltas, new JsonSerializerOptions(JsonSerializerDefaults.Web)),
                 stream.ToArray());
-            Assert.NotEmpty(context.Response.Headers[HeaderNames.ETag]);
+            Assert.NotEqual(0, context.Response.Headers[HeaderNames.ETag].Count);
         }
 
         [Fact]
