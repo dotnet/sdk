@@ -119,9 +119,9 @@
       <ArmEnvironmentVariables Condition="'$(Platform)' == 'armel'">ROOTFS_DIR=$(ArtifactsObjDir)crossrootfs/armel</ArmEnvironmentVariables>
     </PropertyGroup>
 
-    <Exec Command="$(ArmEnvironmentVariables) $(RepositoryEngineeringDir)cross/build-rootfs.sh"
-          Condition="$(TargetArchitecture.Contains('arm')) and '$(TargetArchitecture)' != 'armel' and '$(BuildArchitecture)' != 'arm64' and '$(BuildArchitecture)' != 'arm'" />
-    <Exec Command="$(ArmEnvironmentVariables) $(RepositoryEngineeringDir)cross/armel/tizen-build-rootfs.sh"
+    <Exec Command="$(ArmEnvironmentVariables) $(RepositoryEngineeringDir)common/cross/build-rootfs.sh"
+          Condition="'$(TargetArchitecture)' != 'armel' and '$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <Exec Command="$(ArmEnvironmentVariables) $(RepositoryEngineeringDir)common/cross/armel/tizen-build-rootfs.sh"
           Condition="'$(TargetArchitecture)' == 'armel'" />
   </Target>
 
