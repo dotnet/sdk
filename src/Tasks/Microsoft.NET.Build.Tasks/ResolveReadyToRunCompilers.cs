@@ -257,6 +257,11 @@ namespace Microsoft.NET.Build.Tasks
                 case "arm64":
                     architecture = Architecture.Arm64;
                     break;
+#if !NETFRAMEWORK
+                case "riscv64":
+                    architecture = Architecture.RiscV64;
+                    break;
+#endif
                 case "x64":
                     architecture = Architecture.X64;
                     break;
