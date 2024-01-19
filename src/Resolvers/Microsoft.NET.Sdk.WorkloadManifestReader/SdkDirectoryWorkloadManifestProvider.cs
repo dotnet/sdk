@@ -410,7 +410,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     foreach (var workloadSetDirectory in Directory.GetDirectories(workloadSetsRoot))
                     {
                         WorkloadSet? workloadSet = null;
-                        foreach (var jsonFile in Directory.GetFiles(workloadSetDirectory, "*.workloadset.json"))
+                        var jsonFile = Path.Combine(workloadSetDirectory, "workloadset.json");
+                        if (File.Exists(jsonFile))
                         {
                             var newWorkloadSet = WorkloadSet.FromJson(File.ReadAllText(jsonFile), _sdkVersionBand);
                             if (workloadSet == null)
