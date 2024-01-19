@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData(null, false)]
         public void VerifyVersionIsWellFormedCheckerTest(string? versionString, bool expectedParseResult)
         {
-            Assert.Equal(expectedParseResult, VersionStringHelpers.IsVersionWellFormed(versionString!));
+            Assert.Equal(expectedParseResult, VersionStringHelpers.IsVersionWellFormed(versionString));
         }
 
         [Theory(DisplayName = nameof(VerifyVersionComparisonTest))]
@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("1.1", "1.0.0", 1)]
         public void VerifyVersionComparisonTest(string? version1, string? version2, int? expectedComparison)
         {
-            Assert.Equal(expectedComparison, VersionStringHelpers.CompareVersions(version1!, version2!));
+            Assert.Equal(expectedComparison, VersionStringHelpers.CompareVersions(version1, version2));
         }
 
         [Theory(DisplayName = nameof(VersionParseCompare))]

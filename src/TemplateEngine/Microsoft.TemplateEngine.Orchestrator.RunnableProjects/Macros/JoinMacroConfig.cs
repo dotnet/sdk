@@ -15,11 +15,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         private const string SymbolsTypePropertyName = "type";
         private const string SymbolsValuePropertyName = "value";
 
-        internal JoinMacroConfig(JoinMacro macro, string variableName, string? dataType, IReadOnlyList<(JoinType, string)> symbols, string separator = "", bool removeEmptyValues = false)
+        internal JoinMacroConfig(JoinMacro macro, string variableName, string? dataType, IReadOnlyList<(JoinType, string)> symbols, string? separator = "", bool removeEmptyValues = false)
              : base(macro, variableName, dataType)
         {
             Symbols = symbols ?? throw new ArgumentNullException(nameof(symbols));
-            Separator = separator;
+            Separator = separator ?? string.Empty;
             RemoveEmptyValues = removeEmptyValues;
         }
 

@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
 
             JoinMacro macro = new();
-            JoinMacroConfig macroConfig = new(macro, variableName, null, definitions, separator!, removeEmptyValues);
+            JoinMacroConfig macroConfig = new(macro, variableName, null, definitions, separator, removeEmptyValues);
 
             IVariableCollection variables = new VariableCollection
             {

@@ -322,7 +322,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 sourceSnippet,
                 // To make the test data more compact we have left out the newlines - let's add them back here
                 expectedOutput.Length <= 2 ? expectedOutput : expectedOutput.Replace(",", $",{Environment.NewLine}{Environment.NewLine}{Environment.NewLine}"),
-                expectedErrorMessage!,
+                expectedErrorMessage,
                 instantiateShouldFail,
                 parameters1: parameters);
         }
@@ -411,7 +411,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 TemplateConfigEnabledAndRequiredConditionsTogether,
                 sourceSnippet,
                 expectedOutput,
-                expectedErrorMessage!,
+                expectedErrorMessage,
                 instantiateShouldFail,
                 parameters1: parameters);
         }
@@ -477,7 +477,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 TemplateConfigEnabledConditionInversed,
                 sourceSnippet,
                 expectedOutput,
-                expectedErrorMessage!,
+                expectedErrorMessage,
                 instantiateShouldFail,
                 parameters1: parameters);
         }
@@ -581,7 +581,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
                 TemplateConfigEnabledConditionEvaluationBehavior.Replace("##Enable_Param", paramSnippet),
                 sourceSnippet,
                 expectedOutput,
-                expectedErrorMessage!,
+                expectedErrorMessage,
                 instantiateShouldFail,
                 parameters1: new Dictionary<string, string?>());
         }
@@ -875,7 +875,7 @@ Details: Parameter conditions contain cyclic dependency: [A, B, A] that is preve
             string templateSnippet,
             string sourceSnippet,
             string expectedOutput,
-            string expectedErrorMessage,
+            string? expectedErrorMessage,
             bool instantiateShouldFail,
             string? name = "sourceFile",
             string expectedOutputName = "./sourceFile.cs",
