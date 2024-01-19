@@ -285,17 +285,21 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <exception cref="InvalidOperationException"></exception>
         protected void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
         {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
+            var installStateContents = InstallStateContents.FromPath(path);
+            if (installStateContents.UseWorkloadSets == newMode)
+            {
+                return;
+            }
+
             Elevate();
 
             if (IsElevated)
             {
-                string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
-                var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
                 installStateContents.UseWorkloadSets = newMode;
                 File.WriteAllText(path, installStateContents.ToString());
-
                 SecurityUtils.SecureFile(path);
             }
             else if (IsClient)
@@ -568,6 +572,11 @@ namespace Microsoft.DotNet.Installer.Windows
         public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
+            var installStateContents = InstallStateContents.FromPath(path);
+            if (installStateContents.Manifests == null)
+            {
+                return;
+            }
 
             if (!File.Exists(path))
             {
@@ -581,7 +590,6 @@ namespace Microsoft.DotNet.Installer.Windows
             {
                 if (File.Exists(path))
                 {
-                    var installStateContents = InstallStateContents.FromString(File.ReadAllText(path));
                     installStateContents.Manifests = null;
                     File.WriteAllText(path, installStateContents.ToString());
                 }
@@ -601,6 +609,14 @@ namespace Microsoft.DotNet.Installer.Windows
         public void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
+            var installStateContents = InstallStateContents.FromPath(path);
+            if (installStateContents.Manifests != null && // manifestContents should not be null here
+                installStateContents.Manifests.Count == manifestContents.Count &&
+                installStateContents.Manifests.All(m => manifestContents.TryGetValue(m.Key, out var val) && val.Equals(m.Value)))
+            {
+                return;
+            }
+
             Elevate();
 
             if (IsElevated)
@@ -608,7 +624,7 @@ namespace Microsoft.DotNet.Installer.Windows
                 // Create the parent folder for the state file and set up all required ACLs
                 SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
 
-                var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+                
                 installStateContents.Manifests = manifestContents;
                 File.WriteAllText(path, installStateContents.ToString());
 
