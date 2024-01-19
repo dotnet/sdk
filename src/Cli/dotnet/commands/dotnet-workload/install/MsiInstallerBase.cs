@@ -286,7 +286,7 @@ namespace Microsoft.DotNet.Installer.Windows
         protected void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            var installStateContents = InstallStateContents.FromPath(path);
             if (installStateContents.UseWorkloadSets == newMode)
             {
                 return;
@@ -541,7 +541,7 @@ namespace Microsoft.DotNet.Installer.Windows
         public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            var installStateContents = InstallStateContents.FromPath(path);
             if (installStateContents.Manifests == null)
             {
                 return;
@@ -578,7 +578,7 @@ namespace Microsoft.DotNet.Installer.Windows
         public void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            var installStateContents = InstallStateContents.FromPath(path);
             if (installStateContents.Manifests != null && // manifestContents should not be null here
                 installStateContents.Manifests.Count == manifestContents.Count &&
                 installStateContents.Manifests.All(m => manifestContents.TryGetValue(m.Key, out var val) && val.Equals(m.Value)))
