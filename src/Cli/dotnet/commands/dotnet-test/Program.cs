@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Diagnostics;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.TemplateEngine.Core.Operations;
 
 namespace Microsoft.DotNet.Tools.Test
 {
@@ -74,7 +72,6 @@ namespace Microsoft.DotNet.Tools.Test
                 }
                 else if (propertyValue.ToLowerInvariant() == "true")
                 {
-
                     // User specified the property themselves. Do nothing.
                     additionalBuildProperties = Array.Empty<string>();
                 }
