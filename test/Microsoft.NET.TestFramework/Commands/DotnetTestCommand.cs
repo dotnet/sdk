@@ -13,7 +13,8 @@ namespace Microsoft.NET.TestFramework.Commands
                 Arguments.Add("--property:VsTestUseMSBuildOutput=false");
                 Arguments.Add("-tl:false");
             }
-            // Arguments.AddRange(args);
+
+            Arguments.AddRange(args);
         }
     }
 }
