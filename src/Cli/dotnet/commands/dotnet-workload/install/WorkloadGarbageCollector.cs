@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     .Select(packId => resolver.TryGetPackInfo(packId))
                     .Where(pack => pack != null))
                 {
-                    PacksToKeep.Add((pack.Id, pack.Version));
+                    PacksToKeep.Add((new WorkloadPackId(pack.ResolvedPackageId), pack.Version));
                 }
             }
 

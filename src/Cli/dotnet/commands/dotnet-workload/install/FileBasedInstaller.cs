@@ -296,7 +296,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
         {
-            var garbageCollector = new WorkloadGarbageCollector(_dotnetDir, _sdkFeatureBand, _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet);
+            var garbageCollector = new WorkloadGarbageCollector(_dotnetDir, _sdkFeatureBand, _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet, Reporter.Verbose);
             garbageCollector.Collect();
 
             var featureBandsWithWorkloadInstallRecords = _installationRecordRepository.GetFeatureBandsWithInstallationRecords();
@@ -665,8 +665,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private void WritePackInstallationRecord(PackInfo packInfo, SdkFeatureBand featureBand)
         {
-            _reporter.WriteLine(string.Format(LocalizableStrings.WritingPackInstallRecordMessage, packInfo.Id, packInfo.Version));
-            var path = GetPackInstallRecordPath(packInfo.Id, packInfo.Version, featureBand);
+            _reporter.WriteLine(string.Format(LocalizableStrings.WritingPackInstallRecordMessage, packInfo.ResolvedPackageId, packInfo.Version));
+            var path = GetPackInstallRecordPath(new WorkloadPackId(packInfo.ResolvedPackageId), packInfo.Version, featureBand);
             if (!Directory.Exists(Path.GetDirectoryName(path)))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -676,7 +676,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private void DeletePackInstallationRecord(PackInfo packInfo, SdkFeatureBand featureBand)
         {
-            var packInstallRecord = GetPackInstallRecordPath(packInfo.Id, packInfo.Version, featureBand);
+            var packInstallRecord = GetPackInstallRecordPath(new WorkloadPackId(packInfo.ResolvedPackageId), packInfo.Version, featureBand);
             if (File.Exists(packInstallRecord))
             {
                 File.Delete(packInstallRecord);
