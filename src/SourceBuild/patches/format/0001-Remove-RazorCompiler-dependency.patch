@@ -1,0 +1,37 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Fri, 19 Jan 2024 08:55:05 -0600
+Subject: [PATCH] Remove RazorCompiler dependency
+
+Backport: https://github.com/dotnet/format/issues/2075
+---
+ Directory.Packages.props | 1 -
+ src/dotnet-format.csproj | 3 ---
+ 2 files changed, 4 deletions(-)
+
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index 8da27dea..1b7df1ce 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -37,7 +37,6 @@
+     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftCodeAnalysisVersion)" />
+     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftCodeAnalysisVersion)" />
+     <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
+-    <PackageVersion Include="Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler" Version="$(MicrosoftCodeAnalysisVersion)" />
+ 
+     <!-- runtime -->
+     <PackageVersion Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" />
+diff --git a/src/dotnet-format.csproj b/src/dotnet-format.csproj
+index a07a552b..14323f64 100644
+--- a/src/dotnet-format.csproj
++++ b/src/dotnet-format.csproj
+@@ -35,9 +35,6 @@
+     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" />
+     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
+ 
+-    <!-- Included with Microsoft.CodeAnalysis.dll for Razor support -->
+-    <PackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler" ExcludeAssets="compile" />
+-
+     <!-- Loaded dynamically -->
+     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
+     <PackageReference Include="Microsoft.CodeAnalysis.Features" />
