@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         {
             var allDiagnostics = new ConcurrentQueue<ErrorMessage>();
 
-            System.Threading.Tasks.Parallel.For(0, FilesToTransform.Length, i =>
+            Parallel.For(0, FilesToTransform.Length, i =>
             {
                 var input = FilesToTransform[i];
                 var inputFile = input.GetMetadata("FullPath");
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             private int FindPositionToInsertInSelector(SimpleSelector lastSimpleSelector)
             {
                 var children = lastSimpleSelector.Children;
-                for (var i  = 0; i < children.Count; i++)
+                for (var i = 0; i < children.Count; i++)
                 {
                     switch (children[i])
                     {

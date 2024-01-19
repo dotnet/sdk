@@ -23,7 +23,6 @@ stages:
         name: Windows_NT_FullFramework
         enableRichCodeNavigation: true
         richCodeNavigationLanguage: 'csharp'
-        richCodeNavigationEnvironment: 'production'
         pool:
             name: $(DncEngPublicBuildPool)
             demands: ImageOverride -equals windows.vs2019.amd64.open   

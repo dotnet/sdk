@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     internal class TemplateCommandArgs : ICommandArgs
     {
         private readonly TemplateCommand _command;
-        private Dictionary<string, OptionResult> _templateOptions = new Dictionary<string, OptionResult>();
+        private Dictionary<string, OptionResult> _templateOptions = new();
 
         public TemplateCommandArgs(TemplateCommand command, BaseCommand parentCommand, ParseResult parseResult)
         {
@@ -115,7 +115,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 throw new InvalidOperationException($"Parameter {parameterName} is not defined for {Template.Identity}.");
             }
-            if (parameter.Type == ParameterType.Hex && optionResult.Option.ValueType == typeof(long))
+            if (parameter.Type == ParameterType.Hex && optionResult.Option is CliOption<long>)
             {
                 var intValue = (long)optionValue;
                 return $"0x{intValue.ToString("X")}";

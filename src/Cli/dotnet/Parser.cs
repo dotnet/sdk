@@ -17,7 +17,10 @@ namespace Microsoft.DotNet.Cli
 {
     public static class Parser
     {
-        public static readonly CliRootCommand RootCommand = new();
+        public static readonly CliRootCommand RootCommand = new()
+        {
+            Directives = { new DiagramDirective(), new SuggestDirective() }
+        };
 
         internal static Dictionary<CliOption, Dictionary<CliCommand, string>> HelpDescriptionCustomizations = new();
 
@@ -38,6 +41,7 @@ namespace Microsoft.DotNet.Cli
             NewCommandParser.GetCommand(),
             NuGetCommandParser.GetCommand(),
             PackCommandParser.GetCommand(),
+            PackageCommandParser.GetCommand(),
             ParseCommandParser.GetCommand(),
             PublishCommandParser.GetCommand(),
             RemoveCommandParser.GetCommand(),
@@ -133,9 +137,11 @@ namespace Microsoft.DotNet.Cli
         /// Implements token-per-line response file handling for the CLI. We use this instead of the built-in S.CL handling
         /// to ensure backwards-compatibility with MSBuild.
         /// </summary>
-        public static bool TokenPerLine(string tokenToReplace, out IReadOnlyList<string> replacementTokens, out string errorMessage) {
+        public static bool TokenPerLine(string tokenToReplace, out IReadOnlyList<string> replacementTokens, out string errorMessage)
+        {
             var filePath = Path.GetFullPath(tokenToReplace);
-            if (File.Exists(filePath)) {
+            if (File.Exists(filePath))
+            {
                 var lines = File.ReadAllLines(filePath);
                 var trimmedLines =
                     lines
@@ -148,7 +154,9 @@ namespace Microsoft.DotNet.Cli
                 replacementTokens = trimmedLines.ToArray();
                 errorMessage = null;
                 return true;
-            } else {
+            }
+            else
+            {
                 replacementTokens = null;
                 errorMessage = string.Format(CommonLocalizableStrings.ResponseFileNotFound, tokenToReplace);
                 return false;
@@ -158,7 +166,6 @@ namespace Microsoft.DotNet.Cli
         public static CliConfiguration Instance { get; } = new(ConfigureCommandLine(RootCommand))
         {
             EnableDefaultExceptionHandler = false,
-            EnableParseErrorReporting = true,
             EnablePosixBundling = false,
             Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() },
             ResponseFileTokenReplacer = TokenPerLine
@@ -197,7 +204,8 @@ namespace Microsoft.DotNet.Cli
         {
             private DotnetHelpBuilder(int maxWidth = int.MaxValue) : base(maxWidth) { }
 
-            public static Lazy<HelpBuilder> Instance = new(() => {
+            public static Lazy<HelpBuilder> Instance = new(() =>
+            {
                 int windowWidth;
                 try
                 {

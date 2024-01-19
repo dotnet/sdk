@@ -43,6 +43,7 @@
     <ThreadPoolMinThreads>2</ThreadPoolMinThreads>
     <ThreadPoolMaxThreads>9</ThreadPoolMaxThreads>
     <UseWindowsThreadPool>true</UseWindowsThreadPool>
+    <_UseManagedNtlm>true</_UseManagedNtlm>
   </PropertyGroup>
 
   <ItemGroup>

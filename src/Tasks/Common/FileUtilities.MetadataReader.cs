@@ -30,7 +30,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourcePath);
 
-            if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry) 
+            if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry)
                 && lastWriteTimeUtc == cacheEntry.LastKnownWriteTimeUtc)
             {
                 return cacheEntry.Version;
@@ -56,7 +56,7 @@ namespace Microsoft.NET.Build.Tasks
                     Version result = null;
                     try
                     {
-                        using (PEReader peReader = new PEReader(assemblyStream, PEStreamOptions.LeaveOpen))
+                        using (PEReader peReader = new(assemblyStream, PEStreamOptions.LeaveOpen))
                         {
                             if (peReader.HasMetadata)
                             {
