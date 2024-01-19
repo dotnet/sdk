@@ -27,9 +27,7 @@ namespace Microsoft.TemplateEngine.Utils
         // -1 if version1 < version2
         // 0 if version1 == version2
         // 1 if version1 > version2
-#pragma warning disable RS0016 // Add public types and members to the declared API
         public static int? CompareVersions(string? version1, string? version2)
-#pragma warning restore RS0016 // Add public types and members to the declared API
         {
             if (!TryParseVersionString(version1, out int[]? parts1) || !TryParseVersionString(version2, out int[]? parts2))
             {
@@ -51,9 +49,7 @@ namespace Microsoft.TemplateEngine.Utils
             return 0;
         }
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
         public static bool IsVersionWellFormed(string? version)
-#pragma warning restore RS0016 // Add public types and members to the declared API
         {
             return TryParseVersionString(version, out _);
         }

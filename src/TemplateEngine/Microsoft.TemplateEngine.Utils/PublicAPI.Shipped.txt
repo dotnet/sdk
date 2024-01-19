@@ -258,8 +258,8 @@ static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.IsValidMultiVa
 static Microsoft.TemplateEngine.Utils.TemplateParameterExtensions.TokenizeMultiValueParameter(this string! literal) -> System.Collections.Generic.IReadOnlyList<string!>!
 override Microsoft.TemplateEngine.Utils.RangeVersionSpecification.ToString() -> string!
 static Microsoft.TemplateEngine.Utils.Timing.Over(Microsoft.Extensions.Logging.ILogger! logger, string! label) -> Microsoft.TemplateEngine.Utils.Timing!
-static Microsoft.TemplateEngine.Utils.VersionStringHelpers.CompareVersions(string! version1, string! version2) -> int?
-static Microsoft.TemplateEngine.Utils.VersionStringHelpers.IsVersionWellFormed(string! version) -> bool
+static Microsoft.TemplateEngine.Utils.VersionStringHelpers.CompareVersions(string? version1, string? version2) -> int?
+static Microsoft.TemplateEngine.Utils.VersionStringHelpers.IsVersionWellFormed(string? version) -> bool
 static Microsoft.TemplateEngine.Utils.VersionStringHelpers.TryParseVersionSpecification(string! versionString, out Microsoft.TemplateEngine.Utils.IVersionSpecification? specification) -> bool
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.AuthorFilter(string? author) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
 static Microsoft.TemplateEngine.Utils.WellKnownSearchFilters.BaselineFilter(string? baselineName) -> System.Func<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!, Microsoft.TemplateEngine.Abstractions.TemplateFiltering.MatchInfo?>!
