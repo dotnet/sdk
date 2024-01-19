@@ -61,7 +61,7 @@ namespace Microsoft.NET.ToolPack.Tests
             XNamespace ns = project.Root.Name.Namespace;
             XElement itemGroup = project.Root.Elements(ns + "ItemGroup").First();
             itemGroup.Add(new XElement(ns + "PackageReference", new XAttribute("Include", "System.Data.SqlClient"),
-                                                                new XAttribute("Version", "4.3.0")));
+                                                                new XAttribute("Version", ToolsetInfo.GetSystemDataSqlClientPackageVersion())));
         }
     }
 }
