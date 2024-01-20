@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public async void TemplateEngineSamplesProjectTest(
             string folderName,
             string shortName,
-            string[] arguments,
+            string[]? arguments,
             string caseDescription)
         {
             _log.LogInformation($"Template with {caseDescription}");

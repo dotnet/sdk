@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var testRoot = testAsset.Path;
 
-            CommandResult result = (projectName is null ? new DotnetTestCommand(Log) : new DotnetTestCommand(Log, projectName))
+            CommandResult result = (projectName is null ? new DotnetTestCommand(Log, disableNewOutput: true) : new DotnetTestCommand(Log, disableNewOutput: true, projectName))
                                     .WithWorkingDirectory(testRoot)
                                     .Execute("--logger", "console;verbosity=detailed", MSBuildParameter);
 

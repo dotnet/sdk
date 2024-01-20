@@ -49,17 +49,17 @@
       </trans-unit>
       <trans-unit id="UpdateLocalToolToLowerVersion">
         <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
-        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</target>
+        <target state="translated">Požadovaná verze {0} je nižší než stávající verze {1} (soubor manifestu {2}). Pokud chcete povolit tuto aktualizaci, použijte možnost --allow-downgrade.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
         <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="needs-review-translation">Nástroj{0}byl znovu nainstalován s nejnovější předběžnou verzí (verze{1}).</target>
+        <target state="translated">Nástroj {0} se přeinstaloval na předběžnou verzi (verze {1}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
         <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="needs-review-translation">Nástroj {0} byl přeinstalován nejnovější stabilní verzí (verze {1}).</target>
+        <target state="translated">Nástroj {0} se přeinstaloval na stabilní verzi (verze {1}).</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

@@ -22,7 +22,7 @@ public class CultureAwareTestProject : SdkTest
                 .WithSource()
                 .WithVersionVariables();
 
-        var command = new DotnetTestCommand(Log).WithWorkingDirectory(testAsset.Path).WithCulture(locale);
+        var command = new DotnetTestCommand(Log, disableNewOutput: true).WithWorkingDirectory(testAsset.Path).WithCulture(locale);
         var result = command.Execute();
 
         result.ExitCode.Should().Be(0);

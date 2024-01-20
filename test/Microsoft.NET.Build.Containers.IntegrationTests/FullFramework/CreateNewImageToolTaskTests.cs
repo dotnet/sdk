@@ -65,7 +65,7 @@ public class CreateNewImageToolTaskTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("ValidTag", true)]
-    public void GenerateCommandLineCommands_BaseImageTag(string value, bool optionExpected = false)
+    public void GenerateCommandLineCommands_BaseImageTag(string? value, bool optionExpected = false)
     {
         CreateNewImage task = new();
         DirectoryInfo publishDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyyMMddHHmmssfff")));
@@ -76,7 +76,10 @@ public class CreateNewImageToolTaskTests
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
-        task.BaseImageTag = value;
+        if (value != null)
+        {
+            task.BaseImageTag = value;
+        }
 
         string args = task.GenerateCommandLineCommandsInt();
 
@@ -96,7 +99,7 @@ public class CreateNewImageToolTaskTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("Valid", true)]
-    public void GenerateCommandLineCommands_OutputRegistry(string value, bool optionExpected = false)
+    public void GenerateCommandLineCommands_OutputRegistry(string? value, bool optionExpected = false)
     {
         CreateNewImage task = new();
         DirectoryInfo publishDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyyMMddHHmmssfff")));
@@ -107,7 +110,10 @@ public class CreateNewImageToolTaskTests
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
-        task.OutputRegistry = value;
+        if (value != null)
+        {
+            task.OutputRegistry = value;
+        }
 
         string args = task.GenerateCommandLineCommandsInt();
 
@@ -126,7 +132,7 @@ public class CreateNewImageToolTaskTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("Valid", true)]
-    public void GenerateCommandLineCommands_ContainerRuntimeIdentifier(string value, bool optionExpected = false)
+    public void GenerateCommandLineCommands_ContainerRuntimeIdentifier(string? value, bool optionExpected = false)
     {
         CreateNewImage task = new();
         DirectoryInfo publishDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyyMMddHHmmssfff")));
@@ -137,7 +143,10 @@ public class CreateNewImageToolTaskTests
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
-        task.ContainerRuntimeIdentifier = value;
+        if (value != null)
+        {
+            task.ContainerRuntimeIdentifier = value;
+        }
 
         string args = task.GenerateCommandLineCommandsInt();
         if (optionExpected)
@@ -155,7 +164,7 @@ public class CreateNewImageToolTaskTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("Valid", true)]
-    public void GenerateCommandLineCommands_RuntimeIdentifierGraphPath(string value, bool optionExpected = false)
+    public void GenerateCommandLineCommands_RuntimeIdentifierGraphPath(string? value, bool optionExpected = false)
     {
         CreateNewImage task = new();
         DirectoryInfo publishDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyyMMddHHmmssfff")));
@@ -166,7 +175,10 @@ public class CreateNewImageToolTaskTests
         task.WorkingDirectory = "MyWorkingDirectory";
         task.Entrypoint = new[] { new TaskItem("MyEntryPoint") };
 
-        task.RuntimeIdentifierGraphPath = value;
+        if (value != null)
+        {
+            task.RuntimeIdentifierGraphPath = value;
+        }
 
         string args = task.GenerateCommandLineCommandsInt();
 
@@ -394,7 +406,7 @@ public class CreateNewImageToolTaskTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData("Valid", true)]
-    public void GenerateCommandLineCommands_AppCommandInstruction(string value, bool optionExpected = false)
+    public void GenerateCommandLineCommands_AppCommandInstruction(string? value, bool optionExpected = false)
     {
         CreateNewImage task = new();
         DirectoryInfo publishDir = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), DateTime.Now.ToString("yyyyMMddHHmmssfff")));
@@ -404,7 +416,10 @@ public class CreateNewImageToolTaskTests
         task.Repository = "MyImageName";
         task.WorkingDirectory = "MyWorkingDirectory";
 
-        task.AppCommandInstruction = value;
+        if (value != null)
+        {
+            task.AppCommandInstruction = value;
+        }
 
         string args = task.GenerateCommandLineCommandsInt();
 
