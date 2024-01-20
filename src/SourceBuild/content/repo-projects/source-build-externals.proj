@@ -7,7 +7,7 @@
 
       Modified files make developer experience worse, as they would need to be manually reverted.
     -->
-    <BuildArgs>$(BuildArgs) /p:UseInnerClone=true</BuildArgs>
+    <UseInnerClone>true</UseInnerClone>
   </PropertyGroup>
 
 </Project>
