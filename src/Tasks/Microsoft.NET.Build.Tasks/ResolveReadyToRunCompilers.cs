@@ -429,6 +429,7 @@ namespace Microsoft.NET.Build.Tasks
                 Architecture.X64 => "x64",
                 Architecture.Arm => "arm",
                 Architecture.Arm64 => "arm64",
+                Architecture.RiscV64 => "riscv64",
                 _ => null
             };
         }
