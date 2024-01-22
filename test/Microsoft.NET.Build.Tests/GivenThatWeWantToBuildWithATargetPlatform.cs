@@ -92,11 +92,11 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void It_fails_if_targetplatformversion_is_historical()
+        public void It_fails_if_targetplatformversion_is_constant_only()
         {
             var testProject = new TestProject()
             {
-                Name = "It_fails_if_targetplatform_version_is_historical",
+                Name = "It_fails_if_targetplatformversion_is_constant_only",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
             };
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
@@ -105,7 +105,7 @@ namespace Microsoft.NET.Build.Tests
             string DirectoryBuildTargetsContent = $@"
 <Project>
   <ItemGroup>
-    <SdkSupportedTargetPlatformVersion Include=""111.0"" OrGreaterHistoricalValue=""true"" />
+    <SdkSupportedTargetPlatformVersion Include=""111.0"" DefineConstantsOnly=""true"" />
     <SdkSupportedTargetPlatformVersion Include=""222.0"" />
   </ItemGroup>
   <PropertyGroup>

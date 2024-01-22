@@ -222,7 +222,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     BeforeTargets="ProcessFrameworkReferences"
     Condition="'$(TargetPlatformVersion)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and ('$(Language)' != 'C++' or '$(_EnablePackageReferencesInVCProjects)' == 'true')">
     <ItemGroup>
-      <_ApplicableTargetPlatformVersion Include="@(SdkSupportedTargetPlatformVersion)" Condition="'@(SdkSupportedTargetPlatformVersion)' != '' and '%(SdkSupportedTargetPlatformVersion.OrGreaterHistoricalValue)' != 'true'" RemoveMetadata="OrGreaterHistoricalValue" />
+      <_ApplicableTargetPlatformVersion Include="@(SdkSupportedTargetPlatformVersion)" Condition="'@(SdkSupportedTargetPlatformVersion)' != '' and '%(SdkSupportedTargetPlatformVersion.DefineConstantsOnly)' != 'true'" RemoveMetadata="DefineConstantsOnly" />
       <_ValidTargetPlatformVersion Include="@(_ApplicableTargetPlatformVersion)" Condition="'@(_ApplicableTargetPlatformVersion)' != '' and $([MSBuild]::VersionEquals(%(Identity), $(TargetPlatformVersion)))" />
     </ItemGroup>
 
