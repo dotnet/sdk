@@ -69,7 +69,9 @@ namespace Microsoft.DotNet.NativeWrapper
 
             if (File.Exists(runtimeConfigPath))
             {
-                result = Interop.Windows.hostfxr_initialize_for_runtime_config(runtimeConfigPath, default, out hostContextHandle);
+                result = Interop.RunningOnWindows
+                    ? Interop.Windows.hostfxr_initialize_for_runtime_config(runtimeConfigPath, default, out hostContextHandle)
+                    : Interop.Unix.hostfxr_initialize_for_runtime_config(runtimeConfigPath, default, out hostContextHandle);
             }
 
             Marshal.FreeHGlobal(parametersPtr);
