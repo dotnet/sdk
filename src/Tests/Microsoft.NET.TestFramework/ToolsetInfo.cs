@@ -423,5 +423,16 @@ namespace Microsoft.NET.TestFramework
             return _NewtonsoftJsonPackageVersion.Value;
         }
 
+        private static readonly Lazy<string> _SystemDataSqlClientPackageVersion = new(() =>
+        {
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            return assembly.GetCustomAttributes(true).OfType<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "SystemDataSqlClientPackageVersion").Value;
+        });
+
+        public static string GetSystemDataSqlClientPackageVersion()
+        {
+            return _SystemDataSqlClientPackageVersion.Value;
+        }
+
     }
 }
