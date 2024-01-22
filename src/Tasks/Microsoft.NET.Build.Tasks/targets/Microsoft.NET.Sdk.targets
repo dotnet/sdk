@@ -59,6 +59,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup Condition="'$(RuntimeIdentifierGraphPath)' == ''">
     <RuntimeIdentifierGraphPath Condition="'$(UseRidGraph)' == 'true'">$(BundledRuntimeIdentifierGraphFile)</RuntimeIdentifierGraphPath>
+
     <!-- The portable RID graph should be in the same directory as the full RID graph -->
     <RuntimeIdentifierGraphPath Condition="'$(UseRidGraph)' != 'true'">$([System.IO.Path]::GetDirectoryName($(BundledRuntimeIdentifierGraphFile)))/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
   </PropertyGroup>
