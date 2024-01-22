@@ -59,8 +59,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
         public static int InitializeForRuntimeConfig(string runtimeConfigPath)
         {
-            var result = new SdkResolutionResult();
-            IntPtr hostContextHandle;
+            IntPtr hostContextHandle = default;
 
             hostfxr_initialize_parameters parameters = new hostfxr_initialize_parameters();
 
@@ -69,7 +68,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
             if (File.Exists(runtimeConfigPath))
             {
-                return Interop.Windows.hostfxr_initialize_for_runtime_config(runtimeConfigPath, parametersPtr, out hostContextHandle);
+                return Interop.Windows.hostfxr_initialize_for_runtime_config(runtimeConfigPath, default, out hostContextHandle);
             }
             else
             {
