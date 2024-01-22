@@ -25,6 +25,18 @@
 ./sdk/**/System.Security.Cryptography.ProtectedData.dll
 ./sdk/x.y.z/System.Security.Cryptography.Xml.dll
 
+# These assemblies are lifted to a higher version naturally via SB (https://github.com/dotnet/source-build/issues/3922)
+./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Humanizer.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Microsoft.Build.Locator.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Microsoft.Extensions.*
+./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Composition.*
+./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.IO.Pipelines.dll
+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/Humanizer.dll
+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/Microsoft.Build.Locator.dll
+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/Microsoft.Extensions.*
+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Composition.*
+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.IO.Pipelines.dll
+
 # These assemblies are lifted to a higher version naturally via SB
 ./sdk/x.y.z/DotnetTools/dotnet-format/*/Microsoft.CodeAnalysis.*
 ./sdk/x.y.z/DotnetTools/dotnet-format/Humanizer.dll
