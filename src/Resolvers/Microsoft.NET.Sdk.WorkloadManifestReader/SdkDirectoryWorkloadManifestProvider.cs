@@ -427,6 +427,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                                 }
                             }
                         }
+
                         if (workloadSet != null)
                         {
                             if (File.Exists(Path.Combine(workloadSetDirectory, "baseline.workloadset.json")))

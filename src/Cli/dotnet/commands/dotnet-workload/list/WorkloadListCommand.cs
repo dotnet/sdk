@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         private readonly bool _includePreviews;
         private readonly bool _machineReadableOption;
         private readonly IWorkloadManifestUpdater _workloadManifestUpdater;
-        private readonly IWorkloadInfoHelper _workloadListHelper;
+        private readonly WorkloadInfoHelper _workloadListHelper;
 
         public WorkloadListCommand(
             ParseResult parseResult,
@@ -93,6 +93,24 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
                 table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
 
+                if (InstallingWorkloadCommand.GetInstallStateMode(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.dotnetPath))
+                {
+                    var workloadSetVersion = "unknown";
+                    try
+                    {
+                        var workloadSetPath = Path.Combine(_workloadListHelper.dotnetPath, "sdk-manifests", _workloadListHelper._currentSdkFeatureBand.ToString(), "workloadsets");
+                        var workloadSetDirectory = new DirectoryInfo(workloadSetPath);
+                        workloadSetVersion = workloadSetDirectory.EnumerateDirectories().Where(d => d.EnumerateFiles("workloadset.json").Count() == 1).Max().Name;
+                    }
+                    catch (Exception)
+                    {
+                        // Don't throw just because we couldn't find a workload set! The user may have changed the mode to workload sets but not yet run update/install.
+                    }
+
+                    Reporter.WriteLine();
+                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, workloadSetVersion));
+                }
+                
                 Reporter.WriteLine();
                 Reporter.WriteLine(LocalizableStrings.WorkloadListFooter);
                 Reporter.WriteLine();

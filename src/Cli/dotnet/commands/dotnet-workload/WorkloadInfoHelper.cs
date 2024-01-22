@@ -17,6 +17,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
     {
         public readonly SdkFeatureBand _currentSdkFeatureBand;
         private readonly string _targetSdkVersion;
+        public readonly string dotnetPath;
 
         public WorkloadInfoHelper(
             bool isInteractive,
@@ -30,7 +31,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             string userProfileDir = null,
             IWorkloadResolver workloadResolver = null)
         {
-            string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
+            dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             ReleaseVersion currentSdkReleaseVersion = new(currentSdkVersion ?? Product.Version);
             _currentSdkFeatureBand = new SdkFeatureBand(currentSdkReleaseVersion);
 
