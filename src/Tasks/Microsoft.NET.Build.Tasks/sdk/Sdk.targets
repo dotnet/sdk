@@ -36,11 +36,6 @@ Copyright (c) .NET Foundation. All rights reserved.
                using Sdk attribute (from .NET Core Sdk 1.0.0-preview4) -->
   <Import Project="$(LanguageTargets)"/>
 
-  <!-- The portable RID graph should be in the same directory as the full RID graph -->
-  <PropertyGroup>
-    <PortableRuntimeIdentifierGraph>$([System.IO.Path]::GetDirectoryName($(BundledRuntimeIdentifierGraphFile)))/PortableRuntimeIdentifierGraph.json</PortableRuntimeIdentifierGraph>
-  </PropertyGroup>
-
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.CrossTargeting.targets"
           Condition="'$(IsCrossTargetingBuild)' == 'true'"/>
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.targets"
