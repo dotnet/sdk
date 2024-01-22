@@ -165,7 +165,7 @@ namespace Microsoft.NET.Build.Tests
                 .And
                 .HaveStdOutContaining("NETSDK1140")
                 .And
-                .HaveStdOutContaining("111.0 is not a valid TargetPlatformVersion")
+                .HaveStdOutContaining(string.Format(Strings.InvalidTargetPlatformVersion, "111.0", "ios", "222.0").Split ('\n', '\r') [0])
                 .And
                 .HaveStdOutContaining("222.0");
         }
