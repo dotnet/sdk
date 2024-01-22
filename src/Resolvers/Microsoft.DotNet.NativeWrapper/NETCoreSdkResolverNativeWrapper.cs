@@ -51,15 +51,30 @@ namespace Microsoft.DotNet.NativeWrapper
             return list.Entries;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        internal struct hostfxr_initialize_parameters
+        {
+
+        }
+
         public static int InitializeForRuntimeConfig(string runtimeConfigPath)
         {
             var result = new SdkResolutionResult();
+            IntPtr hostContextHandle;
 
-            int errorCode = Interop.RunningOnWindows
-                ? Interop.Windows.hostfxr_initialize_for_runtime_config(runtimeConfigPath)
-                : Interop.Unix.hostfxr_initialize_for_runtime_config(runtimeConfigPath);
+            hostfxr_initialize_parameters parameters = new hostfxr_initialize_parameters();
 
-            return errorCode;
+            IntPtr parametersPtr = Marshal.AllocHGlobal(Marshal.SizeOf(parameters));
+            Marshal.StructureToPtr(parameters, parametersPtr, false);
+
+            if (File.Exists(runtimeConfigPath))
+            {
+                return Interop.Windows.hostfxr_initialize_for_runtime_config(runtimeConfigPath, parametersPtr, out hostContextHandle);
+            }
+            else
+            {
+                return -1;
+            }
         }
     }
 }
