@@ -59,6 +59,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
         public static int InitializeForRuntimeConfig(string runtimeConfigPath)
         {
+            var result = -1;
             IntPtr hostContextHandle = default;
 
             hostfxr_initialize_parameters parameters = new hostfxr_initialize_parameters();
@@ -68,12 +69,11 @@ namespace Microsoft.DotNet.NativeWrapper
 
             if (File.Exists(runtimeConfigPath))
             {
-                return Interop.Windows.hostfxr_initialize_for_runtime_config(runtimeConfigPath, default, out hostContextHandle);
+                result = Interop.Windows.hostfxr_initialize_for_runtime_config(runtimeConfigPath, default, out hostContextHandle);
             }
-            else
-            {
-                return -1;
-            }
+
+            Marshal.FreeHGlobal(parametersPtr);
+            return result;
         }
     }
 }
