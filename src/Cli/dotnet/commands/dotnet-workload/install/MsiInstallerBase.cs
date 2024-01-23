@@ -316,9 +316,10 @@ namespace Microsoft.DotNet.Installer.Windows
         public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadSetVersion)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            var installStateContents = InstallStateContents.FromPath(path);
             if ((installStateContents.WorkloadSetVersion == null && workloadSetVersion == null) ||
-                (installStateContents.WorkloadSetVersion != null && installStateContents.WorkloadSetVersion.Equals(workloadSetVersion)) {
+                (installStateContents.WorkloadSetVersion != null && installStateContents.WorkloadSetVersion.Equals(workloadSetVersion)))
+            {
                 return;
             }
 

@@ -130,6 +130,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate>();
             var useRollback = false;
+            string workloadSetLocation = null;
 
             if (!skipManifestUpdate)
             {
@@ -162,7 +163,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
 
-                string workloadSetLocation = null;
                 if (useWorkloadSets)
                 {
                     workloadSetLocation = InstallWorkloadSet();
@@ -173,7 +173,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
 
-            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
+            var workloadSetVersion = workloadSetLocation is null ? null : Path.GetDirectoryName(workloadSetLocation);
+
+            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, workloadSetVersion, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
 
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
@@ -199,6 +201,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private void InstallWorkloadsWithInstallRecord(
             IInstaller installer,
             IEnumerable<WorkloadId> workloadIds,
+            string workloadSetVersion,
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
             DirectoryPath? offlineCache,
@@ -239,6 +242,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         installer.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
+
+                    installer.AdjustWorkloadSetInInstallState(sdkFeatureBand, workloadSetVersion);
                 },
                 rollback: () =>
                 {

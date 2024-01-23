@@ -475,7 +475,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            var installStateContents = InstallStateContents.FromPath(path);
             installStateContents.WorkloadSetVersion = workloadSetVersion;
             File.WriteAllText(path, installStateContents.ToString());
         }
