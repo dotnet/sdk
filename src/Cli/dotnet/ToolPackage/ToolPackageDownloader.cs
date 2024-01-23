@@ -227,10 +227,10 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 // RuntimeConfigDetectionResult incompatible
                 // TBD: if include -g in sample command; which version should be included in the install; --force?
                 default:
-                    throw new ToolPackageException(
+                    throw new GracefulException(
                             string.Format(
                             CommonLocalizableStrings.ToolPackageRuntimeConfigIncompatible,
-                            packageId, "7"));
+                            packageId, tfmValue));
             }
         }
 
