@@ -174,7 +174,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 useWorkloadSets ? _workloadManifestUpdater.CalculateManifestRollbacks(workloadSetLocation) :
                 _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
 
-            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, offlineCache);
+            var workloadSetVersion = workloadSetLocation is null ? null : Path.GetDirectoryName(workloadSetLocation);
+
+            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, workloadSetVersion, useRollback, offlineCache);
 
             WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
@@ -188,6 +190,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private void UpdateWorkloadsWithInstallRecord(
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
+            string workloadSetVersion,
             bool useRollback,
             DirectoryPath? offlineCache = null)
         {
@@ -226,6 +229,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         _workloadInstaller.RemoveManifestsFromInstallState(sdkFeatureBand);
                     }
+
+                    _workloadInstaller.AdjustWorkloadSetInInstallState(sdkFeatureBand, workloadSetVersion);
                 },
                 rollback: () =>
                 {

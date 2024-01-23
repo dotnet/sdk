@@ -11,6 +11,9 @@ namespace Microsoft.DotNet.Workloads.Workload
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public Dictionary<string, string> Manifests { get; set; }
 
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string WorkloadSetVersion { get; set; }
+
         private static readonly JsonSerializerOptions s_options = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,

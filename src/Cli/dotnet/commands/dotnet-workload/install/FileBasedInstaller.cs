@@ -471,6 +471,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         }
 
+        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadSetVersion)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
+            Directory.CreateDirectory(Path.GetDirectoryName(path));
+            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            installStateContents.WorkloadSetVersion = workloadSetVersion;
+            File.WriteAllText(path, installStateContents.ToString());
+        }
+
         public void RemoveManifestsFromInstallState(SdkFeatureBand sdkFeatureBand)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");

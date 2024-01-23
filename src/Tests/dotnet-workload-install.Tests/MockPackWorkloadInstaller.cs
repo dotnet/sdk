@@ -61,6 +61,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             throw new NotImplementedException();
         }
 
+        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadSetVersion)
+        {
+            
+        }
+
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
             List<PackInfo> packs = new List<PackInfo>();

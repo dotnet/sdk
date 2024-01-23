@@ -309,6 +309,37 @@ namespace Microsoft.DotNet.Installer.Windows
             }
         }
 
+        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadSetVersion)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
+            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            if ((installStateContents.WorkloadSetVersion == null && workloadSetVersion == null) ||
+                (installStateContents.WorkloadSetVersion != null && installStateContents.WorkloadSetVersion.Equals(workloadSetVersion)) {
+                return;
+            }
+
+            Elevate();
+
+            if (IsElevated)
+            {
+                // Create the parent folder for the state file and set up all required ACLs
+                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
+                installStateContents.WorkloadSetVersion = workloadSetVersion;
+                File.WriteAllText(path, installStateContents.ToString());
+
+                SecurityUtils.SecureFile(path);
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendUpdateWorkloadSetRequest(sdkFeatureBand, workloadSetVersion);
+                ExitOnFailure(response, "Failed to update install mode.");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
+        }
+
         /// <summary>
         /// Installs the specified MSI.
         /// </summary>

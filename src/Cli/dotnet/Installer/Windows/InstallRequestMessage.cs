@@ -129,6 +129,14 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
+        /// The workload set version
+        /// </summary>
+        public string WorkloadSetVersion
+        {
+            get; set;
+        }
+
+        /// <summary>
         /// Converts a deserialized array of bytes into an <see cref="InstallRequestMessage"/>.
         /// </summary>
         /// <param name="bytes">The array of bytes to convert.</param>
