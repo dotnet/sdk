@@ -29,6 +29,7 @@ using NuGet.Configuration;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 using Microsoft.DotNet.NativeWrapper;
+using System.Text.Json;
 
 namespace Microsoft.DotNet.Cli.ToolPackage
 {
@@ -189,17 +190,47 @@ namespace Microsoft.DotNet.Cli.ToolPackage
         }
 
         private static void ReadRuntimeConfig(
-            ToolPackageInstance toolPackageInstance
+            ToolPackageInstance toolPackageInstance,
+            PackageId packageId
             )
         {
             var executableFilePath = toolPackageInstance.Commands[0].Executable;
             var runtimeConfigFilePath = Path.ChangeExtension(executableFilePath.ToString(), ".runtimeconfig.json");
 
             // Update the runtimeconfig.json file
+            // TBD: read tfm from runtimeconfig.json
+            string tfmValue = "";
             if (File.Exists(runtimeConfigFilePath))
-            {
+            { 
+                JsonElement rootElement = JsonDocument.Parse(File.ReadAllText(runtimeConfigFilePath)).RootElement;
+                
+                if (rootElement.TryGetProperty("runtimeOptions", out JsonElement runtimeOptionsElement) &&
+                runtimeOptionsElement.TryGetProperty("tfm", out JsonElement tfmElement))
+                {
+                    tfmValue = tfmElement.GetString();
+                }
                 var result = NETCoreSdkResolverNativeWrapper.InitializeForRuntimeConfig(runtimeConfigFilePath);
-                Console.WriteLine(result);
+                RuntimeConfigDetectionMessage(result, packageId, tfmValue);
+            }
+        }
+
+        private static void RuntimeConfigDetectionMessage(int result, PackageId packageId, string tfmValue = "")
+        {
+            switch(result)
+            {
+                // RuntimeConfigDetectionResult::Success
+                case 0:
+                case 1:
+                case 2:
+                    break;
+
+                // RuntimeConfigDetectionResult incompatible
+                // TBD: if include -g in sample command; which version should be included in the install; --force?
+                default:
+                    throw new ToolPackageException(
+                            string.Format(
+                            CommonLocalizableStrings.ToolPackageRuntimeConfigIncompatible,
+                            packageId, "7"));
             }
         }
 
