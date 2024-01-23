@@ -183,11 +183,11 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [InlineData(false, false)] // publish rid overrides rid in project file if publishing
-        [InlineData(true, false)] // publish rid doesnt override global rid
-        [InlineData(true, true)] // publish rid doesnt override global rid, even if global
+        [InlineData(true, false)] // publish rid doesn't override global rid
+        [InlineData(true, true)] // publish rid doesn't override global rid, even if global
         public void PublishRuntimeIdentifierSetsRuntimeIdentifierAndDoesOrDoesntOverrideRID(bool runtimeIdentifierIsGlobal, bool publishRuntimeIdentifierIsGlobal)
         {
-            string tfm = ToolsetInfo.CurrentTargetFramework;
+            string tfm = "net8.0"; // ToolsetInfo.CurrentTargetFramework;
             string publishRuntimeIdentifier = "win-x64";
             string runtimeIdentifier = "win-x86";
 

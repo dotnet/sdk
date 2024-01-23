@@ -80,7 +80,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                         _FilterSatelliteResourcesForPublish">
 
     <ResolvePackageFileConflicts ReferenceCopyLocalPaths="@(_ResolvedCopyLocalPublishAssets)"
-                                 PlatformManifests="@(PackageConflictPlatformManifests)"
+                                 PlatformManifests="@(PublishPackageConflictPlatformManifests)"
                                  TargetFrameworkDirectories="$(TargetFrameworkDirectory)"
                                  PreferredPackages="$(PackageConflictPreferredPackages)">
       <Output TaskParameter="ReferenceCopyLocalPathsWithoutConflicts" ItemName="_ResolvedCopyLocalPublishAssetsWithoutConflicts" />
