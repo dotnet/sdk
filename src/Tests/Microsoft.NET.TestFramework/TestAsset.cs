@@ -106,7 +106,6 @@ namespace Microsoft.NET.TestFramework
                 new string[] { "NewtonsoftJsonPackageVersion", ToolsetInfo.GetNewtonsoftJsonPackageVersion() },
                 new string[] { "SystemDataSqlClientPackageVersion", ToolsetInfo.GetSystemDataSqlClientPackageVersion() }};
 
-            
             foreach (string[] PackageVersionVariable in PackageVersionVariables)
             {
                 this.ReplacePackageVersionVariable(PackageVersionVariable[0], PackageVersionVariable[1]);
