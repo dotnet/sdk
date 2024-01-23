@@ -25,6 +25,10 @@
       <_Parameter1>NewtonsoftJsonPackageVersion</_Parameter1>
       <_Parameter2>$(NewtonsoftJsonPackageVersion)</_Parameter2>
     </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SystemDataSqlClientPackageVersion</_Parameter1>
+      <_Parameter2>$(SystemDataSqlClientPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup>
