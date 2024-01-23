@@ -24,6 +24,7 @@
     <!-- corefx -->
     <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
     <!-- msbuild -->
+    <MicrosoftBuildTasksCoreVersion>17.3.2</MicrosoftBuildTasksCoreVersion>
     <MicrosoftBuildVersion>17.3.2</MicrosoftBuildVersion>
     <!-- nuget -->
     <!-- In order tests against the same version of NuGet as the SDK. We have to set this to match. -->

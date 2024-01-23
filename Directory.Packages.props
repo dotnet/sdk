@@ -17,6 +17,7 @@
 
     <!-- msbuild -->
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
 
     <!-- nuget -->
