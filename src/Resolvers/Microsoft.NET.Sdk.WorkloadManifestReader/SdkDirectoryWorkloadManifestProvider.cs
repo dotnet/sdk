@@ -126,7 +126,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
                     if (File.Exists(installStateFilePath))
                     {
-                        var installState = InstallStateReader.ReadInstallState(installStateFilePath);
+                        var installState = InstallStateContents.FromPath(installStateFilePath);
                         if (!string.IsNullOrEmpty(installState.WorkloadSetVersion))
                         {
                             if (!availableWorkloadSets.TryGetValue(installState.WorkloadSetVersion!, out _workloadSet))
@@ -134,7 +134,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                                 throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadSetVersion, installStateFilePath));
                             }
                         }
-                        _manifestsFromInstallState = installState.Manifests;
+                        _manifestsFromInstallState = installState.Manifests is null ? new WorkloadSet() : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);
                         _installStateFilePath = installStateFilePath;
                     }
                 }
@@ -413,19 +413,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         var jsonFile = Path.Combine(workloadSetDirectory, "workloadset.json");
                         if (File.Exists(jsonFile))
                         {
-                            var newWorkloadSet = WorkloadSet.FromJson(File.ReadAllText(jsonFile), _sdkVersionBand);
-                            if (workloadSet == null)
-                            {
-                                workloadSet = newWorkloadSet;
-                            }
-                            else
-                            {
-                                //  If there are multiple workloadset.json files, merge them
-                                foreach (var kvp in newWorkloadSet.ManifestVersions)
-                                {
-                                    workloadSet.ManifestVersions.Add(kvp.Key, kvp.Value);
-                                }
-                            }
+                            workloadSet = WorkloadSet.FromJson(File.ReadAllText(jsonFile), _sdkVersionBand);
                         }
 
                         if (workloadSet != null)

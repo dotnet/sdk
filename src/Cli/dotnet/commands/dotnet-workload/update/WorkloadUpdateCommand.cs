@@ -174,7 +174,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 useWorkloadSets ? _workloadManifestUpdater.CalculateManifestRollbacks(workloadSetLocation) :
                 _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
 
-            var workloadSetVersion = workloadSetLocation is null ? null : Path.GetDirectoryName(workloadSetLocation);
+            var workloadSetVersion = workloadSetLocation is null ? null : Path.GetFileName(Path.GetDirectoryName(workloadSetLocation));
 
             UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, workloadSetVersion, useRollback, offlineCache);
 
