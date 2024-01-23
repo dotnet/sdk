@@ -12,7 +12,7 @@ In the VMR, you can find:
 - small customizations, in the form of [patches](https://github.com/dotnet/dotnet/tree/main/src/installer/src/SourceBuild/patches), applied on top of the original code to make the build possible,
 - *[in future]* E2E tests for the whole .NET product.
 
-Just like the development repositories, the VMR will have a release branch for every feature band (e.g. `release/8.0.1xx-preview1`).
+Just like the development repositories, the VMR will have a release branch for every feature band (e.g. `release/8.0.1xx`).
 Similarly, VMR's `main` branch will follow `main` branches of product repositories (see [Synchronization Based on Declared Dependencies](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#synchronization-based-on-declared-dependencies)).
 
 More in-depth documentation about the VMR can be found in [VMR Design And Operation](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#layout).
@@ -28,6 +28,8 @@ See also [dotnet/source-build](https://github.com/dotnet/source-build) for more 
     - Simplify scenarios such as client-run testing of bug fixes and improvements. The build should work in an offline environment too for certain platforms.
     - Enable developers to make and test changes spanning multiple repositories.
     - More efficient pipeline for security fixes during the CVE pre-disclosure process.
+
+We will achieve these goals while keeping active coding work in the separate repos where it happens today. For example: ASP.NET features will continue to be developed in `dotnet/aspnetcore` and CLR features will be continue to be developed in `dotnet/runtime`. Each of these repos have their own distinct communities and processes, and aggregating development into a true mono-repo would work against that. Hence, the "virtual" monolithic repo: the VMR gives us the simplicity of a mono-repo for building and servicing the product, while active development of components of that product stays in its various existing repos. The day to day experience for typical contributors will not change.
 
 ## Limitations
 
@@ -96,7 +98,7 @@ In case you don't want to / cannot prepare your environment per the requirements
     ```
 
     This builds the entire .NET SDK from source.
-    The resulting SDK is placed at `artifacts/x64/Release/dotnet-sdk-8.0.100-your-RID.tar.gz`.
+    The resulting SDK is placed at `artifacts/x64/Release/dotnet-sdk-9.0.100-your-RID.tar.gz`.
 
     Currently, the `--online` flag is required to allow NuGet restore from online sources during the build.
     This is useful for testing unsupported releases that don't yet build without downloading pre-built binaries from the internet.
@@ -107,7 +109,7 @@ In case you don't want to / cannot prepare your environment per the requirements
 
     ```bash
     mkdir -p $HOME/dotnet
-    tar zxf artifacts/[your-arch]/Release/dotnet-sdk-8.0.100-[your-RID].tar.gz -C $HOME/dotnet
+    tar zxf artifacts/[your-arch]/Release/dotnet-sdk-9.0.100-[your-RID].tar.gz -C $HOME/dotnet
     ln -s $HOME/dotnet/dotnet /usr/bin/dotnet
     ```
     
@@ -127,7 +129,7 @@ docker run --rm -it -v vmr:/vmr -w /vmr mcr.microsoft.com/dotnet-buildtools/prer
 git clone https://github.com/dotnet/dotnet .
 ./prep.sh && ./build.sh --online
 mkdir -p $HOME/.dotnet
-tar -zxf artifacts/x64/Release/dotnet-sdk-8.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet
+tar -zxf artifacts/x64/Release/dotnet-sdk-9.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet
 ln -s $HOME/.dotnet/dotnet /usr/bin/dotnet
 ```
 
@@ -148,7 +150,7 @@ Alternatively, you can also provide a manifest file where this information can b
 
 Sometimes you want to make a change in a repository and test that change in the VMR. You could of course make the change in the VMR directly (locally, as the VMR is read-only for now) but in case it's already available in your repository, you can synchronize it into the VMR (again locally).
 
-To do this, you can start a [dotnet/dotnet](https://github.com/dotnet/dotnet) Codespace. You will see instructions right when the Codespace starts. Alternatively, you can clone the repository locally and use the `[eng/vmr-sync.sh](../../eng/vmr-sync.sh)` script to do that. Please refer to the documentation in the script for more details.
+To do this, you can either start a [dotnet/dotnet](https://github.com/dotnet/dotnet) Codespace - you will see instructions right after it starts. Alternatively, you can clone the repository locally and use the [eng/vmr-sync.sh](../../eng/vmr-sync.sh) script to pull your changes in. Please refer to the documentation in the script for more details.
 
 ## List of components
 

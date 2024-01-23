@@ -44,7 +44,7 @@
             "**/*.mdb",
             "**/*.nupkg",
             "**/*.pdb",
-            "**/*.tgz",            
+            "**/*.tgz",
             "**/*.zip"
         ]
     },
@@ -143,6 +143,10 @@
             "defaultRemote": "https://github.com/dotnet/runtime"
         },
         {
+            "name": "scenario-tests",
+            "defaultRemote": "https://github.com/dotnet/scenario-tests"
+        },
+        {
             "name": "sdk",
             "defaultRemote": "https://github.com/dotnet/sdk"
         },
@@ -150,12 +154,16 @@
             "name": "source-build-externals",
             "defaultRemote": "https://github.com/dotnet/source-build-externals",
             "exclude": [
-                "src/humanizer/samples/**/*.js",
                 "src/application-insights/**/*.exe",
                 "src/application-insights/**/*.dll",
                 "src/application-insights/**/*.zip",
                 "src/application-insights/**/NuGet.config",
-                "src/newtonsoft-json/**/NuGet.Config"
+                "src/humanizer/samples/**/*.js",
+                "src/newtonsoft-json/**/NuGet.Config",
+                "src/spectre-console/docs/**",
+                "src/spectre-console/NuGet.Config",
+                "src/spectre-console/examples/Console/Canvas/Mandelbrot.cs",
+                "src/xunit/NuGet.Config"
             ]
         },
         {
@@ -191,8 +199,26 @@
             "defaultRemote": "https://github.com/dotnet/xdt"
         },
         {
+            // TODO: Remove the xliff-tasks mapping once the synchronization flags it as unused
+            // We no longer synchronize it but we can't remove it yet until
+            // it disappears from all of the Version.Details.xml files.
+            // https://github.com/dotnet/installer/issues/17661
             "name": "xliff-tasks",
-            "defaultRemote": "https://github.com/dotnet/xliff-tasks"
+            "defaultRemote": "https://github.com/dotnet/xliff-tasks",
+            "ignoreDefaults": true,
+            "exclude": [ "**/*" ]
+        },
+        {
+            "name": "winforms",
+            "defaultRemote": "https://github.com/dotnet/winforms"
+        },
+        {
+            "name": "wpf",
+            "defaultRemote": "https://github.com/dotnet/wpf"
+        },
+        {
+            "name": "windowsdesktop",
+            "defaultRemote": "https://github.com/dotnet/windowsdesktop"
         }
     ]
 }

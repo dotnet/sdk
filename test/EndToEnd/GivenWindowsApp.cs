@@ -32,6 +32,8 @@ namespace EndToEnd
             //  Update TargetFramework to the right version of .NET Core
             project.Root.Element(ns + "PropertyGroup")
                 .Add(new XElement(ns + "TargetPlatformVersion", targetPlatformVersion));
+            project.Root.Element(ns + "PropertyGroup")
+                .Element(ns + "TargetFramework").Value = TestAssetInfo.currentTfm;
 
             project.Save(projectPath);
 

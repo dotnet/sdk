@@ -152,6 +152,22 @@ public static class Utilities
         }
     }
 
+    public static void LogWarningMessage(this ITestOutputHelper outputHelper, string message)
+    {
+        string prefix = "##vso[task.logissue type=warning;]";
+
+        outputHelper.WriteLine($"{Environment.NewLine}{prefix}{message}.{Environment.NewLine}");
+        outputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
+    }
+
+    public static void ValidateNotNullOrWhiteSpace(string? variable, string variableName)
+    {
+        if (string.IsNullOrWhiteSpace(variable))
+        {
+            throw new ArgumentException($"{variableName} is null, empty, or whitespace.");
+        }
+    }
+
     public static string GetFile(string path, string pattern)
     {
         string[] files = Directory.GetFiles(path, pattern, SearchOption.AllDirectories);

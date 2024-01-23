@@ -11,6 +11,10 @@ namespace Microsoft.DotNet.TestFramework
 {
     public class TestAssetInfo
     {
+        // This is needed each release after we upgrade to 9.0 but the templates haven't been upgraded yet
+
+        public static readonly string currentTfm = "net9.0";
+
         private readonly string [] FilesToExclude = { ".DS_Store", ".noautobuild" };
 
         public string AssetName { get; private set; }

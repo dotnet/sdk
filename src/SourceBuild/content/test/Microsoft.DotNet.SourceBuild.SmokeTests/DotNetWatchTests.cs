@@ -16,6 +16,12 @@ public class DotNetWatchTests : SdkTests
     [Fact]
     public void WatchTests()
     {
+        if (DotNetHelper.IsMonoRuntime)
+        {
+            // TODO: Temporarily disabled due to https://github.com/dotnet/sdk/issues/37774
+            return;
+        }
+        
         string projectDirectory = DotNetHelper.ExecuteNew(DotNetTemplate.Console.GetName(), nameof(DotNetWatchTests));
         bool outputChanged = false;
 

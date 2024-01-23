@@ -1,1 +1,68 @@
-<PrebuiltLeakReport />
+<PrebuiltLeakReport>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Win32.SystemEvents.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/System.CodeDom.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/System.Configuration.ConfigurationManager.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/System.Drawing.Common.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/System.Reflection.MetadataLoadContext.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/System.Resources.Extensions.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.Pkcs.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.ProtectedData.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.Xml.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/dotnet-sdk-x.y.z/sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/Microsoft.Win32.SystemEvents.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/System.CodeDom.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/System.Configuration.ConfigurationManager.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/System.Drawing.Common.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/System.Reflection.MetadataLoadContext.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/System.Resources.Extensions.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/System.Security.Cryptography.Pkcs.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/System.Security.Cryptography.ProtectedData.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/System.Security.Cryptography.Xml.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/System.Security.Permissions.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+  <File Path="artifacts/x64/Release/Private.SourceBuilt.Artifacts.x.y.z/dotnet-format.x.y.z/tools/netx.y/any/System.Windows.Extensions.dll">
+    <Type>SourceBuildReferenceAssembly</Type>
+  </File>
+</PrebuiltLeakReport>

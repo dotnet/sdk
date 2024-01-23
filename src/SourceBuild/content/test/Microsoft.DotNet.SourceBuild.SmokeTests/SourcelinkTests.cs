@@ -32,7 +32,7 @@ public class SourcelinkTests : SdkTests
     /// <summary>
     /// Verifies that all symbols have valid sourcelinks.
     /// </summary>
-    [SkippableFact(Config.SourceBuiltArtifactsPathEnv, skipOnNullOrWhiteSpaceEnv: true)]
+    [Fact]
     public void VerifySourcelinks()
     {
         try

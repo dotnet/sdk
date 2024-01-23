@@ -1,0 +1,22 @@
+# This is the dotnet/dotnet-lite pipeline that is triggered by pushes to main and PRs targetting main and release/*.
+
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
+
+pr:
+  branches:
+    include:
+    - main
+    - release/*
+
+stages:
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+  - template: templates/stages/vmr-scan.yml
+
+- template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
+  parameters:
+    isBuiltFromVmr: true
+    isLiteBuild: true

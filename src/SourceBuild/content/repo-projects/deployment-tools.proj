@@ -1,13 +1,12 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
-  <PropertyGroup>
-    <BuildCommand>$(ProjectDirectory)eng\common\build$(ShellExtension) $(StandardSourceBuildArgs)</BuildCommand>
-  </PropertyGroup>
+<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <RepositoryReference Include="arcade" />
     <RepositoryReference Include="runtime" />
   </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <ItemGroup>
+    <EnvironmentVariables Include="LatestCommit=$(GitCommitHash)" />
+  </ItemGroup>
+
 </Project>

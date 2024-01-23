@@ -71,14 +71,6 @@ namespace Microsoft.DotNet.Build.Tasks
         public ITaskItem[] ExtraProperties { get; set; }
 
         /// <summary>
-        /// Additional assets to be added to the build output props.
-        /// i.e. /bin/obj/x64/Release/blobs/Toolset/3.0.100
-        /// This parameter is the <pathToAsset>/<assetName> portion only, and the asset
-        /// must be in a <AdditionalAssetDir>/<assetVersion> folder.
-        /// </summary>
-        public string[] AdditionalAssetDirs { get; set; }
-
-        /// <summary>
         /// Indicates which properties will be written into the Version props file.
         /// If AllPackages (Default), all packages from previously built repos will be written.
         /// If DependenciesOnly, then only those packages appearing as dependencies in
@@ -196,17 +188,7 @@ namespace Microsoft.DotNet.Build.Tasks
                         Version = identity.Version.ToString()
                     });
 
-            var additionalAssets = (AdditionalAssetDirs ?? new string[0])
-                .Where(Directory.Exists)
-                .Where(dir => Directory.GetDirectories(dir).Count() > 0)
-                .Select(dir => new VersionEntry()
-                {
-                    Name = new DirectoryInfo(dir).Name,
-                    Version = new DirectoryInfo(Directory.EnumerateDirectories(dir).OrderBy(s => s).Last()).Name
-                });
-
             var packageElementsToWrite = latestPackages;
-            var additionalAssetElementsToWrite = additionalAssets;
 
             // Then, if version flow type is "DependenciesOnly", filter those
             // dependencies that do not appear in the version.details.xml file.
@@ -220,7 +202,6 @@ namespace Microsoft.DotNet.Build.Tasks
                 }
 
                 packageElementsToWrite = FilterNonDependencies(packageElementsToWrite, dependencies);
-                additionalAssetElementsToWrite = FilterNonDependencies(additionalAssetElementsToWrite, dependencies);
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(OutputPath));
@@ -233,7 +214,6 @@ namespace Microsoft.DotNet.Build.Tasks
 
                 WriteVersionEntries(sw, packageElementsToWrite, "packages");
                 WriteExtraProperties(sw);
-                WriteVersionEntries(sw, additionalAssetElementsToWrite, "additional assets");
 
                 sw.WriteLine(@"  <PropertyGroup>");
                 sw.WriteLine($@"    <{CreationTimePropertyName}>{DateTime.UtcNow.Ticks}</{CreationTimePropertyName}>");

@@ -12,9 +12,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.MSBuildSdkResolver" Version="$(MicrosoftDotNetMSBuildSdkResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true"/>
-    <PackageReference Include="runtime.win-x86.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="runtime.win-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="runtime.win-arm64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
   <Target
@@ -28,9 +28,9 @@
     <MakeDir Directories="$(OutputPath)" />
 
     <ItemGroup>
-      <_SdkResolverSrc Include="$(Pkgruntime_win-x86_Microsoft_NETCore_DotNetHostResolver)\runtimes\win-x86\native\hostfxr.dll" Arch="x86\" />
-      <_SdkResolverSrc Include="$(Pkgruntime_win-x64_Microsoft_NETCore_DotNetHostResolver)\runtimes\win-x64\native\hostfxr.dll" Arch="x64\" />
-      <_SdkResolverSrc Include="$(Pkgruntime_win-arm64_Microsoft_NETCore_DotNetHostResolver)\runtimes\win-arm64\native\hostfxr.dll" Arch="arm64\" />
+      <_SdkResolverSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-x86)\runtimes\win-x86\native\hostfxr.dll" Arch="x86\" />
+      <_SdkResolverSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-x64)\runtimes\win-x64\native\hostfxr.dll" Arch="x64\" />
+      <_SdkResolverSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-arm64)\runtimes\win-arm64\native\hostfxr.dll" Arch="arm64\" />
       <_SdkResolverSrc Include="$(PkgMicrosoft_DotNet_MSBuildSdkResolver)\lib\net472\**\*.dll" Arch="" />
       <_SdkResolverDst Include="@(_SdkResolverSrc->'$(OutputPath)%(Arch)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>

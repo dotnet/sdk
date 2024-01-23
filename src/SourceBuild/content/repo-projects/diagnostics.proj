@@ -1,10 +1,7 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <BuildCommandArgs>$(StandardSourceBuildArgs)</BuildCommandArgs>
-    <BuildCommand>$(ProjectDirectory)eng\common\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
-  </PropertyGroup>
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+  </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <PropertyGroup>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
@@ -64,6 +64,7 @@
       <RuntimeVersionToInstall Include="5.0.0" />
       <RuntimeVersionToInstall Include="6.0.0" />
       <RuntimeVersionToInstall Include="7.0.0" />
+      <RuntimeVersionToInstall Include="8.0.0" />
     </ItemGroup>
     
   </Target>
