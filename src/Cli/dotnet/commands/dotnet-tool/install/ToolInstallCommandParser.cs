@@ -51,7 +51,12 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<bool> AllowPackageDowngradeOption = new("--allow-downgrade")
         {
             Description = LocalizableStrings.AllowPackageDowngradeOptionDescription
-        }; 
+        };
+
+        public static readonly CliOption<bool> ForceInstallOption = new("--force")
+        {
+            Description = LocalizableStrings.ForceInstallOptionName
+        };
 
         public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
 
