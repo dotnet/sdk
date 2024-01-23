@@ -99,6 +99,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CreateManifestIfNeededOption);
             command.Options.Add(AllowPackageDowngradeOption);
             command.Options.Add(RollForwardOption);
+            command.Options.Add(ForceInstallOption);
 
             command.SetAction((parseResult) => new ToolInstallCommand(parseResult).Execute());
 
