@@ -168,6 +168,12 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                                     packageDirectory: toolReturnPackageDirectory,
                                     assetsJsonParentDirectory: toolReturnJsonParentDirectory);
 
+                    
+                    if(!forceInstall)
+                    {
+                        IsRuntimeConfigCompatible(toolPackageInstance, packageId);
+                    }
+
                     if (isGlobalToolRollForward)
                     {
                         UpdateRuntimeConfig(toolPackageInstance);
@@ -190,7 +196,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 });
         }
 
-        private static void ReadRuntimeConfig(
+        private static void IsRuntimeConfigCompatible(
             ToolPackageInstance toolPackageInstance,
             PackageId packageId
             )
