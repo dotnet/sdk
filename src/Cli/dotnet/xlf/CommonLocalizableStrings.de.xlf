@@ -298,7 +298,12 @@ dotnet tool install {0} (-g) --allow-roll-forward
 
 2. Install .NET {1} with the following link
 
-https://aka.ms/dotnet/download/sdk/{1}</source>
+https://aka.ms/dotnet/download/sdk/{1}
+
+3. Install with `--force` and manually configure the tool to run, using with the following command.
+
+dotnet tool install {0} (-g) --force 
+</source>
         <target state="new">Installation failed.
 
 This app wasn't installed because it won't run on your machine. This can be resolved by one of the following:
@@ -309,7 +314,12 @@ dotnet tool install {0} (-g) --allow-roll-forward
 
 2. Install .NET {1} with the following link
 
-https://aka.ms/dotnet/download/sdk/{1}</target>
+https://aka.ms/dotnet/download/sdk/{1}
+
+3. Install with `--force` and manually configure the tool to run, using with the following command.
+
+dotnet tool install {0} (-g) --force 
+</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">
