@@ -285,7 +285,8 @@ El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o i
       </trans-unit>
       <trans-unit id="ToolSettingsNotFound">
         <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="translated">El archivo de configuración de herramientas no existe para la herramienta {0}.</target>
+        <target state="needs-review-translation">El archivo de configuración de herramientas no existe para la herramienta {0}.</target>
+        <note />
       </trans-unit>
       <trans-unit id="ToolPackageRuntimeConfigIncompatible">
         <source>Installation failed.

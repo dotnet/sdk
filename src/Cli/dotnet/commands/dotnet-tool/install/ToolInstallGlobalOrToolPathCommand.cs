@@ -196,7 +196,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         targetFramework: _framework,
                         verbosity: _verbosity,
                         isGlobalTool: true,
-                        isGlobalToolRollForward: _allowRollForward
+                        isGlobalToolRollForward: _allowRollForward,
+                        forceInstall: _forceInstall
                     );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);

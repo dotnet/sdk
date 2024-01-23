@@ -98,11 +98,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             if (!existingPackageWithPackageId.Any())
             {
-                return InstallNewTool(manifestFile, packageId);
+                return InstallNewTool(manifestFile, packageId, _forceInstall);
             }
 
             var existingPackage = existingPackageWithPackageId.Single();
-            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile, packageId);
+            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile, packageId, _forceInstall);
 
             InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile, packageId);
 
@@ -159,10 +159,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             return 0;
         }
 
-        public int InstallNewTool(FilePath manifestFile, PackageId packageId)
+        public int InstallNewTool(FilePath manifestFile, PackageId packageId, bool forceInstall)
         {
             IToolPackage toolDownloadedPackage =
-                _toolLocalPackageInstaller.Install(manifestFile, packageId);
+                _toolLocalPackageInstaller.Install(manifestFile, packageId, forceInstall);
 
             _toolManifestEditor.Add(
                 manifestFile,
