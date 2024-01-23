@@ -45,6 +45,26 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             result.Args.Should().Contain("--roll-forward", "Major", fakeExecutable.Value);
         }
 
+        [Fact]
+        public void WhenRunWithoutRollForwardOptionItShouldNotIncludeRollForwardInNativeHost()
+        {
+            var parseResult = Parser.Instance.Parse($"dotnet tool run $TOOLCOMMAND$");
+
+            var toolRunCommand = new ToolRunCommand(parseResult);
+
+            (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("dotnet-a");
+            IEnumerable<string> testForwardArgument = Enumerable.Empty<string>();
+
+            var result = localToolsCommandResolver.Resolve(new CommandResolverArguments()
+            {
+                CommandName = "dotnet-a",
+                CommandArguments = (toolRunCommand._allowRollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(testForwardArgument)
+            });
+
+            result.Should().NotBeNull();
+            result.Args.Should().Contain(fakeExecutable.Value);
+        }
+
         private (FilePath, LocalToolsCommandResolver) DefaultSetup(string toolCommand)
         {
             var testDirectoryRoot = _testAssetsManager.CreateTestDirectory();
