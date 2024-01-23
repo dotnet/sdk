@@ -52,17 +52,17 @@
       <Sha>c14a1d2af9d67eec272ff7d7f3c5bb6b114798fe</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.10.0-preview-24073-01">
+    <Dependency Name="Microsoft.Build" Version="17.10.0-preview-24073-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>f0936bf4b63d97a87e163fb1cb204e447550bcae</Sha>
+      <Sha>d51ae5297cd0a24caa8cfe356442cc8634c3f087</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.10.0-preview-24073-01">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.10.0-preview-24073-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>f0936bf4b63d97a87e163fb1cb204e447550bcae</Sha>
+      <Sha>d51ae5297cd0a24caa8cfe356442cc8634c3f087</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.10.0-preview-24073-01">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.10.0-preview-24073-02">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>f0936bf4b63d97a87e163fb1cb204e447550bcae</Sha>
+      <Sha>d51ae5297cd0a24caa8cfe356442cc8634c3f087</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.300-beta.24066.3">
