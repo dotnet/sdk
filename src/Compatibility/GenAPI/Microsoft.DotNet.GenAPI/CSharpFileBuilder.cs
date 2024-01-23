@@ -119,9 +119,15 @@ namespace Microsoft.DotNet.GenAPI
                 if (typeMember.IsRefLikeType &&
                     typeDeclaration is StructDeclarationSyntax structDeclaration)
                 {
-                    Debug.Assert(!structDeclaration.Modifiers.Any(m => m.Text == "ref"), "remove this workaround");
-                    SyntaxToken refToken = SyntaxFactory.Token(SyntaxKind.RefKeyword);
-                    typeDeclaration = structDeclaration.AddModifiers(refToken);
+                    if (structDeclaration.Modifiers.Any(m => m.Text == "ref"))
+                    {
+                        Debug.Fail("remove this workaround");
+                    }
+                    else
+                    {
+                        SyntaxToken refToken = SyntaxFactory.Token(SyntaxKind.RefKeyword);
+                        typeDeclaration = structDeclaration.AddModifiers(refToken);
+                    }
                 }
 
                 typeDeclaration = Visit(typeDeclaration, typeMember);
