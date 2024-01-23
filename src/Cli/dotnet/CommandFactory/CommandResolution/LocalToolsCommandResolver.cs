@@ -102,6 +102,11 @@ namespace Microsoft.DotNet.CommandFactory
                         toolCommandName.ToString()));
                 }
 
+                if (toolManifestPackage.RollForward)
+                {
+                    arguments.CommandArguments = ["--roll-forward", "Major", .. arguments.CommandArguments];
+                }
+
                 return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
                     restoredCommand.Executable.Value,
                     arguments.CommandArguments);
