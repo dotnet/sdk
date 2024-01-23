@@ -81,12 +81,6 @@ namespace Microsoft.DotNet.CommandFactory
                 return null;
             }
 
-            if( arguments.CommandArguments != null && allowRollForward)
-            {
-                arguments.CommandArguments = ["--roll-forward", "Major", .. arguments.CommandArguments];
-            }
-            
-
             if (_localToolsResolverCache.TryLoad(
                 new RestoredCommandIdentifier(
                     toolManifestPackage.PackageId,
@@ -102,7 +96,7 @@ namespace Microsoft.DotNet.CommandFactory
                         toolCommandName.ToString()));
                 }
 
-                if (toolManifestPackage.RollForward)
+                if (toolManifestPackage.RollForward || allowRollForward)
                 {
                     arguments.CommandArguments = ["--roll-forward", "Major", .. arguments.CommandArguments];
                 }
