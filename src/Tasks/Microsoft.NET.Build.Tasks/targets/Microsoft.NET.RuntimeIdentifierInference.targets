@@ -199,13 +199,12 @@ Copyright (c) .NET Foundation. All rights reserved.
                               $([MSBuild]::VersionLessThan($(_TargetFrameworkVersionWithoutV), '8.0'))">true</SelfContained>
     
     <SelfContained Condition="'$(SelfContained)' == ''">false</SelfContained>
-  </PropertyGroup>
 
-  <PropertyGroup Condition="'$(SelfContained)' == 'true' or '$(SelfContained)' == 'false'">
-    <PublishSelfContained Condition="'$(PublishSelfContained)' == ''">$(SelfContained)</PublishSelfContained>
-  </PropertyGroup>
+    <!-- TODO: dedup this. -->
+    <PublishSelfContained Condition="'$(PublishSelfContained)' == '' and
+                                     ('$(SelfContained)' == 'true' or '$(SelfContained)' == 'false')
+                                    ">$(SelfContained)</PublishSelfContained>
 
-  <PropertyGroup>
     <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser'))">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_RuntimeIdentifierUsesAppHost)' == ''">true</_RuntimeIdentifierUsesAppHost>
     <UseAppHost Condition="'$(UseAppHost)' == '' and
