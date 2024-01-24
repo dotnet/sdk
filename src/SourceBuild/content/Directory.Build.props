@@ -119,7 +119,7 @@
     <!-- It's not unusual to build with a preview SDK -->
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <!-- Builds from the VMR are by definition vertical builds. -->
-    <DotNetBuildVertical Condition="'$(DotNetBuildVertical)' == ''">true</DotNetBuildVertical>
+    <DotNetBuildVertical Condition="'$(DotNetBuildVertical)' == '' and '$(DotNetBuildFromSource)' != 'true'">true</DotNetBuildVertical>
     <!-- By default, the VMR builds with online sources. -->
     <BuildWithOnlineSources Condition="'$(BuildWithOnlineSources)' == '' and '$(DotNetBuildVertical)' == 'true'">true</BuildWithOnlineSources>
   </PropertyGroup>
