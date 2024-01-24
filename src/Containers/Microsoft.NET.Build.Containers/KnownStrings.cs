@@ -40,6 +40,11 @@ internal static class KnownStrings
         public static readonly string InvariantGlobalization = nameof(InvariantGlobalization);
     }
 
+    public static class Items
+    {
+        public static readonly string FrameworkReference = nameof(FrameworkReference);
+    }
+
     public static class ErrorCodes
     {
         public static readonly string CONTAINER002 = nameof(CONTAINER002);
