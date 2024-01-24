@@ -179,18 +179,18 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>e92be3915309e687044768de38933ac5fc4cb40c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.10.0-preview-24072-01">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.10.0-preview-24073-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>e6c166f6c346b6c60092121419529e2cd9dbbbcc</Sha>
+      <Sha>c0c0e75fb8ea396a8b0717d17c2e738975d412e7</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.10.0-preview-24072-01">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.10.0-preview-24073-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>e6c166f6c346b6c60092121419529e2cd9dbbbcc</Sha>
+      <Sha>c0c0e75fb8ea396a8b0717d17c2e738975d412e7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.10.0-preview-24072-01">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.10.0-preview-24073-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>e6c166f6c346b6c60092121419529e2cd9dbbbcc</Sha>
+      <Sha>c0c0e75fb8ea396a8b0717d17c2e738975d412e7</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="8.0.0">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
