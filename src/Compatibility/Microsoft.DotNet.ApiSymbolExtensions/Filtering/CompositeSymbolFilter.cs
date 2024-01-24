@@ -11,6 +11,13 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// </summary>
     public sealed class CompositeSymbolFilter : ISymbolFilter
     {
+
+        /// <summary>
+        /// Behavior of combination.  Default is `And` which requires all filters to include the symbol.
+        /// `Or` will include the symbol if any filter includes the symbol.
+        /// </summary>
+        public CompositeSymbolFilterMode Mode { get; set; } = CompositeSymbolFilterMode.And;
+
         /// <summary>
         /// List on inner filters.
         /// </summary>
@@ -21,7 +28,12 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         /// </summary>
         /// <param name="symbol"><see cref="ISymbol"/> to evaluate.</param>
         /// <returns>True to include the <paramref name="symbol"/> or false to filter it out.</returns>
-        public bool Include(ISymbol symbol) => Filters.All(f => f.Include(symbol));
+        public bool Include(ISymbol symbol) => Mode switch
+        {
+            CompositeSymbolFilterMode.And => Filters.All(f => f.Include(symbol)),
+            CompositeSymbolFilterMode.Or => Filters.Any(f => f.Include(symbol)),
+            _ => throw new NotImplementedException()
+        };
 
         /// <summary>
         /// Add a filter object to a list of filters.
@@ -33,5 +45,21 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
             Filters.Add(filter);
             return this;
         }
+    }
+
+    /// <summary>
+    /// Mode of combination of symbol filters
+    /// </summary>
+    public enum CompositeSymbolFilterMode
+    {
+        /// <summary>
+        /// All filters must be true for a symbol to be included.
+        /// </summary>
+        And,
+
+        /// <summary>
+        /// Any filter can be true for a symbol to be included.
+        /// </summary>
+        Or
     }
 }

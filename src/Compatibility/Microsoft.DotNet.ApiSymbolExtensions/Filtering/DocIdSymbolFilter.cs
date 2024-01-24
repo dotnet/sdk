@@ -9,9 +9,16 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// Implements the logic of filtering out api.
     /// Reads the file with the list of attributes, types, members in DocId format.
     /// </summary>
-    public class DocIdSymbolFilter(string[] docIdsToExcludeFiles) : ISymbolFilter
+    /// <param name="docIdsFiles">List of files which contain DocIds to operate on.</param>
+    /// <param name="includeDocIds">Determines if DocIds should be included or excluded.  Defaults to false which excludes specified DocIds.</param>
+    public class DocIdSymbolFilter(IEnumerable<string>? docIdsFiles = null, bool includeDocIds = false) : ISymbolFilter
     {
-        private readonly HashSet<string> _docIdsToExclude = new(ReadDocIdsAttributes(docIdsToExcludeFiles));
+        public ISet<string> DocIds { get;  } = new HashSet<string>(ReadDocIdsAttributes(docIdsFiles));
+
+        /// <summary>
+        /// Determines if DocIds should be included or excluded.
+        /// </summary>
+        public bool IncludeDocIds { get; } = includeDocIds;
 
         /// <summary>
         ///  Determines whether the <see cref="ISymbol"/> should be included.
@@ -21,16 +28,21 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         public bool Include(ISymbol symbol)
         {
             string? docId = symbol.GetDocumentationCommentId();
-            if (docId is not null && _docIdsToExclude.Contains(docId))
+            if (docId is not null && DocIds.Contains(docId))
             {
-                return false;
+                return IncludeDocIds;
             }
 
-            return true;
+            return !IncludeDocIds;
         }
 
-        private static IEnumerable<string> ReadDocIdsAttributes(IEnumerable<string> docIdsToExcludeFiles)
+        private static IEnumerable<string> ReadDocIdsAttributes(IEnumerable<string>? docIdsToExcludeFiles)
         {
+            if (docIdsToExcludeFiles is null)
+            {
+                yield break;
+            }
+
             foreach (string docIdsToExcludeFile in docIdsToExcludeFiles)
             {
                 foreach (string id in File.ReadAllLines(docIdsToExcludeFile))

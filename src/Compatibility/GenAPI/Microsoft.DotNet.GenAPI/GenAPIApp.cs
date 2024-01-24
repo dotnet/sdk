@@ -18,6 +18,23 @@ namespace Microsoft.DotNet.GenAPI
     /// </summary>
     public static class GenAPIApp
     {
+        // Attributes that can work with local definition and no runtime support to light up
+        // public API behavior in the language / compiler that are not defined in all supported frameworks
+        // see https://github.com/dotnet/roslyn/blob/859f94ef2d8bf88527217bc9ad7661b6fbdf33a9/src/Compilers/Core/Portable/Symbols/Attributes/AttributeDescription.cs#L343
+        private static readonly string[] s_compilerAttributes =
+        {
+            "T:System.Runtime.CompilerServices.IsExternalInit",
+            "T:System.Runtime.CompilerServices.NullableAttribute",
+            "T:System.Runtime.CompilerServices.NullableContextAttribute",
+            "T:System.Runtime.CompilerServices.NullablePublicOnlyAttribute",
+            "T:System.Runtime.InteropServices.UnmanagedCallersOnlyAttribute",
+            "T:System.Runtime.CompilerServices.InterpolatedStringHandlerAttribute",
+            "T:System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute",
+            "T:System.Runtime.CompilerServices.RequiredMemberAttribute",
+            "T:System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute",
+            "T:System.Runtime.CompilerServices.CollectionBuilderAttribute"
+        };
+
         /// <summary>
         /// Initialize and run Roslyn-based GenAPI tool.
         /// </summary>
@@ -29,6 +46,8 @@ namespace Microsoft.DotNet.GenAPI
             string? exceptionMessage,
             string[]? excludeApiFiles,
             string[]? excludeAttributesFiles,
+            bool excludeInternalCompilerAttributes,
+            string[]? includeApiFiles,
             bool respectInternals,
             bool includeAssemblyAttributes)
         {
@@ -44,10 +63,36 @@ namespace Microsoft.DotNet.GenAPI
 
             string headerFileText = ReadHeaderFile(headerFile);
 
-            AccessibilitySymbolFilter accessibilitySymbolFilter = new(
+            ISymbolFilter typeFilter = new AccessibilitySymbolFilter(
                 respectInternals,
                 includeEffectivelyPrivateSymbols: true,
                 includeExplicitInterfaceImplementationSymbols: true);
+
+            DocIdSymbolFilter? includeAdditionalApiFilter = null;
+
+            if (includeApiFiles is not null)
+            {
+                includeAdditionalApiFilter = new DocIdSymbolFilter(includeApiFiles, includeDocIds: true);
+            }
+
+            if (!excludeInternalCompilerAttributes)
+            {
+                includeAdditionalApiFilter ??= new DocIdSymbolFilter(includeDocIds: true);
+                includeAdditionalApiFilter.DocIds.UnionWith(s_compilerAttributes);
+            }    
+
+            if (includeAdditionalApiFilter is not null)
+            {
+                typeFilter = new CompositeSymbolFilter()
+                {
+                    Mode = CompositeSymbolFilterMode.Or,
+                    Filters =
+                    {
+                        typeFilter,
+                        includeAdditionalApiFilter
+                    }
+                };
+            }
 
             // Configure the symbol filter
             CompositeSymbolFilter symbolFilter = new();
@@ -56,7 +101,7 @@ namespace Microsoft.DotNet.GenAPI
                 symbolFilter.Add(new DocIdSymbolFilter(excludeApiFiles));
             }
             symbolFilter.Add(new ImplicitSymbolFilter());
-            symbolFilter.Add(accessibilitySymbolFilter);
+            symbolFilter.Add(typeFilter);
 
             // Configure the attribute data symbol filter
             CompositeSymbolFilter attributeDataSymbolFilter = new();
@@ -64,7 +109,7 @@ namespace Microsoft.DotNet.GenAPI
             {
                 attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
             }
-            attributeDataSymbolFilter.Add(accessibilitySymbolFilter);
+            attributeDataSymbolFilter.Add(typeFilter);
 
             // Invoke the CSharpFileBuilder for each directly loaded assembly.
             foreach (IAssemblySymbol? assemblySymbol in assemblySymbols)
