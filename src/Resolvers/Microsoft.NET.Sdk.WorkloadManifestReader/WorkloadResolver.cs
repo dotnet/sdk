@@ -149,7 +149,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         else
                         {
                             throw new WorkloadManifestCompositionException(Strings.ManifestDependencyMissing, dependency.Key, manifest.Id, manifest.ManifestPath);
-                    }
+                        }
                     }
                 }
 
@@ -248,7 +248,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _directoryExistOverride = directoryExists;
         }
 
-        private PackInfo CreatePackInfo(WorkloadPack pack, string aliasedPath, WorkloadPackId resolvedPackageId) => new PackInfo(
+        private PackInfo CreatePackInfo(WorkloadPack pack, string aliasedPath, WorkloadPackId resolvedPackageId) => new(
                 pack.Id,
                 pack.Version,
                 pack.Kind,
@@ -453,7 +453,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         internal IEnumerable<(WorkloadPackId packId, WorkloadDefinition referencingWorkload, WorkloadManifest workloadDefinedIn)> GetPacksInWorkload(WorkloadDefinition workload, WorkloadManifest manifest)
         {
-            foreach((WorkloadDefinition w, WorkloadManifest m) in EnumerateWorkloadWithExtends(workload, manifest))
+            foreach ((WorkloadDefinition w, WorkloadManifest m) in EnumerateWorkloadWithExtends(workload, manifest))
             {
                 if (w.Packs != null && w.Packs.Count > 0)
                 {

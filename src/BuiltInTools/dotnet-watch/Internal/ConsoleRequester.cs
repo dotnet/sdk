@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.Tools.Internal
     /// </summary>
     internal sealed class ConsoleRequester : IRequester
     {
-        private readonly object _writeLock = new object();
+        private readonly object _writeLock = new();
 
         public ConsoleRequester(IConsole console, bool quiet, bool suppressEmojis)
         {
@@ -45,7 +45,7 @@ namespace Microsoft.Extensions.Tools.Internal
                     Console.Out.Write($"  {questionMark} ");
                     Console.ResetColor();
                 }
-                
+
                 var tcs = new TaskCompletionSource<ConsoleKey>(TaskCreationOptions.RunContinuationsAsynchronously);
                 Console.KeyPressed += KeyPressed;
                 try
@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.Tools.Internal
                     }
                 }
             }
-            
+
             void WriteLine(string message, ConsoleColor color = ConsoleColor.DarkGray)
             {
                 lock (_writeLock)
