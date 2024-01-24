@@ -25,6 +25,26 @@
     <RepoManifestFile>$([MSBuild]::NormalizePath('$(ProjectDirectory)', 'artifacts', 'RepoManifest.xml'))</RepoManifestFile>
   </PropertyGroup>
 
+  <!-- Exclude repositories that currently don't build when not building source-only. -->
+  <ItemGroup Condition="'$(DotNetBuildVertical)' == 'true'">
+    <RepositoryReference Remove="roslyn" />
+    <RepositoryReference Remove="wpf" />
+    <RepositoryReference Remove="msbuild" />
+    <RepositoryReference Remove="roslyn-analyzers" />
+    <RepositoryReference Remove="aspnetcore" />
+    <RepositoryReference Remove="razor" />
+    <RepositoryReference Remove="deployment-tools" />
+    <RepositoryReference Remove="format" />
+    <RepositoryReference Remove="nuget-client" />
+    <RepositoryReference Remove="templating" />
+    <RepositoryReference Remove="test-templates" />
+    <RepositoryReference Remove="fsharp" />
+    <RepositoryReference Remove="vstest" />
+    <RepositoryReference Remove="sdk" />
+    <RepositoryReference Remove="aspire" />
+    <RepositoryReference Remove="installer" />
+  </ItemGroup>
+
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="AddSourceToNuGetConfig" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReadNuGetPackageInfos" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="RemoveInternetSourcesFromNuGetConfig" />
