@@ -38,8 +38,8 @@ namespace Microsoft.NET.ToolPack.Tests
                 IEnumerable<NuGet.Frameworks.NuGetFramework> supportedFrameworks = nupkgReader.GetSupportedFrameworks();
                 supportedFrameworks.Should().NotBeEmpty();
 
-                var transitiveDependency = "runtimes/unix/lib/netstandard1.3/System.Data.SqlClient.dll";
-                var nativeDependency = "runtimes/win7-x86/native/sni.dll";
+                var transitiveDependency = "runtimes/unix/lib/netcoreapp2.1/System.Data.SqlClient.dll";
+                var nativeDependency = "runtimes/win-x86/native/sni.dll";
 
                 foreach (var dependency in new string[] { transitiveDependency, nativeDependency })
                 {
@@ -61,7 +61,7 @@ namespace Microsoft.NET.ToolPack.Tests
             XNamespace ns = project.Root.Name.Namespace;
             XElement itemGroup = project.Root.Elements(ns + "ItemGroup").First();
             itemGroup.Add(new XElement(ns + "PackageReference", new XAttribute("Include", "System.Data.SqlClient"),
-                                                                new XAttribute("Version", "4.3.0")));
+                                                                new XAttribute("Version", ToolsetInfo.GetSystemDataSqlClientPackageVersion())));
         }
     }
 }
