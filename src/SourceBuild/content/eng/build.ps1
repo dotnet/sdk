@@ -62,8 +62,8 @@ function Build {
   MSBuild $buildProj `
     $bl `
     /p:Configuration=$configuration `
-    $arguments
-    @properties `
+    $arguments `
+    @properties
 }
 
 try {
