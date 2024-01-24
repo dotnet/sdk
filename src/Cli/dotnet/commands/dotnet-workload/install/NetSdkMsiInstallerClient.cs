@@ -232,6 +232,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             InstallAction plannedAction = PlanPackage(msi, state, installAction, installedVersion, out IEnumerable<string> relatedProducts);
 
+            if (plannedAction != InstallAction.None)
+            {
+                Elevate();
+            }
+
             ExecutePackage(msi, plannedAction, msiPackageId);
 
             // Update the reference count against the MSI.
@@ -613,7 +618,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
         {
-            if (manifestId.ToString().Equals("Microsoft.NET.Workloads"))
+            if (manifestId.ToString().Equals("Microsoft.NET.Workloads", StringComparison.OrdinalIgnoreCase))
             {
                 return new PackageId($"{manifestId}.{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
             }

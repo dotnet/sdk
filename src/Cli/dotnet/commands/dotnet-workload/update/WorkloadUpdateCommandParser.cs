@@ -48,6 +48,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TempDirOption);
             command.Options.Add(FromPreviousSdkOption);
             command.Options.Add(AdManifestOnlyOption);
+            command.Options.Add(WorkloadSetVersionOption);
             command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
             command.Options.Add(CommonOptions.VerbosityOption);
             command.Options.Add(PrintRollbackOption);

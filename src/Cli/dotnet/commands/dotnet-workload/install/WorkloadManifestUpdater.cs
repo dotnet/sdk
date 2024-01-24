@@ -287,7 +287,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         Directory.GetFiles(offlineCache.Value.Value)
                             .Where(path => path.EndsWith(".nupkg") && Path.GetFileName(path).StartsWith(manifestPackageId.ToString(), StringComparison.OrdinalIgnoreCase))
                             .Max() :
-                        await _nugetPackageDownloader.DownloadPackageAsync(manifestPackageId, packageSourceLocation: _packageSourceLocation, includePreview: includePreviews);
+                        await _nugetPackageDownloader.DownloadPackageAsync(manifestPackageId, packageVersion: packageVersion, packageSourceLocation: _packageSourceLocation, includePreview: includePreviews);
                 }
                 catch (NuGetPackageNotFoundException)
                 {
@@ -311,6 +311,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     // The format is Microsoft.NET.Workloads.featureBand.version, so this skips past the band and the '.' afterwards to get the version
                     var version = fileName.Substring(fileName.IndexOf(featureBand) + featureBand.Length + 1);
+                    if (version.StartsWith("msi", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // version starts with msi.<architecture>. Remove that part.
+                        version = version.Substring(version.IndexOf('.', 5));
+                    }
                     File.WriteAllText(Path.Combine(adManifestPath, "version.txt"), version);
                 }
 
