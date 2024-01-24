@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.GenAPI
             {
                 includeAdditionalApiFilter ??= new DocIdSymbolFilter(includeDocIds: true);
                 includeAdditionalApiFilter.DocIds.UnionWith(s_compilerAttributes);
-            }    
+            }
 
             if (includeAdditionalApiFilter is not null)
             {

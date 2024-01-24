@@ -3109,7 +3109,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     }
                     """,
                 expected: """
-                    
                     namespace a
                     {
                         [System.Runtime.CompilerServices.CollectionBuilder(typeof(LineBufferBuilder), "Create")]
