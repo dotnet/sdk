@@ -23,16 +23,33 @@ namespace Microsoft.DotNet.GenAPI
         // see https://github.com/dotnet/roslyn/blob/859f94ef2d8bf88527217bc9ad7661b6fbdf33a9/src/Compilers/Core/Portable/Symbols/Attributes/AttributeDescription.cs#L343
         private static readonly string[] s_compilerAttributes =
         [
+            // init feature
             "T:System.Runtime.CompilerServices.IsExternalInit",
-            "T:System.Runtime.CompilerServices.NullableAttribute",
-            "T:System.Runtime.CompilerServices.NullableContextAttribute",
-            "T:System.Runtime.CompilerServices.NullablePublicOnlyAttribute",
-            "T:System.Runtime.InteropServices.UnmanagedCallersOnlyAttribute",
+
+            // interpolated string handler
             "T:System.Runtime.CompilerServices.InterpolatedStringHandlerAttribute",
             "T:System.Runtime.CompilerServices.InterpolatedStringHandlerArgumentAttribute",
+
+            // required members
             "T:System.Runtime.CompilerServices.RequiredMemberAttribute",
             "T:System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute",
-            "T:System.Runtime.CompilerServices.CollectionBuilderAttribute"
+            "T:System.Diagnostics.CodeAnalysis.CompilerFeatureRequiredAttribute",
+
+            // collection expressions
+            "T:System.Runtime.CompilerServices.CollectionBuilderAttribute",
+
+            // User authored Nullable attributes
+            "T:System.Diagnostics.CodeAnalysis.AllowNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.DisallowNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.MaybeNullAttribute ",
+            "T:System.Diagnostics.CodeAnalysis.NotNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute",
+            "T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute",
+            "T:System.Diagnostics.CodeAnalysis.NotNullIfNotNullAttribute",
+            "T:System.Diagnostics.CodeAnalysis.DoesNotReturnAttribute",
+            "T:System.Diagnostics.CodeAnalysis.DoesNotReturnIfAttribute",
+            "T:System.Diagnostics.CodeAnalysis.MemberNotNullAtribute",
+            "T:System.Diagnostics.CodeAnalysis.MemberNotNullWhenAttribute"
         ];
 
         /// <summary>
