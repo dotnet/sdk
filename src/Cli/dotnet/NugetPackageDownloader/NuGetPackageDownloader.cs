@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             Func<IEnumerable<Task>> timer = null,
             bool verifySignatures = false,
             bool isNuGetTool = false,
-            VerbosityOptions verbosityOptions = VerbosityOptions.minimal)
+            VerbosityOptions verbosityOptions = VerbosityOptions.normal)
         {
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
@@ -135,12 +135,17 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return nupkgPath;
         }
 
+        private bool verbosityGreaterThanMinimal()
+        {
+            return _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q
+                && _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
+        }
+
         private void VerifySigning(string nupkgPath)
         {
-
             if (!_verifySignatures && !_validationMessagesDisplayed)
             {
-                if (_verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q)
+                if (verbosityGreaterThanMinimal())
                 {
                     _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
                 }
