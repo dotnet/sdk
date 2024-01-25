@@ -314,7 +314,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     if (version.StartsWith("msi", StringComparison.OrdinalIgnoreCase))
                     {
                         // version starts with msi.<architecture>. Remove that part.
-                        version = version.Substring(version.IndexOf('.', 5));
+                        version = version.Substring(version.IndexOf('.', 5) + 1);
                     }
                     File.WriteAllText(Path.Combine(adManifestPath, "version.txt"), version);
                 }
