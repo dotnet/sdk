@@ -6,14 +6,14 @@ using Microsoft.CodeAnalysis;
 namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
 {
     /// <summary>
-    /// Implements the logic of filtering out api.
+    /// Implements the logic of filtering API.
     /// Reads the file with the list of attributes, types, members in DocId format.
     /// </summary>
     /// <param name="docIdsFiles">List of files which contain DocIds to operate on.</param>
     /// <param name="includeDocIds">Determines if DocIds should be included or excluded.  Defaults to false which excludes specified DocIds.</param>
     public class DocIdSymbolFilter(IEnumerable<string>? docIdsFiles = null, bool includeDocIds = false) : ISymbolFilter
     {
-        public ISet<string> DocIds { get;  } = new HashSet<string>(ReadDocIdsAttributes(docIdsFiles));
+        private readonly HashSet<string> _docIds = new(ReadDocIdsAttributes(docIdsFiles));
 
         /// <summary>
         /// Determines if DocIds should be included or excluded.
@@ -28,12 +28,30 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         public bool Include(ISymbol symbol)
         {
             string? docId = symbol.GetDocumentationCommentId();
-            if (docId is not null && DocIds.Contains(docId))
+            if (docId is not null && _docIds.Contains(docId))
             {
                 return IncludeDocIds;
             }
 
             return !IncludeDocIds;
+        }
+
+        /// <summary>
+        /// Add a single DocID to the filtered set.
+        /// </summary>
+        /// <param name="docId">DocID to add to the filtered set.</param>
+        public void Add(string docId)
+        {
+            _docIds.Add(docId);
+        }
+
+        /// <summary>
+        /// Add multiple docIDs to the filtered set.
+        /// </summary>
+        /// <param name="docIds">DocIDs to add to the filtered set.</param>
+        public void AddRange(IEnumerable<string> docIds)
+        {
+            _docIds.UnionWith(docIds);
         }
 
         private static IEnumerable<string> ReadDocIdsAttributes(IEnumerable<string>? docIdsToExcludeFiles)

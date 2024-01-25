@@ -45,15 +45,13 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
             if (includeDocIdFile is not null)
             {
-                typeFilter = new CompositeSymbolFilter()
+                CompositeSymbolFilter combinedTypeFilter = new()
                 {
                     Mode = CompositeSymbolFilterMode.Or,
-                    Filters =
-                    {
-                        typeFilter,
-                        new DocIdSymbolFilter(new [] { includeDocIdFile }, includeDocIds: true)
-                    }
                 };
+                combinedTypeFilter.Add(typeFilter);
+                combinedTypeFilter.Add(new DocIdSymbolFilter(new[] { includeDocIdFile }, includeDocIds: true));
+                typeFilter = combinedTypeFilter;
             }
 
             CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()

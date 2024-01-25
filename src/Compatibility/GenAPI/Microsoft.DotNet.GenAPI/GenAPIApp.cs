@@ -78,20 +78,18 @@ namespace Microsoft.DotNet.GenAPI
             if (!excludeInternalCompilerAttributes)
             {
                 includeAdditionalApiFilter ??= new DocIdSymbolFilter(includeDocIds: true);
-                includeAdditionalApiFilter.DocIds.UnionWith(s_compilerAttributes);
+                includeAdditionalApiFilter.AddRange(s_compilerAttributes);
             }
 
             if (includeAdditionalApiFilter is not null)
             {
-                typeFilter = new CompositeSymbolFilter()
+                CompositeSymbolFilter combinedTypeFilter = new()
                 {
-                    Mode = CompositeSymbolFilterMode.Or,
-                    Filters =
-                    {
-                        typeFilter,
-                        includeAdditionalApiFilter
-                    }
+                    Mode = CompositeSymbolFilterMode.Or
                 };
+                combinedTypeFilter.Add(typeFilter);
+                combinedTypeFilter.Add(includeAdditionalApiFilter);
+                typeFilter = combinedTypeFilter;
             }
 
             // Configure the symbol filter
