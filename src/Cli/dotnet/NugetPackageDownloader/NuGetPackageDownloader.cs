@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             Func<IEnumerable<Task>> timer = null,
             bool verifySignatures = false,
             bool shouldUsePackageSourceMapping = false,
-            VerbosityOptions verbosityOptions = VerbosityOptions.minimal)
+            VerbosityOptions verbosityOptions = VerbosityOptions.normal)
         {
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
