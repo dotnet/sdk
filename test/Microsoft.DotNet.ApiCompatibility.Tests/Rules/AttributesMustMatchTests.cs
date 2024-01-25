@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context));
 
         private static ISymbolFilter GetAccessibilityAndAttributeSymbolFiltersAsComposite(params string[] excludeAttributeFiles) =>
-            new CompositeSymbolFilter(default,
+            new CompositeSymbolFilter(mode: CompositeSymbolFilterMode.And,
               new AccessibilitySymbolFilter(false),
               DocIdSymbolFilter.CreateFromFiles(excludeAttributeFiles));
 

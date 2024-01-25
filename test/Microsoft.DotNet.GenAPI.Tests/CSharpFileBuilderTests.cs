@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     DocIdSymbolFilter.CreateFromFiles(new[] { includeDocIdFile }, includeDocIds: true));
             }
 
-            CompositeSymbolFilter symbolFilter = new(default,
+            CompositeSymbolFilter symbolFilter = new(mode: CompositeSymbolFilterMode.And,
                 new ImplicitSymbolFilter(),
                 typeFilter);
 
