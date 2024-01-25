@@ -1,6 +1,6 @@
 ## Welcome to dotnet sdk
 
-This repository contains core functionality needed to create .NET projects that is shared between Visual Studio and the [.NET CLI](https://learn.microsoft.com/dotnet/core/tools/).
+This repository contains core functionality needed to create .NET projects that are shared between Visual Studio and the [.NET CLI](https://learn.microsoft.com/dotnet/core/tools/).
 
 * MSBuild tasks are under [/src/Tasks/Microsoft.NET.Build.Tasks/](src/Tasks/Microsoft.NET.Build.Tasks).
 

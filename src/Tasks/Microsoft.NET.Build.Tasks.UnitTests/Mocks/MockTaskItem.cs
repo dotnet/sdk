@@ -8,7 +8,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class MockTaskItem : ITaskItem
     {
-        private Dictionary<string, string> _metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, string> _metadata = new(StringComparer.OrdinalIgnoreCase);
 
         public MockTaskItem()
         {
@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public MockTaskItem(string itemSpec, Dictionary<string, string> metadata)
         {
             ItemSpec = itemSpec;
-            foreach(var m in metadata)
+            foreach (var m in metadata)
             {
                 _metadata.Add(m.Key, m.Value);
             }

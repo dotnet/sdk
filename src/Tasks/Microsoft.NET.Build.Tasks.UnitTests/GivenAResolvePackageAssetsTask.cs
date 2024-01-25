@@ -1,9 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using FluentAssertions;
 using Microsoft.Build.Framework;
-using System.Reflection;
 using Xunit;
 using static Microsoft.NET.Build.Tasks.ResolvePackageAssets;
 
@@ -25,9 +25,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
             catch (ArgumentNullException)
             {
-                Assert.True(
-                    false,
-                    "HashSettings is likely not correctly handling null value of one or more optional task parameters");
+                Assert.Fail("HashSettings is likely not correctly handling null value of one or more optional task parameters");
 
                 throw; // unreachable
             }
@@ -49,13 +47,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         break;
 
                     default:
-                        Assert.True(false, $"{property.Name} is not a bool or string or ITaskItem[]. Update the test code to handle that.");
+                        Assert.Fail($"{property.Name} is not a bool or string or ITaskItem[]. Update the test code to handle that.");
                         throw null; // unreachable
                 }
 
                 byte[] newHash = task.HashSettings();
                 newHash.Should().NotBeEquivalentTo(
-                    oldHash, 
+                    oldHash,
                     because: $"{property.Name} should be included in hash.");
 
                 oldHash = newHash;
@@ -210,7 +208,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 property.SetValue(task, "_");
             }
-            
+
             task.BuildEngine = new MockBuildEngine();
 
             return task;
