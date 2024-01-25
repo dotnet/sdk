@@ -22,19 +22,23 @@ namespace Microsoft.DotNet.CommandFactory
                 throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
             }
 
-            var rollForwardArgument = (commandArguments ?? []).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
-
-            if (rollForwardArgument.Any())
-            {
-                arguments.Add("--roll-forward");
-                arguments.Add("Major");
-            }
-
-            arguments.Add(commandPath);
-
             if (commandArguments != null)
             {
+                var rollForwardArgument = (commandArguments ?? Enumerable.Empty<string>()).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
+
+                if (rollForwardArgument.Any())
+                {
+                    arguments.Add("--roll-forward");
+                    arguments.Add("Major");
+                }
+
+                arguments.Add(commandPath);
+
                 arguments.AddRange(commandArguments.Except(rollForwardArgument));
+            }
+            else
+            {
+                arguments.Add(commandPath);
             }
 
             return CreateCommandSpec(host, arguments);
