@@ -304,7 +304,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/24257")]
+        [Fact]
         public void Fails_WhenStaticWebAsset_HaveDifferentContentRoot()
         {
             // Arrange
