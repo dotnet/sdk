@@ -32,8 +32,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         /// <returns>True to include the <paramref name="symbol"/> or false to filter it out.</returns>
         public bool Include(ISymbol symbol) => Mode switch
         {
-            CompositeSymbolFilterMode.And => Filters.All(f => f.Include(symbol)),
-            CompositeSymbolFilterMode.Or => Filters.Any(f => f.Include(symbol)),
+            CompositeSymbolFilterMode.And => _filters.All(f => f.Include(symbol)),
+            CompositeSymbolFilterMode.Or => _filters.Any(f => f.Include(symbol)),
             _ => throw new NotImplementedException()
         };
 
