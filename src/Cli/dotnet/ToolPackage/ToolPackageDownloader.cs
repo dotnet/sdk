@@ -209,9 +209,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             ToolPackageInstance toolPackageInstance
             )
         {
-            for (int i = 0; i < toolPackageInstance.Commands.Count; i++)
+            foreach (var command in toolPackageInstance.Commands)
             {
-                var command = toolPackageInstance.Commands[i];
                 var runtimeConfigFilePath = Path.ChangeExtension(command.Executable.Value, ".runtimeconfig.json");
 
                 // Update the runtimeconfig.json file

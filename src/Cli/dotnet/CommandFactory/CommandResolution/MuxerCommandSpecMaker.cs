@@ -11,7 +11,10 @@ namespace Microsoft.DotNet.CommandFactory
             string commandPath,
             IEnumerable<string> commandArguments)
         {
+            var arguments = new List<string>();
+
             var muxer = new Muxer();
+
             var host = muxer.MuxerPath;
 
             if (host == null)
@@ -19,15 +22,21 @@ namespace Microsoft.DotNet.CommandFactory
                 throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
             }
 
-            var previousArg = string.Empty;
+            var rollForwardArgument = (commandArguments ?? []).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
 
-            // Group the arguments by if the previous argument or the current argument is --roll-forward.
-            var argGroups = (commandArguments ?? [])
-                .GroupBy(a => previousArg.Equals("--roll-forward", StringComparison.OrdinalIgnoreCase)
-                | (previousArg = a).Equals("--roll-forward", StringComparison.OrdinalIgnoreCase))
-                .ToArray();
+            if (rollForwardArgument.Any())
+            {
+                arguments.Add("--roll-forward");
+                arguments.Add("Major");
+            }
 
-            string[] arguments = [..argGroups.Where(g => g.Key).SelectMany(g => g), commandPath, .. argGroups.Where(g => !g.Key).SelectMany(g => g)];
+            arguments.Add(commandPath);
+
+            if (commandArguments != null)
+            {
+                arguments.AddRange(commandArguments.Except(rollForwardArgument));
+            }
+
             return CreateCommandSpec(host, arguments);
         }
 

@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.CommandFactory
 
                 if (toolManifestPackage.RollForward || allowRollForward)
                 {
-                    arguments.CommandArguments = ["--roll-forward", "Major", .. arguments.CommandArguments];
+                    arguments.CommandArguments = ["--allow-roll-forward", .. arguments.CommandArguments];
                 }
 
                 return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
