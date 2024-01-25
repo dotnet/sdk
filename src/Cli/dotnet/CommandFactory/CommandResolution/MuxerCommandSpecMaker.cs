@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Eventing.Reader;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.CommandFactory
@@ -22,25 +23,27 @@ namespace Microsoft.DotNet.CommandFactory
                 throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
             }
 
+            var rollForwardArgument = (commandArguments ?? Enumerable.Empty<string>()).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
+
+            if (rollForwardArgument.Any())
+            {
+                arguments.Add("--roll-forward");
+                arguments.Add("Major");
+            }
+
+            arguments.Add(commandPath);
+
             if (commandArguments != null)
             {
-                var rollForwardArgument = (commandArguments ?? Enumerable.Empty<string>()).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
-
                 if (rollForwardArgument.Any())
                 {
-                    arguments.Add("--roll-forward");
-                    arguments.Add("Major");
+                    arguments.AddRange(commandArguments.Except(rollForwardArgument));
                 }
-
-                arguments.Add(commandPath);
-
-                arguments.AddRange(commandArguments.Except(rollForwardArgument));
+                else
+                {
+                    arguments.AddRange(commandArguments);
+                }
             }
-            else
-            {
-                arguments.Add(commandPath);
-            }
-
             return CreateCommandSpec(host, arguments);
         }
 
