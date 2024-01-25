@@ -30,8 +30,8 @@
     <BuildArgs>$(BuildArgs) /p:DOTNET_INSTALL_DIR=$(DotNetRoot)</BuildArgs>
 
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:AspNetCoreInstallerRid=$(OverrideTargetRid)</BuildArgs>
-    <!-- core-sdk always wants to build portable on OSX and FreeBSD -->
-    <BuildArgs Condition="'$(TargetOS)' == 'freebsd'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
+    <!-- installer always wants to build portable on FreeBSD -->
+    <BuildArgs Condition="'$(TargetOS)' == 'freebsd' and '$(DotNetBuildFromSource)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:CoreSetupRid=$(OverrideTargetRid)</BuildArgs>
 
     <!-- Consume the source-built Core-Setup and toolset. This line must be removed to source-build CLI without source-building Core-Setup first. -->
