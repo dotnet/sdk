@@ -227,7 +227,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 // If we are installing the workload set, record its version and the previous version so that we can roll back if necessary.
                 _newWorkloadSetPath = path;
-                _previousWorkloadSetVersion = installedVersion?.ToString();
+                var parentDirectory = new DirectoryInfo(Path.GetDirectoryName(Path.GetDirectoryName(msi.MsiPath)));
+                _previousWorkloadSetVersion = parentDirectory.EnumerateDirectories().Select(d => d.Name).Where(n => !n.Equals(version))?.Max();
             }
 
             InstallAction plannedAction = PlanPackage(msi, state, installAction, installedVersion, out IEnumerable<string> relatedProducts);
