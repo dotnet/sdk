@@ -28,18 +28,18 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithRollForwardOptionItShouldIncludeRollForwardInNativeHost()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool run $TOOLCOMMAND$ --allow-roll-forward");
+            var parseResult = Parser.Instance.Parse($"dotnet tool run dotnet-a --allow-roll-forward");
 
             var toolRunCommand = new ToolRunCommand(parseResult);
 
-            (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("dotnet-a");
+            (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("a");
             IEnumerable<string> testForwardArgument = Enumerable.Empty<string>();
 
-            var result = localToolsCommandResolver.Resolve(new CommandResolverArguments()
+            var result = localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
             {
                 CommandName = "dotnet-a",
-                CommandArguments = (toolRunCommand._allowRollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(testForwardArgument)
-            });
+                CommandArguments = testForwardArgument
+            }, toolRunCommand._allowRollForward); 
 
             result.Should().NotBeNull();
             result.Args.Should().Contain("--roll-forward", "Major", fakeExecutable.Value);
@@ -48,21 +48,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void WhenRunWithoutRollForwardOptionItShouldNotIncludeRollForwardInNativeHost()
         {
-            var parseResult = Parser.Instance.Parse($"dotnet tool run $TOOLCOMMAND$");
+            var parseResult = Parser.Instance.Parse($"dotnet tool run dotnet-a");
 
             var toolRunCommand = new ToolRunCommand(parseResult);
 
-            (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("dotnet-a");
+            (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("a");
             IEnumerable<string> testForwardArgument = Enumerable.Empty<string>();
 
-            var result = localToolsCommandResolver.Resolve(new CommandResolverArguments()
+            var result = localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
             {
                 CommandName = "dotnet-a",
-                CommandArguments = (toolRunCommand._allowRollForward != false ? new List<string> { "--roll-forward", "Major" } : Enumerable.Empty<string>()).Concat(testForwardArgument)
-            });
+                CommandArguments = testForwardArgument
+            }, toolRunCommand._allowRollForward);
 
             result.Should().NotBeNull();
             result.Args.Should().Contain(fakeExecutable.Value);
+            result.Args.Should().NotContain("--roll-forward", "Major");
         }
 
         private (FilePath, LocalToolsCommandResolver) DefaultSetup(string toolCommand)
