@@ -7,13 +7,12 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
 {
     /// <summary>
     /// Implements the logic of filtering API.
-    /// Reads the file with the list of attributes, types, members in DocId format.
     /// </summary>
-    /// <param name="docIdsFiles">List of files which contain DocIds to operate on.</param>
-    /// <param name="includeDocIds">Determines if DocIds should be included or excluded.  Defaults to false which excludes specified DocIds.</param>
-    public class DocIdSymbolFilter(IEnumerable<string>? docIdsFiles = null, bool includeDocIds = false) : ISymbolFilter
+    /// <param name="docIds">List of DocIDs to operate on.</param>
+    /// <param name="includeDocIds">Determines if DocIds should be included or excluded. Defaults to false which excludes specified DocIds.</param>
+    public class DocIdSymbolFilter(IEnumerable<string> docIds, bool includeDocIds = false) : ISymbolFilter
     {
-        private readonly HashSet<string> _docIds = new(ReadDocIdsAttributes(docIdsFiles));
+        private readonly HashSet<string> _docIds = new(docIds);
 
         /// <summary>
         /// Determines if DocIds should be included or excluded.
@@ -37,44 +36,33 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         }
 
         /// <summary>
-        /// Add a single DocID to the filtered set.
+        /// Create a DocIdSymbolFilter from a list of files which contain DocIds.
+        /// Reads the file with the list of attributes, types, members in DocId format.
         /// </summary>
-        /// <param name="docId">DocID to add to the filtered set.</param>
-        public void Add(string docId)
+        /// <param name="docIdsFiles">List of files which contain DocIds to operate on.</param>
+        /// <param name="includeDocIds">Determines if DocIds should be included or excluded. Defaults to false which excludes specified DocIds.</param>
+        /// <returns></returns>
+        public static DocIdSymbolFilter CreateFromFiles(IEnumerable<string> docIdsFiles, bool includeDocIds = false)
         {
-            _docIds.Add(docId);
-        }
-
-        /// <summary>
-        /// Add multiple docIDs to the filtered set.
-        /// </summary>
-        /// <param name="docIds">DocIDs to add to the filtered set.</param>
-        public void AddRange(IEnumerable<string> docIds)
-        {
-            _docIds.UnionWith(docIds);
-        }
-
-        private static IEnumerable<string> ReadDocIdsAttributes(IEnumerable<string>? docIdsToExcludeFiles)
-        {
-            if (docIdsToExcludeFiles is null)
+            static IEnumerable<string> ReadDocIdsAttributes(IEnumerable<string> docIdsToExcludeFiles)
             {
-                yield break;
-            }
-
-            foreach (string docIdsToExcludeFile in docIdsToExcludeFiles)
-            {
-                foreach (string id in File.ReadAllLines(docIdsToExcludeFile))
+                foreach (string docIdsToExcludeFile in docIdsToExcludeFiles)
                 {
+                    foreach (string id in File.ReadAllLines(docIdsToExcludeFile))
+                    {
 #if NET
                     if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith('#') && !id.StartsWith("//"))
 #else
-                    if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith("#") && !id.StartsWith("//"))
+                        if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith("#") && !id.StartsWith("//"))
 #endif
-                    {
-                        yield return id.Trim();
+                        {
+                            yield return id.Trim();
+                        }
                     }
                 }
             }
+
+            return new(ReadDocIdsAttributes(docIdsFiles), includeDocIds);
         }
     }
 }

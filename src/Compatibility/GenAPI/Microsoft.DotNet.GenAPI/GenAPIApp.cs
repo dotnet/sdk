@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.GenAPI
         // public API behavior in the language / compiler that are not defined in all supported frameworks
         // see https://github.com/dotnet/roslyn/blob/859f94ef2d8bf88527217bc9ad7661b6fbdf33a9/src/Compilers/Core/Portable/Symbols/Attributes/AttributeDescription.cs#L343
         private static readonly string[] s_compilerAttributes =
-        {
+        [
             "T:System.Runtime.CompilerServices.IsExternalInit",
             "T:System.Runtime.CompilerServices.NullableAttribute",
             "T:System.Runtime.CompilerServices.NullableContextAttribute",
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.GenAPI
             "T:System.Runtime.CompilerServices.RequiredMemberAttribute",
             "T:System.Diagnostics.CodeAnalysis.SetsRequiredMembersAttribute",
             "T:System.Runtime.CompilerServices.CollectionBuilderAttribute"
-        };
+        ];
 
         /// <summary>
         /// Initialize and run Roslyn-based GenAPI tool.
@@ -63,40 +63,34 @@ namespace Microsoft.DotNet.GenAPI
 
             string headerFileText = ReadHeaderFile(headerFile);
 
-            ISymbolFilter typeFilter = new AccessibilitySymbolFilter(
-                respectInternals,
+            ISymbolFilter typeFilter = new AccessibilitySymbolFilter(respectInternals,
                 includeEffectivelyPrivateSymbols: true,
                 includeExplicitInterfaceImplementationSymbols: true);
 
-            DocIdSymbolFilter? includeAdditionalApiFilter = null;
-
-            if (includeApiFiles is not null)
+            if (includeApiFiles is not null || !excludeInternalCompilerAttributes)
             {
-                includeAdditionalApiFilter = new DocIdSymbolFilter(includeApiFiles, includeDocIds: true);
-            }
+                CompositeSymbolFilter compositeTypeFilter = new(mode: CompositeSymbolFilterMode.Or, typeFilter);
 
-            if (!excludeInternalCompilerAttributes)
-            {
-                includeAdditionalApiFilter ??= new DocIdSymbolFilter(includeDocIds: true);
-                includeAdditionalApiFilter.AddRange(s_compilerAttributes);
-            }
-
-            if (includeAdditionalApiFilter is not null)
-            {
-                CompositeSymbolFilter combinedTypeFilter = new()
+                if (includeApiFiles is not null)
                 {
-                    Mode = CompositeSymbolFilterMode.Or
-                };
-                combinedTypeFilter.Add(typeFilter);
-                combinedTypeFilter.Add(includeAdditionalApiFilter);
-                typeFilter = combinedTypeFilter;
+                    DocIdSymbolFilter includeApiFilesFilter = DocIdSymbolFilter.CreateFromFiles(includeApiFiles, includeDocIds: true);
+                    compositeTypeFilter.Add(includeApiFilesFilter);
+                }
+
+                if (!excludeInternalCompilerAttributes)
+                {
+                    DocIdSymbolFilter excludeInternalCompilerAttributesFilter = new(s_compilerAttributes, includeDocIds: true);
+                    compositeTypeFilter.Add(excludeInternalCompilerAttributesFilter);
+                }
+
+                typeFilter = compositeTypeFilter;
             }
 
             // Configure the symbol filter
             CompositeSymbolFilter symbolFilter = new();
             if (excludeApiFiles is not null)
             {
-                symbolFilter.Add(new DocIdSymbolFilter(excludeApiFiles));
+                symbolFilter.Add(DocIdSymbolFilter.CreateFromFiles(excludeApiFiles));
             }
             symbolFilter.Add(new ImplicitSymbolFilter());
             symbolFilter.Add(typeFilter);
@@ -105,7 +99,7 @@ namespace Microsoft.DotNet.GenAPI
             CompositeSymbolFilter attributeDataSymbolFilter = new();
             if (excludeAttributesFiles is not null)
             {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(excludeAttributesFiles));
+                attributeDataSymbolFilter.Add(DocIdSymbolFilter.CreateFromFiles(excludeAttributesFiles));
             }
             attributeDataSymbolFilter.Add(typeFilter);
 

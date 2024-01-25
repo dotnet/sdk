@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using System.Net.Http.Headers;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
@@ -11,20 +9,21 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// Implements the composite pattern, group the list of <see cref="ISymbol"/> and interact with them
     /// the same way as a single instance of a <see cref="ISymbol"/> object.
     /// </summary>
-    public sealed class CompositeSymbolFilter : ISymbolFilter
+    public sealed class CompositeSymbolFilter(CompositeSymbolFilterMode mode = CompositeSymbolFilterMode.And,
+        params ISymbolFilter[] symbolFilters) : ISymbolFilter
     {
-        private readonly List<ISymbolFilter> _filters = new();
+        private readonly List<ISymbolFilter> _filters = new(symbolFilters);
 
         /// <summary>
         /// Behavior of combination.  Default is `And` which requires all filters to include the symbol.
         /// `Or` will include the symbol if any filter includes the symbol.
         /// </summary>
-        public CompositeSymbolFilterMode Mode { get; set; } = CompositeSymbolFilterMode.And;
+        public CompositeSymbolFilterMode Mode { get; } = mode;
 
         /// <summary>
         /// List on inner filters.
         /// </summary>
-        public IReadOnlyList<ISymbolFilter> Filters { get => _filters.AsReadOnly(); }
+        public IReadOnlyList<ISymbolFilter> Filters => _filters.AsReadOnly();
 
         /// <summary>
         /// Determines whether the <see cref="ISymbol"/> should be included.

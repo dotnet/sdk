@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
         private static SyntaxTree GetSyntaxTree(string syntax) =>
             CSharpSyntaxTree.ParseText(syntax);
 
-        private void RunTest(string original,
+        private static void RunTest(string original,
             string expected,
             bool includeInternalSymbols = true,
             bool includeEffectivelyPrivateSymbols = true,
@@ -45,23 +45,19 @@ namespace Microsoft.DotNet.GenAPI.Tests
 
             if (includeDocIdFile is not null)
             {
-                CompositeSymbolFilter combinedTypeFilter = new()
-                {
-                    Mode = CompositeSymbolFilterMode.Or,
-                };
-                combinedTypeFilter.Add(typeFilter);
-                combinedTypeFilter.Add(new DocIdSymbolFilter(new[] { includeDocIdFile }, includeDocIds: true));
-                typeFilter = combinedTypeFilter;
+                typeFilter = new CompositeSymbolFilter(mode: CompositeSymbolFilterMode.Or,
+                    typeFilter,
+                    DocIdSymbolFilter.CreateFromFiles(new[] { includeDocIdFile }, includeDocIds: true));
             }
 
-            CompositeSymbolFilter symbolFilter = new CompositeSymbolFilter()
-                .Add(new ImplicitSymbolFilter())
-                .Add(typeFilter);
+            CompositeSymbolFilter symbolFilter = new(default,
+                new ImplicitSymbolFilter(),
+                typeFilter);
 
             CompositeSymbolFilter attributeDataSymbolFilter = new();
             if (excludedAttributeFile is not null)
             {
-                attributeDataSymbolFilter.Add(new DocIdSymbolFilter(new string[] { excludedAttributeFile }));
+                attributeDataSymbolFilter.Add(DocIdSymbolFilter.CreateFromFiles(new[] { excludedAttributeFile }));
             }
             attributeDataSymbolFilter.Add(typeFilter);
 
