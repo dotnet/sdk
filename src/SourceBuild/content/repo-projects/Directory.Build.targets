@@ -75,6 +75,22 @@
       <SourceBuildSources>$(SourceBuildSources);$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName)</SourceBuildSources>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <!-- When not building source-only, repositories lagging behind on the .NET SDK (e.g. tooling repos)
+          that need to utilize a VS-aligned version for development purposes may not have the latest product
+          daily build feed in their NuGet.config. This means that when a newer globally-specified .NET SDK
+          attempts to restore shared framework packages, they will not be found. Work around this by
+          ensuring that repos have the supporting SDK feed. Note that this is not required when the SDK
+          in use is a released SDK.
+
+          Currently we are using a preview .NET 9 SDK and not all repos are using the Net 9 SDK
+          If either of these are not true, set below to false.
+      -->
+      <AddNetSdkSupportingFeed>true</AddNetSdkSupportingFeed>
+      <NetSdkSupportingFeedName>net-sdk-supporting-feed</NetSdkSupportingFeedName>
+      <NetSdkSupportingFeed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json</NetSdkSupportingFeed>
+    </PropertyGroup>
+
     <!-- Update the detected or manually specified NuGetConfigFile, but also allow multiple. -->
     <ItemGroup>
       <NuGetConfigFiles Include="$(NuGetConfigFile)" />
@@ -109,6 +125,12 @@
                             SourceName="$(ExtraSourcesNuGetSourceName)"
                             SourcePath="$(ExtraRestoreSourcePath)"
                             Condition="'$(ExtraRestoreSourcePath)' != ''" />
+
+    <!-- See root Directory.Build.props for value. -->
+    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+                            SourceName="$(NetSdkSupportingFeedName)"
+                            SourcePath="$(NetSdkSupportingFeed)"
+                            Condition="'$(AddNetSdkSupportingFeed)' == 'true'" />
 
     <UpdateNuGetConfigPackageSourcesMappings
       NuGetConfigFile="%(NuGetConfigFiles.Identity)"
