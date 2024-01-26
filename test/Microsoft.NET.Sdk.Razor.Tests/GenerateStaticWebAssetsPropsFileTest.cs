@@ -304,67 +304,6 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/24257")]
-        public void Fails_WhenStaticWebAsset_HaveDifferentContentRoot()
-        {
-            // Arrange
-            var expectedError = "Static web assets have different 'ContentRoot' metadata values " +
-                @"'$(MSBuildThisFileDirectory)..\staticwebassets' and '..\staticwebassets' " +
-                $"for '{Path.Combine("wwwroot", "js", "sample.js")}' and '{Path.Combine("wwwroot", "css", "site.css")}'.";
-
-            var errorMessages = new List<string>();
-            var buildEngine = new Mock<IBuildEngine>();
-            buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-                .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-            var task = new GenerateStaticWebAsssetsPropsFile
-            {
-                BuildEngine = buildEngine.Object,
-                StaticWebAssets = new TaskItem[]
-                {
-                    CreateItem(Path.Combine("wwwroot","js","sample.js"), new Dictionary<string,string>
-                    {
-                        ["SourceType"] = "Discovered",
-                        ["SourceId"] = "MyLibrary",
-                        ["ContentRoot"] = @"$(MSBuildThisFileDirectory)..\staticwebassets",
-                        ["BasePath"] = "_content/mylibrary",
-                        ["RelativePath"] = Path.Combine("js", "sample.js"),
-                        ["AssetKind"] = "All",
-                        ["AssetMode"] = "All",
-                        ["AssetRole"] = "Primary",
-                        ["RelatedAsset"] = "",
-                        ["AssetTraitName"] = "",
-                        ["AssetTraitValue"] = "",
-                        ["CopyToOutputDirectory"] = "Never",
-                        ["CopyToPublishDirectory"] = "PreserveNewest"
-                    }),
-                    CreateItem(Path.Combine("wwwroot","css","site.css"), new Dictionary<string,string>
-                    {
-                        ["SourceType"] = "Discovered",
-                        ["SourceId"] = "MyLibrary",
-                        ["ContentRoot"] = @"..\staticwebassets",
-                        ["BasePath"] = "_content/mylibrary",
-                        ["RelativePath"] = Path.Combine("css", "site.css"),
-                        ["AssetKind"] = "All",
-                        ["AssetMode"] = "All",
-                        ["AssetRole"] = "Primary",
-                        ["RelatedAsset"] = "",
-                        ["AssetTraitName"] = "",
-                        ["AssetTraitValue"] = "",
-                        ["CopyToOutputDirectory"] = "Never",
-                        ["CopyToPublishDirectory"] = "PreserveNewest"
-                    })
-                }
-            };
-
-            // Act
-            var result = task.Execute();
-
-            // Assert
-            result.Should().BeFalse();
-            errorMessages.Should().ContainSingle(message => message == expectedError);
-        }
-
         [Fact]
         public void WritesPropsFile_WhenThereIsAtLeastOneStaticAsset()
         {
