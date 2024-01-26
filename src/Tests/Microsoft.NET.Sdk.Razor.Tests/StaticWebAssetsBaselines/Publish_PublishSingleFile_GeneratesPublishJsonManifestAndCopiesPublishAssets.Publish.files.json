@@ -1,5 +1,0 @@
-[
-  "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\bundle\\ComponentApp.styles.css",
-  "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
-  "${OutputPath}\\wwwroot\\ComponentApp.styles.css"
-]
