@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Build.Tasks
         /// <summary>
         /// Whether to work in offline mode (remove all internet sources) or online mode (remove only authenticated sources)
         /// </summary>
-        public bool BuildWithOnlineSources { get; set; }
+        public bool BuildWithOnlineFeeds { get; set; }
 
         /// <summary>
         /// A list of all source-build specific NuGet sources.
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 .Distinct()
                 .ToArray();
 
-            if (!BuildWithOnlineSources)
+            if (!BuildWithOnlineFeeds)
             {
                 // When building offline remove all packageSourceMappings.
                 pkgSrcMappingElement?.ReplaceNodes(new XElement("clear"));
