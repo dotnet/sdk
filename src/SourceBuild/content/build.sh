@@ -122,7 +122,7 @@ while [[ $# > 0 ]]; do
       properties="$properties /p:DotNetBuildSourceOnly=true"
       ;;
     -online)
-      properties="$properties /p:DotNetBuildWithOnlineSources=true"
+      properties="$properties /p:DotNetBuildWithOnlineFeeds=true"
       ;;
     -poison)
       properties="$properties /p:EnablePoison=true"
