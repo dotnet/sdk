@@ -10,7 +10,7 @@
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="diagnostics" />
     <RepositoryReference Include="runtime" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
 </Project>

@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <!-- Toolsets -->
-    <RepositoryReference Include="source-build-reference-packages" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <RepositoryReference Include="source-build-reference-packages" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <RepositoryReference Include="arcade" />
 
     <!-- Product Repos -->
@@ -22,7 +22,7 @@
     <RepositoryReference Include="emsdk" />
     <RepositoryReference Include="cecil" />
     <RepositoryReference Include="symreader" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
@@ -43,7 +43,7 @@
     <RepositoryReference Include="installer" />
 
     <!-- Package source-build artifacts -->
-    <RepositoryReference Include="package-source-build" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <RepositoryReference Include="package-source-build" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
     <!-- Testing. -->
     <RepositoryReference Include="scenario-tests" />

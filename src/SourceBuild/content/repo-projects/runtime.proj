@@ -24,7 +24,7 @@
     <BuildArgs>$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <PortableBuild Condition="'$(PortableBuild)' == ''">false</PortableBuild>
     <BuildNonPortable>true</BuildNonPortable>
     <BuildNonPortable Condition="'$(PortableBuild)' == 'true'">false</BuildNonPortable>
@@ -38,14 +38,14 @@
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="cecil" />
     <RepositoryReference Include="symreader" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
   <ItemGroup>
     <SourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_X" Version="%24(MicrosoftCodeAnalysisVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_4" Version="%24(MicrosoftCodeAnalysisVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_LatestVS" Version="%24(MicrosoftCodeAnalysisVersion)" />

@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="xdt" />
   </ItemGroup>

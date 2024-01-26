@@ -19,6 +19,6 @@
              StopOnFirstFailure="true" />
   </Target>
 
-  <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+  <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
 </Project>

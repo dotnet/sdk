@@ -30,12 +30,12 @@
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <RepositoryReference Include="runtime" />
   </ItemGroup>
 
   <ItemGroup>
-    <SourceBuiltSdkOverride Include="@(WindowsDesktopSdkOverride)" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <SourceBuiltSdkOverride Include="@(WindowsDesktopSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
 </Project>
