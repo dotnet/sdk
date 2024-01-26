@@ -61,5 +61,9 @@
             Skip="true"
             Issue=""
             Reason="Requires props file not in installer repo"/>
+    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAHelloWorldProject.It_publishes_portable_apps_to_the_publish_folder_and_the_app_should_run"
+            Skip="true"
+            Issue="https://github.com/dotnet/sdk/pull/3574"
+            Reason="Requires the 1.1 runtime, renenable when removed"/>
   </SkippedTests>
 </Tests>

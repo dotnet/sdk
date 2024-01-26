@@ -4,10 +4,6 @@
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_links_simple_app_without_analysis_warnings_and_it_runs"
-            Skip="true"
-            Issue=""
-            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_does_not_include_leftover_artifacts_on_second_run"
             Skip="true"
             Issue=""
@@ -149,10 +145,6 @@
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_TrimMode_applies_to_IsTrimmable_assemblies"
-            Skip="true"
-            Issue=""
-            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
-    <Method Name="Microsoft.NET.Build.Tests.AppHostTests.It_builds_a_runnable_apphost_by_default"
             Skip="true"
             Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
