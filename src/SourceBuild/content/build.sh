@@ -142,7 +142,7 @@ while [[ $# > 0 ]]; do
     -use-mono-runtime)
       properties="$properties /p:SourceBuildUseMonoRuntime=true"
       ;;
-    --with-packages)
+    -with-packages)
       CUSTOM_PACKAGES_DIR="$(cd -P "$2" && pwd)"
       if [ ! -d "$CUSTOM_PACKAGES_DIR" ]; then
           echo "Custom prviously built packages directory '$CUSTOM_PACKAGES_DIR' does not exist"
@@ -150,7 +150,7 @@ while [[ $# > 0 ]]; do
       fi
       shift
       ;;
-    --with-sdk)
+    -with-sdk)
       CUSTOM_SDK_DIR="$(cd -P "$2" && pwd)"
       if [ ! -d "$CUSTOM_SDK_DIR" ]; then
           echo "Custom SDK directory '$CUSTOM_SDK_DIR' does not exist"
