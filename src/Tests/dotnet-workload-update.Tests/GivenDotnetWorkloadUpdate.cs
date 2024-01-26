@@ -13,6 +13,7 @@ using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Workload.Search.Tests;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -188,6 +189,55 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             installer.CachePath.Should().BeNull();
             installer.InstalledPacks.Count.Should().Be(8);
             installer.InstalledPacks.Where(pack => pack.Id.ToString().Contains("Android")).Count().Should().Be(8);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void UpdateViaWorkloadSet(bool upgrade)
+        {
+            var versionNumber = "8.0.0";
+            var workloadSetContents = @"
+{
+""android"": ""2.3.4/8.0.200""
+}
+";
+            var nugetPackageDownloader = new MockNuGetPackageDownloader();
+            var workloadResolver = new MockWorkloadResolver(new WorkloadInfo[] { new WorkloadInfo(new WorkloadId("android"), string.Empty) });
+            var workloadInstaller = new MockPackWorkloadInstaller(
+                Path.Combine(Path.GetTempPath(), "dotnetTestPat", "userProfileDir"),
+                installedWorkloads: new List<WorkloadId>() { new WorkloadId("android")},
+                workloadSetContents: workloadSetContents)
+            {
+                WorkloadResolver = workloadResolver
+            };
+            var oldVersion = upgrade ? "2.3.2" : "2.3.6";
+            var workloadManifestUpdater = new MockWorkloadManifestUpdater(
+                manifestUpdates: new ManifestUpdateWithWorkloads[] {
+                    new ManifestUpdateWithWorkloads(new ManifestVersionUpdate(new ManifestId("android"), new ManifestVersion(oldVersion), "8.0.200", new ManifestVersion("2.3.4"), "8.0.200"), Enumerable.Empty<KeyValuePair<WorkloadId, WorkloadDefinition>>().ToDictionary())
+                },
+                fromWorkloadSet: true);
+            var resolverFactory = new MockWorkloadResolverFactory(Path.Combine(Path.GetTempPath(), "dotnetTestPath"), versionNumber, workloadResolver, "userProfileDir");
+            var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater);
+
+            var installStatePath = Path.Combine(Path.GetTempPath(), "dotnetTestPath", "metadata", "workloads", versionNumber, "InstallState", "default.json");
+            var contents = new InstallStateContents();
+            contents.UseWorkloadSets = true;
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
+                File.WriteAllText(installStatePath, contents.ToString());
+                updateCommand.Execute();
+                var newContents = InstallStateContents.FromPath(installStatePath);
+                newContents.WorkloadSetVersion.Should().Be("8.0.0");
+            }
+            finally
+            {
+                File.Delete(installStatePath);
+            }
+
+            workloadInstaller.InstalledManifests.Count.Should().Be(1);
+            workloadInstaller.InstalledManifests[0].manifestUpdate.NewVersion.ToString().Should().Be("2.3.4");
         }
 
         [Fact]
