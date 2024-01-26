@@ -7,17 +7,17 @@
     <!-- BuildActions includes -publish which is not supported by the aspnetcore build script. -->
     <BuildActions>$(FlagParameterPrefix)restore $(FlagParameterPrefix)build $(FlagParameterPrefix)pack</BuildActions>
     <!-- On Windows, build all for the VB PoC -->
-    <BuildActions Condition="'$(DotNetBuildVertical)' == 'true' and '$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore $(FlagParameterPrefix)all $(FlagParameterPrefix)pack</BuildActions>
+    <BuildActions Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore $(FlagParameterPrefix)all $(FlagParameterPrefix)pack</BuildActions>
 
     <BuildArgs Condition="'$(OverrideTargetArch)' == ''">$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
     <BuildArgs Condition="'$(OverrideTargetArch)' != ''">$(BuildArgs) $(FlagParameterPrefix)arch $(OverrideTargetArch)</BuildArgs>
-    <BuildArgs Condition="'$(DotNetBuildVertical)' != 'true' or '$(BuildOS)' != 'windows'">$(BuildArgs) $(FlagParameterPrefix)no-build-repo-tasks</BuildArgs>
-    <BuildArgs Condition="'$(DotNetBuildVertical)' != 'true' or '$(BuildOS)' != 'windows'">$(BuildArgs) $(FlagParameterPrefix)no-build-nodejs</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(BuildOS)' != 'windows'">$(BuildArgs) $(FlagParameterPrefix)no-build-repo-tasks</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(BuildOS)' != 'windows'">$(BuildArgs) $(FlagParameterPrefix)no-build-nodejs</BuildArgs>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
     <OverrideTargetRid Condition="'$(TargetOS)' == 'osx'">osx-$(TargetArchitecture)</OverrideTargetRid>
     <OverrideTargetRid Condition="'$(TargetOS)' == 'freebsd'">freebsd-$(TargetArchitecture)</OverrideTargetRid>
@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn" />
@@ -42,7 +42,7 @@
     <EnvironmentVariables Include="warn_as_error=false" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <!--
       From aspnetcore Versions.props:
           Versions of Microsoft.CodeAnalysis packages referenced by analyzers shipped in the SDK.

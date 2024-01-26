@@ -31,7 +31,7 @@
 
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:AspNetCoreInstallerRid=$(OverrideTargetRid)</BuildArgs>
     <!-- installer always wants to build portable on FreeBSD -->
-    <BuildArgs Condition="'$(TargetOS)' == 'freebsd' and '$(DotNetBuildFromSource)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
+    <BuildArgs Condition="'$(TargetOS)' == 'freebsd' and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:CoreSetupRid=$(OverrideTargetRid)</BuildArgs>
 
     <!-- Consume the source-built Core-Setup and toolset. This line must be removed to source-build CLI without source-building Core-Setup first. -->
@@ -46,7 +46,7 @@
     <RepositoryReference Include="emsdk" />
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <RepositoryReference Include="nuget-client" />
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="runtime" />

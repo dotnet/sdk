@@ -61,11 +61,11 @@
     <BuildArgs Condition="'$(CrossBuild)' == 'true'">$(BuildArgs) /p:CrossBuild=$(CrossBuild)</BuildArgs>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(DotNetBuildVertical)' == 'true'">
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <BuildArgs>$(BuildArgs) /p:ArcadeBuildVertical=true</BuildArgs>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(DotNetBuildFromSource)' == 'true'">
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <BuildArgs>$(BuildArgs) /p:ArcadeBuildFromSource=true</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PreviouslySourceBuiltNupkgCacheDir="$(PrebuiltSourceBuiltPackagesPath)"</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:ReferencePackageNupkgCacheDir="$(ReferencePackagesDir)"</BuildArgs>
@@ -139,11 +139,9 @@
     <EnvironmentVariables Include="DotNetPackageVersionPropsPath=$(PackageVersionPropsPath)" />
   </ItemGroup>
 
-  <!-- VBPOC - I'm not sure about this. Some of this may be needed for VB, but I'm not sure why some pieces like
-       DotNetBuildFromSource are in there for source-build at all. -->
   <ItemGroup>
-    <EnvironmentVariables Include="DotNetBuildFromSource=true" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-    <EnvironmentVariables Include="DotNetBuildVertical=true" Condition="'$(DotNetBuildVertical)' == 'true'" />
+    <EnvironmentVariables Include="DotNetBuildFromSource=true" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <EnvironmentVariables Include="DotNetBuildVertical=true" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
@@ -176,7 +174,7 @@
                             Condition="'$(UseBootstrapArcade)' == 'true'" />
 
     <ArcadeSharedFrameworkSdkOverride Include="Microsoft.DotNet.SharedFramework.Sdk" Group="ARCADE_SHARED_FX_SDK" Version="$(arcadeOutputPackageVersion)" />
-    <WindowsDesktopSdkOverride Include="Microsoft.Net.Sdk.WindowsDesktop" Group="WINDOWS_DESKTOP" Location="$(ToolsDir)EmptySdk" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <WindowsDesktopSdkOverride Include="Microsoft.Net.Sdk.WindowsDesktop" Group="WINDOWS_DESKTOP" Location="$(ToolsDir)EmptySdk" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
     <!-- CLI internal version is statically set by us to a version that will never show up in the wild.

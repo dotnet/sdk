@@ -21,7 +21,7 @@
       PoisonPrebuiltPackages" />
 
   <Target Name="UnpackTarballs"
-          Condition="'$(DotNetBuildFromSource)' == 'true'"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)UnpackTarballs.complete" >
     <PropertyGroup>
@@ -127,7 +127,7 @@
 
   <!-- Extract Arcade prebuilt package into the bootstrap folder and prepare it. -->
   <Target Name="ExtractToolPackage"
-          Condition="'$(DotNetBuildFromSource)' == 'true'"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'"
           DependsOnTargets="UnpackTarballs"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">

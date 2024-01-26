@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    <_SuppressSdkImports Condition="'$(DotNetBuildFromSource)' == 'true'">true</_SuppressSdkImports>
+    <_SuppressSdkImports Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</_SuppressSdkImports>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <DotNetBuildOrchestrator>true</DotNetBuildOrchestrator>
   </PropertyGroup>
@@ -118,10 +118,8 @@
     <IsShipping>false</IsShipping>
     <!-- It's not unusual to build with a preview SDK -->
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
-    <!-- Builds from the VMR are by definition vertical builds. -->
-    <DotNetBuildVertical Condition="'$(DotNetBuildVertical)' == '' and '$(DotNetBuildFromSource)' != 'true'">true</DotNetBuildVertical>
-    <!-- By default, the VMR builds with online sources. -->
-    <DotNetBuildWithOnlineSources Condition="'$(DotNetBuildWithOnlineSources)' == '' and '$(DotNetBuildVertical)' == 'true'">true</DotNetBuildWithOnlineSources>
+    <!-- By default, the VMR builds with online sources when not building source-only. -->
+    <DotNetBuildWithOnlineSources Condition="'$(DotNetBuildWithOnlineSources)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</DotNetBuildWithOnlineSources>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -157,8 +155,8 @@
 
     <!-- When SB mode, the initial arcade is unzipped to a the "ArcadeBootStrap" dir.
          When running in VBPOC, the bootstrap package is the arcade restored at the beginning of the build. -->
-    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildFromSource)' == 'true'">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'ArcadeBootstrapPackage'))</ArcadeBootstrapPackageDir>
-    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildFromSource)' != 'true'">$(NuGetPackageRoot)</ArcadeBootstrapPackageDir>
+    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildSourceOnly)' == 'true'">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'ArcadeBootstrapPackage'))</ArcadeBootstrapPackageDir>
+    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(NuGetPackageRoot)</ArcadeBootstrapPackageDir>
 
     <!-- Shared output and intermediate output path folders that are architecture and configuration specific. -->
     <SharedOutputPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', '$(TargetArchitecture)', '$(Configuration)'))</SharedOutputPath>
