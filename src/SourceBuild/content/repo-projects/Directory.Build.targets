@@ -82,7 +82,7 @@
 
     <RemoveInternetSourcesFromNuGetConfig
       NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-      BuildWithOnlineSources="$(BuildWithOnlineSources)"
+      BuildWithOnlineSources="$(DotNetBuildWithOnlineSources)"
       KeepFeedPrefixes="@(KeepFeedPrefixes)"
       Condition="'$(DotNetBuildFromSource)' == 'true'" />
 
@@ -112,7 +112,7 @@
 
     <UpdateNuGetConfigPackageSourcesMappings
       NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-      BuildWithOnlineSources="$(BuildWithOnlineSources)"
+      BuildWithOnlineSources="$(DotNetBuildWithOnlineSources)"
       SourceBuildSources="$(SourceBuildSources)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />

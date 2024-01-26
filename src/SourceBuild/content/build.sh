@@ -119,10 +119,10 @@ while [[ $# > 0 ]]; do
     # Source-only settings
     -source-only|-so)
       sourceOnly=true
-      properties="$properties /p:DotNetBuildFromSource=true"
+      properties="$properties /p:DotNetBuildFromSource=true /p:DotNetBuildSourceOnly=true"
       ;;
     -online)
-      properties="$properties /p:BuildWithOnlineSources=true"
+      properties="$properties /p:DotNetBuildWithOnlineSources=true"
       ;;
     -poison)
       properties="$properties /p:EnablePoison=true"
