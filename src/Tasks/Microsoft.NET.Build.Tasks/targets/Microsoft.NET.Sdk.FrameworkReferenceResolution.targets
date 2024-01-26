@@ -121,7 +121,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 SilenceEnableSingleFileAnalyzerUnsupportedWarning="$(_SilenceEnableSingleFileAnalyzerUnsupportedWarning)"
                                 MinNonEolTargetFrameworkForSingleFile="$(_MinNonEolTargetFrameworkForSingleFile)"
                                 AotUseKnownRuntimePackForTarget="$(PublishAotUsingRuntimePack)"
-                                RuntimeIdentifier="$(RuntimeIdentifier)"
+                                RuntimeIdentifier="$(PublishRuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"
                                 RuntimeFrameworkVersion="$(RuntimeFrameworkVersion)"
                                 TargetLatestRuntimePatch="$(TargetLatestRuntimePatch)"
