@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
-using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install;
@@ -13,17 +12,23 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using System.Text.Json;
 using Microsoft.TemplateEngine.Edge.Constraints;
 using Microsoft.DotNet.Cli.Utils;
+//using System.Management;
+using Microsoft.Management.Infrastructure;
+using System.Xml.Linq;
 
-namespace Microsoft.DotNet.Cli.Workload.Install.Tests
+namespace Microsoft.DotNet.MsiInstallerTests
 {
-    public class MsiInstallerTests : SdkTest
+    public class WorkloadTests : SdkTest, IDisposable
     {
         //  Remote execution notes:
         //  psexec / uses Admin share (C$)
         //  ddrits / cloudtest
         //  sysinternals: filemon / regmon
+        //  May need to run winrm quickconfig to use WMI
         //  How to apply snapshot via C#: https://stackoverflow.com/questions/60173096/hyperv-wmi-apply-snapshot-in-c-sharp
         //  Also see https://stackoverflow.com/questions/1735978/manipulate-hyper-v-from-net
+        //  Official documentation?: https://learn.microsoft.com/en-us/windows/win32/hyperv_v2/exporting-virtual-machines
+        //  How to rename a snapshot: https://stackoverflow.com/questions/7599217/setting-hyper-v-snapshots-name-programmatically
 
 
         //  Reminder: Enable "Remote Service Management" firewall rule so that PSExec will run more quickly
@@ -68,10 +73,36 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 }
                 """;
 
+        VirtualMachine VM { get; }
 
-        public MsiInstallerTests(ITestOutputHelper log) : base(log)
+        public WorkloadTests(ITestOutputHelper log) : base(log)
         {
-            
+            VM = new VirtualMachine(Log);
+        }
+
+        public void Dispose()
+        {
+            VM.Dispose();
+        }
+
+
+        [Fact]
+        public async Task UseWMI()
+        {
+            var snapshots = VM.GetSnapshots();
+
+            foreach (var snapshot in snapshots)
+            {
+                Log.WriteLine(snapshot.id + ": " + snapshot.name);
+
+                //await vm.RenameSnapshot(snapshot.id, snapshot.name + " - renamed");
+            }
+
+            //await VM.CreateSnapshotAsync("New test snapshot");
+
+            //await VM.ApplySnapshotAsync("9BA74A78-D221-436E-9875-0A3BF86CEF4A");
+
+            await Task.Yield();
         }
 
         [Fact]
@@ -106,8 +137,37 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             RunRemoteCommand("dotnet", "--version")
                 .Should()
                 .HaveStdOut("7.0.401");
+        }
+
+        [Fact]
+        public void SdkInstallation2()
+        {
+            VM.RunCommand("dotnet", "--version")
+                .Should()
+                .HaveStdOut("7.0.401");
+
+            VM.RunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
+
+            new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
+                .Should()
+                .Exist();
+
+            //RunRemoteCommand("dotnet", "--version")
+            //    .Should()
+            //    .HaveStdOut(SdkInstallerVersion);
+
+            //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
+
+            //new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
+            //    .Should()
+            //    .NotExist();
+
+            //RunRemoteCommand("dotnet", "--version")
+            //    .Should()
+            //    .HaveStdOut("7.0.401");
 
         }
+
 
         [Fact]
         public void WorkloadInstallation()
@@ -238,14 +298,14 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         void TempTest()
         {
             //CleanupInstallState();
-            //RunRemoteCommand("dotnet", "--version")
-            //    .Should()
-            //    .HaveStdOut("7.0.401");
+            RunRemoteCommand("dotnet", "--version")
+                .Should()
+                .HaveStdOut("7.0.401");
 
             //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
             //DeployStage2Sdk();
-            CleanupInstallState();
-            RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
+            //CleanupInstallState();
+            //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
         }
 
         void DeployStage2Sdk()
@@ -315,6 +375,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             return result;
         }
+
+        
 
         class RemoteCommand : TestCommand
         {

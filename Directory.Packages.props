@@ -39,6 +39,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)"/>
     <PackageVersion Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" />
+    <PackageVersion Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
     <PackageVersion Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
     <PackageVersion Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftNETStringToolsPackageVersion)" />
@@ -89,6 +90,7 @@
     <PackageVersion Include="System.Composition.TypedParts" Version="$(SystemCompositionTypedPartsPackageVersion)"/>
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerPackageVersion)" />
     <PackageVersion Include="System.Drawing.Common" Version="$(SystemDrawingCommonPackageVersion)" />
+    <PackageVersion Include="System.Management" Version="$(MicrosoftNETCoreAppRefPackageVersion)" />
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <!-- System.Reflection.Metadata and System.Collections.Immutable cannot be pinned here because of hard dependencies within Roslyn on specific versions that have to work both here and in VS -->
     <PackageVersion Include="System.Reflection.MetadataLoadContext" Version="$(SystemReflectionMetadataLoadContextVersion)" />
