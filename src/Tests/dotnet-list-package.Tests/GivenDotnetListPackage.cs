@@ -345,5 +345,23 @@ class Program
                 .Should()
                 .Pass();
         }
+
+        [Fact]
+        public void ItRecognizesRelativePaths()
+        {
+            var testAssetName = "TestAppSimple";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(testAssetName)
+                .WithSource();
+
+            var projectDirectory = testAsset.Path;
+            var relativePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), projectDirectory);
+
+            new ListPackageCommand(Log, relativePath)
+                .WithWorkingDirectory(Directory.GetCurrentDirectory())
+                .Execute()
+                .Should()
+                .Pass();
+        }
     }
 }
