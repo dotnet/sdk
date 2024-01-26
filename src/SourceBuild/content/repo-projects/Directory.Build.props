@@ -58,7 +58,8 @@
     <BuildArgs>$(BuildArgs) /p:DotNetBuildRepo=true</BuildArgs>
     <!-- Indicate that the build is being run from the orchestrator -->
     <BuildArgs>$(BuildArgs) /p:DotNetBuildOrchestrator=true</BuildArgs>
-    <BuildArgs Condition="'$(CrossBuild)' == 'true'">$(BuildArgs) /p:CrossBuild=$(CrossBuild)</BuildArgs>
+    <BuildArgs Condition="'$(CrossBuild)' == 'true'">$(BuildArgs) /p:CrossBuild=true</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildSkipTests)' == 'true'">$(BuildArgs) /p:DotNetBuildSkipTests=true</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
