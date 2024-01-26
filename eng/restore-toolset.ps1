@@ -26,7 +26,7 @@ function InitializeCustomSDKToolset {
   InstallDotNetSharedFramework "5.0.0"
   InstallDotNetSharedFramework "6.0.0"
   InstallDotNetSharedFramework "7.0.0"
-  InstallDotNetSharedFramework "8.0.0-rc.2.23479.6"
+  InstallDotNetSharedFramework "8.0.0"
 
   CreateBuildEnvScripts
   CreateVSShortcut
@@ -154,7 +154,7 @@ function CleanOutStage0ToolsetsAndRuntimes {
       Remove-Item (Join-Path $aspnetRuntimePath "$majorVersion.*") -Recurse
       Remove-Item (Join-Path $coreRuntimePath "$majorVersion.*") -Recurse
       Remove-Item (Join-Path $wdRuntimePath "$majorVersion.*") -Recurse
-      Remove-Item (Join-Path $sdkPath "$majorVersion.*") -Recurse
+      Remove-Item (Join-Path $sdkPath "*") -Recurse
       Remove-Item (Join-Path $dotnetRoot "packs") -Recurse
       Remove-Item (Join-Path $dotnetRoot "sdk-manifests") -Recurse
       Remove-Item (Join-Path $dotnetRoot "templates") -Recurse

@@ -27,7 +27,7 @@ function InitializeCustomSDKToolset {
   InstallDotNetSharedFramework "5.0.0"
   InstallDotNetSharedFramework "6.0.0"
   InstallDotNetSharedFramework "7.0.0"
-  InstallDotNetSharedFramework "8.0.0-rc.2.23479.6"
+  InstallDotNetSharedFramework "8.0.0"
 
   CreateBuildEnvScript
 }
@@ -94,7 +94,7 @@ function CleanOutStage0ToolsetsAndRuntimes {
   local aspnetRuntimePath="$dotnetRoot/shared/Microsoft.AspNetCore.App/$majorVersion.*"
   local coreRuntimePath="$dotnetRoot/shared/Microsoft.NETCore.App/$majorVersion.*"
   local wdRuntimePath="$dotnetRoot/shared/Microsoft.WindowsDesktop.App/$majorVersion.*"
-  local sdkPath="$dotnetRoot/sdk/$majorVersion.*"
+  local sdkPath="$dotnetRoot/sdk/*"
 
   if [ -f "$versionPath" ]; then
     local lastInstalledSDK=$(cat $versionPath)

@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
-            Log?.LogMessage($"Executing: {Windows.GetProcessCommandLine()}, PID: {CurrentProcess.Id}, PPID: {ParentProcess.Id}");
+            Log?.LogMessage($"Executing: {Microsoft.DotNet.Cli.Utils.Windows.GetProcessCommandLine()}, PID: {CurrentProcess.Id}, PPID: {ParentProcess.Id}");
             Log?.LogMessage($"{nameof(IsElevated)}: {IsElevated}");
             Log?.LogMessage($"{nameof(Is64BitProcess)}: {Is64BitProcess}");
             Log?.LogMessage($"{nameof(RebootPending)}: {RebootPending}");
@@ -1067,9 +1067,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 finally
                 {
-                    ((TimestampedFileLogger)Log).Dispose();
+                    if (Log is IDisposable tfl)
+                    {
+                        tfl.Dispose();
+                    }
                 }
             }
         }
+
+        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode) => UpdateInstallMode(sdkFeatureBand, newMode);
     }
 }

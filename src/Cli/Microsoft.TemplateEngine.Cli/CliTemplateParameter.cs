@@ -425,7 +425,7 @@ namespace Microsoft.TemplateEngine.Cli
 
         private (bool, double) ConvertValueToFloat(string? value)
         {
-            if (Utils.ParserExtensions.DoubleTryParseСurrentOrInvariant(value, out double convertedFloat))
+            if (Utils.ParserExtensions.DoubleTryParseCurrentOrInvariant(value, out double convertedFloat))
             {
                 return (true, convertedFloat);
             }
