@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = true,
+            AllowTrailingCommas = true,
         };
 
         public static InstallStateContents FromString(string contents)

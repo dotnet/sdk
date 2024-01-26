@@ -61,7 +61,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                                     {
                                         case JsonTokenType.PropertyName:
                                             var sdkPropName = reader.GetString();
-                                            if (string.Equals("workloadVersion", sdkPropName, StringComparison.OrdinalIgnoreCase))
+                                            if (string.Equals("workloadSetVersion", sdkPropName, StringComparison.OrdinalIgnoreCase))
                                             {
                                                 workloadVersion = JsonReader.ReadString(ref reader);
                                             }
