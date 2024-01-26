@@ -121,7 +121,7 @@
     <!-- Builds from the VMR are by definition vertical builds. -->
     <DotNetBuildVertical Condition="'$(DotNetBuildVertical)' == '' and '$(DotNetBuildFromSource)' != 'true'">true</DotNetBuildVertical>
     <!-- By default, the VMR builds with online sources. -->
-    <BuildWithOnlineSources Condition="'$(BuildWithOnlineSources)' == '' and '$(DotNetBuildVertical)' == 'true'">true</BuildWithOnlineSources>
+    <DotNetBuildWithOnlineSources Condition="'$(DotNetBuildWithOnlineSources)' == '' and '$(DotNetBuildVertical)' == 'true'">true</DotNetBuildWithOnlineSources>
   </PropertyGroup>
 
   <PropertyGroup>
