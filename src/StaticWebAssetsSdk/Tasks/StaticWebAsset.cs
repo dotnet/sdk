@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         // We need to iterate over the assets, the moment we detect one asset for our specific kind, we return that asset
         // While we iterate over the list of assets we keep any asset of the `All` kind we find on a variable.
         // * If we find a more specific asset, we will ignore it in favor of the specific one.
-        // * If we don't find a more specfic (Build or Publish) asset we will return the `All` asset.
+        // * If we don't find a more specific (Build or Publish) asset we will return the `All` asset.
         // We assume that the manifest is correct and don't try to deal with errors at this level, if for some reason we find more
         // than one type of asset we will just return all of them.
         // One exception to this is the `All` kind of assets, where we will just return the first two we find. The reason for it is
