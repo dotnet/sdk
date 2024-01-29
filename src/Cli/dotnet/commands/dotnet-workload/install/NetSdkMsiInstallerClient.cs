@@ -491,6 +491,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        public void WriteWorkloadInstallRecords(IEnumerable<WorkloadId> workloadsToWriteRecordsFor)
+        {
+            foreach (var workload in workloadsToWriteRecordsFor.AsEnumerable())
+            {
+                RecordRepository.WriteWorkloadInstallationRecord(workload, _sdkFeatureBand);
+            }
+        }
+
         void RollBackMsiInstall(WorkloadDownload msiToRollback, DirectoryPath? offlineCache = null)
         {
             try
