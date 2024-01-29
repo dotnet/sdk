@@ -34,11 +34,11 @@ The ID will be an identifier for the record which will start at 1 for the oldest
 
 ## `dotnet workload update --from-history
 
-A `--from-history` option will be added to the `dotnet workload update` command, which will update to a state from the workload history.  This will require one of two new parameters, `--before` or `--after`, to be specified.  By default the command will update the manifests to the versions specified, as well as install or uninstall workloads to match the workloads that were installed at the specified point.  A `--manifests-only` option will be supported which will update the manifests, but not change the current workloads that are installed (this may result in installing or uninstalling packs to match the new manifest versions).
+A `--from-history` option will be added to the `dotnet workload update` command, which will update to the state after a workload history record was written. By default the command will update the manifests to the versions specified, as well as install or uninstall workloads to match the workloads that were installed at the specified point. A `--manifests-only` option will be supported which will update the manifests, but not change the current workloads that are installed (this may result in installing or uninstalling packs to match the new manifest versions).
 
 For example:
 
-`dotnet workload update --from-history --before 3 --manifests-only` - This will roll back to the manifests before operation 3 in the workload history.
+`dotnet workload update --from-history 3 --manifests-only` - This will roll back to the manifests after operation 3 in the workload history.
 
-`dotnet workload update --from-history --after 2` - This will roll back to the manifests and workloads installed after operation 2 in workload history.
+`dotnet workload update --from-history 2` - This will roll back to the manifests and workloads installed after operation 2 in workload history.
 
