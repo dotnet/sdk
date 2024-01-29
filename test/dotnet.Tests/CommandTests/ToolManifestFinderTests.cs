@@ -29,13 +29,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new ToolManifestPackage(
                     new PackageId("t-rex"),
                     NuGetVersion.Parse("1.0.53"),
-                    new[] {new ToolCommandName("t-rex")},
-                    new DirectoryPath(_testDirectoryRoot)),
+                    new[] {new ToolCommandName("t-rex"),},
+                    new DirectoryPath(_testDirectoryRoot),
+                    false),
                 new ToolManifestPackage(
                     new PackageId("dotnetsay"),
                     NuGetVersion.Parse("2.1.4"),
                     new[] {new ToolCommandName("dotnetsay")},
-                    new DirectoryPath(_testDirectoryRoot))
+                    new DirectoryPath(_testDirectoryRoot),
+                    false)
             };
         }
 
@@ -112,12 +114,14 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new PackageId("t-rex"),
                     NuGetVersion.Parse("1.0.53"),
                     new[] {new ToolCommandName("t-rex")},
-                    new DirectoryPath(rootDirectory.Value)),
+                    new DirectoryPath(rootDirectory.Value),
+                    false),
                 new ToolManifestPackage(
                     new PackageId("dotnetsay"),
                     NuGetVersion.Parse("2.1.4"),
                     new[] {new ToolCommandName("dotnetsay")},
-                    new DirectoryPath(rootDirectory.Value))
+                    new DirectoryPath(rootDirectory.Value),
+                    false)
             };
 
             AssertToolManifestPackageListEqual(expectedResult, manifestResult);
@@ -179,12 +183,14 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     new PackageId("t-rex"),
                     NuGetVersion.Parse("1.0.53"),
                     new[] {new ToolCommandName("t-rex")},
-                    new DirectoryPath(rootDirectory.Value)),
+                    new DirectoryPath(rootDirectory.Value),
+                    false),
                 new ToolManifestPackage(
                     new PackageId("dotnetsay"),
                     NuGetVersion.Parse("2.1.4"),
                     new[] {new ToolCommandName("dotnetsay")},
-                    new DirectoryPath(rootDirectory.Value))
+                    new DirectoryPath(rootDirectory.Value),
+                    false)
             };
 
             AssertToolManifestPackageListEqual(expectedResult, manifestResult);
@@ -364,7 +370,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                          new PackageId("t-rex"),
                          NuGetVersion.Parse("1.0.49"),
                          new[] { new ToolCommandName("t-rex") },
-                         new DirectoryPath(subdirectoryOfTestRoot)),
+                         new DirectoryPath(subdirectoryOfTestRoot),
+                         false),
                 because: "when different manifest file has the same package id, " +
                          "only keep entry that is in the manifest close to current directory");
             manifestResult.Should().Contain(
@@ -372,14 +379,16 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                          new PackageId("dotnetsay2"),
                          NuGetVersion.Parse("4.0.0"),
                          new[] { new ToolCommandName("dotnetsay2") },
-                         new DirectoryPath(_testDirectoryRoot)));
+                         new DirectoryPath(_testDirectoryRoot),
+                         false));
 
             manifestResult.Should().Contain(
                 p => p == new ToolManifestPackage(
                          new PackageId("dotnetsay"),
                          NuGetVersion.Parse("2.1.4"),
                          new[] { new ToolCommandName("dotnetsay") },
-                         new DirectoryPath(subdirectoryOfTestRoot)),
+                         new DirectoryPath(subdirectoryOfTestRoot),
+                         false),
                 because: "combine both content in different manifests");
         }
 
@@ -508,7 +517,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new PackageId("dotnetsay"),
                 NuGetVersion.Parse("2.1.4"),
                 new[] { new ToolCommandName("dotnetsay") },
-                new DirectoryPath(_testDirectoryRoot)));
+                new DirectoryPath(_testDirectoryRoot),
+                false));
         }
 
         [Fact]
@@ -527,7 +537,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new PackageId("dotnetsay"),
                 NuGetVersion.Parse("2.1.4"),
                 new[] { new ToolCommandName("dotnetsay") },
-                new DirectoryPath(_testDirectoryRoot)));
+                new DirectoryPath(_testDirectoryRoot),
+                false));
         }
 
         [Fact]
@@ -547,7 +558,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new PackageId("dotnetsay"),
                 NuGetVersion.Parse("2.1.4"),
                 new[] { new ToolCommandName("dotnetsay") },
-                new DirectoryPath(_testDirectoryRoot)));
+                new DirectoryPath(_testDirectoryRoot),
+                false));
         }
 
         [Fact]
@@ -625,7 +637,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new PackageId("t-rex"),
                 NuGetVersion.Parse("1.0.49"),
                 new[] { new ToolCommandName("t-rex") },
-                new DirectoryPath(subdirectoryOfTestRoot)));
+                new DirectoryPath(subdirectoryOfTestRoot),
+                false));
         }
 
         [Fact]

@@ -282,6 +282,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">解決方案 {0} 已在解決方案資料夾中 {2} 包含專案 {1}。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSettingsNotFound">
+        <source>Tool settings file does not exist for the tool {0}.</source>
+        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">更新</target>
