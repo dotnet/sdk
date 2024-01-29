@@ -308,9 +308,9 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>1ab9e3bf251276b792d217afc8f669aad3564d56</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24067.1">
+    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24079.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>d71290db981c297b17054b64b2bc7c707a547545</Sha>
+      <Sha>cf833a969d2657b661c40ab4c8bf3ed1dd66d0ee</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24078.1">
