@@ -44,6 +44,9 @@
     <PackageVersion Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
     <PackageVersion Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftNETStringToolsPackageVersion)" />
+    <PackageVersion Include="Microsoft.NETCore.App.Runtime.win-x86" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <PackageVersion Include="Microsoft.NETCore.App.Runtime.win-x64" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <PackageVersion Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="Microsoft.NETCore.Targets" Version="2.1.0" />
     <PackageVersion Include="Microsoft.Signed.Wix" Version="$(WixPackageVersion)" />
@@ -80,9 +83,6 @@
     <PackageVersion Include="runtime.linux-musl-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
-    <PackageVersion Include="runtime.win-x86.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
-    <PackageVersion Include="runtime.win-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
-    <PackageVersion Include="runtime.win-arm64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
     <PackageVersion Include="StyleCop.Analyzers" Version="$(StyleCopAnalyzersPackageVersion)" />
     <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <PackageVersion Include="System.Collections.Specialized" Version="$(SystemCollectionsSpecializedPackageVersion)" />

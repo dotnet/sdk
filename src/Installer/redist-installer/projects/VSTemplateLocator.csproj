@@ -10,9 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="runtime.win-x86.Microsoft.NETCore.DotNetHostResolver" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="runtime.win-x64.Microsoft.NETCore.DotNetHostResolver" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="runtime.win-arm64.Microsoft.NETCore.DotNetHostResolver" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" ExcludeAssets="all" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" ExcludeAssets="all" GeneratePathProperty="true" />
   </ItemGroup>
 
@@ -27,9 +27,9 @@
     <MakeDir Directories="$(OutputPath)" />
 
     <ItemGroup>
-      <_VSTemplateLocatorSrc Include="$(Pkgruntime_win-x86_Microsoft_NETCore_DotNetHostResolver)\runtimes\win-x86\native\hostfxr.dll" Arch="x86\" />
-      <_VSTemplateLocatorSrc Include="$(Pkgruntime_win-x64_Microsoft_NETCore_DotNetHostResolver)\runtimes\win-x64\native\hostfxr.dll" Arch="x64\" />
-      <_VSTemplateLocatorSrc Include="$(Pkgruntime_win-arm64_Microsoft_NETCore_DotNetHostResolver)\runtimes\win-arm64\native\hostfxr.dll" Arch="arm64\" />
+      <_VSTemplateLocatorSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-x86)\runtimes\win-x86\native\hostfxr.dll" Arch="x86\" />
+      <_VSTemplateLocatorSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-x64)\runtimes\win-x64\native\hostfxr.dll" Arch="x64\" />
+      <_VSTemplateLocatorSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-arm64)\runtimes\win-arm64\native\hostfxr.dll" Arch="arm64\" />
       <_VSTemplateLocatorSrc Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\Microsoft.DotNet.NativeWrapper.dll" Arch="" />
       <_VSTemplateLocatorSrc Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\Microsoft.DotNet.SdkResolver.dll" Arch="" />
       <_VSTemplateLocatorSrc Include="$(ArtifactsBinDir)Microsoft.DotNet.TemplateLocator\$(Configuration)\net472\**\Microsoft.DotNet.TemplateLocator*.dll" Arch="" />
