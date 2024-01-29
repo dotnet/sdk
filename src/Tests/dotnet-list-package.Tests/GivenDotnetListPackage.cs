@@ -355,13 +355,19 @@ class Program
                 .WithSource();
 
             var projectDirectory = testAsset.Path;
-            var relativePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), projectDirectory);
 
-            new ListPackageCommand(Log, relativePath)
-                .WithWorkingDirectory(Directory.GetCurrentDirectory())
+            new RestoreCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass();
+
+            new ListPackageCommand(Log)
+                .WithProject("TestAppSimple.csproj")
+                .WithWorkingDirectory(projectDirectory)
                 .Execute()
                 .Should()
                 .Pass();
         }
+
     }
 }
