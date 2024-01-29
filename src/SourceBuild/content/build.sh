@@ -1,82 +1,148 @@
 #!/usr/bin/env bash
 
-### Usage: $0 [options]
-###
-### Options:
-###   --clean-while-building       Cleans each repo after building (reduces disk space usage)
-###   --online                     Build using online sources
-###   --poison                     Build with poisoning checks
-###   --run-smoke-test             Don't build; run smoke tests
-###   --source-repository <URL>    Source Link repository URL, required when building from tarball
-###   --source-version <SHA>       Source Link revision, required when building from tarball
-###   --release-manifest <FILE>    A JSON file, an alternative source of Source Link metadata
-###   --use-mono-runtime           Output uses the mono runtime
-###   --with-packages <DIR>        Use the specified directory of previously-built packages
-###   --with-sdk <DIR>             Use the SDK in the specified directory for bootstrapping
-###
-### Use -- to send the remaining arguments to MSBuild
+# Stop script if unbound variable found (use ${var:-} if intentional)
+set -u
 
-set -euo pipefail
-IFS=$'\n\t'
+# Stop script if command returns non-zero exit code.
+# Prevents hidden errors caused by missing error code propagation.
+set -e
 
-source="${BASH_SOURCE[0]}"
-SCRIPT_ROOT="$(cd -P "$( dirname "$0" )" && pwd)"
+usage()
+{
+  echo "Common settings:"
+  echo "  --binaryLog                  Create MSBuild binary log (short: -bl)"
+  echo "  --configuration <value>      Build configuration: 'Debug' or 'Release' (short: -c)"
+  echo "  --verbosity <value>          Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
+  echo ""
 
-function print_help () {
-    sed -n '/^### /,/^$/p' "$source" | cut -b 5-
+  echo "Actions:"
+  echo "  --clean                      Clean the solution"
+  echo "  --help                       Print help and exit (short: -h)"
+  echo "  --test                       Run smoke tests (short: -t)"
+  echo ""
+
+  echo "Source-only settings:"
+  echo "  --source-only                Source-build the solution (short: -so)"
+  echo "  --online                     Build using online sources"
+  echo "  --poison                     Build with poisoning checks"
+  echo "  --release-manifest <FILE>    A JSON file, an alternative source of Source Link metadata"
+  echo "  --source-repository <URL>    Source Link repository URL, required when building from tarball"
+  echo "  --source-version <SHA>       Source Link revision, required when building from tarball"
+  echo "  --use-mono-runtime           Output uses the mono runtime"
+  echo "  --with-packages <DIR>        Use the specified directory of previously-built packages"
+  echo "  --with-sdk <DIR>             Use the SDK in the specified directory for bootstrapping"
+  echo ""
+
+  echo "Advanced settings:"
+  echo "  --ci                         Set when running on CI server"
+  echo "  --clean-while-building       Cleans each repo after building (reduces disk space usage, short: -cwb)"
+  echo "  --excludeCIBinarylog         Don't output binary log (short: -nobl)"
+  echo "  --prepareMachine             Prepare machine for CI run, clean up processes after build"
+  echo ""
+  echo "Command line arguments not listed above are passed thru to msbuild."
+  echo "Arguments can also be passed in with a single hyphen."
 }
 
-MSBUILD_ARGUMENTS=("-flp:v=detailed")
-CUSTOM_PACKAGES_DIR=''
-alternateTarget=false
-runningSmokeTests=false
-packagesDir="$SCRIPT_ROOT/prereqs/packages/"
-packagesArchiveDir="${packagesDir}archive/"
-packagesRestoredDir="${packagesDir}restored/"
-packagesPreviouslySourceBuiltDir="${packagesDir}previously-source-built/"
-CUSTOM_SDK_DIR=''
+source="${BASH_SOURCE[0]}"
 
+# resolve $source until the file is no longer a symlink
+while [[ -h "$source" ]]; do
+  scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
+  source="$(readlink "$source")"
+  # if $source was a relative symlink, we need to resolve it relative to the path where the
+  # symlink file was located
+  [[ $source != /* ]] && source="$scriptroot/$source"
+done
+scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
+
+# Set the NUGET_PACKAGES dir so that we don't accidentally pull some packages from the global location,
+# They should be pulled from the local feeds.
+packagesDir="$scriptroot/prereqs/packages/"
+packagesRestoredDir="${packagesDir}restored/"
+export NUGET_PACKAGES=$packagesRestoredDir/
+
+# Common settings
+binary_log=false
+configuration='Release'
+verbosity='minimal'
+
+# Actions
+clean=false
+test=false
+
+# Source-only settings
+sourceOnly=false
+releaseManifest=''
 sourceRepository=''
 sourceVersion=''
-releaseManifest=''
+CUSTOM_PACKAGES_DIR=''
+CUSTOM_SDK_DIR=''
+packagesArchiveDir="${packagesDir}archive/"
+packagesPreviouslySourceBuiltDir="${packagesDir}previously-source-built/"
 
-while :; do
-  if [ $# -le 0 ]; then
-    break
-  fi
+# Advanced settings
+ci=false
+exclude_ci_binary_log=false
+prepare_machine=false
 
-  lowerI="$(echo "$1" | awk '{print tolower($0)}')"
-  case $lowerI in
-    --clean-while-building)
-      MSBUILD_ARGUMENTS+=( "-p:CleanWhileBuilding=true")
+properties=''
+while [[ $# > 0 ]]; do
+  opt="$(echo "${1/#--/-}" | tr "[:upper:]" "[:lower:]")"
+  case "$opt" in
+    # Common settings
+    -binarylog|-bl)
+      binary_log=true
       ;;
-    --online)
-      MSBUILD_ARGUMENTS+=( "-p:BuildWithOnlineSources=true")
-      ;;
-    --poison)
-      MSBUILD_ARGUMENTS+=( "-p:EnablePoison=true")
-      ;;
-    --run-smoke-test)
-      alternateTarget=true
-      runningSmokeTests=true
-      MSBUILD_ARGUMENTS+=( "-t:RunSmokeTest" )
-      ;;
-    --source-repository)
-      sourceRepository="$2"
+    -configuration|-c)
+      configuration=$2
       shift
       ;;
-    --source-version)
-      sourceVersion="$2"
+    -verbosity|-v)
+      verbosity=$2
       shift
       ;;
-    --release-manifest)
+
+    # Actions
+    -clean)
+      clean=true
+      ;;
+    -help|-h|-\?|/?)
+      usage
+      exit 0
+      ;;
+    -test|-t)
+      export NUGET_PACKAGES=$NUGET_PACKAGES/smoke-tests
+      properties="$properties /t:RunSmokeTest"
+      test=true
+      ;;
+
+    # Source-only settings
+    -source-only|-so)
+      sourceOnly=true
+      properties="$properties /p:DotNetBuildSourceOnly=true"
+      ;;
+    -online)
+      properties="$properties /p:DotNetBuildWithOnlineSources=true"
+      ;;
+    -poison)
+      properties="$properties /p:EnablePoison=true"
+      ;;
+    -release-manifest)
       releaseManifest="$2"
       shift
       ;;
-    --use-mono-runtime)
-      MSBUILD_ARGUMENTS+=( "/p:SourceBuildUseMonoRuntime=true" )
+    -source-repository)
+      sourceRepository="$2"
+      shift
       ;;
-    --with-packages)
+    -source-version)
+      sourceVersion="$2"
+      shift
+      ;;
+    -use-mono-runtime)
+      properties="$properties /p:SourceBuildUseMonoRuntime=true"
+      ;;
+    -with-packages)
       CUSTOM_PACKAGES_DIR="$(cd -P "$2" && pwd)"
       if [ ! -d "$CUSTOM_PACKAGES_DIR" ]; then
           echo "Custom prviously built packages directory '$CUSTOM_PACKAGES_DIR' does not exist"
@@ -84,7 +150,7 @@ while :; do
       fi
       shift
       ;;
-    --with-sdk)
+    -with-sdk)
       CUSTOM_SDK_DIR="$(cd -P "$2" && pwd)"
       if [ ! -d "$CUSTOM_SDK_DIR" ]; then
           echo "Custom SDK directory '$CUSTOM_SDK_DIR' does not exist"
@@ -96,172 +162,192 @@ while :; do
       fi
       shift
       ;;
-    --)
-      shift
-      echo "Detected '--': passing remaining parameters '$@' as build.sh arguments."
-      break
+
+    # Advanced settings
+    -ci)
+      ci=true
       ;;
-    '-?'|-h|--help)
-      print_help
-      exit 0
+    -clean-while-building|-cwb)
+      properties="$properties /p:CleanWhileBuilding=true"
       ;;
+    -excludecibinarylog|-nobl)
+      exclude_ci_binary_log=true
+      ;;
+    -preparemachine)
+      prepare_machine=true
+      ;;
+
     *)
-      echo "Unrecognized argument '$1'"
-      print_help
-      exit 1
+      properties="$properties $1"
       ;;
   esac
+
   shift
 done
 
-# For build purposes, we need to make sure we have all the SourceLink information
-if [ "$alternateTarget" != "true" ]; then
-  GIT_DIR="$SCRIPT_ROOT/.git"
-  if [ -f "$GIT_DIR/index" ]; then # We check for index because if outside of git, we create config and HEAD manually
-    if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ] || [ -n "$releaseManifest" ]; then
-      echo "ERROR: Source Link arguments cannot be used in a git repository"
-      exit 1
+. "$scriptroot/eng/common/tools.sh"
+
+function Build {
+  if [[ "$sourceOnly" != "true" ]]; then
+
+    InitializeToolset
+
+    local bl=""
+    if [[ "$binary_log" == true ]]; then
+      bl="/bl:\"$log_dir/Build.binlog\""
     fi
+
+    MSBuild "$scriptroot/build.proj" \
+      $bl \
+      /p:Configuration=$configuration \
+      $properties
+
+    ExitWithExitCode 0
+
   else
-    if [ -z "$releaseManifest" ]; then
-      if [ -z "$sourceRepository" ] || [ -z "$sourceVersion" ]; then
-        echo "ERROR: $SCRIPT_ROOT is not a git repository, either --release-manifest or --source-repository and --source-version must be specified"
+
+    "$CLI_ROOT/dotnet" build-server shutdown
+
+    if [ "$test" == "true" ]; then
+      "$CLI_ROOT/dotnet" msbuild "$scriptroot/build.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildTests.binlog" -flp:"LogFile=$scriptroot/artifacts/log/$configuration/BuildTests.log" -clp:v=m $properties
+    else
+      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/tools/init-build.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.binlog" -flp:LogFile="$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.log" /t:ExtractToolPackage,BuildMSBuildSdkResolver $properties
+
+      # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
+      "$CLI_ROOT/dotnet" build-server shutdown
+
+      "$CLI_ROOT/dotnet" msbuild "$scriptroot/build.proj" -bl:"$scriptroot/artifacts/log/$configuration/Build.binlog" -flp:"LogFile=$scriptroot/artifacts/log/$configuration/Build.log" $properties
+    fi
+
+  fi
+}
+
+if [[ "$clean" == true ]]; then
+  if [ -d "$artifacts_dir" ]; then
+    rm -rf $artifacts_dir
+    echo "Artifacts directory deleted."
+  fi
+  exit 0
+fi
+
+# Initialize __DistroRid and __PortableTargetOS
+source $scriptroot/eng/common/native/init-os-and-arch.sh
+source $scriptroot/eng/common/native/init-distro-rid.sh
+initDistroRidGlobal "$os" "$arch" ""
+
+# Source-only settings
+if [[ "$sourceOnly" == "true" ]]; then
+  # For build purposes, we need to make sure we have all the SourceLink information
+  if [ "$test" != "true" ]; then
+    GIT_DIR="$scriptroot/.git"
+    if [ -f "$GIT_DIR/index" ]; then # We check for index because if outside of git, we create config and HEAD manually
+      if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ] || [ -n "$releaseManifest" ]; then
+        echo "ERROR: Source Link arguments cannot be used in a git repository"
         exit 1
       fi
     else
-      if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ]; then
-        echo "ERROR: --release-manifest cannot be specified together with --source-repository and --source-version"
-        exit 1
+      if [ -z "$releaseManifest" ]; then
+        if [ -z "$sourceRepository" ] || [ -z "$sourceVersion" ]; then
+          echo "ERROR: $scriptroot is not a git repository, either --release-manifest or --source-repository and --source-version must be specified"
+          exit 1
+        fi
+      else
+        if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ]; then
+          echo "ERROR: --release-manifest cannot be specified together with --source-repository and --source-version"
+          exit 1
+        fi
+
+        get_property() {
+          local json_file_path="$1"
+          local property_name="$2"
+          grep -oP '(?<="'$property_name'": ")[^"]*' "$json_file_path"
+        }
+
+        sourceRepository=$(get_property "$releaseManifest" sourceRepository) \
+          || (echo "ERROR: Failed to find sourceRepository in $releaseManifest" && exit 1)
+        sourceVersion=$(get_property "$releaseManifest" sourceVersion) \
+          || (echo "ERROR: Failed to find sourceVersion in $releaseManifest" && exit 1)
+
+        if [ -z "$sourceRepository" ] || [ -z "$sourceVersion" ]; then
+          echo "ERROR: sourceRepository and sourceVersion must be specified in $releaseManifest"
+          exit 1
+        fi
       fi
 
-      get_property() {
-        local json_file_path="$1"
-        local property_name="$2"
-        grep -oP '(?<="'$property_name'": ")[^"]*' "$json_file_path"
-      }
-
-      sourceRepository=$(get_property "$releaseManifest" sourceRepository) \
-        || (echo "ERROR: Failed to find sourceRepository in $releaseManifest" && exit 1)
-      sourceVersion=$(get_property "$releaseManifest" sourceVersion) \
-        || (echo "ERROR: Failed to find sourceVersion in $releaseManifest" && exit 1)
-
-      if [ -z "$sourceRepository" ] || [ -z "$sourceVersion" ]; then
-        echo "ERROR: sourceRepository and sourceVersion must be specified in $releaseManifest"
-        exit 1
-      fi
+      # We need to add "fake" .git/ files when not building from a git repository
+      mkdir -p "$GIT_DIR"
+      echo '[remote "origin"]' > "$GIT_DIR/config"
+      echo "url=\"$sourceRepository\"" >> "$GIT_DIR/config"
+      echo "$sourceVersion" > "$GIT_DIR/HEAD"
     fi
+  fi
 
-    # We need to add "fake" .git/ files when not building from a git repository
-    mkdir -p "$GIT_DIR"
-    echo '[remote "origin"]' > "$GIT_DIR/config"
-    echo "url=\"$sourceRepository\"" >> "$GIT_DIR/config"
-    echo "$sourceVersion" > "$GIT_DIR/HEAD"
+  # Support custom source built package locations
+  if [ "$CUSTOM_PACKAGES_DIR" != "" ]; then
+    if [ "$test" == "true" ]; then
+      properties="$properties /p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR"
+    else
+      properties="$properties /p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR"
+    fi
   fi
-fi
 
-if [ "$CUSTOM_PACKAGES_DIR" != "" ]; then
-  if [ "$runningSmokeTests" == "true" ]; then
-    MSBUILD_ARGUMENTS+=( "-p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
-  else
-    MSBUILD_ARGUMENTS+=( "-p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
-  fi
-fi
-
-if [ -f "${packagesArchiveDir}archiveArtifacts.txt" ]; then
-  ARCHIVE_ERROR=0
-  if [ ! -d "$SCRIPT_ROOT/.dotnet" ] && [ "$CUSTOM_SDK_DIR" == "" ]; then
-    echo "ERROR: SDK not found at '$SCRIPT_ROOT/.dotnet'. Either run prep.sh to acquire one or specify one via the --with-sdk parameter."
-    ARCHIVE_ERROR=1
-  fi
-  if [ ! -f ${packagesArchiveDir}Private.SourceBuilt.Artifacts*.tar.gz ] && [ "$CUSTOM_PACKAGES_DIR" == "" ]; then
-    echo "ERROR: Private.SourceBuilt.Artifacts artifact not found at '$packagesArchiveDir'. Either run prep.sh to acquire it or specify one via the --with-packages parameter."
-    ARCHIVE_ERROR=1
-  fi
-  if [ $ARCHIVE_ERROR == 1 ]; then
+  if [ ! -d "$scriptroot/.git" ]; then
+    echo "ERROR: $scriptroot is not a git repository. Please run prep.sh add initialize Source Link metadata."
     exit 1
   fi
-fi
 
-if [ ! -d "$SCRIPT_ROOT/.git" ]; then
-  echo "ERROR: $SCRIPT_ROOT is not a git repository. Please run prep.sh add initialize Source Link metadata."
-  exit 1
-fi
-
-if [ -d "$CUSTOM_SDK_DIR" ]; then
-  export SDK_VERSION=$("$CUSTOM_SDK_DIR/dotnet" --version)
-  export CLI_ROOT="$CUSTOM_SDK_DIR"
-  export _InitializeDotNetCli="$CLI_ROOT/dotnet"
-  export CustomDotNetSdkDir="$CLI_ROOT"
-  echo "Using custom bootstrap SDK from '$CLI_ROOT', version '$SDK_VERSION'"
-else
-  sdkLine=$(grep -m 1 'dotnet' "$SCRIPT_ROOT/global.json")
-  sdkPattern="\"dotnet\" *: *\"(.*)\""
-  if [[ $sdkLine =~ $sdkPattern ]]; then
-    export SDK_VERSION=${BASH_REMATCH[1]}
-    export CLI_ROOT="$SCRIPT_ROOT/.dotnet"
+  # Allow a custom SDK directory to be specified
+  if [ -d "$CUSTOM_SDK_DIR" ]; then
+    export SDK_VERSION=$("$CUSTOM_SDK_DIR/dotnet" --version)
+    export CLI_ROOT="$CUSTOM_SDK_DIR"
+    export _InitializeDotNetCli="$CLI_ROOT/dotnet"
+    export DOTNET_INSTALL_DIR="$CLI_ROOT"
+    echo "Using custom bootstrap SDK from '$CLI_ROOT', version '$SDK_VERSION'"
+  else
+    sdkLine=$(grep -m 1 'dotnet' "$scriptroot/global.json")
+    sdkPattern="\"dotnet\" *: *\"(.*)\""
+    if [[ $sdkLine =~ $sdkPattern ]]; then
+      export SDK_VERSION=${BASH_REMATCH[1]}
+      export CLI_ROOT="$scriptroot/.dotnet"
+    fi
   fi
-fi
 
-packageVersionsPath=''
+  # Find the Arcade SDK version and set env vars for the msbuild sdk resolver
+  packageVersionsPath=''
 
-if [[ "$CUSTOM_PACKAGES_DIR" != "" && -f "$CUSTOM_PACKAGES_DIR/PackageVersions.props" ]]; then
-  packageVersionsPath="$CUSTOM_PACKAGES_DIR/PackageVersions.props"
-elif [ -d "$packagesArchiveDir" ]; then
-  sourceBuiltArchive=$(find "$packagesArchiveDir" -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz')
-  if [ -f "${packagesPreviouslySourceBuiltDir}}PackageVersions.props" ]; then
-    packageVersionsPath=${packagesPreviouslySourceBuiltDir}PackageVersions.props
-  elif [ -f "$sourceBuiltArchive" ]; then
-    tar -xzf "$sourceBuiltArchive" -C /tmp PackageVersions.props
-    packageVersionsPath=/tmp/PackageVersions.props
+  if [[ "$CUSTOM_PACKAGES_DIR" != "" && -f "$CUSTOM_PACKAGES_DIR/PackageVersions.props" ]]; then
+    packageVersionsPath="$CUSTOM_PACKAGES_DIR/PackageVersions.props"
+  elif [ -d "$packagesArchiveDir" ]; then
+    sourceBuiltArchive=$(find "$packagesArchiveDir" -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz')
+    if [ -f "${packagesPreviouslySourceBuiltDir}}PackageVersions.props" ]; then
+      packageVersionsPath=${packagesPreviouslySourceBuiltDir}PackageVersions.props
+    elif [ -f "$sourceBuiltArchive" ]; then
+      tar -xzf "$sourceBuiltArchive" -C /tmp PackageVersions.props
+      packageVersionsPath=/tmp/PackageVersions.props
+    fi
   fi
+
+  if [ ! -f "$packageVersionsPath" ]; then
+    echo "Cannot find PackagesVersions.props.  Debugging info:"
+    echo "  Attempted archive path: $packagesArchiveDir"
+    echo "  Attempted custom PVP path: $CUSTOM_PACKAGES_DIR/PackageVersions.props"
+    exit 1
+  fi
+
+  arcadeSdkLine=$(grep -m 1 'MicrosoftDotNetArcadeSdkVersion' "$packageVersionsPath")
+  versionPattern="<MicrosoftDotNetArcadeSdkVersion>(.*)</MicrosoftDotNetArcadeSdkVersion>"
+  if [[ $arcadeSdkLine =~ $versionPattern ]]; then
+    export ARCADE_BOOTSTRAP_VERSION=${BASH_REMATCH[1]}
+
+    # Ensure that by default, the bootstrap version of the Arcade SDK is used. Source-build infra
+    # projects use bootstrap Arcade SDK, and would fail to find it in the build. The repo
+    # projects overwrite this so that they use the source-built Arcade SDK instad.
+    export SOURCE_BUILT_SDK_ID_ARCADE=Microsoft.DotNet.Arcade.Sdk
+    export SOURCE_BUILT_SDK_VERSION_ARCADE=$ARCADE_BOOTSTRAP_VERSION
+    export SOURCE_BUILT_SDK_DIR_ARCADE=$packagesRestoredDir/ArcadeBootstrapPackage/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
+  fi
+
+  echo "Found bootstrap SDK $SDK_VERSION, bootstrap Arcade $ARCADE_BOOTSTRAP_VERSION"
 fi
 
-if [ ! -f "$packageVersionsPath" ]; then
-  echo "Cannot find PackagesVersions.props.  Debugging info:"
-  echo "  Attempted archive path: $packagesArchiveDir"
-  echo "  Attempted custom PVP path: $CUSTOM_PACKAGES_DIR/PackageVersions.props"
-  exit 1
-fi
-
-arcadeSdkLine=$(grep -m 1 'MicrosoftDotNetArcadeSdkVersion' "$packageVersionsPath")
-versionPattern="<MicrosoftDotNetArcadeSdkVersion>(.*)</MicrosoftDotNetArcadeSdkVersion>"
-if [[ $arcadeSdkLine =~ $versionPattern ]]; then
-  export ARCADE_BOOTSTRAP_VERSION=${BASH_REMATCH[1]}
-
-  # Ensure that by default, the bootstrap version of the Arcade SDK is used. Source-build infra
-  # projects use bootstrap Arcade SDK, and would fail to find it in the build. The repo
-  # projects overwrite this so that they use the source-built Arcade SDK instad.
-  export SOURCE_BUILT_SDK_ID_ARCADE=Microsoft.DotNet.Arcade.Sdk
-  export SOURCE_BUILT_SDK_VERSION_ARCADE=$ARCADE_BOOTSTRAP_VERSION
-  export SOURCE_BUILT_SDK_DIR_ARCADE=$packagesRestoredDir/ArcadeBootstrapPackage/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
-fi
-
-sourceLinkLine=$(grep -m 1 'MicrosoftSourceLinkCommonVersion' "$packageVersionsPath")
-versionPattern="<MicrosoftSourceLinkCommonVersion>(.*)</MicrosoftSourceLinkCommonVersion>"
-if [[ $sourceLinkLine =~ $versionPattern ]]; then
-  export SOURCE_LINK_BOOTSTRAP_VERSION=${BASH_REMATCH[1]}
-fi
-
-echo "Found bootstrap SDK $SDK_VERSION, bootstrap Arcade $ARCADE_BOOTSTRAP_VERSION, bootstrap SourceLink $SOURCE_LINK_BOOTSTRAP_VERSION"
-
-export DOTNET_CLI_TELEMETRY_OPTOUT=1
-export NUGET_PACKAGES=$packagesRestoredDir/
-
-source $SCRIPT_ROOT/eng/common/native/init-os-and-arch.sh
-source $SCRIPT_ROOT/eng/common/native/init-distro-rid.sh
-initDistroRidGlobal "$os" "$arch" ""
-
-LogDateStamp=$(date +"%m%d%H%M%S")
-
-"$CLI_ROOT/dotnet" build-server shutdown
-
-if [ "$alternateTarget" == "true" ]; then
-  export NUGET_PACKAGES=$NUGET_PACKAGES/smoke-tests
-  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/Debug/BuildTests_$LogDateStamp.binlog" -flp:"LogFile=$SCRIPT_ROOT/artifacts/logs/BuildTests_$LogDateStamp.log" -clp:v=m ${MSBUILD_ARGUMENTS[@]} "$@"
-else
-  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/eng/tools/init-build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/Debug/BuildXPlatTasks_$LogDateStamp.binlog" -flp:LogFile="$SCRIPT_ROOT/artifacts/logs/BuildXPlatTasks_$LogDateStamp.log" -t:PrepareOfflineLocalTools ${MSBUILD_ARGUMENTS[@]} "$@"
-  # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
-  "$CLI_ROOT/dotnet" build-server shutdown
-
-  "$CLI_ROOT/dotnet" msbuild "$SCRIPT_ROOT/build.proj" -bl:"$SCRIPT_ROOT/artifacts/log/Debug/Build_$LogDateStamp.binlog" -flp:"LogFile=$SCRIPT_ROOT/artifacts/logs/Build_$LogDateStamp.log" ${MSBUILD_ARGUMENTS[@]} "$@"
-fi
+Build

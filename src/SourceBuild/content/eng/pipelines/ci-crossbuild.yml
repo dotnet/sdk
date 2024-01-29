@@ -18,9 +18,10 @@ trigger:
 pr: none
 
 stages:
-- template: templates/stages/vmr-scan.yml
+- ${{ if ne(variables['Build.Reason'], 'Schedule') }}:
+  - template: templates/stages/vmr-scan.yml
 
-- template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
+- template: /src/installer/eng/pipelines/templates/stages/vmr-cross-build.yml
   parameters:
     isBuiltFromVmr: true
     isLiteBuild: false

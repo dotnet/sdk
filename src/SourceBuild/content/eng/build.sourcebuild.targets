@@ -1,0 +1,268 @@
+<Project>
+
+  <PropertyGroup>
+    <SkipErrorOnPrebuilts>true</SkipErrorOnPrebuilts>
+    <SmokeTestsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'test', 'Microsoft.DotNet.SourceBuild.SmokeTests'))</SmokeTestsDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnablePoison)' == 'true'">
+    <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
+  </PropertyGroup>
+
+  <!-- Copies the output assets of the builds to the output path. -->
+  <Target Name="CopyBinariesToBinFolder"
+          AfterTargets="Build">
+    <ItemGroup>
+      <BinariesToCopy Include="$(SourceBuiltAssetsDir)*.*"
+                      Exclude="$(SourceBuiltAssetsDir)*.nupkg;$(SourceBuiltAssetsDir)*.requires_nupkg_signing" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(BinariesToCopy)"
+          DestinationFolder="$(SharedOutputPath)"
+          SkipUnchangedFiles="true"
+          Condition="'@(BinariesToCopy)'!=''" />
+  </Target>
+
+  <!-- After building, generate a prebuilt usage report. -->
+  <Target Name="ReportPrebuiltUsage"
+          AfterTargets="Build"
+          Condition="'$(SkipReportPrebuiltUsage)' != 'true'">
+    <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj" Targets="WritePrebuiltUsageData;ReportPrebuiltUsage" />
+  </Target>
+
+  <Target Name="DiscoverSymbolsTarballs"
+          AfterTargets="Build">
+    <ItemGroup>
+      <SymbolsTarball Include="$(SharedOutputPath)Symbols.*$(ArchiveExtension)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ExtractSymbolsTarballs"
+          AfterTargets="Build"
+          DependsOnTargets="DiscoverSymbolsTarballs"
+          Outputs="%(SymbolsTarball.Identity)">
+
+    <PropertyGroup>
+      <Filename>$([System.IO.Path]::GetFileName('%(SymbolsTarball.Identity)'))</Filename>
+      <RepositoryName>$(Filename.Split('.')[1])</RepositoryName>
+      <UnifiedSymbolsLayout>$(ArtifactsTmpDir)Symbols</UnifiedSymbolsLayout>
+      <DestinationFolder>$(UnifiedSymbolsLayout)/$(RepositoryName)</DestinationFolder>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(DestinationFolder)" />
+    <Exec Command="tar -xzf %(SymbolsTarball.Identity) -C $(DestinationFolder)"
+          WorkingDirectory="$(SymbolsRoot)" />
+
+    <Delete Files="%(SymbolsTarball.Identity)" />
+  </Target>
+
+  <!-- After building, repackage symbols into a single tarball. -->
+  <Target Name="RepackageSymbols"
+          AfterTargets="Build"
+          DependsOnTargets="
+            DetermineSourceBuiltSdkVersion;
+            DiscoverSymbolsTarballs;
+            ExtractSymbolsTarballs">
+    <PropertyGroup>
+      <UnifiedSymbolsTarball>$(SharedOutputPath)dotnet-symbols-all-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</UnifiedSymbolsTarball>
+    </PropertyGroup>
+
+    <Exec Command="tar --numeric-owner -czf $(UnifiedSymbolsTarball) *"
+          WorkingDirectory="$(UnifiedSymbolsLayout)" />
+
+    <Message Importance="High" Text="Packaged all symbols in '$(UnifiedSymbolsTarball)'" />
+  </Target>
+
+  <!-- After building, create the sdk symbols tarball. -->
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="CreateSdkSymbolsLayout" />
+  <Target Name="CreateSdkSymbolsTarball"
+          AfterTargets="Build"
+          DependsOnTargets="RepackageSymbols">
+    <ItemGroup>
+      <SdkTarballItem Include="$(SharedOutputPath)dotnet-sdk-*$(ArchiveExtension)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <SdkSymbolsLayout>$(ArtifactsTmpDir)SdkSymbols</SdkSymbolsLayout>
+      <SdkSymbolsTarball>$(SharedOutputPath)dotnet-symbols-sdk-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
+      <SdkLayout>$(ArtifactsTmpDir)Sdk</SdkLayout>
+      <SdkTarball>%(SdkTarballItem.Identity)</SdkTarball>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(SdkLayout)" />
+    <Exec Command="tar -xzf $(SdkTarball) -C $(SdkLayout)"
+          WorkingDirectory="$(SharedOutputPath)" />
+
+    <CreateSdkSymbolsLayout SdkLayoutPath="$(SdkLayout)"
+                            AllSymbolsPath="$(UnifiedSymbolsLayout)"
+                            SdkSymbolsLayoutPath="$(SdkSymbolsLayout)"
+                            FailOnMissingPDBs="false" />
+
+    <Exec Command="tar --numeric-owner -czf $(SdkSymbolsTarball) *"
+          WorkingDirectory="$(SdkSymbolsLayout)" />
+
+    <Message Importance="High" Text="Packaged sdk symbols in '$(SdkSymbolsTarball)'" />
+
+    <RemoveDir Directories="$(UnifiedSymbolsLayout)" />
+    <RemoveDir Directories="$(SdkSymbolsLayout)" />
+    <RemoveDir Directories="$(SdkLayout)" />
+  </Target>
+
+  <!--
+    Dev scenario: rewrite a prebuilt-report. This makes it easy to add data to an existing
+    prebuilt report without performing another full build. This doesn't reevalutate which packages
+    are prebuilts or search the projects: it uses the existing usage.xml file to generate report
+    XMLs based on the info put in artifacts/.
+  -->
+  <Target Name="RewritePrebuiltUsageReport">
+    <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj"
+             Targets="ReportPrebuiltUsage" />
+  </Target>
+
+  <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="CheckForPoison" Condition="'$(EnablePoison)' == 'true'" />
+  <Target Name="ReportPoisonUsage"
+          AfterTargets="Build"
+          Condition="'$(EnablePoison)' == 'true'"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(BaseIntermediateOutputPath)ReportPoisonUsage.complete" >
+    <ItemGroup>
+      <FinalCliTarball Include="$(SharedOutputPath)**/*$(ArchiveExtension)" />
+    </ItemGroup>
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Checking @(FinalCliTarball) for poisoned files." />
+
+    <ItemGroup>
+      <NonShippingPackagesList Include="$(PackageListsDir)**/$(NonShippingPackagesListPrefix)*" />
+    </ItemGroup>
+
+    <CheckForPoison FilesToCheck="@(FinalCliTarball)"
+                    ProjectDirPath="$(RepoRoot)"
+                    HashCatalogFilePath="$(PoisonReportDataFile)"
+                    MarkerFileName="$(PoisonMarkerFile)"
+                    PoisonReportOutputFilePath="$(PoisonUsageReportFile)"
+                    NonShippingPackagesListFiles="@(NonShippingPackagesList)" />
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done checking for poison." />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)ReportPoisonUsage.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
+  </Target>
+
+  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageBurndownData" />
+  <Target Name="GeneratePrebuiltBurndownData"
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(BaseIntermediateOutputPath)GeneratePrebuiltBurndownData.complete" >
+    <PropertyGroup>
+      <PrebuiltBurndownDataFile>$(PackageReportDir)PrebuiltBurndownData.csv</PrebuiltBurndownDataFile>
+    </PropertyGroup>
+
+    <WriteUsageBurndownData RootDirectory="$(RepoRoot)"
+                            PrebuiltBaselineFile="$(BaselineDataFile)"
+                            OutputFilePath="$(PrebuiltBurndownDataFile)" />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)GeneratePrebuiltBurndownData.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
+  </Target>
+
+  <Target Name="RunSmokeTest">
+    <ItemGroup>
+      <SdkTarballItem Include="$(SharedOutputPath)**/dotnet-sdk*$(ArchiveExtension)" />
+      <SourceBuiltArtifactsItem Include="$(SharedOutputPath)**/$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <CustomTestEnvVars Condition="'$(EnablePoison)' == 'true'">SMOKE_TESTS_POISON_REPORT_PATH=$(PoisonUsageReportFile);</CustomTestEnvVars>
+      <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
+      <SourceBuiltArtifactsPath>%(SourceBuiltArtifactsItem.Identity)</SourceBuiltArtifactsPath>
+      <SmokeTestConsoleVerbosity Condition="'$(SmokeTestConsoleVerbosity)' == ''">normal</SmokeTestConsoleVerbosity>
+    </PropertyGroup>
+
+    <!-- Multiple loggers are specified so that results are captured in trx and pipelines can fail with AzDO pipeline warnings -->
+    <!-- Workaround https://github.com/dotnet/source-build/issues/4003 by disabling VSTestUseMSBuildOutput -->
+    <Exec Command="$(DotnetTool) test $(SmokeTestsDir) --logger:trx --logger:'console;verbosity=$(SmokeTestConsoleVerbosity)' -c $(Configuration) -p:VSTestUseMSBuildOutput=false"
+          IgnoreStandardErrorWarningFormat="true"
+          EnvironmentVariables="
+            SMOKE_TESTS_SDK_TARBALL_PATH=$(SdkTarballPath);
+            SMOKE_TESTS_SOURCEBUILT_ARTIFACTS_PATH=$(SourceBuiltArtifactsPath);
+            SMOKE_TESTS_TARGET_RID=$(TargetRid);
+            SMOKE_TESTS_PORTABLE_RID=$(PortableRid);
+            SMOKE_TESTS_CUSTOM_PACKAGES_PATH=$(CustomSourceBuiltPackagesPath);
+            $(CustomTestEnvVars)" />
+  </Target>
+
+  <Target Name="CreateSmokeTestPrereqsTarball"
+          AfterTargets="RunSmokeTest"
+          Condition="'$(SkipSmokeTestPrereqsTarballCreation)' != 'true'"
+          DependsOnTargets="
+            CheckIfCreateSmokeTestPrereqsExistToPack;
+            CreateSmokeTestPrereqsTarballIfPrereqsExist"/>
+
+  <Target Name="CheckIfCreateSmokeTestPrereqsExistToPack">
+    <PropertyGroup>
+      <SmokeTestsArtifactsDir>$(SmokeTestsDir)bin/$(Configuration)/$(NetCurrent)/</SmokeTestsArtifactsDir>
+      <SmokeTestsPackagesDir>$(SmokeTestsArtifactsDir)packages/</SmokeTestsPackagesDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <SmokeTestsPrereqs Include="$(SmokeTestsPackagesDir)**/*.nupkg" />
+    </ItemGroup>
+
+    <Message Text="Found @(SmokeTestsPrereqs->Count()) prereqs in '$(SmokeTestsPackagesDir)'." Importance="High" />
+  </Target>
+
+  <Target Name="CreateSmokeTestPrereqsTarballIfPrereqsExist"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          Condition="'@(SmokeTestsPrereqs->Count())' != '0'">
+    <PropertyGroup>
+      <SmokeTestPrereqsTarballName>$(SharedOutputPath)dotnet-smoke-test-prereqs.$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</SmokeTestPrereqsTarballName>
+      <SmokeTestsPrereqPackagesDir>$(SmokeTestsArtifactsDir)prereq-packages/</SmokeTestsPrereqPackagesDir>
+    </PropertyGroup>
+
+    <Copy SourceFiles="@(SmokeTestsPrereqs)"
+          DestinationFolder="$(SmokeTestsPrereqPackagesDir)" />
+
+    <Exec Command="tar --numeric-owner -czf $(SmokeTestPrereqsTarballName) ."
+          WorkingDirectory="$(SmokeTestsPrereqPackagesDir)"/>
+
+    <Message Importance="High" Text="Packaged smoke-test prereqs in '$(SmokeTestPrereqsTarballName)'" />
+  </Target>
+
+  <Target Name="CreatePrebuiltsTarball"
+          AfterTargets="Build"
+          DependsOnTargets="
+            CheckIfPrebuiltsExistToPack;
+            CreatePrebuiltsTarballIfPrebuiltsExist;
+            ErrorOnPrebuilts"/>
+
+  <Target Name="CheckIfPrebuiltsExistToPack">
+    <!-- Directory existence doesn't mean there are files inside. Use a pattern to find files. -->
+    <ItemGroup>
+      <PrebuiltFile Include="$(ResultingPrebuiltPackagesDir)**" />
+    </ItemGroup>
+
+    <Message Text="Found @(PrebuiltFile->Count()) files in prebuilt packages dir." Importance="High" />
+  </Target>
+
+  <Target Name="CreatePrebuiltsTarballIfPrebuiltsExist"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          Condition="'@(PrebuiltFile->Count())' != '0'">
+    <PropertyGroup>
+      <TarballFilePath>$(SharedOutputPath)$(SourceBuiltPrebuiltsTarballName).$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</TarballFilePath>
+      <TarballWorkingDir>$(ResultingPrebuiltPackagesDir)</TarballWorkingDir>
+    </PropertyGroup>
+
+    <Exec Command="tar --numeric-owner -zcf $(TarballFilePath) -C $(TarballWorkingDir) ." />
+
+    <Message Text="Tarball '$(TarballFilePath)' was successfully created from '$(TarballWorkingDir)'" Importance="High" />
+  </Target>
+
+  <Target Name="ErrorOnPrebuilts"
+          Condition="'@(PrebuiltFile->Count())' != '0' AND '$(SkipErrorOnPrebuilts)' != 'true'">
+    <Error Text="@(PrebuiltFile->Count()) Prebuilts Exist" />
+  </Target>
+
+</Project>

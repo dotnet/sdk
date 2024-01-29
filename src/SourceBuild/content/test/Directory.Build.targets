@@ -1,7 +1,0 @@
-<Project>
-
-  <!--
-    Prevent repo src automatic Directory.Build imports from finding source-build infra.
-  -->
-
-</Project>

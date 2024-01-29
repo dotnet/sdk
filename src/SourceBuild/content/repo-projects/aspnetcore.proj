@@ -1,34 +1,48 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'OSX'">osx-$(Platform)</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'FreeBSD'">freebsd-$(Platform)</OverrideTargetRid>
-    <OverrideTargetRid Condition="'$(TargetOS)' == 'Windows_NT'">win-$(Platform)</OverrideTargetRid>
-    <_portableRidOverridden Condition="'$(TargetRid)' != '$(OverrideTargetRid)'">true</_portableRidOverridden>
-    <_portableRidOverridden Condition="'$(TargetRid)' == '$(OverrideTargetRid)'">false</_portableRidOverridden>
+    <!-- AspNetCore doesn't have a root build script but one under the eng folder. -->
+    <BuildScript>$(ProjectDirectory)eng\build$(ShellExtension)</BuildScript>
 
-    <!-- StandardSourceBuildArgs include -publish which is not supported by the aspnetcore build script. -->
-    <BuildCommandArgs>$(StandardSourceBuildArgs.Replace('--publish', ''))</BuildCommandArgs>
-    <!-- The arch flag (defaults to x64) overrides any value of TargetArchitecture that we might set -->
-    <BuildCommandArgs>$(BuildCommandArgs) --arch $(Platform)</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) --no-build-repo-tasks</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) --no-build-nodejs</BuildCommandArgs>
-    <BuildCommandArgs>$(BuildCommandArgs) /p:PortableBuild=$(_portableRidOverridden) /p:TargetRuntimeIdentifier=$(OverrideTargetRid)</BuildCommandArgs>
-    <!-- Update to 1.0.0 version of reference assemblies which are built in SBRP instead of the preview.2 version
-         included by Arcade -->
-    <BuildCommandArgs>$(BuildCommandArgs) /p:MicrosoftNetFrameworkReferenceAssembliesVersion=1.0.0</BuildCommandArgs>
-    <BuildCommand>$(ProjectDirectory)\eng\build$(ShellExtension) $(BuildCommandArgs)</BuildCommand>
+    <!-- BuildActions includes -publish which is not supported by the aspnetcore build script. -->
+    <BuildActions>$(FlagParameterPrefix)restore $(FlagParameterPrefix)build $(FlagParameterPrefix)pack</BuildActions>
+    <!-- On Windows, build all for the VB PoC -->
+    <BuildActions Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore $(FlagParameterPrefix)all $(FlagParameterPrefix)pack</BuildActions>
+
+    <BuildArgs Condition="'$(OverrideTargetArch)' == ''">$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
+    <BuildArgs Condition="'$(OverrideTargetArch)' != ''">$(BuildArgs) $(FlagParameterPrefix)arch $(OverrideTargetArch)</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(BuildOS)' != 'windows'">$(BuildArgs) $(FlagParameterPrefix)no-build-repo-tasks</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(BuildOS)' != 'windows'">$(BuildArgs) $(FlagParameterPrefix)no-build-nodejs</BuildArgs>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <OverrideTargetRid>$(TargetRid)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'osx'">osx-$(TargetArchitecture)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'freebsd'">freebsd-$(TargetArchitecture)</OverrideTargetRid>
+    <OverrideTargetRid Condition="'$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</OverrideTargetRid>
+    <_portableRidOverridden Condition="'$(TargetRid)' != '$(OverrideTargetRid)'">true</_portableRidOverridden>
+    <_portableRidOverridden Condition="'$(TargetRid)' == '$(OverrideTargetRid)'">false</_portableRidOverridden>
+
+    <BuildArgs>$(BuildArgs) /p:PortableBuild=$(_portableRidOverridden)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:TargetRuntimeIdentifier=$(OverrideTargetRid)</BuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="roslyn-analyzers" />
+  </ItemGroup>
 
   <ItemGroup>
     <EnvironmentVariables Include="warn_as_error=false" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <!--
       From aspnetcore Versions.props:
           Versions of Microsoft.CodeAnalysis packages referenced by analyzers shipped in the SDK.
@@ -41,14 +55,4 @@
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_LatestVS" Version="%24(MicrosoftCodeAnalysisCommonVersion)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="source-build-externals" />
-    <RepositoryReference Include="runtime" />
-    <RepositoryReference Include="msbuild" />
-    <RepositoryReference Include="roslyn" />
-    <RepositoryReference Include="roslyn-analyzers" />
-  </ItemGroup>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

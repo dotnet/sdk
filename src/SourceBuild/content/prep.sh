@@ -165,7 +165,7 @@ function BootstrapArtifacts {
   fi
 
   # Run restore on project to initiate download of bootstrap packages
-  "$DOTNET_SDK_PATH/dotnet" restore "$workingDir/buildBootstrapPreviouslySB.csproj" /bl:artifacts/prep/bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/prep/bootstrap.log /p:ArchiveDir="$packagesArchiveDir" /p:BootstrapOverrideVersionsProps="$SCRIPT_ROOT/eng/bootstrap/OverrideBootstrapVersions.props"
+  "$DOTNET_SDK_PATH/dotnet" restore "$workingDir/buildBootstrapPreviouslySB.csproj" /bl:artifacts/log/prep-bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/log/prep-bootstrap.log /p:ArchiveDir="$packagesArchiveDir" /p:BootstrapOverrideVersionsProps="$SCRIPT_ROOT/eng/bootstrap/OverrideBootstrapVersions.props"
 
   # Remove working directory
   rm -rf "$workingDir"
@@ -174,6 +174,7 @@ function BootstrapArtifacts {
 # Check for the version of dotnet to install
 if [ "$installDotnet" == true ]; then
   echo "  Installing dotnet..."
+  use_installed_dotnet_cli=false
   (source ./eng/common/tools.sh && InitializeDotNetCli true)
 
   # TODO: Remove once runtime dependency is gone (https://github.com/dotnet/runtime/issues/93666)

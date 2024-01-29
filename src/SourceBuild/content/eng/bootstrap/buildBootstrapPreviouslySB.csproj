@@ -36,9 +36,6 @@
 
     <PortablePackage Include="Microsoft.DotNet.ILCompiler" Version="[$(MicrosoftDotNetILCompilerVersion)]" />
     <PortablePackage Include="Microsoft.NETCore.DotNetAppHost" Version="[$(MicrosoftNETCoreDotNetAppHostVersion)]" />
-    <PortablePackage Include="Microsoft.NETCore.DotNetHost" Version="[$(MicrosoftNETCoreDotNetHostVersion)]" />
-    <PortablePackage Include="Microsoft.NETCore.DotNetHostPolicy" Version="[$(MicrosoftNETCoreDotNetHostPolicyVersion)]" />
-    <PortablePackage Include="Microsoft.NETCore.DotNetHostResolver" Version="[$(MicrosoftNETCoreDotNetHostResolverVersion)]" />
     <PortablePackage Include="Microsoft.NETCore.ILAsm" Version="[$(MicrosoftNETCoreILAsmVersion)]" />
     <PortablePackage Include="Microsoft.NETCore.ILDAsm" Version="[$(MicrosoftNETCoreILDAsmVersion)]" />
     <PortablePackage Include="Microsoft.NETCore.TestHost" Version="[$(MicrosoftNETCoreTestHostVersion)]" />
@@ -47,9 +44,6 @@
     <!-- These packages don't actually exist -->
     <ExcludedPackage Include="runtime.linux-musl-x64.runtime.native.System.IO.Ports" />
     <ExcludedPackage Include="runtime.linux-musl-arm64.runtime.native.System.IO.Ports" />
-
-    <PackageDownload Include="Microsoft.NET.ILLink.Tasks" Version="[$(MicrosoftNETILLinkTasksVersion)]" />
-    <PackageDownload Include="Microsoft.NETCore.App.Ref" Version="[$(MicrosoftNETCoreAppRefVersion)]" />
   </ItemGroup>
 
   <Target Name="GetPackagesToDownload"
