@@ -283,6 +283,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">{0} 솔루션은 {2} 솔루션 폴더에 {1} 프로젝트를 이미 포함합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSettingsNotFound">
+        <source>Tool settings file does not exist for the tool {0}.</source>
+        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">업데이트</target>
