@@ -317,6 +317,11 @@
     <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
       <Output TaskParameter="Lines" PropertyName="MinimumVSVersion" />
     </ReadLinesFromFile>
+
+          <PropertyGroup Condition=" '$(VersionSDKMinor)' == '1' and '$(StabilizePackageVersion)' == 'true' ">
+            <MinimumVSVersion>$(MinimumVSVersion.Substring(0,$(MinimumVSVersion.LastIndexOf('.'))))</MinimumVSVersion>
+            <MinimumVSVersion >$([MSBuild]::Add($(MinimumVSVersion), .1))</MinimumVSVersion>
+          </PropertyGroup>
   </Target>
 
   <Target Name="GenerateSdkBundle"
@@ -330,11 +335,8 @@
           Outputs="$(CombinedFrameworkSdkHostMSIInstallerFile)">
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
-      <!-- While we don't have 9.0 templates available (need SDK update, choose the 8.0 templates -->
-      <!-- <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'" /> -->
       <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                         Condition="'%(TemplatesMajorMinorVersion)' == '8.0'" />
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/>
     </ItemGroup>
     <PropertyGroup>
       <LatestTemplateMsiInstallerFile>@(LatestTemplateInstallerComponent->'%(MSIInstallerFile)')</LatestTemplateMsiInstallerFile>

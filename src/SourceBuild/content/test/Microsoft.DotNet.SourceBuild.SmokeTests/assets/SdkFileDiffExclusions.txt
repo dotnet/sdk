@@ -45,7 +45,6 @@ sb,./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/*?
 
 # missing workload manifests - https://github.com/dotnet/source-build/issues/3242
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.android/*
-msft,./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.ios/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.maccatalyst/*
 msft,./sdk-manifests/x.y.z/microsoft.net.sdk.macos/*
@@ -74,15 +73,48 @@ msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security
 msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Permissions.dll
 msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Windows.Extensions.dll
 
+# netfx runtimes for dotnet-watch - https://github.com/dotnet/source-build/issues/3999
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-net472/*
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Threading.Channels.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/*
+sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Configuration.ConfigurationManager.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Diagnostics.EventLog.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.IO.Pipelines.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.ProtectedData.dll
+
+# netfx runtimes for dotnet-watch - https://github.com/dotnet/source-build/issues/4035
+sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/runtimes/*
+sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Text.Encodings.Web.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Text.Json.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.Extensions.DependencyInjection.Abstractions.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.Extensions.Logging.Abstractions.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.Pkcs.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.Xml.dll
+
 # netfx runtimes for dotnet-format - https://github.com/dotnet/source-build/issues/3509
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.Elfie.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Win32.SystemEvents.dll
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/runtimes/*
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Configuration.ConfigurationManager.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Drawing.Common.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.ProtectedData.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll
+
+# netfx runtimes for dotnet-format - https://github.com/dotnet/source-build/issues/3998
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-net472/*
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Threading.Channels.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Build.Tasks.Core.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Build.Utilities.Core.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.NET.StringTools.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll
+
+# netfx runtimes for dotnet-format - https://github.com/dotnet/source-build/issues/4034
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.deps.json
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/runtimes/*
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Collections.Immutable.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Reflection.Metadata.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Text.Encodings.Web.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Text.Json.dll
+
+# version coherency issue in dotnet-format - https://github.com/dotnet/source-build/issues/4016#issuecomment-1908996093
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll
 
 # netfx runtimes for fsharp - https://github.com/dotnet/source-build/issues/3290
 msft,./sdk/x.y.z/FSharp/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
@@ -94,7 +126,6 @@ msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.Pro
 msft,./sdk/x.y.z/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
 msft,./sdk/x.y.z/runtimes/win/lib/netx.y/System.Drawing.Common.dll
 
-# runtime components in roslyn layout - https://github.com/dotnet/source-build/issues/3286
-# Expected - build is filtering components present in target platform.
-msft,./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll
-msft,./sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll
+# runtime components in roslyn layout - https://github.com/dotnet/source-build/issues/4016
+sb,./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll
+sb,./sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll

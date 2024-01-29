@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <!-- https://github.com/dotnet/source-build/issues/3798 -->
+    <RepositoryReference Include="wpf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
+  </ItemGroup>
+
+</Project>

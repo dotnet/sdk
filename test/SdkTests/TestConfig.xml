@@ -257,5 +257,9 @@
             Skip="true"
             Issue=""
             Reason="Requires props file not in installer repo"/>
+     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAFrameworkDependentApp.It_publishes_with_or_without_apphost"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>   
   </SkippedTests>
 </Tests>

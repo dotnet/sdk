@@ -12,6 +12,10 @@
 *.vsd
 *.vsdx
 *.xlsx
+*.ttf
+*.cur
+*.icm
+*.reg
 
 **/test/*
 **/Test/*
@@ -27,7 +31,6 @@ src/aspnetcore/**/samples/*
 src/aspnetcore/**/TestCertificates/*
 src/aspnetcore/src/*.eot
 src/aspnetcore/src/*.otf
-src/aspnetcore/src/*.ttf
 src/aspnetcore/src/*.woff
 src/aspnetcore/src/*.woff2
 src/aspnetcore/src/Components/Web.JS/dist/Release/blazor.*.js # JavaScript files with a null bytes
