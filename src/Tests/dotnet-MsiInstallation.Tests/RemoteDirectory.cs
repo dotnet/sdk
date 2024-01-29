@@ -14,7 +14,13 @@ namespace Microsoft.DotNet.MsiInstallerTests
     {
         public string Path { get; }
 
-        public bool Exists {  get {  throw new NotImplementedException(); } }
+        public bool Exists
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         public Assertions Should()
         {

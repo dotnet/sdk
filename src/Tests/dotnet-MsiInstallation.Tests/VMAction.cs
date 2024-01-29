@@ -39,6 +39,31 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
     }
 
+    class SerializedRunCommand
+    {
+        public List<string> Arguments { get; set; } = new List<string>();
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SerializedRunCommand other)
+            {
+                return Arguments.SequenceEqual(other.Arguments);
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashcode = new HashCode();
+            hashcode.Add(Arguments.Count);
+            foreach (var arg in Arguments)
+            {
+                hashcode.Add(arg.GetHashCode());
+            }
+            return hashcode.ToHashCode();
+        }
+    }
+
     class VMActionResult
     {
 

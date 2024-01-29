@@ -73,11 +73,11 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 }
                 """;
 
-        VirtualMachine VM { get; }
+        VMControl VM { get; }
 
         public WorkloadTests(ITestOutputHelper log) : base(log)
         {
-            VM = new VirtualMachine(Log);
+            VM = new VMControl(Log);
         }
 
         public void Dispose()
