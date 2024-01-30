@@ -743,7 +743,7 @@ This app wasn't installed because it won't run on your machine. This can be reso
 
 1. Install with the `--allow-roll-forward` flag, using with the following command.
 
-dotnet tool install {0} (-g) --allow-roll-forward 
+dotnet tool install {0}{2} --allow-roll-forward 
 
 2. Install .NET {1} with the following link
 
@@ -751,7 +751,7 @@ https://aka.ms/dotnet/download/sdk/{1}
 
 3. Install with `--force` and manually configure the tool to run, using with the following command.
 
-dotnet tool install {0} (-g) --force 
+dotnet tool install {0}{2} --force 
 </value>
   </data>
 </root>
