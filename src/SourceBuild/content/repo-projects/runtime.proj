@@ -20,8 +20,8 @@
     <BuildArgs Condition="'$(OverrideTargetArch)' != ''">$(BuildArgs) $(FlagParameterPrefix)arch $(OverrideTargetArch)</BuildArgs>
     <BuildArgs Condition="'$(OverrideTargetOS)' != ''">$(BuildArgs) $(FlagParameterPrefix)os $(OverrideTargetOS)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:TargetRid=$(OverrideTargetRid)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">

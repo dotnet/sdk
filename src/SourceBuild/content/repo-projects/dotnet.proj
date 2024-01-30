@@ -24,6 +24,10 @@
     <RepositoryReference Include="symreader" />
     <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <RepositoryReference Include="runtime" />
+  </ItemGroup>
+
+  <!-- Stop build at this point for runtime-only platforms like iOS -->
+  <ItemGroup Condition="'$(ShortStack)' != 'true'">
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
     <RepositoryReference Include="xdt" />

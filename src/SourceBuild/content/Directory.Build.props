@@ -6,6 +6,18 @@
     <DotNetBuildOrchestrator>true</DotNetBuildOrchestrator>
   </PropertyGroup>
 
+  <PropertyGroup Label="ShortStacks">
+    <_OverrideTargetOS>$(OverrideTargetRid.Substring(0, $(OverrideTargetRid.LastIndexOf('-'))))</_OverrideTargetOS>
+    <ShortStack Condition="'$(_OverrideTargetOS)' == 'wasi'">true</ShortStack>
+    <ShortStack Condition="'$(_OverrideTargetOS)' == 'browser'">true</ShortStack>
+    <ShortStack Condition="'$(_OverrideTargetOS)' == 'ios'">true</ShortStack>
+    <ShortStack Condition="'$(_OverrideTargetOS)' == 'iossimulator'">true</ShortStack>
+    <ShortStack Condition="'$(_OverrideTargetOS)' == 'tvos'">true</ShortStack>
+    <ShortStack Condition="'$(_OverrideTargetOS)' == 'tvossimulator'">true</ShortStack>
+    <ShortStack Condition="'$(_OverrideTargetOS)' == 'maccatalyst'">true</ShortStack>
+    <ShortStack Condition="'$(_OverrideTargetOS)' == 'android'">true</ShortStack>
+  </PropertyGroup>
+
   <PropertyGroup Label="CalculateTargetOS">
     <BuildOS>linux</BuildOS>
     <BuildOS Condition="$([MSBuild]::IsOSPlatform('OSX'))">osx</BuildOS>
@@ -33,7 +45,7 @@
     <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 's390x'">s390x</TargetArchitecture>
     <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'ppc64le'">ppc64le</TargetArchitecture>
 
-    <TargetArchitecture Condition="'$(OverrideTargetRid)' != ''">$(OverrideTargetRid.Substring($(OverrideTargetRid.LastIndexOf('-'))).TrimStart('-'))</TargetArchitecture>
+    <TargetArchitecture Condition="'$(OverrideTargetRid)' != '' and '$(ShortStack)' != 'true'">$(OverrideTargetRid.Substring($(OverrideTargetRid.LastIndexOf('-'))).TrimStart('-'))</TargetArchitecture>
     <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
 
     <Platform Condition="'$(Platform)' == '' and '$(InferPlatformFromTargetArchitecture)' == 'true'">$(TargetArchitecture)</Platform>
