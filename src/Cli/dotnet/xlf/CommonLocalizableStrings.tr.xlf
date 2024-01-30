@@ -298,7 +298,7 @@ dotnet tool install {0}{2} --allow-roll-forward
 
 2. Install .NET {1} with the following link
 
-https://aka.ms/dotnet/download/sdk/{1}
+https://aka.ms/dotnet/download/sdk
 
 3. Install with `--force` and manually configure the tool to run, using with the following command.
 
@@ -314,7 +314,7 @@ dotnet tool install {0}{2} --allow-roll-forward
 
 2. Install .NET {1} with the following link
 
-https://aka.ms/dotnet/download/sdk/{1}
+https://aka.ms/dotnet/download/sdk
 
 3. Install with `--force` and manually configure the tool to run, using with the following command.
 
