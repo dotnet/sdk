@@ -62,15 +62,16 @@ namespace Microsoft.DotNet.Tools.Test
             string previousNodeWindowSetting = Environment.GetEnvironmentVariable(NodeWindowEnvironmentName);
             try
             {
+                var forceLegacyOutput = previousNodeWindowSetting == "1";
                 var properties = GetUserSpecifiedExplicitMSBuildProperties(parseResult);
                 var hasUserMSBuildOutputProperty = properties.TryGetValue("VsTestUseMSBuildOutput", out var propertyValue);
-                
+
                 string[] additionalBuildProperties;
-                if (!hasUserMSBuildOutputProperty)
+                if (!forceLegacyOutput && !hasUserMSBuildOutputProperty)
                 {
                     additionalBuildProperties = ["--property:VsTestUseMSBuildOutput=true"];
                 }
-                else if (propertyValue.ToLowerInvariant() == "true")
+                else if (!forceLegacyOutput && propertyValue.ToLowerInvariant() == "true")
                 {
                     // User specified the property themselves. Do nothing.
                     additionalBuildProperties = Array.Empty<string>();
@@ -301,7 +302,7 @@ namespace Microsoft.DotNet.Tools.Test
         private static Dictionary<string, string> GetUserSpecifiedExplicitMSBuildProperties(ParseResult parseResult)
         {
             Dictionary<string, string> globalProperties = new(StringComparer.OrdinalIgnoreCase);
-           IEnumerable<string> globalPropEnumerable = parseResult.UnmatchedTokens;
+            IEnumerable<string> globalPropEnumerable = parseResult.UnmatchedTokens;
             foreach (var unmatchedToken in globalPropEnumerable)
             {
                 var propertyPairs = MSBuildPropertyParser.ParseProperties(unmatchedToken);
