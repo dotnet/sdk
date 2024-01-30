@@ -206,7 +206,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             var runtimeConfigFilePath = Path.ChangeExtension(executableFilePath.ToString(), ".runtimeconfig.json");
 
             // Update the runtimeconfig.json file
-            // TBD: read tfm from runtimeconfig.json
             string tfmValue = "";
             if (File.Exists(runtimeConfigFilePath))
             { 
@@ -235,7 +234,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     break;
 
                 // RuntimeConfigDetectionResult incompatible
-                // TBD: which version should be included in the install; --force?
+                // TBD: ensure the latest
                 default:
                     throw new GracefulException(
                             string.Format(
