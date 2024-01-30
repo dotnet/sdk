@@ -160,9 +160,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     InstalledWorkloadsCollection vsWorkloads = new();
                     VisualStudioWorkloads.GetInstalledWorkloads(_workloadResolver, vsWorkloads);
                     // Remove workloads with an SDK installation source, as we've already created install records for them, and don't need to again.
-                    List<WorkloadId> vsOnlyWorkloads = vsWorkloads.AsEnumerable().Where(w => !w.Value.Contains("SDK")).Select(w => new WorkloadId(w.Key)).ToList();
-                    List<WorkloadId> workloadsWithExistingInstallRecords = (List<WorkloadId>)GetUpdatableWorkloads();
-                    List<WorkloadId> workloadsToWriteRecordsFor = (List<WorkloadId>)vsOnlyWorkloads.Except(workloadsWithExistingInstallRecords);
+                    var vsOnlyWorkloads = vsWorkloads.AsEnumerable().Where(w => !w.Value.Contains("SDK")).Select(w => new WorkloadId(w.Key));
+                    var workloadsWithExistingInstallRecords = GetUpdatableWorkloads();
+                    var workloadsToWriteRecordsFor = vsOnlyWorkloads.Except(workloadsWithExistingInstallRecords);
 
                     ((NetSdkMsiInstallerClient)_workloadInstaller).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
                 }
