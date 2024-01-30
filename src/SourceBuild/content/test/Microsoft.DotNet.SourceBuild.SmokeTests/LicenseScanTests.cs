@@ -150,7 +150,7 @@ public class LicenseScanTests : TestBase
         string ignoreOptions = string.Join(" ", s_ignoredFilePatterns.Select(pattern => $"--ignore {pattern}"));
         ExecuteHelper.ExecuteProcessValidateExitCode(
             "scancode",
-            $"--license --strip-root --only-findings {ignoreOptions} --json-pp {scancodeResultsPath} {Config.LicenseScanPath}",
+            $"--license --processes 4 --strip-root --only-findings {ignoreOptions} --json-pp {scancodeResultsPath} {Config.LicenseScanPath}",
             OutputHelper);
 
         JsonDocument doc = JsonDocument.Parse(File.ReadAllText(scancodeResultsPath));
