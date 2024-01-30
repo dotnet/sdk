@@ -61,7 +61,6 @@ msft,./sdk/x.y.z/Extensions/dump/*
 # https://github.com/dotnet/msbuild/issues/9213
 msft,./sdk/x.y.z/**/System.Windows.Extensions.dll
 msft,./sdk/x.y.z/**/System.Security.Permissions.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Diagnostics.EventLog.dll
 
 # netfx runtimes for dotnet-watch - https://github.com/dotnet/source-build/issues/3285
 msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Elfie.dll
@@ -79,7 +78,6 @@ msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netco
 msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
 sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/*
 sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Configuration.ConfigurationManager.dll
-sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Diagnostics.EventLog.dll
 sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.IO.Pipelines.dll
 sb,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.ProtectedData.dll
 
@@ -99,9 +97,6 @@ msft,./sdk/x.y.z/DotnetTools/dotnet-format/runtimes/*
 # netfx runtimes for dotnet-format - https://github.com/dotnet/source-build/issues/3998
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-net472/*
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Threading.Channels.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Build.Tasks.Core.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Build.Utilities.Core.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.NET.StringTools.dll
 sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll
 sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll
 
@@ -112,6 +107,13 @@ sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Collections.Immutable.dll
 sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Reflection.Metadata.dll
 sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Text.Encodings.Web.dll
 sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Text.Json.dll
+
+# https://github.com/dotnet/source-build/issues/3922
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Win32.SystemEvents.dll
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Drawing.Common.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Diagnostics.EventLog.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Formats.Asn1.dll
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/System.Threading.Tasks.Dataflow.dll
 
 # version coherency issue in dotnet-format - https://github.com/dotnet/source-build/issues/4016#issuecomment-1908996093
 msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll
