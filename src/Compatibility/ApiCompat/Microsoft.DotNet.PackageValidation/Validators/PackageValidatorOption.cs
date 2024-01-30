@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.PackageValidation.Filtering;
+
 namespace Microsoft.DotNet.PackageValidation.Validators
 {
     /// <summary>
@@ -14,7 +16,7 @@ namespace Microsoft.DotNet.PackageValidation.Validators
         bool enqueueApiCompatWorkItems = true,
         bool executeApiCompatWorkItems = true,
         Package? baselinePackage = null,
-        string[]? baselinePackageFrameworksToIgnore = null)
+        ITargetFrameworkRegexFilter? targetFrameworkRegexFilter = null)
     {
         /// <summary>
         /// The latest package that should be validated.
@@ -45,9 +47,6 @@ namespace Microsoft.DotNet.PackageValidation.Validators
         /// A set of frameworks to ignore from the baseline package.
         /// Entries are stored with invariant culture and ignored casing.
         /// </summary>
-        public HashSet<string>? BaselinePackageFrameworksToIgnore { get; } =
-            baselinePackageFrameworksToIgnore is not null ?
-                new HashSet<string>(baselinePackageFrameworksToIgnore, StringComparer.InvariantCultureIgnoreCase) :
-                null;
+        public ITargetFrameworkRegexFilter? BaselinePackageFrameworkFilter { get; } = targetFrameworkRegexFilter;
     }
 }

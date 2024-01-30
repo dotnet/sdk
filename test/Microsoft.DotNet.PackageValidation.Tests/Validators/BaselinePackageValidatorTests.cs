@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.ApiCompatibility.Runner;
 using Microsoft.DotNet.ApiCompatibility.Tests;
+using Microsoft.DotNet.PackageValidation.Filtering;
 using Microsoft.DotNet.PackageValidation.Tests;
 using Moq;
 
@@ -51,12 +52,13 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
             Package package = new(string.Empty, "TestPackage", "2.0.0", [ @"lib/netstandard2.0/TestPackage.dll" ]);
 
             (SuppressibleTestLog log, BaselinePackageValidator validator) = CreateLoggerAndValidator();
+            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new("netcoreapp3.1");
 
             validator.Validate(new PackageValidatorOption(package,
                 enableStrictMode: false,
                 enqueueApiCompatWorkItems: false,
                 baselinePackage: baselinePackage,
-                baselinePackageFrameworksToIgnore: [ "netcoreapp3.1" ]));
+                targetFrameworkRegexFilter: targetFrameworkRegexFilter));
 
             Assert.Empty(log.errors);
         }

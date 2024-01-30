@@ -31,8 +31,8 @@ namespace Microsoft.DotNet.PackageValidation.Validators
             foreach (NuGetFramework baselineTargetFramework in options.BaselinePackage.FrameworksInPackage)
             {
                 // Skip target frameworks excluded from the baseline package.
-                if (options.BaselinePackageFrameworksToIgnore is not null &&
-                   options.BaselinePackageFrameworksToIgnore.Contains(baselineTargetFramework.GetShortFolderName()))
+                if (options.BaselinePackageFrameworkFilter is not null &&
+                   !options.BaselinePackageFrameworkFilter.IsExcluded(baselineTargetFramework.GetShortFolderName()))
                 {
                     continue;
                 }
@@ -115,6 +115,15 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                         }
                     }
                 }
+            }
+
+            // If baseline target frameworks were ignored, log them as an informational message.
+            if (options.BaselinePackageFrameworkFilter is not null &&
+                options.BaselinePackageFrameworkFilter.FoundExcludedTargetFrameworks.Count > 0)
+            {
+                log.LogMessage(ApiSymbolExtensions.Logging.MessageImportance.Normal,
+                    string.Format(Resources.BaselineTargetFrameworksIgnored,
+                        string.Join(", ", options.BaselinePackageFrameworkFilter.FoundExcludedTargetFrameworks)));
             }
 
             if (options.ExecuteApiCompatWorkItems)

@@ -4,6 +4,7 @@
 using Microsoft.DotNet.ApiCompatibility.Logging;
 using Microsoft.DotNet.ApiCompatibility.Rules;
 using Microsoft.DotNet.PackageValidation;
+using Microsoft.DotNet.PackageValidation.Filtering;
 using Microsoft.DotNet.PackageValidation.Validators;
 using NuGet.Frameworks;
 
@@ -31,7 +32,7 @@ namespace Microsoft.DotNet.ApiCompat
             string? runtimeGraph,
             IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences,
             IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences,
-            string[]? baselinePackageFrameworksToIgnore)
+            string? baselinePackageFrameworksToIgnore)
         {
             // Initialize the service provider
             ApiCompatServiceProvider serviceProvider = new(logFactory,
@@ -72,7 +73,7 @@ namespace Microsoft.DotNet.ApiCompat
                     enqueueApiCompatWorkItems: runApiCompat,
                     executeApiCompatWorkItems: false,
                     Package.Create(baselinePackagePath, baselinePackageAssemblyReferences),
-                    baselinePackageFrameworksToIgnore));
+                    baselinePackageFrameworksToIgnore is not null ? new TargetFrameworkRegexFilter(baselinePackageFrameworksToIgnore) : null));
             }
 
             if (runApiCompat)

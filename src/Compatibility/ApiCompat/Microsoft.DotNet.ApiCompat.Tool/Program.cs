@@ -270,11 +270,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 Arity = ArgumentArity.ZeroOrMore,
                 HelpName = "tfm=file1,file2,..."
             };
-            CliOption<string[]?> baselinePackageFrameworksToIgnoreOption = new("--baseline-package-frameworks-to-ignore")
+            CliOption<string?> baselinePackageFrameworksToIgnoreOption = new("--baseline-package-frameworks-to-ignore")
             {
-                Description = "A set of target frameworks to ignore from the baseline package. The framework string must exactly match the folder name in the baseline package.",
-                AllowMultipleArgumentsPerToken = true,
-                Arity = ArgumentArity.ZeroOrMore,
+                Description = "Text pattern to ignore target frameworks from the baseline package during comparison. Multiple target frameworks must be separated with the ';' character. Supports the glob character '*'. Culture and casing is ignored. The framework string must match the folder name in the baseline package."
             };
 
             CliCommand packageCommand = new("package", "Validates the compatibility of package assets");
@@ -316,7 +314,7 @@ namespace Microsoft.DotNet.ApiCompat.Tool
                 string? runtimeGraph = parseResult.GetValue(runtimeGraphOption);
                 Dictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences = parseResult.GetValue(packageAssemblyReferencesOption);
                 Dictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences = parseResult.GetValue(baselinePackageAssemblyReferencesOption);
-                string[]? baselinePackageFrameworksToIgnore = parseResult.GetValue(baselinePackageFrameworksToIgnoreOption);
+                string? baselinePackageFrameworksToIgnore = parseResult.GetValue(baselinePackageFrameworksToIgnoreOption);
 
                 SuppressibleConsoleLog logFactory(ISuppressionEngine suppressionEngine) => new(suppressionEngine, verbosity);
                 ValidatePackage.Run(logFactory,

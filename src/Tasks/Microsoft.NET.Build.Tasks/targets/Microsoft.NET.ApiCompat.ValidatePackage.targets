@@ -56,7 +56,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       BaselinePackageTargetPath="$(_packageValidationBaselinePath)"
       RoslynAssembliesPath="$(RoslynAssembliesPath)"
       PackageAssemblyReferences="@(PackageValidationReferencePath)"
-      BaselinePackageFrameworksToIgnore="@(PackageValidationBaselineFrameworkToIgnore)" />
+      BaselinePackageFrameworksToIgnore="$(PackageValidationBaselineFrameworksToIgnore)" />
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(_ApiCompatValidatePackageSemaphoreFile)'))" />
     <Touch Files="$(_ApiCompatValidatePackageSemaphoreFile)" AlwaysCreate="true" />

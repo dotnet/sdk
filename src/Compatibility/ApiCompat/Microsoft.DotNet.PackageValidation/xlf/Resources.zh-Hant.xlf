@@ -7,6 +7,11 @@
         <target state="translated">[基準]</target>
         <note />
       </trans-unit>
+      <trans-unit id="BaselineTargetFrameworksIgnored">
+        <source>The following target frameworks were ignored from the baseline package: {0}.</source>
+        <target state="new">The following target frameworks were ignored from the baseline package: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="EmptyPackagePath">
         <source>Package path is empty. Please provide a valid package path.</source>
         <target state="translated">套件路徑為空白。請提供有效的套件路徑。</target>
