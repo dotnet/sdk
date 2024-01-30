@@ -167,6 +167,10 @@
     <!-- Dependencies from https://github.com/dotnet/wpf -->
     <MicrosoftNETSdkWindowsDesktopPackageVersion>9.0.0-preview.2.24077.2</MicrosoftNETSdkWindowsDesktopPackageVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <!-- Dependencies from https://github.com/dotnet/winforms -->
+    <SystemDrawingCommonPackageVersion>8.0.0</SystemDrawingCommonPackageVersion>
+  </PropertyGroup>
   <PropertyGroup Label="Manually updated">
     <!-- Dependencies from https://github.com/microsoft/MSBuildLocator -->
     <MicrosoftBuildLocatorPackageVersion>1.6.10</MicrosoftBuildLocatorPackageVersion>
