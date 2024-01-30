@@ -47,6 +47,10 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bcc1d3d6f00fbcea3f454b2e35bceeaa51e604b1</Sha>
     </Dependency>
+    <Dependency Name="System.Drawing.Common" Version="8.0.0">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-winforms</Uri>
+      <Sha>e4ede9b8979b9d2b1b1d4383f30a791414f0625b</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-alpha.1.24072.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>ae7c93e25ae596594b3b22d64115f374a3595912</Sha>
