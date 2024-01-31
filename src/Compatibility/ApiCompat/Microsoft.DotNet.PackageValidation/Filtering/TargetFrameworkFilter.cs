@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using NuGet.Frameworks;
+
 namespace Microsoft.DotNet.PackageValidation.Filtering
 {
     /// <summary>
@@ -14,6 +16,9 @@ namespace Microsoft.DotNet.PackageValidation.Filtering
 
         /// <inheritdoc/>
         public IReadOnlyCollection<string> FoundExcludedTargetFrameworks => _foundExcludedTargetFrameworks;
+
+        /// <inheritdoc/>
+        public bool IsExcluded(NuGetFramework framework) => IsExcluded(framework.GetShortFolderName());
 
         /// <inheritdoc/>
         public bool IsExcluded(string targetFramework)

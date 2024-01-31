@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.PackageValidation.Filtering;
+using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
 {
@@ -12,7 +13,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
         [InlineData("net8.0", "net8.0", "net9.0")]
         [InlineData("net8.0", "net8*")]
         [InlineData("net80.0", "net8*")]
-        public void IsExcluded_FrameworkFound_ReturnsTrue(string targetFramework, params string[] excludedTargetFrameworks)
+        public void IsExcluded_TargetFrameworkFound_ReturnsTrue(string targetFramework, params string[] excludedTargetFrameworks)
         {
             TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
 
@@ -23,11 +24,34 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
         [InlineData("", "")]
         [InlineData("net8.0", "net9.0")]
         [InlineData("net7.0", "net8.0", "net9.0")]
-        public void IsExcluded_FrameworkNotFound_ReturnsFalse(string targetFramework, params string[] excludedTargetFrameworks)
+        public void IsExcluded_TargetFrameworkNotFound_ReturnsFalse(string targetFramework, params string[] excludedTargetFrameworks)
         {
             TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
 
             Assert.False(targetFrameworkFilter.IsExcluded(targetFramework));
+        }
+
+        [Theory]
+        [InlineData("net8.0", "net8.0")]
+        [InlineData("net8.0", "net8.0", "net9.0")]
+        [InlineData("net8.0", "net8*")]
+        [InlineData("net80.0", "net8*")]
+        public void IsExcluded_NuGetFrameworkFound_ReturnsTrue(string targetFramework, params string[] excludedTargetFrameworks)
+        {
+            TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
+
+            Assert.True(targetFrameworkFilter.IsExcluded(NuGetFramework.ParseFolder(targetFramework)));
+        }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData("net8.0", "net9.0")]
+        [InlineData("net7.0", "net8.0", "net9.0")]
+        public void IsExcluded_NuGetFrameworkNotFound_ReturnsFalse(string targetFramework, params string[] excludedTargetFrameworks)
+        {
+            TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
+
+            Assert.False(targetFrameworkFilter.IsExcluded(NuGetFramework.ParseFolder(targetFramework)));
         }
 
         [Fact]
