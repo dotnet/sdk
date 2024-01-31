@@ -34,6 +34,11 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
 
+        public static readonly CliOption<bool> AllUpdateOption = new("--all")
+        {
+            Description = LocalizableStrings.AllUpdateOptionDescription
+        };
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -47,6 +52,7 @@ namespace Microsoft.DotNet.Cli
 
             ToolInstallCommandParser.AddCommandOptions(command);
             command.Options.Add(AllowPackageDowngradeOption);
+            command.Options.Add(AllUpdateOption);
 
             command.SetAction((parseResult) => new ToolUpdateCommand(parseResult).Execute());
 

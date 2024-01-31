@@ -224,4 +224,7 @@ and the corresponding package Ids for installed tools using the command
   <data name="UpdateLocaToolSucceededVersionNoChange" xml:space="preserve">
     <value>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</value>
   </data>
+  <data name="AllUpdateOptionDescription" xml:space="preserve">
+    <value>Update all tools.</value>
+  </data>
 </root>
