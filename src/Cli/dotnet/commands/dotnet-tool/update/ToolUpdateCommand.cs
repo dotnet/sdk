@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly ToolUpdateGlobalOrToolPathCommand _toolUpdateGlobalOrToolPathCommand;
         private readonly bool _global;
         private readonly string _toolPath;
+        private readonly bool _all;
 
         public ToolUpdateCommand(
             ParseResult result,
@@ -32,6 +33,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             _global = result.GetValue(ToolUpdateCommandParser.GlobalOption);
             _toolPath = result.GetValue(ToolUpdateCommandParser.ToolPathOption);
+            _all = result.GetValue(ToolUpdateCommandParser.AllUpdateOption);
         }
 
         public override int Execute()
