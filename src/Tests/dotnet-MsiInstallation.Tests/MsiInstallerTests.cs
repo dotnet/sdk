@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.WriteFile($@"C:\SdkTesting\rollback-rc1.json", RollbackRC1);
             VM.RunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check");
 
-            VM.RunCommand("dotnet", "workload", "install", "Android", "--skip-manifest-update")
+            VM.RunCommand("dotnet", "workload", "install", "android", "--skip-manifest-update")
                 .Should()
                 .Pass();
         }
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.WriteFile($@"C:\SdkTesting\rollback-rc1.json", RollbackRC1);
             VM.RunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check");
 
-            VM.RunCommand("dotnet", "workload", "install", "Android", "--skip-manifest-update")
+            VM.RunCommand("dotnet", "workload", "install", "android", "--skip-manifest-update")
                 .Should()
                 .Pass();
 

@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             switch (Type)
             {
                 case VMActionType.RunCommand:
-                    return $"Run command: {string.Join(" ", Arguments)}";
+                    return $"Run: {string.Join(" ", Arguments)}";
                 case VMActionType.CopyFileToVM:
                     return $"Copy file to VM: {SourcePath} -> {TargetPath}";
                 case VMActionType.WriteFileToVM:

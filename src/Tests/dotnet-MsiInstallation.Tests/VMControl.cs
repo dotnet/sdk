@@ -27,10 +27,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
         private CimSession _session;
         private CimInstance VMInstance
         {
-            get
-            {
-                return _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName='{VMName}'").Single();
-            }
+            get;
+            //{
+            //    return _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName='{VMName}'").Single();
+            //}
         }
 
         public VMControl(ITestOutputHelper log)
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             Log = log;
             _session = CimSession.Create(Environment.MachineName);
-            //VMInstance = _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName='{VMName}'").Single();
+            VMInstance = _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName='{VMName}'").Single();
         }
 
         public CommandResult RunCommandOnVM(params string[] args)
@@ -87,54 +87,40 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public async Task RenameSnapshotAsync(string snapshotId, string newName)
         {
-
-
-
-            for (int i = 0; i < 4; i++)
+            if (newName.Length >= 100)
             {
-                try
-                {
-                    var snapshots = GetSnapshotInstances();
-
-
-                    var managementService = _session.QueryInstances(@"root\virtualization\v2", "WQL", "SELECT * FROM Msvm_VirtualSystemManagementService").Single();
-                    var modifyVmMethod = managementService.CimClass.CimClassMethods.Single(m => m.Name == "ModifySystemSettings");
-                    //foreach (var param in modifyVmMethod.Parameters)
-                    //{
-                    //    Log.WriteLine($"{param.Name}: {param.CimType}");
-                    //}
-
-                    var snapshot = snapshots.Single(s => s.CimInstanceProperties["ConfigurationID"].Value.ToString() == snapshotId);
-
-                    snapshot.CimInstanceProperties["ElementName"].Value = newName;
-
-                    Log.WriteLine("Renaming snapshot " + snapshotId + " to " + newName);
-                    //foreach (var prop in snapshot.CimInstanceProperties)
-                    //{
-                    //    Log.WriteLine($"\t{prop.Name}: {prop.Value}");
-                    //}
-
-                    CimSerializer serializer = CimSerializer.Create();
-                    var snapshotString = Encoding.Unicode.GetString(serializer.Serialize(snapshot, InstanceSerializationOptions.None));
-
-                    CimMethodParametersCollection cimMethodParameters = new CimMethodParametersCollection {
-                        CimMethodParameter.Create("SystemSettings", snapshotString, CimType.String, CimFlags.In)
-                    };
-
-                    var result = _session.InvokeMethod(virtNamespace, managementService, "ModifySystemSettings", cimMethodParameters);
-
-                    await WaitForJobSuccess(result);
-                    return;
-                }
-                catch (Exception ex) when (ex.Message.Contains("ErrorCode: 32773") && ex.Message.Contains("The parameter is incorrect. (0x80070057)"))
-                {
-                    Log.WriteLine("Rename failed: " + ex.Message);
-                    Thread.Sleep(500);
-                    continue;
-                }
+                newName = newName.Substring(0, 96) + "...";
             }
-            Log.WriteLine("Gave up renaming snapshot " + snapshotId + " to " + newName);
-            
+
+            var snapshots = GetSnapshotInstances();
+
+            var managementService = _session.QueryInstances(@"root\virtualization\v2", "WQL", "SELECT * FROM Msvm_VirtualSystemManagementService").Single();
+            var modifyVmMethod = managementService.CimClass.CimClassMethods.Single(m => m.Name == "ModifySystemSettings");
+            //foreach (var param in modifyVmMethod.Parameters)
+            //{
+            //    Log.WriteLine($"{param.Name}: {param.CimType}");
+            //}
+
+            var snapshot = snapshots.Single(s => s.CimInstanceProperties["ConfigurationID"].Value.ToString() == snapshotId);
+
+            snapshot.CimInstanceProperties["ElementName"].Value = newName;
+
+            Log.WriteLine("Renaming snapshot " + snapshotId + " to " + newName);
+            //foreach (var prop in snapshot.CimInstanceProperties)
+            //{
+            //    Log.WriteLine($"\t{prop.Name}: {prop.Value}");
+            //}
+
+            CimSerializer serializer = CimSerializer.Create();
+            var snapshotString = Encoding.Unicode.GetString(serializer.Serialize(snapshot, InstanceSerializationOptions.None));
+
+            CimMethodParametersCollection cimMethodParameters = new CimMethodParametersCollection {
+                CimMethodParameter.Create("SystemSettings", snapshotString, CimType.String, CimFlags.In)
+            };
+
+            var result = _session.InvokeMethod(virtNamespace, managementService, "ModifySystemSettings", cimMethodParameters);
+
+            await WaitForJobSuccess(result);
         }
 
         public async Task<string> CreateSnapshotAsync(string snapshotName)
