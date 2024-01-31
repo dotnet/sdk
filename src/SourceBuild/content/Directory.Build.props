@@ -47,6 +47,9 @@
     <HostRid Condition="'$(HostRid)' == ''">$(BuildRid)</HostRid>
     <TargetRid Condition="'$(TargetRid)' == ''">$(BuildRid)</TargetRid>
 
+    <!-- Source-only builds are non portable. -->
+    <PortableBuild Condition="'$(PortableBuild)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</PortableBuild>
+
     <PortableRid Condition="'$(__PortableTargetOS)' != ''">$(__PortableTargetOS)-$(TargetArchitecture)</PortableRid>
     <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'freebsd'">freebsd-$(TargetArchitecture)</PortableRid>
     <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'osx'">osx-$(TargetArchitecture)</PortableRid>
