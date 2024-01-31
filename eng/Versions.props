@@ -58,7 +58,6 @@
     <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.2.24080.3</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>9.0.0-preview.2.24080.3</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.1</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETILLinkTasksPackageVersion>9.0.0-preview.2.24080.3</MicrosoftNETILLinkTasksPackageVersion>
     <MicrosoftNETHostModelVersion>9.0.0-preview.2.24080.3</MicrosoftNETHostModelVersion>
     <MicrosoftWin32SystemEventsPackageVersion>9.0.0-preview.2.24080.3</MicrosoftWin32SystemEventsPackageVersion>

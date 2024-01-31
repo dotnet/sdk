@@ -47,10 +47,6 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.DotNetHostResolver" Version="9.0.0-preview.2.24080.3">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>df05ddcfc3b62f9186537b533e34d90ac54d85f7</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.2.24076.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>687be2a32a302aaade82380c0eaafa5af85fb4da</Sha>
