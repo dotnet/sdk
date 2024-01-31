@@ -187,6 +187,10 @@
      <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAFrameworkDependentApp.It_publishes_with_or_without_apphost"
             Skip="true"
             Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>  
+     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink.ILLink_links_simple_app_without_analysis_warnings_and_it_runs"
+            Skip="true"
+            Issue=""
             Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>   
   </SkippedTests>
 </Tests>
