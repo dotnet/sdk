@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
@@ -24,12 +22,15 @@ namespace Microsoft.DotNet.Watcher.Internal
             _watchers = new Dictionary<string, IFileSystemWatcher>();
         }
 
-        public event Action<string, bool> OnFileChange;
+        public event Action<string, bool>? OnFileChange;
 
-        public void WatchDirectory(string directory)
+        public void WatchDirectory(string? directory)
         {
             EnsureNotDisposed();
-            AddDirectoryWatcher(directory);
+            if ( directory != null )
+            {
+                AddDirectoryWatcher(directory);
+            } 
         }
 
         public void Dispose()
@@ -56,7 +57,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             directory = EnsureTrailingSlash(directory);
 
             var alreadyWatched = _watchers
-                .Where(d => directory.StartsWith(d.Key))
+                .Where(d => directory!.StartsWith(d.Key))
                 .Any();
 
             if (alreadyWatched)
@@ -65,7 +66,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
 
             var redundantWatchers = _watchers
-                .Where(d => d.Key.StartsWith(directory))
+                .Where(d => d.Key.StartsWith(directory!))
                 .Select(d => d.Key)
                 .ToList();
 
@@ -77,15 +78,15 @@ namespace Microsoft.DotNet.Watcher.Internal
                 }
             }
 
-            var newWatcher = FileWatcherFactory.CreateWatcher(directory);
+            var newWatcher = FileWatcherFactory.CreateWatcher(directory!);
             newWatcher.OnFileChange += WatcherChangedHandler;
             newWatcher.OnError += WatcherErrorHandler;
             newWatcher.EnableRaisingEvents = true;
 
-            _watchers.Add(directory, newWatcher);
+            _watchers.Add(directory!, newWatcher);
         }
 
-        private void WatcherErrorHandler(object sender, Exception error)
+        private void WatcherErrorHandler(object? sender, Exception error)
         {
             if (sender is IFileSystemWatcher watcher)
             {
@@ -93,7 +94,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
         }
 
-        private void WatcherChangedHandler(object sender, (string changedPath, bool newFile) args)
+        private void WatcherChangedHandler(object? sender, (string changedPath, bool newFile) args)
         {
             NotifyChange(args.changedPath, args.newFile);
         }
