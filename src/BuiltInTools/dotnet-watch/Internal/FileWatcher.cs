@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             directory = EnsureTrailingSlash(directory);
 
             var alreadyWatched = _watchers
-                .Where(d => directory!.StartsWith(d.Key))
+                .Where(d => directory.StartsWith(d.Key))
                 .Any();
 
             if (alreadyWatched)
@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
 
             var redundantWatchers = _watchers
-                .Where(d => d.Key.StartsWith(directory!))
+                .Where(d => d.Key.StartsWith(directory))
                 .Select(d => d.Key)
                 .ToList();
 
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             newWatcher.OnError += WatcherErrorHandler;
             newWatcher.EnableRaisingEvents = true;
 
-            _watchers.Add(directory!, newWatcher);
+            _watchers.Add(directory, newWatcher);
         }
 
         private void WatcherErrorHandler(object? sender, Exception error)

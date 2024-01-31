@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         public async Task<FileItem?> GetChangedFileAsync(CancellationToken cancellationToken, Action startedWatching)
         {
-            if(_fileSet != null)
+            if ( _fileSet != null )
             {
                 foreach (var file in _fileSet)
                 {
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             void FileChangedCallback(string path, bool newFile)
             {
-                if (_fileSet != null)
+                if ( _fileSet != null )
                 {
                     if (_fileSet.TryGetValue(path, out var fileItem))
                     {
