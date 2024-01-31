@@ -8,7 +8,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Tools.Tool.List;
 
 namespace Microsoft.DotNet.Tools.Tool.Update
 {
@@ -22,6 +24,15 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
         public override int Execute()
         {
+            // Get the list of tools
+            var toolListCommand = new ToolListCommand(_parseResult);
+            var toolList = toolListCommand.Execute();
+
+            // Parse result
+
+
+
+            // For each tool, call the update command
             return 0;
         }
     }

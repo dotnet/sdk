@@ -44,6 +44,11 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
 
+            if (_all)
+            {
+                return new ToolUpdateAllCommand(_parseResult).Execute();
+            }
+
             if (_global || !string.IsNullOrWhiteSpace(_toolPath))
             {
                 return _toolUpdateGlobalOrToolPathCommand.Execute();
