@@ -495,6 +495,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\In
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks.Tests", "test\core-sdk-tasks.Tests\core-sdk-tasks.Tests.csproj", "{EE5F621E-D9CE-4276-849A-EF03D3C016BC}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Tools.Tests.Utilities", "test\Microsoft.DotNet.Tools.Tests.Utilities\Microsoft.DotNet.Tools.Tests.Utilities.csproj", "{5C5E619D-C507-4C36-9185-10A72B183DFA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -933,6 +935,10 @@ Global
 		{EE5F621E-D9CE-4276-849A-EF03D3C016BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE5F621E-D9CE-4276-849A-EF03D3C016BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE5F621E-D9CE-4276-849A-EF03D3C016BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C5E619D-C507-4C36-9185-10A72B183DFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C5E619D-C507-4C36-9185-10A72B183DFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C5E619D-C507-4C36-9185-10A72B183DFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C5E619D-C507-4C36-9185-10A72B183DFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1106,6 +1112,7 @@ Global
 		{7E8243A3-F8A6-49A2-8F09-9802C8981608} = {E014DF18-8378-4422-ABA7-DB039B72E640}
 		{712E7F93-2477-4290-B6A2-31BFBA6C0182} = {E014DF18-8378-4422-ABA7-DB039B72E640}
 		{EE5F621E-D9CE-4276-849A-EF03D3C016BC} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+		{5C5E619D-C507-4C36-9185-10A72B183DFA} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
