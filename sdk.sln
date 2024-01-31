@@ -493,6 +493,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SdkResolver", "src\Installe
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VSTemplateLocator", "src\Installer\redist-installer\projects\VSTemplateLocator.csproj", "{712E7F93-2477-4290-B6A2-31BFBA6C0182}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks.Tests", "test\core-sdk-tasks.Tests\core-sdk-tasks.Tests.csproj", "{EE5F621E-D9CE-4276-849A-EF03D3C016BC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -927,6 +929,10 @@ Global
 		{712E7F93-2477-4290-B6A2-31BFBA6C0182}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{712E7F93-2477-4290-B6A2-31BFBA6C0182}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{712E7F93-2477-4290-B6A2-31BFBA6C0182}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE5F621E-D9CE-4276-849A-EF03D3C016BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE5F621E-D9CE-4276-849A-EF03D3C016BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE5F621E-D9CE-4276-849A-EF03D3C016BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE5F621E-D9CE-4276-849A-EF03D3C016BC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1099,6 +1105,7 @@ Global
 		{722B74EC-BB45-4251-B54C-83830786A15A} = {E014DF18-8378-4422-ABA7-DB039B72E640}
 		{7E8243A3-F8A6-49A2-8F09-9802C8981608} = {E014DF18-8378-4422-ABA7-DB039B72E640}
 		{712E7F93-2477-4290-B6A2-31BFBA6C0182} = {E014DF18-8378-4422-ABA7-DB039B72E640}
+		{EE5F621E-D9CE-4276-849A-EF03D3C016BC} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
