@@ -9,23 +9,23 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
     {
         [Theory]
         [InlineData("net8.0", "net8.0")]
-        [InlineData("net8.0;net9.0", "net8.0")]
-        [InlineData("net8*", "net8.0")]
-        [InlineData("net8*", "net80.0")]
-        public void IsExcluded_FrameworkFound_ReturnsTrue(string pattern, string targetFramework)
+        [InlineData("net8.0", "net8.0", "net9.0")]
+        [InlineData("net8.0", "net8*")]
+        [InlineData("net80.0", "net8*")]
+        public void IsExcluded_FrameworkFound_ReturnsTrue(string targetFramework, params string[] excludedTargetFrameworks)
         {
-            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(pattern);
+            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(excludedTargetFrameworks);
 
             Assert.True(targetFrameworkRegexFilter.IsExcluded(targetFramework));
         }
 
         [Theory]
         [InlineData("", "")]
-        [InlineData("net9.0", "net8.0")]
-        [InlineData("net8.0;net9.0", "net7.0")]
-        public void IsExcluded_FrameworkNotFound_ReturnsFalse(string pattern, string targetFramework)
+        [InlineData("net8.0", "net9.0")]
+        [InlineData("net7.0", "net8.0", "net9.0")]
+        public void IsExcluded_FrameworkNotFound_ReturnsFalse(string targetFramework, params string[] excludedTargetFrameworks)
         {
-            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(pattern);
+            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(excludedTargetFrameworks);
 
             Assert.False(targetFrameworkRegexFilter.IsExcluded(targetFramework));
         }
@@ -33,9 +33,9 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
         [Fact]
         public void FoundExcludedTargetFrameworks_FrameworksFound_ReturnsEqual()
         {
-            const string pattern = "netstandard2.0;net4*";
-            string[] targetFrameworks = [ "netstandard2.0", "net462" ];
-            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(pattern);
+            string[] excludedTargetFrameworks = ["netstandard2.0", "net4*"];
+            string[] targetFrameworks = ["netstandard2.0", "net462"];
+            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(excludedTargetFrameworks);
 
             foreach (string targetFramework in targetFrameworks)
             {
@@ -48,9 +48,9 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
         [Fact]
         public void FoundExcludedTargetFrameworks_FrameworksNotFound_ReturnsEmpty()
         {
-            const string pattern = "netstandard2.0;net4*";
+            string[] excludedTargetFrameworks = ["netstandard2.0", "net4*"];
             string[] targetFrameworks = ["net6.0", "net7.0"];
-            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(pattern);
+            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(excludedTargetFrameworks);
 
             foreach (string targetFramework in targetFrameworks)
             {

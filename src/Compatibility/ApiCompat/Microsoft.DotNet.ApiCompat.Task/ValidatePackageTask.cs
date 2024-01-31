@@ -119,12 +119,11 @@ namespace Microsoft.DotNet.ApiCompat.Task
         public ITaskItem[]? BaselinePackageAssemblyReferences { get; set; }
 
         /// <summary>
-        /// Text pattern to ignore target frameworks from the baseline package during comparison.
-        /// Multiple target frameworks must be separated with the ';' character. Supports the glob character '*'.
-        /// Culture and casing is ignored.
+        /// Target frameworks to ignore from the baseline package.
+        /// Supports the wildcard character '*' at the end of the string. Culture and casing is ignored.
         /// The framework string must match the folder name in the baseline package.
         /// </summary>
-        public string? BaselinePackageFrameworksToIgnore { get; set; }
+        public string[]? BaselinePackageFrameworksToIgnore { get; set; }
 
         public override bool Execute()
         {

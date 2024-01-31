@@ -1,18 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
-
 namespace Microsoft.DotNet.PackageValidation.Filtering
 {
     /// <summary>
-    /// Helper to check for excluded target frameworks based on a regex pattern.
+    /// Helper to check for excluded target frameworks with wildcard support.
     /// </summary>
-    /// <param name="excludeTargetFrameworks">String pattern to exclude target frameworks. Multiple target frameworks must be separated with the ';' character. The glob '*' character is supported.</param>
-    public class TargetFrameworkRegexFilter(string excludeTargetFrameworks) : ITargetFrameworkRegexFilter
+    /// <param name="excludedTargetFrameworks">Target frameworks to exclude. The wildcard character '*' is allowed at the end of the string.</param>
+    public class TargetFrameworkRegexFilter(params string[] excludedTargetFrameworks) : ITargetFrameworkRegexFilter
     {
-        private const char TargetFrameworkDelimiter = ';';
-        private readonly Regex? _excludeTargetFrameworks = TransformPatternsToRegexList(excludeTargetFrameworks);
+        private const StringComparison TargetFrameworkComparison = StringComparison.InvariantCultureIgnoreCase;
         private readonly HashSet<string> _foundExcludedTargetFrameworks = [];
 
         /// <inheritdoc/>
@@ -21,45 +18,39 @@ namespace Microsoft.DotNet.PackageValidation.Filtering
         /// <inheritdoc/>
         public bool IsExcluded(string targetFramework)
         {
+            // Empty strings can't be excluded.
+            if (targetFramework == string.Empty)
+            {
+                return false;
+            }
+
+            // Fast path if the target framework was already found.
             if (_foundExcludedTargetFrameworks.Contains(targetFramework))
             {
                 return true;
             }
 
-            // Skip target frameworks that are excluded.
-            if (_excludeTargetFrameworks is not null && _excludeTargetFrameworks.IsMatch(targetFramework))
+            foreach (string excludedTargetFramework in excludedTargetFrameworks)
             {
-                _foundExcludedTargetFrameworks.Add(targetFramework);
-                return true;
+                // Wildcard match
+                if (excludedTargetFramework.Length > 1 && excludedTargetFramework.EndsWith("*"))
+                {
+                    string excludedTargetFrameworkWithoutWildcard = excludedTargetFramework.Substring(0, excludedTargetFramework.Length - 1);
+                    if (targetFramework.StartsWith(excludedTargetFrameworkWithoutWildcard, TargetFrameworkComparison))
+                    {
+                        _foundExcludedTargetFrameworks.Add(targetFramework);
+                        return true;
+                    }
+                }
+                // Exact match
+                else if (targetFramework.Equals(excludedTargetFramework, TargetFrameworkComparison))
+                {
+                    _foundExcludedTargetFrameworks.Add(targetFramework);
+                    return true;
+                }
             }
 
             return false;
-        }
-
-        private static Regex? TransformPatternsToRegexList(string patterns)
-        {
-            if (patterns == string.Empty)
-            {
-                return null;
-            }
-
-#if NET
-            string pattern = patterns.Split(TargetFrameworkDelimiter, StringSplitOptions.RemoveEmptyEntries)
-#else
-            string pattern = patterns.Split(new char[] { TargetFrameworkDelimiter }, StringSplitOptions.RemoveEmptyEntries)
-#endif
-                .Select(p => Regex.Escape(p).Replace("\\*", ".*"))
-                .Aggregate((p1, p2) => p1 + "|" + p2);
-            pattern = $"^(?:{pattern})$";
-
-            return new Regex(pattern,
-                RegexOptions.CultureInvariant |
-                RegexOptions.IgnoreCase |
-                RegexOptions.Compiled
-#if NET
-                | RegexOptions.NonBacktracking
-#endif
-                );
         }
     }
 }

@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.ApiCompat
             string? runtimeGraph,
             IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? packageAssemblyReferences,
             IReadOnlyDictionary<NuGetFramework, IEnumerable<string>>? baselinePackageAssemblyReferences,
-            string? baselinePackageFrameworksToIgnore)
+            string[]? baselinePackageFrameworksToIgnore)
         {
             // Initialize the service provider
             ApiCompatServiceProvider serviceProvider = new(logFactory,

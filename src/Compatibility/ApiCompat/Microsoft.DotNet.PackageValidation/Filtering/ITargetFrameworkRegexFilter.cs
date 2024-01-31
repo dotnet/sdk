@@ -4,7 +4,7 @@
 namespace Microsoft.DotNet.PackageValidation.Filtering
 {
     /// <summary>
-    /// Helper to check for excluded target frameworks based on a regex pattern.
+    /// Helper to check for excluded target frameworks with wildcard support.
     /// </summary>
     public interface ITargetFrameworkRegexFilter
     {
@@ -14,11 +14,11 @@ namespace Microsoft.DotNet.PackageValidation.Filtering
         IReadOnlyCollection<string> FoundExcludedTargetFrameworks { get; }
 
         /// <summary>
-        /// Skip target frameworks that are excluded in the ExcludeTargetFrameworks filter.
+        /// Checks if a target framework string is excluded.
         /// The comparison is performed invariant and with ignored casing.
         /// </summary>
         /// <param name="targetFramework">The target framework string to check for exclusion.</param>
-        /// <returns>True if the target framework is excluded by the passed in pattern.</returns>
+        /// <returns>True if the target framework is excluded.</returns>
         bool IsExcluded(string targetFramework);
     }
 }
