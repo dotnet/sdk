@@ -14,6 +14,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public string SnapshotId {  get; set; }
         public string SnapshotName { get; set; }
 
-        public Dictionary<VMAction, (VMActionResult, string snapshotId, string snapshotName)> Actions { get; set; }
+        public Dictionary<SerializedVMAction, (VMActionResult actionResult, VMStateTree resultingState)> Actions { get; set; } = new();
     }
 }

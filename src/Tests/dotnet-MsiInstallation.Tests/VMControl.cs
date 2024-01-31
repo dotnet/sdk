@@ -17,13 +17,21 @@ namespace Microsoft.DotNet.MsiInstallerTests
     internal class VMControl : IDisposable
     {
         public string VMName { get; set; } = "Windows 11 dev environment";
+        public string VMMachineName { get; set; } = "dsp-vm";
+        public string PsExecPath = @"C:\Users\Daniel\Downloads\PSTools\PsExec.exe";
 
         const string virtNamespace = @"root\virtualization\v2";
 
         public ITestOutputHelper Log { get; }
 
         private CimSession _session;
-        private CimInstance VMInstance { get; }
+        private CimInstance VMInstance
+        {
+            get
+            {
+                return _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName='{VMName}'").Single();
+            }
+        }
 
         public VMControl(ITestOutputHelper log)
         {
@@ -34,10 +42,26 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             Log = log;
             _session = CimSession.Create(Environment.MachineName);
-            VMInstance = _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName='{VMName}'").Single();
+            //VMInstance = _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName='{VMName}'").Single();
         }
 
+        public CommandResult RunCommandOnVM(params string[] args)
+        {
+            var remoteCommand = new RemoteCommand(Log, VMMachineName, PsExecPath, args);
 
+            for (int i=0; i<3; i++)
+            {
+                var result = remoteCommand.Execute();
+                if (result.ExitCode != 6 && !result.StdErr.Contains("The handle is invalid"))
+                {
+                    return result;
+                }
+                Log.WriteLine("PsExec failed, retrying...");
+                Thread.Sleep(500);
+            }
+
+            throw new Exception("PsExec failed");
+        }
 
         public IEnumerable<(string id, string name)> GetSnapshots()
         {
@@ -63,34 +87,57 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public async Task RenameSnapshotAsync(string snapshotId, string newName)
         {
-            var snapshots = GetSnapshotInstances();
-
-            var snapshot = snapshots.Single(s => s.CimInstanceProperties["ConfigurationID"].Value.ToString() == snapshotId);
-
-            snapshot.CimInstanceProperties["ElementName"].Value = newName;
 
 
-            var managementService = _session.QueryInstances(@"root\virtualization\v2", "WQL", "SELECT * FROM Msvm_VirtualSystemManagementService").Single();
-            var modifyVmMethod = managementService.CimClass.CimClassMethods.Single(m => m.Name == "ModifySystemSettings");
-            //foreach (var param in modifyVmMethod.Parameters)
-            //{
-            //    Log.WriteLine($"{param.Name}: {param.CimType}");
-            //}
 
-            CimSerializer serializer = CimSerializer.Create();
-            var snapshotString = Encoding.Unicode.GetString(serializer.Serialize(snapshot, InstanceSerializationOptions.None));
+            for (int i = 0; i < 4; i++)
+            {
+                try
+                {
+                    var snapshots = GetSnapshotInstances();
 
-            CimMethodParametersCollection cimMethodParameters = new CimMethodParametersCollection {
-                CimMethodParameter.Create("SystemSettings", snapshotString, CimType.String, CimFlags.In)
-            };
 
-            var result = _session.InvokeMethod(virtNamespace, managementService, "ModifySystemSettings", cimMethodParameters);
+                    var managementService = _session.QueryInstances(@"root\virtualization\v2", "WQL", "SELECT * FROM Msvm_VirtualSystemManagementService").Single();
+                    var modifyVmMethod = managementService.CimClass.CimClassMethods.Single(m => m.Name == "ModifySystemSettings");
+                    //foreach (var param in modifyVmMethod.Parameters)
+                    //{
+                    //    Log.WriteLine($"{param.Name}: {param.CimType}");
+                    //}
 
-            await WaitForJobSuccess(result);
+                    var snapshot = snapshots.Single(s => s.CimInstanceProperties["ConfigurationID"].Value.ToString() == snapshotId);
 
+                    snapshot.CimInstanceProperties["ElementName"].Value = newName;
+
+                    Log.WriteLine("Renaming snapshot " + snapshotId + " to " + newName);
+                    //foreach (var prop in snapshot.CimInstanceProperties)
+                    //{
+                    //    Log.WriteLine($"\t{prop.Name}: {prop.Value}");
+                    //}
+
+                    CimSerializer serializer = CimSerializer.Create();
+                    var snapshotString = Encoding.Unicode.GetString(serializer.Serialize(snapshot, InstanceSerializationOptions.None));
+
+                    CimMethodParametersCollection cimMethodParameters = new CimMethodParametersCollection {
+                        CimMethodParameter.Create("SystemSettings", snapshotString, CimType.String, CimFlags.In)
+                    };
+
+                    var result = _session.InvokeMethod(virtNamespace, managementService, "ModifySystemSettings", cimMethodParameters);
+
+                    await WaitForJobSuccess(result);
+                    return;
+                }
+                catch (Exception ex) when (ex.Message.Contains("ErrorCode: 32773") && ex.Message.Contains("The parameter is incorrect. (0x80070057)"))
+                {
+                    Log.WriteLine("Rename failed: " + ex.Message);
+                    Thread.Sleep(500);
+                    continue;
+                }
+            }
+            Log.WriteLine("Gave up renaming snapshot " + snapshotId + " to " + newName);
+            
         }
 
-        public async Task CreateSnapshotAsync(string snapshotName)
+        public async Task<string> CreateSnapshotAsync(string snapshotName)
         {
             var existingSnapshots = GetSnapshots().ToDictionary(s => s.id, s => s.name);
 
@@ -104,6 +151,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             };
 
 
+            Log.WriteLine("Creating snapshot " + snapshotName);
 
             var result = _session.InvokeMethod(virtNamespace, snapshotService, "CreateSnapshot", cimMethodParameters);
 
@@ -120,10 +168,16 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var newSnapshot = GetSnapshots().Single(s => !existingSnapshots.ContainsKey(s.id));
 
-            //Log.WriteLine($"Created snapshot {newSnapshot.name} ({newSnapshot.id})");
 
-            await RenameSnapshotAsync(newSnapshot.id, snapshotName);
 
+            if (!string.IsNullOrEmpty(snapshotName))
+            {
+                await RenameSnapshotAsync(newSnapshot.id, snapshotName);
+            }
+
+            Log.WriteLine($"Created snapshot {snapshotName} ({newSnapshot.id})");
+
+            return newSnapshot.id;
         }
 
         public async Task ApplySnapshotAsync(string snapshotId)
@@ -141,6 +195,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 CimMethodParameter.Create("Snapshot", snapshot, CimType.Reference, CimFlags.In),
             };
 
+            Log.WriteLine($"Applying snapshot {snapshot.CimInstanceProperties["ElementName"].Value} ({snapshot.CimInstanceProperties["ConfigurationID"].Value})");
+
             var result = _session.InvokeMethod(virtNamespace, snapshotService, "ApplySnapshot", cimMethodParameters);
 
             await WaitForJobSuccess(result);
@@ -150,20 +206,43 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public async Task SetRunningAsync(bool running)
         {
-            bool isAlreadyRunning = (UInt16) VMInstance.CimInstanceProperties["EnabledState"].Value == 2;
-            if (running == isAlreadyRunning)
+            VMEnabledState getCurrentState()
+            {
+                var state = (VMEnabledState) (UInt16)VMInstance.CimInstanceProperties["EnabledState"].Value;
+                Log.WriteLine("Current EnabledState: " + state);
+                return state;
+            }
+
+            var targetState = running ? VMEnabledState.Enabled : VMEnabledState.Disabled;
+
+            if (getCurrentState() == targetState)
             {
                 return;
             }
 
+            //bool isAlreadyRunning = getCurrentState() == 2;
+            //if (running == isAlreadyRunning)
+            //{
+            //    return;
+            //}
+
+            Log.WriteLine("Setting EnabledState to " + targetState);
+
             var methodParameters = new CimMethodParametersCollection()
             {
-                CimMethodParameter.Create("RequestedState", (UInt16) (running ? 2 : 4), CimFlags.In)
+                CimMethodParameter.Create("RequestedState", (UInt16) targetState, CimFlags.In)
             };
+
 
             var result = _session.InvokeMethod(virtNamespace, VMInstance, "RequestStateChange", methodParameters);
 
             await WaitForJobSuccess(result);
+
+            for (int i = 0; i < 10 && getCurrentState() != targetState; i++)
+            {
+                Log.WriteLine("Waiting for state change...");
+                await Task.Delay(250);
+            }
         }
 
         private static bool IsRunning(JobState jobState)
@@ -186,7 +265,23 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 var jobState = (JobState)(UInt16)job.CimInstanceProperties["JobState"].Value;
                 if (jobState != JobState.Completed && jobState != JobState.CompletedWithWarnings)
                 {
-                    throw new Exception("Job failed");
+                    Log.WriteLine("Job failed: " + jobState);
+                    //foreach (var prop in job.CimInstanceProperties)
+                    //{
+                    //    Log.WriteLine($"\t{prop.Name}: {prop.Value}");
+                    //}
+
+                    string exceptionText = "Job failed: " + jobState;
+
+                    try
+                    {
+                        exceptionText += Environment.NewLine +
+                            "ErrorCode: " + job.CimInstanceProperties["ErrorCode"].Value + Environment.NewLine +
+                            "ErrorDescription: " + job.CimInstanceProperties["ErrorDescription"].Value;
+                    }
+                    catch { }
+
+                    throw new Exception(exceptionText);
                 }
             }
             else
@@ -225,31 +320,106 @@ namespace Microsoft.DotNet.MsiInstallerTests
             CompletedWithWarnings = 32768
         }
 
-
-        private class CimObserver<T> : IObserver<T>
+        enum VMEnabledState : UInt16
         {
-            TaskCompletionSource<T> _tcs;
-            Management.Infrastructure.Generic.CimAsyncResult<T> _result;
+            Unknown = 0,
+            Other = 1,
+            Enabled = 2,
+            Disabled = 3,
+            ShuttingDown = 4,
+            NotApplicable = 5,
+            EnabledButOffline = 6,
+            //NoContact = 7,
+            //LostCommunication = 8,
+            //DisabledNoRedundancy = 9,
+            //InTest = 10,
+            //Deferred = 11,
+            //Quiesce = 12,
+            //Starting = 13,
+            //Snapshotting = 14,
+            //Saving = 15,
+            //Stopping = 16,
+            //Pausing = 17,
+            //Resuming = 18,
+            //FastSnapshotting = 19,
+            //FastSaving = 20,
+            //StartingUp = 21,
+            //PoweringDown = 22,
+            //PoweringUp = 23,
+            //SavingState = 24,
+            //RestoringState = 25,
+            //Paused = 26,
+            //Resumed = 27,
+            //Suspended = 28,
+            //StartingUpService = 29,
+            //UndoingSnapshot = 30,
+            //ImportingSnapshot = 31,
+            //ExportingSnapshot = 32,
+            //MergingSnapshot = 33,
+            //RemovingSnapshot = 34,
+            //ApplyingSnapshot = 35,
+            //Killing = 36,
+            //StoppingService = 37,
+            //SuspendedWithSavedState = 38,
+            //StartingUpWithSavedState = 39,
+            //InService = 40,
+            //NoRecovery = 41,
+            //Last = 42
+        }
 
-            public Task<T> Task => _tcs.Task;
+        //private class CimObserver<T> : IObserver<T>
+        //{
+        //    TaskCompletionSource<T> _tcs;
+        //    Management.Infrastructure.Generic.CimAsyncResult<T> _result;
 
-            public CimObserver(Management.Infrastructure.Generic.CimAsyncResult<T> result)
+        //    public Task<T> Task => _tcs.Task;
+
+        //    public CimObserver(Management.Infrastructure.Generic.CimAsyncResult<T> result)
+        //    {
+        //        _tcs = new TaskCompletionSource<T>();
+        //        _result = result;
+        //        _result.Subscribe(this);
+        //    }
+
+        //    public void OnCompleted()
+        //    {
+        //    }
+        //    public void OnError(Exception error)
+        //    {
+        //        _tcs.SetException(error);
+        //    }
+        //    public void OnNext(T value)
+        //    {
+        //        _tcs.SetResult(value);
+        //    }
+        //}
+
+        class RemoteCommand : TestCommand
+        {
+            string _targetMachineName;
+            string _psExecPath;
+
+
+            public RemoteCommand(ITestOutputHelper log, string targetMachineName, string psExecPath, params string[] args)
+                : base(log)
             {
-                _tcs = new TaskCompletionSource<T>();
-                _result = result;
-                _result.Subscribe(this);
+                _targetMachineName = targetMachineName;
+                _psExecPath = psExecPath;
+
+                Arguments.Add("-nobanner");
+                Arguments.Add($@"\\{_targetMachineName}");
+                Arguments.AddRange(args);
             }
 
-            public void OnCompleted()
+            protected override SdkCommandSpec CreateCommand(IEnumerable<string> args)
             {
-            }
-            public void OnError(Exception error)
-            {
-                _tcs.SetException(error);
-            }
-            public void OnNext(T value)
-            {
-                _tcs.SetResult(value);
+                var sdkCommandSpec = new SdkCommandSpec()
+                {
+                    FileName = _psExecPath,
+                    Arguments = args.ToList(),
+                    WorkingDirectory = WorkingDirectory,
+                };
+                return sdkCommandSpec;
             }
         }
 

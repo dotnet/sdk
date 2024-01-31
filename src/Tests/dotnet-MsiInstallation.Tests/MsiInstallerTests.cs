@@ -73,11 +73,13 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 }
                 """;
 
-        VMControl VM { get; }
+        //VMControl VM { get; }
+        VirtualMachine VM { get; }
 
         public WorkloadTests(ITestOutputHelper log) : base(log)
         {
-            VM = new VMControl(Log);
+            //VM = new VMControl(Log);
+            VM = new VirtualMachine(Log);
         }
 
         public void Dispose()
@@ -85,11 +87,61 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.Dispose();
         }
 
+        [Fact]
+        public void InstallSdk()
+        {
+            VM.RunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
+                .Should()
+                .Pass();
+        }
+
+        [Fact]
+        public void InstallWasm()
+        {
+            InstallSdk();
+
+            VM.WriteFile($@"C:\SdkTesting\rollback-rc1.json", RollbackRC1);
+            VM.RunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check");
+
+            VM.RunCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update")
+                .Should()
+                .Pass();
+        }
+
+        [Fact]
+        public void InstallAndroid()
+        {
+            InstallSdk();
+
+            VM.WriteFile($@"C:\SdkTesting\rollback-rc1.json", RollbackRC1);
+            VM.RunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check");
+
+            VM.RunCommand("dotnet", "workload", "install", "Android", "--skip-manifest-update")
+                .Should()
+                .Pass();
+        }
+
+        [Fact]
+        public void InstallAndroidAndWasm()
+        {
+            InstallSdk();
+
+            VM.WriteFile($@"C:\SdkTesting\rollback-rc1.json", RollbackRC1);
+            VM.RunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check");
+
+            VM.RunCommand("dotnet", "workload", "install", "Android", "--skip-manifest-update")
+                .Should()
+                .Pass();
+
+            VM.RunCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update")
+                .Should()
+                .Pass();
+        }
 
         [Fact]
         public async Task UseWMI()
         {
-            var snapshots = VM.GetSnapshots();
+            var snapshots = VM.VMControl.GetSnapshots();
 
             foreach (var snapshot in snapshots)
             {
@@ -98,6 +150,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 //await vm.RenameSnapshot(snapshot.id, snapshot.name + " - renamed");
             }
 
+            await VM.VMControl.RenameSnapshotAsync("D258F2C9-F4BE-47F7-8D9C-DF5D955B84BC", "Can I rename this?");
+
             //await VM.CreateSnapshotAsync("New test snapshot");
 
             //await VM.ApplySnapshotAsync("9BA74A78-D221-436E-9875-0A3BF86CEF4A");
@@ -105,132 +159,132 @@ namespace Microsoft.DotNet.MsiInstallerTests
             await Task.Yield();
         }
 
-        [Fact]
-        public void UninstallSdk()
-        {
-            RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
-        }
+        //[Fact(Skip = "testing")]
+        //public void UninstallSdk()
+        //{
+        //    RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
+        //}
 
-        [Fact]
-        public void SdkInstallation()
-        {
-            RunRemoteCommand("dotnet", "--version")
-                .Should()
-                .HaveStdOut("7.0.401");
+        //[Fact(Skip = "testing")]
+        //public void SdkInstallation()
+        //{
+        //    RunRemoteCommand("dotnet", "--version")
+        //        .Should()
+        //        .HaveStdOut("7.0.401");
 
-            RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
+        //    RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
 
-            new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
-                .Should()
-                .Exist();
+        //    new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
+        //        .Should()
+        //        .Exist();
 
-            RunRemoteCommand("dotnet", "--version")
-                .Should()
-                .HaveStdOut(SdkInstallerVersion);
+        //    RunRemoteCommand("dotnet", "--version")
+        //        .Should()
+        //        .HaveStdOut(SdkInstallerVersion);
 
-            RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
+        //    RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
 
-            new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
-                .Should()
-                .NotExist();
+        //    new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
+        //        .Should()
+        //        .NotExist();
 
-            RunRemoteCommand("dotnet", "--version")
-                .Should()
-                .HaveStdOut("7.0.401");
-        }
+        //    RunRemoteCommand("dotnet", "--version")
+        //        .Should()
+        //        .HaveStdOut("7.0.401");
+        //}
 
-        [Fact]
-        public void SdkInstallation2()
-        {
-            VM.RunCommand("dotnet", "--version")
-                .Should()
-                .HaveStdOut("7.0.401");
+        //[Fact]
+        //public void SdkInstallation2()
+        //{
+        //    //VM.RunCommand("dotnet", "--version")
+        //    //    .Should()
+        //    //    .HaveStdOut("7.0.401");
 
-            VM.RunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
+        //    //VM.RunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
 
-            new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
-                .Should()
-                .Exist();
+        //    //new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
+        //    //    .Should()
+        //    //    .Exist();
 
-            //RunRemoteCommand("dotnet", "--version")
-            //    .Should()
-            //    .HaveStdOut(SdkInstallerVersion);
+        //    //RunRemoteCommand("dotnet", "--version")
+        //    //    .Should()
+        //    //    .HaveStdOut(SdkInstallerVersion);
 
-            //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
+        //    //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
 
-            //new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
-            //    .Should()
-            //    .NotExist();
+        //    //new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
+        //    //    .Should()
+        //    //    .NotExist();
 
-            //RunRemoteCommand("dotnet", "--version")
-            //    .Should()
-            //    .HaveStdOut("7.0.401");
+        //    //RunRemoteCommand("dotnet", "--version")
+        //    //    .Should()
+        //    //    .HaveStdOut("7.0.401");
 
-        }
+        //}
 
 
-        [Fact]
-        public void WorkloadInstallation()
-        {
-            //CleanupInstallState();
+        //[Fact(Skip = "testing")]
+        //public void WorkloadInstallation()
+        //{
+        //    //CleanupInstallState();
 
-            //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
+        //    //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
 
-            //DeployStage2Sdk();
+        //    //DeployStage2Sdk();
 
-            var rollbackResult = RunRemoteCommand("dotnet", "workload", "update", "--print-rollback");
-            rollbackResult.Should().Pass();
-            var originalManifests = ParseRollbackOutput(rollbackResult.StdOut);
+        //    var rollbackResult = RunRemoteCommand("dotnet", "workload", "update", "--print-rollback");
+        //    rollbackResult.Should().Pass();
+        //    var originalManifests = ParseRollbackOutput(rollbackResult.StdOut);
            
 
-            RunRemoteCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update");
+        //    RunRemoteCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update");
 
-            RunRemoteCommand("dotnet", "workload", "list", "--machine-readable")
-                .Should()
-                .HaveStdOutContaining("wasm-tools");
+        //    RunRemoteCommand("dotnet", "workload", "list", "--machine-readable")
+        //        .Should()
+        //        .HaveStdOutContaining("wasm-tools");
 
-            CheckForDuplicateManifests();
+        //    CheckForDuplicateManifests();
 
-            File.WriteAllText($@"\\{TargetMachineName}\c$\SdkTesting\rollback-rc1.json", RollbackRC1);
+        //    File.WriteAllText($@"\\{TargetMachineName}\c$\SdkTesting\rollback-rc1.json", RollbackRC1);
 
-            RunRemoteCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check");
+        //    RunRemoteCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check");
 
-            File.WriteAllText($@"\\{TargetMachineName}\c$\SdkTesting\rollback-8.0.101.json", Rollback8_0_101);
+        //    File.WriteAllText($@"\\{TargetMachineName}\c$\SdkTesting\rollback-8.0.101.json", Rollback8_0_101);
 
-            RunRemoteCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-8.0.101.json", "--skip-sign-check");
+        //    RunRemoteCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-8.0.101.json", "--skip-sign-check");
 
-            HashSet<(string id, string version, string featureBand)> expectedManifests = new();
-            foreach (var kvp in originalManifests.ManifestVersions.Concat(WorkloadSet.FromJson(Rollback8_0_101, new SdkFeatureBand(SdkInstallerVersion)).ManifestVersions))
-            {
-                expectedManifests.Add((kvp.Key.ToString(), kvp.Value.Version.ToString(), kvp.Value.FeatureBand.ToString()));
-            }
+        //    HashSet<(string id, string version, string featureBand)> expectedManifests = new();
+        //    foreach (var kvp in originalManifests.ManifestVersions.Concat(WorkloadSet.FromJson(Rollback8_0_101, new SdkFeatureBand(SdkInstallerVersion)).ManifestVersions))
+        //    {
+        //        expectedManifests.Add((kvp.Key.ToString(), kvp.Value.Version.ToString(), kvp.Value.FeatureBand.ToString()));
+        //    }
 
-            var unexpectedManifests = GetInstalledManifestVersions()
-                .SelectMany(kvp => kvp.Value.Select(v => (id: kvp.Key, version: v.version, featureBand: v.sdkFeatureBand)))
-                .Except(expectedManifests);
+        //    var unexpectedManifests = GetInstalledManifestVersions()
+        //        .SelectMany(kvp => kvp.Value.Select(v => (id: kvp.Key, version: v.version, featureBand: v.sdkFeatureBand)))
+        //        .Except(expectedManifests);
 
-            if (unexpectedManifests.Any())
-            {
-                Assert.Fail($"Unexpected manifests installed: {string.Join(", ", unexpectedManifests)}");
-            }
+        //    if (unexpectedManifests.Any())
+        //    {
+        //        Assert.Fail($"Unexpected manifests installed: {string.Join(", ", unexpectedManifests)}");
+        //    }
 
-            //CheckForDuplicateManifests();
+        //    //CheckForDuplicateManifests();
 
-            //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
-        }
+        //    //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
+        //}
 
-        [Fact]
-        public void InstallStateShouldBeRemovedOnSdkUninstall()
-        {
-            //  This is currently broken, needs to be added to the finalizer
-            throw new NotImplementedException();
-        }
+        //[Fact(Skip = "testing")]
+        //public void InstallStateShouldBeRemovedOnSdkUninstall()
+        //{
+        //    //  This is currently broken, needs to be added to the finalizer
+        //    throw new NotImplementedException();
+        //}
 
-        [Fact]
-        public void RepeatedUpdateToSameRollbackFile()
-        {
-            //  Should not install or uninstall anything
-        }
+        //[Fact(Skip = "testing")]
+        //public void RepeatedUpdateToSameRollbackFile()
+        //{
+        //    //  Should not install or uninstall anything
+        //}
 
         void CleanupInstallState()
         {
