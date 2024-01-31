@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.PackageValidation.Filtering
     /// Helper to check for excluded target frameworks with wildcard support.
     /// </summary>
     /// <param name="excludedTargetFrameworks">Target frameworks to exclude. The wildcard character '*' is allowed at the end of the string.</param>
-    public class TargetFrameworkRegexFilter(params string[] excludedTargetFrameworks) : ITargetFrameworkRegexFilter
+    public class TargetFrameworkFilter(params string[] excludedTargetFrameworks) : ITargetFrameworkFilter
     {
         private const StringComparison TargetFrameworkComparison = StringComparison.InvariantCultureIgnoreCase;
         private readonly HashSet<string> _foundExcludedTargetFrameworks = [];

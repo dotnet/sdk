@@ -5,7 +5,7 @@ using Microsoft.DotNet.PackageValidation.Filtering;
 
 namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
 {
-    public class TargetFrameworkRegexFilterTests
+    public class TargetFrameworkFilterTests
     {
         [Theory]
         [InlineData("net8.0", "net8.0")]
@@ -14,9 +14,9 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
         [InlineData("net80.0", "net8*")]
         public void IsExcluded_FrameworkFound_ReturnsTrue(string targetFramework, params string[] excludedTargetFrameworks)
         {
-            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(excludedTargetFrameworks);
+            TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
 
-            Assert.True(targetFrameworkRegexFilter.IsExcluded(targetFramework));
+            Assert.True(targetFrameworkFilter.IsExcluded(targetFramework));
         }
 
         [Theory]
@@ -25,9 +25,9 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
         [InlineData("net7.0", "net8.0", "net9.0")]
         public void IsExcluded_FrameworkNotFound_ReturnsFalse(string targetFramework, params string[] excludedTargetFrameworks)
         {
-            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(excludedTargetFrameworks);
+            TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
 
-            Assert.False(targetFrameworkRegexFilter.IsExcluded(targetFramework));
+            Assert.False(targetFrameworkFilter.IsExcluded(targetFramework));
         }
 
         [Fact]
@@ -35,14 +35,14 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
         {
             string[] excludedTargetFrameworks = ["netstandard2.0", "net4*"];
             string[] targetFrameworks = ["netstandard2.0", "net462"];
-            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(excludedTargetFrameworks);
+            TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
 
             foreach (string targetFramework in targetFrameworks)
             {
-                Assert.True(targetFrameworkRegexFilter.IsExcluded(targetFramework));
+                Assert.True(targetFrameworkFilter.IsExcluded(targetFramework));
             }
 
-            Assert.Equal(targetFrameworks, targetFrameworkRegexFilter.FoundExcludedTargetFrameworks);
+            Assert.Equal(targetFrameworks, targetFrameworkFilter.FoundExcludedTargetFrameworks);
         }
 
         [Fact]
@@ -50,14 +50,14 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
         {
             string[] excludedTargetFrameworks = ["netstandard2.0", "net4*"];
             string[] targetFrameworks = ["net6.0", "net7.0"];
-            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new(excludedTargetFrameworks);
+            TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
 
             foreach (string targetFramework in targetFrameworks)
             {
-                Assert.False(targetFrameworkRegexFilter.IsExcluded(targetFramework));
+                Assert.False(targetFrameworkFilter.IsExcluded(targetFramework));
             }
 
-            Assert.Empty(targetFrameworkRegexFilter.FoundExcludedTargetFrameworks);
+            Assert.Empty(targetFrameworkFilter.FoundExcludedTargetFrameworks);
         }
     }
 }

@@ -52,13 +52,13 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
             Package package = new(string.Empty, "TestPackage", "2.0.0", [ @"lib/netstandard2.0/TestPackage.dll" ]);
 
             (SuppressibleTestLog log, BaselinePackageValidator validator) = CreateLoggerAndValidator();
-            TargetFrameworkRegexFilter targetFrameworkRegexFilter = new("netcoreapp3.1");
+            TargetFrameworkFilter targetFrameworkRegexFilter = new("netcoreapp3.1");
 
             validator.Validate(new PackageValidatorOption(package,
                 enableStrictMode: false,
                 enqueueApiCompatWorkItems: false,
                 baselinePackage: baselinePackage,
-                targetFrameworkRegexFilter: targetFrameworkRegexFilter));
+                targetFrameworkFilter: targetFrameworkRegexFilter));
 
             Assert.Empty(log.errors);
         }

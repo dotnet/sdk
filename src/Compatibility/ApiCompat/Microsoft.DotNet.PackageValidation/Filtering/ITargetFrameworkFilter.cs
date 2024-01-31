@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.PackageValidation.Filtering
     /// <summary>
     /// Helper to check for excluded target frameworks with wildcard support.
     /// </summary>
-    public interface ITargetFrameworkRegexFilter
+    public interface ITargetFrameworkFilter
     {
         /// <summary>
         /// The list of found excluded target frameworks.

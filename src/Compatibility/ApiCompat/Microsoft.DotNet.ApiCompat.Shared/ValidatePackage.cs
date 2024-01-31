@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.ApiCompat
                     enqueueApiCompatWorkItems: runApiCompat,
                     executeApiCompatWorkItems: false,
                     Package.Create(baselinePackagePath, baselinePackageAssemblyReferences),
-                    baselinePackageFrameworksToIgnore is not null ? new TargetFrameworkRegexFilter(baselinePackageFrameworksToIgnore) : null));
+                    baselinePackageFrameworksToIgnore is not null ? new TargetFrameworkFilter(baselinePackageFrameworksToIgnore) : null));
             }
 
             if (runApiCompat)

@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.PackageValidation.Validators
         bool enqueueApiCompatWorkItems = true,
         bool executeApiCompatWorkItems = true,
         Package? baselinePackage = null,
-        ITargetFrameworkRegexFilter? targetFrameworkRegexFilter = null)
+        ITargetFrameworkFilter? targetFrameworkFilter = null)
     {
         /// <summary>
         /// The latest package that should be validated.
@@ -44,9 +44,9 @@ namespace Microsoft.DotNet.PackageValidation.Validators
         public Package? BaselinePackage { get; } = baselinePackage;
 
         /// <summary>
-        /// A set of frameworks to ignore from the baseline package.
-        /// Entries are stored with invariant culture and ignored casing.
+        /// A filter to ignore target frameworks from the baseline package.
+        /// Comparison is performed with invariant culture and ignored casing.
         /// </summary>
-        public ITargetFrameworkRegexFilter? BaselinePackageFrameworkFilter { get; } = targetFrameworkRegexFilter;
+        public ITargetFrameworkFilter? BaselinePackageFrameworkFilter { get; } = targetFrameworkFilter;
     }
 }
