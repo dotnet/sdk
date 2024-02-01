@@ -7,9 +7,14 @@
         <target state="translated">[Linia bazowa]</target>
         <note />
       </trans-unit>
+      <trans-unit id="BaselineTargetFrameworkIgnoredButPresentInCurrentPackage">
+        <source>Target framework '{0}' in the baseline package is ignored but exists in the current package.</source>
+        <target state="new">Target framework '{0}' in the baseline package is ignored but exists in the current package.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="BaselineTargetFrameworksIgnored">
-        <source>The following target frameworks were ignored from the baseline package: {0}.</source>
-        <target state="new">The following target frameworks were ignored from the baseline package: {0}.</target>
+        <source>Target frameworks '{0}' were ignored from the baseline package.</source>
+        <target state="new">Target frameworks '{0}' were ignored from the baseline package.</target>
         <note />
       </trans-unit>
       <trans-unit id="EmptyPackagePath">
