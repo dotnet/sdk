@@ -2214,13 +2214,13 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
-        <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</source>
-        <target state="translated">プロパティ 'MaxResponseHeadersLength' がバイト単位ではなくキロバイト単位で測定されました。つまり、指定された値は 1024 倍され、その結果は意図した値よりも大きすぎる可能性があります。</target>
+        <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</source>
+        <target state="needs-review-translation">プロパティ 'MaxResponseHeadersLength' がバイト単位ではなくキロバイト単位で測定されました。つまり、指定された値は 1024 倍され、その結果は意図した値よりも大きすぎる可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
-        <source>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</source>
-        <target state="translated">値 '{0}' が正しく指定されていることを確認してください。この値はバイト単位ではなくキロバイト単位で測定されます。</target>
+        <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
+        <target state="needs-review-translation">値 '{0}' が正しく指定されていることを確認してください。この値はバイト単位ではなくキロバイト単位で測定されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">

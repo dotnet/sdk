@@ -1287,10 +1287,10 @@
     <value>Set 'MaxResponseHeadersLength' properly</value>
   </data>
   <data name="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage" xml:space="preserve">
-    <value>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</value>
+    <value>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</value>
   </data>
   <data name="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription" xml:space="preserve">
-    <value>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</value>
+    <value>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</value>
   </data>
   <data name="ProvideCorrectArgumentToEnumHasFlagMessageDifferentType" xml:space="preserve">
     <value>The argument type, '{0}', must be the same as the enum type '{1}'</value>

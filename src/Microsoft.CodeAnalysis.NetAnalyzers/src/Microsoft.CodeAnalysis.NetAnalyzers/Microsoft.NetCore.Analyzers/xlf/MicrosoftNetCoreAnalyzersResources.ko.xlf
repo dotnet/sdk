@@ -2214,13 +2214,13 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
-        <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</source>
-        <target state="translated">'MaxResponseHeadersLength' 속성은 바이트가 아닌 킬로바이트 단위로 측정됩니다. 즉, 제공된 값에 1024를 곱하면 결과가 의도한 값보다 너무 높을 수 있습니다.</target>
+        <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</source>
+        <target state="needs-review-translation">'MaxResponseHeadersLength' 속성은 바이트가 아닌 킬로바이트 단위로 측정됩니다. 즉, 제공된 값에 1024를 곱하면 결과가 의도한 값보다 너무 높을 수 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
-        <source>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</source>
-        <target state="translated">'{0}' 값이 올바르게 제공되었는지 확인합니다. 이 값은 바이트가 아닌 킬로바이트 단위로 측정됩니다.</target>
+        <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
+        <target state="needs-review-translation">'{0}' 값이 올바르게 제공되었는지 확인합니다. 이 값은 바이트가 아닌 킬로바이트 단위로 측정됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">

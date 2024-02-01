@@ -4457,7 +4457,7 @@
         "CA2262": {
           "id": "CA2262",
           "shortDescription": "Set 'MaxResponseHeadersLength' properly",
-          "fullDescription": "The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.",
+          "fullDescription": "The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.",
           "defaultLevel": "note",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2262",
           "properties": {

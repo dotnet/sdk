@@ -2214,13 +2214,13 @@ Konwersje poszerzane i zdefiniowane przez użytkownika nie są obsługiwane w pr
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
-        <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</source>
-        <target state="translated">Właściwość „MaxResponseHeadersLength” jest mierzona w kilobajtach, a nie w bajtach. Oznacza to, że podana wartość zostanie pomnożona przez 1024, a wynik może być zbyt wysoki niż zamierzona wartość.</target>
+        <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</source>
+        <target state="needs-review-translation">Właściwość „MaxResponseHeadersLength” jest mierzona w kilobajtach, a nie w bajtach. Oznacza to, że podana wartość zostanie pomnożona przez 1024, a wynik może być zbyt wysoki niż zamierzona wartość.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
-        <source>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</source>
-        <target state="translated">Upewnij się, że wartość „{0}” jest podana poprawnie. Ta wartość jest mierzona w kilobajtach, a nie w bajtach.</target>
+        <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
+        <target state="needs-review-translation">Upewnij się, że wartość „{0}” jest podana poprawnie. Ta wartość jest mierzona w kilobajtach, a nie w bajtach.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">

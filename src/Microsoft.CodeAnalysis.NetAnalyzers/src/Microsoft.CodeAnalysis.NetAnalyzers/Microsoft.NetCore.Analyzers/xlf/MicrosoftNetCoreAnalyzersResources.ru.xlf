@@ -2214,13 +2214,13 @@ Widening and user defined conversions are not supported with generic types.</sou
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
-        <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. That mean the provided value will be multiplied by 1024, the result might be too high than your intended value.</source>
-        <target state="translated">Свойство "MaxResponseHeadersLength" измеряется в килобайтах, а не байтах. Это означает, что указанное значение будет умножено на 1024. Результат может быть слишком большим по сравнению с предполагаемым значением.</target>
+        <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</source>
+        <target state="needs-review-translation">Свойство "MaxResponseHeadersLength" измеряется в килобайтах, а не байтах. Это означает, что указанное значение будет умножено на 1024. Результат может быть слишком большим по сравнению с предполагаемым значением.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
-        <source>Make sure the value '{0}' is provided correctly. This value is measured in kilobytes not bytes.</source>
-        <target state="translated">Убедитесь, что значение "{0}" указано правильно. Это значение измеряется в килобайтах, а не байтах.</target>
+        <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
+        <target state="needs-review-translation">Убедитесь, что значение "{0}" указано правильно. Это значение измеряется в килобайтах, а не байтах.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">
