@@ -18,13 +18,5 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             bool isGlobalToolRollForward = false,
             bool forceInstall = false
         );
-
-        NuGetVersion GetNuGetVersion(
-            PackageLocation packageLocation,
-            PackageId packageId,
-            VerbosityOptions verbosity,
-            VersionRange versionRange = null,
-            bool isGlobalTool = false
-        );
     }
 }

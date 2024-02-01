@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     }
                     NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
-                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
+                    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value : Path.Combine(toolDownloadDir.Value, packageId.ToString(), packageVersion.ToString());
 
                     if (isGlobalTool)
                     {
@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     {
                         DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
                     }
-                    else if(isGlobalTool)
+                    else if (isGlobalTool)
                     {
                         throw new ToolPackageException(
                             string.Format(
@@ -142,9 +142,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                                 packageId,
                                 packageVersion.ToNormalizedString()));
                     }
-                                       
+
                     CreateAssetFile(packageId, packageVersion, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
-                    
+
                     DirectoryPath toolReturnPackageDirectory;
                     DirectoryPath toolReturnJsonParentDirectory;
 
@@ -168,8 +168,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                                     packageDirectory: toolReturnPackageDirectory,
                                     assetsJsonParentDirectory: toolReturnJsonParentDirectory);
 
-                    
-                    if(!forceInstall)
+                    if (!forceInstall && !isGlobalToolRollForward)
                     {
                         IsRuntimeConfigCompatible(toolPackageInstance, packageId, isGlobalTool);
                     }
@@ -179,7 +178,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                         UpdateRuntimeConfig(toolPackageInstance);
                     }
 
-                    return toolPackageInstance;
+                    return toolPackageInstance;   
                 },
                 rollback: () =>
                 {
