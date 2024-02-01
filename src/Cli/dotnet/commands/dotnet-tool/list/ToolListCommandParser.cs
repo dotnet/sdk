@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
 
-        public static readonly CliOption<string> ToolListFormatOption = new("--format")
+        public static readonly CliOption<ToolListOutputFormat> ToolListFormatOption = new("--format")
         {
             Arity = ArgumentArity.ZeroOrOne
         };
