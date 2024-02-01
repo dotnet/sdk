@@ -25,7 +25,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<ToolListOutputFormat> ToolListFormatOption = new("--format")
         {
-            Arity = ArgumentArity.ZeroOrOne
+            Arity = ArgumentArity.ZeroOrOne,
+            DefaultValueFactory = _ => ToolListOutputFormat.table,
         };
 
         private static readonly CliCommand Command = ConstructCommand();

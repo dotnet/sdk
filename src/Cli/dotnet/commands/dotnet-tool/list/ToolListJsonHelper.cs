@@ -35,8 +35,8 @@ internal sealed class LocalToolListJsonContract : ToolListJsonContract
 
 internal enum ToolListOutputFormat
 {
-    Table = 0,
-    Json = 1
+    table = 0,
+    json = 1
 }
 
 internal static class JsonHelper

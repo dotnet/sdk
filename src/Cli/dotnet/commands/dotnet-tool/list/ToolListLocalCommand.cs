@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
             );
 
             var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption);
-            if (formatValue is ToolListOutputFormat.Json)
+            if (formatValue is ToolListOutputFormat.json)
             {
                 PrintJson(packageEnumerable);
             }
