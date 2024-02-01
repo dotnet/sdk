@@ -13,6 +13,8 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
         [InlineData("net8.0", "net8.0", "net9.0")]
         [InlineData("net8.0", "net8*")]
         [InlineData("net80.0", "net8*")]
+        [InlineData("portable-net45+win8+wpa81+wp8", "portable-*")]
+        [InlineData("portable-net45+win8+wpa81+wp8", "portable*")]
         public void IsExcluded_TargetFrameworkFound_ReturnsTrue(string targetFramework, params string[] excludedTargetFrameworks)
         {
             TargetFrameworkFilter targetFrameworkFilter = new(excludedTargetFrameworks);
@@ -22,6 +24,7 @@ namespace Microsoft.DotNet.PackageValidation.Tests.Filtering
 
         [Theory]
         [InlineData("", "")]
+        [InlineData("net8.0", "*")]
         [InlineData("net8.0", "net9.0")]
         [InlineData("net7.0", "net8.0", "net9.0")]
         public void IsExcluded_TargetFrameworkNotFound_ReturnsFalse(string targetFramework, params string[] excludedTargetFrameworks)
