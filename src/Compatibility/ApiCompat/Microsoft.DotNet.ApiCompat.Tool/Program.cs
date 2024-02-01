@@ -272,9 +272,9 @@ namespace Microsoft.DotNet.ApiCompat.Tool
             };
             CliOption<string[]?> baselinePackageFrameworksToIgnoreOption = new("--baseline-package-frameworks-to-ignore")
             {
-                Description = "A set of target frameworks to ignore from the baseline package. The framework string must exactly match the folder name in the baseline package.",
+                Description = "Target frameworks to ignore from the baseline package. Supports the wildcard character '*' at the end of the string. Culture and casing is ignored. The framework string must match the folder name in the baseline package.",
                 AllowMultipleArgumentsPerToken = true,
-                Arity = ArgumentArity.ZeroOrMore,
+                Arity = ArgumentArity.ZeroOrMore
             };
 
             CliCommand packageCommand = new("package", "Validates the compatibility of package assets");
