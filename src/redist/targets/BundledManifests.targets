@@ -18,7 +18,7 @@
     <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net6" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net7" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
     <BundledManifests Include="Microsoft.NET.Workload.Mono.ToolChain.net8" FeatureBand="$(MonoWorkloadFeatureBand)" Version="$(MonoWorkloadManifestVersion)" />
-    <BundledManifests Include="Microsoft.NET.Sdk.Aspire" FeatureBand="$(AspireFeatureBand)" Version="$(AspireWorkloadManifestVersion)" />
+    <BundledManifests Include="Microsoft.NET.Sdk.Aspire" FeatureBand="$(AspireFeatureBand)" Version="$(MicrosoftNETSdkAspireManifest90100preview1PackageVersion)" />
   </ItemGroup>
 
   <!-- Calculate NuGet package IDs for bundled manifests -->
