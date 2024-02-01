@@ -2215,12 +2215,12 @@ Ampliação e conversões definidas pelo usuário não são compatíveis com tip
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
         <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</source>
-        <target state="needs-review-translation">A propriedade “MaxResponseHeadersLength” é medida em quilobytes, não em bytes. Isso significa que o valor fornecido será multiplicado por 1024 e o resultado pode ser bem mais alto do que o valor pretendido.</target>
+        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
         <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
-        <target state="needs-review-translation">Verifique se o valor “{0}” foi fornecido corretamente. Esse valor é medido em quilobytes e não em bytes.</target>
+        <target state="new">Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">
