@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
@@ -32,12 +33,16 @@ namespace Microsoft.DotNet.MsiInstallerTests
         CopyFileToVM,
         CopyFolderToVM,
         WriteFileToVM,
+        //  Used to combine multiple actions into a single action, so they don't get snapshotted separately
+        ActionGroup,
     }
 
     //  Use a single class for all actions to make it easier to serialize
     class SerializedVMAction
     {
         public VMActionType Type { get; set; }
+
+        public string ExplicitDescription { get; set; }
 
         //  Applies to RunCommand
         public List<string> Arguments { get; set; }
@@ -57,8 +62,15 @@ namespace Microsoft.DotNet.MsiInstallerTests
         //  Applies to WriteFileToVM
         public string FileContents { get; set; }
 
+        //  Applies to ActionGroup
+        public List<SerializedVMAction> Actions { get; set; }
+
         public string GetDescription()
         {
+            if (!string.IsNullOrEmpty(ExplicitDescription))
+            {
+                return ExplicitDescription;
+            }
             switch (Type)
             {
                 case VMActionType.RunCommand:
@@ -69,6 +81,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     return $"Copy folder to VM: {SourcePath} -> {TargetPath}";
                 case VMActionType.WriteFileToVM:
                     return $"Write file to VM: {TargetPath}";
+                case VMActionType.ActionGroup:
+                    return $"Action group: {string.Join(", ", Actions.Select(a => a.GetDescription()))}";
                 default:
                     throw new NotImplementedException();
             }
@@ -81,21 +95,27 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 return false;
             }
 
-            if ((Arguments == null) != (action.Arguments == null))
+            static bool ListsAreEqual<T>(List<T> a, List<T> b)
             {
-                return false;
-            }
-
-            if (Arguments != null && !Arguments.SequenceEqual(action.Arguments))
-            {
-                return false;
+                if (a == null && b == null)
+                {
+                    return true;
+                }
+                if (a == null || b == null)
+                {
+                    return false;
+                }
+                return a.SequenceEqual(b);
             }
 
             return Type == action.Type &&
+                   ExplicitDescription == action.ExplicitDescription &&
+                   ListsAreEqual(Arguments, action.Arguments) &&
                    TargetPath == action.TargetPath &&
                    SourcePath == action.SourcePath &&
                    ContentId == action.ContentId &&
-                   FileContents == action.FileContents;
+                   FileContents == action.FileContents &&
+                   ListsAreEqual(Actions, action.Actions);
         }
 
         public override int GetHashCode()
@@ -152,5 +172,15 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 StdErr = "",
             };
         }
+    }
+
+    interface IVMActionGroup : IDisposable
+    {
+        void RunCommand(params string[] args);
+        void CopyFile(string localSource, string vmDestination);
+
+        void CopyFolder(string localSource, string vmDestination);
+
+        void WriteFile(string vmDestination, string contents);
     }
 }

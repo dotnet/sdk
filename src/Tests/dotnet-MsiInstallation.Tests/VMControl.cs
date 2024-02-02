@@ -168,11 +168,24 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public async Task ApplySnapshotAsync(string snapshotId)
         {
-            await SetRunningAsync(false);
+            if (!await ApplySnapshotIfExistsAsync(snapshotId))
+            {
+                throw new Exception("Snapshot not found: " + snapshotId);
+            }
+        }
 
+        public async Task<bool> ApplySnapshotIfExistsAsync(string snapshotId)
+        {
             var snapshots = GetSnapshotInstances();
 
-            var snapshot = snapshots.Single(s => s.CimInstanceProperties["ConfigurationID"].Value.ToString() == snapshotId);
+            var snapshot = snapshots.SingleOrDefault(s => s.CimInstanceProperties["ConfigurationID"].Value.ToString() == snapshotId);
+
+            if (snapshot == null)
+            {
+                return false;
+            }
+
+            await SetRunningAsync(false);
 
             var snapshotService = _session.EnumerateInstances(virtNamespace, "Msvm_VirtualSystemSnapshotService").First();
 
@@ -188,6 +201,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
             await WaitForJobSuccess(result);
 
             await SetRunningAsync(true);
+
+            return true;
         }
 
         public async Task SetRunningAsync(bool running)

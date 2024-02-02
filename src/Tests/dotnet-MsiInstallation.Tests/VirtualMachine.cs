@@ -50,9 +50,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
 
             _currentState = _rootState;
-
-            VMControl.ApplySnapshotAsync(_currentState.SnapshotId).Wait();
-            _currentAppliedState = _currentState;
         }
         public void Dispose()
         {
@@ -72,7 +69,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             };
         }
 
-        public CommandResult RunCommand(params string[] args)
+        SerializedVMAction CreateRunCommandAction(params string[] args)
         {
             if (args.Length == 0)
             {
@@ -85,17 +82,38 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 Arguments = args.ToList(),
             };
 
-            var vmActionResult = Apply(action);
+            return action;
+        }
+
+        public CommandResult RunCommand(params string[] args)
+        {
+            var vmActionResult = Apply(CreateRunCommandAction(args));
 
             return vmActionResult.ToCommandResult();
         }
 
-        public void CopyFile(string localSource, string vmDestination)
+        SerializedVMAction CreateCopyFileAction(string localSource, string vmDestination)
         {
-            throw new NotImplementedException();
+            var action = new SerializedVMAction
+            {
+                Type = VMActionType.CopyFileToVM,
+                SourcePath = localSource,
+                TargetPath = vmDestination,
+                ContentId = GetFileContentId(localSource),
+            };
+
+            return action;
         }
 
-        public void CopyFolder(string localSource, string vmDestination)
+        public void CopyFile(string localSource, string vmDestination)
+        {
+            Apply(CreateCopyFileAction(localSource, vmDestination))
+                .ToCommandResult()
+                .Should()
+                .Pass();
+        }
+
+        SerializedVMAction CreateCopyFolderAction(string localSource, string vmDestination)
         {
             var action = new SerializedVMAction
             {
@@ -105,12 +123,17 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 ContentId = GetDirectoryContentId(localSource),
             };
 
-            var vmActionResult = Apply(action);
+            return action;
+        }
+
+        public void CopyFolder(string localSource, string vmDestination)
+        {
+            var vmActionResult = Apply(CreateCopyFolderAction(localSource, vmDestination));
 
             vmActionResult.ToCommandResult().Should().Pass();
         }
 
-        public void WriteFile(string vmDestination, string contents)
+        SerializedVMAction CreateWriteFileAction(string vmDestination, string contents)
         {
             var action = new SerializedVMAction
             {
@@ -119,14 +142,38 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 FileContents = contents,
             };
 
-            var vmActionResult = Apply(action);
+
+            return action;
+        }
+
+        public void WriteFile(string vmDestination, string contents)
+        {
+            var vmActionResult = Apply(CreateWriteFileAction(vmDestination, contents));
 
             vmActionResult.ToCommandResult().Should().Pass();
+        }
+
+        public IVMActionGroup CreateActionGroup(string name)
+        {
+            return new VMActionGroup(this, name);
+        }
+
+        public RemoteFile GetRemoteFile(string path)
+        {
+            return new VMRemoteFile(this, path);
         }
 
         public RemoteDirectory GetRemoteDirectory(string path)
         {
             throw new NotImplementedException();
+        }
+
+        void SyncToCurrentState()
+        {
+            if (_currentAppliedState != _currentState)
+            {
+                VMControl.ApplySnapshotAsync(_currentState.SnapshotId).Wait();
+            }
         }
 
         VMActionResult Apply(SerializedVMAction action)
@@ -137,10 +184,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 return result.actionResult;
             }
 
-            if (_currentAppliedState != _currentState)
-            {
-                VMControl.ApplySnapshotAsync(_currentState.SnapshotId).Wait();
-            }
+            SyncToCurrentState();
 
             var actionResult = Run(action);
 
@@ -199,9 +243,20 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
                 return VMActionResult.Success();
             }
+            else if (action.Type == VMActionType.ActionGroup)
+            {
+                VMActionResult lastResult = VMActionResult.Success();
+
+                foreach (var subAction in action.Actions)
+                {
+                    lastResult = Run(subAction);
+                }
+
+                return lastResult;
+            }
             else
             {
-                throw new NotImplementedException();
+                throw new NotImplementedException(action.Type.ToString());
             }
         }
 
@@ -268,6 +323,51 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             return $@"\\{VMControl.VMMachineName}\{driveLetter}$\{pathUnderDrive}";
 
+        }
+
+        class VMActionGroup : IVMActionGroup
+        {
+            VirtualMachine _vm;
+            SerializedVMAction _action;
+
+            public VMActionGroup(VirtualMachine vm, string name)
+            {
+                _vm = vm;
+                _action = new SerializedVMAction
+                {
+                    Type = VMActionType.ActionGroup,
+                    ExplicitDescription = name,
+                    Actions = new List<SerializedVMAction>(),
+                };
+            }
+
+            public void RunCommand(params string[] args) => _action.Actions.Add(_vm.CreateRunCommandAction(args));
+
+            public void CopyFile(string localSource, string vmDestination) => _action.Actions.Add(_vm.CreateCopyFileAction(localSource, vmDestination));
+            public void CopyFolder(string localSource, string vmDestination) => _action.Actions.Add(_vm.CreateCopyFolderAction(localSource, vmDestination));
+            
+            
+            public void WriteFile(string vmDestination, string contents) => _action.Actions.Add(_vm.CreateWriteFileAction(vmDestination, contents));
+
+            public void Dispose()
+            {
+                _vm.Apply(_action);
+            }
+        }
+
+        class VMRemoteFile : RemoteFile
+        {
+            VirtualMachine _vm;
+            public VMRemoteFile(VirtualMachine vm, string path) : base(path)
+            {
+                _vm = vm;
+            }
+
+            public override string ReadAllText()
+            {
+                _vm.SyncToCurrentState();
+                return File.ReadAllText(_vm.VMPathToSharePath(Path));
+            }
         }
     }
 }

@@ -93,6 +93,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.RunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
                 .Should()
                 .Pass();
+
+            DeployStage2Sdk();
         }
 
         [Fact]
@@ -149,8 +151,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
                 //await vm.RenameSnapshot(snapshot.id, snapshot.name + " - renamed");
             }
-
-            await VM.VMControl.RenameSnapshotAsync("D258F2C9-F4BE-47F7-8D9C-DF5D955B84BC", "Can I rename this?");
 
             //await VM.CreateSnapshotAsync("New test snapshot");
 
@@ -366,30 +366,19 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             Log.WriteLine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
 
-            
-            var existingSdkFolder = $@"\\dsp-vm\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}";
-            //var targetSdkFolder = $@"\\dsp-vm\c$\Program Files\dotnet\sdk\{TestContext.Current.ToolsetUnderTest.SdkVersion}";
-            var targetSdkFolder = existingSdkFolder;
-            var backupSdkFolder = $@"\\dsp-vm\c$\SdkTesting\backup\{SdkInstallerVersion}";
+            var installedSdkFolder = $@"c:\Program Files\dotnet\sdk\{SdkInstallerVersion}";
 
-            var existingVersionFileContents = File.ReadAllLines(Path.Combine(existingSdkFolder, ".version"));
+            var vmVersionFilePath = Path.Combine(installedSdkFolder, ".version");
 
-            if (!Directory.Exists(backupSdkFolder))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(backupSdkFolder));
-                Directory.Move(existingSdkFolder, backupSdkFolder);
-            }
-            else if (Directory.Exists(targetSdkFolder))
-            {
-                Directory.Delete(targetSdkFolder, true);
-            }
-
-            CopyDirectory(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, targetSdkFolder);
-
-            var newVersionFileContents = File.ReadAllLines(Path.Combine(targetSdkFolder, ".version"));
-            //  Change feature band for deployed SDK to match MSI installation version
+            var existingVersionFileContents = VM.GetRemoteFile(vmVersionFilePath).ReadAllText().Split(Environment.NewLine);
+            var newVersionFileContents = File.ReadAllLines(Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, ".version"));
             newVersionFileContents[1] = existingVersionFileContents[1];
-            File.WriteAllLines(Path.Combine(targetSdkFolder, ".version"), newVersionFileContents);
+
+            using (var group = VM.CreateActionGroup("Deploy Stage 2 SDK"))
+            {
+                group.CopyFolder(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, installedSdkFolder);
+                group.WriteFile(vmVersionFilePath, string.Join(Environment.NewLine, newVersionFileContents));
+            }
         }
 
         WorkloadSet ParseRollbackOutput(string output)

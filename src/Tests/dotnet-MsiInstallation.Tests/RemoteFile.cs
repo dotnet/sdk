@@ -9,8 +9,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
-    internal class RemoteFile
+    abstract class RemoteFile
     {
+        public RemoteFile(string path)
+        {
+            Path = path;
+        }
+
         public string Path { get; }
+
+        public abstract string ReadAllText();
     }
 }
