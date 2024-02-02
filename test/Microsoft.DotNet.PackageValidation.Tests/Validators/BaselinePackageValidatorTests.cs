@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.ApiCompatibility.Runner;
@@ -60,6 +60,7 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
                 baselinePackage: baselinePackage,
                 targetFrameworkFilter: targetFrameworkRegexFilter));
 
+            Assert.Contains(string.Format(Resources.BaselineTargetFrameworksIgnored, "netcoreapp3.1"), log.info);
             Assert.Empty(log.warnings);
             Assert.Empty(log.errors);
         }
@@ -87,10 +88,11 @@ namespace Microsoft.DotNet.PackageValidation.Validators.Tests
                 baselinePackage: baselinePackage,
                 targetFrameworkFilter: targetFrameworkRegexFilter));
 
-            Assert.Empty(log.errors);
+            Assert.Contains(string.Format(Resources.BaselineTargetFrameworksIgnored, "portable-net45+win8+wp8+wpa81"), log.info);
             Assert.Contains(DiagnosticIds.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage + " " +
                 string.Format(Resources.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage, "portable-net45+win8+wp8+wpa81"),
                 log.warnings);
+            Assert.Empty(log.errors);
         }
     }
 }
