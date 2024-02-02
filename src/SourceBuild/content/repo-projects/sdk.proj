@@ -3,11 +3,6 @@
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
-    <!-- Propagate RID set in source-build to sdk repo -->
-    <_platformIndex>$(NETCoreSdkPortableRuntimeIdentifier.LastIndexOf('-'))</_platformIndex>
-    <_baseOS>$(NETCoreSdkPortableRuntimeIdentifier.Substring(0, $(_platformIndex)))</_baseOS>
-    <_baseOS Condition="'$(PortableBuild)' == 'true'">$(TargetOS)</_baseOS>
-
     <BuildArgs>$(BuildArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PortableRid=$(PortableRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>

@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <Target Name="AddLocalNuGetPackageCacheDirectory"
-          BeforeTargets="Build">
+          BeforeTargets="UpdateNuGetConfig">
     <MakeDir Condition="'$(LocalNuGetPackageCacheDirectory)' != ''"
              Directories="$(LocalNuGetPackageCacheDirectory)" />
 
