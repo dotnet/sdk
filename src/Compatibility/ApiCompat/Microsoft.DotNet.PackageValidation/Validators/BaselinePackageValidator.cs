@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.PackageValidation.Validators
             {
                 // Skip target frameworks excluded from the baseline package.
                 if (options.BaselinePackageFrameworkFilter is not null &&
-                   !options.BaselinePackageFrameworkFilter.IsExcluded(baselineTargetFramework))
+                   options.BaselinePackageFrameworkFilter.IsExcluded(baselineTargetFramework))
                 {
                     continue;
                 }
