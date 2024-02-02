@@ -2215,12 +2215,12 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
         <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</source>
-        <target state="needs-review-translation">Vlastnost MaxResponseHeadersLength se měří v kilobajtech, nikoli v bajtech. To znamená, že zadaná hodnota se vynásobí hodnotou 1024, výsledek může být příliš vysoký, než je vaše zamýšlená hodnota.</target>
+        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
         <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
-        <target state="needs-review-translation">Ujistěte se, že je správně zadaná hodnota {0}. Tato hodnota se měří v kilobajtech, nikoli v bajtech.</target>
+        <target state="new">Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">

@@ -2215,12 +2215,12 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
         <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</source>
-        <target state="needs-review-translation">Die Eigenschaft "MaxResponseHeadersLength" wird in Kilobytes und nicht in Bytes gemessen. Das bedeutet, dass der angegebene Wert mit 1024 multipliziert wird. Das Ergebnis ist im Vergleich zum beabsichtigten Wert möglicherweise zu hoch.</target>
+        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
         <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
-        <target state="needs-review-translation">Stellen Sie sicher, dass der Wert "{0}" richtig angegeben wurde. Dieser Wert wird in Kilobytes und nicht in Bytes gemessen.</target>
+        <target state="new">Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">
