@@ -82,12 +82,6 @@
     <AspNetRazorBuildServerLogFile>$(AspNetRazorBuildServerLogDir)razor-build-server.log</AspNetRazorBuildServerLogFile>
   </PropertyGroup>
 
-  <!-- Cross-build property setting from OverrideTargetRid -->
-  <PropertyGroup Condition="'$(OverrideTargetRid)' != ''">
-    <OverrideTargetOS>$(OverrideTargetRid.Substring(0, $(OverrideTargetRid.LastIndexOf('-'))))</OverrideTargetOS>
-    <OverrideTargetArch>$(OverrideTargetRid.Substring($(OverrideTargetRid.LastIndexOf('-'))).TrimStart('-'))</OverrideTargetArch>
-  </PropertyGroup>
-
   <ItemGroup>
     <!-- Arcade tools.sh picks up DotNetCoreSdkDir, but we can pass DOTNET_INSTALL_DIR directly. -->
     <EnvironmentVariables Include="DOTNET_INSTALL_DIR=$(DotNetRoot)" />
