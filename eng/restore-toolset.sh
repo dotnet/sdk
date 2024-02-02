@@ -7,7 +7,7 @@ function InitializeCustomSDKToolset {
 
   # The following frameworks and tools are used only for testing.
   # Do not attempt to install them in source build.
-  if [[ $properties == *"ArcadeBuildFromSource=true"* ]]; then
+  if [[ $properties == *"ArcadeBuildFromSource=true"* || $product_build || $properties == *"DotNetBuildRepo=true"* ]]; then
     return
   fi
 

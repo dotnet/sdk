@@ -10,14 +10,6 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftNETCoreAppRefPackageVersion)"/>
-    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.NuGetSdkResolver" Version="$(MicrosoftBuildNuGetSdkResolverPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftCodeAnalysisCSharpFeaturesPackageVersion)" />
@@ -108,5 +100,32 @@
     <PackageVersion Include="xunit" Version="$(XUnitVersion)" />
     <PackageVersion Include="Xunit.Combinatorial" Version="$(XunitCombinatorialVersion)" />
     <PackageVersion Include="xunit.console" Version="$(XUnitVersion)"/>
+  </ItemGroup>
+
+  <!-- Use different versions of Microsoft.Build.* depending on whether we are building in source-only
+       modes or normal modes. In normal modes we use MicrosoftBuildMinimumVersion, otherwise
+       we use MicrosoftBuildVersion. Note: This is not abstracted in Versions.props because source-only
+       modes will import a version override file after Versions.props. -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
+    <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
+    <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationVersion)" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.NuGetSdkResolver" Version="$(MicrosoftBuildNuGetSdkResolverPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildTasksCoreVersion)" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildMinimumVersion)" />
+    <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
+    <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationVersion)" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="Microsoft.Build.NuGetSdkResolver" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildMinimumVersion)" />
   </ItemGroup>
 </Project>

@@ -64,7 +64,7 @@
   </ItemGroup>
 
   <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(DotNetBuildFromSource)' != 'true'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <!--
         Microsoft.NET.HostModel also uses System.Reflection.Metadata. Don't move ahead of the version of System.Reflection.Metadata
         that MSBuild supports with the binding redirect to ensure that both this project and Microsoft.NET.HostModel can load
