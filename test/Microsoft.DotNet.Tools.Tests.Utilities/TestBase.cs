@@ -37,12 +37,12 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             {
                 if (s_testAssets == null)
                 {
-                    var assetsRoot = Path.Combine(RepoRoot, "TestAssets");
+                    var assetsRoot = Path.Combine(RepoRoot, "test", "TestAssets");
 
                     s_testAssets = new TestAssets(
                         new DirectoryInfo(assetsRoot),
                         new FileInfo(RepoDirectoriesProvider.DotnetUnderTest),
-                        RepoDirectoriesProvider.TestWorkingFolder); 
+                        RepoDirectoriesProvider.TestWorkingFolder);
                 }
 
                 return s_testAssets;

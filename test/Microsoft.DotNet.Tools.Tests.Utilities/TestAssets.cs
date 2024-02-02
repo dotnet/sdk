@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.TestFramework
             string baseDirectory = AppContext.BaseDirectory;
 #endif
             //  Find the name of the assembly the test comes from based on the the base directory and how the output path has been constructed
-            string testAssemblyName = new DirectoryInfo(baseDirectory).Parent.Parent.Name;
+            string testAssemblyName = new DirectoryInfo(baseDirectory).Parent.Name;
 
             string directory = Path.Combine(_testWorkingFolder, testAssemblyName, callingMethod + identifier);
             if (!string.IsNullOrEmpty(testProjectName))

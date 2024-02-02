@@ -1,0 +1,19 @@
+﻿using Microsoft.DotNet.Tools.Test.Utilities;
+using DotnetCommand = Microsoft.DotNet.Tools.Test.Utilities.DotnetCommand;
+using AssemblyInfo = Microsoft.DotNet.Tools.Test.Utilities.AssemblyInfo;
+
+namespace EndToEnd.Tests
+{
+    public class TelemetryOptOutDefault : TestBase
+    {
+        [Fact(Skip = "TODO: This test can only be ran in CI because the local build does not adjust telemetry settings.")]
+        public void TelemetryOptOutDefaultAttribute()
+        {
+            var versionCommand = new DotnetCommand().ExecuteWithCapturedOutput("--version");
+            var sdkVersion = versionCommand.StdOut.Trim();
+            var dotnetdir = Path.Combine(Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest), "sdk", sdkVersion);
+            var result = AssemblyInfo.Get(Path.Combine(dotnetdir, "dotnet.dll"), "AssemblyMetadataAttribute");
+            result.Should().Contain("TelemetryOptOutDefault:False");
+        }
+    }
+}

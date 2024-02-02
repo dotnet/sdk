@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("Hello Portable World!"); ;
+                .HaveStdOutContaining("Hello Portable World!");
         }
 
         [RequiresMSBuildVersionFact("16.8.0")]
@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute("prefercliruntime")
                 .Should().Pass()
-                .And.HaveStdOutContaining("Hello I prefer the cli runtime World!"); ;
+                .And.HaveStdOutContaining("Hello I prefer the cli runtime World!");
         }
     }
 }

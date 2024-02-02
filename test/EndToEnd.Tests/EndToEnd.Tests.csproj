@@ -1,4 +1,5 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project>
+
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
@@ -9,11 +10,25 @@
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <CanRunTestAsTool>false</CanRunTestAsTool>
+    <DefineConstants Condition="'$(IslinuxPortable)' == 'true'">$(DefineConstants);LINUX_PORTABLE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Copy empty Directory.Build files to stop tests from getting repo build logic -->
+    <Content Include="$(RepoRoot)test\TestAssets\Directory.Build.props" LinkBase="Tests" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(RepoRoot)test\TestAssets\Directory.Build.targets" LinkBase="Tests" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.Utilities\Microsoft.DotNet.Tools.Tests.Utilities.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
 </Project>
