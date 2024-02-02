@@ -206,6 +206,10 @@ function Build {
 
   else
 
+    if [ "$ci" == "true" ]; then
+      properties="$properties /p:ContinuousIntegrationBuild=true"
+    fi
+
     "$CLI_ROOT/dotnet" build-server shutdown
 
     if [ "$test" == "true" ]; then
