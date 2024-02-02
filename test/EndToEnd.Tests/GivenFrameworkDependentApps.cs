@@ -56,10 +56,10 @@ namespace EndToEnd
 
                 string projectPath = Path.Combine(projectDirectory, "TestAppSimple.csproj");
 
-            //  Get the resolved version of .NET Core
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new RestoreCommand()
+                //  Get the resolved version of .NET Core
+                new RestoreCommand()
                         .WithWorkingDirectory(projectDirectory)
-                        .Execute()).Pass();
+                        .Execute().Should().Pass();
 
                 string assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
                 var assetsFile = new LockFileFormat().Read(assetsFilePath);

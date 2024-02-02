@@ -13,10 +13,9 @@ namespace EndToEnd.Tests
         {
             var directory = TestAssets.CreateTestDirectory();
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
+            new NewCommandShim()
                 .WithWorkingDirectory(directory.FullName)
-                .Execute(template))
-                .Fail()
+                .Execute(template).Should().Fail()
                 .And
                 .HaveStdErrContaining($": {template}.");
         }

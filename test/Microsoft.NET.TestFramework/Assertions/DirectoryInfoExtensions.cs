@@ -19,5 +19,7 @@ namespace Microsoft.NET.TestFramework.Assertions
         {
             return new FileInfo(Path.Combine(dir.FullName, name));
         }
+
+        public static FileInfo GetFile(this DirectoryInfo subject, string fileName) => new(Path.Combine(subject.FullName, fileName));
     }
 }

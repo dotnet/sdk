@@ -6,13 +6,6 @@ namespace EndToEnd.Tests
 {
     public class ValidateInsertedManifests : TestBase
     {
-        private readonly ITestOutputHelper output;
-
-        public ValidateInsertedManifests(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
         [Fact]
         public void ManifestReaderCanReadManifests()
         {

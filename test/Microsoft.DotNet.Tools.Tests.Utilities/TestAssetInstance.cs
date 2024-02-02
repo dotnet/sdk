@@ -190,13 +190,8 @@ namespace Microsoft.DotNet.TestFramework
                     }
                 }
 
-                using (var file = new FileStream(
-                    destination.FullName,
-                    FileMode.CreateNew,
-                    FileAccess.ReadWrite))
-                {
-                    doc.Save(file, SaveOptions.None);
-                }
+                using var file = new FileStream(destination.FullName, FileMode.CreateNew, FileAccess.ReadWrite);
+                doc.Save(file, SaveOptions.None);
             }
         }
 
@@ -209,7 +204,7 @@ namespace Microsoft.DotNet.TestFramework
             var commandResult = new DotnetCommand()
                 .Execute(ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(restoreArgs));
 
-            Tools.Test.Utilities.CommandResultExtensions.Should(commandResult).Pass();
+            commandResult.Should().Pass();
         }
 
         private void RestoreAllProjects()

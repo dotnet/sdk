@@ -47,15 +47,12 @@ namespace EndToEnd
                 project.Save(file);
             }
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new RestoreCommand()
+            new RestoreCommand()
                     .WithWorkingDirectory(testProject.Root.FullName)
-                    .Execute()).Pass();
+                    .Execute().Should().Pass();
 
-            var binDirectory =
-                Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(
-                    Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(new DirectoryInfo(testProject.Root.FullName), "bin"), "Debug")
-                .GetDirectories().FirstOrDefault();
-            Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Should(binDirectory).HaveFilesMatching(outputFile, SearchOption.TopDirectoryOnly);
+            var binDirectory = new DirectoryInfo(testProject.Root.FullName).Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault();
+            binDirectory.Should().HaveFilesMatching(outputFile, SearchOption.TopDirectoryOnly);
             var resolvedVersionsFile = File.ReadAllLines(Path.Combine(binDirectory.FullName, outputFile));
             foreach (var framework in frameworks)
             {

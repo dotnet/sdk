@@ -10,16 +10,11 @@ namespace EndToEnd
         public const string AspNetCoreAppPackageName = "Microsoft.AspNetCore.App";
         public const string AspNetCoreAllPackageName = "Microsoft.AspNetCore.All";
 
-
         public string TestName { get; set; }
         public string Identifier { get; set; }
-
         public string PackageName { get; set; } = NETCorePackageName;
-
         public string MinorVersion { get; set; }
-
         public string RuntimeIdentifier { get; set; }
-
         public Dictionary<string, string> AdditionalProperties { get; } = new Dictionary<string, string>();
 
         public TestProjectCreator([CallerMemberName] string testName = null, string identifier = "")
@@ -73,9 +68,7 @@ namespace EndToEnd
             }
 
             project.Save(projectPath);
-
             return testInstance;
-
         }
     }
 }

@@ -23,9 +23,9 @@ namespace EndToEnd
             string projectDirectory = testInstance.Root.FullName;
 
             //  Get the version rolled forward to
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new RestoreCommand()
+            new RestoreCommand()
                     .WithWorkingDirectory(projectDirectory)
-                    .Execute()).Pass();
+                    .Execute().Should().Pass();
 
             string assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
             var assetsFile = new LockFileFormat().Read(assetsFilePath);
@@ -68,9 +68,9 @@ namespace EndToEnd
 
             floatingProject.Save(floatingProjectPath);
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new RestoreCommand()
+            new RestoreCommand()
                     .WithWorkingDirectory(floatingProjectInstance.Root.FullName)
-                    .Execute()).Pass();
+                    .Execute().Should().Pass();
 
             string floatingAssetsFilePath = Path.Combine(floatingProjectInstance.Root.FullName, "obj", "project.assets.json");
 
@@ -96,9 +96,9 @@ namespace EndToEnd
             var directory = TestAssets.CreateTestDirectory();
             string projectDirectory = directory.FullName;
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
+            new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("console --no-restore")).Pass();
+                .Execute("console --no-restore").Should().Pass();
 
             string projectPath = Path.Combine(projectDirectory, Path.GetFileName(projectDirectory) + ".csproj");
 
@@ -122,9 +122,9 @@ namespace EndToEnd
 
             //  Run "dotnet new web", get TargetFramework property, and make sure it's covered in SupportedAspNetCoreAppVersions
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
+            new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("web --no-restore")).Pass();
+                .Execute("web --no-restore").Should().Pass();
 
             string projectPath = Path.Combine(projectDirectory, Path.GetFileName(projectDirectory) + ".csproj");
 

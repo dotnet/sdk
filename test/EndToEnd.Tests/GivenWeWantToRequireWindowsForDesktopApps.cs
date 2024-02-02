@@ -25,9 +25,9 @@ namespace Microsoft.DotNet.Tests.EndToEnd
 
             var testInstance = testProjectCreator.Create();
 
-            Tools.Test.Utilities.CommandResultExtensions.Should(new BuildCommand()
+            new BuildCommand()
                     .WithWorkingDirectory(testInstance.Root.FullName)
-                    .Execute()).Pass();
+                    .Execute().Should().Pass();
 
             string packagesPath = Path.Combine(testInstance.Root.FullName, "packages");
             Directory.Exists(packagesPath).Should().BeFalse(packagesPath + " should not exist");
@@ -63,12 +63,12 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 target.Name = ns + target.Name.LocalName;
                 project.Root.Add(target);
             }
-            TestFramework.TestAssetInstance testInstance 
-                = testProjectCreator.Create().WithProjectChanges(overrideLastRuntimeFrameworkVersionToExistingOlderVersion);
+            TestFramework.TestAssetInstance testInstance = testProjectCreator.Create()
+                .WithProjectChanges(overrideLastRuntimeFrameworkVersionToExistingOlderVersion);
 
-            Tools.Test.Utilities.CommandResultExtensions.Should(new PublishCommand()
+            new PublishCommand()
                     .WithWorkingDirectory(testInstance.Root.FullName)
-                    .Execute()).Pass();
+                    .Execute().Should().Pass();
 
             string packagesPath = Path.Combine(testInstance.Root.FullName, "packages", $"runtime.{Rid}.microsoft.windowsdesktop.app"); 
             Directory.Exists(packagesPath).Should().BeFalse(packagesPath + " should not exist");

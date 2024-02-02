@@ -14,7 +14,7 @@ namespace EndToEnd
         {
             new DotnetCommand(Log)
                 .Execute("dev-certs", "--help")
-                    .Should().Pass();
+                .Should().Pass();
         }
     }
 }

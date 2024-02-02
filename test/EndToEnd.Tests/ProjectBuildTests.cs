@@ -20,9 +20,9 @@ namespace EndToEnd.Tests
             string projectDirectory = directory.FullName;
 
             string newArgs = "console --no-restore";
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
+            new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)).Pass();
+                .Execute(newArgs).Should().Pass();
 
             string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
 
@@ -33,26 +33,26 @@ namespace EndToEnd.Tests
                 .Element(ns + "TargetFramework").Value = TestAssetInfo.currentTfm;
             project.Save(projectPath);
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new RestoreCommand()
+            new RestoreCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()).Pass();
+                .Execute().Should().Pass();
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new BuildCommand()
+            new BuildCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()).Pass();
+                .Execute().Should().Pass();
 
-            var runCommand = Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new RunCommand()
+            new RunCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .ExecuteWithCapturedOutput()).Pass().And.HaveStdOutContaining("Hello, World!");
+                .ExecuteWithCapturedOutput().Should().Pass().And.HaveStdOutContaining("Hello, World!");
 
-            var binDirectory = Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(new DirectoryInfo(projectDirectory), "bin");
-            Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Should(binDirectory).HaveFilesMatching("*.dll", SearchOption.AllDirectories);
+            var binDirectory = new DirectoryInfo(projectDirectory).Sub("bin");
+            binDirectory.Should().HaveFilesMatching("*.dll", SearchOption.AllDirectories);
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new CleanCommand()
+            new CleanCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()).Pass();
+                .Execute().Should().Pass();
 
-            Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Should(binDirectory).NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
+            binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
         [Fact]
@@ -62,9 +62,9 @@ namespace EndToEnd.Tests
             string projectDirectory = directory.FullName;
 
             string newArgs = "console --no-restore";
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
+            new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)).Pass();
+                .Execute(newArgs).Should().Pass();
 
             string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
 
@@ -76,18 +76,16 @@ namespace EndToEnd.Tests
                 .Element(ns + "TargetFramework").Value = TestAssetInfo.currentTfm;
             project.Save(projectPath);
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new BuildCommand()
+            new BuildCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()).Pass();
+                .Execute().Should().Pass();
 
-            var runCommand = Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new RunCommand()
+            new RunCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .ExecuteWithCapturedOutput()).Pass().And.HaveStdOutContaining("Hello, World!");
+                .ExecuteWithCapturedOutput().Should().Pass().And.HaveStdOutContaining("Hello, World!");
         }
 
         [WindowsOnlyTheory]
-        // [InlineData("net6.0", true)]
-        // [InlineData("net6.0", false)]
         [InlineData("current", true)]
         [InlineData("current", false)]
         public void ItCanPublishArm64Winforms(string TargetFramework, bool selfContained)
@@ -101,34 +99,28 @@ namespace EndToEnd.Tests
                 TargetFrameworkParameter = $"-f {TargetFramework}";
             }
             string newArgs = $"winforms {TargetFrameworkParameter} --no-restore";
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
+            new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)).Pass();
+                .Execute(newArgs).Should().Pass();
 
             string selfContainedArgs = selfContained ? " --self-contained" : "";
             string publishArgs = "-r win-arm64" + selfContainedArgs;
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new PublishCommand()
+            new PublishCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(publishArgs)).Pass();
+                .Execute(publishArgs).Should().Pass();
 
-            var selfContainedPublishDir =
-                Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(
-                    Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(
-                    Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(
-                    Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(
-                        new DirectoryInfo(projectDirectory), "bin"), TargetFramework != "current" ? "Debug" : "Release")
-                    .GetDirectories().FirstOrDefault(), "win-arm64"), "publish");
+            var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
+                .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release")
+                .GetDirectories().FirstOrDefault().Sub("win-arm64").Sub("publish");
 
             if (selfContained)
             {
-                Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Should(selfContainedPublishDir).HaveFilesMatching("System.Windows.Forms.dll", SearchOption.TopDirectoryOnly);
+                selfContainedPublishDir.Should().HaveFilesMatching("System.Windows.Forms.dll", SearchOption.TopDirectoryOnly);
             }
-            Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Should(selfContainedPublishDir).HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
+            selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
         [WindowsOnlyTheory]
-        // [InlineData("net6.0", true)]
-        // [InlineData("net6.0", false)]
         [InlineData("current", true)]
         [InlineData("current", false)]
         public void ItCanPublishArm64Wpf(string TargetFramework, bool selfContained)
@@ -143,30 +135,26 @@ namespace EndToEnd.Tests
             }
 
             string newArgs = $"wpf {TargetFrameworkParameter} --no-restore";
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
+            new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)).Pass();
+                .Execute(newArgs).Should().Pass();
 
             string selfContainedArgs = selfContained ? " --self-contained" : "";
             string publishArgs = "-r win-arm64" + selfContainedArgs;
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new PublishCommand()
+            new PublishCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(publishArgs)).Pass();
+                .Execute(publishArgs).Should().Pass();
 
-            var selfContainedPublishDir =
-                Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(
-                    Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(
-                    Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(
-                    Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Sub(
-                        new DirectoryInfo(projectDirectory), "bin"), TargetFramework != "current" ? "Debug" : "Release")
-                    .GetDirectories().FirstOrDefault(), "win-arm64"), "publish");
+            var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
+                .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release")
+                .GetDirectories().FirstOrDefault().Sub("win-arm64").Sub("publish");
 
             if (selfContained)
             {
-                Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Should(selfContainedPublishDir).HaveFilesMatching("PresentationCore.dll", SearchOption.TopDirectoryOnly);
-                Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Should(selfContainedPublishDir).HaveFilesMatching("PresentationNative_*.dll", SearchOption.TopDirectoryOnly);
+                selfContainedPublishDir.Should().HaveFilesMatching("PresentationCore.dll", SearchOption.TopDirectoryOnly);
+                selfContainedPublishDir.Should().HaveFilesMatching("PresentationNative_*.dll", SearchOption.TopDirectoryOnly);
             }
-            Microsoft.DotNet.Tools.Test.Utilities.DirectoryInfoExtensions.Should(selfContainedPublishDir).HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
+            selfContainedPublishDir.Should().HaveFilesMatching($"{directory.Name}.dll", SearchOption.TopDirectoryOnly);
         }
 
         [Theory]
@@ -179,7 +167,6 @@ namespace EndToEnd.Tests
         [InlineData("classlib", "C#")]
         [InlineData("classlib", "VB")]
         [InlineData("classlib", "F#")]
-
         [InlineData("mstest")]
         [InlineData("nunit")]
         [InlineData("web")]
@@ -192,7 +179,7 @@ namespace EndToEnd.Tests
         [Fact]
         public void DotnetNewShowsCuratedListCorrectly()
         {
-            string locale = System.Threading.Thread.CurrentThread.CurrentUICulture.Name;
+            string locale = Thread.CurrentThread.CurrentUICulture.Name;
             if (!string.IsNullOrWhiteSpace(locale)
                 && !locale.StartsWith("en", StringComparison.OrdinalIgnoreCase))
             {
@@ -218,8 +205,8 @@ namespace EndToEnd.Tests
             //list should end with new line
             expectedOutput += Environment.NewLine;
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
-             .Execute()).Pass()
+            new NewCommandShim()
+             .Execute().Should().Pass()
              .And.HaveStdOutMatching(expectedOutput);
         }
 
@@ -238,9 +225,9 @@ namespace EndToEnd.Tests
 
             string newArgs = $"{templateName}";
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
+            new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)).Pass();
+                .Execute(newArgs).Should().Pass();
 
             //check if the template created files
             Assert.True(directory.Exists);
@@ -283,9 +270,9 @@ namespace EndToEnd.Tests
                 newArgs += $" --language {language}";
             }
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
+            new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)).Pass();
+                .Execute(newArgs).Should().Pass();
 
             //check if the template created files
             Assert.True(directory.Exists);
@@ -457,10 +444,10 @@ namespace EndToEnd.Tests
                 }
 
                 string dotnetRoot = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
-                Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new BuildCommand()
+                new BuildCommand()
                      .WithEnvironmentVariable("PATH", dotnetRoot) // override PATH since razor rely on PATH to find dotnet
                      .WithWorkingDirectory(projectDirectory)
-                     .Execute(buildArgs)).Pass();
+                     .Execute(buildArgs).Should().Pass();
             }
 
             // delete test directory for some tests so we aren't leaving behind non-compliant package files
@@ -484,9 +471,9 @@ namespace EndToEnd.Tests
                 newArgs += $" --language {language}";
             }
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new NewCommandShim()
+            new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)).Pass();
+                .Execute(newArgs).Should().Pass();
 
             return directory;
         }

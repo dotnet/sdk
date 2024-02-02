@@ -9,7 +9,7 @@ namespace EndToEnd.Tests
         public void DotnetVersionReturnsCorrectVersion()
         {
             var result = new DotnetCommand().ExecuteWithCapturedOutput("--version");
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(result).Pass();
+            result.Should().Pass();
 
             var dotnetFolder = Path.GetDirectoryName(RepoDirectoriesProvider.DotnetUnderTest);
             var sdkFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "sdk"));

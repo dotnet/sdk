@@ -34,13 +34,13 @@ namespace EndToEnd
                 .Element(ns + "TargetFramework").Value = TestAssetInfo.currentTfm;
             project.Save(projectPath);
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new BuildCommand()
+            new BuildCommand()
                     .WithProjectFile(new FileInfo(testInstance.Root.FullName))
-                    .Execute()).Pass();
+                    .Execute().Should().Pass();
 
-            Microsoft.DotNet.Tools.Test.Utilities.CommandResultExtensions.Should(new RunCommand()
+            new RunCommand()
                 .WithWorkingDirectory(testInstance.Root.FullName)
-                .Execute("--no-build")).Pass().And.HaveStdOutContaining("Hello");
+                .Execute("--no-build").Should().Pass().And.HaveStdOutContaining("Hello");
         }
     }
 }
