@@ -61,6 +61,7 @@
     <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</PortableRid>
 
     <TargetRid Condition="'$(PortableBuild)' == 'true' and '$(PortableRid)' != ''">$(PortableRid)</TargetRid>
+    <TargetRid Condition="'$(ShortStack)' == 'true'">$(TargetOS)-$(TargetArchitecture)</TargetRid>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
