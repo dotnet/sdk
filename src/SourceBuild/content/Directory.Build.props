@@ -24,17 +24,7 @@
     <HostArchitecture Condition="'$(HostArchitecture)' == ''">$(BuildArchitecture)</HostArchitecture>
 
     <!-- When building on non-x64 architectures, there may be no cross-compilation available, select a target architecture that is the same as the build. -->
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'arm'">arm</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'armv6'">armv6</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'armel'">armel</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'arm64'">arm64</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'riscv64'">riscv64</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'loongarch64'">loongarch64</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 's390x'">s390x</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'ppc64le'">ppc64le</TargetArchitecture>
-
-    <TargetArchitecture Condition="'$(OverrideTargetRid)' != ''">$(OverrideTargetRid.Substring($(OverrideTargetRid.LastIndexOf('-'))).TrimStart('-'))</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">$(BuildArchitecture)</TargetArchitecture>
 
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
   </PropertyGroup>
@@ -49,6 +39,7 @@
 
     <!-- Source-only builds are non portable. -->
     <PortableBuild Condition="'$(PortableBuild)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</PortableBuild>
+    <PortableBuild Condition="'$(PortableBuild)' == ''">false</PortableBuild>
 
     <PortableRid Condition="'$(__PortableTargetOS)' != ''">$(__PortableTargetOS)-$(TargetArchitecture)</PortableRid>
     <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'freebsd'">freebsd-$(TargetArchitecture)</PortableRid>
