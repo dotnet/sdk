@@ -13,7 +13,7 @@
 
   <Target Name="CustomRepoBuild"
           AfterTargets="RepoBuild"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion">
+          DependsOnTargets="CreateBuildInputProps;DetermineSourceBuiltSdkVersion">
     <!-- Copy PVP to packages dir in order to package them together -->
     <Copy SourceFiles="$(CurrentSourceBuiltPackageVersionPropsPath)" DestinationFiles="$(SourceBuiltPackagesPath)PackageVersions.props" />
 
