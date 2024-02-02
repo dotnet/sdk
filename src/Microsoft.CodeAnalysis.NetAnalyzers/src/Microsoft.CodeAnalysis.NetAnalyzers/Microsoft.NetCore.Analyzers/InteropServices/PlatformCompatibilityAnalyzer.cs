@@ -1869,7 +1869,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                     {
                                         existing.Obsoleted = childAttribute.Obsoleted;
                                         existing.ObsoletedMessage = childAttribute.ObsoletedMessage;
-                                        existing.ObsoletedUrl = childAttribute.ObsoletedMessage;
+                                        existing.ObsoletedUrl = childAttribute.ObsoletedUrl;
                                     }
                                 }
                                 else
