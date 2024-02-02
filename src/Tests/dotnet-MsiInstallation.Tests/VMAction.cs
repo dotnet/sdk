@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
     {
         RunCommand,
         CopyFileToVM,
+        CopyFolderToVM,
         WriteFileToVM,
     }
 
@@ -41,14 +42,17 @@ namespace Microsoft.DotNet.MsiInstallerTests
         //  Applies to RunCommand
         public List<string> Arguments { get; set; }
 
-        //  Applies to CopyFileToVM, WriteFileToVM
+        //  Applies to CopyFileToVM, CopyFolderToVM, WriteFileToVM
         public string TargetPath { get; set; }
 
-        //  Applies to CopyFileToVM
+        //  Applies to CopyFileToVM, CopyFolderToVM
         public string SourcePath { get; set; }
 
-        //  Applies to CopyFileToVM
-        public string ContentHash { get; set; }
+        //  Applies to CopyFileToVM, CopyFolderToVM
+        /// <summary>
+        /// Identifier for the contents of the file or folder to copy.  This could be a hash, but for our purposes a combination of the file size and last modified time should work.
+        /// </summary>
+        public string ContentId { get; set; }
 
         //  Applies to WriteFileToVM
         public string FileContents { get; set; }
@@ -61,6 +65,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     return $"Run: {string.Join(" ", Arguments)}";
                 case VMActionType.CopyFileToVM:
                     return $"Copy file to VM: {SourcePath} -> {TargetPath}";
+                case VMActionType.CopyFolderToVM:
+                    return $"Copy folder to VM: {SourcePath} -> {TargetPath}";
                 case VMActionType.WriteFileToVM:
                     return $"Write file to VM: {TargetPath}";
                 default:
@@ -88,7 +94,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             return Type == action.Type &&
                    TargetPath == action.TargetPath &&
                    SourcePath == action.SourcePath &&
-                   ContentHash == action.ContentHash &&
+                   ContentId == action.ContentId &&
                    FileContents == action.FileContents;
         }
 
@@ -106,7 +112,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
             hashcode.Add(TargetPath);
             hashcode.Add(SourcePath);
-            hashcode.Add(ContentHash);
+            hashcode.Add(ContentId);
             hashcode.Add(FileContents);
             return hashcode.ToHashCode();
         }
@@ -135,6 +141,16 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 ExitCode,
                 StdOut,
                 StdErr);
+        }
+
+        public static VMActionResult Success()
+        {
+            return new VMActionResult
+            {
+                ExitCode = 0,
+                StdOut = "",
+                StdErr = "",
+            };
         }
     }
 }

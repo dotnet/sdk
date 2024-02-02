@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -20,20 +22,31 @@ namespace Microsoft.DotNet.MsiInstallerTests
         VMStateTree _currentState;
         VMStateTree _currentAppliedState;
 
+        string _stateFile;
+
         public VirtualMachine(ITestOutputHelper log)
         {
             Log = log;
             VMControl = new VMControl(log);
 
-            //  TODO: Load root state from file
+            _stateFile = Path.Combine(Environment.CurrentDirectory, "vmstate.json");
 
-            if (_rootState == null)
+            //  Load root state from file, if it exists
+            if (File.Exists(_stateFile))
             {
-                _rootState = new VMStateTree()
+                string json = File.ReadAllText(_stateFile);
+                _rootState = JsonSerializer.Deserialize<SerializeableVMStateTree>(json, GetSerializerOptions()).ToVMStateTree();
+            }
+            else
+            {
+                if (_rootState == null)
                 {
-                    SnapshotId = "60667B5C-EC88-430E-8C69-5E4214123941",
-                    SnapshotName = "Updated expired password, enabled Remote Management",
-                };
+                    _rootState = new VMStateTree()
+                    {
+                        SnapshotId = "60667B5C-EC88-430E-8C69-5E4214123941",
+                        SnapshotName = "Updated expired password, enabled Remote Management",
+                    };
+                }
             }
 
             _currentState = _rootState;
@@ -43,7 +56,20 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
         public void Dispose()
         {
+            string json = JsonSerializer.Serialize(_rootState.ToSerializeable(), GetSerializerOptions());
+            File.WriteAllText(_stateFile, json);
+
             VMControl.Dispose();
+        }
+
+        JsonSerializerOptions GetSerializerOptions()
+        {
+            return new JsonSerializerOptions()
+            {
+                WriteIndented = true,
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                Converters = { new JsonStringEnumConverter() }
+            };
         }
 
         public CommandResult RunCommand(params string[] args)
@@ -67,6 +93,21 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public void CopyFile(string localSource, string vmDestination)
         {
             throw new NotImplementedException();
+        }
+
+        public void CopyFolder(string localSource, string vmDestination)
+        {
+            var action = new SerializedVMAction
+            {
+                Type = VMActionType.CopyFolderToVM,
+                SourcePath = localSource,
+                TargetPath = vmDestination,
+                ContentId = GetDirectoryContentId(localSource),
+            };
+
+            var vmActionResult = Apply(action);
+
+            vmActionResult.ToCommandResult().Should().Pass();
         }
 
         public void WriteFile(string vmDestination, string contents)
@@ -138,6 +179,14 @@ namespace Microsoft.DotNet.MsiInstallerTests
             {
                 throw new NotImplementedException();
             }
+            else if (action.Type == VMActionType.CopyFolderToVM)
+            {
+                var targetSharePath = VMPathToSharePath(action.TargetPath);
+
+                CopyDirectory(action.SourcePath, targetSharePath);
+
+                return VMActionResult.Success();
+            }
             else if (action.Type == VMActionType.WriteFileToVM)
             {
                 var targetSharePath = VMPathToSharePath(action.TargetPath);
@@ -148,16 +197,59 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
                 File.WriteAllText(targetSharePath, action.FileContents);
 
-                return new VMActionResult
-                {
-                    ExitCode = 0,
-                    StdOut = "",
-                    StdErr = "",
-                };
+                return VMActionResult.Success();
             }
             else
             {
                 throw new NotImplementedException();
+            }
+        }
+
+        string GetFileContentId(string path)
+        {
+            var info = new FileInfo(path);
+            return $"{info.LastWriteTimeUtc.Ticks}-{info.Length}";
+        }
+
+        string GetDirectoryContentId(string path)
+        {
+            StringBuilder sb = new StringBuilder();
+            var info = new DirectoryInfo(path);
+
+            void ProcessDirectory(DirectoryInfo dir, string relativeTo)
+            {
+                foreach (var file in dir.GetFiles())
+                {
+                    sb.AppendLine($"{Path.GetRelativePath(relativeTo, file.FullName)}:{file.LastWriteTimeUtc.Ticks}-{file.Length}");
+                }
+
+                foreach (var subDir in dir.GetDirectories())
+                {
+                    sb.AppendLine(subDir.FullName);
+                    ProcessDirectory(subDir, relativeTo);
+                }
+            }
+
+            ProcessDirectory(info, path);
+
+            return sb.ToString();
+        }
+
+        static void CopyDirectory(string sourcePath, string destPath)
+        {
+            if (!Directory.Exists(destPath))
+            {
+                Directory.CreateDirectory(destPath);
+            }
+
+            foreach (var dir in Directory.GetDirectories(sourcePath))
+            {
+                CopyDirectory(dir, Path.Combine(destPath, Path.GetFileName(dir)));
+            }
+
+            foreach (var file in Directory.GetFiles(sourcePath))
+            {
+                new FileInfo(file).CopyTo(Path.Combine(destPath, Path.GetFileName(file)), true);
             }
         }
 

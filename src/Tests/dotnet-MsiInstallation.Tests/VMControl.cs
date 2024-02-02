@@ -27,10 +27,11 @@ namespace Microsoft.DotNet.MsiInstallerTests
         private CimSession _session;
         private CimInstance VMInstance
         {
-            get;
-            //{
-            //    return _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName='{VMName}'").Single();
-            //}
+            get
+            {
+                //  Query WMI for the VM instance each time so that the state is always up to date
+                return _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName='{VMName}'").Single();
+            }
         }
 
         public VMControl(ITestOutputHelper log)
@@ -42,7 +43,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             Log = log;
             _session = CimSession.Create(Environment.MachineName);
-            VMInstance = _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_ComputerSystem WHERE ElementName='{VMName}'").Single();
         }
 
         public CommandResult RunCommandOnVM(params string[] args)
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 Thread.Sleep(500);
             }
 
-            throw new Exception("PsExec failed");
+            throw new Exception(@$"PsExec failed, make sure VM is running and can be accessed via \\{VMMachineName}");
         }
 
         public IEnumerable<(string id, string name)> GetSnapshots()
