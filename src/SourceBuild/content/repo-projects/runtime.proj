@@ -14,9 +14,9 @@
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)os $(TargetOS)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
-    <BuildArgs Condition="'$(ShortStack)' != 'true'>$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
-    <BuildArgs Condition="'$(ShortStack)' != 'true'>$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true'">$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true'">$(BuildArgs) /p:RuntimeOS=$(RuntimeOS)</BuildArgs>
+    <BuildArgs Condition="'$(ShortStack)' != 'true'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
