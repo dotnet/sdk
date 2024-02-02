@@ -281,10 +281,10 @@ namespace Microsoft.DotNet.Cli
 
     public enum VerbosityOptions
     {
-        minimal,
-        m,
         quiet,
         q,
+        minimal,
+        m,
         normal,
         n,
         detailed,
