@@ -213,26 +213,26 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>2d7fe94f837246e89c84a626f8f212094f364ab7</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.2.24102.3">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.2.24103.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>14e9f1e117fc88fcd05349fe9c1e93b5a7d7a2ef</Sha>
+      <Sha>46c6349fc0f75f065394d11bfa6783f5d1760775</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.2.24102.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.2.24103.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>14e9f1e117fc88fcd05349fe9c1e93b5a7d7a2ef</Sha>
+      <Sha>46c6349fc0f75f065394d11bfa6783f5d1760775</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.2.24102.3">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.2.24103.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>14e9f1e117fc88fcd05349fe9c1e93b5a7d7a2ef</Sha>
+      <Sha>46c6349fc0f75f065394d11bfa6783f5d1760775</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.2.24102.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.2.24103.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>14e9f1e117fc88fcd05349fe9c1e93b5a7d7a2ef</Sha>
+      <Sha>46c6349fc0f75f065394d11bfa6783f5d1760775</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.2.24102.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.2.24102.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>873db676363ce1777e763948481b24ded3513746</Sha>
+      <Sha>4dba929532c2620a721e8fe448a309b4693541bb</Sha>
     </Dependency>
     <Dependency Name="System.Drawing.Common" Version="8.0.0">
       <Uri>https://github.com/dotnet/winforms</Uri>
