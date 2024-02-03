@@ -19,7 +19,13 @@
     <BuildArgs>$(BuildArgs) /p:LocalNuGetPackageCacheDirectory=$(LocalNuGetPackageCacheDirectory)</BuildArgs>
   </PropertyGroup>
 
+  <ItemGroup>
+    <BuiltSdkPackageOverride Include="@(NoTargetsSdkOverride)" />
+    <BuiltSdkPackageOverride Include="@(TraversalSdkOverride)" />
+  </ItemGroup>
+
   <Target Name="AddLocalNuGetPackageCacheDirectory"
+          AfterTargets="CopyNuGetConfig"
           BeforeTargets="UpdateNuGetConfig">
     <MakeDir Condition="'$(LocalNuGetPackageCacheDirectory)' != ''"
              Directories="$(LocalNuGetPackageCacheDirectory)" />
