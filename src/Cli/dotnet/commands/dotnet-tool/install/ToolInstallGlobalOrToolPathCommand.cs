@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _errorReporter = (reporter ?? Reporter.Error);
         }
 
-        public T GetValueOrDefault<T>(CliOption<T> option, T defaultOption, ParseResult parseResult)
+        public static T GetValueOrDefault<T>(CliOption<T> option, T defaultOption, ParseResult parseResult)
         {
             if (parseResult.GetResult(option) is { } result &&
                 result.GetValueOrDefault<T>() is { } t)
