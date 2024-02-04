@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetToolCurrent);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
   </PropertyGroup>
 
   <!-- Exclude files that depend on Microsoft.Build.Framework and Microsoft.Build.Utilities.Core. These should be manually included by other projects. -->
