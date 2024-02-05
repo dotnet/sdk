@@ -353,25 +353,24 @@ class Program
         [Fact]
         public void ItRecognizesRelativePaths()
         {
-            var testAssetName = "TestAppSimple";
+            var sln = "TestAppWithSlnAndSolutionFolders";
             var testAsset = _testAssetsManager
-                .CopyTestAsset(testAssetName)
+                .CopyTestAsset(sln)
                 .WithSource();
 
             var projectDirectory = testAsset.Path;
 
-            new RestoreCommand(testAsset)
+            new RestoreCommand(testAsset, "App.sln")
                 .Execute()
                 .Should()
                 .Pass();
 
             new ListPackageCommand(Log)
-                .WithProject("TestAppSimple.csproj")
+                .WithProject("App.sln")
                 .WithWorkingDirectory(projectDirectory)
                 .Execute()
                 .Should()
                 .Pass();
         }
-
     }
 }
