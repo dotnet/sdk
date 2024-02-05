@@ -10,6 +10,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project>
+
   <!-- Expose the tasks for SDK consumption and for external use cases. -->
   <UsingTask TaskName="Microsoft.DotNet.ApiCompat.Task.ValidateAssembliesTask" AssemblyFile="$(DotNetApiCompatTaskAssembly)" />
   <UsingTask TaskName="Microsoft.DotNet.ApiCompat.Task.ValidatePackageTask" AssemblyFile="$(DotNetApiCompatTaskAssembly)" />
@@ -17,11 +18,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="CollectApiCompatInputs">
     <PropertyGroup Condition="'$(RoslynAssembliesPath)' == ''">
       <RoslynAssembliesPath>$(RoslynTargetsPath)</RoslynAssembliesPath>
-      <_packageReferenceList>@(PackageReference)</_packageReferenceList>
+
+      <_UsesRoslynToolsetPackage Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset'))' == 'true'">true</_UsesRoslynToolsetPackage>
       <!-- CSharpCoreTargetsPath and VisualBasicCoreTargetsPath point to the same location, Microsoft.CodeAnalysis.CSharp and Microsoft.CodeAnalysis.VisualBasic
            are on the same directory as Microsoft.CodeAnalysis. So there is no need to distinguish between csproj or vbproj. -->
-      <RoslynAssembliesPath Condition="$(_packageReferenceList.Contains('Microsoft.Net.Compilers.Toolset'))">$([System.IO.Path]::GetDirectoryName($(CSharpCoreTargetsPath)))</RoslynAssembliesPath>
+      <RoslynAssembliesPath Condition="'$(_UsesRoslynToolsetPackage)' == 'true'">$([System.IO.Path]::GetDirectoryName($(CSharpCoreTargetsPath)))</RoslynAssembliesPath>
       <RoslynAssembliesPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$([System.IO.Path]::Combine('$(RoslynAssembliesPath)', bincore))</RoslynAssembliesPath>
+
+      <!-- Temporary workaround to mitigate https://github.com/dotnet/sdk/issues/32691 with roslyn toolset package and desktop msbuild < 17.9.0.
+           Reset the roslyn assemblies path back to Roslyn inside Visual Studio. -->
+      <RoslynAssembliesPath Condition="'$(MSBuildRuntimeType)' != 'Core' and '$(_UsesRoslynToolsetPackage)' == 'true' and '$(MSBuildVersion)' &lt; '17.9.0'">$(RoslynTargetsPath)</RoslynAssembliesPath>
     </PropertyGroup>
 
     <!-- Respect legacy property and item names. -->
@@ -47,4 +53,5 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 Condition="Exists($(_apiCompatDefaultProjectSuppressionFile))" />
     </ItemGroup>
   </Target>
+
 </Project>
