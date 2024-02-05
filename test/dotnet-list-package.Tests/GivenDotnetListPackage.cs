@@ -351,7 +351,30 @@ class Program
         }
 
         [Fact]
-        public void ItRecognizesRelativePaths()
+        public void ItRecognizesRelativePathsForAProject()
+        {
+            var testAssetName = "TestAppSimple";
+            var testAsset = _testAssetsManager
+                .CopyTestAsset(testAssetName)
+                .WithSource();
+
+            var projectDirectory = testAsset.Path;
+
+            new RestoreCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass();
+
+            new ListPackageCommand(Log)
+                .WithProject("TestAppSimple.csproj")
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+        }
+
+        [Fact]
+        public void ItRecognizesRelativePathsForASolution()
         {
             var sln = "TestAppWithSlnAndSolutionFolders";
             var testAsset = _testAssetsManager
