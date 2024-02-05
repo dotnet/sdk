@@ -1,0 +1,22 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Wed, 31 Jan 2024 16:48:26 +0000
+Subject: [PATCH] Enable use of RestoreConfigFile property in source-build
+
+Backport: https://github.com/dotnet/runtime/pull/97778
+---
+ eng/SourceBuild.props | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
+index 3b544528694..dee4316dbbf 100644
+--- a/eng/SourceBuild.props
++++ b/eng/SourceBuild.props
+@@ -51,6 +51,7 @@
+       <InnerBuildArgs Condition="'$(OfficialBuildId)' != ''">$(InnerBuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</InnerBuildArgs>
+       <InnerBuildArgs Condition="'$(ContinuousIntegrationBuild)' != ''">$(InnerBuildArgs) /p:ContinuousIntegrationBuild=$(ContinuousIntegrationBuild)</InnerBuildArgs>
+       <InnerBuildArgs Condition="'$(PortableBuild)' != ''">$(InnerBuildArgs) /p:PortableBuild=$(PortableBuild)</InnerBuildArgs>
++      <InnerBuildArgs Condition="'$(RestoreConfigFile)' != ''">$(InnerBuildArgs) /p:RestoreConfigFile=$(RestoreConfigFile)</InnerBuildArgs>
+     </PropertyGroup>
+   </Target>
+ 

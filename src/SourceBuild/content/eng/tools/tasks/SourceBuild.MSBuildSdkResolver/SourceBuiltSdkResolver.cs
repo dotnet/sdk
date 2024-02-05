@@ -12,17 +12,17 @@ using System.Linq;
 namespace Microsoft.DotNet.SourceBuild.Tasks
 {
     /// <summary>
-    /// Extends the SDK to handle "SOURCE_BUILD_SDK_*" override environment variables. Each override
+    /// Extends the SDK to handle "SOURCE_BUILT_SDK_*" override environment variables. Each override
     /// should provide a set of 3 environment variables:
     ///
-    /// SOURCE_BUILD_SDK_ID_EXAMPLE=Your.Sdk.Example
+    /// SOURCE_BUILT_SDK_ID_EXAMPLE=Your.Sdk.Example
     ///   ID of the SDK nuget package to override.
     /// 
-    /// SOURCE_BUILD_SDK_DIR_EXAMPLE=/git/repo/bin/extracted/Your.Sdk.Example/
+    /// SOURCE_BUILT_SDK_DIR_EXAMPLE=/git/repo/bin/extracted/Your.Sdk.Example/
     ///   Directory where the sdk/Sdk.props and/or sdk/Sdk.targets files are located. This should be
     ///   the directory where the override SDK package is extracted.
     /// 
-    /// SOURCE_BUILD_SDK_VERSION_EXAMPLE=1.0.0-source-built
+    /// SOURCE_BUILT_SDK_VERSION_EXAMPLE=1.0.0-source-built
     ///   (Optional) Version of the SDK package to use. This is informational.
     /// </summary>
     public class SourceBuiltSdkResolver : SdkResolver

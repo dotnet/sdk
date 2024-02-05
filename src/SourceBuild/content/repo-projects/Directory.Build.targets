@@ -55,9 +55,23 @@
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageUsageData" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageReports" />
 
-  <!-- Update NuGet feeds in the repo -->
+  <Target Name="CopyNuGetConfig"
+          Condition="'$(NuGetConfigFile)' != ''"
+          Inputs="$(MSBuildProjectFullPath);$(OriginalNuGetConfigFile)"
+          Outputs="$(NuGetConfigFile)">
+
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(NuGetConfigFile)'))" />
+
+    <Copy
+      SourceFiles="$(OriginalNuGetConfigFile)"
+      DestinationFiles="$(NuGetConfigFile)">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
   <Target Name="UpdateNuGetConfig"
-          Condition="'$(NuGetConfigFile)' != '' or '@(NuGetConfigFiles)' != ''"
+          DependsOnTargets="CopyNuGetConfig"
+          Condition="'$(NuGetConfigFile)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)UpdateNuGetConfig.complete">
     <PropertyGroup>
@@ -90,49 +104,44 @@
       <NetSdkSupportingFeed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json</NetSdkSupportingFeed>
     </PropertyGroup>
 
-    <!-- Update the detected or manually specified NuGetConfigFile, but also allow multiple. -->
-    <ItemGroup>
-      <NuGetConfigFiles Include="$(NuGetConfigFile)" />
-    </ItemGroup>
-
     <RemoveInternetSourcesFromNuGetConfig
-      NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+      NuGetConfigFile="$(NuGetConfigFile)"
       BuildWithOnlineFeeds="$(DotNetBuildWithOnlineFeeds)"
       KeepFeedPrefixes="@(KeepFeedPrefixes)"
       Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PrebuiltNuGetSourceName)"
                             SourcePath="$(PrebuiltPackagesPath)"
                             Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PreviouslySourceBuiltNuGetSourceName)"
                             SourcePath="$(PrebuiltSourceBuiltPackagesPath)"
                             Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(ReferencePackagesNuGetSourceName)"
                             SourcePath="$(ReferencePackagesDir)"
                             Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(SourceBuiltNuGetSourceName)"
                             SourcePath="$(SourceBuiltPackagesPath)" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(ExtraSourcesNuGetSourceName)"
                             SourcePath="$(ExtraRestoreSourcePath)"
                             Condition="'$(ExtraRestoreSourcePath)' != ''" />
 
     <!-- See root Directory.Build.props for value. -->
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(NetSdkSupportingFeedName)"
                             SourcePath="$(NetSdkSupportingFeed)"
                             Condition="'$(AddNetSdkSupportingFeed)' == 'true'" />
 
     <UpdateNuGetConfigPackageSourcesMappings
-      NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+      NuGetConfigFile="$(NuGetConfigFile)"
       BuildWithOnlineFeeds="$(DotNetBuildWithOnlineFeeds)"
       SourceBuildSources="$(SourceBuildSources)" />
 
@@ -572,16 +581,21 @@
           Condition="'@(BuiltSdkPackageOverride)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">
+    <PropertyGroup>
+      <_ToolPackagesRoot Condition="'$(RepositoryName)' != 'source-build-reference-packages'">$(SourceBuiltPackagesPath)</_ToolPackagesRoot>
+      <_ToolPackagesRoot Condition="'$(RepositoryName)' == 'source-build-reference-packages'">$(ReferencePackagesDir)</_ToolPackagesRoot>
+    </PropertyGroup>
+
     <ItemGroup>
       <_ToolPackage
         Condition="'%(BuiltSdkPackageOverride.Version)' == ''"
-        Include="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity)*.nupkg"
-        Exclude="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity)*.symbols.nupkg"
+        Include="$(_ToolPackagesRoot)%(BuiltSdkPackageOverride.Identity)*.nupkg"
+        Exclude="$(_ToolPackagesRoot)%(BuiltSdkPackageOverride.Identity)*.symbols.nupkg"
         Id="%(BuiltSdkPackageOverride.Identity)" />
       <_ToolPackage
         Condition="'%(BuiltSdkPackageOverride.Version)' != ''"
-        Include="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity).%(BuiltSdkPackageOverride.Version).nupkg"
-        Exclude="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity).%(BuiltSdkPackageOverride.Version).symbols.nupkg"
+        Include="$(_ToolPackagesRoot)%(BuiltSdkPackageOverride.Identity).%(BuiltSdkPackageOverride.Version).nupkg"
+        Exclude="$(_ToolPackagesRoot)%(BuiltSdkPackageOverride.Identity).%(BuiltSdkPackageOverride.Version).symbols.nupkg"
         Id="%(BuiltSdkPackageOverride.Identity)" />
     </ItemGroup>
 
