@@ -44,10 +44,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFrameworks)" />
-      <_MSBuildProjectFile Include="$(MSBuildProjectFile)" Properties="TargetFramework=%(_TargetFramework.Identity);VSTestNoBuild=true" />
+      <_ProjectToTestWithTFM Include="$(MSBuildProjectFile)" Properties="TargetFramework=%(_TargetFramework.Identity);VSTestNoBuild=true" />
     </ItemGroup>
     <Message Importance="High" Text="Starting custom DispatchToInnerBuildsWithVSTestTarget" />
-    <MSBuild Projects="@(_MSBuildProjectFile)"
+    <MSBuild Projects="@(_ProjectToTestWithTFM)"
              Condition="'$(TargetFrameworks)' != '' "
              Targets="$(InnerVSTestTargets)"
              ContinueOnError="ErrorAndContinue"
