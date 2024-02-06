@@ -3,8 +3,6 @@
     <PropertyGroup>
       <!-- Currently, 'arm*' SDK's do not include the LZMA for performance upon extraction of the NuGet archive. -->
       <!-- https://github.com/dotnet/cli/issues/8800 -->
-      <IncludeNuGetPackageArchive Condition=" $(Architecture.StartsWith('arm')) ">false</IncludeNuGetPackageArchive>
-      <!--<IncludeNuGetPackageArchive Condition=" '$(IncludeNuGetPackageArchive)' == '' ">true</IncludeNuGetPackageArchive>-->
       <SkipBuildingInstallers Condition=" '$(SkipBuildingInstallers)' == '' AND
         ($(Rid.StartsWith('rhel.6'))
         OR $(Rid.StartsWith('freebsd'))
@@ -13,11 +11,6 @@
       <SkipBuildingInstallers Condition=" '$(SkipBuildingInstallers)' == '' ">false</SkipBuildingInstallers>
 
       <UsePortableLinuxSharedFramework Condition=" '$(UsePortableLinuxSharedFramework)' == '' AND '$(IsLinux)' == 'True' AND '$(Rid)' != 'rhel.6-x64' AND !$(Rid.StartsWith('linux-musl')) ">true</UsePortableLinuxSharedFramework>
-      <!--<IncludeSharedFrameworksForBackwardsCompatibilityTests Condition=" $(IncludeSharedFrameworksForBackwardsCompatibilityTests) == ''
-        AND '$(Rid)' != 'linux-x64'
-        AND '$(Rid)' != 'rhel.6-x64'
-        AND (!$(Rid.StartsWith('linux-musl')))
-        AND '$(Rid)' != 'ubuntu.18.04-x64'">true</IncludeSharedFrameworksForBackwardsCompatibilityTests>-->
       <HighEntropyVA>true</HighEntropyVA>
 
       <!-- Only use asset target fallback that we set (not implicit one to net461). -->
