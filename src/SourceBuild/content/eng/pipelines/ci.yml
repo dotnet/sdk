@@ -14,8 +14,11 @@
 # - dotnet-source-build (internal)
 #   - PR: ultralite build
 #   - CI: release/* and internal/release/* only, every batched commit, full build
-#   - CI: main only, every batched commit, lite build
 #   - Schedule: main only, full build
+#
+# - dotnet-source-build-lite (internal)
+#   - PR: release/* and main, lite build, on-demand trigger
+#   - CI: main only, every batched commit, lite build
 #
 # - dotnet-unified-build (internal)
 #   - PR: lite build
@@ -26,11 +29,8 @@ variables:
 - name: isSourceOnlyBuild
   value: ${{ contains(variables['Build.DefinitionName'], '-source-build') }}
 
-- name: isInternalBuild
-  value: ${{ eq(variables['System.TeamProject'], 'internal') }}
-
-- name: isMainBranch
-  value: ${{ in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/main-ub') }}
+- name: isSourceOnlyBuildLite
+  value: ${{ contains(variables['Build.DefinitionName'], '-source-build-lite') }}
 
 - name: isScheduleTrigger
   value: ${{ eq(variables['Build.Reason'], 'Schedule') }}
@@ -48,11 +48,11 @@ stages:
     isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
     ${{ if eq(variables.isScheduleTrigger, 'true') }}:
       scope: full
+    ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:
+      scope: lite
     ${{ elseif and(eq(variables.isPRTrigger, 'true'), eq(variables.isSourceOnlyBuild, 'true')) }}:
       scope: ultralite
     ${{ elseif and(eq(variables.isPRTrigger, 'true'), not(eq(variables.isSourceOnlyBuild, 'true'))) }}:
-      scope: lite
-    ${{ elseif and(not(eq(variables.isPRTrigger, 'true')), eq(variables.isSourceOnlyBuild, 'true'), eq(variables.isInternalBuild, 'true'), eq(variables.isMainBranch, 'true')) }}:
       scope: lite
     ${{ else }}:
       scope: full
