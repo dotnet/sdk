@@ -207,7 +207,7 @@
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipx86.xml"</TestArgs>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" $(IslinuxPortable)' == 'true'">
+    <PropertyGroup Condition="'$(IsLinuxPortable)' == 'true'">
       <!-- Add list of tests to skip on Linux Portable -->
       <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipPortableLinux.xml"</TestArgs>
     </PropertyGroup>
