@@ -34,14 +34,24 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
 
   <Target Name="DispatchToInnerBuildsWithVSTestTarget" Returns="@(InnerOutput)">
+    <PropertyGroup>
+      <!-- 
+        Emulating technique found in Microsoft.Build.Traversal for deciding whether to run tests in parallel.
+        Setting either property will revert to previous behavior of running tests in parallel, but without their
+        different TFMs running in parallel.
+      -->
+      <_TestTfmInParallel>$([MSBuild]::ValueOrDefault('$(TestTfmInParallel)', '$(BuildInParallel)'))</_TestTfmInParallel>
+    </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFrameworks)" />
+      <_MSBuildProjectFile Include="$(MSBuildProjectFile)" Properties="TargetFramework=%(_TargetFramework.Identity);VSTestNoBuild=true" />
     </ItemGroup>
-    <MSBuild Projects="$(MSBuildProjectFile)"
+    <Message Importance="High" Text="Starting custom DispatchToInnerBuildsWithVSTestTarget" />
+    <MSBuild Projects="@(_MSBuildProjectFile)"
              Condition="'$(TargetFrameworks)' != '' "
              Targets="$(InnerVSTestTargets)"
-             Properties="TargetFramework=%(_TargetFramework.Identity);VSTestNoBuild=true"
-             ContinueOnError="ErrorAndContinue">
+             ContinueOnError="ErrorAndContinue"
+             BuildInParallel="$(_TestTfmInParallel)">
       <Output ItemName="InnerOutput" TaskParameter="TargetOutputs" />
     </MSBuild>
   </Target>
