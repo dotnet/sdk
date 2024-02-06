@@ -236,7 +236,7 @@
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>fba94d7a096cb102ee2ea8a2214010d5c02460c4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.2.24075.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.2.24076.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
       <Sha>bec0472431f3c127deb2b9823f17bfd9bfd55c1d</Sha>
     </Dependency>
