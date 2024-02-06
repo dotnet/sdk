@@ -40,7 +40,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         Setting either property will revert to previous behavior of running tests in parallel, but without their
         different TFMs running in parallel.
       -->
-      <_TestTfmInParallel>$([MSBuild]::ValueOrDefault('$(TestTfmInParallel)', '$(BuildInParallel)'))</_TestTfmInParallel>
+      <_TestTfmsInParallel>$([MSBuild]::ValueOrDefault('$(TestTfmsInParallel)', '$(BuildInParallel)'))</_TestTfmsInParallel>
     </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFrameworks)" />
@@ -51,7 +51,7 @@ Copyright (c) .NET Foundation. All rights reserved.
              Condition="'$(TargetFrameworks)' != '' "
              Targets="$(InnerVSTestTargets)"
              ContinueOnError="ErrorAndContinue"
-             BuildInParallel="$(_TestTfmInParallel)">
+             BuildInParallel="$(_TestTfmsInParallel)">
       <Output ItemName="InnerOutput" TaskParameter="TargetOutputs" />
     </MSBuild>
   </Target>
