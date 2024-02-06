@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.TemplateLocator
 
         public bool TryGetDotnetSdkVersionUsedInVs(string vsVersion, out string? sdkVersion)
         {
-            string dotnetExeDir = EnvironmentProvider.GetDotnetExeDirectory(_getEnvironmentVariable, _getCurrentProcessPath);
+            string? dotnetExeDir = EnvironmentProvider.GetDotnetExeDirectory(_getEnvironmentVariable, _getCurrentProcessPath);
 
             if (!Version.TryParse(vsVersion, out var parsedVsVersion))
             {

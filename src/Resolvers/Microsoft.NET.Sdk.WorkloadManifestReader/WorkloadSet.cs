@@ -34,29 +34,33 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             };
         }
 
-        public static WorkloadSet FromDictionaryForJson(IDictionary<string, string> dictionary, SdkFeatureBand defaultFeatureBand)
+        public static WorkloadSet FromDictionaryForJson(IDictionary<string, string?> dictionary, SdkFeatureBand defaultFeatureBand)
         {
             var manifestVersions = dictionary
                 .Select(manifest =>
                 {
                     ManifestVersion manifestVersion;
                     SdkFeatureBand manifestFeatureBand;
-                    var parts = manifest.Value.Split('/');
+                    var parts = manifest.Value?.Split('/');
 
-                    string manifestVersionString = parts[0];
-                    if (!FXVersion.TryParse(manifestVersionString, out FXVersion version))
+                    string manifestVersionString = string.Empty;
+                    if (parts != null)
+                    {
+                        manifestVersionString = parts[0];
+                    }
+                    if (!FXVersion.TryParse(manifestVersionString, out FXVersion? version))
                     {
                         throw new FormatException(string.Format(Strings.InvalidVersionForWorkload, manifest.Key, manifestVersionString));
                     }
 
-                    manifestVersion = new ManifestVersion(parts[0]);
-                    if (parts.Length == 1)
+                    manifestVersion = new ManifestVersion(parts?[0]);
+                    if (parts != null && parts.Length == 1)
                     {
                         manifestFeatureBand = defaultFeatureBand;
                     }
                     else
                     {
-                        manifestFeatureBand = new SdkFeatureBand(parts[1]);
+                        manifestFeatureBand = new SdkFeatureBand(parts?[1]);
                     }
                     return (id: new ManifestId(manifest.Key), manifestVersion, manifestFeatureBand);
                 }).ToDictionary(t => t.id, t => (t.manifestVersion, t.manifestFeatureBand));
