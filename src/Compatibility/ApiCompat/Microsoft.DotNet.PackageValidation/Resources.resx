@@ -144,4 +144,10 @@
   <data name="MissingSearchDirectory" xml:space="preserve">
     <value>Could not find a reference directory in the provided directories for TargetFramework '{0}' when loading '{1}'. For more information see: https://aka.ms/dotnetpackagevalidation</value>
   </data>
+  <data name="BaselineTargetFrameworksIgnored" xml:space="preserve">
+    <value>Target frameworks '{0}' were ignored from the baseline package.</value>
+  </data>
+  <data name="BaselineTargetFrameworkIgnoredButPresentInCurrentPackage" xml:space="preserve">
+    <value>Target framework '{0}' in the baseline package is ignored but exists in the current package.</value>
+  </data>
 </root>

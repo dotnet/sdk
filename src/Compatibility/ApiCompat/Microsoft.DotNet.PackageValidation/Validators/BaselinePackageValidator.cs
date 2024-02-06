@@ -31,8 +31,8 @@ namespace Microsoft.DotNet.PackageValidation.Validators
             foreach (NuGetFramework baselineTargetFramework in options.BaselinePackage.FrameworksInPackage)
             {
                 // Skip target frameworks excluded from the baseline package.
-                if (options.BaselinePackageFrameworksToIgnore is not null &&
-                   options.BaselinePackageFrameworksToIgnore.Contains(baselineTargetFramework.GetShortFolderName()))
+                if (options.BaselinePackageFrameworkFilter is not null &&
+                   options.BaselinePackageFrameworkFilter.IsExcluded(baselineTargetFramework))
                 {
                     continue;
                 }
@@ -114,6 +114,30 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                                 options.Package);
                         }
                     }
+                }
+            }
+
+            // If baseline target frameworks are excluded, provide additional logging.
+            if (options.BaselinePackageFrameworkFilter is not null &&
+                options.BaselinePackageFrameworkFilter.FoundExcludedTargetFrameworks.Count > 0)
+            {
+                log.LogMessage(ApiSymbolExtensions.Logging.MessageImportance.Normal,
+                    string.Format(Resources.BaselineTargetFrameworksIgnored,
+                        string.Join(", ", options.BaselinePackageFrameworkFilter.FoundExcludedTargetFrameworks)));
+
+                // If a baseline target framework is ignored but present in the current package, emit a warning.
+                // This should help avoiding unintentional exclusions when using wildcards in the exclusion patterns.
+                string[] baselineTargetFrameworksExcludedButPresentInCurrentPackage = options.Package.FrameworksInPackage
+                    .Select(framework => framework.GetShortFolderName())
+                    .Intersect(options.BaselinePackageFrameworkFilter.FoundExcludedTargetFrameworks)
+                    .ToArray();
+                foreach (string baselineTargetFrameworkExcludedButPresentInCurrentPackage in baselineTargetFrameworksExcludedButPresentInCurrentPackage)
+                {
+                    log.LogWarning(new Suppression(DiagnosticIds.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage,
+                        baselineTargetFrameworkExcludedButPresentInCurrentPackage),
+                        DiagnosticIds.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage,
+                        string.Format(Resources.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage,
+                            baselineTargetFrameworkExcludedButPresentInCurrentPackage));
                 }
             }
 
