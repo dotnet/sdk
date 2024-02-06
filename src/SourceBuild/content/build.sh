@@ -185,6 +185,12 @@ while [[ $# > 0 ]]; do
   shift
 done
 
+if [[ "$ci" == true ]]; then
+  if [[ "$exclude_ci_binary_log" == false ]]; then
+    binary_log=true
+  fi
+fi
+
 . "$scriptroot/eng/common/tools.sh"
 
 function Build {
