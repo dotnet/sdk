@@ -30,7 +30,7 @@ variables:
   value: ${{ eq(variables['System.TeamProject'], 'internal') }}
 
 - name: isMainBranch
-  value: ${{ eq(variables['Build.SourceBranch'], 'refs/heads/main') }}
+  value: ${{ in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/main-ub') }}
 
 - name: isScheduleTrigger
   value: ${{ eq(variables['Build.Reason'], 'Schedule') }}
@@ -39,7 +39,8 @@ variables:
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
 
 stages:
-- template: templates/stages/vmr-scan.yml
+- ${{ if not(eq(variables.isPRTrigger, 'true')) }}:
+  - template: templates/stages/vmr-scan.yml
 
 - template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
   parameters:
