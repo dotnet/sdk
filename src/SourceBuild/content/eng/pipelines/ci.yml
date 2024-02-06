@@ -1,26 +1,58 @@
-# This is the dotnet/dotnet pipeline that is triggered every weekday at midnight PST (08:00 UTC) for "main" and when changes are pushed to release/* and internal/release/* branches.
+# This yml is used by these pipelines and triggers: 
+# NOTE: the triggers are defined in the Azure DevOps UI as they are too complex
+#
+# - dotnet-source-build (public)
+#   - PR: ultralite build
+#   - CI: release/* only, every batched commit, full build
+#   - Schedule: main only, full build
+#
+# - dotnet-unified-build (public)
+#   - PR: lite build
+#   - CI: release/* only, every batched commit, full build
+#   - Schedule: main only, full build
+#
+# - dotnet-source-build (internal)
+#   - PR: ultralite build
+#   - CI: release/* and internal/release/* only, every batched commit, full build
+#   - CI: main only, every batched commit, lite build
+#   - Schedule: main only, full build
+#
+# - dotnet-unified-build (internal)
+#   - PR: lite build
+#   - CI: release/*, internal/release/* and main, every batched commit, full build
 
-schedules:
-- cron: '0 8 * * Mon-Fri'
-  displayName: Weekday midnight build
-  branches:
-    include:
-    - main
-  batch: true
+variables:
+# enable source-only build for pipelines that contain the -source-build string
+- name: isSourceOnlyBuild
+  value: ${{ contains(variables['Build.DefinitionName'], '-source-build') }}
 
-trigger:
-  batch: true
-  branches:
-   include:
-   - release/*
-   - internal/release/*
+- name: isInternalBuild
+  value: ${{ eq(variables['System.TeamProject'], 'internal') }}
 
-pr: none
+- name: isMainBranch
+  value: ${{ in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/main-ub') }}
+
+- name: isScheduleTrigger
+  value: ${{ eq(variables['Build.Reason'], 'Schedule') }}
+
+- name: isPRTrigger
+  value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
 
 stages:
-- template: templates/stages/vmr-scan.yml
+- ${{ if not(eq(variables.isPRTrigger, 'true')) }}:
+  - template: templates/stages/vmr-scan.yml
 
 - template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
   parameters:
     isBuiltFromVmr: true
-    isLiteBuild: false
+    isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+    ${{ if eq(variables.isScheduleTrigger, 'true') }}:
+      scope: full
+    ${{ elseif and(eq(variables.isPRTrigger, 'true'), eq(variables.isSourceOnlyBuild, 'true')) }}:
+      scope: ultralite
+    ${{ elseif and(eq(variables.isPRTrigger, 'true'), not(eq(variables.isSourceOnlyBuild, 'true'))) }}:
+      scope: lite
+    ${{ elseif and(not(eq(variables.isPRTrigger, 'true')), eq(variables.isSourceOnlyBuild, 'true'), eq(variables.isInternalBuild, 'true'), eq(variables.isMainBranch, 'true')) }}:
+      scope: lite
+    ${{ else }}:
+      scope: full
