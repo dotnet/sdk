@@ -79,7 +79,6 @@ namespace EndToEnd
             project.Save(projectPath);
 
             return testInstance;
-
         }
     }
 }

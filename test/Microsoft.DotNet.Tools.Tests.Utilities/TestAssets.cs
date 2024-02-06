@@ -51,10 +51,7 @@ namespace Microsoft.DotNet.TestFramework
         {
             var assetDirectory = new DirectoryInfo(Path.Combine(_root.FullName, kind, name));
 
-            return new TestAssetInfo(
-                assetDirectory, 
-                name, 
-                this);
+            return new TestAssetInfo(assetDirectory, name, this);
         }
 
         public DirectoryInfo CreateTestDirectory(string testProjectName = "", [CallerMemberName] string callingMethod = "", string identifier = "")

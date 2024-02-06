@@ -11,7 +11,6 @@ using Microsoft.DotNet.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
 {
-
     /// <summary>
     /// Base class for all unit test classes.
     /// </summary>
@@ -46,7 +45,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                     s_testAssets = new TestAssets(
                         new DirectoryInfo(assetsRoot),
                         new FileInfo(RepoDirectoriesProvider.DotnetUnderTest),
-                        RepoDirectoriesProvider.TestWorkingFolder); 
+                        RepoDirectoriesProvider.TestWorkingFolder);
                 }
 
                 return s_testAssets;

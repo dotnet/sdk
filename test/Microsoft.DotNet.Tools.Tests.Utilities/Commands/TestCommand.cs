@@ -195,7 +195,6 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             AppContext.BaseDirectory;
 #endif
 
-
         private void ResolveCommand(ref string executable, ref string args)
         {
             if (executable.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
