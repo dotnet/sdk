@@ -4,3 +4,5 @@
 
 $script:useInstalledDotNetCli = $false
 
+# Add CMake to the path.
+$env:PATH = "$PSScriptRoot\..\.tools\bin;$env:PATH"
