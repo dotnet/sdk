@@ -8,9 +8,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public class ManifestVersion : IEquatable<ManifestVersion>, IComparable<ManifestVersion>
     {
-        private FXVersion _version;
+        private FXVersion? _version;
 
-        public ManifestVersion(string version)
+        public ManifestVersion(string? version)
         {
             if (!FXVersion.TryParse(version, out _version))
             {
@@ -25,7 +25,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public int CompareTo(ManifestVersion? other)
         {
-            return FXVersion.Compare(_version, other?._version);
+            return FXVersion.Compare(_version!, other?._version!);
         }
 
         public override bool Equals(object? obj)
@@ -41,7 +41,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public override string ToString()
         {
-            return _version.ToString();
+            return _version?.ToString() ?? string.Empty;
         }
     }
 }
