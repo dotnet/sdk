@@ -104,21 +104,19 @@ namespace Microsoft.DotNet.Tools.Common
         /// </summary>
         public static bool DeleteFileAndEmptyParents(string path)
         {
-            try
+            if (!File.Exists(path))
             {
-                File.Delete(path);
-                var dir = Path.GetDirectoryName(path);
-
-                // Directory.Delete throws an exception when it fails to delete
-                // a directory, as, for instance, if it isn't empty. This is
-                // intended to run until it throws an exception, then return.
-                while (true)
-                {
-                    Directory.Delete(dir);
-                    dir = Path.GetDirectoryName(dir);
-                }
+                return false;
             }
-            catch (Exception) { }
+
+            File.Delete(path);
+            var dir = Path.GetDirectoryName(path);
+
+            while (!Directory.EnumerateFileSystemEntries(dir).Any())
+            {
+                Directory.Delete(dir);
+                dir = Path.GetDirectoryName(dir);
+            }
 
             return !File.Exists(path);
         }

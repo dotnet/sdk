@@ -13,9 +13,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     {
         int ExitCode { get; }
 
-        string InstallWorkloadSet(string path);
-
-        void RollBackWorkloadSetInstallation();
+        string InstallWorkloadSet(CliTransaction transaction, string path);
 
         void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
 

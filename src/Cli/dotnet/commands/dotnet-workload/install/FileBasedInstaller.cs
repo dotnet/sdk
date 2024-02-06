@@ -32,7 +32,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private readonly FileBasedInstallationRecordRepository _installationRecordRepository;
         private readonly PackageSourceLocation _packageSourceLocation;
         private readonly RestoreActionConfig _restoreActionConfig;
-        private string workloadSetPath;
 
         public int ExitCode => 0;
 
@@ -86,22 +85,25 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return packs;
         }
 
-        public string InstallWorkloadSet(string path)
+        public string InstallWorkloadSet(CliTransaction transaction, string path)
         {
-            workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(path, "version.txt")), "workloadset.json");
-            Directory.CreateDirectory(Path.GetDirectoryName(workloadSetPath));
+            var workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(path, "version.txt")), "workloadset.json");
+            transaction.Run(
+                action: context =>
+                {
+                    Directory.CreateDirectory(Path.GetDirectoryName(workloadSetPath));
 
-            File.Copy(Path.Combine(path, "workloadset.json"), workloadSetPath, overwrite: true);
+                    File.Copy(Path.Combine(path, "workloadset.json"), workloadSetPath, overwrite: true);
+                },
+                rollback: () =>
+                {
+                    if (path is not null)
+                    {
+                        PathUtility.DeleteFileAndEmptyParents(path);
+                    }
+                });
+            
             return workloadSetPath;
-        }
-
-        public void RollBackWorkloadSetInstallation()
-        {
-            // We don't really need to worry about uninstalling workload sets for file-based installations, since they're side-by-side.
-            if (workloadSetPath is not null)
-            {
-                PathUtility.DeleteFileAndEmptyParents(workloadSetPath);
-            }
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)

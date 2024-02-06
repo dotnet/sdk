@@ -103,9 +103,9 @@ namespace Microsoft.DotNet.Workloads.Workload
             return installStateContents.UseWorkloadSets ?? false;
         }
 
-        public string InstallWorkloadSet()
+        public string InstallWorkloadSet(CliTransaction transaction)
         {
-            return _workloadInstaller.InstallWorkloadSet(Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads"));
+            return _workloadInstaller.InstallWorkloadSet(transaction, Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads"));
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)

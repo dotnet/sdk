@@ -34,9 +34,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public int ExitCode => Restart ? unchecked((int)Error.SUCCESS_REBOOT_REQUIRED) : unchecked((int)Error.SUCCESS);
 
-        private string _newWorkloadSetPath;
-        private string _previousWorkloadSetVersion;
-
         public NetSdkMsiInstallerClient(InstallElevationContextBase elevationContext,
             ISetupLogger logger,
             bool verifySignatures,
@@ -185,31 +182,29 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public string InstallWorkloadSet(string path)
+        public string InstallWorkloadSet(CliTransaction transaction, string path)
         {
-            return ModifyWorkloadSet(path, InstallAction.Install);
-        }
-
-        public void RollBackWorkloadSetInstallation()
-        {
-            if (_newWorkloadSetPath is not null)
-            {
-                ModifyWorkloadSet(_newWorkloadSetPath, InstallAction.Uninstall);
-                if (_previousWorkloadSetVersion is not null)
+            var pathToReturn = string.Empty;
+            var previousVersion = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, DotNetHome), "default.json")).WorkloadSetVersion;
+            transaction.Run(
+                action: context =>
                 {
-                    File.WriteAllText(Path.Combine(_newWorkloadSetPath, "version.txt"), _previousWorkloadSetVersion);
-                    ModifyWorkloadSet(_newWorkloadSetPath, InstallAction.Repair);
-                }
-            }
+                    pathToReturn = ModifyWorkloadSet(path, InstallAction.Install);
+                },
+                rollback: () =>
+                {
+                    ModifyWorkloadSet(path, InstallAction.Uninstall);
+                    File.WriteAllText(Path.Combine(path, "version.txt"), previousVersion);
+                    ModifyWorkloadSet(path, InstallAction.Repair);
+                });
+
+            return pathToReturn;
         }
 
         private string ModifyWorkloadSet(string path, InstallAction requestedAction)
         {
             ReportPendingReboot();
 
-            // Rolling back a manifest update after a successful install is essentially a downgrade, which is blocked so we have to
-            // treat it as a special case and is different from the install failing and rolling that back, though depending where the install
-            // failed, it may have removed the old product already.
             // Resolve the package ID for the manifest payload package
             var featureBand = Path.GetFileName(Path.GetDirectoryName(path));
             var version = File.ReadAllText(Path.Combine(path, "version.txt"));
@@ -222,13 +217,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, null);
             VerifyPackage(msi);
             DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
-
-            if (requestedAction == InstallAction.Install)
-            {
-                // If we are installing the workload set, record its version and the previous version so that we can roll back if necessary.
-                _newWorkloadSetPath = path;
-                _previousWorkloadSetVersion = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, DotNetHome), "default.json")).WorkloadSetVersion;
-            }
 
             InstallAction plannedAction = PlanPackage(msi, state, requestedAction, installedVersion, out IEnumerable<string> relatedProducts);
 
