@@ -329,15 +329,15 @@
       <Uri>https://github.com/dotnet/razor</Uri>
       <Sha>e71445b4873e223d12d0c16bb09a47c06e4355f2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0-preview.2.24106.2">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>edb2fb8890d3e5dcea53510348f945ac9ea290cb</Sha>
-    </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="7.0.0-preview.24105.1">
       <Uri>https://github.com/dotnet/razor</Uri>
       <Sha>e71445b4873e223d12d0c16bb09a47c06e4355f2</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0-preview.2.24106.2">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>edb2fb8890d3e5dcea53510348f945ac9ea290cb</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.2.24106.2">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
