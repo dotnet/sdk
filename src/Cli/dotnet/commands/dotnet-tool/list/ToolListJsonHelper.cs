@@ -8,6 +8,9 @@ namespace Microsoft.DotNet.Tools.Tool.List;
 
 internal sealed class VersionedDataContract<TContract>
 {
+        /// <summary>
+        /// The version of the JSON format for dotnet tool list.
+        /// </summary>
     [JsonPropertyName("version")]
     public int Version { get; init; } = 1;
     
