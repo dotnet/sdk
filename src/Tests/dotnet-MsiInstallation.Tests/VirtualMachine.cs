@@ -13,7 +13,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
-    internal class VirtualMachine : IDisposable
+    class VirtualMachine : IDisposable
     {
         ITestOutputHelper Log { get; }
         public VMControl VMControl { get; }
@@ -69,93 +69,45 @@ namespace Microsoft.DotNet.MsiInstallerTests
             };
         }
 
-        SerializedVMAction CreateRunCommandAction(params string[] args)
+        public VMRunAction CreateRunCommand(params string[] args)
         {
-            if (args.Length == 0)
-            {
-                throw new ArgumentException("Must provide at least one argument", nameof(args));
-            }
-
-            var action = new SerializedVMAction
-            {
-                Type = VMActionType.RunCommand,
-                Arguments = args.ToList(),
-            };
-
-            return action;
+            return new VMRunAction(this, args.ToList());
         }
 
-        public CommandResult RunCommand(params string[] args)
+        public VMCopyFileAction CopyFile(string localSource, string vmDestination)
         {
-            var vmActionResult = Apply(CreateRunCommandAction(args));
-
-            return vmActionResult.ToCommandResult();
-        }
-
-        SerializedVMAction CreateCopyFileAction(string localSource, string vmDestination)
-        {
-            var action = new SerializedVMAction
+            return new VMCopyFileAction(this)
             {
-                Type = VMActionType.CopyFileToVM,
-                SourcePath = localSource,
+                LocalSource = localSource,
                 TargetPath = vmDestination,
-                ContentId = GetFileContentId(localSource),
             };
-
-            return action;
         }
 
-        public void CopyFile(string localSource, string vmDestination)
+        public VMCopyFolderAction CopyFolder(string localSource, string vmDestination)
         {
-            Apply(CreateCopyFileAction(localSource, vmDestination))
-                .ToCommandResult()
-                .Should()
-                .Pass();
-        }
-
-        SerializedVMAction CreateCopyFolderAction(string localSource, string vmDestination)
-        {
-            var action = new SerializedVMAction
+            return new VMCopyFolderAction(this)
             {
-                Type = VMActionType.CopyFolderToVM,
-                SourcePath = localSource,
+                LocalSource = localSource,
                 TargetPath = vmDestination,
-                ContentId = GetDirectoryContentId(localSource),
             };
-
-            return action;
         }
 
-        public void CopyFolder(string localSource, string vmDestination)
+        public VMWriteFileAction WriteFile(string vmDestination, string contents)
         {
-            var vmActionResult = Apply(CreateCopyFolderAction(localSource, vmDestination));
-
-            vmActionResult.ToCommandResult().Should().Pass();
-        }
-
-        SerializedVMAction CreateWriteFileAction(string vmDestination, string contents)
-        {
-            var action = new SerializedVMAction
+            return new VMWriteFileAction(this)
             {
-                Type = VMActionType.WriteFileToVM,
                 TargetPath = vmDestination,
                 FileContents = contents,
             };
-
-
-            return action;
         }
 
-        public void WriteFile(string vmDestination, string contents)
+        public VMGroupedAction CreateActionGroup(string name, params VMAction[] actions)
         {
-            var vmActionResult = Apply(CreateWriteFileAction(vmDestination, contents));
-
-            vmActionResult.ToCommandResult().Should().Pass();
-        }
-
-        public IVMActionGroup CreateActionGroup(string name)
-        {
-            return new VMActionGroup(this, name);
+            return new VMGroupedAction(this)
+            {
+                ExplicitDescription = name,
+                Actions = actions.ToList(),
+            };
         }
 
         public RemoteFile GetRemoteFile(string path)
@@ -176,7 +128,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
         }
 
-        VMActionResult Apply(SerializedVMAction action)
+        //  Runs a command if necessary, or returns previously recorded result.  Handles syncing to the correct state, creating a new snapshot, etc.
+        public VMActionResult Apply(SerializedVMAction action)
         {
             if (_currentState.Actions.TryGetValue(action, out var result))
             {
@@ -205,6 +158,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             return actionResult;
         }
 
+        //  Runs a command, with no state management
         VMActionResult Run(SerializedVMAction action)
         {
             if (action.Type == VMActionType.RunCommand)
@@ -260,13 +214,13 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
         }
 
-        string GetFileContentId(string path)
+        public static string GetFileContentId(string path)
         {
             var info = new FileInfo(path);
             return $"{info.LastWriteTimeUtc.Ticks}-{info.Length}";
         }
 
-        string GetDirectoryContentId(string path)
+        public static string GetDirectoryContentId(string path)
         {
             StringBuilder sb = new StringBuilder();
             var info = new DirectoryInfo(path);
@@ -323,36 +277,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             return $@"\\{VMControl.VMMachineName}\{driveLetter}$\{pathUnderDrive}";
 
-        }
-
-        class VMActionGroup : IVMActionGroup
-        {
-            VirtualMachine _vm;
-            SerializedVMAction _action;
-
-            public VMActionGroup(VirtualMachine vm, string name)
-            {
-                _vm = vm;
-                _action = new SerializedVMAction
-                {
-                    Type = VMActionType.ActionGroup,
-                    ExplicitDescription = name,
-                    Actions = new List<SerializedVMAction>(),
-                };
-            }
-
-            public void RunCommand(params string[] args) => _action.Actions.Add(_vm.CreateRunCommandAction(args));
-
-            public void CopyFile(string localSource, string vmDestination) => _action.Actions.Add(_vm.CreateCopyFileAction(localSource, vmDestination));
-            public void CopyFolder(string localSource, string vmDestination) => _action.Actions.Add(_vm.CreateCopyFolderAction(localSource, vmDestination));
-            
-            
-            public void WriteFile(string vmDestination, string contents) => _action.Actions.Add(_vm.CreateWriteFileAction(vmDestination, contents));
-
-            public void Dispose()
-            {
-                _vm.Apply(_action);
-            }
         }
 
         class VMRemoteFile : RemoteFile

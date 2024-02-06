@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
+    //  TODO: Add VMAction for reading remote file, to allow read of file to be cached, avoiding the need to apply a snapshot to read the file on subsequent runs
+
     abstract class RemoteFile
     {
         public RemoteFile(string path)

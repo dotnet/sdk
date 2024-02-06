@@ -27,6 +27,132 @@ namespace Microsoft.DotNet.MsiInstallerTests
     //  Copy file to VM
     //  - Deploy stage 2 SDK
 
+    abstract class VMAction
+    {
+        public VirtualMachine VM { get; }
+
+        protected VMAction(VirtualMachine vm)
+        {
+            VM = vm;
+        }
+
+        public string ExplicitDescription { get; set; }
+
+        public CommandResult Execute()
+        {
+            return VM.Apply(Serialize()).ToCommandResult();
+        }
+
+        public SerializedVMAction Serialize()
+        {
+            var serialized = SerializeDerivedProperties();
+            serialized.ExplicitDescription = ExplicitDescription;
+            return serialized;
+        }
+        protected abstract SerializedVMAction SerializeDerivedProperties();
+    }
+
+    class VMRunAction : VMAction
+    {
+        public List<string> Arguments { get; set; }
+
+        public VMRunAction(VirtualMachine vm, List<string> arguments = null) : base(vm)
+        {
+            Arguments = arguments ?? new List<string>();
+        }
+
+        protected override SerializedVMAction SerializeDerivedProperties()
+        {
+            return new SerializedVMAction
+            {
+                Type = VMActionType.RunCommand,
+                Arguments = Arguments,
+            };
+        }
+    }
+
+    class VMCopyFileAction : VMAction
+    {
+        public string LocalSource { get; set; }
+        public string TargetPath { get; set; }
+
+        public VMCopyFileAction(VirtualMachine vm) : base(vm)
+        {
+        }
+
+        protected override SerializedVMAction SerializeDerivedProperties()
+        {
+            return new SerializedVMAction
+            {
+                Type = VMActionType.CopyFileToVM,
+                SourcePath = LocalSource,
+                TargetPath = TargetPath,
+                ContentId = VirtualMachine.GetFileContentId(LocalSource),
+
+            };
+        }
+    }
+
+    class VMCopyFolderAction : VMAction
+    {
+        public string LocalSource { get; set; }
+        public string TargetPath { get; set; }
+
+        public VMCopyFolderAction(VirtualMachine vm) : base(vm)
+        {
+        }
+
+        protected override SerializedVMAction SerializeDerivedProperties()
+        {
+            return new SerializedVMAction
+            {
+                Type = VMActionType.CopyFolderToVM,
+                SourcePath = LocalSource,
+                TargetPath = TargetPath,
+                ContentId = VirtualMachine.GetDirectoryContentId(LocalSource),
+            };
+        }
+    }
+
+    class VMWriteFileAction : VMAction
+    {
+        public string TargetPath { get; set; }
+        public string FileContents { get; set; }
+
+        public VMWriteFileAction(VirtualMachine vm) : base(vm)
+        {
+        }
+
+        protected override SerializedVMAction SerializeDerivedProperties()
+        {
+            return new SerializedVMAction
+            {
+                Type = VMActionType.WriteFileToVM,
+                TargetPath = TargetPath,
+                FileContents = FileContents,
+            };
+        }
+    }
+
+    class VMGroupedAction : VMAction
+    {
+        public List<VMAction> Actions { get; set; }
+
+        public VMGroupedAction(VirtualMachine vm) : base(vm)
+        {
+            Actions = new List<VMAction>();
+        }
+
+        protected override SerializedVMAction SerializeDerivedProperties()
+        {
+            return new SerializedVMAction
+            {
+                Type = VMActionType.ActionGroup,
+                Actions = Actions.Select(a => a.Serialize()).ToList(),
+            };
+        }
+    }
+
     enum VMActionType
     {
         RunCommand,
@@ -141,6 +267,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public static bool operator !=(SerializedVMAction left, SerializedVMAction right) => !(left == right);
     }
 
+    //  Do we need a separate VMActionResult, or should we just use CommandResult?
     class VMActionResult
     {
         public string Filename { get; set; }
@@ -172,15 +299,5 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 StdErr = "",
             };
         }
-    }
-
-    interface IVMActionGroup : IDisposable
-    {
-        void RunCommand(params string[] args);
-        void CopyFile(string localSource, string vmDestination);
-
-        void CopyFolder(string localSource, string vmDestination);
-
-        void WriteFile(string vmDestination, string contents);
     }
 }
