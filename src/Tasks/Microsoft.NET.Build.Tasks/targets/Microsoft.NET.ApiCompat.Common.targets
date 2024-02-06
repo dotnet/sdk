@@ -26,7 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <RoslynAssembliesPath Condition="'$(_UseRoslynToolsetPackage)' == 'true'">$([System.IO.Path]::GetDirectoryName('$(CSharpCoreTargetsPath)'))</RoslynAssembliesPath>
       
       <!-- Otherwise, default to the roslyn compiler provided by the SDK / Visual Studio. -->
-      <RoslynAssembliesPath Condition="'$(_UseRoslynToolsetPackage)' != 'true'>$(RoslynTargetsPath)</RoslynAssembliesPath>
+      <RoslynAssembliesPath Condition="'$(_UseRoslynToolsetPackage)' != 'true'">$(RoslynTargetsPath)</RoslynAssembliesPath>
 
       <!-- The SDK stores the roslyn assemblies in the 'bincore' subdirectory. -->
       <RoslynAssembliesPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$([System.IO.Path]::Combine('$(RoslynAssembliesPath)', 'bincore'))</RoslynAssembliesPath>
