@@ -35,4 +35,16 @@
          is only applicable to 8.0.1xx. -->
     <UsagePattern IdentityGlob="Valleysoft.DockerCredsProvider/*" />
   </IgnorePatterns>
+  <Usages>
+    <Usage Id="Microsoft.AspNetCore.App.Ref" Version="9.0.0-preview.2.24075.3" />
+    <Usage Id="Microsoft.Extensions.Configuration" Version="9.0.0-alpha.1.24058.10" />
+    <Usage Id="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0-alpha.1.24058.10" />
+    <Usage Id="Microsoft.Extensions.Configuration.Binder" Version="9.0.0-alpha.1.24058.10" />
+    <Usage Id="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0-alpha.1.24058.10" />
+    <Usage Id="Microsoft.Extensions.Logging.Configuration" Version="9.0.0-alpha.1.24058.10" />
+    <Usage Id="Microsoft.Extensions.Logging.Console" Version="9.0.0-alpha.1.24058.10" IsDirectDependency="true" />
+    <Usage Id="Microsoft.Extensions.Options" Version="9.0.0-alpha.1.24058.10" />
+    <Usage Id="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0-alpha.1.24058.10" />
+    <Usage Id="Microsoft.Extensions.Primitives" Version="9.0.0-alpha.1.24058.10" />
+  </Usages>
 </UsageData>
