@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        private string ModifyWorkloadSet(string path, InstallAction installAction)
+        private string ModifyWorkloadSet(string path, InstallAction requestedAction)
         {
             ReportPendingReboot();
 
@@ -223,25 +223,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             VerifyPackage(msi);
             DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
 
-            if (installAction == InstallAction.Install)
+            if (requestedAction == InstallAction.Install)
             {
                 // If we are installing the workload set, record its version and the previous version so that we can roll back if necessary.
                 _newWorkloadSetPath = path;
-                var parentDirectory = new DirectoryInfo(Path.GetDirectoryName(Path.GetDirectoryName(msi.MsiPath)));
-                _previousWorkloadSetVersion = parentDirectory.EnumerateDirectories().Select(d => d.Name).Where(n => !n.Equals(version))?.Max();
+                _previousWorkloadSetVersion = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, DotNetHome), "default.json")).WorkloadSetVersion;
             }
 
-            InstallAction plannedAction = PlanPackage(msi, state, installAction, installedVersion, out IEnumerable<string> relatedProducts);
+            InstallAction plannedAction = PlanPackage(msi, state, requestedAction, installedVersion, out IEnumerable<string> relatedProducts);
 
             if (plannedAction != InstallAction.None)
             {
                 Elevate();
+
+                ExecutePackage(msi, plannedAction, msiPackageId);
+
+                // Update the reference count against the MSI.
+                UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
             }
-
-            ExecutePackage(msi, plannedAction, msiPackageId);
-
-            // Update the reference count against the MSI.
-            UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
 
             return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", version, "workloadset.json");
         }
