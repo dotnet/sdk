@@ -386,10 +386,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 return GetPacksInWorkload(workload, value.manifest).Select(p => p.packId);
             }
-
-#nullable disable
             return workload.Packs ?? Enumerable.Empty<WorkloadPackId>();
-#nullable restore
         }
 
         public IEnumerable<WorkloadInfo> GetExtendedWorkloads(IEnumerable<WorkloadId> workloadIds)
