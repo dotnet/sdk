@@ -26,10 +26,7 @@
       </CrossGenDownloadPackageProject>
     </ItemGroup>
 
-    <MSBuild
-      BuildInParallel="False"
-      Projects="@(CrossGenDownloadPackageProject)">
-    </MSBuild>
+    <MSBuild Projects="@(CrossGenDownloadPackageProject)" />
 
     <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
          cross-genned. This tooling multi-targets, and we only want to cross-gen the .NET Core

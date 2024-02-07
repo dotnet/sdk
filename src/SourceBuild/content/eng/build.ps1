@@ -41,7 +41,7 @@ function Get-Usage() {
 
 # Set the NUGET_PACKAGES dir so that we don't accidentally pull some packages from the global location,
 # They should be pulled from the local feeds.
-$env:NUGET_PACKAGES="$RepoRoot\prereqs\packages\restored\"
+$env:NUGET_PACKAGES="$RepoRoot\.packages\"
 
 if ($help) {
   Get-Usage
