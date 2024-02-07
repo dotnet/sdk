@@ -345,18 +345,13 @@
     </ItemGroup>
   </Target>
 
-  <!--
-    Condition should be removed after source-build picks up version of Arcade that has
-    source-build infra changes for removal od inner-clone in VMR build. Until then some
-    repos will produce intermediate packages instead of repo manifest file.
-
-    https://github.com/dotnet/source-build/issues/3930
-  -->
   <Target Name="CopyRepoArtifacts"
           AfterTargets="Package"
-          Condition="Exists($(RepoManifestFile))"
+          Condition="'$(IsUtilityProject)' != 'true'"
           Inputs="$(RepoManifestFile)"
           Outputs="$(BaseIntermediateOutputPath)ArtifactsCopy.complete">
+    <Error Text="Repo manifest file doesn't exist." Condition="!Exists('$(RepoManifestFile)')" />
+
     <XmlPeek XmlInputPath="$(RepoManifestFile)"
              Query="Build/Artifact/@Path">
         <Output TaskParameter="Result" ItemName="RepoManifestArtifact" />
@@ -404,75 +399,6 @@
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)ArtifactsCopy.complete" AlwaysCreate="true">
-      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
-    </Touch>
-  </Target>
-
-  <!--
-    This target can be removed after source-build picks up version of Arcade that has
-    source-build infra changes for removal od inner-clone in VMR build. Until then the target
-    is needed for building source-build-reference-packages and arcade repos.
-
-    https://github.com/dotnet/source-build/issues/3930
-  -->
-  <Target Name="ExtractIntermediatePackages"
-          AfterTargets="Package"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)IntermediateExtraction.complete">
-    <ItemGroup>
-      <_BuiltIntermediatePackages Condition="'$(PackagesOutput)' != ''" Include="$(PackagesOutput)/Microsoft.SourceBuild.Intermediate.*.nupkg" Exclude="$(PackagesOutput)/*.symbols.nupkg"/>
-      <_BuiltIntermediatePackages Condition="'@(PackagesOutputList)' != ''" Include="%(PackagesOutputList.Identity)/Microsoft.SourceBuild.Intermediate.*.nupkg" Exclude="%(PackagesOutputList.Identity)/*.symbols.nupkg"/>
-    </ItemGroup>
-
-    <PropertyGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
-      <_NupkgDestinationPath>$(SourceBuiltPackagesPath)</_NupkgDestinationPath>
-      <!-- SBRP packages unpack into the Reference packages directory instead of into blob-feed packages -->
-      <_NupkgDestinationPath Condition="$([System.String]::Copy(%(_BuiltIntermediatePackages.Identity)).Contains('source-build-reference-packages'))">$(ReferencePackagesDir)</_NupkgDestinationPath>
-    </PropertyGroup>
-
-    <Unzip SourceFiles="@(_BuiltIntermediatePackages)"
-           DestinationFolder="$(SourceBuiltPackagesPath)extractArtifacts/%(_BuiltIntermediatePackages.FileName)/"
-           SkipUnchangedFiles="true"
-           Condition="'@(_BuiltIntermediatePackages)' != ''" />
-
-    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
-      <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
-      <NonShippingPackageLists Include="$(SourceBuiltPackagesPath)extractArtifacts/**/$(NonShippingPackagesListPrefix)*" />
-    </ItemGroup>
-
-    <!-- Copy lists of NonShipping packages to prebuilt-report dir -->
-    <Copy SourceFiles="@(NonShippingPackageLists)" DestinationFolder="$(PackageListsDir)" />
-
-    <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,
-         clear it before moving the current SBRPs.  This ensures n-1 SBRPs aren't required to build the product repos. -->
-    <RemoveDir
-      Condition="'$(_NupkgDestinationPath)' == '$(ReferencePackagesDir)'"
-      Directories="$(ReferencePackagesDir)" />
-
-    <Move
-      Condition="'@(SourceBuiltNupkgFiles)' != ''"
-      SourceFiles="@(SourceBuiltNupkgFiles)"
-      DestinationFiles="@(SourceBuiltNupkgFiles -> '$(_NupkgDestinationPath)%(Filename)%(Extension)')" />
-
-    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
-      <SourceBuiltAssetFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.*" />
-      <SourceBuiltAssetFiles Remove="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
-    </ItemGroup>
-
-    <Move
-      Condition="'@(SourceBuiltAssetFiles)' != ''"
-      SourceFiles="@(SourceBuiltAssetFiles)"
-      DestinationFiles="@(SourceBuiltAssetFiles -> '$(SourceBuiltAssetsDir)%(Filename)%(Extension)')" />
-
-    <RemoveDir
-      Condition="Exists('$(SourceBuiltPackagesPath)extractArtifacts/')"
-      Directories="$(SourceBuiltPackagesPath)extractArtifacts/" />
-
-    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)IntermediateExtraction.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
   </Target>
