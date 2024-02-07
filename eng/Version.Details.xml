@@ -48,9 +48,9 @@
       <Sha>9dd8f5205784cabedd639fed1959bbfd95b2efd1</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime" Version="9.0.0-preview.2.24106.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime" Version="9.0.0-preview.2.24107.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>12db2459c029b4b8ee0335c4d6297d8cb5968f1e</Sha>
+      <Sha>9dd8f5205784cabedd639fed1959bbfd95b2efd1</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.2.24079.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
