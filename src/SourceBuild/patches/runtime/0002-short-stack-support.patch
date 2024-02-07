@@ -1,3 +1,10 @@
+From 6e36330872998c791a2c0d31b688e1bdece2451f Mon Sep 17 00:00:00 2001
+From: Jo Shields <joshield@microsoft.com>
+Date: Fri, 2 Feb 2024 06:56:20 -0500
+Subject: [PATCH] Source built short stack support (#97725)
+
+Backport: https://github.com/dotnet/runtime/pull/97725
+
 --- a/eng/SourceBuild.props	2024-02-07 11:01:33.807337902 -0500
 +++ b/eng/SourceBuild.props	2024-02-05 16:48:58.219933758 -0500
 @@ -15,6 +15,7 @@
