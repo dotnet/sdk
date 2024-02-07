@@ -1,5 +1,5 @@
---- ../dotnet/src/runtime/eng/SourceBuild.props	2024-02-07 11:01:33.807337902 -0500
-+++ eng/SourceBuild.props	2024-02-05 16:48:58.219933758 -0500
+--- a/eng/SourceBuild.props	2024-02-07 11:01:33.807337902 -0500
++++ b/eng/SourceBuild.props	2024-02-05 16:48:58.219933758 -0500
 @@ -15,6 +15,7 @@
      <!-- Split e.g. 'fedora.33-x64' into 'fedora.33' and 'x64'. -->
      <_targetRidPlatformIndex>$(TargetRid.LastIndexOf('-'))</_targetRidPlatformIndex>
