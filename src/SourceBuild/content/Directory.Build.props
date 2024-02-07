@@ -148,7 +148,7 @@
     <KeysDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'keys'))</KeysDir>
     <PrereqsPackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'packages'))</PrereqsPackagesDir>
 
-    <!-- When SB mode, the initial arcade is unzipped to a the "ArcadeBootStrap" dir.
+    <!-- When SB mode, the initial arcade is unzipped to the "ArcadeBootstrapPackage" dir.
          When running in VBPOC, the bootstrap package is the arcade restored at the beginning of the build. -->
     <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildSourceOnly)' == 'true'">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'ArcadeBootstrapPackage'))</ArcadeBootstrapPackageDir>
     <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(NuGetPackageRoot)</ArcadeBootstrapPackageDir>
