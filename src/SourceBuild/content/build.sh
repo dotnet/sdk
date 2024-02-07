@@ -57,8 +57,7 @@ scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 
 # Set the NUGET_PACKAGES dir so that we don't accidentally pull some packages from the global location,
 # They should be pulled from the local feeds.
-packagesDir="$scriptroot/prereqs/packages/"
-packagesRestoredDir="${packagesDir}restored/"
+packagesRestoredDir="$scriptroot/.packages/"
 export NUGET_PACKAGES=$packagesRestoredDir/
 
 # Common settings
@@ -77,6 +76,7 @@ sourceRepository=''
 sourceVersion=''
 CUSTOM_PACKAGES_DIR=''
 CUSTOM_SDK_DIR=''
+packagesDir="$scriptroot/prereqs/packages/"
 packagesArchiveDir="${packagesDir}archive/"
 packagesPreviouslySourceBuiltDir="${packagesDir}previously-source-built/"
 

@@ -9,20 +9,6 @@
     <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
   </PropertyGroup>
 
-  <!-- Copies the output assets of the builds to the output path. -->
-  <Target Name="CopyBinariesToBinFolder"
-          AfterTargets="Build">
-    <ItemGroup>
-      <BinariesToCopy Include="$(SourceBuiltAssetsDir)*.*"
-                      Exclude="$(SourceBuiltAssetsDir)*.nupkg;$(SourceBuiltAssetsDir)*.requires_nupkg_signing" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(BinariesToCopy)"
-          DestinationFolder="$(SharedOutputPath)"
-          SkipUnchangedFiles="true"
-          Condition="'@(BinariesToCopy)'!=''" />
-  </Target>
-
   <!-- After building, generate a prebuilt usage report. -->
   <Target Name="ReportPrebuiltUsage"
           AfterTargets="Build"
