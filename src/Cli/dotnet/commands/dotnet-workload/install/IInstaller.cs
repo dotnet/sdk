@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     {
         int ExitCode { get; }
 
-        string InstallWorkloadSet(CliTransaction transaction, string path);
+        string InstallWorkloadSet(CliTransaction transaction, string advertisingPackagePath);
 
         void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
 

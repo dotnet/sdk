@@ -367,6 +367,11 @@
         <target state="translated">Hiermit wird gesteuert, ob zukünftige Workloadvorgänge Workloadsätze oder lose Manifeste verwenden sollen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload set.</source>
+        <target state="new">Update to the specified workload set.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
         <target state="translated">Es sind Workloadupdates verfügbar. Um weitere Informationen zu erhalten, führen Sie `dotnet workload list` aus.</target>

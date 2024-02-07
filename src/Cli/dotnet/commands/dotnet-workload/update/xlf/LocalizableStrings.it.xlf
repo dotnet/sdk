@@ -57,11 +57,6 @@
         <target state="new">Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload set.</source>
-        <target state="new">Update to the specified workload set.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">I manifesti pubblicitari sono stati aggiornati.</target>

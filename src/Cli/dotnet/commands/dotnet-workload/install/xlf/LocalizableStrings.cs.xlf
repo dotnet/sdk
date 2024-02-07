@@ -367,6 +367,11 @@
         <target state="new">Control whether future workload operations should use workload sets or loose manifests.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload set.</source>
+        <target state="new">Update to the specified workload set.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
         <target state="translated">Jsou k dispozici aktualizace úloh. Pokud chcete získat další informace, spusťte `dotnet workload list`.</target>

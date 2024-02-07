@@ -57,11 +57,6 @@
         <target state="translated">Argumento "{0}" inválido para o argumento --mode para atualização de carga de trabalho dotnet. Os únicos modos com suporte são "workloadset", "loosemanifest" e "auto".</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload set.</source>
-        <target state="new">Update to the specified workload set.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">Manifestos de anúncio atualizados com êxito.</target>

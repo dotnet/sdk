@@ -104,9 +104,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
-        public string InstallWorkloadSet(CliTransaction transaction, string path)
+        public string InstallWorkloadSet(CliTransaction transaction, string advertisingPackagePath)
         {
-            return (path ?? string.Empty) + "installed.workloadset.json";
+            return (advertisingPackagePath ?? string.Empty) + "installed.workloadset.json";
         }
 
         public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null) => throw new NotImplementedException();

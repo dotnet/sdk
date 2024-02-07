@@ -182,36 +182,33 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public string InstallWorkloadSet(CliTransaction transaction, string path)
+        public string InstallWorkloadSet(CliTransaction transaction, string advertisingPackagePath)
         {
             var pathToReturn = string.Empty;
-            var previousVersion = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, DotNetHome), "default.json")).WorkloadSetVersion;
             transaction.Run(
                 action: context =>
                 {
-                    pathToReturn = ModifyWorkloadSet(path, InstallAction.Install);
+                    pathToReturn = ModifyWorkloadSet(advertisingPackagePath, InstallAction.Install);
                 },
                 rollback: () =>
                 {
-                    ModifyWorkloadSet(path, InstallAction.Uninstall);
-                    File.WriteAllText(Path.Combine(path, "version.txt"), previousVersion);
-                    ModifyWorkloadSet(path, InstallAction.Repair);
+                    ModifyWorkloadSet(advertisingPackagePath, InstallAction.Uninstall);
                 });
 
             return pathToReturn;
         }
 
-        private string ModifyWorkloadSet(string path, InstallAction requestedAction)
+        private string ModifyWorkloadSet(string advertisingPackagePath, InstallAction requestedAction)
         {
             ReportPendingReboot();
 
             // Resolve the package ID for the manifest payload package
-            var featureBand = Path.GetFileName(Path.GetDirectoryName(path));
-            var version = File.ReadAllText(Path.Combine(path, "version.txt"));
+            var featureBand = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath));
+            var packageVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, "packageVersion.txt"));
             string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), new SdkFeatureBand(featureBand)).ToString();
-            string msiPackageVersion = version;
+            string msiPackageVersion = packageVersion;
 
-            Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({version}) to {msiPackageId} ({msiPackageVersion}).");
+            Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({packageVersion}) to {msiPackageId} ({msiPackageVersion}).");
 
             // Retrieve the payload from the MSI package cache.
             MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, null);
@@ -230,7 +227,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
             }
 
-            return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", version, "workloadset.json");
+            return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", packageVersion, "workloadset.json");
         }
 
         /// <summary>

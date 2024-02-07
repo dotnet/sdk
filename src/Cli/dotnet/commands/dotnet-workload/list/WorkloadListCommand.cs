@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 if (installState.UseWorkloadSets == true)
                 {
                     Reporter.WriteLine();
-                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, installState.WorkloadSetVersion ?? "unknown"));
+                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion() ?? "unknown"));
                 }
                 
                 Reporter.WriteLine();

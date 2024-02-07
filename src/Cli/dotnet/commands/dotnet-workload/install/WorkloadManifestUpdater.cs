@@ -11,6 +11,7 @@ using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
@@ -306,17 +307,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 if (id.Equals("Microsoft.NET.Workloads"))
                 {
-                    var fileName = Path.GetFileNameWithoutExtension(packagePath);
-                    var featureBand = _sdkFeatureBand.ToString();
-
-                    // The format is Microsoft.NET.Workloads.featureBand.version, so this skips past the band and the '.' afterwards to get the version
-                    var version = fileName.Substring(fileName.IndexOf(featureBand) + featureBand.Length + 1);
-                    if (version.StartsWith("msi", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // version starts with msi.<architecture>. Remove that part.
-                        version = version.Substring(version.IndexOf('.', 5) + 1);
-                    }
-                    File.WriteAllText(Path.Combine(adManifestPath, "version.txt"), version);
+                    using PackageArchiveReader packageReader = new(packagePath);
+                    var downloadedPackageVersion = packageReader.NuspecReader.GetVersion();
+                    File.WriteAllText(Path.Combine(adManifestPath, "packageVersion.txt"), downloadedPackageVersion.ToString());
                 }
 
                 if (_displayManifestUpdates)

@@ -367,6 +367,11 @@
         <target state="translated">控制未来的工作负载操作应该使用工作负载集还是松散清单。</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload set.</source>
+        <target state="new">Update to the specified workload set.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
         <target state="translated">有可用的工作负载更新。有关详细信息，请运行 `dotnet workload list`。</target>

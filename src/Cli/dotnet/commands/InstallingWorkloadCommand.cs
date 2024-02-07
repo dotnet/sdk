@@ -214,6 +214,11 @@ namespace Microsoft.DotNet.Workloads.Workload
             Hidden = true
         };
 
+        public static readonly CliOption<string> WorkloadSetVersionOption = new("--version")
+        {
+            Description = Strings.WorkloadSetVersionOptionDescription
+        };
+
         public static readonly CliOption<bool> PrintDownloadLinkOnlyOption = new("--print-download-link-only")
         {
             Description = Strings.PrintDownloadLinkOnlyDescription,

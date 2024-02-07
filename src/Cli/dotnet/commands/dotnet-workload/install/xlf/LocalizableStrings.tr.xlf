@@ -367,6 +367,11 @@
         <target state="translated">Gelecekteki iş yükü işlemlerinin iş yükü kümelerini mi yoksa gevşek bildirimleri mi kullanması gerektiğini kontrol edin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload set.</source>
+        <target state="new">Update to the specified workload set.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
         <target state="translated">İş yükü güncelleştirmeleri var. Daha fazla bilgi için `dotnet workload list` çalıştırın.</target>

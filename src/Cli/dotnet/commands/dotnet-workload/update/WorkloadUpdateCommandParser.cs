@@ -12,11 +12,6 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly CliOption<string> TempDirOption = WorkloadInstallCommandParser.TempDirOption;
 
-        public static readonly CliOption<string> WorkloadSetVersionOption = new("--version")
-        {
-            Description = LocalizableStrings.WorkloadSetVersionOptionDescription
-        };
-
         public static readonly CliOption<bool> FromPreviousSdkOption = new("--from-previous-sdk")
         {
             Description = LocalizableStrings.FromPreviousSdkOptionDescription
@@ -48,7 +43,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TempDirOption);
             command.Options.Add(FromPreviousSdkOption);
             command.Options.Add(AdManifestOnlyOption);
-            command.Options.Add(WorkloadSetVersionOption);
+            command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
             command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
             command.Options.Add(CommonOptions.VerbosityOption);
             command.Options.Add(PrintRollbackOption);

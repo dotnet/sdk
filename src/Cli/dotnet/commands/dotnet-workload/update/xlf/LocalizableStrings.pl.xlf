@@ -57,11 +57,6 @@
         <target state="translated">Nieprawidłowy argument „{0}” argumentu --mode dla aktualizacji obciążenia dotnet. Obsługiwane tryby to „workloadset”, „loosemanifest” i „auto”.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload set.</source>
-        <target state="new">Update to the specified workload set.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
         <source>Successfully updated advertising manifests.</source>
         <target state="translated">Pomyślnie zaktualizowano manifesty reklam.</target>

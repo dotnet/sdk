@@ -18,6 +18,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     {
         private readonly bool _skipManifestUpdate;
         private readonly IReadOnlyCollection<string> _workloadIds;
+        private readonly string _workloadSetVersion;
 
         public WorkloadInstallCommand(
             ParseResult parseResult,
@@ -42,6 +43,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(Reporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
+
+            _workloadSetVersion = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
+            if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+            {
+                // If the version of the workload set is currently pinned, treat it as if it were freshly pinned.
+                var installStateContents = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json"));
+                _workloadSetVersion = installStateContents.WorkloadSetVersion;
+            }
 
             ValidateWorkloadIdsInput();
         }
@@ -107,11 +116,32 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 try
                 {
-                    InstallWorkloads(
-                        _workloadIds.Select(id => new WorkloadId(id)),
-                        _skipManifestUpdate,
-                        _includePreviews,
-                        string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
+                    DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
+                    var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+                    {
+                        InstallWorkloads(
+                            workloadIds,
+                            _skipManifestUpdate,
+                            _includePreviews,
+                            offlineCache);
+                    }
+                    else
+                    {
+                        // Ensure workload set mode is set to 'workloadset'
+                        // Do not skip checking the mode first, as setting it triggers
+                        // an admin authorization popup for MSI-based installs.
+                        if (!GetInstallStateMode(_sdkFeatureBand, _dotnetPath))
+                        {
+                            _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+                        }
+
+                        _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
+                        var transaction = new CliTransaction();
+                        var workloadSetLocation = InstallWorkloadSet(transaction);
+                        var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestRollbacks(workloadSetLocation);
+                        InstallWorkloadsAndGarbageCollect(workloadSetLocation, transaction, workloadIds, manifestsToUpdate, offlineCache, false);
+                    }
                 }
                 catch (Exception e)
                 {
@@ -180,6 +210,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
 
+            InstallWorkloadsAndGarbageCollect(workloadSetLocation, transaction, workloadIds, manifestsToUpdate, offlineCache, useRollback);
+        }
+
+        private void InstallWorkloadsAndGarbageCollect(string workloadSetLocation, CliTransaction transaction, IEnumerable<WorkloadId> workloadIds, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, bool useRollback)
+        {
             var workloadSetVersion = workloadSetLocation is null ? null : Path.GetDirectoryName(workloadSetLocation);
 
             InstallWorkloadsWithInstallRecord(transaction, _workloadInstaller, workloadIds, workloadSetVersion, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
@@ -244,7 +279,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         installer.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
 
-                    installer.AdjustWorkloadSetInInstallState(sdkFeatureBand, workloadSetVersion);
+                    installer.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : workloadSetVersion);
                 },
                 rollback: () =>
                 {

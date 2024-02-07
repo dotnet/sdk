@@ -85,21 +85,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return packs;
         }
 
-        public string InstallWorkloadSet(CliTransaction transaction, string path)
+        public string InstallWorkloadSet(CliTransaction transaction, string advertisingPackagePath)
         {
-            var workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(path, "version.txt")), "workloadset.json");
+            var workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(advertisingPackagePath, "packageVersion.txt")), "workloadset.json");
             transaction.Run(
                 action: context =>
                 {
                     Directory.CreateDirectory(Path.GetDirectoryName(workloadSetPath));
 
-                    File.Copy(Path.Combine(path, "workloadset.json"), workloadSetPath, overwrite: true);
+                    File.Copy(Path.Combine(advertisingPackagePath, "workloadset.json"), workloadSetPath, overwrite: true);
                 },
                 rollback: () =>
                 {
-                    if (path is not null)
+                    if (advertisingPackagePath is not null)
                     {
-                        PathUtility.DeleteFileAndEmptyParents(path);
+                        PathUtility.DeleteFileAndEmptyParents(advertisingPackagePath);
                     }
                 });
             

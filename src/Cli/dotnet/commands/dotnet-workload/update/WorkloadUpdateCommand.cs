@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                   tempDirPath: tempDirPath)
 
         {
-            _workloadSetVersion = parseResult.GetValue(WorkloadUpdateCommandParser.WorkloadSetVersionOption);
+            _workloadSetVersion = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
             _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);
             _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
             _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);
@@ -230,7 +230,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         _workloadInstaller.RemoveManifestsFromInstallState(sdkFeatureBand);
                     }
 
-                    _workloadInstaller.AdjustWorkloadSetInInstallState(sdkFeatureBand, workloadSetVersion);
+                    _workloadInstaller.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : workloadSetVersion);
                 },
                 rollback: () =>
                 {

@@ -346,4 +346,7 @@
   <data name="ManifestMsiNotFoundInNuGetPackage" xml:space="preserve">
     <value>Manifest MSI not found in NuGet package {0}</value>
   </data>
+  <data name="WorkloadSetVersionOptionDescription" xml:space="preserve">
+    <value>Update to the specified workload set.</value>
+  </data>
 </root>
