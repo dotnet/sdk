@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Tue, 6 Feb 2024 23:44:10 +0000
+Subject: [PATCH] Eliminate System.CommandLine prebuilt package
+
+Backport: https://github.com/NuGet/NuGet.Client/pull/5625
+---
+ eng/Version.Details.xml | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index d8352707b..282edfd3c 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -30,6 +30,10 @@
+       <Uri>https://github.com/aspnet/xdt</Uri>
+       <Sha>d4d088b6a9c793525b1a27a119cb66ba4587bb39</Sha>
+     </Dependency>
++    <Dependency Name="System.CommandLine" Version="2.0.0-beta4.23307.1">
++      <Uri>https://github.com/dotnet/command-line-api</Uri>
++      <Sha>02fe27cd6a9b001c8feb7938e6ef4b3799745759</Sha>
++    </Dependency>
+     <Dependency Name="System.ComponentModel.Composition" Version="4.5.0">
+       <Uri>https://github.com/dotnet/corefx</Uri>
+       <Sha>30ab651fcb4354552bd4891619a0bdd81e0ebdbf</Sha>
