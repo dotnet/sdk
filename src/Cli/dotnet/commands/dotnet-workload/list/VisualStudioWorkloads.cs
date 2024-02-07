@@ -123,7 +123,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         /// <summary>
         /// Writes install records for VS Workloads so we later install the packs via the CLI for workloads managed by VS.
         /// This is to fix a bug where updating the manifests in the CLI will cause VS to also be told to use these newer workloads via the workload resolver.
-        /// ...  but these workloads don't have their corresponding packs installed as VS doesnt update its workloads as the CLI does.
+        /// ...  but these workloads don't have their corresponding packs installed as VS doesn't update its workloads as the CLI does.
         /// </summary>
         internal static void WriteSDKInstallRecordsForVSWorkloads(IInstaller workloadInstaller, IWorkloadResolver workloadResolver,
             IEnumerable<WorkloadId> workloadsWithExistingInstallRecords)
@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                     // Remove workloads with an SDK installation source, as we've already created install records for them, and don't need to again.
                     var vsOnlyWorkloads = vsWorkloads.AsEnumerable().Where(w => !w.Value.Contains("SDK")).Select(w => new WorkloadId(w.Key));
                     var workloadsToWriteRecordsFor = vsOnlyWorkloads.Except(workloadsWithExistingInstallRecords);
-                    ((NetSdkMsiInstallerClient)workloadResolver).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
+                    ((NetSdkMsiInstallerClient)workloadInstaller).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
                 }
             }
         }
