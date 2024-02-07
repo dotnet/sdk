@@ -28,10 +28,7 @@
       </BundledToolLayoutProject>
     </ItemGroup>
 
-    <MSBuild
-        BuildInParallel="False"
-        Projects="@(BundledToolLayoutProject)">
-    </MSBuild>
+    <MSBuild Projects="@(BundledToolLayoutProject)" />
   </Target>
 
 </Project>

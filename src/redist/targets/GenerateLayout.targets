@@ -409,10 +409,7 @@
       </BundledLayoutPackageDownloadProject>
     </ItemGroup>
 
-    <MSBuild
-      BuildInParallel="False"
-      Projects="@(BundledLayoutPackageDownloadProject)">
-    </MSBuild>
+    <MSBuild Projects="@(BundledLayoutPackageDownloadProject)" />
 
     <ItemGroup>
       <!-- Use lowercase package name in package path -->
@@ -534,10 +531,7 @@
       </AppHostTemplateDownloadPackageProject>
     </ItemGroup>
 
-    <MSBuild
-      BuildInParallel="False"
-      Projects="@(AppHostTemplateDownloadPackageProject)">
-    </MSBuild>
+    <MSBuild Projects="@(AppHostTemplateDownloadPackageProject)" />
 
     <PropertyGroup>
       <AppHostExecutableName>AppHost$(ExeExtension)</AppHostExecutableName>
