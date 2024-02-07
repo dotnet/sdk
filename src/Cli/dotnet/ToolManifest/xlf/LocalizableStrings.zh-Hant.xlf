@@ -36,6 +36,11 @@ For a list of locations searched, specify the "-d" option before the tool name.<
         <target state="translated">封裝存在多個項目: {0}。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolMissingRollForward">
+        <source>Missing 'rollForward' entry.</source>
+        <target state="new">Missing 'rollForward' entry.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
         <source>Expected a {0} for property '{1}'.</source>
         <target state="translated">對屬性 '{1}' 來說應為 {0}。</target>

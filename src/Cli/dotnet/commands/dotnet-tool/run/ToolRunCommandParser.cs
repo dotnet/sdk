@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Tools.Tool.Run;
+using Microsoft.DotNet.Tools.Tool.Install;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli
@@ -20,6 +21,11 @@ namespace Microsoft.DotNet.Cli
             Description = "arguments forwarded to the tool"
         };
 
+        public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
+        {
+            Description = Tools.Tool.Install.LocalizableStrings.RollForwardOptionDescription
+        };
+       
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -33,6 +39,7 @@ namespace Microsoft.DotNet.Cli
 
             command.Arguments.Add(CommandNameArgument);
             command.Arguments.Add(CommandArgument);
+            command.Options.Add(RollForwardOption);
 
             command.SetAction((parseResult) => new ToolRunCommand(parseResult).Execute());
 

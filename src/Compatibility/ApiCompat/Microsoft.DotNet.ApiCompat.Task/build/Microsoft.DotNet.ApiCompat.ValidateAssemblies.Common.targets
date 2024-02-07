@@ -11,7 +11,7 @@
                   @(ApiCompatSuppressionFile);
                   $(ApiCompatSuppressionOutputFile)"
           Outputs="$(_ApiCompatValidateAssembliesSemaphoreFile)"
-          Condition="'@(ApiCompatLeftAssemblies)' != '' and '@(ApiCompatRightAssemblies)' != ''"
+          Condition="'@(ApiCompatLeftAssemblies)' != '' and '@(ApiCompatRightAssemblies)' != '' and '$(DesignTimeBuild)' != 'true'"
           DependsOnTargets="$(ApiCompatValidateAssembliesDependsOn)">
     <Microsoft.DotNet.ApiCompat.Task.ValidateAssembliesTask
       RoslynAssembliesPath="$(RoslynAssembliesPath)"

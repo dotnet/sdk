@@ -88,6 +88,11 @@ Si desea crear un manifiesto, utilice "dotnet new tool-manifest", normalmente en
         <target state="translated">No se admiten las opciones --prerelease y --version en el mismo comando.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RollForwardOptionDescription">
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="new">Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">La versión del paquete de herramientas para instalar.</target>
