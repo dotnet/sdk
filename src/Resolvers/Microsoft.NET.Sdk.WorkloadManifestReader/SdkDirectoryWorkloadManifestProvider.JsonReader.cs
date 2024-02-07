@@ -80,7 +80,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 throw new JsonFormatException(key, reader.TokenStartIndex);
             }
 
-            internal static string ReadString(ref Utf8JsonStreamReader reader)
+            internal static string? ReadString(ref Utf8JsonStreamReader reader)
             {
                 ConsumeToken(ref reader, JsonTokenType.String);
                 return reader.GetString();
