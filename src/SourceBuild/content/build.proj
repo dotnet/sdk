@@ -19,6 +19,21 @@
              StopOnFirstFailure="true" />
   </Target>
 
+  <!-- Copies the output assets of the builds to the output path. -->
+  <Target Name="CopyBinariesToBinFolder"
+          AfterTargets="Build">
+    <ItemGroup>
+      <BinaryToCopy Include="$(SourceBuiltAssetsDir)*.*"
+                    Exclude="$(SourceBuiltAssetsDir)*.nupkg;
+                             $(SourceBuiltAssetsDir)*.requires_nupkg_signing" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(BinaryToCopy)"
+          DestinationFolder="$(SharedOutputPath)"
+          SkipUnchangedFiles="true"
+          Condition="'@(BinaryToCopy)'!=''" />
+  </Target>
+
   <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
 </Project>
