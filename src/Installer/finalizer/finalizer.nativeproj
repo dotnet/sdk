@@ -14,4 +14,9 @@
     <!-- <CMakeNativeToolArguments Include="/bl:$(ArtifactsDir)native.binlog" /> -->
   </ItemGroup>
 
+  <Target Name="FinalizerPropertyCheck" AfterTargets="Restore" BeforeTargets="Build">
+    <Message Text="Platform: $(Platform)" Importance="high"/>
+    <Message Text="ArtifactsDir: $(ArtifactsDir)" Importance="high"/>
+  </Target>
+
 </Project>
