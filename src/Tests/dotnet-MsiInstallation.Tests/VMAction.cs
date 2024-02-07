@@ -38,6 +38,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public string ExplicitDescription { get; set; }
 
+        public bool ShouldChangeState { get; set; } = true;
+
         public CommandResult Execute()
         {
             return VM.Apply(Serialize()).ToCommandResult();
@@ -47,6 +49,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             var serialized = SerializeDerivedProperties();
             serialized.ExplicitDescription = ExplicitDescription;
+            serialized.ShouldChangeState = ShouldChangeState;
             return serialized;
         }
         protected abstract SerializedVMAction SerializeDerivedProperties();
@@ -170,6 +173,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public string ExplicitDescription { get; set; }
 
+        public bool ShouldChangeState { get; set; }
+
         //  Applies to RunCommand
         public List<string> Arguments { get; set; }
 
@@ -236,6 +241,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             return Type == action.Type &&
                    ExplicitDescription == action.ExplicitDescription &&
+                   ShouldChangeState == action.ShouldChangeState &&
                    ListsAreEqual(Arguments, action.Arguments) &&
                    TargetPath == action.TargetPath &&
                    SourcePath == action.SourcePath &&

@@ -10,17 +10,16 @@ using FluentAssertions.Execution;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
-    internal class RemoteDirectory
+    abstract class RemoteDirectory
     {
         public string Path { get; }
 
-        public bool Exists
+        protected RemoteDirectory(string path)
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
+            Path = path;
         }
+
+        public abstract bool Exists { get; }
 
         public Assertions Should()
         {
@@ -40,6 +39,12 @@ namespace Microsoft.DotNet.MsiInstallerTests
             {
                 Execute.Assertion.ForCondition(_directory.Exists)
                     .FailWith("Expected directory {0} does not exist.", _directory.Path);
+                return new AndConstraint<Assertions>(this);
+            }
+            public AndConstraint<Assertions> NotExist()
+            {
+                Execute.Assertion.ForCondition(!_directory.Exists)
+                    .FailWith("Expected directory {0} not to exist.", _directory.Path);
                 return new AndConstraint<Assertions>(this);
             }
         }

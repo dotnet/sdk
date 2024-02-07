@@ -24,6 +24,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         string _stateFile;
 
+        //  Whether we should trust the ShouldChangeState property of the action.  If not, then we will re-apply the previous snapshot after the action runs to make sure the state hasn't been polluted.
+        public bool TrustShouldChangeState { get; set; } = true;
+
         public VirtualMachine(ITestOutputHelper log)
         {
             Log = log;
@@ -43,8 +46,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 {
                     _rootState = new VMStateTree()
                     {
-                        SnapshotId = "60667B5C-EC88-430E-8C69-5E4214123941",
-                        SnapshotName = "Updated expired password, enabled Remote Management",
+                        SnapshotId = "CF853278-1B6B-4816-8E51-FBDBE3AABA2C",
+                        SnapshotName = "Set network to private",
                     };
                 }
             }
@@ -117,7 +120,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public RemoteDirectory GetRemoteDirectory(string path)
         {
-            throw new NotImplementedException();
+            return new VMRemoteDirectory(this, path);
         }
 
         void SyncToCurrentState()
@@ -125,6 +128,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             if (_currentAppliedState != _currentState)
             {
                 VMControl.ApplySnapshotAsync(_currentState.SnapshotId).Wait();
+                _currentAppliedState = _currentState;
             }
         }
 
@@ -140,6 +144,16 @@ namespace Microsoft.DotNet.MsiInstallerTests
             SyncToCurrentState();
 
             var actionResult = Run(action);
+
+            if (!action.ShouldChangeState)
+            {
+                if (!TrustShouldChangeState)
+                {
+                    VMControl.ApplySnapshotAsync(_currentState.SnapshotId).Wait();
+                }
+
+                return actionResult;
+            }
 
             string actionDescription = action.GetDescription();
 
@@ -291,6 +305,24 @@ namespace Microsoft.DotNet.MsiInstallerTests
             {
                 _vm.SyncToCurrentState();
                 return File.ReadAllText(_vm.VMPathToSharePath(Path));
+            }
+        }
+
+        class VMRemoteDirectory : RemoteDirectory
+        {
+            VirtualMachine _vm;
+            public VMRemoteDirectory(VirtualMachine vm, string path) : base(path)
+            {
+                _vm = vm;
+            }
+
+            public override bool Exists
+            {
+                get
+                {
+                    _vm.SyncToCurrentState();
+                    return Directory.Exists(_vm.VMPathToSharePath(Path));
+                }
             }
         }
     }

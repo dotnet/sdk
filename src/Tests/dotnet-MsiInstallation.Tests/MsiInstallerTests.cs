@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         //  How to rename a snapshot: https://stackoverflow.com/questions/7599217/setting-hyper-v-snapshots-name-programmatically
 
 
-        //  Reminder: Enable "Remote Service Management" firewall rule so that PSExec will run more quickly
+        //  Reminder: Enable "Remote Service Management" firewall rule so that PSExec will run more quickly.  Make sure network is set to "Private" in Windows settings (or enable the firewall rule for public networks).
 
         const string TargetMachineName = "dsp-vm";
         const string PsExecPath = @"C:\Users\Daniel\Downloads\PSTools\PsExec.exe";
@@ -218,38 +218,37 @@ namespace Microsoft.DotNet.MsiInstallerTests
         //        .HaveStdOut("7.0.401");
         //}
 
-        //[Fact]
-        //public void SdkInstallation2()
-        //{
-        //    VM.CreateRunCommand("dotnet", "--version")
-        //        .Execute()
-        //        .Should()
-        //        .HaveStdOut("7.0.401");
+        [Fact]
+        public void SdkInstallation2()
+        {
+            GetInstalledSdkVersion().Should().Be("7.0.401");
 
-        //    VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
-        //        .Execute()
-        //        .Should()
-        //        .Pass();
+            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
+                .Execute()
+                .Should()
+                .Pass();
 
-        //    new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
-        //        .Should()
-        //        .Exist();
+            VM.GetRemoteDirectory($@"c:\Program Files\dotnet\sdk\{SdkInstallerVersion}")
+                .Should()
+                .Exist();
 
-        //    RunRemoteCommand("dotnet", "--version")
-        //        .Should()
-        //        .HaveStdOut(SdkInstallerVersion);
+            GetInstalledSdkVersion().Should().Be(SdkInstallerVersion);
 
-        //    RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
+            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall")
+                .Execute()
+                .Should()
+                .Pass();
 
-        //    new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
-        //        .Should()
-        //        .NotExist();
+            VM.GetRemoteDirectory($@"c:\Program Files\dotnet\sdk\{SdkInstallerVersion}")
+                .Should()
+                .NotExist();
 
-        //    RunRemoteCommand("dotnet", "--version")
-        //        .Should()
-        //        .HaveStdOut("7.0.401");
+            new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
+                .Should()
+                .NotExist();
 
-        //}
+            GetInstalledSdkVersion().Should().Be("7.0.401");
+        }
 
 
         //[Fact(Skip = "testing")]
@@ -314,6 +313,15 @@ namespace Microsoft.DotNet.MsiInstallerTests
         //{
         //    //  Should not install or uninstall anything
         //}
+
+        string GetInstalledSdkVersion()
+        {
+            var command = VM.CreateRunCommand("dotnet", "--version");
+            command.ShouldChangeState = false;
+            var result = command.Execute();
+            result.Should().Pass();
+            return result.StdOut;
+        }
 
         void CleanupInstallState()
         {

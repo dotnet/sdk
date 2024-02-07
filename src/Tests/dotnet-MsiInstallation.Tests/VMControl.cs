@@ -210,7 +210,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VMEnabledState getCurrentState()
             {
                 var state = (VMEnabledState) (UInt16)VMInstance.CimInstanceProperties["EnabledState"].Value;
-                Log.WriteLine("Current EnabledState: " + state);
                 return state;
             }
 
@@ -227,7 +226,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             //    return;
             //}
 
-            Log.WriteLine("Setting EnabledState to " + targetState);
+            Log.WriteLine($"Changing EnabledState from {getCurrentState()} to {targetState}");
 
             var methodParameters = new CimMethodParametersCollection()
             {
