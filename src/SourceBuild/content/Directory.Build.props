@@ -19,6 +19,20 @@
     <TargetOS Condition="'$(TargetOS)' == ''">$(BuildOS)</TargetOS>
   </PropertyGroup>
 
+  <!-- This is a list of cases where we aren't producing a whole SDK, just a runtime. This list should be kept in sync with https://github.com/dotnet/runtime/blob/main/eng/SourceBuild.props#L26 -->
+  <PropertyGroup Label="ShortStacks">
+    <ShortStack Condition="'$(TargetOS)' == 'wasi'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'browser'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'ios'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'iossimulator'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'tvos'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'tvossimulator'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'maccatalyst'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'android'">true</ShortStack>
+    <!-- Short stack builds stop at runtime, not the whole SDK -->
+    <RootRepo Condition="'$(ShortStack)' == 'true'">runtime</RootRepo>
+  </PropertyGroup>
+
   <PropertyGroup Label="CalculateArch">
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant)</BuildArchitecture>
     <HostArchitecture Condition="'$(HostArchitecture)' == ''">$(BuildArchitecture)</HostArchitecture>
@@ -49,6 +63,8 @@
     <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</PortableRid>
 
     <TargetRid Condition="'$(PortableBuild)' == 'true' and '$(PortableRid)' != ''">$(PortableRid)</TargetRid>
+    <TargetRid Condition="'$(ShortStack)' == 'true' and '$(TargetOS)' != 'windows'">$(TargetOS)-$(TargetArchitecture)</TargetRid>
+    <TargetRid Condition="'$(ShortStack)' == 'true' and '$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</TargetRid>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
