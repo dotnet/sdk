@@ -163,6 +163,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 manifestsToUpdate = useRollback ?
                     _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
                     _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+
+                WriteSDKInstallRecordsForVSWorkloads();
             }
 
             InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
@@ -186,6 +188,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 reporter.WriteLine(string.Format(LocalizableStrings.GarbageCollectionFailed,
                     verbosity.IsDetailedOrDiagnostic() ? e.ToString() : e.Message).Yellow());
             }
+        }
+
+        private void WriteSDKInstallRecordsForVSWorkloads()
+        {
+#if !DOT_NET_BUILD_FROM_SOURCE
+            if (OperatingSystem.IsWindows())
+            {
+                // The 'workload restore' command relies on this happening through the existing chain of logic, if this is massively refactored please ensure this is called.
+                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, GetInstalledWorkloads(false));
+            }
+#endif
         }
 
         private void InstallWorkloadsWithInstallRecord(
