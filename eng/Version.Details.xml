@@ -4,9 +4,9 @@
     <!-- Microsoft.CodeAnalysis.Workspaces.MSBuild transitively references M.Bcl.AsyncInterfaces.
          Adding an explicit dependency to make sure the latest version is used instead of the SBRP
          one under source build. -->
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="9.0.0-alpha.1.24064.3">
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="9.0.0-preview.2.24105.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>6f9d6569684cc17015aa6fc5f9d9a5f7580ade97</Sha>
+      <Sha>bdc031f53b9d24b5f3229badbb1d0b3b9e1e1fd9</Sha>
     </Dependency>
     <!-- Necessary for source-build. This allows the live version of the package to be used by source-build. -->
     <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.3.2">
@@ -50,18 +50,18 @@
       <Uri>https://github.com/dotnet/symreader</Uri>
       <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-alpha.1.24064.3">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-preview.2.24105.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>6f9d6569684cc17015aa6fc5f9d9a5f7580ade97</Sha>
+      <Sha>bdc031f53b9d24b5f3229badbb1d0b3b9e1e1fd9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.0-alpha.1.24064.3">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.0-preview.2.24105.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>6f9d6569684cc17015aa6fc5f9d9a5f7580ade97</Sha>
+      <Sha>bdc031f53b9d24b5f3229badbb1d0b3b9e1e1fd9</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.0-alpha.1.24064.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="9.0.0-preview.2.24105.2">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>6f9d6569684cc17015aa6fc5f9d9a5f7580ade97</Sha>
+      <Sha>bdc031f53b9d24b5f3229badbb1d0b3b9e1e1fd9</Sha>
       <SourceBuild RepoName="runtime" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
