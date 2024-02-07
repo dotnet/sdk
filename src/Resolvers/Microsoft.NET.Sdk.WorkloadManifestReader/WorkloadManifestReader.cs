@@ -49,7 +49,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             throw new WorkloadManifestFormatException(key, reader.TokenStartIndex);
         }
 
-        private static string ReadString(ref Utf8JsonStreamReader reader)
+        private static string? ReadString(ref Utf8JsonStreamReader reader)
         {
             ConsumeToken(ref reader, JsonTokenType.String);
             return reader.GetString();
@@ -229,14 +229,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var dependencyId = reader.GetString();
+                        var dependencyId = reader.GetString() ?? string.Empty;
                         if (FXVersion.TryParse(ReadString(ref reader), out var dependencyVersion))
                         {
                             if (dependsOn.ContainsKey(dependencyId))
                             {
                                 ThrowDuplicateKeyException(ref reader, dependencyId);
                             }
-                            dependsOn.Add(dependencyId, dependencyVersion);
+                            dependsOn.Add(dependencyId, dependencyVersion!);
                             continue;
                         }
                         goto default;
@@ -261,7 +261,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var workloadId = new WorkloadId(reader.GetString());
+                        var workloadId = new WorkloadId(reader.GetString() ?? string.Empty);
                         var workload = ReadWorkloadDefinition(workloadId, ref reader, localizationCatalog);
                         if (workloads.ContainsKey(workloadId)) ThrowDuplicateKeyException(ref reader, workloadId);
                         workloads.Add(workloadId, workload);
@@ -287,7 +287,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var packId = new WorkloadPackId(reader.GetString());
+                        var packId = new WorkloadPackId(reader.GetString() ?? string.Empty);
                         var pack = ReadWorkloadPack(packId, ref reader);
                         if (packs.ContainsKey(packId)) ThrowDuplicateKeyException(ref reader, packId);
                         packs[packId] = pack;
@@ -313,7 +313,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.String:
-                        list.Add(reader.GetString());
+                        list.Add(reader.GetString() ?? string.Empty);
                         continue;
                     case JsonTokenType.EndArray:
                         return list;
@@ -336,7 +336,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.String:
-                        list.Add(map(reader.GetString()));
+                        list.Add(map(reader.GetString() ?? string.Empty));
                         continue;
                     case JsonTokenType.EndArray:
                         return list;
@@ -359,10 +359,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var name = reader.GetString();
+                        var name = reader.GetString() ?? string.Empty;
                         var val = ReadString(ref reader);
                         if (dictionary.ContainsKey(name)) ThrowDuplicateKeyException(ref reader, name);
-                        dictionary.Add(name, val);
+                        dictionary.Add(name, val ?? string.Empty);
                         continue;
                     case JsonTokenType.EndObject:
                         return dictionary;
@@ -385,8 +385,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var name = reader.GetString();
-                        var val = mapValue(ReadString(ref reader));
+                        var name = reader.GetString() ?? string.Empty;
+                        var val = mapValue(ReadString(ref reader) ?? string.Empty);
                         if (dictionary.ContainsKey(name)) ThrowDuplicateKeyException(ref reader, name);
                         dictionary.Add(name, val);
                         continue;
@@ -473,7 +473,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         if (string.Equals("replace-with", propName, StringComparison.OrdinalIgnoreCase))
                         {
                             if (replaceWith != null) ThrowDuplicateKeyException(ref reader, propName);
-                            replaceWith = new WorkloadId(ReadString(ref reader));
+                            replaceWith = new WorkloadId(ReadString(ref reader) ?? string.Empty);
                             continue;
                         }
 
