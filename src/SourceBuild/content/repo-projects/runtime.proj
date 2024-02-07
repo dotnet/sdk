@@ -35,10 +35,6 @@
     <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
-  <ItemGroup>
-    <SourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_X" Version="%24(MicrosoftCodeAnalysisVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_4_4" Version="%24(MicrosoftCodeAnalysisVersion)" />
