@@ -16,18 +16,12 @@
   </ItemGroup>
 
   <Target Name="LayoutBundledTools" DependsOnTargets="SetupBundledComponents">
-    <PropertyGroup>
-      <PackageToRestore>%(BundledDotnetTool.Identity)</PackageToRestore>
-      <PackageVersionToRestore>%(BundledDotnetTool.Version)</PackageVersionToRestore>
-      <RestoredToolRoot>$([System.IO.Path]::GetFullPath('$(NuGetPackageRoot)/$(PackageToRestore)/$(PackageVersionToRestore)'))</RestoredToolRoot>
-    </PropertyGroup>
-
     <ItemGroup>
       <BundledToolLayoutProject Include="$(MSBuildThisFileDirectory)..\projects\DownloadPackage.csproj">
         <!-- For this unique RestoreProjectStyle, see: https://aka.ms/global-tools-nuget -->
         <Properties>
-          PackageToRestore=$(PackageToRestore);
-          PackageVersionToRestore=$(PackageVersionToRestore);
+          PackageToRestore=%(BundledDotnetTool.Identity);
+          PackageVersionToRestore=%(BundledDotnetTool.Version);
           TargetFramework=$(TargetFramework);
           RestoreProjectStyle=DotnetToolReference
         </Properties>
@@ -37,14 +31,13 @@
     <MSBuild BuildInParallel="False" Projects="@(BundledToolLayoutProject)" />
 
     <ItemGroup>
-      <BundledToolFiles Include="$(RestoredToolRoot)\**\*.*" />
-      <BundledToolFiles Remove="$(RestoredToolRoot)\*.*" />
+      <BundledToolFiles Include="%(BundledDotnetTool.RestoredPackagePath)\**\*.*" PackageToRestore="%(BundledDotnetTool.Identity)" PackageVersionToRestore="%(BundledDotnetTool.Version)" />
+      <BundledToolFiles Remove="%(BundledDotnetTool.RestoredPackagePath)\*.*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(BundledToolFiles)"
-          DestinationFiles="@(BundledToolFiles->'$(SdkOutputDirectory)DotnetTools/$(PackageToRestore)\$(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true"
-          Condition="'$(PackageToRestore)' != ''" />
+          DestinationFiles="@(BundledToolFiles->'$(SdkOutputDirectory)DotnetTools/%(PackageToRestore)\%(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

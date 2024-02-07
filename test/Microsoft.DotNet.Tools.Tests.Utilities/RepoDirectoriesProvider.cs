@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                     // https://stackoverflow.com/a/60545278/294804
                     var assemblyConfigurationAttribute = typeof(RepoDirectoriesProvider).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>();
                     string configuration = assemblyConfigurationAttribute?.Configuration;
-                    DotnetUnderTest = Path.Combine(RepoRoot, "artifacts", "bin", "redist", configuration, "dotnet", "dotnet" + dotnetExtension);
+                    DotnetUnderTest = Path.Combine(RepoRoot, "artifacts", "bin", "redist-installer", configuration, "dotnet", "dotnet" + dotnetExtension);
                 }
             }
 
