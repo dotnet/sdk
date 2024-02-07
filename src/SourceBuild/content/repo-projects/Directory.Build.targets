@@ -586,6 +586,8 @@
   <Target Name="SetSourceBuiltSdkOverrides"
           Condition="'@(SourceBuiltSdkOverride)' != ''">
     <ItemGroup>
+      <!-- Set the environment variables for MSBuild to look for our additional SDK Resolvers and or our resolver to find our source-built SDKs. -->
+      <EnvironmentVariables Include="MSBUILDADDITIONALSDKRESOLVERSFOLDER=$(VSMSBuildSdkResolversDir)" />
       <EnvironmentVariables Include="SOURCE_BUILT_SDK_ID_%(SourceBuiltSdkOverride.Group)=%(SourceBuiltSdkOverride.Identity)" />
       <EnvironmentVariables Include="SOURCE_BUILT_SDK_VERSION_%(SourceBuiltSdkOverride.Group)=%(SourceBuiltSdkOverride.Version)" />
       <EnvironmentVariables Condition="'%(SourceBuiltSdkOverride.Location)' != ''" Include="SOURCE_BUILT_SDK_DIR_%(SourceBuiltSdkOverride.Group)=%(SourceBuiltSdkOverride.Location)/" />
