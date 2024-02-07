@@ -22,7 +22,7 @@
   <Import Project="targets\PublishDotnetWatch.targets" />
   <Import Project="targets\GenerateLayout.targets" />
   <Import Project="targets\GenerateArchive.targets" />
-  <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+  <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
   <Import Project="targets\MSBuildExtensions.targets" />
 
   <ItemGroup>
@@ -33,7 +33,7 @@
     <PackageReference Include="Microsoft.Build.NuGetSdkResolver" />
     <PackageReference Include="Microsoft.TestPlatform.CLI" ExcludeAssets="All" />
     <PackageReference Include="Microsoft.TestPlatform.Build" />
-    <PackageReference Condition=" '$(DotNetBuildFromSource)' != 'true' " Include="NuGet.Localization" />
+    <PackageReference Condition=" '$(DotNetBuildSourceOnly)' != 'true' " Include="NuGet.Localization" />
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" ExcludeAssets="All" GeneratePathProperty="true"/>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true"/>
@@ -46,12 +46,13 @@
     <PackageReference Include="System.Text.Encoding.CodePages" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="System.Resources.Extensions" />
-    <PackageReference Include="Microsoft.Build.Runtime" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
-    <PackageReference Include="Microsoft.Build" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
-    <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
+    <!-- Override to use the newest version. In source-only modes this will be a no-diff change. -->
+    <PackageReference Include="Microsoft.Build.Runtime" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="$(MicrosoftBuildVersion)" />
   </ItemGroup>
 
   <ItemGroup>
