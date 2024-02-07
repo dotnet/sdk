@@ -45,6 +45,12 @@ namespace Microsoft.DotNet.MsiInstallerTests
             return VM.Apply(Serialize()).ToCommandResult();
         }
 
+        public VMAction WithDescription(string description)
+        {
+            ExplicitDescription = description;
+            return this;
+        }
+
         public SerializedVMAction Serialize()
         {
             var serialized = SerializeDerivedProperties();
