@@ -13,8 +13,4 @@
     <RepositoryReference Include="wpf" />
   </ItemGroup>
 
-  <ItemGroup>
-    <SourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
-  </ItemGroup>
-
 </Project>
