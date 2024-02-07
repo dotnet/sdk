@@ -425,9 +425,9 @@
       <Sha>9edd64c74bb39ab76edaa2bc6aae834b50422c1c</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.sourcelink" Version="9.0.0-beta.24102.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.sourcelink" Version="9.0.0-beta.24105.3">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>7378b26120437e4984e322d07bfd5028e10bc5ad</Sha>
+      <Sha>9edd64c74bb39ab76edaa2bc6aae834b50422c1c</Sha>
       <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
