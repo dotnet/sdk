@@ -39,14 +39,13 @@ See the [Unified Build roadmap](src/arcade/Documentation/UnifiedBuild/Roadmap.md
 
 ### Supported platforms
 
-The VMR only supports .NET 8.0 and higher. Additionally, source-build currently supports Linux only.  
-It is expected that Mac and Windows will be supported in the .NET 9.0.
+* 8.0 
+    * source-build configuration on Linux
+* 9.0+ (WIP)
+    * source-build configuration on Linux
+    * non-source-build configuration on Linux, Mac, and Windows
 
 For the latest information about Source-Build support for new .NET versions, please check our [GitHub Discussions page](https://github.com/dotnet/source-build/discussions) for announcements.
-
-### Online build only
-
-Building the product offline is not fully working at the moment. The `--online` switch is needed when building the VMR as not all dependencies are currently built from source.
 
 ### Code flow
 For the time being, the source code only flows one way - from the development repos into the VMR.
@@ -75,7 +74,7 @@ For the latest information about Source-Build support, please watch for announce
 The dependencies for building .NET from source can be found [here](https://github.com/dotnet/runtime/blob/main/docs/workflow/requirements/linux-requirements.md).
 In case you don't want to / cannot prepare your environment per the requirements, consider [using Docker](#building-using-docker).
 
-### Building
+### Building (source-build configuration)
 
 1. **Clone the VMR**
 
@@ -94,14 +93,11 @@ In case you don't want to / cannot prepare your environment per the requirements
 3. **Build the .NET SDK**
 
     ```bash
-    ./build.sh --clean-while-building --online
+    ./build.sh -sb --clean-while-building
     ```
 
     This builds the entire .NET SDK from source.
     The resulting SDK is placed at `artifacts/x64/Release/dotnet-sdk-9.0.100-your-RID.tar.gz`.
-
-    Currently, the `--online` flag is required to allow NuGet restore from online sources during the build.
-    This is useful for testing unsupported releases that don't yet build without downloading pre-built binaries from the internet.
 
     Run `./build.sh --help` to see more information about supported build options.
 
@@ -119,7 +115,7 @@ In case you don't want to / cannot prepare your environment per the requirements
     dotnet --info
     ```
 
-### Building using Docker
+### Building using Docker (source-build configuration)
 
 You can also build the repository using a Docker image which has the required prerequisites inside.
 The example below creates a Docker volume named `vmr` and clones and builds the VMR there.
@@ -127,7 +123,7 @@ The example below creates a Docker volume named `vmr` and clones and builds the 
 ```sh
 docker run --rm -it -v vmr:/vmr -w /vmr mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8
 git clone https://github.com/dotnet/dotnet .
-./prep.sh && ./build.sh --online
+./prep.sh && ./build.sh -sb --clean-while-building
 mkdir -p $HOME/.dotnet
 tar -zxf artifacts/x64/Release/dotnet-sdk-9.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet
 ln -s $HOME/.dotnet/dotnet /usr/bin/dotnet
