@@ -1,0 +1,9 @@
+<Project>
+
+  <PropertyGroup>
+    <_PackageDiffTasksAssemblyPath>$(MSBuildThisFileDirectory)\..\tasks\netstandard2.0\PackageDiff.Tasks.dll</_PackageDiffTasksAssemblyPath>
+  </PropertyGroup>
+
+  <UsingTask TaskName="PackageDiff" AssemblyFile="$(_PackageDiffTasksAssemblyPath)" />
+
+</Project>
