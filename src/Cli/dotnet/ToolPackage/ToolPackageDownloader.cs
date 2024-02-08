@@ -204,7 +204,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             var executableFilePath = toolPackageInstance.Commands[0].Executable;
             var runtimeConfigFilePath = Path.ChangeExtension(executableFilePath.ToString(), ".runtimeconfig.json");
 
-            // Update the runtimeconfig.json file
+            // Check if the runtimeconfig.json file is compatible with the current runtime
             string tfmValue = "";
             if (File.Exists(runtimeConfigFilePath))
             { 
