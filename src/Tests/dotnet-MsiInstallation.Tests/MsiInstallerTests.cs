@@ -90,6 +90,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public void InstallSdk()
         {
             VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
+                .WithDescription($"Install SDK {SdkInstallerVersion}")
                 .Execute()
                 .Should()
                 .Pass();
@@ -97,25 +98,24 @@ namespace Microsoft.DotNet.MsiInstallerTests
             DeployStage2Sdk();
         }
 
+        void ApplyRC1Manifests()
+        {
+            VM.CreateActionGroup("Rollback to RC1 manifests",
+                    VM.WriteFile($@"C:\SdkTesting\rollback-rc1.json", RollbackRC1),
+                    VM.CreateRunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check"))
+                .Execute().Should().Pass();
+        }
+
         [Fact]
         public void InstallWasm()
         {
             InstallSdk();
 
-            VM.WriteFile($@"C:\SdkTesting\rollback-rc1.json", RollbackRC1)
-                .Execute()
-                .Should()
-                .Pass();
-
-            VM.CreateRunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check")
-                .Execute()
-                .Should()
-                .Pass();
+            ApplyRC1Manifests();
 
             VM.CreateRunCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update")
-                .Execute()
-                .Should()
-                .Pass();
+                .WithDescription("Install wasm workload")
+                .Execute().Should().Pass();
         }
 
         [Fact]
@@ -123,17 +123,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             InstallSdk();
 
-            VM.WriteFile($@"C:\SdkTesting\rollback-rc1.json", RollbackRC1)
-                .Execute()
-                .Should()
-                .Pass();
-
-            VM.CreateRunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check")
-                .Execute()
-                .Should()
-                .Pass();
+            ApplyRC1Manifests();
 
             VM.CreateRunCommand("dotnet", "workload", "install", "android", "--skip-manifest-update")
+                .WithDescription("Install android workload")
                 .Execute()
                 .Should()
                 .Pass();
@@ -144,22 +137,16 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             InstallSdk();
 
-            VM.WriteFile($@"C:\SdkTesting\rollback-rc1.json", RollbackRC1)
-                .Execute()
-                .Should()
-                .Pass();
-
-            VM.CreateRunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check")
-                .Execute()
-                .Should()
-                .Pass();
+            ApplyRC1Manifests();
 
             VM.CreateRunCommand("dotnet", "workload", "install", "android", "--skip-manifest-update")
+                .WithDescription("Install android workload")
                 .Execute()
                 .Should()
                 .Pass();
 
             VM.CreateRunCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update")
+                .WithDescription("Install wasm workload")
                 .Execute()
                 .Should()
                 .Pass();
@@ -224,6 +211,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetInstalledSdkVersion().Should().Be("7.0.401");
 
             VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
+                .WithDescription($"Install SDK {SdkInstallerVersion}")
                 .Execute()
                 .Should()
                 .Pass();
@@ -240,10 +228,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Pass();
 
             VM.GetRemoteDirectory($@"c:\Program Files\dotnet\sdk\{SdkInstallerVersion}")
-                .Should()
-                .NotExist();
-
-            new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
                 .Should()
                 .NotExist();
 
@@ -317,7 +301,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         string GetInstalledSdkVersion()
         {
             var command = VM.CreateRunCommand("dotnet", "--version");
-            command.ShouldChangeState = false;
+            command.IsReadOnly = true;
             var result = command.Execute();
             result.Should().Pass();
             return result.StdOut;

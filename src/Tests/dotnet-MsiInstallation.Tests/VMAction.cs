@@ -38,7 +38,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public string ExplicitDescription { get; set; }
 
-        public bool ShouldChangeState { get; set; } = true;
+        //  Indicates that the action doesn't change the state of the VM, which allows extra snapshots to be avoided
+        public bool IsReadOnly { get; set; }
 
         public CommandResult Execute()
         {
@@ -55,7 +56,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             var serialized = SerializeDerivedProperties();
             serialized.ExplicitDescription = ExplicitDescription;
-            serialized.ShouldChangeState = ShouldChangeState;
+            serialized.IsReadOnly = IsReadOnly;
             return serialized;
         }
         protected abstract SerializedVMAction SerializeDerivedProperties();
@@ -168,6 +169,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
         CopyFileToVM,
         CopyFolderToVM,
         WriteFileToVM,
+        GetRemoteDirectory,
+        GetRemoteFile,
         //  Used to combine multiple actions into a single action, so they don't get snapshotted separately
         ActionGroup,
     }
@@ -179,12 +182,12 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public string ExplicitDescription { get; set; }
 
-        public bool ShouldChangeState { get; set; }
+        public bool IsReadOnly { get; set; }
 
         //  Applies to RunCommand
         public List<string> Arguments { get; set; }
 
-        //  Applies to CopyFileToVM, CopyFolderToVM, WriteFileToVM
+        //  Applies to CopyFileToVM, CopyFolderToVM, WriteFileToVM, GetRemoteDirectory, GetRemoteFile
         public string TargetPath { get; set; }
 
         //  Applies to CopyFileToVM, CopyFolderToVM
@@ -218,6 +221,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     return $"Copy folder to VM: {SourcePath} -> {TargetPath}";
                 case VMActionType.WriteFileToVM:
                     return $"Write file to VM: {TargetPath}";
+                case VMActionType.GetRemoteDirectory:
+                    return $"Get remote directory: {TargetPath}";
+                case VMActionType.GetRemoteFile:
+                    return $"Get remote file: {TargetPath}";
                 case VMActionType.ActionGroup:
                     return $"Action group: {string.Join(", ", Actions.Select(a => a.GetDescription()))}";
                 default:
@@ -247,7 +254,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             return Type == action.Type &&
                    ExplicitDescription == action.ExplicitDescription &&
-                   ShouldChangeState == action.ShouldChangeState &&
+                   IsReadOnly == action.IsReadOnly &&
                    ListsAreEqual(Arguments, action.Arguments) &&
                    TargetPath == action.TargetPath &&
                    SourcePath == action.SourcePath &&
@@ -287,6 +294,11 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public int ExitCode { get; set; }
         public string StdOut { get; set; }
         public string StdErr { get; set; }
+
+        //  For GetRemoteDirectory and GetRemoteFile
+        public bool Exists { get; set; }
+        public List<string> Directories { get; set; }
+        public List<string> Files { get; set; }
 
         public CommandResult ToCommandResult()
         {

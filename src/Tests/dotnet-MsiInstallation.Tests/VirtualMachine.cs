@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.MsiInstallerTests
@@ -24,8 +25,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         string _stateFile;
 
-        //  Whether we should trust the ShouldChangeState property of the action.  If not, then we will re-apply the previous snapshot after the action runs to make sure the state hasn't been polluted.
-        public bool TrustShouldChangeState { get; set; } = true;
+        //  Whether we should trust the IsReadOnly property of the action.  If not, then we will re-apply the previous snapshot after the action runs to make sure the state hasn't been polluted.
+        public bool TrustIsReadOnly { get; set; } = true;
 
         public VirtualMachine(ITestOutputHelper log)
         {
@@ -47,7 +48,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     _rootState = new VMStateTree()
                     {
                         SnapshotId = "CF853278-1B6B-4816-8E51-FBDBE3AABA2C",
-                        SnapshotName = "Set network to private",
+                        SnapshotName = "Initial test state (Set network to private)",
                     };
                 }
             }
@@ -135,22 +136,34 @@ namespace Microsoft.DotNet.MsiInstallerTests
         //  Runs a command if necessary, or returns previously recorded result.  Handles syncing to the correct state, creating a new snapshot, etc.
         public VMActionResult Apply(SerializedVMAction action)
         {
-            if (_currentState.Actions.TryGetValue(action, out var result))
+            if (action.IsReadOnly)
             {
-                _currentState = result.resultingState;
-                return result.actionResult;
+                if (_currentState.ReadOnlyActions.TryGetValue(action, out var readOnlyResult))
+                {
+                    return readOnlyResult;
+                }
+            }
+            else
+            {
+                if (_currentState.Actions.TryGetValue(action, out var result))
+                {
+                    _currentState = result.resultingState;
+                    return result.actionResult;
+                }
             }
 
             SyncToCurrentState();
 
             var actionResult = Run(action);
 
-            if (!action.ShouldChangeState)
+            if (action.IsReadOnly)
             {
-                if (!TrustShouldChangeState)
+                if (!TrustIsReadOnly)
                 {
                     VMControl.ApplySnapshotAsync(_currentState.SnapshotId).Wait();
                 }
+
+                _currentState.ReadOnlyActions[action] = actionResult;
 
                 return actionResult;
             }
@@ -210,6 +223,38 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 File.WriteAllText(targetSharePath, action.FileContents);
 
                 return VMActionResult.Success();
+            }
+            else if (action.Type == VMActionType.GetRemoteDirectory)
+            {
+                var targetSharePath = VMPathToSharePath(action.TargetPath);
+                var result = VMActionResult.Success();
+
+                if (Directory.Exists(targetSharePath))
+                {
+                    result.Exists = true;
+                    result.Directories = Directory.GetDirectories(targetSharePath).Select(SharePathToVMPath).ToList();
+                    result.Files = Directory.GetFiles(targetSharePath).Select(SharePathToVMPath).ToList();
+                }
+                else
+                {
+                    result.Exists = false;
+                }
+                return result;
+            }
+            else if (action.Type == VMActionType.GetRemoteFile)
+            {
+                var targetSharePath = VMPathToSharePath(action.TargetPath);
+                var result = VMActionResult.Success();
+                if (File.Exists(targetSharePath))
+                {
+                    result.Exists = true;
+                    result.StdOut = File.ReadAllText(targetSharePath);
+                }
+                else
+                {
+                    result.Exists = false;
+                }
+                return result;
             }
             else if (action.Type == VMActionType.ActionGroup)
             {
@@ -290,7 +335,23 @@ namespace Microsoft.DotNet.MsiInstallerTests
             string pathUnderDrive = dirInfo.FullName.Substring(3);
 
             return $@"\\{VMControl.VMMachineName}\{driveLetter}$\{pathUnderDrive}";
+        }
 
+        //  Copilot wrote the entire body of this method
+        string SharePathToVMPath(string sharePath)
+        {
+            if (!sharePath.StartsWith($@"\\{VMControl.VMMachineName}\"))
+            {
+                throw new ArgumentException("Unrecognized share path: " + sharePath, nameof(sharePath));
+            }
+
+            string pathUnderDrive = sharePath.Substring($@"\\{VMControl.VMMachineName}\".Length);
+
+            string driveLetter = pathUnderDrive.Substring(0, 1);
+
+            string pathAfterDrive = pathUnderDrive.Substring(3);
+
+            return $"{driveLetter}:\\{pathAfterDrive}";
         }
 
         class VMRemoteFile : RemoteFile
@@ -301,10 +362,24 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 _vm = vm;
             }
 
+            VMActionResult GetResult()
+            {
+                return _vm.Apply(new SerializedVMAction()
+                {
+                    Type = VMActionType.GetRemoteFile,
+                    TargetPath = Path,
+                    IsReadOnly = true
+                });
+            }
+
             public override string ReadAllText()
             {
-                _vm.SyncToCurrentState();
-                return File.ReadAllText(_vm.VMPathToSharePath(Path));
+                var result = GetResult();
+                if (!result.Exists)
+                {
+                    throw new FileNotFoundException("File not found: " + Path);
+                }
+                return result.StdOut;
             }
         }
 
@@ -316,12 +391,21 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 _vm = vm;
             }
 
+            VMActionResult GetResult()
+            {
+                return _vm.Apply(new SerializedVMAction()
+                {
+                    Type = VMActionType.GetRemoteDirectory,
+                    TargetPath = Path,
+                    IsReadOnly = true
+                });
+            }
+
             public override bool Exists
             {
                 get
                 {
-                    _vm.SyncToCurrentState();
-                    return Directory.Exists(_vm.VMPathToSharePath(Path));
+                    return GetResult().Exists;
                 }
             }
         }

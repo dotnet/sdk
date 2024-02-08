@@ -16,6 +16,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public Dictionary<SerializedVMAction, (VMActionResult actionResult, VMStateTree resultingState)> Actions { get; set; } = new();
 
+        public Dictionary<SerializedVMAction, VMActionResult> ReadOnlyActions { get; set; } = new();
+
         public SerializeableVMStateTree ToSerializeable()
         {
             return new SerializeableVMStateTree()
@@ -26,7 +28,12 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     Action = a.Key,
                     ActionResult = a.Value.actionResult,
                     ResultingState = a.Value.resultingState.ToSerializeable()
-                })
+                }).ToList(),
+                ReadOnlyActions = ReadOnlyActions.Select(a => new SerializeableVMStateTree.ReadOnlyEntry()
+                {
+                    Action = a.Key,
+                    ActionResult = a.Value
+                }).ToList()
                 .ToList()
             };
         }
@@ -39,12 +46,20 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public List<Entry> Actions { get; set; }
 
+        public List<ReadOnlyEntry> ReadOnlyActions { get; set; }
+
 
         public class Entry
         {
             public SerializedVMAction Action { get; set; }
             public VMActionResult ActionResult { get; set; }
             public SerializeableVMStateTree ResultingState { get; set; }
+        }
+
+        public class ReadOnlyEntry
+        {
+            public SerializedVMAction Action { get; set; }
+            public VMActionResult ActionResult { get; set; }
         }
 
         public VMStateTree ToVMStateTree()
@@ -58,6 +73,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
             foreach (var entry in Actions)
             {
                 tree.Actions.Add(entry.Action, (entry.ActionResult, entry.ResultingState.ToVMStateTree()));
+            }
+            foreach (var entry in ReadOnlyActions)
+            {
+                tree.ReadOnlyActions.Add(entry.Action, entry.ActionResult);
             }
 
             return tree;
