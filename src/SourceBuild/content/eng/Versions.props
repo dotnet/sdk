@@ -24,7 +24,6 @@
     -->
     <PrivateSourceBuiltSdkVersion>9.0.100-preview.2.24104.1</PrivateSourceBuiltSdkVersion>
     <PrivateSourceBuiltArtifactsVersion>9.0.100-preview.2.24104.1</PrivateSourceBuiltArtifactsVersion>
-    <PrivateSourceBuiltPrebuiltsVersion>0.1.0-9.0.100-9</PrivateSourceBuiltPrebuiltsVersion>
     <!-- msbuild -->
     <MicrosoftBuildVersion>15.7.179</MicrosoftBuildVersion>
   </PropertyGroup>

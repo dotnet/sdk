@@ -1,7 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <SkipErrorOnPrebuilts>true</SkipErrorOnPrebuilts>
     <SmokeTestsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'test', 'Microsoft.DotNet.SourceBuild.SmokeTests'))</SmokeTestsDir>
   </PropertyGroup>
 
