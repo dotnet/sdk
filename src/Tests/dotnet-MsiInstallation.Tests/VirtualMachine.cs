@@ -372,6 +372,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 });
             }
 
+            public override bool Exists => GetResult().Exists;
+
             public override string ReadAllText()
             {
                 var result = GetResult();
@@ -401,13 +403,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 });
             }
 
-            public override bool Exists
-            {
-                get
-                {
-                    return GetResult().Exists;
-                }
-            }
+            public override bool Exists => GetResult().Exists;
+
+            public override List<string> Directories => GetResult().Directories;
         }
     }
 }

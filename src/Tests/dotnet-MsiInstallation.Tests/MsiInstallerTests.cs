@@ -89,6 +89,12 @@ namespace Microsoft.DotNet.MsiInstallerTests
         [Fact]
         public void InstallSdk()
         {
+            VM.CreateRunCommand("setx", "DOTNET_NOLOGO", "true")
+                .WithDescription("Disable .NET SDK first run message")
+                .Execute()
+                .Should()
+                .Pass();
+
             VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
                 .WithDescription($"Install SDK {SdkInstallerVersion}")
                 .Execute()
@@ -106,6 +112,14 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Execute().Should().Pass();
         }
 
+        void Apply8_0_101Manifests()
+        {
+            VM.CreateActionGroup("Rollback to 8.0.101 manifests",
+                    VM.WriteFile($@"C:\SdkTesting\rollback-8.0.101.json", Rollback8_0_101),
+                    VM.CreateRunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-8.0.101.json", "--skip-sign-check"))
+                .Execute().Should().Pass();
+        }
+
         [Fact]
         public void InstallWasm()
         {
@@ -113,9 +127,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             ApplyRC1Manifests();
 
-            VM.CreateRunCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update")
-                .WithDescription("Install wasm workload")
-                .Execute().Should().Pass();
+            InstallWorkload("wasm-tools");
         }
 
         [Fact]
@@ -125,11 +137,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             ApplyRC1Manifests();
 
-            VM.CreateRunCommand("dotnet", "workload", "install", "android", "--skip-manifest-update")
-                .WithDescription("Install android workload")
-                .Execute()
-                .Should()
-                .Pass();
+            InstallWorkload("android");
         }
 
         [Fact]
@@ -139,17 +147,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             ApplyRC1Manifests();
 
-            VM.CreateRunCommand("dotnet", "workload", "install", "android", "--skip-manifest-update")
-                .WithDescription("Install android workload")
-                .Execute()
-                .Should()
-                .Pass();
+            InstallWorkload("android");
 
-            VM.CreateRunCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update")
-                .WithDescription("Install wasm workload")
-                .Execute()
-                .Should()
-                .Pass();
+            InstallWorkload("wasm-tools");
         }
 
         [Fact]
@@ -171,42 +171,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
             await Task.Yield();
         }
 
-        //[Fact(Skip = "testing")]
-        //public void UninstallSdk()
-        //{
-        //    RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
-        //}
-
-        //[Fact(Skip = "testing")]
-        //public void SdkInstallation()
-        //{
-        //    RunRemoteCommand("dotnet", "--version")
-        //        .Should()
-        //        .HaveStdOut("7.0.401");
-
-        //    RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
-
-        //    new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
-        //        .Should()
-        //        .Exist();
-
-        //    RunRemoteCommand("dotnet", "--version")
-        //        .Should()
-        //        .HaveStdOut(SdkInstallerVersion);
-
-        //    RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
-
-        //    new DirectoryInfo($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk\{SdkInstallerVersion}")
-        //        .Should()
-        //        .NotExist();
-
-        //    RunRemoteCommand("dotnet", "--version")
-        //        .Should()
-        //        .HaveStdOut("7.0.401");
-        //}
-
         [Fact]
-        public void SdkInstallation2()
+        public void SdkInstallation()
         {
             GetInstalledSdkVersion().Should().Be("7.0.401");
 
@@ -235,55 +201,38 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
 
-        //[Fact(Skip = "testing")]
-        //public void WorkloadInstallation()
-        //{
-        //    //CleanupInstallState();
+        [Fact]
+        public void WorkloadInstallation()
+        {
+            InstallSdk();
 
-        //    //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
+            var originalManifests = GetRollback();
 
-        //    //DeployStage2Sdk();
+            InstallWorkload("wasm-tools");
 
-        //    var rollbackResult = RunRemoteCommand("dotnet", "workload", "update", "--print-rollback");
-        //    rollbackResult.Should().Pass();
-        //    var originalManifests = ParseRollbackOutput(rollbackResult.StdOut);
+            ListWorkloads().Should().Contain("wasm-tools");
 
+            CheckForDuplicateManifests();
 
-        //    RunRemoteCommand("dotnet", "workload", "install", "wasm-tools", "--skip-manifest-update");
+            ApplyRC1Manifests();
 
-        //    RunRemoteCommand("dotnet", "workload", "list", "--machine-readable")
-        //        .Should()
-        //        .HaveStdOutContaining("wasm-tools");
+            Apply8_0_101Manifests();
 
-        //    CheckForDuplicateManifests();
+            HashSet<(string id, string version, string featureBand)> expectedManifests = new();
+            foreach (var kvp in originalManifests.ManifestVersions.Concat(WorkloadSet.FromJson(Rollback8_0_101, new SdkFeatureBand(SdkInstallerVersion)).ManifestVersions))
+            {
+                expectedManifests.Add((kvp.Key.ToString(), kvp.Value.Version.ToString(), kvp.Value.FeatureBand.ToString()));
+            }
 
-        //    File.WriteAllText($@"\\{TargetMachineName}\c$\SdkTesting\rollback-rc1.json", RollbackRC1);
+            var unexpectedManifests = GetInstalledManifestVersions()
+                .SelectMany(kvp => kvp.Value.Select(v => (id: kvp.Key, version: v.version, featureBand: v.sdkFeatureBand)))
+                .Except(expectedManifests);
 
-        //    RunRemoteCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check");
-
-        //    File.WriteAllText($@"\\{TargetMachineName}\c$\SdkTesting\rollback-8.0.101.json", Rollback8_0_101);
-
-        //    RunRemoteCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-8.0.101.json", "--skip-sign-check");
-
-        //    HashSet<(string id, string version, string featureBand)> expectedManifests = new();
-        //    foreach (var kvp in originalManifests.ManifestVersions.Concat(WorkloadSet.FromJson(Rollback8_0_101, new SdkFeatureBand(SdkInstallerVersion)).ManifestVersions))
-        //    {
-        //        expectedManifests.Add((kvp.Key.ToString(), kvp.Value.Version.ToString(), kvp.Value.FeatureBand.ToString()));
-        //    }
-
-        //    var unexpectedManifests = GetInstalledManifestVersions()
-        //        .SelectMany(kvp => kvp.Value.Select(v => (id: kvp.Key, version: v.version, featureBand: v.sdkFeatureBand)))
-        //        .Except(expectedManifests);
-
-        //    if (unexpectedManifests.Any())
-        //    {
-        //        Assert.Fail($"Unexpected manifests installed: {string.Join(", ", unexpectedManifests)}");
-        //    }
-
-        //    //CheckForDuplicateManifests();
-
-        //    //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
-        //}
+            if (unexpectedManifests.Any())
+            {
+                Assert.Fail($"Unexpected manifests installed: {string.Join(", ", unexpectedManifests)}");
+            }
+        }
 
         //[Fact(Skip = "testing")]
         //public void InstallStateShouldBeRemovedOnSdkUninstall()
@@ -327,7 +276,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 {
                     Assert.Fail($"Found multiple manifest versions for {manifestId}: {string.Join(", ", installedVersions)}");
                 }
-                //installedVersions.Count.Should().Be(1, $"Only one version of manifest {manifestId} should be installed");
             }
         }
 
@@ -335,7 +283,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             Dictionary<string, List<(string version, string sdkFeatureBand)>> installedManifestVersions = new();
 
-            foreach (var manifestFeatureBandPath in Directory.GetDirectories($@"\\{TargetMachineName}\c$\Program Files\dotnet\sdk-manifests"))
+            var manifestsRoot = VM.GetRemoteDirectory($@"c:\Program Files\dotnet\sdk-manifests");
+            
+            foreach (var manifestFeatureBandPath in manifestsRoot.Directories)
             {
                 var manifestFeatureBand = Path.GetFileName(manifestFeatureBandPath);
                 if (manifestFeatureBand.Equals("7.0.100"))
@@ -344,15 +294,15 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     continue;
                 }
 
-                foreach (var manifestIdPath in Directory.GetDirectories(manifestFeatureBandPath))
+                foreach (var manifestIdPath in VM.GetRemoteDirectory(manifestFeatureBandPath).Directories)
                 {
                     var manifestId = Path.GetFileName(manifestIdPath);
-                    new FileInfo(Path.Combine(manifestIdPath, "WorkloadManifest.json"))
+                    VM.GetRemoteFile(Path.Combine(manifestIdPath, "WorkloadManifest.json"))
                         .Should().NotExist("Not expecting non side-by-side workload manifests");
 
-                    foreach (var manifestVersionPath in Directory.GetDirectories(manifestIdPath))
+                    foreach (var manifestVersionPath in VM.GetRemoteDirectory(manifestIdPath).Directories)
                     {
-                        new FileInfo(Path.Combine(manifestVersionPath, "WorkloadManifest.json"))
+                        VM.GetRemoteFile(Path.Combine(manifestVersionPath, "WorkloadManifest.json"))
                             .Should().Exist("Workload manifest should exist");
 
                         var manifestVersion = Path.GetFileName(manifestVersionPath);
@@ -367,20 +317,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
 
             return installedManifestVersions;
-        }
-
-        [Fact]
-        void TempTest()
-        {
-            //CleanupInstallState();
-            RunRemoteCommand("dotnet", "--version")
-                .Should()
-                .HaveStdOut("7.0.401");
-
-            //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet");
-            //DeployStage2Sdk();
-            //CleanupInstallState();
-            //RunRemoteCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall");
         }
 
         void DeployStage2Sdk()
@@ -403,6 +339,39 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Pass();
         }
 
+        CommandResult InstallWorkload(string workloadName)
+        {
+            var result = VM.CreateRunCommand("dotnet", "workload", "install", workloadName, "--skip-manifest-update")
+                    .WithDescription($"Install {workloadName} workload")
+                    .Execute();
+
+            result.Should().Pass();
+
+            return result;
+        }
+
+        string ListWorkloads()
+        {
+            var result = VM.CreateRunCommand("dotnet", "workload", "list", "--machine-readable")
+                .WithIsReadOnly(true)
+                .Execute();
+
+            result.Should().Pass();
+
+            return result.StdOut;            
+        }
+
+        WorkloadSet GetRollback()
+        {
+            var result = VM.CreateRunCommand("dotnet", "workload", "update", "--print-rollback")
+                .WithIsReadOnly(true)
+                .Execute();
+
+            result.Should().Pass();
+
+            return ParseRollbackOutput(result.StdOut);
+        }
+
         WorkloadSet ParseRollbackOutput(string output)
         {
             var filteredOutput = string.Join(Environment.NewLine,
@@ -410,61 +379,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Except(["==workloadRollbackDefinitionJsonOutputStart==", "==workloadRollbackDefinitionJsonOutputEnd=="]));
 
             return WorkloadSet.FromJson(filteredOutput, defaultFeatureBand: new SdkFeatureBand(SdkInstallerVersion));
-        }
-
-
-        private static void CopyDirectory(string sourcePath, string destPath)
-        {
-            if (!Directory.Exists(destPath))
-            {
-                Directory.CreateDirectory(destPath);
-            }
-
-            foreach (var dir in Directory.GetDirectories(sourcePath))
-            {
-                CopyDirectory(dir, Path.Combine(destPath, Path.GetFileName(dir)));
-            }
-
-            foreach (var file in Directory.GetFiles(sourcePath))
-            {
-                new FileInfo(file).CopyTo(Path.Combine(destPath, Path.GetFileName(file)), true);
-            }
-        }
-
-
-        CommandResult RunRemoteCommand(params string[] args)
-        {
-            var result = new RemoteCommand(Log, args).Execute();
-
-            result.Should().Pass();
-
-            return result;
-        }
-
-        
-
-        class RemoteCommand : TestCommand
-        {
-
-
-            public RemoteCommand(ITestOutputHelper log, params string[] args)
-                : base(log)
-            {
-                Arguments.Add("-nobanner");
-                Arguments.Add($@"\\{TargetMachineName}");
-                Arguments.AddRange(args);
-            }
-
-            protected override SdkCommandSpec CreateCommand(IEnumerable<string> args)
-            {
-                var sdkCommandSpec = new SdkCommandSpec()
-                {
-                    FileName = PsExecPath,
-                    Arguments = args.ToList(),
-                    WorkingDirectory = WorkingDirectory,
-                };
-                return sdkCommandSpec;
-            }
         }
     }
 }

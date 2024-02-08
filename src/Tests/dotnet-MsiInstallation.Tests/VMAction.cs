@@ -52,6 +52,12 @@ namespace Microsoft.DotNet.MsiInstallerTests
             return this;
         }
 
+        public VMAction WithIsReadOnly(bool isReadOnly)
+        {
+            IsReadOnly = isReadOnly;
+            return this;
+        }
+
         public SerializedVMAction Serialize()
         {
             var serialized = SerializeDerivedProperties();

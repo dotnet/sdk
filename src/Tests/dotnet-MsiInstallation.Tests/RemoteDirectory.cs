@@ -21,6 +21,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public abstract bool Exists { get; }
 
+        public abstract List<string> Directories { get; }
+
         public Assertions Should()
         {
             return new Assertions(this);
