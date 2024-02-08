@@ -12,9 +12,9 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /SUBSYSTEM:WINDOWS /ENTRY:
 # The WiX SDK is extracted from a NuGet package using an SDK .csproj (finalizer-build) that copies the "lib" and "inc" folders to a stable location.
 # The defines below (values in ${}) are set in the finalizer.nativeproj.
 # See: https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.CMake.Sdk#common-items
-include_directories(${ArtifactsDir}/WixSdk/inc)
-include_directories(${ArtifactsDir}/obj)
-link_directories(${ArtifactsDir}/WixSdk/lib/${Platform})
+include_directories(../../artifacts/WixSdk/inc)
+include_directories(../../artifacts/obj)
+link_directories(../../artifacts/WixSdk/lib/${Platform})
 
 add_compile_options(/MT)
 
