@@ -230,7 +230,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             if (unexpectedManifests.Any())
             {
-                Assert.Fail($"Unexpected manifests installed: {string.Join(", ", unexpectedManifests)}");
+                Assert.Fail($"Unexpected manifests installed:\r\n{string.Join(Environment.NewLine, unexpectedManifests.Select(m => $"{m.id} {m.version}/{m.featureBand}"))}");
             }
         }
 
