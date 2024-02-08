@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 JsonElement rootElement = JsonDocument.Parse(File.ReadAllText(runtimeConfigFilePath)).RootElement;
                 
                 if (rootElement.TryGetProperty("runtimeOptions", out JsonElement runtimeOptionsElement) &&
-                runtimeOptionsElement.TryGetProperty("tfm", out JsonElement tfmElement))
+                    runtimeOptionsElement.TryGetProperty("tfm", out JsonElement tfmElement))
                 {
                     tfmValue = new string(tfmElement.GetString().Where(c => char.IsDigit(c) || c == '.').ToArray());
                 }
