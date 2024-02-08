@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     if (!forceInstall && !isGlobalToolRollForward)
                     {
-                        IsRuntimeConfigCompatible(toolPackageInstance, packageId, isGlobalTool);
+                        CheckIfRequiredRuntimeIsInstalled(toolPackageInstance, packageId, isGlobalTool);
                     }
 
                     if (isGlobalToolRollForward)
@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 });
         }
 
-        private static void IsRuntimeConfigCompatible(
+        private static void CheckIfRequiredRuntimeIsInstalled(
             ToolPackageInstance toolPackageInstance,
             PackageId packageId,
             bool isGlobalTool
