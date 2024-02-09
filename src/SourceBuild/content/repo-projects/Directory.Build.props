@@ -15,7 +15,6 @@
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
 
     <ProjectDirectory>$([MSBuild]::NormalizeDirectory('$(SrcDir)', '$(RepositoryName)'))</ProjectDirectory>
-    <PackagesOutput>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'packages', '$(Configuration)', 'NonShipping'))</PackagesOutput>
 
     <!-- Paths to the version props files -->
     <PackageVersionPropsPath>$(SharedIntermediateOutputPath)PackageVersions.$(RepositoryName).props</PackageVersionPropsPath>

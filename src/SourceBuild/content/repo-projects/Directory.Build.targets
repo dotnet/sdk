@@ -338,18 +338,16 @@
 
   <Target Name="Build" DependsOnTargets="BuildRepoReferences;RepoBuild" />
 
-  <Target Name="Package" AfterTargets="Build" />
-
-  <Target Name="GatherBuiltPackages">
-    <ItemGroup>
-      <!-- Filter out packages for WriteVersions -->
-      <_BuiltPackages Condition="'$(PackagesOutput)' != ''" Include="$(PackagesOutput)/*.nupkg" Exclude="$(PackagesOutput)/*.symbols.nupkg"/>
-      <_BuiltPackages Condition="'@(PackagesOutputList)' != ''" Include="%(PackagesOutputList.Identity)/*.nupkg" Exclude="%(PackagesOutputList.Identity)/*.symbols.nupkg"/>
-    </ItemGroup>
-  </Target>
+  <Target Name="Package"
+          AfterTargets="Build"
+          DependsOnTargets="
+    CopyRepoArtifacts;
+    CopyInnerBuildRestoredPackages;
+    EnsurePackagesCreated;
+    ExtractToolPackage;
+    CleanupRepo" />
 
   <Target Name="CopyRepoArtifacts"
-          AfterTargets="Package"
           Condition="'$(IsUtilityProject)' != 'true'"
           Inputs="$(RepoManifestFile)"
           Outputs="$(BaseIntermediateOutputPath)ArtifactsCopy.complete">
@@ -408,8 +406,7 @@
 
   <!-- Copy restored packages from inner build to ensure they're included in the
        main build prebuilt check -->
-  <Target Name="CopyInnerBuildRestoredPackages"
-          AfterTargets="Package">
+  <Target Name="CopyInnerBuildRestoredPackages">
     <ItemGroup>
       <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/sb/package-cache/**/*" />
     </ItemGroup>
@@ -419,51 +416,7 @@
           Condition=" '@(_InnerPackageCacheFiles)' != '' " />
   </Target>
 
-  <Target Name="CopyPackage"
-          AfterTargets="Package"
-          Condition="'$(PackagesOutput)' != '' OR '@(PackagesOutputList)' != ''"
-          DependsOnTargets="GatherBuiltPackages">
-    <Copy SourceFiles="@(_BuiltPackages)"
-          DestinationFolder="$(SourceBuiltPackagesPath)"
-          Condition="'@(_BuiltPackages)'!=''"
-          SkipUnchangedFiles="true" />
-  </Target>
-
-  <Target Name="RemoveBuiltPackagesFromCache"
-          AfterTargets="Package"
-          Condition="'@(_BuiltPackages)'!=''"
-          DependsOnTargets="GatherBuiltPackages"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)RemoveBuiltPackagesFromCache.complete">
-    <ItemGroup>
-      <!-- Excluding Arcade here will keep it in the cache, because that's where we're running from.
-           Subsequent projects will get Arcade from eng/source-built-sdks. -->
-      <PackagePaths Include="@(_BuiltPackages)" Exclude="$(PackagesOutput)/Microsoft.DotNet.Arcade.Sdk.*.nupkg" />
-    </ItemGroup>
-
-    <ReadNuGetPackageInfos PackagePaths="@(PackagePaths)">
-      <Output TaskParameter="PackageInfoItems" ItemName="_BuiltPackageInfos" />
-    </ReadNuGetPackageInfos>
-
-    <!-- Copy built nupkgs from nuget packages cache directory to the previouslyRestored directory
-         and then delete all expanded files and the nupkg from the package cache so the next time
-         the package is used, it will reload the source-built version -->
-    <ItemGroup>
-      <_FilesToCopy Include="$(NuGetPackageRoot)$([System.String]::copy('%(_BuiltPackageInfos.PackageId)').ToLowerInvariant())/%(_BuiltPackageInfos.PackageVersion)/**/*.nupkg" />
-      <_FilesToDelete Include="$(NuGetPackageRoot)$([System.String]::copy('%(_BuiltPackageInfos.PackageId)').ToLowerInvariant())/%(_BuiltPackageInfos.PackageVersion)/**/*.*" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(PreviouslyRestoredPackagesPath)$(RepositoryName)/" />
-    <Delete Files="@(_FilesToDelete)" />
-
-    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)RemoveBuiltPackagesFromCache.complete" AlwaysCreate="true">
-      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
-    </Touch>
-  </Target>
-
   <Target Name="CleanupRepo"
-          AfterTargets="RemoveBuiltPackagesFromCache"
           Condition="'$(CleanWhileBuilding)' == 'true' and Exists('$(ProjectDirectory)artifacts')">
     <PropertyGroup>
       <BuildLogsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildLogs'))</BuildLogsDir>
@@ -505,8 +458,7 @@
   </Target>
 
   <Target Name="ExtractToolPackage"
-          DependsOnTargets="GatherBuiltPackages"
-          AfterTargets="Build"
+          DependsOnTargets="CopyRepoArtifacts"
           Condition="'@(BuiltSdkPackageOverride)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">
@@ -551,23 +503,21 @@
   </Target>
 
   <Target Name="EnsurePackagesCreated"
-          AfterTargets="CopyPackage"
+          DependsOnTargets="CopyRepoArtifacts"
           Condition="'$(SkipEnsurePackagesCreated)' != 'true' and '$(IsUtilityProject)' != 'true'"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)EnsurePackagesCreated.complete">
     <ItemGroup>
       <JustSourceBuiltPackages
         Include="$(SourceBuiltPackagesPath)*.nupkg"
-        Exclude="
-          $(SourceBuiltPackagesPath)*.symbols.nupkg;
-          @(PreviouslySourceBuiltPackages)" />
+        Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
     </ItemGroup>
 
     <ItemGroup>
       <_PackagesNotCreatedReason Include="^ There may have been a silent failure in the submodule build. To confirm, check the build log file for undetected errors that may have prevented package creation: $(RepoConsoleLogFile)" />
       <_PackagesNotCreatedReason Include="^ This error might be a false positive if $(RepositoryName) intentionally builds no nuget packages. If so, set the SkipEnsurePackagesCreated property to true in $(MSBuildProjectFullPath)" />
       <_PackagesNotCreatedReason Include="^ The 'bin' directory might be dirty from a previous build and the package files already existed. If so, perform a clean build, or check which packages were already in 'bin' by opening $(CurrentSourceBuiltPackageVersionPropsPath)" />
-      <_PackagesNotCreatedReason Include="^ The packages may have been written to an unexpected directory. For example, some repos used bin/ and changed to artifacts/ to match Arcade. Check PackagesOutput in $(MSBuildProjectFullPath) (currently '$(PackagesOutput)')" />
+      <_PackagesNotCreatedReason Include="^ The packages may have been written to an unexpected directory. For example, some repos used bin/ and changed to artifacts/ to match Arcade. Check RepoManifestFile in $(MSBuildProjectFullPath) (currently '$(RepoManifestFile)')" />
     </ItemGroup>
 
     <Error Condition="'@(JustSourceBuiltPackages)' == ''"

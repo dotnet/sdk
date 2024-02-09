@@ -1,7 +1,6 @@
 <Project>
 
   <PropertyGroup>
-    <_SuppressSdkImports Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</_SuppressSdkImports>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <DotNetBuildOrchestrator>true</DotNetBuildOrchestrator>
   </PropertyGroup>
@@ -71,7 +70,7 @@
 
   <!-- Init basic Arcade props, if the project importing this file doesn't use Arcade.
        Keep in sync with props/targets in the Arcade.Sdk. -->
-  <PropertyGroup Condition="'$(_SuppressSdkImports)' == 'true' or '$(SkipArcadeSdkImport)' == 'true'">
+  <PropertyGroup Condition="'$(SkipArcadeSdkImport)' == 'true'">
     <!-- RepoLayout.props -->
     <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' != ''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)'))</NuGetPackageRoot>
     <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(NUGET_PACKAGES)' != ''">$([MSBuild]::NormalizeDirectory('$(NUGET_PACKAGES)'))</NuGetPackageRoot>
@@ -117,8 +116,7 @@
   </PropertyGroup>
 
   <!-- Manually import the Versions.props file when the Arcade SDK isn't used. -->
-  <Import Project="$(RepositoryEngineeringDir)Versions.props"
-          Condition="'$(_SuppressSdkImports)' == 'true' or '$(SkipArcadeSdkImport)' == 'true'" />
+  <Import Project="$(RepositoryEngineeringDir)Versions.props" Condition="'$(SkipArcadeSdkImport)' == 'true'" />
 
   <PropertyGroup>
     <!-- We have no projects targeting multiple frameworks, so don't include in output path. -->
