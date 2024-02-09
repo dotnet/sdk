@@ -9,6 +9,11 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- Force use of dotnet msbuild (ignoring global.json contents) unless BuildWithDesktopMSBuild is explicitly set in the repo project. -->
+    <BuildArgs Condition="'$(BuildOS)' == 'windows' and '$(BuildWithDesktopMSBuild)' != 'true'">$(BuildArgs) $(FlagParameterPrefix)msbuildEngine dotnet</BuildArgs>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(BuildArgs)</BuildCommand>
 
     <!-- The default PackageVersionPropsFlowType behavior (DependenciesOnly) triggers logic that looks for a
@@ -36,7 +41,6 @@
     <RepositoryReference Remove="format" />
     <RepositoryReference Remove="nuget-client" />
     <RepositoryReference Remove="templating" />
-    <RepositoryReference Remove="test-templates" />
     <RepositoryReference Remove="fsharp" />
     <RepositoryReference Remove="vstest" />
     <RepositoryReference Remove="sdk" />
