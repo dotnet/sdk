@@ -30,7 +30,6 @@
     <RepositoryReference Remove="roslyn" />
     <RepositoryReference Remove="wpf" />
     <RepositoryReference Remove="msbuild" />
-    <RepositoryReference Remove="roslyn-analyzers" />
     <RepositoryReference Remove="aspnetcore" />
     <RepositoryReference Remove="razor" />
     <RepositoryReference Remove="deployment-tools" />
