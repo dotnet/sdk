@@ -41,13 +41,4 @@
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftCodeAnalysisVersion_LatestVS" Version="%24(MicrosoftCodeAnalysisVersion)" />
   </ItemGroup>
 
-  <Target Name="SetOutputList"
-          AfterTargets="Package"
-          BeforeTargets="GatherBuiltPackages">
-    <ItemGroup>
-      <PackagesOutputList Include="$(ShippingPackagesOutput)" />
-      <PackagesOutputList Include="$(NonShippingPackagesOutput)" />
-    </ItemGroup>
-  </Target>
-
 </Project>
