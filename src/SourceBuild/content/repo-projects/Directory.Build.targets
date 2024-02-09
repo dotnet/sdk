@@ -33,7 +33,6 @@
   <!-- Exclude repositories that currently don't build when not building source-only. -->
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <RepositoryReference Remove="roslyn" />
-    <RepositoryReference Remove="wpf" />
     <RepositoryReference Remove="msbuild" />
     <RepositoryReference Remove="aspnetcore" />
     <RepositoryReference Remove="razor" />
@@ -419,6 +418,15 @@
 
   <Target Name="CleanupRepo"
           Condition="'$(CleanWhileBuilding)' == 'true' and Exists('$(ProjectDirectory)artifacts')">
+
+    <!--
+      Some repositories (WinForms) use source generators that open files manually and keep file handles open on the compiler server (CsWin32).
+      These source generators are written incorrectly (a source generator should never do IO itself),
+      but the required features to read in binary files as input to a source generator don't exist.
+      To work around these source generators, shut down the compiler server so we can delete the obj directories.
+    -->
+    <Exec Command="$(DotnetTool) build-server shutdown --vbcscompiler" />
+
     <PropertyGroup>
       <BuildLogsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildLogs'))</BuildLogsDir>
       <BuildObjDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildObj'))</BuildObjDir>
