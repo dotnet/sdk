@@ -41,6 +41,7 @@
     <RepositoryReference Remove="format" />
     <RepositoryReference Remove="nuget-client" />
     <RepositoryReference Remove="templating" />
+    <RepositoryReference Remove="test-templates" />
     <RepositoryReference Remove="fsharp" />
     <RepositoryReference Remove="vstest" />
     <RepositoryReference Remove="sdk" />
