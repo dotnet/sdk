@@ -127,8 +127,6 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <!-- By default, the VMR builds with online sources when not building source-only. -->
     <DotNetBuildWithOnlineFeeds Condition="'$(DotNetBuildWithOnlineFeeds)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</DotNetBuildWithOnlineFeeds>
-    <!-- By default, skip building tests when building the VMR. -->
-    <DotNetBuildSkipTests Condition="'$(DotNetBuildSkipTests)' == ''">true</DotNetBuildSkipTests>
   </PropertyGroup>
 
   <PropertyGroup>
