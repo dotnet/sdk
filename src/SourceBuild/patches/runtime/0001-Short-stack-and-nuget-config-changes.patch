@@ -1,12 +1,18 @@
-From 6e36330872998c791a2c0d31b688e1bdece2451f Mon Sep 17 00:00:00 2001
-From: Jo Shields <joshield@microsoft.com>
-Date: Fri, 2 Feb 2024 06:56:20 -0500
-Subject: [PATCH] Source built short stack support (#97725)
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Fri, 9 Feb 2024 16:33:58 +0000
+Subject: [PATCH] Short stack and nuget config changes
 
 Backport: https://github.com/dotnet/runtime/pull/97725
+Backport: https://github.com/dotnet/runtime/pull/97778
+---
+ eng/SourceBuild.props | 18 ++++++++++++++++--
+ 1 file changed, 16 insertions(+), 2 deletions(-)
 
---- a/eng/SourceBuild.props	2024-02-07 11:01:33.807337902 -0500
-+++ b/eng/SourceBuild.props	2024-02-05 16:48:58.219933758 -0500
+diff --git a/eng/SourceBuild.props b/eng/SourceBuild.props
+index 3b544528694..f0637cad996 100644
+--- a/eng/SourceBuild.props
++++ b/eng/SourceBuild.props
 @@ -15,6 +15,7 @@
      <!-- Split e.g. 'fedora.33-x64' into 'fedora.33' and 'x64'. -->
      <_targetRidPlatformIndex>$(TargetRid.LastIndexOf('-'))</_targetRidPlatformIndex>
@@ -46,3 +52,11 @@ Backport: https://github.com/dotnet/runtime/pull/97725
        <InnerBuildArgs>$(InnerBuildArgs) $(FlagParameterPrefix)verbosity $(LogVerbosity)</InnerBuildArgs>
        <InnerBuildArgs>$(InnerBuildArgs) $(FlagParameterPrefix)nodereuse $(ArcadeFalseBoolBuildArg)</InnerBuildArgs>
        <InnerBuildArgs>$(InnerBuildArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</InnerBuildArgs>
+@@ -51,6 +64,7 @@
+       <InnerBuildArgs Condition="'$(OfficialBuildId)' != ''">$(InnerBuildArgs) /p:OfficialBuildId=$(OfficialBuildId)</InnerBuildArgs>
+       <InnerBuildArgs Condition="'$(ContinuousIntegrationBuild)' != ''">$(InnerBuildArgs) /p:ContinuousIntegrationBuild=$(ContinuousIntegrationBuild)</InnerBuildArgs>
+       <InnerBuildArgs Condition="'$(PortableBuild)' != ''">$(InnerBuildArgs) /p:PortableBuild=$(PortableBuild)</InnerBuildArgs>
++      <InnerBuildArgs Condition="'$(RestoreConfigFile)' != ''">$(InnerBuildArgs) /p:RestoreConfigFile=$(RestoreConfigFile)</InnerBuildArgs>
+     </PropertyGroup>
+   </Target>
+ 
