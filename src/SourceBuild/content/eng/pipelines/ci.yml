@@ -39,7 +39,7 @@ variables:
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
 
 stages:
-- ${{ if not(eq(variables.isPRTrigger, 'true')) }}:
+- ${{ if and(ne(variables.isPRTrigger, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
   - template: templates/stages/vmr-scan.yml
 
 - template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
@@ -52,7 +52,7 @@ stages:
       scope: lite
     ${{ elseif and(eq(variables.isPRTrigger, 'true'), eq(variables.isSourceOnlyBuild, 'true')) }}:
       scope: ultralite
-    ${{ elseif and(eq(variables.isPRTrigger, 'true'), not(eq(variables.isSourceOnlyBuild, 'true'))) }}:
+    ${{ elseif and(eq(variables.isPRTrigger, 'true'), ne(variables.isSourceOnlyBuild, 'true')) }}:
       scope: lite
     ${{ else }}:
       scope: full
