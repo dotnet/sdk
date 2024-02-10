@@ -34,6 +34,9 @@
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <RepositoryReference Remove="roslyn" />
     <RepositoryReference Remove="msbuild" />
+    <RepositoryReference Remove="sdk" />
+    <RepositoryReference Remove="wpf" />
+    <RepositoryReference Remove="roslyn-analyzers" />
     <RepositoryReference Remove="aspnetcore" />
     <RepositoryReference Remove="razor" />
     <RepositoryReference Remove="deployment-tools" />
@@ -43,7 +46,6 @@
     <RepositoryReference Remove="test-templates" />
     <RepositoryReference Remove="fsharp" />
     <RepositoryReference Remove="vstest" />
-    <RepositoryReference Remove="sdk" />
     <RepositoryReference Remove="aspire" />
     <RepositoryReference Remove="installer" />
   </ItemGroup>
