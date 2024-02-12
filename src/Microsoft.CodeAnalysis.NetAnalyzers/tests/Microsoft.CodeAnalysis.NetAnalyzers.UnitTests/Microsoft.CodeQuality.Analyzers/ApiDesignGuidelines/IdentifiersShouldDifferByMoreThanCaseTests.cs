@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
@@ -141,6 +141,57 @@ namespace N
                 }
             }.RunAsync();
         }
+
+        [Fact]
+        public async Task FileScopedTypesInNamespaceAsync()
+        {
+            string fileWithClass = """
+                namespace N;
+
+                file class C
+                {
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        fileWithClass,
+                        fileWithClass
+                    }
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70
+            }.RunAsync();
+        }
+
+        [Fact]
+        public async Task FileScopedTypesGlobalAsync()
+        {
+            string fileWithClass = """
+                file class C
+                {
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        fileWithClass,
+                        fileWithClass
+                    }
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70
+            }.RunAsync();
+        }
+
 
         #endregion
 
