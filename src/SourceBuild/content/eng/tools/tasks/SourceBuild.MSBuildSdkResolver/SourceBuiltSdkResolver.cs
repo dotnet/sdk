@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
 
             void LogMessage(string message)
             {
-                resolverContext.Logger.LogMessage($"[{Name}] {message}", MessageImportance.High);
+                resolverContext.Logger.LogMessage($"[{Name}] {message}", MessageImportance.Low);
             }
 
             if (overrides.Any())
