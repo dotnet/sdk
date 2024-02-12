@@ -9,23 +9,39 @@
       <Sha>bdc031f53b9d24b5f3229badbb1d0b3b9e1e1fd9</Sha>
     </Dependency>
     <!-- Necessary for source-build. This allows the live version of the package to be used by source-build. -->
-    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.3.2">
+    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.7.2">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>561848881bab01749e6d8b03be2869a18ca944f7</Sha>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
     </Dependency>
     <!-- Necessary for source-build. This allows the live version of the package to be used by source-build. -->
-    <Dependency Name="Microsoft.Build" Version="17.3.2">
+    <Dependency Name="Microsoft.Build" Version="17.7.2">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>561848881bab01749e6d8b03be2869a18ca944f7</Sha>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis" Version="4.9.0-3.24054.13">
+    <Dependency Name="Microsoft.Build.Framework" Version="17.7.2">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.7.2">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.7.2">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.StringTools" Version="17.7.2">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.10.0-2.24109.17">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>28e49407a6e4744819bd471707259b99964e441c</Sha>
+      <Sha>291255bc40c2ccd8ef1ca12ed580820c79f527cc</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.9.0-3.24054.13">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.10.0-2.24109.17">
       <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>28e49407a6e4744819bd471707259b99964e441c</Sha>
+      <Sha>291255bc40c2ccd8ef1ca12ed580820c79f527cc</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
@@ -35,9 +51,9 @@
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.23471.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.24112.1">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>7b55da982fc6e71c1776c4de89111aee0eecb45a</Sha>
+      <Sha>9af3d3655226a7218ad9e05649ed67632f359ecf</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
