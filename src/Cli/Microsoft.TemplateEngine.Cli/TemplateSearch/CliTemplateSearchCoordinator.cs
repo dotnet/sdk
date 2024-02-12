@@ -1,16 +1,16 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.TemplateEngine.Cli.NuGet;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.Common.Abstractions;
+using static Microsoft.TemplateEngine.Cli.NuGet.NugetApiManager;
 
 namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 {
@@ -46,7 +46,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 await templatePackageManager.GetManagedTemplatePackagesAsync(force: false, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             TemplateSearchCoordinator searchCoordinator = CliTemplateSearchCoordinatorFactory.CreateCliTemplateSearchCoordinator(environmentSettings);
-            CliSearchFiltersFactory searchFiltersFactory = new CliSearchFiltersFactory(templatePackages);
+            CliSearchFiltersFactory searchFiltersFactory = new(templatePackages);
 
             IReadOnlyList<SearchResult>? searchResults = await searchCoordinator.SearchAsync(
                 searchFiltersFactory.GetPackFilter(commandArgs),
@@ -94,16 +94,58 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                  Example
                      .For<NewCommand>(commandArgs.ParseResult)
                      .WithSubcommand<InstallCommand>()
-                     .WithArgument(InstallCommand.NameArgument));
+                     .WithArgument(BaseInstallCommand.NameArgument));
                 Reporter.Output.WriteLine(LocalizableStrings.Generic_ExampleHeader);
                 Reporter.Output.WriteCommand(
                    Example
                        .For<NewCommand>(commandArgs.ParseResult)
                        .WithSubcommand<InstallCommand>()
-                       .WithArgument(InstallCommand.NameArgument, packageIdToShow));
+                       .WithArgument(BaseInstallCommand.NameArgument, packageIdToShow));
                 return NewCommandStatus.Success;
             }
             return NewCommandStatus.NotFound;
+        }
+
+        internal static async Task<(NugetPackageMetadata?, IReadOnlyList<ITemplateInfo>)> SearchForPackageDetailsAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            NugetApiManager nugetApiManager,
+            string packageIdentifier,
+            string? version,
+            CancellationToken cancellationToken)
+        {
+            var nugetPackage = await nugetApiManager.GetPackageMetadataAsync(packageIdentifier, version, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (nugetPackage != null)
+            {
+                var packages = await SearchForPackageTemplatesAsync(
+                    environmentSettings,
+                    packageIdentifier,
+                    version,
+                    cancellationToken).ConfigureAwait(false);
+                return (nugetPackage, packages);
+            }
+
+            return (null, new List<ITemplateInfo>());
+        }
+
+        internal static async Task<IReadOnlyList<ITemplateInfo>> SearchForPackageTemplatesAsync(
+            IEngineEnvironmentSettings environmentSettings,
+            string packageIdentifier,
+            string? version,
+            CancellationToken cancellationToken)
+        {
+            var searchResults = await CliTemplateSearchCoordinatorFactory
+                    .CreateCliTemplateSearchCoordinator(environmentSettings)
+                    .SearchAsync(
+                        f => f.Name == packageIdentifier && (string.IsNullOrEmpty(version) || f.Version == version),
+                        t => t.Templates,
+                        cancellationToken).ConfigureAwait(false);
+
+            if (searchResults.Any() && searchResults[0].SearchHits.Any())
+            {
+                return searchResults[0].SearchHits[0].MatchedTemplates;
+            }
+
+            return new List<ITemplateInfo>();
         }
 
         private static string EvaluatePackageToShow(IReadOnlyList<SearchResult> searchResults)
@@ -140,7 +182,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             IReadOnlyCollection<SearchResultTableRow> data = GetSearchResultsForDisplay(results, commandArgs.Language, defaultLanguage, environmentSettings.Environment);
 
             TabularOutput<SearchResultTableRow> formatter =
-                TabularOutput.TabularOutput
+               TabularOutput.TabularOutput
                     .For(
                         new TabularOutputSettings(environmentSettings.Environment, commandArgs),
                         data
@@ -148,14 +190,36 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                           .ThenBy(d => d.TemplateGroupInfo.Name, StringComparer.CurrentCultureIgnoreCase))
                     .DefineColumn(r => r.TemplateGroupInfo.Name, out object? nameColumn, LocalizableStrings.ColumnNameTemplateName, showAlways: true, shrinkIfNeeded: true, minWidth: 15)
                     .DefineColumn(r => r.TemplateGroupInfo.ShortNames, LocalizableStrings.ColumnNameShortName, showAlways: true)
-                    .DefineColumn(r => r.TemplateGroupInfo.Author, LocalizableStrings.ColumnNameAuthor, TabularOutputSettings.ColumnNames.Author, defaultColumn: true, shrinkIfNeeded: true, minWidth: 10)
+                    .DefineColumn(r => r.TemplateGroupInfo.Author, LocalizableStrings.ColumnNameAuthor, TabularOutputSettings.ColumnNames.Author, defaultColumn: false, shrinkIfNeeded: true, minWidth: 10)
                     .DefineColumn(r => r.TemplateGroupInfo.Languages, LocalizableStrings.ColumnNameLanguage, TabularOutputSettings.ColumnNames.Language, defaultColumn: true)
                     .DefineColumn(r => r.TemplateGroupInfo.Type, LocalizableStrings.ColumnNameType, TabularOutputSettings.ColumnNames.Type, defaultColumn: false)
                     .DefineColumn(r => r.TemplateGroupInfo.Classifications, LocalizableStrings.ColumnNameTags, TabularOutputSettings.ColumnNames.Tags, defaultColumn: false, shrinkIfNeeded: true, minWidth: 10)
-                    .DefineColumn(r => r.PackageName, out object? packageColumn, LocalizableStrings.ColumnNamePackage, showAlways: true)
-                    .DefineColumn(r => r.PrintableTotalDownloads, out object? downloadsColumn, LocalizableStrings.ColumnNameTotalDownloads, showAlways: true, rightAlign: true);
+                    .DefineColumn(r => GetPackageInfo(r.PackageName, r.PackageOwners), out object? packageColumn, LocalizableStrings.ColumnNamePackageNameAndOwners, showAlways: true)
+                    .DefineColumn(r => GetReservedMark(r.Reserved), LocalizableStrings.ColumnNameTrusted, showAlways: true, textAlign: TextAlign.Center)
+                    .DefineColumn(r => r.PrintableTotalDownloads, out object? downloadsColumn, LocalizableStrings.ColumnNameTotalDownloads, showAlways: true, textAlign: TextAlign.Center);
 
             Reporter.Output.WriteLine(formatter.Layout());
+        }
+
+        private static string GetReservedMark(bool reserved) => reserved ? "✓" : string.Empty;
+
+        private static string GetPackageInfo(string packageName, string packageOwners)
+        {
+            // take max number of package id symbols https://learn.microsoft.com/en-us/nuget/reference/nuspec because this value has to be fully displayed
+            var maxColumnWidth = 128;
+            var packageIdLength = packageName.Length;
+
+            var formattedOutput = packageName;
+            var maxPackageOwnerLength = maxColumnWidth - packageIdLength;
+
+            if (maxPackageOwnerLength > 0)
+            {
+                formattedOutput = packageOwners.Length > maxPackageOwnerLength
+                    ? $"{packageName} / {packageOwners.Substring(0, maxPackageOwnerLength)}"
+                    : $"{packageName} / {packageOwners}";
+            }
+
+            return formattedOutput;
         }
 
         private static IReadOnlyCollection<SearchResultTableRow> GetSearchResultsForDisplay(
@@ -164,12 +228,18 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             string? defaultLanguage,
             IEnvironment environment)
         {
-            List<SearchResultTableRow> templateGroupsForDisplay = new List<SearchResultTableRow>();
+            List<SearchResultTableRow> templateGroupsForDisplay = new();
 
             foreach (var packSearchResult in results)
             {
                 var templateGroupsForPack = TemplateGroupDisplay.GetTemplateGroupsForListDisplay(packSearchResult.MatchedTemplates, language, defaultLanguage, environment);
-                templateGroupsForDisplay.AddRange(templateGroupsForPack.Select(t => new SearchResultTableRow(t, packSearchResult.PackageInfo.Name, packSearchResult.PackageInfo.TotalDownloads)));
+                templateGroupsForDisplay.AddRange(templateGroupsForPack.Select(t =>
+                new SearchResultTableRow(
+                    t,
+                    packSearchResult.PackageInfo.Name,
+                    string.Join(", ", packSearchResult.PackageInfo.Owners),
+                    packSearchResult.PackageInfo.Reserved,
+                    packSearchResult.PackageInfo.TotalDownloads)));
             }
 
             return templateGroupsForDisplay;
@@ -182,13 +252,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             // && !commandInput.RemainingParameters.Any())
             {
                 Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Error_NoTemplateName.Red().Bold());
-                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", SearchCommand.SupportedFilters.Select(f => $"'{f.OptionFactory().Aliases.First()}'")));
+                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_SearchHelp, string.Join(", ", BaseSearchCommand.SupportedFilters.Select(f => $"'{f.OptionFactory().Name}'")));
                 Reporter.Error.WriteLine(LocalizableStrings.Generic_ExamplesHeader);
                 Reporter.Error.WriteCommand(
                     Example
                         .For<NewCommand>(commandArgs.ParseResult)
                         .WithSubcommand<SearchCommand>()
-                        .WithArgument(SearchCommand.NameArgument, "web"));
+                        .WithArgument(BaseSearchCommand.NameArgument, "web"));
 
                 Reporter.Error.WriteCommand(
                      Example
@@ -200,7 +270,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                  Example
                     .For<NewCommand>(commandArgs.ParseResult)
                     .WithSubcommand<SearchCommand>()
-                    .WithArgument(SearchCommand.NameArgument, "web")
+                    .WithArgument(BaseSearchCommand.NameArgument, "web")
                     .WithOption(SharedOptionsFactory.CreateLanguageOption(), "C#"));
 
                 return false;
@@ -225,7 +295,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             //IEnumerable<string> appliedTemplateParameters = templateParameters?
             //       .Select(param => string.IsNullOrWhiteSpace(param.Value) ? param.Key : $"{param.Key}='{param.Value}'") ?? Array.Empty<string>();
 
-            StringBuilder inputParameters = new StringBuilder();
+            StringBuilder inputParameters = new();
             string? mainCriteria = commandArgs.SearchNameCriteria;
             if (!string.IsNullOrWhiteSpace(mainCriteria))
             {
@@ -250,16 +320,22 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             private const string MinimumDownloadCount = "<1k";
             private const char ThousandsChar = 'k';
 
-            internal SearchResultTableRow(TemplateGroupTableRow templateGroupTableRow, string packageName, long downloads = 0)
+            internal SearchResultTableRow(TemplateGroupTableRow templateGroupTableRow, string packageName, string packageOwners, bool reserved, long downloads = 0)
             {
                 TemplateGroupInfo = templateGroupTableRow;
                 PackageName = packageName;
+                PackageOwners = packageOwners;
                 TotalDownloads = downloads;
+                Reserved = reserved;
             }
 
             internal static IComparer<long> TotalDownloadsComparer { get; } = new ThousandComparer();
 
             internal string PackageName { get; private set; }
+
+            internal string PackageOwners { get; private set; }
+
+            internal bool Reserved { get; private set; }
 
             internal string PrintableTotalDownloads
             {

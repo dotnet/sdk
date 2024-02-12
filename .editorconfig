@@ -11,6 +11,7 @@ insert_final_newline = true
 indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
+spelling_exclusion_path = ./exclusion.dic
 
 [*.json]
 indent_size = 2
@@ -48,9 +49,9 @@ dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_event = false:suggestion
 
 # Types: use keywords instead of BCL types, and permit var only when the type is clear
-csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_for_built_in_types = false:none
 csharp_style_var_when_type_is_apparent = false:none
-csharp_style_var_elsewhere = false:suggestion
+csharp_style_var_elsewhere = false:none
 dotnet_style_predefined_type_for_locals_parameters_members = true:suggestion
 dotnet_style_predefined_type_for_member_access = true:suggestion
 
@@ -161,7 +162,7 @@ csharp_space_between_square_brackets = false
 dotnet_code_quality.api_surface = all
 
 # License header
-file_header_template = Copyright (c) .NET Foundation and contributors. All rights reserved.\nLicensed under the MIT license. See LICENSE file in the project root for full license information.\n
+file_header_template = Licensed to the .NET Foundation under one or more agreements.\nThe .NET Foundation licenses this file to you under the MIT license.
 
 # Code files
 [*.{cs,vb}]
@@ -200,7 +201,8 @@ dotnet_diagnostic.CA1836.severity = warning
 # Use 'Environment.ProcessPath'
 dotnet_diagnostic.CA1839.severity = warning
 # Do not call ToImmutableCollection on an ImmutableCollection value
-dotnet_diagnostic.CA2009.severity = warning
+# Temporarily disable to avoid regression in preview 1, revert back to warning when start using preview 2
+dotnet_diagnostic.CA2009.severity = none
 # Avoid infinite recursion
 dotnet_diagnostic.CA2011.severity = warning
 # Initialize value type static fields inline
@@ -272,11 +274,13 @@ dotnet_diagnostic.IDE0043.severity = warning
 dotnet_diagnostic.IDE0062.severity = warning
 # ConvertTypeOfToNameOf
 dotnet_diagnostic.IDE0082.severity = warning
+# Remove unnecessary lambda expression
+dotnet_diagnostic.IDE0200.severity = none
 # Remove redundant nullable directive
 dotnet_diagnostic.IDE0240.severity = warning
 
 # Additional rules for template engine source code
-[src/**{Microsoft.TemplateEngine.*,dotnet-new?*}/**.cs]
+[{src,test}/**{Microsoft.TemplateEngine.*,dotnet-new?*}/**.cs]
 # Default analyzed API surface = 'public' (public APIs)
 dotnet_code_quality.api_surface = public
 # Provide ObsoleteAttribute message
@@ -312,7 +316,7 @@ dotnet_diagnostic.CA1838.severity = warning
 # Use 'Environment.CurrentManagedThreadId'
 dotnet_diagnostic.CA1840.severity = warning
 # Consider calling ConfigureAwait on the awaited task
-dotnet_diagnostic.CA2007.severity = warning
+dotnet_diagnostic.CA2007.severity = none
 # Do not create tasks without passing a TaskScheduler
 dotnet_diagnostic.CA2008.severity = warning
 # Use ValueTasks correctly
@@ -441,7 +445,7 @@ dotnet_diagnostic.SA1642.severity = none
 dotnet_diagnostic.SA1649.severity = none
 
 # Disable some StyleCop rules for test common Program.cs that is linked to test project of template engine
-[src/Tests/Common/Program.cs]
+[test/Common/Program.cs]
 # Declare types in namespaces
 dotnet_diagnostic.CA1050.severity = none
 # Elements should be documented
@@ -452,7 +456,7 @@ dotnet_diagnostic.SA1601.severity = none
 dotnet_diagnostic.SA1633.severity = none
 
 # Additional rules for test source code for template engine
-[src/Tests/{Microsoft.TemplateEngine.*,dotnet-new.Tests}/**.cs]
+[test/{Microsoft.TemplateEngine.*,dotnet-new.Tests}/**.cs]
 # Test methods should not be skipped
 dotnet_diagnostic.xUnit1004.severity = warning
 # Elements should appear in the correct order
@@ -501,3 +505,6 @@ dotnet_diagnostic.IDE0040.severity = warning
 
 [*.txt]
 insert_final_newline = false
+
+[test/dotnet-new.Tests/**/Approvals/**]
+trim_trailing_whitespace = false

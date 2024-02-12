@@ -1,4 +1,7 @@
-﻿///--------------------------------------------------------------------------------------------
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+///--------------------------------------------------------------------------------------------
 /// ParametersFile.cs
 ///
 /// Implements using through MSDeploy's API
@@ -39,7 +42,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             get { return m_generateFileEvenIfEmpty; }
             set { m_generateFileEvenIfEmpty = value; }
         }
-        
+
         /// <summary>
         /// utility function to write the simple setParameter.xml file
         /// </summary>
@@ -48,7 +51,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <param name="outputFileName"></param>
         private static void WriteManifestsToFile(Utilities.TaskLoggingHelper loggingHelper, Framework.ITaskItem[] items, string outputFileName)
         {
-            Xml.XmlDocument document = new System.Xml.XmlDocument();
+            Xml.XmlDocument document = new();
             Xml.XmlElement manifestElement = document.CreateElement("sitemanifest");
             document.AppendChild(manifestElement);
             if (items != null)
@@ -78,7 +81,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
 
             // Save the UTF8 and Indented 
-            Utility.SaveDocument(document, outputFileName, System.Text.Encoding.UTF8);
+            Utility.SaveDocument(document, outputFileName, Encoding.UTF8);
         }
 
         /// <summary>
@@ -111,7 +114,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 #if NET472
                 catch (System.Xml.XmlException ex)
                 {
-                    System.Uri sourceUri = new System.Uri(ex.SourceUri);
+                    System.Uri sourceUri = new(ex.SourceUri);
                     succeeded = false;
                 }
 #endif
@@ -130,6 +133,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         }
     }
 
-    
+
 
 }

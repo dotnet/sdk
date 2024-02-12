@@ -1,25 +1,20 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
 using Newtonsoft.Json;
 using NuGet.Packaging.Core;
-using NuGet.RuntimeModel;
 using NuGet.ProjectModel;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+using NuGet.RuntimeModel;
 
 namespace Microsoft.NET.Build.Tasks
 {
     /// <summary>
     /// Generates the $(project).deps.json file.
     /// </summary>
-    public class GenerateDepsFile : TaskWithAssemblyResolveHooks
+    public class GenerateDepsFile : TaskBase
     {
         [Required]
         public string ProjectPath { get; set; }
@@ -96,10 +91,14 @@ namespace Microsoft.NET.Build.Tasks
 
         public bool IncludeProjectsNotInAssetsFile { get; set; }
 
+        // List of runtime identifer (platform part only) to validate for runtime assets
+        // If set, the task will warn on any RIDs that aren't in the list
+        public string[] ValidRuntimeIdentifierPlatformsForAssets { get; set; }
+
         [Required]
         public string RuntimeGraphPath { get; set; }
 
-        List<ITaskItem> _filesWritten = new List<ITaskItem>();
+        List<ITaskItem> _filesWritten = new();
 
         [Output]
         public ITaskItem[] FilesWritten
@@ -199,15 +198,15 @@ namespace Microsoft.NET.Build.Tasks
             {
                 // Generate the RID-fallback for self-contained builds.
                 //
-                // In order to support loading components with RID-specific assets, 
+                // In order to support loading components with RID-specific assets,
                 // the AssemblyDependencyResolver requires a RID fallback graph.
                 // The component itself should not carry the RID fallback graph with it, because
                 // it would need to carry graph of all the RIDs and needs updates for newer RIDs.
-                // For framework dependent apps, the RID fallback graph comes from the core framework Microsoft.NETCore.App, 
+                // For framework dependent apps, the RID fallback graph comes from the core framework Microsoft.NETCore.App,
                 // so there is no need to write it into the app.
                 // If self-contained apps, the (applicable subset of) RID fallback graph needs to be written to the deps.json manifest.
                 //
-                // If a RID-graph is provided to the DependencyContextBuilder, it generates a RID-fallback 
+                // If a RID-graph is provided to the DependencyContextBuilder, it generates a RID-fallback
                 // graph with respect to the target RuntimeIdentifier.
 
                 RuntimeGraph runtimeGraph =
@@ -255,6 +254,42 @@ namespace Microsoft.NET.Build.Tasks
                 writer.Write(dependencyContext, fileStream);
             }
             _filesWritten.Add(new TaskItem(depsFilePath));
+
+            if (ValidRuntimeIdentifierPlatformsForAssets != null)
+            {
+                var affectedLibs = new List<string>();
+                var affectedRids = new List<string>();
+                foreach (var lib in dependencyContext.RuntimeLibraries)
+                {
+                    var warnOnRids = lib.RuntimeAssemblyGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifer)
+                        .Concat(lib.NativeLibraryGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifer));
+                    if (warnOnRids.Any())
+                    {
+                        affectedLibs.Add(lib.Name);
+                        affectedRids.AddRange(warnOnRids);
+                    }
+                }
+
+                if (affectedRids.Count > 0)
+                {
+                    affectedLibs.Sort();
+                    affectedRids.Sort();
+                    Log.LogWarning(Strings.NonPortableRuntimeIdentifierDetected, string.Join(", ", affectedRids.Distinct()), string.Join(", ", affectedLibs.Distinct()));
+                }
+            }
+        }
+
+        private bool ShouldWarnOnRuntimeIdentifer(string runtimeIdentifier)
+        {
+            if (string.IsNullOrEmpty(runtimeIdentifier))
+                return false;
+
+            int separator = runtimeIdentifier.LastIndexOf('-');
+            string platform = separator < 0
+                ? runtimeIdentifier
+                : runtimeIdentifier.Substring(0, separator);
+
+            return Array.IndexOf(ValidRuntimeIdentifierPlatformsForAssets, platform.ToLowerInvariant()) == -1;
         }
 
         protected override void ExecuteCore()

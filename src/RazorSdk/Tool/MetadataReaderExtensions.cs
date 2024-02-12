@@ -1,9 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Reflection;
 using System.Reflection.Metadata;
 using Microsoft.CodeAnalysis;
@@ -30,7 +27,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 definition.Culture,
                 isReference: false);
         }
-        
+
         internal static AssemblyIdentity[] GetReferencedAssembliesOrThrow(this MetadataReader reader)
         {
             var references = new List<AssemblyIdentity>(reader.AssemblyReferences.Count);
@@ -50,7 +47,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             return references.ToArray();
         }
-        
+
         private static AssemblyIdentity CreateAssemblyIdentity(
             MetadataReader reader,
             Version version,

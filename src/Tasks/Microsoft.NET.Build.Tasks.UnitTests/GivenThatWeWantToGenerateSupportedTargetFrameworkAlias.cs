@@ -1,19 +1,16 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class GivenThatWeWantToGenerateSupportedTargetFrameworkAlias
     {
-        private static List<(string targetFrameworkMoniker, string displayName)> MockSupportedTargetFramework = new List<(string, string)>()
+        private static List<(string targetFrameworkMoniker, string displayName)> MockSupportedTargetFramework = new()
             {
                 ( ".NETCoreApp,Version=v3.0", ".NET Core 3.0"),
                 ( ".NETCoreApp,Version=v3.1", ".NET Core 3.1"),

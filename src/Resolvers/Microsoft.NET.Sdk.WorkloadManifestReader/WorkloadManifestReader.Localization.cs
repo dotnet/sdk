@@ -1,12 +1,8 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using Microsoft.NET.Sdk.Localization;
 
 
 #if USE_SYSTEM_TEXT_JSON
@@ -20,7 +16,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     partial class WorkloadManifestReader
     {
         private static LocalizationCatalog ReadLocalizationCatalog(ref Utf8JsonStreamReader reader)
-            => new LocalizationCatalog(ReadStringDictionary(ref reader));
+            => new(ReadStringDictionary(ref reader));
 
         public static string? GetLocalizationCatalogFilePath(string manifestFilePath, CultureInfo? culture = null)
             => GetLocalizationCatalogFilePath(manifestFilePath, culture ?? CultureInfo.CurrentUICulture, _fileExists);

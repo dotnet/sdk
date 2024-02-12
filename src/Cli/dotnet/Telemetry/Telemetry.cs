@@ -1,14 +1,12 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Threading.Tasks;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using CLIRuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
 
 namespace Microsoft.DotNet.Cli.Telemetry
 {
@@ -22,7 +20,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
         private Dictionary<string, double> _commonMeasurements = null;
         private Task _trackEventTask = null;
 
-        private const string InstrumentationKey = "74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
+        private const string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
 
         public bool Enabled { get; }
 
@@ -138,15 +136,17 @@ namespace Microsoft.DotNet.Cli.Telemetry
         {
             try
             {
-                var persistenceChannel = new PersistenceChannel.PersistenceChannel(sendersCount: _senderCount);
-                persistenceChannel.SendingInterval = TimeSpan.FromMilliseconds(1);
+                var persistenceChannel = new PersistenceChannel.PersistenceChannel(sendersCount: _senderCount)
+                {
+                    SendingInterval = TimeSpan.FromMilliseconds(1)
+                };
 
                 var config = TelemetryConfiguration.CreateDefault();
                 config.TelemetryChannel = persistenceChannel;
+                config.ConnectionString = ConnectionString;
                 _client = new TelemetryClient(config);
-                _client.InstrumentationKey = InstrumentationKey;
                 _client.Context.Session.Id = CurrentSessionId;
-                _client.Context.Device.OperatingSystem = RuntimeEnvironment.OperatingSystem;
+                _client.Context.Device.OperatingSystem = CLIRuntimeEnvironment.OperatingSystem;
 
                 _commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties();
                 _commonMeasurements = new Dictionary<string, double>();
@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.Cli.Telemetry
 
         private Dictionary<string, double> GetEventMeasures(IDictionary<string, double> measurements)
         {
-            Dictionary<string, double> eventMeasurements = new Dictionary<string, double>(_commonMeasurements);
+            Dictionary<string, double> eventMeasurements = new(_commonMeasurements);
             if (measurements != null)
             {
                 foreach (KeyValuePair<string, double> measurement in measurements)

@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine.Help;
 using Microsoft.TemplateEngine.Abstractions;
@@ -17,7 +16,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 {
                     throw new ArgumentException($"{nameof(context)} should be for {nameof(NewCommand)}");
                 }
-                NewCommandArgs args = new NewCommandArgs(newCommand, context.ParseResult);
+                NewCommandArgs args = new(newCommand, context.ParseResult);
                 using IEngineEnvironmentSettings environmentSettings = CreateEnvironmentSettings(args, context.ParseResult);
                 InstantiateCommandArgs instantiateCommandArgs = InstantiateCommandArgs.FromNewCommandArgs(args);
                 InstantiateCommand.WriteHelp(context, instantiateCommandArgs, environmentSettings);

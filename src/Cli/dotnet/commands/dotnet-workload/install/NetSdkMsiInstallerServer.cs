@@ -1,15 +1,12 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipes;
 using System.Runtime.Versioning;
 using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Installer.Windows;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
@@ -26,8 +23,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             // Establish a connection with the install client and logger. We're relying on tasks to handle
             // this, otherwise, the ordering needs to be lined up with how the client configures
             // the underlying pipe streams to avoid deadlock.
-            Task dispatchTask = new Task(() => Dispatcher.Connect());
-            Task loggerTask = new Task(() => logger.Connect());
+            Task dispatchTask = new(() => Dispatcher.Connect());
+            Task loggerTask = new(() => logger.Connect());
 
             dispatchTask.Start();
             loggerTask.Start();
@@ -96,6 +93,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Updated dependent '{request.Dependent}' for provider key '{request.ProviderKeyName}'");
                             break;
 
+                        case InstallRequestType.SaveInstallStateManifestVersions:
+                            SaveInstallStateManifestVersions(new SdkFeatureBand(request.SdkFeatureBand), request.InstallStateManifestVersions);
+                            Dispatcher.ReplySuccess($"Created install state file for {request.SdkFeatureBand}.");
+                            break;
+
+                        case InstallRequestType.RemoveManifestsFromInstallStateFile:
+                            RemoveManifestsFromInstallState(new SdkFeatureBand(request.SdkFeatureBand));
+                            Dispatcher.ReplySuccess($"Deleted install state file for {request.SdkFeatureBand}.");
+                            break;
+
+                        case InstallRequestType.AdjustWorkloadMode:
+                            UpdateInstallMode(new SdkFeatureBand(request.SdkFeatureBand), request.UseWorkloadSets);
+                            string newMode = request.UseWorkloadSets ? "workload sets" : "loose manifests";
+                            Dispatcher.ReplySuccess($"Updated install mode to use {newMode}.");
+                            break;
+
                         default:
                             throw new InvalidOperationException($"Unknown message request: {(int)request.RequestType}");
                     }
@@ -136,11 +149,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             if ((ParentProcess == null) || (ParentProcess.StartTime > CurrentProcess.StartTime) ||
                 !string.Equals(ParentProcess.MainModule.FileName, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase))
             {
-                throw new SecurityException(String.Format(LocalizableStrings.NoTrustWithParentPID, ParentProcess?.Id));
+                throw new SecurityException(string.Format(LocalizableStrings.NoTrustWithParentPID, ParentProcess?.Id));
             }
 
             // Configure pipe DACLs
-            SecurityIdentifier authenticatedUserIdentifier = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+            SecurityIdentifier authenticatedUserIdentifier = new(WellKnownSidType.AuthenticatedUserSid, null);
             SecurityIdentifier currentOwnerIdentifier = WindowsIdentity.GetCurrent().Owner;
             PipeSecurity pipeSecurity = new();
 

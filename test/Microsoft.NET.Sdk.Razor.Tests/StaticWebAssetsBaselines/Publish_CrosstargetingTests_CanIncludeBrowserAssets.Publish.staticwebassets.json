@@ -1,0 +1,39 @@
+{
+  "Version": 1,
+  "Hash": "__hash__",
+  "Source": "RazorComponentAppMultitarget",
+  "BasePath": "/",
+  "Mode": "Default",
+  "ManifestType": "Publish",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "RazorComponentAppMultitarget\\wwwroot",
+      "Source": "RazorComponentAppMultitarget",
+      "ContentRoot": "${ProjectPath}\\wwwroot\\",
+      "BasePath": "/",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": [
+    {
+      "Identity": "${ProjectPath}\\wwwroot\\test.js",
+      "SourceId": "RazorComponentAppMultitarget",
+      "SourceType": "Discovered",
+      "ContentRoot": "${ProjectPath}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "test.js",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "Server",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\test.js"
+    }
+  ]
+}

@@ -1,10 +1,6 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
@@ -12,9 +8,9 @@ namespace Microsoft.DotNet.Watcher.Internal
     internal sealed class FileSetWatcher : IDisposable
     {
         private readonly FileWatcher _fileWatcher;
-        private readonly FileSet _fileSet;
+        private readonly FileSet? _fileSet;
 
-        public FileSetWatcher(FileSet fileSet, IReporter reporter)
+        public FileSetWatcher(FileSet? fileSet, IReporter reporter)
         {
             Ensure.NotNull(fileSet, nameof(fileSet));
 
@@ -24,9 +20,12 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         public async Task<FileItem?> GetChangedFileAsync(CancellationToken cancellationToken, Action startedWatching)
         {
-            foreach (var file in _fileSet)
+            if ( _fileSet != null )
             {
-                _fileWatcher.WatchDirectory(Path.GetDirectoryName(file.FilePath));
+                foreach (var file in _fileSet)
+                {
+                    _fileWatcher.WatchDirectory(Path.GetDirectoryName(file.FilePath));
+                }
             }
 
             var tcs = new TaskCompletionSource<FileItem?>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -34,10 +33,13 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             void FileChangedCallback(string path, bool newFile)
             {
-                if (_fileSet.TryGetValue(path, out var fileItem))
+                if ( _fileSet != null )
                 {
-                    tcs.TrySetResult(fileItem);
-                }
+                    if (_fileSet.TryGetValue(path, out var fileItem))
+                    {
+                        tcs.TrySetResult(fileItem);
+                    }
+                }     
             }
 
             _fileWatcher.OnFileChange += FileChangedCallback;

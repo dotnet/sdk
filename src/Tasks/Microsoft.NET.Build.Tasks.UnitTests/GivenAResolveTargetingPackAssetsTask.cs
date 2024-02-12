@@ -1,21 +1,13 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.NET.TestFramework;
-
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
-
 using Xunit;
 using Xunit.Abstractions;
-
 using static Microsoft.NET.Build.Tasks.ResolveTargetingPackAssets;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
@@ -34,7 +26,15 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             task.Execute().Should().BeTrue();
 
-            task.ReferencesToAdd[0].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "lib/Microsoft.Windows.SDK.NET.dll"));
+            var reference = task.ReferencesToAdd[0];
+            reference.ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "lib/Microsoft.Windows.SDK.NET.dll"));
+            reference.GetMetadata("AssemblyName").Should().Be("Microsoft.Windows.SDK.NET");
+            reference.GetMetadata("AssemblyVersion").Should().Be("10.0.18362.3");
+            reference.GetMetadata("FileVersion").Should().Be("10.0.18362.3");
+            reference.GetMetadata("PublicKeyToken").Should().Be("null");
+            reference.GetMetadata("FrameworkReferenceName").Should().Be("Microsoft.Windows.SDK.NET.Ref");
+            reference.GetMetadata("FrameworkReferenceVersion").Should().Be("5.0.0-preview1");
+
             task.PlatformManifests[0].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, $"data{Path.DirectorySeparatorChar}PlatformManifest.txt"));
             task.AnalyzersToAdd.Length.Should().Be(2);
             task.AnalyzersToAdd[0].ItemSpec.Should().Be(Path.Combine(mockPackageDirectory, "analyzers/dotnet/anyAnalyzer.dll"));
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 });
         }
 
-            [Fact]
+        [Fact]
         public void Given_Passing_ResolvedTargetingPacks_It_Passes_Again_With_Cached_Results()
         {
             ResolveTargetingPackAssets task1 = InitializeMockTargetingPackAssetsDirectory(out string packageDirectory);
@@ -140,16 +140,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
         private ResolveTargetingPackAssets InitializeTask(string mockPackageDirectory, IBuildEngine buildEngine)
         {
-            var task = new ResolveTargetingPackAssets()
+            var task = new ResolveTargetingPackAssets
             {
                 BuildEngine = buildEngine,
+                FrameworkReferences = DefaultFrameworkReferences(),
+                ResolvedTargetingPacks = DefaultTargetingPacks(mockPackageDirectory),
+                ProjectLanguage = "C#"
             };
-
-            task.FrameworkReferences = DefaultFrameworkReferences();
-
-            task.ResolvedTargetingPacks = DefaultTargetingPacks(mockPackageDirectory);
-
-            task.ProjectLanguage = "C#";
 
             return task;
         }
@@ -195,9 +192,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
             catch (ArgumentNullException)
             {
-                Assert.True(
-                    false,
-                    nameof(StronglyTypedInputs) + " is likely not correctly handling null value of one or more optional task parameters");
+                Assert.Fail(nameof(StronglyTypedInputs) + " is likely not correctly handling null value of one or more optional task parameters");
 
                 throw; // unreachable
             }
@@ -220,7 +215,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                         break;
 
                     default:
-                        Assert.True(false, $"{property.Name} is not a bool or string or ITaskItem[]. Update the test code to handle that.");
+                        Assert.Fail($"{property.Name} is not a bool or string or ITaskItem[]. Update the test code to handle that.");
                         throw null; // unreachable
                 }
 
@@ -280,7 +275,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             FrameworkListDefinition defaultObject = (FrameworkListDefinition)constructor.Invoke(args);
 
-            List<string> seenKeys = new List<string>(args.Length + 1);
+            List<string> seenKeys = new(args.Length + 1);
 
             seenKeys.Add(defaultObject.CacheKey());
 
@@ -307,7 +302,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             StronglyTypedInputs defaultObject = new(
                 frameworkReferences: DefaultFrameworkReferences(),
                 resolvedTargetingPacks: DefaultTargetingPacks(Path.GetTempPath()),
-                runtimeFrameworks: new[] {new MockTaskItem("RuntimeFramework1", new Dictionary<string, string>()) },
+                runtimeFrameworks: new[] { new MockTaskItem("RuntimeFramework1", new Dictionary<string, string>()) },
                 generateErrorForMissingTargetingPacks: true,
                 nuGetRestoreSupported: true,
                 disableTransitiveFrameworkReferences: false,
@@ -347,7 +342,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                                 continue;
                             }
 
-                            Assert.True(false, $"update test to understand fields of type {subfield.PropertyType} in {nameof(FrameworkReference)}");
+                            Assert.Fail($"update test to understand fields of type {subfield.PropertyType} in {nameof(FrameworkReference)}");
                         }
                     }
                     else if (property.PropertyType == typeof(TargetingPack[]))
@@ -363,7 +358,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                                 continue;
                             }
 
-                            Assert.True(false, $"update test to understand fields of type {subproperty.PropertyType} in {nameof(TargetingPack)}");
+                            Assert.Fail($"update test to understand fields of type {subproperty.PropertyType} in {nameof(TargetingPack)}");
                         }
                     }
                     else if (property.PropertyType == typeof(RuntimeFramework[]))
@@ -385,7 +380,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                                 continue;
                             }
 
-                            Assert.True(false, $"update test to understand fields of type {subproperty.PropertyType} in {nameof(RuntimeFramework)}");
+                            Assert.Fail($"update test to understand fields of type {subproperty.PropertyType} in {nameof(RuntimeFramework)}");
                         }
                     }
                     else if (property.PropertyType == typeof(string))
@@ -400,7 +395,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     }
                     else
                     {
-                        Assert.True(false, $"Unknown type {property.PropertyType} for field {property.Name}");
+                        Assert.Fail($"Unknown type {property.PropertyType} for field {property.Name}");
                     }
                 }
             }

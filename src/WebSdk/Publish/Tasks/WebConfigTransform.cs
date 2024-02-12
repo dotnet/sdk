@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks
@@ -21,7 +19,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             }
 
             XElement rootElement = null;
-            
+
             // Find the first aspNetCore element. If it is null use the default logic. Else use the root containing the aspNetCore element.
             var firstAspNetCoreElement = webConfig.Root.Descendants(aspNetCoreElementName).FirstOrDefault();
             if (firstAspNetCoreElement == null)
@@ -119,7 +117,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 // if the app path is already there in the web.config, don't do anything.
                 if (string.Equals(appPath, (string)argumentsAttribute, StringComparison.OrdinalIgnoreCase))
                 {
-                    appPath = String.Empty;
+                    appPath = string.Empty;
                 }
                 attributes.Insert(processPathIndex + 1,
                     new XAttribute("arguments", (appPath + " " + (string)argumentsAttribute).Trim()));
@@ -249,7 +247,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 if (document != null && !string.IsNullOrEmpty(projectGuid))
                 {
                     IEnumerable<XComment> comments = document.DescendantNodes().OfType<XComment>();
-                    projectGuid =  projectGuid.Trim('{', '}', '(', ')').Trim();
+                    projectGuid = projectGuid.Trim('{', '}', '(', ')').Trim();
                     string projectGuidValue = string.Format("ProjectGuid: {0}", projectGuid);
                     XComment projectGuidComment = comments.FirstOrDefault(comment => string.Equals(comment.Value, projectGuidValue, StringComparison.OrdinalIgnoreCase));
                     if (projectGuidComment != null)

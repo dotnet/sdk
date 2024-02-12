@@ -7,6 +7,11 @@
         <target state="translated">下载 {0} 版本 {1} 失败。</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">已启用包源映射，但在指定的包 ID 下找不到源: {0}。有关详细信息，请参阅包源映射文档(https://aka.ms/nuget-package-source-mapping)。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
         <source>Failed to load NuGet source {0}</source>
         <target state="translated">无法加载 NuGet 源 {0}</target>
@@ -15,6 +20,11 @@
       <trans-unit id="FailedToLoadNuGetSourceSourceIsNotValid">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
         <target state="translated">无法加载 NuGet 源 {0}: 源无效。进一步处理中将跳过它。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">已启用包源映射，但在指定的包 ID 下未映射源: {0}。有关详细信息，请参阅包源映射文档(https://aka.ms/nuget-package-source-mapping)。</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">
@@ -30,6 +40,31 @@
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">正在跳过 NuGet 包签名验证。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionDefault">
+        <source>A version of {0} of package {1}</source>
+        <target state="translated">包 {1} 的版本 {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForExactVersionMatch">
+        <source>Version {0} of package {1}</source>
+        <target state="translated">包 {1} 的版本 {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerAndUpperBounds">
+        <source>A version between {0} and {1} of package {2}</source>
+        <target state="translated">包 {2} 的 {0} 和 {1} 之间的版本</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerBound">
+        <source>A version higher than {0} of package {1}</source>
+        <target state="translated">包 {1} 的高于 {0} 的版本</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithUpperBound">
+        <source>A version less than {0} of package {1}</source>
+        <target state="translated">包 {1} 的低于 {0} 的版本</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">

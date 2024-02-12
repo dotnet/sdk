@@ -38,14 +38,29 @@
       "generator": "regexMatch",
       "datatype": "bool",
       "parameters": {
-        "pattern": "^(net5.0|net6.0|net7.0|net8.0)$*",
+        "pattern": "^(net5.0|net6.0|net7.0|net8.0|net9.0)$*",
         "source": "TargetFramework"
       }
     },
-    "langVersion": {
+    "evaluatedLangVersion": {
       "type": "bind",
       "binding": "msbuild:LangVersion",
       "dataType": "string"
+    },
+    "latestLangVersion": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "latest"
+      }
+    },
+    "langVersion": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "evaluatedLangVersion",
+        "fallbackVariableName": "latestLangVersion"
+      }
     },
     "csharp8orOlder": {
       "type": "generated",

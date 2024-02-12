@@ -1,12 +1,8 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -18,9 +14,9 @@ namespace Microsoft.NET.Build.Tasks
     /// </summary>
     public sealed class ProduceContentAssets : TaskBase
     {
-        private readonly List<ITaskItem> _contentItems = new List<ITaskItem>();
-        private readonly List<ITaskItem> _fileWrites = new List<ITaskItem>();
-        private readonly List<ITaskItem> _copyLocalItems = new List<ITaskItem>();
+        private readonly List<ITaskItem> _contentItems = new();
+        private readonly List<ITaskItem> _fileWrites = new();
+        private readonly List<ITaskItem> _copyLocalItems = new();
         private IContentAssetPreprocessor _assetPreprocessor;
 
         #region Output Items

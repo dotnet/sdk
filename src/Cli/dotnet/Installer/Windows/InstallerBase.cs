@@ -1,13 +1,9 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
-using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.Win32.Msi;
@@ -107,7 +103,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// </summary>
         /// <param name="elevationContext"></param>
         /// <param name="logger"></param>
-        /// <param name="verifySignatures"></param>
+        /// <param name="verifySignatures">Determines whether MSI signatures should be verified</param>
         protected InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifySignatures)
         {
             ElevationContext = elevationContext;
@@ -127,7 +123,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Checks the specified error code to determine whether it indicates a success result. If not, additional extended information
         /// is retrieved before throwing a <see cref="WorkloadException"/>.
         /// 
-        /// The<see cref="Restart"/> property will be set to <see langword="true" /> if the error is either <see cref="Error.SUCCESS_REBOOT_INITIATED"/>
+        /// The <see cref="Restart"/> property will be set to <see langword="true" /> if the error is either <see cref="Error.SUCCESS_REBOOT_INITIATED"/>
         /// or <see cref="Error.SUCCESS_REBOOT_REQUIRED"/>.
         /// </summary>
         /// <param name="error">The error code to check.</param>
@@ -137,18 +133,7 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             if (!Error.Success(error))
             {
-                StringBuilder sb = new StringBuilder(2048);
-                NativeMethods.FormatMessage((uint)(FormatMessage.FromSystem | FormatMessage.IgnoreInserts),
-                    IntPtr.Zero, error, 0, sb, (uint)sb.Capacity, IntPtr.Zero);
-                string errorDetail = sb.ToString().TrimEnd(Environment.NewLine.ToCharArray());
-                string errorMessage = $"{message} Error: 0x{error:x8}.";
-
-                if (!string.IsNullOrWhiteSpace(errorDetail))
-                {
-                    errorMessage += $" {errorDetail}";
-                }
-
-                throw new WorkloadException(error, errorMessage);
+                throw new WorkloadException($"{message} Error: 0x{error:x8}, {Marshal.GetPInvokeErrorMessage((int)error)}");
             }
 
             // Once set to true, we retain restart information for the duration of the underlying command.

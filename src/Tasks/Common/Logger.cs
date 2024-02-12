@@ -1,12 +1,10 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-//Microsoft.NET.Build.Extensions.Tasks (net7.0) has nullables disabled
 #pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
+#nullable enable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
 
-using System;
 using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -45,8 +43,8 @@ namespace Microsoft.NET.Build.Tasks
     /// Results in LogCore getting a Message instance with Code="NETSDK1234"
     /// and Text="Something is wrong."
     ///
-    /// Pattern inspired by <se cref="TaskLoggingHelper.LogErrorWithCodeFromResources"/>,
-    /// but retains completion via generated <see cref="Strings"/> instead of
+    /// Pattern inspired by TaskLoggingHelper.LogErrorWithCodeFromResources,
+    /// but retains completion via generated Strings instead of
     /// passing resource keys by name.
     ///
     /// All actual logging is deferred to subclass in <see cref="LogCore"/>,
@@ -80,7 +78,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private static Message CreateMessage(MessageLevel level, string format, string[] args)
         {
-            string code;
+            string? code;
 
             if (format.Length >= 12
                 && format[0] == 'N'
@@ -107,13 +105,13 @@ namespace Microsoft.NET.Build.Tasks
             DebugThrowMissingOrIncorrectCode(code, format, level);
 
             return new Message(
-                level, 
+                level,
                 text: string.Format(format, args),
                 code: code);
         }
 
         [Conditional("DEBUG")]
-        private static void DebugThrowMissingOrIncorrectCode(string code, string message, MessageLevel level)
+        private static void DebugThrowMissingOrIncorrectCode(string? code, string message, MessageLevel level)
         {
             // NB: This is not localized because it represents a bug in our code base, not a user error.
             //     To log message with external codes, use Log.Log(in Message, string[]) directly.

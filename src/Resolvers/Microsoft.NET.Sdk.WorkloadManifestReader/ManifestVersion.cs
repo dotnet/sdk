@@ -1,7 +1,6 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
@@ -9,13 +8,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public class ManifestVersion : IEquatable<ManifestVersion>, IComparable<ManifestVersion>
     {
-        private FXVersion _version;
+        private FXVersion? _version;
 
-        public ManifestVersion(string version)
+        public ManifestVersion(string? version)
         {
             if (!FXVersion.TryParse(version, out _version))
             {
-                throw new ArgumentException(Strings.InvalidManifestVersion, version);     
+                throw new ArgumentException(Strings.InvalidManifestVersion, version);
             }
         }
 
@@ -26,7 +25,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public int CompareTo(ManifestVersion? other)
         {
-            return FXVersion.Compare(_version, other?._version);
+            return FXVersion.Compare(_version!, other?._version!);
         }
 
         public override bool Equals(object? obj)
@@ -36,12 +35,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public override int GetHashCode()
         {
-            return _version.GetHashCode();
+            //  FXVersion doesn't define its own hashcode, so convert to string and get its hashcode
+            return ToString().GetHashCode();
         }
 
         public override string ToString()
         {
-            return _version.ToString();
+            return _version?.ToString() ?? string.Empty;
         }
     }
 }

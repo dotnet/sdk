@@ -3,5 +3,7 @@
   "name": "Soubor MSBuild Directory.Build.props",
   "description": "Prázdný soubor Directory.Build.props, který lze použít k určení vlastností MSBuild pro celou složku",
   "symbols/inherit/displayName": "Zdědit",
-  "symbols/inherit/description": "Při hodnotě true přidá import pro nejbližší soubor Directory.Build.props v hierarchii adresářů systému souborů. Directory.Build.props ve výchozím nastavení nedědí, takže můžete vytvořit sadu přizpůsobení pro každou složku zvlášť."
+  "symbols/inherit/description": "Při hodnotě true přidá import pro nejbližší soubor Directory.Build.props v hierarchii adresářů systému souborů. Directory.Build.props ve výchozím nastavení nedědí, takže můžete vytvořit sadu přizpůsobení pro každou složku zvlášť.",
+  "symbols/useArtifacts/displayName": "Použít rozložení výstupu artefaktů",
+  "symbols/useArtifacts/description": "Při hodnotě true přidá vlastnost pro povolení výstupního rozložení artefaktů. Toto je běžný vzor pro projekty, které vytvářejí artefakty sestavení, jako jsou balíčky NuGet, které jsou umístěné ve společné složce."
 }

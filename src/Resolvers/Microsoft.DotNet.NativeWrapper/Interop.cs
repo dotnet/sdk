@@ -1,14 +1,10 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
-//only Microsoft.DotNet.NativeWrapper (net7.0) has nullables disabled
 #pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
+#nullable enable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
 
 //  Work around https://github.com/dotnet/roslyn-analyzers/issues/6094
@@ -23,7 +19,7 @@ namespace Microsoft.DotNet.NativeWrapper
     {
         public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 #if NETCOREAPP
-        private static readonly string HostFxrPath;
+        private static readonly string? HostFxrPath;
 #endif
 
         static Interop()
@@ -35,8 +31,8 @@ namespace Microsoft.DotNet.NativeWrapper
 #if NETCOREAPP
             else
             {
-                HostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath);
-                System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()).ResolvingUnmanagedDll += HostFxrResolver;
+                HostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath)!;
+                System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.ResolvingUnmanagedDll += HostFxrResolver;
             }
 #endif
         }
@@ -47,10 +43,9 @@ namespace Microsoft.DotNet.NativeWrapper
         // construction so that subsequent P/Invokes can find it.
         private static void PreloadWindowsLibrary(string dllFileName)
         {
-            string basePath = Path.GetDirectoryName(typeof(Interop).Assembly.Location);
-            string architecture = IntPtr.Size == 8 ? "x64" : "x86";
-            architecture = RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "arm64" : architecture;
-            string dllPath = Path.Combine(basePath, architecture, $"{dllFileName}.dll");
+            string? basePath = Path.GetDirectoryName(typeof(Interop).Assembly.Location);
+            string architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
+            string dllPath = Path.Combine(basePath ?? string.Empty, architecture, $"{dllFileName}.dll");
 
             // return value is intentionally ignored as we let the subsequent P/Invokes fail naturally.
             LoadLibraryExW(dllPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
@@ -149,8 +144,8 @@ namespace Microsoft.DotNet.NativeWrapper
 
             [DllImport(Constants.HostFxr, CharSet = UTF16, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
             internal static extern int hostfxr_resolve_sdk2(
-                string exe_dir,
-                string working_dir,
+                string? exe_dir,
+                string? working_dir,
                 hostfxr_resolve_sdk2_flags_t flags,
                 hostfxr_resolve_sdk2_result_fn result);
 
@@ -162,7 +157,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
             [DllImport(Constants.HostFxr, CharSet = UTF16, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
             internal static extern int hostfxr_get_available_sdks(
-                string exe_dir,
+                string? exe_dir,
                 hostfxr_get_available_sdks_result_fn result);
         }
 
@@ -170,7 +165,7 @@ namespace Microsoft.DotNet.NativeWrapper
         {
             // Ansi marshaling on Unix is actually UTF8
             private const CharSet UTF8 = CharSet.Ansi;
-            private static string PtrToStringUTF8(IntPtr ptr) => Marshal.PtrToStringAnsi(ptr);
+            private static string? PtrToStringUTF8(IntPtr ptr) => Marshal.PtrToStringAnsi(ptr);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = UTF8)]
             internal delegate void hostfxr_resolve_sdk2_result_fn(
@@ -179,8 +174,8 @@ namespace Microsoft.DotNet.NativeWrapper
 
             [DllImport(Constants.HostFxr, CharSet = UTF8, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
             internal static extern int hostfxr_resolve_sdk2(
-                string exe_dir,
-                string working_dir,
+                string? exe_dir,
+                string? working_dir,
                 hostfxr_resolve_sdk2_flags_t flags,
                 hostfxr_resolve_sdk2_result_fn result);
 
@@ -192,7 +187,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
             [DllImport(Constants.HostFxr, CharSet = UTF8, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
             internal static extern int hostfxr_get_available_sdks(
-                string exe_dir,
+                string? exe_dir,
                 hostfxr_get_available_sdks_result_fn result);
 
             [DllImport("libc", CharSet = UTF8, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
@@ -201,7 +196,7 @@ namespace Microsoft.DotNet.NativeWrapper
             [DllImport("libc", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
             private static extern void free(IntPtr ptr);
 
-            public static string realpath(string path)
+            public static string? realpath(string path)
             {
                 var ptr = realpath(path, IntPtr.Zero);
                 var result = PtrToStringUTF8(ptr);

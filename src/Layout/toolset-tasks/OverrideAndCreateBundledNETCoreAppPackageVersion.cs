@@ -1,16 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
 
-using System;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using System.Xml.XPath;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
@@ -36,10 +28,6 @@ namespace Microsoft.DotNet.Build.Tasks
 
         [Required] public string MicrosoftNETCoreAppRefPackageVersion { get; set; }
 
-        // TODO: remove this once linker packages are produced from dotnet/runtime
-        // and replace it with MicrosoftNETCoreAppRefPackageVersion.
-        [Required] public string MicrosoftNETILLinkTasksPackageVersion { get; set; }
-
         [Required] public string NewSDKVersion { get; set; }
 
         [Required] public string OutputPath { get; set; }
@@ -50,7 +38,6 @@ namespace Microsoft.DotNet.Build.Tasks
                 ExecuteInternal(
                     File.ReadAllText(Stage0MicrosoftNETCoreAppRefPackageVersionPath),
                     MicrosoftNETCoreAppRefPackageVersion,
-                    MicrosoftNETILLinkTasksPackageVersion,
                     NewSDKVersion));
             return true;
         }
@@ -58,22 +45,36 @@ namespace Microsoft.DotNet.Build.Tasks
         public static string ExecuteInternal(
             string stage0MicrosoftNETCoreAppRefPackageVersionContent,
             string microsoftNETCoreAppRefPackageVersion,
-            string microsoftNETILLinkTasksPackageVersion,
             string newSDKVersion)
         {
             var projectXml = XDocument.Parse(stage0MicrosoftNETCoreAppRefPackageVersionContent);
 
             var ns = projectXml.Root.Name.Namespace;
 
-            var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();
-
-            var isSDKServicing = IsSDKServicing(propertyGroup.Element(ns + "NETCoreSdkVersion").Value);
+            var propertyGroup = projectXml.Root.Elements(ns + "PropertyGroup").First();            
 
             propertyGroup.Element(ns + "NETCoreSdkVersion").Value = newSDKVersion;
 
-            var originalBundledNETCoreAppPackageVersion =
-                propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
-            propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value = microsoftNETCoreAppRefPackageVersion;
+
+            var originalBundledNETCoreAppPackageVersion = propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value;
+            var parsedOriginalBundledPackageVersion = SemanticVersion.Parse(originalBundledNETCoreAppPackageVersion);
+            var parsedMicrosoftNETCoreAppRefPackageVersion =
+                SemanticVersion.Parse(microsoftNETCoreAppRefPackageVersion);
+
+            // In the case where we have a new major version, it'll come in first through the dotnet/runtime flow of the
+            // SDK's own package references. The Stage0 SDK's bundled version props file will still be on the older major version
+            // (and the older TFM that goes along with that). If we just replaced the bundled version with the new major version,
+            // apps that target the 'older' TFM would fail to build. So we need to keep the bundled version from the existing
+            // bundledversions.props in this one specific case.
+
+            var newBundledPackageVersion =
+                parsedOriginalBundledPackageVersion.Major == parsedMicrosoftNETCoreAppRefPackageVersion.Major
+                ? microsoftNETCoreAppRefPackageVersion
+                : originalBundledNETCoreAppPackageVersion;
+
+            propertyGroup.Element(ns + "BundledNETCoreAppPackageVersion").Value = newBundledPackageVersion;
+
+            var isNETServicing = IsNETServicing(originalBundledNETCoreAppPackageVersion);
 
             void CheckAndReplaceElement(XElement element)
             {
@@ -84,7 +85,7 @@ namespace Microsoft.DotNet.Build.Tasks
                         element.ToString(), element.Value, originalBundledNETCoreAppPackageVersion));
                 }
 
-                element.Value = microsoftNETCoreAppRefPackageVersion;
+                element.Value = newBundledPackageVersion;
             }
 
             void CheckAndReplaceAttribute(XAttribute attribute)
@@ -97,17 +98,17 @@ namespace Microsoft.DotNet.Build.Tasks
                         originalBundledNETCoreAppPackageVersion));
                 }
 
-                attribute.Value = microsoftNETCoreAppRefPackageVersion;
+                attribute.Value = newBundledPackageVersion;
             }
 
-            if (!isSDKServicing)
+            if (!isNETServicing)
             {
                 CheckAndReplaceElement(propertyGroup.Element(ns + "BundledNETCorePlatformsPackageVersion"));
             }
 
             var itemGroup = projectXml.Root.Elements(ns + "ItemGroup").First();
 
-            if (!isSDKServicing)
+            if (!isNETServicing)
             {
                 CheckAndReplaceAttribute(itemGroup
                     .Elements(ns + "KnownFrameworkReference").First().Attribute("DefaultRuntimeFrameworkVersion"));
@@ -123,9 +124,8 @@ namespace Microsoft.DotNet.Build.Tasks
                 .Elements(ns + "KnownCrossgen2Pack").First().Attribute("Crossgen2PackVersion"));
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownILCompilerPack").First().Attribute("ILCompilerPackVersion"));
-
-            // TODO: replace this with CheckAndReplaceAttribute once linker packages are produced from dotnet/runtime.
-            itemGroup.Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion").Value = microsoftNETILLinkTasksPackageVersion;
+            CheckAndReplaceAttribute(itemGroup
+                .Elements(ns + "KnownILLinkPack").First().Attribute("ILLinkPackVersion"));
 
             CheckAndReplaceAttribute(itemGroup
                 .Elements(ns + "KnownRuntimePack").First().Attribute("LatestRuntimeFrameworkVersion"));
@@ -138,11 +138,11 @@ namespace Microsoft.DotNet.Build.Tasks
         /// so there is no need to replace them.
         /// </summary>
         /// <returns></returns>
-        private static bool IsSDKServicing(string sdkVersion)
+        private static bool IsNETServicing(string netVersion)
         {
-            var parsedSdkVersion = NuGet.Versioning.NuGetVersion.Parse(sdkVersion);
+            var parsedSdkVersion = NuGet.Versioning.NuGetVersion.Parse(netVersion);
 
-            return parsedSdkVersion.Patch % 100 != 0;
+            return !parsedSdkVersion.IsPrerelease;
         }
     }
 }

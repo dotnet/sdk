@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
@@ -56,7 +55,7 @@ namespace Microsoft.TemplateEngine.Cli.Alias
             }
 
             //ensure loaded sets aliases
-            Dictionary<string, IReadOnlyList<string>> aliasesWithCandidate = new Dictionary<string, IReadOnlyList<string>>(_aliases!.CommandAliases);
+            Dictionary<string, IReadOnlyList<string>> aliasesWithCandidate = new(_aliases!.CommandAliases);
             aliasesWithCandidate[aliasName] = aliasTokens;
             if (!TryExpandCommandAliases(aliasesWithCandidate, aliasTokens, out IReadOnlyList<string>? expandedInputTokens))
             {
@@ -93,7 +92,7 @@ namespace Microsoft.TemplateEngine.Cli.Alias
         private static bool TryExpandCommandAliases(IReadOnlyDictionary<string, IReadOnlyList<string>> aliases, IReadOnlyList<string> inputTokens, out IReadOnlyList<string>? expandedTokens)
         {
             bool expansionOccurred = false;
-            HashSet<string> seenAliases = new HashSet<string>();
+            HashSet<string> seenAliases = new();
             expandedTokens = new List<string>(inputTokens);
 
             do
@@ -157,7 +156,7 @@ namespace Microsoft.TemplateEngine.Cli.Alias
         // reads a dictionary whose values can either be string literals, or arrays of strings.
         private IReadOnlyDictionary<string, IReadOnlyList<string>> ToStringListDictionary(JToken token, StringComparer? comparer = null, string? propertyName = null)
         {
-            Dictionary<string, IReadOnlyList<string>> result = new Dictionary<string, IReadOnlyList<string>>(comparer ?? StringComparer.Ordinal);
+            Dictionary<string, IReadOnlyList<string>> result = new(comparer ?? StringComparer.Ordinal);
             JObject? jObj = token as JObject;
             if (jObj == null || propertyName == null || !jObj.TryGetValue(propertyName, StringComparison.OrdinalIgnoreCase, out JToken? element))
             {
@@ -189,7 +188,7 @@ namespace Microsoft.TemplateEngine.Cli.Alias
                     }
                     else
                     {
-                        List<string> values = new List<string>();
+                        List<string> values = new();
                         foreach (JToken item in arr)
                         {
                             if (item != null && item.Type == JTokenType.String)

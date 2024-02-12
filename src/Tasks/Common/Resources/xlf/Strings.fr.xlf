@@ -7,15 +7,25 @@
         <target state="translated">NETSDK1076: AddResource peut uniquement être utilisé avec des ressources de type entier.</target>
         <note>{StrBegin="NETSDK1076: "}</note>
       </trans-unit>
-      <trans-unit id="AotNoValidRuntimePackageError">
-        <source>NETSDK1183: Unable to optimize assemblies for ahead-of-time compilation: a valid runtime package was not found. Either set the PublishAot property to false, or use a supported runtime identifier when publishing. When targeting .NET 7 or higher, make sure to restore packages with the PublishAot property set to true.</source>
-        <target state="translated">NETSDK1183: Impossible d'optimiser les assemblys pour la compilation Ahead of time : un package d'exécution valide n'a pas été trouvé. Définissez la propriété PublishAot sur false ou utilisez un identificateur d'exécution pris en charge lors de la publication. Lorsque vous ciblez .NET 7 ou supérieur, assurez-vous de restaurer les packages avec la propriété PublishAot définie sur true.</target>
-        <note>{StrBegin="NETSDK1183: "}</note>
-      </trans-unit>
       <trans-unit id="AotNotSupported">
         <source>NETSDK1196: The SDK does not support ahead-of-time compilation. Set the PublishAot property to false.</source>
-        <target state="new">NETSDK1196: The SDK does not support ahead-of-time compilation. Set the PublishAot property to false.</target>
+        <target state="translated">NETSDK1196: le SDK ne prend pas en charge la compilation à l’avance. Définissez la propriété PublishAot sur false.</target>
         <note>{StrBegin="NETSDK1196: "}</note>
+      </trans-unit>
+      <trans-unit id="AotUnsupportedHostRuntimeIdentifier">
+        <source>NETSDK1204: Ahead-of-time compilation is not supported on the current platform '{0}'.</source>
+        <target state="translated">NETSDK1204: la compilation anticipée n'est pas prise en charge sur la plate-forme actuelle « {0} ».</target>
+        <note>{StrBegin="NETSDK1204: "}</note>
+      </trans-unit>
+      <trans-unit id="AotUnsupportedTargetFramework">
+        <source>NETSDK1207: Ahead-of-time compilation is not supported for the target framework.</source>
+        <target state="translated">NETSDK1207: la compilation anticipée n'est pas prise en charge pour le framework cible.</target>
+        <note>{StrBegin="NETSDK1207: "}</note>
+      </trans-unit>
+      <trans-unit id="AotUnsupportedTargetRuntimeIdentifier">
+        <source>NETSDK1203: Ahead-of-time compilation is not supported for the target runtime identifier '{0}'.</source>
+        <target state="translated">NETSDK1203: la compilation anticipée n'est pas prise en charge pour l'identificateur d'exécution cible « {0} ».</target>
+        <note>{StrBegin="NETSDK1203: "}</note>
       </trans-unit>
       <trans-unit id="AppConfigRequiresRootConfiguration">
         <source>NETSDK1070: The application configuration file must have root configuration element.</source>
@@ -51,6 +61,11 @@
         <source>NETSDK1177: Failed to sign apphost with error code {1}: {0}</source>
         <target state="translated">NETSDK1177: échec de la signature de apphost avec le code d’erreur {1}: {0}</target>
         <note>{StrBegin="NETSDK1177: "}</note>
+      </trans-unit>
+      <trans-unit id="ArtifactsPathCannotBeSetInProject">
+        <source>NETSDK1199: The ArtifactsPath and UseArtifactsOutput properties cannot be set in a project file, due to MSBuild ordering constraints. They must be set in a Directory.Build.props file or from the command line. See https://aka.ms/netsdk1199 for more information.</source>
+        <target state="translated">NETSDK1199: les propriétés ArtifactsPath et UseArtifactsOutput ne peuvent pas être définies dans un fichier projet, en raison des contraintes d'ordre MSBuild. Ils doivent être définis dans un fichier Directory.Build.props ou à partir de la ligne de commande. Voir https://aka.ms/netsdk1199 pour plus d'informations.</target>
+        <note>{StrBegin="NETSDK1199: "}</note>
       </trans-unit>
       <trans-unit id="AspNetCoreAllNotSupported">
         <source>NETSDK1079: The Microsoft.AspNetCore.All package is not supported when targeting .NET Core 3.0 or higher.  A FrameworkReference to Microsoft.AspNetCore.App should be used instead, and will be implicitly included by Microsoft.NET.Sdk.Web.</source>
@@ -96,6 +111,11 @@
         <source>NETSDK1001: At least one possible target framework must be specified.</source>
         <target state="translated">NETSDK1001: Vous devez spécifier au moins un framework cible.</target>
         <note>{StrBegin="NETSDK1001: "}</note>
+      </trans-unit>
+      <trans-unit id="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework">
+        <source>NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. Set the property 'BuildWithNetFrameworkHostedCompiler' to 'true' instead if you need it.</source>
+        <target state="translated">NETSDK1205: le package Microsoft.Net.Compilers.Toolset.Framework ne doit pas être défini directement. Définissez la propriété ’BuildWithNetFrameworkHostedCompiler’ sur « true » à la place si vous en avez besoin.</target>
+        <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
       </trans-unit>
       <trans-unit id="CannotEmbedClsidMapIntoComhost">
         <source>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
@@ -148,13 +168,13 @@
         <note>{StrBegin="NETSDK1099: "}</note>
       </trans-unit>
       <trans-unit id="CannotHaveSolutionLevelOutputPath">
-        <source>NETSDK1194: The "--output" option isn't supported when building a solution.</source>
-        <target state="translated">NETSDK1194: l’option «--output» n’est pas prise en charge lors de la génération d’une solution.</target>
-        <note>{StrBegin="NETSDK1194: "}</note>
+        <source>NETSDK1194: The "--output" option isn't supported when building a solution. Specifying a solution-level output path results in all projects copying outputs to the same directory, which can lead to inconsistent builds.</source>
+        <target state="translated">NETSDK1194: l’option « --output » n’est pas prise en charge lors de la génération d’une solution. Si vous spécifiez un chemin de sortie au niveau de la solution, tous les projets copient les sorties dans le même répertoire, ce qui peut entraîner des builds incohérentes.</target>
+        <note>{StrBegin="NETSDK1194: "}{Locked="--output"}</note>
       </trans-unit>
       <trans-unit id="CannotHaveSolutionLevelRuntimeIdentifier">
-        <source>NETSDK1134: Building a solution with a specific RuntimeIdentifier is not supported. If you would like to publish for a single RID, specifiy the RID at the individual project level instead.</source>
-        <target state="translated">NETSDK1134: La génération d'une solution avec un RuntimeIdentifier spécifique n'est pas prise en charge. Si vous voulez publier pour un RID unique, spécifiez le RID au niveau du projet individuel à la place.</target>
+        <source>NETSDK1134: Building a solution with a specific RuntimeIdentifier is not supported. If you would like to publish for a single RID, specify the RID at the individual project level instead.</source>
+        <target state="translated">NETSDK1134: la création d'une solution avec un RuntimeIdentifier spécifique n'est pas prise en charge. Si vous souhaitez publier pour un seul RID, spécifiez plutôt le RID au niveau du projet individuel.</target>
         <note>{StrBegin="NETSDK1134: "}</note>
       </trans-unit>
       <trans-unit id="CannotHaveSupportedOSPlatformVersionHigherThanTargetPlatformVersion">
@@ -379,6 +399,13 @@
         <target state="translated">NETSDK1169: le même ID de ressource {0} a été spécifié pour deux bibliothèques de types «{1}» et «{2}». Les ID de bibliothèque de types en double ne sont pas autorisés.</target>
         <note>{StrBegin="NETSDK1169: "}</note>
       </trans-unit>
+      <trans-unit id="EnableSingleFileAnalyzerUnsupported">
+        <source>NETSDK1211: EnableSingleFileAnalyzer is not supported for the target framework. Consider multi-targeting to a supported framework to enable single-file analysis, and set EnableSingleFileAnalyzer only for the supported frameworks. For example:
+&lt;EnableSingleFileAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/EnableSingleFileAnalyzer&gt;</source>
+        <target state="translated">NETSDK1211: EnableSingleFileAnalyzer n’est pas pris en charge pour le framework cible. Envisagez le ciblage multiple vers un framework pris en charge pour permettre l'analyse d'un fichier unique et définissez EnableSingleFileAnalyzer uniquement pour les frameworks pris en charge. Par exemple :
+&lt;EnableSingleFileAnalyzer Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/EnableSingleFileAnalyzer&gt;</target>
+        <note>{StrBegin="NETSDK1211: "}</note>
+      </trans-unit>
       <trans-unit id="EncounteredConflict_Info">
         <source>Encountered conflict between '{0}' and '{1}'.</source>
         <target state="translated">Conflit détecté entre '{0}' et '{1}'.</target>
@@ -455,13 +482,13 @@
         <note>{StrBegin="NETSDK1141: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkFailed">
-        <source>NETSDK1144: Optimizing assemblies for size failed. Optimization can be disabled by setting the PublishTrimmed property to false.</source>
-        <target state="translated">NETSDK1144: L'optimisation de la taille des assemblys a échoué. Vous pouvez désactiver l'optimisation en affectant à la propriété PublishTrimmed la valeur false.</target>
+        <source>NETSDK1144: Optimizing assemblies for size failed.</source>
+        <target state="needs-review-translation">NETSDK1144: L'optimisation de la taille des assemblys a échoué. Vous pouvez désactiver l'optimisation en affectant à la propriété PublishTrimmed la valeur false.</target>
         <note>{StrBegin="NETSDK1144: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNoValidRuntimePackageError">
-        <source>NETSDK1195: Unable to optimize assemblies for size: a valid runtime package was not found. Either set the PublishTrimmed property to false, or use a supported target framework when publishing.</source>
-        <target state="new">NETSDK1195: Unable to optimize assemblies for size: a valid runtime package was not found. Either set the PublishTrimmed property to false, or use a supported target framework when publishing.</target>
+        <source>NETSDK1195: Trimming, or code compatibility analysis for trimming, single-file deployment, or ahead-of-time compilation is not supported for the target framework. For more information, see https://aka.ms/netsdk1195</source>
+        <target state="translated">NETSDK1195: le découpage ou l'analyse de la compatibilité du code pour le découpage, le déploiement d'un seul fichier ou la compilation anticipée n'est pas pris en charge pour le framework cible. Pour plus d'informations, voir https://aka.ms/netsdk1195</target>
         <note>{StrBegin="NETSDK1195: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNotSupportedError">
@@ -542,6 +569,20 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1170: L'ID de bibliothèque de types fourni "{0}" pour la bibliothèque de types "{1}" n'est pas valide. L'ID doit être un entier positif inférieur à 65536.</target>
         <note>{StrBegin="NETSDK1170: "}</note>
       </trans-unit>
+      <trans-unit id="IsAotCompatibleUnsupported">
+        <source>NETSDK1210: IsAotCompatible and EnableAotAnalyzer are not supported for the target framework. Consider multi-targeting to a supported framework to enable ahead-of-time compilation analysis, and set IsAotCompatible only for the supported frameworks. For example:
+&lt;IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsAotCompatible&gt;</source>
+        <target state="translated">NETSDK1210: IsAotCompatible et EnableAotAnalyzer ne sont pas pris en charge pour le framework cible. Envisagez le ciblage multiple vers un framework pris en charge pour permettre une analyse de compilation anticipée et définissez IsAotCompatible uniquement pour les frameworks pris en charge. Par exemple :
+&lt;IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsAotCompatible&gt;</target>
+        <note>{StrBegin="NETSDK1210: "}</note>
+      </trans-unit>
+      <trans-unit id="IsTrimmableUnsupported">
+        <source>NETSDK1212: IsTrimmable and EnableTrimAnalyzer are not supported for the target framework. Consider multi-targeting to a supported framework to enable trimming, and set IsTrimmable only for the supported frameworks. For example:
+&lt;IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsTrimmable&gt;</source>
+        <target state="translated">NETSDK1212: IsTrimmable et EnableTrimAnalyzer ne sont pas pris en charge pour le framework cible. Envisagez le ciblage multiple sur un framework pris en charge pour activer le découpage et définissez IsTrimmable uniquement pour les frameworks pris en charge. Par exemple :
+&lt;IsTrimmable Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', '{0}'))"&gt;true&lt;/IsTrimmable&gt;</target>
+        <note>{StrBegin="NETSDK1212: "}</note>
+      </trans-unit>
       <trans-unit id="JitLibraryNotFound">
         <source>NETSDK1157: JIT library '{0}' not found.</source>
         <target state="translated">NETSDK1157: la bibliothèque JIT '{0}' est introuvable.</target>
@@ -590,15 +631,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1115: Le SDK .NET actuel ne prend pas en charge le .NET Framework avec des valeurs du SDK .NET autres que celles par défaut. Cela est probablement dû à une incompatibilité entre la propriété CLRSupport du projet C++/CLI et TargetFramework.</target>
         <note>{StrBegin="NETSDK1115: "}</note>
       </trans-unit>
-      <trans-unit id="Net6NotCompatibleWithDev16">
-        <source>NETSDK1182: Targeting .NET 6.0 or higher in Visual Studio 2019 is not supported.</source>
-        <target state="translated">NETSDK1182: le ciblage de .NET 6.0 ou plus dans Visual Studio 2019 n’est pas pris en charge.</target>
-        <note>{StrBegin="NETSDK1182: "}</note>
-      </trans-unit>
-      <trans-unit id="Net7NotCompatibleWithDev173">
-        <source>NETSDK1192: Targeting .NET 7.0 or higher in Visual Studio 2022 17.3 is not supported.</source>
-        <target state="translated">NETSDK1192: le ciblage de .NET 7.0 ou plus dans Visual Studio 2022 17.3 n’est pas pris en charge.</target>
-        <note>{StrBegin="NETSDK1192: "}</note>
+      <trans-unit id="Net8NotCompatibleWithDev177">
+        <source>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</source>
+        <target state="translated">NETSDK1213: le ciblage de .NET 8.0 ou plus dans Visual Studio 2022 17.7 n’est pas pris en charge.</target>
+        <note>{StrBegin="NETSDK1213: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -655,6 +691,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1121: les projets C++/CLI qui ciblent le .NET Core ne peuvent pas utiliser SelfContained=true.</target>
         <note>{StrBegin="NETSDK1121: "}</note>
       </trans-unit>
+      <trans-unit id="NonPortableRuntimeIdentifierDetected">
+        <source>NETSDK1206: Found version-specific or distribution-specific runtime identifier(s): {0}. Affected libraries: {1}. In .NET 8.0 and higher, assets for version-specific and distribution-specific runtime identifiers will not be found by default. See https://aka.ms/dotnet/rid-usage for details.</source>
+        <target state="translated">NETSDK1206: Identifiant(s) d'exécution spécifique(s) à la version ou à la distribution trouvé(s) : {0}. Bibliothèques concernées : {1}. Dans .NET 8.0 et versions ultérieures, les actifs des identificateurs d'exécution spécifiques à la version et à la distribution ne seront pas trouvés par défaut. Voir https://aka.ms/dotnet/rid-usage pour plus de détails.</target>
+        <note>{StrBegin="NETSDK1206: "}</note>
+      </trans-unit>
       <trans-unit id="NonSelfContainedExeCannotReferenceSelfContained">
         <source>NETSDK1151: The referenced project '{0}' is a self-contained executable.  A self-contained executable cannot be referenced by a non self-contained executable.  For more information, see https://aka.ms/netsdk1151</source>
         <target state="translated">NETSDK1151: le projet référencé « {0} » est un exécutable autonome.  Un exécutable autonome ne peut pas être référencé par un exécutable non autonome. Pour plus d’informations, voir https://aka.ms/netsdk1151</target>
@@ -664,11 +705,6 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1162: PDB generation: R2R executable '{0}' not found.</source>
         <target state="translated">NETSDK1162: génération de PDB{0}: exécutable R2R '' introuvable.</target>
         <note>{StrBegin="NETSDK1162: "}</note>
-      </trans-unit>
-      <trans-unit id="PReleaseRequiresEnvVarOnSln">
-        <source>NETSDK1190: To use '{0}' in solution projects, you must set the environment variable '{1}' (to true). This will increase the time to complete the operation.</source>
-        <target state="translated">NETSDK1190: Pour utiliser « {0} » dans les projets de solution, vous devez définir la variable d’environnement « {1} » (sur true). Cette opération augmente la durée de l’achèvement de l’opération.</target>
-        <note>{StrBegin="NETSDK1190: "}</note>
       </trans-unit>
       <trans-unit id="PackAsToolCannotSupportSelfContained">
         <source>NETSDK1053: Pack as tool does not support self contained.</source>
@@ -682,13 +718,13 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PackageContainsIncorrectlyCasedLocale">
         <source>NETSDK1187: Package {0} {1} has a resource with the locale '{2}'. This locale has been normalized to the standard format '{3}' to prevent casing issues in the build. Consider notifying the package author about this casing issue.</source>
-        <target state="translated">NETSDK1187 : package {0} {1} a une ressource avec les paramètres régionaux '{2}'. Ces paramètres régionaux ont été normalisés au format standard '{3}' pour éviter les problèmes de casse dans la build. Envisagez d’avertir l’auteur du package de ce problème de casse.</target>
-        <note>Error code is NETSDK1187. 0 is a package name, 1 is a package version, 2 is the incorrect locale string, and 3 is the correct locale string.</note>
+        <target state="translated">NETSDK1187: package {0} {1} a une ressource avec les paramètres régionaux '{2}'. Ces paramètres régionaux ont été normalisés au format standard '{3}' pour éviter les problèmes de casse dans la build. Envisagez d’avertir l’auteur du package de ce problème de casse.</target>
+        <note>{StrBegin="NETSDK1187: "} 0 is a package name, 1 is a package version, 2 is the incorrect locale string, and 3 is the correct locale string.</note>
       </trans-unit>
       <trans-unit id="PackageContainsUnknownLocale">
         <source>NETSDK1188: Package {0} {1} has a resource with the locale '{2}'. This locale is not recognized by .NET. Consider notifying the package author that it appears to be using an invalid locale.</source>
         <target state="translated">NETSDK1188: Package {0} {1} a une ressource avec les paramètres régionaux '{2}'. Ces paramètres régionaux ne sont pas reconnus par .NET. Envisagez d’avertir l’auteur du package qu’il semble utiliser des paramètres régionaux non valides.</target>
-        <note>Error code is NETSDK1188. 0 is a package name, 1 is a package version, and 2 is the incorrect locale string</note>
+        <note>{StrBegin="NETSDK1188: "} 0 is a package name, 1 is a package version, and 2 is the incorrect locale string</note>
       </trans-unit>
       <trans-unit id="PackageNotFound">
         <source>NETSDK1064: Package {0}, version {1} was not found. It might have been deleted since NuGet restore. Otherwise, NuGet restore might have only partially completed, which might have been due to maximum path length restrictions.</source>
@@ -730,6 +766,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1093: les outils de projet (DotnetCliTool) prennent uniquement en charge le ciblage de .NET Core 2.2 et des versions antérieures.</target>
         <note>{StrBegin="NETSDK1093: "}</note>
       </trans-unit>
+      <trans-unit id="PublishProfileNotPresent">
+        <source>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</source>
+        <target state="translated">NETSDK1198: un profil de publication portant le nom '{0}' est introuvable dans le projet. Affectez un nom de fichier valide à la propriété PublishProfile.</target>
+        <note>{StrBegin="NETSDK1198: "}</note>
+      </trans-unit>
       <trans-unit id="PublishReadyToRunRequiresVersion30">
         <source>NETSDK1122: ReadyToRun compilation will be skipped because it is only supported for .NET Core 3.0 or higher.</source>
         <target state="translated">NETSDK1122: la compilation ReadyToRun va être ignorée, car elle est uniquement prise en charge pour .NET Core 3.0 ou une version ultérieure.</target>
@@ -751,8 +792,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1124: "}</note>
       </trans-unit>
       <trans-unit id="PublishUnsupportedWithoutTargetFramework">
-        <source>NETSDK1129: The 'Publish' target is not supported without specifying a target framework. The current project targets multiple frameworks, you must specify the framework for the published application.</source>
-        <target state="translated">NETSDK1129: la cible 'Publish' n'est pas prise en charge sans spécification d'un framework cible. Dans la mesure où le projet actif cible plusieurs frameworks, vous devez spécifier le framework de l'application publiée.</target>
+        <source>NETSDK1129: The 'Publish' target is not supported without specifying a target framework. The current project targets multiple frameworks, you must specify one of the following frameworks in order to publish: {0}</source>
+        <target state="translated">NETSDK1129: la cible « Publish » n’est pas prise en charge sans spécifier de framework cible. Le projet actuel cible plusieurs frameworks. Vous devez spécifier l’une des infrastructures suivantes pour pouvoir publier : {0}</target>
         <note>{StrBegin="NETSDK1129: "}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunCompilationFailed">
@@ -766,8 +807,8 @@ The following are names of parameters or literal values and should not be transl
         <note />
       </trans-unit>
       <trans-unit id="ReadyToRunNoValidRuntimePackageError">
-        <source>NETSDK1094: Unable to optimize assemblies for performance: a valid runtime package was not found. Either set the PublishReadyToRun property to false, or use a supported runtime identifier when publishing and make sure to restore packages with the PublishReadyToRun property set to true.</source>
-        <target state="needs-review-translation">NETSDK1094: Impossible d'optimiser les assemblages pour les performances : un package d'exécution valide n'a pas été trouvé. Définissez la propriété PublishReadyToRun sur false ou utilisez un identificateur d'exécution pris en charge lors de la publication. Lorsque vous ciblez .NET 6 ou supérieur, assurez-vous de restaurer les packages avec la propriété PublishReadyToRun définie sur true.</target>
+        <source>NETSDK1094: Unable to optimize assemblies for performance: a valid runtime package was not found. Either set the PublishReadyToRun property to false, or use a supported runtime identifier when publishing. When targeting .NET 6 or higher, make sure to restore packages with the PublishReadyToRun property set to true.</source>
+        <target state="translated">NETSDK1094: Impossible d'optimiser les assemblages pour les performances : un package d'exécution valide n'a pas été trouvé. Définissez la propriété PublishReadyToRun sur false ou utilisez un identificateur d'exécution pris en charge lors de la publication. Lorsque vous ciblez .NET 6 ou supérieur, assurez-vous de restaurer les packages avec la propriété PublishReadyToRun définie sur true.</target>
         <note>{StrBegin="NETSDK1094: "}</note>
       </trans-unit>
       <trans-unit id="ReadyToRunTargetNotSupportedError">
@@ -781,14 +822,19 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1103: "}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierNotRecognized">
-        <source>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized.</source>
-        <target state="translated">NETSDK1083: le RuntimeIdentifier spécifié, '{0}', n'est pas reconnu.</target>
+        <source>NETSDK1083: The specified RuntimeIdentifier '{0}' is not recognized. See https://aka.ms/netsdk1083 for more information.</source>
+        <target state="translated">NETSDK1083: Le RuntimeIdentifier «{0}» spécifié n’est pas reconnu. Pour plus d’informations, consultez https://aka.ms/netsdk1083.</target>
         <note>{StrBegin="NETSDK1083: "}</note>
       </trans-unit>
       <trans-unit id="RuntimeIdentifierWasNotSpecified">
         <source>NETSDK1028: Specify a RuntimeIdentifier</source>
         <target state="translated">NETSDK1028: Spécifiez un RuntimeIdentifier</target>
         <note>{StrBegin="NETSDK1028: "}</note>
+      </trans-unit>
+      <trans-unit id="RuntimeIdentifierWillNoLongerImplySelfContained">
+        <source>NETSDK1201: For projects targeting .NET 8.0 and higher, specifying a RuntimeIdentifier will no longer produce a self contained app by default. To continue building self-contained apps, set the SelfContained property to true or use the --self-contained argument.</source>
+        <target state="translated">NETSDK1201: pour les projets ciblant .NET 8.0 et versions ultérieures, la spécification d'un RuntimeIdentifier ne produira plus d'application autonome par défaut. Pour continuer à créer des applications autonomes, définissez la propriété SelfContained sur true ou utilisez l'argument --self-contained .</target>
+        <note>{StrBegin="NETSDK1201: "}</note>
       </trans-unit>
       <trans-unit id="RuntimeListNotFound">
         <source>NETSDK1109: Runtime list file '{0}' was not found. Report this error to the .NET team here: https://aka.ms/dotnet-sdk-issue.</source>
@@ -813,12 +859,19 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="SelfContainedOptionShouldBeUsedWithRuntime">
         <source>NETSDK1179: One of '--self-contained' or '--no-self-contained' options are required when '--runtime' is used.</source>
         <target state="translated">NETSDK1179: One of '--self-contained' or '--no-self-contained' options are required when '--runtime' is used.</target>
-        <note>{StrBegin="NETSDK1179: "}</note>
+        <note>{StrBegin="NETSDK1179: "}{Locked="--self-contained"}{Locked="--no-self-contained"}{Locked="--runtime"}</note>
       </trans-unit>
       <trans-unit id="SkippingAdditionalProbingPaths">
         <source>NETSDK1048: 'AdditionalProbingPaths' were specified for GenerateRuntimeConfigurationFiles, but are being skipped because 'RuntimeConfigDevPath' is empty.</source>
         <target state="translated">NETSDK1048: Des 'AdditionalProbingPaths' ont été spécifiés pour GenerateRuntimeConfigurationFiles, mais ils sont ignorés, car 'RuntimeConfigDevPath' est vide.</target>
         <note>{StrBegin="NETSDK1048: "}</note>
+      </trans-unit>
+      <trans-unit id="SolutionProjectConfigurationsConflict">
+        <source>NETSDK1197: Multiple solution project(s) contain conflicting '{0}' values; ensure the values match. Consider using a Directory.build.props file to set the property for all projects. Conflicting projects:
+{1}</source>
+        <target state="translated">NETSDK1197: plusieurs projets de solution contiennent des valeurs '{0}' en conflit ; assurez-vous que les valeurs correspondent. Envisagez d'utiliser un fichier Directory.build.props pour définir la propriété pour tous les projets. Projets conflictuels : 
+{1}</target>
+        <note>{StrBegin="NETSDK1197: "}</note>
       </trans-unit>
       <trans-unit id="TargetFrameworkIsEol">
         <source>NETSDK1138: The target framework '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
@@ -916,8 +969,8 @@ The following are names of parameters or literal values and should not be transl
         <note>{StrBegin="NETSDK1050: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetFrameworkVersion">
-        <source>NETSDK1045: The current .NET SDK does not support targeting {0} {1}.  Either target {0} {2} or lower, or use a version of the .NET SDK that supports {0} {1}.</source>
-        <target state="translated">NETSDK1045: Le kit .NET SDK actuel ne prend pas en charge le ciblage de {0} {1}. Vous devez soit cibler {0} {2} ou une version antérieure, soit utiliser une version du kit .NET SDK qui prend en charge {0} {1}.</target>
+        <source>NETSDK1045: The current .NET SDK does not support targeting {0} {1}.  Either target {0} {2} or lower, or use a version of the .NET SDK that supports {0} {1}. Download the .NET SDK from https://aka.ms/dotnet/download</source>
+        <target state="translated">NETSDK1045: le SDK .NET actuel ne prend pas en charge le ciblage {0} {1}.  Ciblez {0} {2} ou inférieur, ou utilisez une version du Kit de développement logiciel (SDK) .NET qui prend en charge {0} {1}. Télécharger le Kit de développement logiciel (SDK) .NET à partir de https://aka.ms/dotnet/download</target>
         <note>{StrBegin="NETSDK1045: "}</note>
       </trans-unit>
       <trans-unit id="UnsupportedTargetPlatformIdentifier">
@@ -925,15 +978,30 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1139: L'identificateur de la plateforme cible {0} n'a pas été reconnu.</target>
         <note>{StrBegin="NETSDK1139: "}</note>
       </trans-unit>
+      <trans-unit id="UseArtifactsOutputRequiresDirectoryBuildProps">
+        <source>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</source>
+        <target state="translated">NETSDK1200: si UseArtifactsPath est défini sur true et que le chemin de l'artefact n'est pas défini, il doit y avoir un fichier Directory.Build.props afin de déterminer l'emplacement du dossier des artefacts.</target>
+        <note>{StrBegin="NETSDK1200: "}</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedVisualStudioVersion">
+        <source>NETSDK1209: The current Visual Studio version does not support targeting {0} {1}.  Either target {0} {2} or lower, or use Visual Studio version {3} or higher</source>
+        <target state="translated">NETSDK1209: la version Visual Studio actuelle ne prend pas en charge le ciblage de {0} {1}.  Ciblez {0} {2} ou une version antérieure, ou utilisez Visual Studio version {3} ou ultérieure</target>
+        <note>{StrBegin="NETSDK1209: "}</note>
+      </trans-unit>
+      <trans-unit id="UnsupportedTargetPlatformIdentifierWithWorkloadsDisabled">
+        <source>NETSDK1208: The target platform identifier {0} was not recognized. This is because MSBuildEnableWorkloadResolver is set to false which disables .NET SDK Workloads which is required for this identifer. Unset this environment variable or MSBuild property to enable workloads.</source>
+        <target state="translated">NETSDK1208: l’identificateur de plateforme cible {0} n’a pas été reconnu. Cela est dû au fait que MSBuildEnableWorkloadResolver a la valeur false, ce qui désactive les charges de travail SDK .NET requises pour cet identificateur. Annulez la définition de cette variable d’environnement ou propriété MSBuild pour activer les charges de travail.</target>
+        <note>{StrBegin="NETSDK1208: "}</note>
+      </trans-unit>
       <trans-unit id="UseWpfOrUseWindowsFormsRequiresWindowsDesktopFramework">
         <source>NETSDK1107: Microsoft.NET.Sdk.WindowsDesktop is required to build Windows desktop applications. 'UseWpf' and 'UseWindowsForms' are not supported by the current SDK.</source>
         <target state="translated">NETSDK1107: vous devez disposer de Microsoft.NET.Sdk.WindowsDesktop pour générer des applications de bureau Windows. 'UseWpf' et 'UseWindowsForms' ne sont pas pris en charge par le kit SDK actuel.</target>
         <note>{StrBegin="NETSDK1107: "}</note>
       </trans-unit>
-      <trans-unit id="UsingPreviewSdk_Info">
+      <trans-unit id="UsingPreviewSdk">
         <source>NETSDK1057: You are using a preview version of .NET. See: https://aka.ms/dotnet-support-policy</source>
-        <target state="translated">NETSDK1057 : vous utilisez une version d'aperçu de .NET. Voir : https://aka.ms/dotnet-support-policy</target>
-        <note />
+        <target state="translated">NETSDK1057: vous utilisez une version d'aperçu de .NET. Voir : https://aka.ms/dotnet-support-policy</target>
+        <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
@@ -974,6 +1042,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1148: A referenced assembly was compiled using a newer version of Microsoft.Windows.SDK.NET.dll. Please update to a newer .NET SDK in order to reference this assembly.</source>
         <target state="translated">NETSDK1148: un assembly de référence a été compilé à l'aide d'une version plus récente de Microsoft.Windows.SDK.NET.dll. Effectuez une mise à jour vers un kit SDK .NET plus récent pour référencer cet assembly.</target>
         <note>{StrBegin="NETSDK1148: "}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadIsEol">
+        <source>NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
+        <target state="translated">NETSDK1202: La charge de travail '{0}' n’est pas prise en charge et ne recevra pas les mises à jour de sécurité. Consultez {1} pour plus d’informations sur la stratégie de support.</target>
+        <note>{StrBegin="NETSDK1202: "}</note>
       </trans-unit>
       <trans-unit id="WorkloadNotAvailable">
         <source>NETSDK1178: The project depends on the following workload packs that do not exist in any of the workloads available in this installation: {0}

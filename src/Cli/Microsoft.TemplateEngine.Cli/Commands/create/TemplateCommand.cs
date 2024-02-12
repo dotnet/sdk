@@ -1,6 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
@@ -11,11 +10,10 @@ using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
-using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class TemplateCommand : Command
+    internal class TemplateCommand : CliCommand
     {
         private static readonly TimeSpan ConstraintEvaluationTimeout = TimeSpan.FromMilliseconds(1000);
         private static readonly string[] _helpAliases = new[] { "-h", "/h", "--help", "-?", "/?" };
@@ -24,7 +22,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         private readonly BaseCommand _instantiateCommand;
         private readonly TemplateGroup _templateGroup;
         private readonly CliTemplateInfo _template;
-        private Dictionary<string, TemplateOption> _templateSpecificOptions = new Dictionary<string, TemplateOption>();
+        private Dictionary<string, TemplateOption> _templateSpecificOptions = new();
 
         /// <summary>
         /// Create command for instantiation of specific template.
@@ -48,14 +46,14 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             _template = template;
             foreach (var item in templateGroup.ShortNames.Skip(1))
             {
-                AddAlias(item);
+                Aliases.Add(item);
             }
 
-            this.AddOption(SharedOptions.OutputOption);
-            this.AddOption(SharedOptions.NameOption);
-            this.AddOption(SharedOptions.DryRunOption);
-            this.AddOption(SharedOptions.ForceOption);
-            this.AddOption(SharedOptions.NoUpdateCheckOption);
+            Options.Add(SharedOptions.OutputOption);
+            Options.Add(SharedOptions.NameOption);
+            Options.Add(SharedOptions.DryRunOption);
+            Options.Add(SharedOptions.ForceOption);
+            Options.Add(SharedOptions.NoUpdateCheckOption);
 
             string? templateLanguage = template.GetLanguage();
             string? defaultLanguage = environmentSettings.GetDefaultLanguage();
@@ -68,18 +66,18 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 if (!string.IsNullOrWhiteSpace(defaultLanguage)
                      && buildDefaultLanguageValidation)
                 {
-                    LanguageOption.SetDefaultValue(defaultLanguage);
-                    LanguageOption.AddValidator(optionResult =>
+                    LanguageOption.DefaultValueFactory = (_) => defaultLanguage;
+                    LanguageOption.Validators.Add(optionResult =>
                     {
                         var value = optionResult.GetValueOrDefault<string>();
                         if (value != template.GetLanguage())
                         {
-                            optionResult.ErrorMessage = "Languages don't match";
+                            optionResult.AddError("Languages don't match");
                         }
                     }
                     );
                 }
-                this.AddOption(LanguageOption);
+                Options.Add(LanguageOption);
             }
 
             string? templateType = template.GetTemplateType();
@@ -89,7 +87,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 TypeOption = SharedOptionsFactory.CreateTypeOption();
                 TypeOption.Description = SymbolStrings.TemplateCommand_Option_Type;
                 TypeOption.FromAmongCaseInsensitive(new[] { templateType });
-                this.AddOption(TypeOption);
+                Options.Add(TypeOption);
             }
 
             if (template.BaselineInfo.Any(b => !string.IsNullOrWhiteSpace(b.Key)))
@@ -97,18 +95,18 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 BaselineOption = SharedOptionsFactory.CreateBaselineOption();
                 BaselineOption.Description = SymbolStrings.TemplateCommand_Option_Baseline;
                 BaselineOption.FromAmongCaseInsensitive(template.BaselineInfo.Select(b => b.Key).Where(b => !string.IsNullOrWhiteSpace(b)).ToArray());
-                this.AddOption(BaselineOption);
+                Options.Add(BaselineOption);
             }
 
             if (HasRunScriptPostActionDefined(template))
             {
-                AllowScriptsOption = new Option<AllowRunScripts>("--allow-scripts")
+                AllowScriptsOption = new CliOption<AllowRunScripts>("--allow-scripts")
                 {
                     Description = SymbolStrings.TemplateCommand_Option_AllowScripts,
-                    Arity = new ArgumentArity(1, 1)
+                    Arity = new ArgumentArity(1, 1),
+                    DefaultValueFactory = (_) => AllowRunScripts.Prompt
                 };
-                AllowScriptsOption.SetDefaultValue(AllowRunScripts.Prompt);
-                this.AddOption(AllowScriptsOption);
+                Options.Add(AllowScriptsOption);
             }
 
             AddTemplateOptionsToCommand(template);
@@ -116,13 +114,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal static IReadOnlyList<string> KnownHelpAliases => _helpAliases;
 
-        internal Option<AllowRunScripts>? AllowScriptsOption { get; }
+        internal CliOption<AllowRunScripts>? AllowScriptsOption { get; }
 
-        internal Option<string>? LanguageOption { get; }
+        internal CliOption<string>? LanguageOption { get; }
 
-        internal Option<string>? TypeOption { get; }
+        internal CliOption<string>? TypeOption { get; }
 
-        internal Option<string>? BaselineOption { get; }
+        internal CliOption<string>? BaselineOption { get; }
 
         internal IReadOnlyDictionary<string, TemplateOption> TemplateOptions => _templateSpecificOptions;
 
@@ -147,12 +145,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal async Task<NewCommandStatus> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
         {
-            TemplateCommandArgs args = new TemplateCommandArgs(this, _instantiateCommand, parseResult);
-            TemplateInvoker invoker = new TemplateInvoker(_environmentSettings, () => Console.ReadLine() ?? string.Empty);
-            TemplatePackageCoordinator packageCoordinator = new TemplatePackageCoordinator(_environmentSettings, _templatePackageManager);
-            TemplateConstraintManager constraintManager = new TemplateConstraintManager(_environmentSettings);
+            TemplateCommandArgs args = new(this, _instantiateCommand, parseResult);
+            TemplateInvoker invoker = new(_environmentSettings, () => Console.ReadLine() ?? string.Empty);
+            TemplatePackageCoordinator packageCoordinator = new(_environmentSettings, _templatePackageManager);
+            TemplateConstraintManager constraintManager = new(_environmentSettings);
+            TemplatePackageDisplay templatePackageDisplay = new(Reporter.Output, Reporter.Error);
 
-            CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+            CancellationTokenSource cancellationTokenSource = new();
             cancellationTokenSource.CancelAfter(ConstraintEvaluationTimeout);
 
             Task<IReadOnlyList<TemplateConstraintResult>> constraintsEvaluation = ValidateConstraintsAsync(constraintManager, args.Template, args.IsForceFlagSpecified ? cancellationTokenSource.Token : cancellationToken);
@@ -183,13 +182,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             if (checkForUpdateTask.Result != null)
             {
                 // print if there is update for the template package containing the template
-                packageCoordinator.DisplayUpdateCheckResult(checkForUpdateTask.Result, args);
+                templatePackageDisplay.DisplayUpdateCheckResult(checkForUpdateTask.Result, args);
             }
 
             if (builtInPackageCheck.Result != default)
             {
                 // print if there is same or newer built-in package
-                packageCoordinator.DisplayBuiltInPackagesCheckResult(
+                templatePackageDisplay.DisplayBuiltInPackagesCheckResult(
                     builtInPackageCheck.Result.Id,
                     builtInPackageCheck.Result.Version,
                     builtInPackageCheck.Result.Provider,
@@ -237,7 +236,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             if (!templateArgs.IsForceFlagSpecified)
             {
-                reporter.WriteLine(LocalizableStrings.TemplateCommand_DisplayConstraintResults_Hint, SharedOptions.ForceOption.Aliases.First());
+                reporter.WriteLine(LocalizableStrings.TemplateCommand_DisplayConstraintResults_Hint, SharedOptions.ForceOption.Name);
                 reporter.WriteCommand(Example.FromExistingTokens(templateArgs.ParseResult).WithOption(SharedOptions.ForceOption));
             }
             else
@@ -253,29 +252,20 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         private HashSet<string> GetReservedAliases()
         {
-            HashSet<string> reservedAliases = new HashSet<string>();
-            foreach (string alias in this.Children.OfType<Option>().SelectMany(o => o.Aliases))
-            {
-                reservedAliases.Add(alias);
-            }
-            foreach (string alias in this.Children.OfType<Command>().SelectMany(o => o.Aliases))
-            {
-                reservedAliases.Add(alias);
-            }
+            HashSet<string> reservedAliases = new();
+            AddReservedNamesAndAliases(reservedAliases, this);
             //add options of parent? - this covers debug: options
-            foreach (string alias in _instantiateCommand.Children.OfType<Option>().SelectMany(o => o.Aliases))
-            {
-                reservedAliases.Add(alias);
-            }
-            foreach (string alias in _instantiateCommand.Children.OfType<Command>().SelectMany(o => o.Aliases))
-            {
-                reservedAliases.Add(alias);
-            }
+            AddReservedNamesAndAliases(reservedAliases, _instantiateCommand);
 
             //add restricted aliases: language, type, baseline (they may be optional)
-            foreach (string alias in new[] { SharedOptionsFactory.CreateLanguageOption(), SharedOptionsFactory.CreateTypeOption(), SharedOptionsFactory.CreateBaselineOption() }.SelectMany(o => o.Aliases))
+            foreach (var option in new[] { SharedOptionsFactory.CreateLanguageOption(), SharedOptionsFactory.CreateTypeOption(), SharedOptionsFactory.CreateBaselineOption() })
             {
-                reservedAliases.Add(alias);
+                reservedAliases.Add(option.Name);
+
+                foreach (string alias in option.Aliases)
+                {
+                    reservedAliases.Add(alias);
+                }
             }
 
             foreach (string helpAlias in KnownHelpAliases)
@@ -283,6 +273,26 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 reservedAliases.Add(helpAlias);
             }
             return reservedAliases;
+
+            static void AddReservedNamesAndAliases(HashSet<string> reservedAliases, CliCommand command)
+            {
+                foreach (CliOption option in command.Options)
+                {
+                    reservedAliases.Add(option.Name);
+                    foreach (string alias in option.Aliases)
+                    {
+                        reservedAliases.Add(alias);
+                    }
+                }
+                foreach (CliCommand subCommand in command.Subcommands)
+                {
+                    reservedAliases.Add(subCommand.Name);
+                    foreach (string alias in subCommand.Aliases)
+                    {
+                        reservedAliases.Add(alias);
+                    }
+                }
+            }
         }
 
         private void AddTemplateOptionsToCommand(CliTemplateInfo templateInfo)
@@ -300,8 +310,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             foreach ((CliTemplateParameter parameter, IReadOnlySet<string> aliases, IReadOnlyList<string> _) in parametersWithAliasAssignments)
             {
-                TemplateOption option = new TemplateOption(parameter, aliases);
-                this.AddOption(option.Option);
+                TemplateOption option = new(parameter, aliases);
+                Options.Add(option.Option);
                 _templateSpecificOptions[parameter.Name] = option;
             }
         }

@@ -1,7 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System.Collections.Generic;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
 {
@@ -12,8 +10,8 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
     internal class FixedSizeQueue<T>
     {
         private readonly int _maxSize;
-        private readonly Queue<T> _queue = new Queue<T>();
-        private readonly object _queueLockObj = new object();
+        private readonly Queue<T> _queue = new();
+        private readonly object _queueLockObj = new();
 
         internal FixedSizeQueue(int maxSize)
         {

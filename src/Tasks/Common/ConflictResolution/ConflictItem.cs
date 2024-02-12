@@ -1,14 +1,7 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-//Microsoft.NET.Build.Extensions.Tasks (net7.0) has nullables disabled
-#pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
-#pragma warning restore IDE0240 // Remove redundant nullable directive
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using System;
-using System.IO;
 
 #if EXTENSIONS
 using ConflictVersion = System.Version;
@@ -71,7 +64,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 {
                     _assemblyVersion = null;
 
-                    var assemblyVersionString = OriginalItem?.GetMetadata(nameof(AssemblyVersion)) ?? String.Empty;
+                    var assemblyVersionString = OriginalItem?.GetMetadata(nameof(AssemblyVersion)) ?? string.Empty;
 
                     if (assemblyVersionString.Length != 0)
                     {
@@ -118,7 +111,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 if (_fileName == null)
                 {
-                    _fileName = OriginalItem == null ? String.Empty : Path.GetFileName(OriginalItem.ItemSpec);
+                    _fileName = OriginalItem == null ? string.Empty : Path.GetFileName(OriginalItem.ItemSpec);
                 }
                 return _fileName;
             }
@@ -135,7 +128,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 {
                     _fileVersion = null;
 
-                    var fileVersionString = OriginalItem?.GetMetadata(nameof(FileVersion)) ?? String.Empty;
+                    var fileVersionString = OriginalItem?.GetMetadata(nameof(FileVersion)) ?? string.Empty;
 
                     if (fileVersionString.Length != 0)
                     {
@@ -192,7 +185,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 {
                     _packageVersion = null;
 
-                    var packageVersionString = OriginalItem?.GetMetadata(nameof(MetadataNames.NuGetPackageVersion)) ?? String.Empty;
+                    var packageVersionString = OriginalItem?.GetMetadata(nameof(MetadataNames.NuGetPackageVersion)) ?? string.Empty;
 
                     if (packageVersionString.Length != 0)
                     {
@@ -214,14 +207,14 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             {
                 if (_sourcePath == null)
                 {
-                    _sourcePath = ItemUtilities.GetSourcePath(OriginalItem) ?? String.Empty;
+                    _sourcePath = ItemUtilities.GetSourcePath(OriginalItem) ?? string.Empty;
                 }
 
                 return _sourcePath.Length == 0 ? null : _sourcePath;
             }
             private set { _sourcePath = value; }
         }
-        
+
         private string _displayName;
         public string DisplayName
         {

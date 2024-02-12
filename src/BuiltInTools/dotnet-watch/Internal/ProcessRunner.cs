@@ -1,14 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
 
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Tools.Internal;
 using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
@@ -71,8 +65,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 stopwatch.Start();
                 process.Start();
 
-                var args = processSpec.EscapedArguments ?? string.Join(" ", processSpec.Arguments);
-                _reporter.Verbose($"Started '{processSpec.Executable}' '{args}' with process id {process.Id}", emoji: "🚀");
+                _reporter.Verbose($"Started '{processSpec.Executable}' with arguments '{processSpec.GetArgumentsDisplay()}': process id {process.Id}", emoji: "🚀");
 
                 if (readOutput)
                 {
@@ -112,7 +105,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 process.StartInfo.Arguments = processSpec.EscapedArguments;
             }
-            else
+            else if (processSpec.Arguments is not null)
             {
                 for (var i = 0; i < processSpec.Arguments.Count; i++)
                 {
@@ -171,7 +164,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         {
             private readonly IReporter _reporter;
             private readonly Process _process;
-            private readonly TaskCompletionSource _tcs = new TaskCompletionSource();
+            private readonly TaskCompletionSource _tcs = new();
             private volatile bool _disposed;
 
             public ProcessState(Process process, IReporter reporter)
@@ -188,7 +181,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                         // events.
                         //
                         // See the remarks here: https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.process.waitforexit#System_Diagnostics_Process_WaitForExit_System_Int32_
-                        if (!_process.WaitForExit(Int32.MaxValue))
+                        if (!_process.WaitForExit(int.MaxValue))
                         {
                             throw new TimeoutException();
                         }

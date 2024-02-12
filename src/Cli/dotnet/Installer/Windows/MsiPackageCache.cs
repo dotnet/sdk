@@ -1,20 +1,11 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipes;
-using System.Linq;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Security;
-using System.Security.AccessControl;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Principal;
-using Microsoft.DotNet.Cli.Utils;
+#if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Installer.Windows.Security;
-using Microsoft.Win32.Msi;
+#endif
+using Microsoft.DotNet.Workloads.Workload;
 using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Installer.Windows
@@ -26,68 +17,14 @@ namespace Microsoft.DotNet.Installer.Windows
     internal class MsiPackageCache : InstallerBase
     {
         /// <summary>
-        /// Default inheritance to apply to directory ACLs.
+        /// Determines whether revocation checks can go online.
         /// </summary>
-        private static readonly InheritanceFlags s_DefaultInheritance = InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit;
-
-        /// <summary>
-        /// SID that matches built-in administrators.
-        /// </summary>
-        private static readonly SecurityIdentifier s_AdministratorsSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
-
-        /// <summary>
-        /// SID that matches everyone.
-        /// </summary>
-        private static readonly SecurityIdentifier s_EveryoneSid = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
-
-        /// <summary>
-        /// Local SYSTEM SID.
-        /// </summary>
-        private static readonly SecurityIdentifier s_LocalSystemSid = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null);
-
-        /// <summary>
-        /// SID matching built-in user accounts.
-        /// </summary>
-        private static readonly SecurityIdentifier s_UsersSid = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
-
-        /// <summary>
-        /// ACL rule associated with the Administrators SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_AdministratorRule = new FileSystemAccessRule(s_AdministratorsSid, FileSystemRights.FullControl,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
-        /// ACL rule associated with the Everyone SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_EveryoneRule = new FileSystemAccessRule(s_EveryoneSid, FileSystemRights.ReadAndExecute,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
-        /// ACL rule associated with the Local SYSTEM SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_LocalSystemRule = new FileSystemAccessRule(s_LocalSystemSid, FileSystemRights.FullControl,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
-        /// ACL rule associated with the built-in users SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_UsersRule = new FileSystemAccessRule(s_UsersSid, FileSystemRights.ReadAndExecute,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
+        private bool _allowOnlineRevocationChecks;
 
         /// <summary>
         /// The root directory of the package cache where MSI workload packs are stored.
         /// </summary>
         public readonly string PackageCacheRoot;
-
-        /// <summary>
-        /// SDDL string for files inside the package cache. The owner is set to built-in administrators (O:BA), the group is domain users (G:DU).
-        /// DACL is auto-inherit with the following ACE definitions: Full control for NT AUTHORITY\SYSTEM (A;ID;FA;;;SY),
-        /// full control for BUILTIN\Administators (A;ID;FA;;;BA), read and execute for BUILTIN\Users (A;ID;0x1200a9;;;BU) and
-        /// and Everyone (A;ID;0x1200a9;;;WD).
-        /// </summary>
-        /// <remarks>See <see href="https://learn.microsoft.com/en-us/windows/win32/secauthz/security-descriptor-definition-language">SDDL</see>
-        /// documentation for details.</remarks>
-        private const string FileSecurityDescriptor = "O:BAG:DUD:AI(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;0x1200a9;;;BU)(A;ID;0x1200a9;;;WD)";
 
         public MsiPackageCache(InstallElevationContextBase elevationContext, ISetupLogger logger,
             bool verifySignatures, string packageCacheRoot = null) : base(elevationContext, logger, verifySignatures)
@@ -95,35 +32,7 @@ namespace Microsoft.DotNet.Installer.Windows
             PackageCacheRoot = string.IsNullOrWhiteSpace(packageCacheRoot)
                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "dotnet", "workloads")
                 : packageCacheRoot;
-        }
-
-        /// <summary>
-        /// Creates the root package cache directory if it does not exist and configures the directory's ACLs. ACLs are still configured
-        /// if the directory exists.
-        /// </summary>
-        private void CreateRootDirectory()
-        {
-            CreateSecureDirectory(PackageCacheRoot);
-        }
-
-        /// <summary>
-        /// Creates the specified directory and secures it by configuring access rules (ACLs). If the parent
-        /// of the directory does not exist, it recursively walks the path back to ensure each parent directory
-        /// is created with the proper ACLs and inheritance settings.
-        /// </summary>
-        /// <param name="path">The path of the directory to create.</param>
-        private void CreateSecureDirectory(string path)
-        {
-            if (!Directory.Exists(path))
-            {
-                CreateSecureDirectory(Directory.GetParent(path).FullName);
-
-                DirectorySecurity directorySecurity = new();
-                directorySecurity.SetAccessRule(s_AdministratorRule);
-                directorySecurity.SetGroup(s_LocalSystemSid);
-                directorySecurity.CreateDirectory(path);
-                SecureDirectory(path);
-            }
+            _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
         }
 
         /// <summary>
@@ -143,18 +52,16 @@ namespace Microsoft.DotNet.Installer.Windows
 
             if (IsElevated)
             {
-                CreateRootDirectory();
-
                 string packageDirectory = GetPackageDirectory(packageId, packageVersion);
 
-                // Delete the directory and create a new one that's secure. If the files were properly
-                // cached, the client won't request this action.
+                // Delete the package directory and create a new one that's secure. If all the files were properly
+                // cached, the client would not request this action.
                 if (Directory.Exists(packageDirectory))
                 {
                     Directory.Delete(packageDirectory, recursive: true);
                 }
 
-                CreateSecureDirectory(packageDirectory);
+                SecurityUtils.CreateSecureDirectory(packageDirectory);
 
                 // We cannot assume that the MSI adjacent to the manifest is the one to cache. We'll trust
                 // the manifest to provide the MSI filename.
@@ -165,8 +72,8 @@ namespace Microsoft.DotNet.Installer.Windows
                 string cachedMsiPath = Path.Combine(packageDirectory, Path.GetFileName(msiPath));
                 string cachedManifestPath = Path.Combine(packageDirectory, Path.GetFileName(manifestPath));
 
-                MoveAndSecureFile(manifestPath, cachedManifestPath);
-                MoveAndSecureFile(msiPath, cachedMsiPath);
+                SecurityUtils.MoveAndSecureFile(manifestPath, cachedManifestPath, Log);
+                SecurityUtils.MoveAndSecureFile(msiPath, cachedMsiPath, Log);
             }
             else if (IsClient)
             {
@@ -186,27 +93,6 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// Moves a file from one location to another if the destination file does not already exist and
-        /// configure its permissions.
-        /// </summary>
-        /// <param name="sourceFile">The source file to move.</param>
-        /// <param name="destinationFile">The destination where the source file will be moved.</param>
-        private void MoveAndSecureFile(string sourceFile, string destinationFile)
-        {
-            if (!File.Exists(destinationFile))
-            {
-                // See https://github.com/dotnet/sdk/issues/28450
-                FileAccessRetrier.RetryOnMoveAccessFailure(() => File.Move(sourceFile, destinationFile));
-                Log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
-
-                FileInfo fi = new(destinationFile);
-                FileSecurity fs = new();
-                fs.SetSecurityDescriptorSddlForm(FileSecurityDescriptor);
-                fi.SetAccessControl(fs);
-            }
-        }
-
-        /// <summary>
         /// Determines if the workload pack MSI is cached and tries to retrieve its payload from the cache.
         /// </summary>
         /// <param name="packageId">The package ID of NuGet package carrying the MSI payload.</param>
@@ -218,8 +104,7 @@ namespace Microsoft.DotNet.Installer.Windows
             string packageCacheDirectory = GetPackageDirectory(packageId, packageVersion);
             payload = default;
 
-            string msiPath;
-            if (!TryGetMsiPathFromPackageData(packageCacheDirectory, out msiPath, out string manifestPath))
+            if (!TryGetMsiPathFromPackageData(packageCacheDirectory, out string msiPath, out string manifestPath))
             {
                 return false;
             }
@@ -260,79 +145,41 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// Verifies the AuthentiCode signature of an MSI package if the executing command itself is running
-        /// from a signed module.
+        /// Verifies that an MSI package contains an Authenticode signature that terminates in a trusted Microsoft root certificate.
         /// </summary>
         /// <param name="msiPath">The path of the MSI to verify.</param>
         private void VerifyPackageSignature(string msiPath)
         {
             if (VerifySignatures)
             {
-                bool isAuthentiCodeSigned = AuthentiCode.IsSigned(msiPath);
-
-                // Need to capture the error now as other OS calls might change the last error.
-                uint lastError = !isAuthentiCodeSigned ? unchecked((uint)Marshal.GetLastWin32Error()) : Error.SUCCESS;
-
-                bool isTrustedOrganization = AuthentiCode.IsSignedByTrustedOrganization(msiPath, AuthentiCode.TrustedOrganizations);
-
-                if (isAuthentiCodeSigned && isTrustedOrganization)
+                // MSI and authenticode verification only applies to Windows. NET only supports Win7 and later.
+#if !DOT_NET_BUILD_FROM_SOURCE
+#pragma warning disable CA1416
+                unsafe
                 {
-                    Log?.LogMessage($"Successfully verified AuthentiCode signature for {msiPath}.");
+                    int result = Signature.IsAuthenticodeSigned(msiPath, _allowOnlineRevocationChecks);
+
+                    if (result != 0)
+                    {
+                        ExitOnError((uint)result, $"Failed to verify Authenticode signature, package: {msiPath}, allow online revocation checks: {_allowOnlineRevocationChecks}");
+                    }
+
+                    result = Signature.HasMicrosoftTrustedRoot(msiPath);
+
+                    if (result != 0)
+                    {
+                        ExitOnError((uint)result, $"Failed to verify the Authenticode signature terminates in a trusted Microsoft root certificate. Package: {msiPath}");
+                    }
+
                 }
-                else
-                {
-                    // Summarize the failure and then report additional details.
-                    Log?.LogMessage($"Failed to verify signature for {msiPath}. AuthentiCode signed: {isAuthentiCodeSigned}, Trusted organization: {isTrustedOrganization}.");
-                    IEnumerable<X509Certificate2> certificates = AuthentiCode.GetCertificates(msiPath);
-
-                    // Dump all the certificates if there are any.
-                    if (certificates.Any())
-                    {
-                        Log?.LogMessage($"Certificate(s):");
-
-                        foreach (X509Certificate2 certificate in certificates)
-                        {
-                            Log?.LogMessage($"       Subject={certificate.Subject}");
-                            Log?.LogMessage($"        Issuer={certificate.Issuer}");
-                            Log?.LogMessage($"    Not before={certificate.NotBefore}");
-                            Log?.LogMessage($"     Not after={certificate.NotAfter}");
-                            Log?.LogMessage($"    Thumbprint={certificate.Thumbprint}");
-                            Log?.LogMessage($"     Algorithm={certificate.SignatureAlgorithm.FriendlyName}");
-                        }
-                    }
-
-                    if (!isAuthentiCodeSigned)
-                    {
-                        // If it was a WinTrust failure, we can exit using that error code and include a proper message from the OS.
-                        ExitOnError(lastError, $"Failed to verify authenticode signature for {msiPath}.");
-                    }
-
-                    if (!isTrustedOrganization)
-                    {
-                        throw new SecurityException(string.Format(LocalizableStrings.AuthentiCodeNoTrustedOrg, msiPath));
-                    }
-                }
+                Log?.LogMessage($"Successfully verified Authenticode signature for {msiPath}");
+#pragma warning restore CA1416
+#endif
             }
             else
             {
                 Log?.LogMessage($"Skipping signature verification for {msiPath}.");
             }
-        }
-
-        /// <summary>
-        /// Secures the target directory by applying multiple ACLs. Administrators and local SYSTEM
-        /// receive full control. Users and Everyone receive read and execute permissions.
-        /// </summary>
-        /// <param name="path">The directory to secure.</param>
-        private void SecureDirectory(string path)
-        {
-            DirectoryInfo directoryInfo = new DirectoryInfo(path);
-            DirectorySecurity directorySecurity = directoryInfo.GetAccessControl();
-            directorySecurity.SetAccessRule(s_AdministratorRule);
-            directorySecurity.SetAccessRule(s_EveryoneRule);
-            directorySecurity.SetAccessRule(s_LocalSystemRule);
-            directorySecurity.SetAccessRule(s_UsersRule);
-            directoryInfo.SetAccessControl(directorySecurity);
         }
     }
 }

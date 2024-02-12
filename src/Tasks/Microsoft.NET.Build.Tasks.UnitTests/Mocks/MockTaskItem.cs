@@ -1,16 +1,14 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     public class MockTaskItem : ITaskItem
     {
-        private Dictionary<string, string> _metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, string> _metadata = new(StringComparer.OrdinalIgnoreCase);
 
         public MockTaskItem()
         {
@@ -19,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public MockTaskItem(string itemSpec, Dictionary<string, string> metadata)
         {
             ItemSpec = itemSpec;
-            foreach(var m in metadata)
+            foreach (var m in metadata)
             {
                 _metadata.Add(m.Key, m.Value);
             }

@@ -7,6 +7,11 @@
         <target state="translated">Pobieranie {0} w wersji {1} nie powiodło się.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">Mapowanie źródła pakietu jest włączone, ale nie znaleziono źródła w ramach określonego identyfikatora pakietu: {0}. Aby uzyskać więcej informacji, zapoznaj się z dokumentacją mapowania źródła pakietu w witrynie https://aka.ms/nuget-package-source-mapping.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
         <source>Failed to load NuGet source {0}</source>
         <target state="translated">Nie można załadować źródła pakietu NuGet {0}</target>
@@ -15,6 +20,11 @@
       <trans-unit id="FailedToLoadNuGetSourceSourceIsNotValid">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
         <target state="translated">Nie można załadować źródła pakietu NuGet {0}: źródło jest nieprawidłowe. Zostanie ono pominięte podczas dalszego przetwarzania.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">Mapowanie źródła pakietu jest włączone, ale nie zamapowano źródła w ramach określonego identyfikatora pakietu: {0}. Aby uzyskać więcej informacji, zapoznaj się z dokumentacją mapowania źródła pakietu w witrynie https://aka.ms/nuget-package-source-mapping.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">
@@ -30,6 +40,31 @@
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">Pomijanie weryfikacji podpisu pakietu NuGet.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionDefault">
+        <source>A version of {0} of package {1}</source>
+        <target state="translated">Wersja {0} pakietu {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForExactVersionMatch">
+        <source>Version {0} of package {1}</source>
+        <target state="translated">Wersja {0} pakietu {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerAndUpperBounds">
+        <source>A version between {0} and {1} of package {2}</source>
+        <target state="translated">Wersja między {0} i {1} pakietu {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerBound">
+        <source>A version higher than {0} of package {1}</source>
+        <target state="translated">Wersja nowsza niż {0} pakietu {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithUpperBound">
+        <source>A version less than {0} of package {1}</source>
+        <target state="translated">Wersja mniejsza niż {0} pakietu {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">

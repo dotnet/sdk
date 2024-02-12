@@ -1,8 +1,7 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Linq;
-using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -13,8 +12,8 @@ namespace Microsoft.DotNet.Cli
             result.HandleDebugSwitch();
 
             var tokens = result.Tokens.Skip(1).Select(t => t.Value).ToArray();
-            var reparsed = Microsoft.DotNet.Cli.Parser.Instance.Parse(tokens);
-            Console.WriteLine(reparsed.Diagram());
+            var reparsed = Parser.Instance.Parse(tokens);
+            Console.WriteLine(reparsed.ToString());
 
 
             if (reparsed.UnmatchedTokens.Any())

@@ -1,8 +1,6 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Installer.Windows
@@ -26,6 +24,16 @@ namespace Microsoft.DotNet.Installer.Windows
         /// The path of the msi.json manifest.
         /// </summary>
         public string ManifestPath
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// The contents of the install state file. Each element corresponds to a single line of
+        /// the JSON file to be written.
+        /// </summary>
+        public Dictionary<string, string> InstallStateManifestVersions
         {
             get;
             set;
@@ -110,6 +118,14 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// The new mode to use: workloadset or loosemanifests
+        /// </summary>
+        public bool UseWorkloadSets
+        {
+            get; set;
         }
 
         /// <summary>

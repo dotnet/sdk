@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 //  Use MetadataReader version of GetAssemblyVersion for:
 //  - netcoreapp version of Microsoft.NET.Build.Extensions.Tasks
@@ -11,8 +11,6 @@
 //  We do use the MetadataReader version for the SDK tasks in order to correctly read the assembly
 //  versions of cross-gened assemblies.  See https://github.com/dotnet/sdk/issues/1502
 #if NETCOREAPP || !EXTENSIONS
-
-#nullable disable
 
 using System;
 using System.Collections.Generic;
@@ -30,7 +28,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourcePath);
 
-            if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry) 
+            if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry)
                 && lastWriteTimeUtc == cacheEntry.LastKnownWriteTimeUtc)
             {
                 return cacheEntry.Version;
@@ -56,7 +54,7 @@ namespace Microsoft.NET.Build.Tasks
                     Version result = null;
                     try
                     {
-                        using (PEReader peReader = new PEReader(assemblyStream, PEStreamOptions.LeaveOpen))
+                        using (PEReader peReader = new(assemblyStream, PEStreamOptions.LeaveOpen))
                         {
                             if (peReader.HasMetadata)
                             {

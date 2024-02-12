@@ -1,10 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
 {
@@ -21,7 +16,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
         /// <summary>
         ///     A list of senders that sends transmissions.
         /// </summary>
-        private readonly List<Sender> _senders = new List<Sender>();
+        private readonly List<Sender> _senders = new();
 
         /// <summary>
         ///     The storage that is used to persist all the transmissions.
@@ -76,7 +71,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.PersistenceChannel
                 return;
             }
 
-            List<Task> stoppedTasks = new List<Task>();
+            List<Task> stoppedTasks = new();
             foreach (Sender sender in _senders)
             {
                 stoppedTasks.Add(sender.StopAsync());

@@ -1,8 +1,7 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.IO;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -72,6 +71,8 @@ namespace Microsoft.DotNet.Workloads.Workload
             get;
         }
 
+        protected bool IsPackageDownloaderProvided { get; }
+
         /// <summary>
         /// Initializes a new <see cref="WorkloadCommandBase"/> instance.
         /// </summary>
@@ -81,8 +82,9 @@ namespace Microsoft.DotNet.Workloads.Workload
         /// <param name="tempDirPath">The directory to use for volatile output. If no value is specified, the commandline
         /// option is used if present, otherwise the default temp directory used.</param>
         /// <param name="nugetPackageDownloader">The package downloader to use for acquiring NuGet packages.</param>
-        public WorkloadCommandBase(ParseResult parseResult,
-            Option<VerbosityOptions> verbosityOptions = null,
+        public WorkloadCommandBase(
+            ParseResult parseResult,
+            CliOption<VerbosityOptions> verbosityOptions = null,
             IReporter reporter = null,
             string tempDirPath = null,
             INuGetPackageDownloader nugetPackageDownloader = null) : base(parseResult)
@@ -101,16 +103,18 @@ namespace Microsoft.DotNet.Workloads.Workload
 
             TempDirectoryPath = !string.IsNullOrWhiteSpace(tempDirPath)
                 ? tempDirPath
-                : !string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption))
-                ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)
-                : PathUtilities.CreateTempSubdirectory();
+                : (!string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption))
+                    ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)
+                    : PathUtilities.CreateTempSubdirectory());
 
             TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
-            PackageDownloader = nugetPackageDownloader ?? new NuGetPackageDownloader(TempPackagesDirectory,
+            IsPackageDownloaderProvided = nugetPackageDownloader != null;
+            PackageDownloader = IsPackageDownloaderProvided ? nugetPackageDownloader : new NuGetPackageDownloader(TempPackagesDirectory,
                 filePermissionSetter: null,
                 new FirstPartyNuGetPackageSigningVerifier(),
                 nugetLogger,
+                Reporter,
                 restoreActionConfig: RestoreActionConfiguration,
                 verifySignatures: VerifySignatures);
         }
@@ -123,7 +127,10 @@ namespace Microsoft.DotNet.Workloads.Workload
         /// <param name="parseResult">The results of parsing the command line.</param>
         /// <returns><see langword="true"/> if signatures of packages and installers should be verified.</returns>
         /// <exception cref="GracefulException" />
-        private static bool ShouldVerifySignatures(ParseResult parseResult)
+        private static bool ShouldVerifySignatures(ParseResult parseResult) =>
+            ShouldVerifySignatures(parseResult.GetValue(WorkloadInstallCommandParser.SkipSignCheckOption));
+
+        public static bool ShouldVerifySignatures(bool skipSignCheck = false)
         {
             if (!SignCheck.IsDotNetSigned())
             {
@@ -131,9 +138,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 return false;
             }
 
-            bool skipSignCheck = parseResult.GetValue(WorkloadInstallCommandParser.SkipSignCheckOption);
             bool policyEnabled = SignCheck.IsWorkloadSignVerificationPolicySet();
-
             if (skipSignCheck && policyEnabled)
             {
                 // Can't override the global policy by using the skip option.

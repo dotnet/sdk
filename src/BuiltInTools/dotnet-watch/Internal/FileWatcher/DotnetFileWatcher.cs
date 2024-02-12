@@ -1,9 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.ComponentModel;
-using System.IO;
 using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
@@ -14,9 +12,9 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private readonly Func<string, FileSystemWatcher> _watcherFactory;
 
-        private FileSystemWatcher _fileSystemWatcher;
+        private FileSystemWatcher? _fileSystemWatcher;
 
-        private readonly object _createLock = new object();
+        private readonly object _createLock = new();
 
         public DotnetFileWatcher(string watchedDirectory)
             : this(watchedDirectory, DefaultWatcherFactory)
@@ -33,9 +31,9 @@ namespace Microsoft.DotNet.Watcher.Internal
             CreateFileSystemWatcher();
         }
 
-        public event EventHandler<(string, bool)> OnFileChange;
+        public event EventHandler<(string, bool)>? OnFileChange;
 
-        public event EventHandler<Exception> OnError;
+        public event EventHandler<Exception>? OnError;
 
         public string BasePath { get; }
 
@@ -143,21 +141,24 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void DisposeInnerWatcher()
         {
-            _fileSystemWatcher.EnableRaisingEvents = false;
+            if ( _fileSystemWatcher != null )
+            {
+                _fileSystemWatcher.EnableRaisingEvents = false;
 
-            _fileSystemWatcher.Created -= WatcherAddedHandler;
-            _fileSystemWatcher.Deleted -= WatcherChangeHandler;
-            _fileSystemWatcher.Changed -= WatcherChangeHandler;
-            _fileSystemWatcher.Renamed -= WatcherRenameHandler;
-            _fileSystemWatcher.Error -= WatcherErrorHandler;
+                _fileSystemWatcher.Created -= WatcherAddedHandler;
+                _fileSystemWatcher.Deleted -= WatcherChangeHandler;
+                _fileSystemWatcher.Changed -= WatcherChangeHandler;
+                _fileSystemWatcher.Renamed -= WatcherRenameHandler;
+                _fileSystemWatcher.Error -= WatcherErrorHandler;
 
-            _fileSystemWatcher.Dispose();
+                _fileSystemWatcher.Dispose();
+            }
         }
 
         public bool EnableRaisingEvents
         {
-            get => _fileSystemWatcher.EnableRaisingEvents;
-            set => _fileSystemWatcher.EnableRaisingEvents = value;
+            get => _fileSystemWatcher!.EnableRaisingEvents;
+            set => _fileSystemWatcher!.EnableRaisingEvents = value;
         }
 
         public void Dispose()

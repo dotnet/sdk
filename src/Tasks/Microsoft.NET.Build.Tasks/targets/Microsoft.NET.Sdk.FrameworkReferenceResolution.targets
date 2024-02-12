@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <KnownFrameworkReference Remove="Microsoft.Windows.SDK.NET.Ref" />
     </ItemGroup>
-    
+
     <!-- Generate KnownFrameworkReference items for the Windows SDK pack -->
     <CreateWindowsSdkKnownFrameworkReferences
       UseWindowsSDKPreview="$(UseWindowsSDKPreview)"
@@ -42,7 +42,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       WindowsSdkSupportedTargetPlatformVersions="@(WindowsSdkSupportedTargetPlatformVersion)">
 
       <Output TaskParameter="KnownFrameworkReferences" ItemName="KnownFrameworkReference" />
-      
+
     </CreateWindowsSdkKnownFrameworkReferences>
   </Target>
 
@@ -60,7 +60,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ProcessFrameworkReferences" BeforeTargets="_CheckForInvalidConfigurationAndPlatform;CollectPackageReferences;CollectPackageDownloads"
           DependsOnTargets="AddWindowsSdkKnownFrameworkReferences"
-          Condition="'@(FrameworkReference)' != ''">
+          Condition="'@(FrameworkReference)' != '' Or '$(_RequiresILLinkPack)' == 'true'">
 
     <CheckForDuplicateFrameworkReferences
         FrameworkReferences="@(FrameworkReference)"
@@ -95,12 +95,28 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
                                 TargetPlatformVersion="$(TargetPlatformVersion)"
                                 TargetingPackRoot="$(NetCoreTargetingPackRoot)"
-                                RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                                RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
                                 SelfContained="$(SelfContained)"
                                 ReadyToRunEnabled="$(PublishReadyToRun)"
                                 ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
-                                TrimmingEnabled="$(_IsTrimmingEnabled)"
-                                AotEnabled="$(PublishAot)"
+                                PublishAot="$(PublishAot)"
+                                RequiresILLinkPack="$(_RequiresILLinkPack)"
+                                IsAotCompatible="$(IsAotCompatible)"
+                                SilenceIsAotCompatibleUnsupportedWarning="$(_SilenceIsAotCompatibleUnsupportedWarning)"
+                                MinNonEolTargetFrameworkForAot="$(_MinNonEolTargetFrameworkForAot)"
+                                EnableAotAnalyzer="$(EnableAotAnalyzer)"
+                                FirstTargetFrameworkVersionToSupportAotAnalyzer="$(_FirstTargetFrameworkVersionToSupportAotAnalyzer)"
+                                PublishTrimmed="$(PublishTrimmed)"
+                                IsTrimmable="$(IsTrimmable)"
+                                FirstTargetFrameworkVersionToSupportTrimAnalyzer="$(_FirstTargetFrameworkVersionToSupportTrimAnalyzer)"
+                                SilenceIsTrimmableUnsupportedWarning="$(_SilenceIsTrimmableUnsupportedWarning)"
+                                MinNonEolTargetFrameworkForTrimming="$(_MinNonEolTargetFrameworkForTrimming)"
+                                EnableTrimAnalyzer="$(EnableTrimAnalyzer)"
+                                EnableSingleFileAnalyzer="$(EnableSingleFileAnalyzer)"
+                                FirstTargetFrameworkVersionToSupportSingleFileAnalyzer="$(_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer)"
+                                SilenceEnableSingleFileAnalyzerUnsupportedWarning="$(_SilenceEnableSingleFileAnalyzerUnsupportedWarning)"
+                                MinNonEolTargetFrameworkForSingleFile="$(_MinNonEolTargetFrameworkForSingleFile)"
+                                AotUseKnownRuntimePackForTarget="$(PublishAotUsingRuntimePack)"
                                 RuntimeIdentifier="$(RuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"
                                 RuntimeFrameworkVersion="$(RuntimeFrameworkVersion)"
@@ -113,6 +129,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 KnownCrossgen2Packs="@(KnownCrossgen2Pack)"
                                 KnownILCompilerPacks="@(KnownILCompilerPack)"
                                 KnownILLinkPacks="@(KnownILLinkPack)"
+                                KnownWebAssemblySdkPacks="@(KnownWebAssemblySdkPack)"
+                                UsingMicrosoftNETSdkWebAssembly="$(UsingMicrosoftNETSdkWebAssembly)"
                                 NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
                                 NetCoreRoot="$(NetCoreRoot)"
                                 NETCoreSdkVersion="$(NETCoreSdkVersion)">
@@ -126,6 +144,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="TargetILCompilerPacks" ItemName="TargetILCompilerPack" />
       <Output TaskParameter="UnavailableRuntimePacks" ItemName="UnavailableRuntimePack" />
       <Output TaskParameter="ImplicitPackageReferences" ItemName="_ImplicitPackageReference" />
+      <Output TaskParameter="KnownRuntimeIdentifierPlatforms" ItemName="_KnownRuntimeIdentifierPlatformsForTargetFramework" />
 
     </ProcessFrameworkReferences>
 
@@ -146,7 +165,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                      DotNetSingleFileHostExecutableNameWithoutExtension="$(_DotNetSingleFileHostExecutableNameWithoutExtension)"
                      DotNetComHostLibraryNameWithoutExtension="$(_DotNetComHostLibraryNameWithoutExtension)"
                      DotNetIjwHostLibraryNameWithoutExtension="$(_DotNetIjwHostLibraryNameWithoutExtension)"
-                     RuntimeGraphPath="$(BundledRuntimeIdentifierGraphFile)"
+                     RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
                      KnownAppHostPacks="@(KnownAppHostPack)"
                      NuGetRestoreSupported="$(_NuGetRestoreSupported)"
                      EnableAppHostPackDownload="$(EnableAppHostPackDownload)"
@@ -418,6 +437,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <Target Name="ResolveOffByDefaultAnalyzers" AfterTargets="ResolveTargetingPackAssets"
+          Condition="'@(FrameworkReference)' != ''">
+    <ItemGroup>
+      <OffByDefaultAnalyzer Include="Microsoft.AspNetCore.Http.RequestDelegateGenerator.dll"
+                            IsEnabled="$(EnableRequestDelegateGenerator)"/>
+      <OffByDefaultAnalyzer Include="Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll"
+                            IsEnabled="$(EnableConfigurationBindingGenerator)"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Analyzer Remove="@(OffByDefaultAnalyzer)"
+                Condition="'%(OffByDefaultAnalyzer.IsEnabled)' != 'true'"
+                MatchOnMetadata="FileName" />
+    </ItemGroup>
+  </Target>
+
   <UsingTask TaskName="ResolveRuntimePackAssets" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <!--
@@ -438,12 +473,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="_FullFrameworkReferenceAssemblyPaths"/>
     </GetReferenceAssemblyPaths>
 
-
     <ItemGroup>
       <_ExistingReferenceAssembliesPackageReference Include="@(PackageReference)" Condition="'%(PackageReference.Identity)' == 'Microsoft.NETFramework.ReferenceAssemblies'"/>
 
       <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesLatestPackageVersion)" IsImplicitlyDefined="true" PrivateAssets="All"
-                        Condition="'$(_FullFrameworkReferenceAssemblyPaths)' == '' and '@(_ExistingReferenceAssembliesPackageReference)' == ''"/>
+                        Condition="('$(_FullFrameworkReferenceAssemblyPaths)' == '' or $(_FullFrameworkReferenceAssemblyPaths.Contains('microsoft.netframework.referenceassemblies'))) and '@(_ExistingReferenceAssembliesPackageReference)' == ''"/>
     </ItemGroup>
   </Target>
 

@@ -1,24 +1,26 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Utils
 {
     public class CommandUnknownException : GracefulException
     {
-        public CommandUnknownException(string commandName) : base(string.Format(
-            LocalizableStrings.NoExecutableFoundMatchingCommand,
-            commandName))
+        public string InstructionMessage { get; } = string.Empty;
+
+        public CommandUnknownException(string commandName) : base(
+            LocalizableStrings.NoExecutableFoundMatchingCommandErrorMessage)
         {
+            InstructionMessage = string.Format(
+                LocalizableStrings.NoExecutableFoundMatchingCommand,
+                commandName);
         }
 
         public CommandUnknownException(string commandName, Exception innerException) : base(
-            string.Format(
-                LocalizableStrings.NoExecutableFoundMatchingCommand,
-                commandName),
-            innerException)
+            LocalizableStrings.NoExecutableFoundMatchingCommandErrorMessage)
         {
+            InstructionMessage = string.Format(
+                LocalizableStrings.NoExecutableFoundMatchingCommand,
+                commandName);
         }
     }
 }

@@ -1,13 +1,12 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.ToolManifest;
+using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tool.Run
 {
@@ -16,15 +15,20 @@ namespace Microsoft.DotNet.Tools.Tool.Run
         private readonly string _toolCommandName;
         private readonly LocalToolsCommandResolver _localToolsCommandResolver;
         private readonly IEnumerable<string> _forwardArgument;
+        public bool _allowRollForward;
+        private readonly ToolManifestFinder _toolManifest;
 
         public ToolRunCommand(
             ParseResult result,
-            LocalToolsCommandResolver localToolsCommandResolver = null)
+            LocalToolsCommandResolver localToolsCommandResolver = null,
+            ToolManifestFinder toolManifest = null)
             : base(result)
         {
             _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
             _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
             _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
+            _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
+            _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
         }
 
         public override int Execute()
@@ -33,8 +37,9 @@ namespace Microsoft.DotNet.Tools.Tool.Run
             {
                 // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
                 CommandName = $"dotnet-{_toolCommandName}",
-                CommandArguments = _forwardArgument
-            });
+                CommandArguments = _forwardArgument,
+
+            }, _allowRollForward); ;
 
             if (commandspec == null)
             {

@@ -19,7 +19,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
   <PropertyGroup>
     <!-- We want to force this property to be true, hence not adding a condition check -->
     <SupportsDeployOnBuild>true</SupportsDeployOnBuild>
-    <_PublishTaskFramework Condition=" '$(MSBuildRuntimeType)' == 'Core'">net8.0</_PublishTaskFramework>
+    <_PublishTaskFramework Condition=" '$(MSBuildRuntimeType)' == 'Core'">net9.0</_PublishTaskFramework>
     <_PublishTaskFramework Condition=" '$(_PublishTaskFramework)' == ''">net472</_PublishTaskFramework>
     <_PublishTasksDir Condition=" '$(_PublishTasksDir)'=='' ">$(MSBuildThisFileDirectory)..\tools\$(_PublishTaskFramework)\</_PublishTasksDir>
     <_PublishTaskAssemblyFullPath Condition=" '$(_PublishTaskAssemblyFullPath)'=='' ">$(_PublishTasksDir)Microsoft.NET.Sdk.Publish.Tasks.dll</_PublishTaskAssemblyFullPath>
@@ -55,6 +55,12 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
   <Import Project="$(_PublishProfilesDir)$(PublishProfileName).pubxml" Condition="Exists('$(_PublishProfilesDir)$(PublishProfileName).pubxml') And '$(PublishProfileImported)' != 'true'" />
 
+  <!-- Mark the PublishProfile as imported if the default profile shipped with WebSDK is imported -->
+  <PropertyGroup Condition="'$(PublishProfileImported)' != 'true'">
+    <PublishProfileImported Condition="Exists('$(_PublishProfilesDir)$(PublishProfileName).pubxml')">true</PublishProfileImported>
+  </PropertyGroup>
+
+
   <!--
   ***********************************************************************************************
   Set the properties based on PublishProfile properties
@@ -87,9 +93,11 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
     <EFSQLScriptsFolderName Condition="$(EFSQLScriptsFolderName) == ''">EFSQLScripts</EFSQLScriptsFolderName>
 
-    <!-- If TrimMode has not already been set, default to partial trimming, as AspNet is not currently fully trim-compatible -->
-    <!-- We allow the full trimming default with PublishAot enabled, because the parts that are not trim-compatible are not aot-compatible either -->
-    <TrimMode Condition="'$(TrimMode)' == '' and '$(PublishTrimmed)' == 'true' and '$(PublishAot)' != 'true'">partial</TrimMode>
+    <!-- Use default TrimMode for projects targeting net8.0 and above and retain TrimMode=partial for back-compat. -->
+    <TrimMode Condition="'$(TrimMode)' == '' And
+      '$(PublishTrimmed)' == 'true' And
+      '$(TargetFrameworkIdentifier)' == '.NETCoreApp' And
+      $([MSBuild]::VersionLessThan($(_TargetFrameworkVersionWithoutV), '8.0'))">partial</TrimMode>
   </PropertyGroup>
 
   <!--
@@ -161,7 +169,6 @@ Copyright (C) Microsoft Corporation. All rights reserved.
           AfterTargets="Build"
           Condition=" '$(DeployOnBuild)' == 'true' " >
   </Target>
-
 
   <PropertyGroup>
     <CorePublishDependsOn>

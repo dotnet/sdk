@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
@@ -11,7 +10,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 {
     internal class ProcessStartPostActionProcessor : PostActionProcessorBase
     {
-        internal static readonly Guid ActionProcessorId = new Guid("3A7C4B45-1F5D-4A30-959A-51B88E82B5D2");
+        internal static readonly Guid ActionProcessorId = new("3A7C4B45-1F5D-4A30-959A-51B88E82B5D2");
 
         public override Guid Id => ActionProcessorId;
 

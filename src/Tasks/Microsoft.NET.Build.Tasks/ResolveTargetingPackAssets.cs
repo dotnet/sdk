@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Xml.Linq;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -113,12 +107,12 @@ namespace Microsoft.NET.Build.Tasks
 
         private static ResolvedAssetsCacheEntry Resolve(StronglyTypedInputs inputs, IBuildEngine4 buildEngine)
         {
-            List<TaskItem> referencesToAdd = new List<TaskItem>();
-            List<TaskItem> analyzersToAdd = new List<TaskItem>();
-            List<TaskItem> platformManifests = new List<TaskItem>();
-            List<TaskItem> packageConflictOverrides = new List<TaskItem>();
-            List<string> preferredPackages = new List<string>();
-            List<string> errors = new List<string>();
+            List<TaskItem> referencesToAdd = new();
+            List<TaskItem> analyzersToAdd = new();
+            List<TaskItem> platformManifests = new();
+            List<TaskItem> packageConflictOverrides = new();
+            List<string> preferredPackages = new();
+            List<string> errors = new();
 
             var resolvedTargetingPacks = inputs.ResolvedTargetingPacks
                 .ToDictionary(
@@ -146,7 +140,7 @@ namespace Microsoft.NET.Build.Tasks
                             {
                                 errors.Add(string.Format(Strings.UnknownFrameworkReference, frameworkReference.Name));
                             }
-                            
+
                         }
                         else
                         {
@@ -234,7 +228,7 @@ namespace Microsoft.NET.Build.Tasks
             }
 
             //  Calculate which RuntimeFramework items should actually be used based on framework references
-            HashSet<string> frameworkReferenceNames = new HashSet<string>(frameworkReferences.Select(fr => fr.Name), StringComparer.OrdinalIgnoreCase);
+            HashSet<string> frameworkReferenceNames = new(frameworkReferences.Select(fr => fr.Name), StringComparer.OrdinalIgnoreCase);
 
             //  Filter out duplicate references (which can happen when referencing two different profiles that overlap)
             List<TaskItem> deduplicatedReferences = DeduplicateItems(referencesToAdd);
@@ -258,8 +252,8 @@ namespace Microsoft.NET.Build.Tasks
         //  Get distinct items based on case-insensitive ItemSpec comparison
         private static List<TaskItem> DeduplicateItems(List<TaskItem> items)
         {
-            HashSet<string> seenItemSpecs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            List<TaskItem> deduplicatedItems = new List<TaskItem>(items.Count);
+            HashSet<string> seenItemSpecs = new(StringComparer.OrdinalIgnoreCase);
+            List<TaskItem> deduplicatedItems = new(items.Count);
             foreach (var item in items)
             {
                 if (seenItemSpecs.Add(item.ItemSpec))
@@ -272,7 +266,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private static TaskItem CreatePackageOverride(string runtimeFrameworkName, string packageOverridesPath)
         {
-            TaskItem packageOverride = new TaskItem(runtimeFrameworkName);
+            TaskItem packageOverride = new(runtimeFrameworkName);
             packageOverride.SetMetadata("OverriddenPackages", File.ReadAllText(packageOverridesPath));
             return packageOverride;
         }
@@ -324,8 +318,8 @@ namespace Microsoft.NET.Build.Tasks
             bool usePathElementsInFrameworkListAsFallBack =
                 TestFirstFileInFrameworkListUsingAssemblyNameConvention(definition.TargetingPackDllFolder, frameworkListDoc);
 
-            List<TaskItem> referenceItemsFromThisFramework = new List<TaskItem>();
-            List<TaskItem> analyzerItemsFromThisFramework = new List<TaskItem>();
+            List<TaskItem> referenceItemsFromThisFramework = new();
+            List<TaskItem> analyzerItemsFromThisFramework = new();
 
             foreach (var fileElement in frameworkListDoc.Root.Elements("File"))
             {
@@ -358,12 +352,15 @@ namespace Microsoft.NET.Build.Tasks
                 string itemType = fileElement.Attribute("Type")?.Value;
                 bool isAnalyzer = itemType?.Equals("Analyzer", StringComparison.OrdinalIgnoreCase) ?? false;
 
+                string assemblyName = fileElement.Attribute("AssemblyName").Value;
+
                 string dllPath = usePathElementsInFrameworkListAsFallBack || isAnalyzer ?
                     Path.Combine(definition.TargetingPackRoot, fileElement.Attribute("Path").Value) :
-                    GetDllPathViaAssemblyName(definition.TargetingPackDllFolder, fileElement);
+                    GetDllPathViaAssemblyName(definition.TargetingPackDllFolder, assemblyName);
 
                 var item = CreateItem(dllPath, definition.FrameworkReferenceName, definition.NuGetPackageId, definition.NuGetPackageVersion);
 
+                item.SetMetadata("AssemblyName", assemblyName);
                 item.SetMetadata("AssemblyVersion", fileElement.Attribute("AssemblyVersion").Value);
                 item.SetMetadata("FileVersion", fileElement.Attribute("FileVersion").Value);
                 item.SetMetadata("PublicKeyToken", fileElement.Attribute("PublicKeyToken").Value);
@@ -433,6 +430,11 @@ namespace Microsoft.NET.Build.Tasks
         private static string GetDllPathViaAssemblyName(string targetingPackDllFolder, XElement fileElement)
         {
             string assemblyName = fileElement.Attribute("AssemblyName").Value;
+            return GetDllPathViaAssemblyName(targetingPackDllFolder, assemblyName);
+        }
+
+        private static string GetDllPathViaAssemblyName(string targetingPackDllFolder, string assemblyName)
+        {
             var dllPath = Path.Combine(targetingPackDllFolder, assemblyName + ".dll");
             return dllPath;
         }
@@ -464,13 +466,13 @@ namespace Microsoft.NET.Build.Tasks
         internal class StronglyTypedInputs
         {
             public FrameworkReference[] FrameworkReferences { get; private set; }
-            public TargetingPack[] ResolvedTargetingPacks {get; private set;}
-            public RuntimeFramework[] RuntimeFrameworks {get; private set;}
-            public bool GenerateErrorForMissingTargetingPacks {get; private set;}
-            public bool NuGetRestoreSupported {get; private set;}
+            public TargetingPack[] ResolvedTargetingPacks { get; private set; }
+            public RuntimeFramework[] RuntimeFrameworks { get; private set; }
+            public bool GenerateErrorForMissingTargetingPacks { get; private set; }
+            public bool NuGetRestoreSupported { get; private set; }
             public bool DisableTransitiveFrameworkReferences { get; private set; }
-            public string NetCoreTargetingPackRoot {get; private set;}
-            public string ProjectLanguage {get; private set;}
+            public string NetCoreTargetingPackRoot { get; private set; }
+            public string ProjectLanguage { get; private set; }
 
             public StronglyTypedInputs(
                 ITaskItem[] frameworkReferences,

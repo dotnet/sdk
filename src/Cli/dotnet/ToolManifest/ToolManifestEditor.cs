@@ -1,21 +1,12 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using Microsoft.CodeAnalysis;
+using System.Buffers;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using System.Text.Json.Serialization;
-using NuGet.Frameworks;
 using NuGet.Versioning;
-using System.Text.Json;
-using System.Text;
-using System.Buffers;
 
 namespace Microsoft.DotNet.ToolManifest
 {
@@ -30,6 +21,7 @@ namespace Microsoft.DotNet.ToolManifest
         private const string JsonPropertyIsRoot = "isRoot";
         private const string JsonPropertyCommands = "commands";
         private const string JsonPropertyTools = "tools";
+        private const string JsonPropertyRollForward = "rollForward";
 
         public ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileDetector dangerousFileDetector = null)
         {
@@ -41,7 +33,8 @@ namespace Microsoft.DotNet.ToolManifest
             FilePath manifest,
             PackageId packageId,
             NuGetVersion nuGetVersion,
-            ToolCommandName[] toolCommandNames)
+            ToolCommandName[] toolCommandNames,
+            bool rollForward = false)
         {
             SerializableLocalToolsManifest deserializedManifest =
                 DeserializeLocalToolsManifest(manifest);
@@ -54,10 +47,14 @@ namespace Microsoft.DotNet.ToolManifest
             {
                 var existingPackage = existing.Single();
 
+                // Update the tool manifest if --roll-forward changes
                 if (existingPackage.PackageId.Equals(packageId)
                     && existingPackage.Version == nuGetVersion
                     && CommandNamesEqual(existingPackage.CommandNames, toolCommandNames))
                 {
+                    var toEdit = deserializedManifest.Tools.Single(t => new PackageId(t.PackageId).Equals(packageId));
+                    toEdit.RollForward = rollForward;
+                    _fileSystem.File.WriteAllText(manifest.Value, deserializedManifest.ToJson());
                     return;
                 }
 
@@ -79,7 +76,8 @@ namespace Microsoft.DotNet.ToolManifest
                 {
                     PackageId = packageId.ToString(),
                     Version = nuGetVersion.ToNormalizedString(),
-                    Commands = toolCommandNames.Select(c => c.Value).ToArray()
+                    Commands = toolCommandNames.Select(c => c.Value).ToArray(),
+                    RollForward = rollForward,
                 });
 
             _fileSystem.File.WriteAllText(manifest.Value, deserializedManifest.ToJson());
@@ -174,8 +172,10 @@ namespace Microsoft.DotNet.ToolManifest
 
                         foreach (var toolJson in tools.EnumerateObject())
                         {
-                            var serializableLocalToolSinglePackage = new SerializableLocalToolSinglePackage();
-                            serializableLocalToolSinglePackage.PackageId = toolJson.Name;
+                            var serializableLocalToolSinglePackage = new SerializableLocalToolSinglePackage
+                            {
+                                PackageId = toolJson.Name
+                            };
                             if (toolJson.Value.TryGetStringValue(JsonPropertyVersion, out var versionJson))
                             {
                                 serializableLocalToolSinglePackage.Version = versionJson;
@@ -208,6 +208,11 @@ namespace Microsoft.DotNet.ToolManifest
                                 serializableLocalToolSinglePackage.Commands = commands.ToArray();
                             }
 
+                            if (toolJson.Value.TryGetBooleanValue(JsonPropertyRollForward, out var rollForwardJson))
+                            {
+                                serializableLocalToolSinglePackage.RollForward = rollForwardJson;
+                            }
+
                             serializableLocalToolsManifest.Tools.Add(serializableLocalToolSinglePackage);
                         }
                     }
@@ -228,7 +233,7 @@ namespace Microsoft.DotNet.ToolManifest
             FilePath path,
             DirectoryPath correspondingDirectory)
         {
-            List<ToolManifestPackage> result = new List<ToolManifestPackage>();
+            List<ToolManifestPackage> result = new();
             var errors = new List<string>();
 
             ValidateVersion(deserializedManifest, errors);
@@ -278,6 +283,8 @@ namespace Microsoft.DotNet.ToolManifest
                     packageLevelErrors.Add(LocalizableStrings.FieldCommandsIsMissing);
                 }
 
+                bool rollForward = tools.RollForward;
+
                 if (packageLevelErrors.Any())
                 {
                     var joinedWithIndentation = string.Join(Environment.NewLine,
@@ -291,7 +298,8 @@ namespace Microsoft.DotNet.ToolManifest
                         packageId,
                         version,
                         ToolCommandName.Convert(tools.Commands),
-                        correspondingDirectory));
+                        correspondingDirectory,
+                        rollForward));
                 }
             }
 
@@ -334,6 +342,7 @@ namespace Microsoft.DotNet.ToolManifest
             public string PackageId { get; set; }
             public string Version { get; set; }
             public string[] Commands { get; set; }
+            public bool RollForward { get; set; }
         }
 
         private static bool CommandNamesEqual(ToolCommandName[] left, ToolCommandName[] right)
@@ -388,8 +397,8 @@ namespace Microsoft.DotNet.ToolManifest
                         {
                             writer.WriteStringValue(toolCommandName);
                         }
-
                         writer.WriteEndArray();
+                        writer.WriteBoolean(JsonPropertyRollForward, tool.RollForward);
                         writer.WriteEndObject();
                     }
 

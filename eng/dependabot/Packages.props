@@ -1,0 +1,12 @@
+<Project>
+
+  <!-- Packages in this file have versions updated periodically by Dependabot. Versions managed by Darc/Maestro should be in ..\Packages.props. -->
+
+  <ItemGroup>
+    <!--Test dependencies-->
+    <PackageVersion Include="Verify.Xunit" Version="22.5.0" />
+    <PackageVersion Include="Verify.DiffPlex" Version="2.3.0" />
+    <PackageVersion Include="FakeItEasy" Version="8.0.0" />
+    <PackageVersion Include="Wcwidth.Sources" Version="2.0.0" />
+  </ItemGroup>
+</Project>

@@ -1,16 +1,14 @@
-﻿using Microsoft.Build.Framework;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
 {
     public class CheckForImplicitPackageReferenceOverrides : TaskBase
     {
         [Required]
-        public ITaskItem [] PackageReferenceItems { get; set; }
+        public ITaskItem[] PackageReferenceItems { get; set; }
 
         [Required]
         public string MoreInformationLink { get; set; }
@@ -27,8 +25,8 @@ namespace Microsoft.NET.Build.Tasks
 
             if (duplicateItems.Any())
             {
-                List<ITaskItem> itemsToRemove = new List<ITaskItem>();
-                List<ITaskItem> itemsToAdd = new List<ITaskItem>();
+                List<ITaskItem> itemsToRemove = new();
+                List<ITaskItem> itemsToAdd = new();
                 foreach (var duplicateItemGroup in duplicateItems)
                 {
                     foreach (var item in duplicateItemGroup)
@@ -36,7 +34,7 @@ namespace Microsoft.NET.Build.Tasks
                         if (item.GetMetadata(MetadataKeys.IsImplicitlyDefined).Equals("true", StringComparison.OrdinalIgnoreCase))
                         {
                             itemsToRemove.Add(item);
-  
+
                             Log.LogWarning(Strings.PackageReferenceOverrideWarning, item.ItemSpec, MoreInformationLink);
                         }
                         else

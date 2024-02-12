@@ -1,11 +1,5 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.Extensions.Tools.Internal
 {
@@ -15,7 +9,7 @@ namespace Microsoft.Extensions.Tools.Internal
     /// </summary>
     internal sealed class ConsoleReporter : IReporter
     {
-        private readonly object _writeLock = new object();
+        private readonly object _writeLock = new();
 
         public ConsoleReporter(IConsole console)
             : this(console, verbose: false, quiet: false, suppressEmojis: false)

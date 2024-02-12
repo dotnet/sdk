@@ -1,12 +1,8 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli;
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Tools.Build
 {
@@ -22,7 +18,7 @@ namespace Microsoft.DotNet.Tools.Build
 
         public static BuildCommand FromArgs(string[] args, string msbuildPath = null)
         {
-            var parser = Cli.Parser.Instance;
+            var parser = Parser.Instance;
             var parseResult = parser.ParseFrom("dotnet build", args);
             return FromParseResult(parseResult, msbuildPath);
         }
@@ -30,17 +26,18 @@ namespace Microsoft.DotNet.Tools.Build
         public static BuildCommand FromParseResult(ParseResult parseResult, string msbuildPath = null)
         {
             PerformanceLogEventSource.Log.CreateBuildCommandStart();
-             
+
             var msbuildArgs = new List<string>();
 
             parseResult.ShowHelpOrErrorIfAppropriate();
 
-            CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(BuildCommandParser.SelfContainedOption),
-                parseResult.HasOption(BuildCommandParser.NoSelfContainedOption));
+            CommonOptions.ValidateSelfContainedOptions(
+                parseResult.GetResult(BuildCommandParser.SelfContainedOption) is not null,
+                parseResult.GetResult(BuildCommandParser.NoSelfContainedOption) is not null);
 
             msbuildArgs.Add($"-consoleloggerparameters:Summary");
 
-            if (parseResult.HasOption(BuildCommandParser.NoIncrementalOption))
+            if (parseResult.GetResult(BuildCommandParser.NoIncrementalOption) is not null)
             {
                 msbuildArgs.Add("-target:Rebuild");
             }
@@ -50,9 +47,9 @@ namespace Microsoft.DotNet.Tools.Build
 
             msbuildArgs.AddRange(arguments);
 
-            bool noRestore = parseResult.HasOption(BuildCommandParser.NoRestoreOption);
+            bool noRestore = parseResult.GetResult(BuildCommandParser.NoRestoreOption) is not null;
 
-            BuildCommand command = new BuildCommand(
+            BuildCommand command = new(
                 msbuildArgs,
                 noRestore,
                 msbuildPath);

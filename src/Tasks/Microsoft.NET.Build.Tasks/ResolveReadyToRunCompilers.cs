@@ -1,11 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-
-using System;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -191,7 +185,7 @@ namespace Microsoft.NET.Build.Tasks
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
                     _targetPlatform,
-                    new[] { "linux", "linux-musl", "osx", "win" },
+                    new[] { "linux", "linux-musl", "osx", "win", "freebsd" },
                     out _);
 
             // For source-build, allow the bootstrap SDK rid to be unknown to the runtime repo graph.
@@ -199,11 +193,11 @@ namespace Microsoft.NET.Build.Tasks
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    portablePlatform = "linux";
+                    portablePlatform = "win";
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
-                    portablePlatform = "win";
+                    portablePlatform = "linux";
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 {
@@ -217,6 +211,7 @@ namespace Microsoft.NET.Build.Tasks
                 "linux-musl" => "linux",
                 "osx" => "osx",
                 "win" => "windows",
+                "freebsd" => "freebsd",
                 _ => null
             };
 
@@ -262,6 +257,11 @@ namespace Microsoft.NET.Build.Tasks
                 case "arm64":
                     architecture = Architecture.Arm64;
                     break;
+#if !NETFRAMEWORK
+                case "riscv64":
+                    architecture = Architecture.RiscV64;
+                    break;
+#endif
                 case "x64":
                     architecture = Architecture.X64;
                     break;
@@ -387,11 +387,6 @@ namespace Microsoft.NET.Build.Tasks
                 toolFileName = "crossgen2.exe";
                 v5_clrJitFileNamePattern = "clrjit-{0}.dll";
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                toolFileName = "crossgen2";
-                v5_clrJitFileNamePattern = "libclrjit-{0}.so";
-            }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 toolFileName = "crossgen2";
@@ -399,8 +394,9 @@ namespace Microsoft.NET.Build.Tasks
             }
             else
             {
-                // Unknown platform
-                return false;
+                // Generic Unix-like: linux, freebsd, and others.
+                toolFileName = "crossgen2";
+                v5_clrJitFileNamePattern = "libclrjit-{0}.so";
             }
 
             if (version5)
@@ -433,6 +429,9 @@ namespace Microsoft.NET.Build.Tasks
                 Architecture.X64 => "x64",
                 Architecture.Arm => "arm",
                 Architecture.Arm64 => "arm64",
+#if !NETFRAMEWORK
+                Architecture.RiscV64 => "riscv64",
+#endif
                 _ => null
             };
         }

@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #if !NET6_0_OR_GREATER
 using System;
@@ -209,7 +208,7 @@ namespace Microsoft.TemplateEngine
         internal static JObject ReadObject(this IPhysicalFileSystem fileSystem, string path)
         {
             using (Stream fileStream = fileSystem.OpenRead(path))
-            using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
+            using (var textReader = new StreamReader(fileStream, Encoding.UTF8, true))
             using (var jsonReader = new JsonTextReader(textReader))
             {
                 return JObject.Load(jsonReader);
@@ -219,7 +218,7 @@ namespace Microsoft.TemplateEngine
         internal static void WriteObject(this IPhysicalFileSystem fileSystem, string path, object obj)
         {
             using (Stream fileStream = fileSystem.CreateFile(path))
-            using (var textWriter = new StreamWriter(fileStream, System.Text.Encoding.UTF8))
+            using (var textWriter = new StreamWriter(fileStream, Encoding.UTF8))
             using (var jsonWriter = new JsonTextWriter(textWriter))
             {
                 var serializer = new JsonSerializer();

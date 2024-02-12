@@ -1,12 +1,10 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.IO.Pipes;
 using System.Runtime.Versioning;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
-using static Microsoft.Win32.Msi.Error;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using static Microsoft.Win32.Msi.Error;
 
 namespace Microsoft.DotNet.Installer.Windows
 {
@@ -146,6 +144,52 @@ namespace Microsoft.DotNet.Installer.Windows
                 RequestType = requestType,
                 WorkloadId = workloadId.ToString(),
                 SdkFeatureBand = sdkFeatureBand.ToString(),
+            });
+        }
+
+        /// <summary>
+        /// Send an <see cref="InstallRequestMessage"/> to delete the install state file.
+        /// </summary>
+        /// <param name="sdkFeatureBand">The SDK feature band of the install state file to delete.</param>
+        /// <returns></returns>
+        public InstallResponseMessage SendRemoveManifestsFromInstallStateFileRequest(SdkFeatureBand sdkFeatureBand)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.RemoveManifestsFromInstallStateFile,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
+            });
+        }
+
+        /// <summary>
+        /// Sends an <see cref="InstallRequestMessage"/> to write the install state file.
+        /// </summary>
+        /// <param name="sdkFeatureBand">The SDK feature band of the install state file to write</param>
+        /// <param name="value">A multi-line string containing the formatted JSON data to write.</param>
+        /// <returns></returns>
+        public InstallResponseMessage SendSaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.SaveInstallStateManifestVersions,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
+                InstallStateManifestVersions = manifestContents
+            });
+        }
+
+        /// <summary>
+        /// Send an <see cref="InstallRequestMessage"/> to adjust the mode used for installing and updating workloads
+        /// </summary>
+        /// <param name="sdkFeatureBand">The SDK feature band of the install state file to write</param>
+        /// <param name="newMode">Whether to use workload sets or not</param>
+        /// <returns></returns>
+        public InstallResponseMessage SendUpdateWorkloadModeRequest(SdkFeatureBand sdkFeatureBand, bool newMode)
+        {
+            return Send(new InstallRequestMessage
+            {
+                RequestType = InstallRequestType.AdjustWorkloadMode,
+                SdkFeatureBand = sdkFeatureBand.ToString(),
+                UseWorkloadSets = newMode,
             });
         }
     }

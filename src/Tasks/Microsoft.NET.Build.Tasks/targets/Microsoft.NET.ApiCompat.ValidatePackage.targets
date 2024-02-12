@@ -11,7 +11,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project>
   <PropertyGroup>
-    <ApiCompatValidatePackageSemaphoreFile>$(IntermediateOutputPath)$(MSBuildThisFileName).semaphore</ApiCompatValidatePackageSemaphoreFile>
+    <_ApiCompatValidatePackageSemaphoreFile>$(IntermediateOutputPath)$(MSBuildThisFileName).semaphore</_ApiCompatValidatePackageSemaphoreFile>
     <!-- Add any custom targets that need to run before package validation to the following property. -->
     <RunPackageValidationDependsOn>CollectApiCompatInputs;_GetReferencePathFromInnerProjects;$(RunPackageValidationDependsOn)</RunPackageValidationDependsOn>
   </PropertyGroup>
@@ -22,7 +22,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Inputs="@(NuGetPackInput);
                   @(ApiCompatSuppressionFile);
                   $(ApiCompatSuppressionOutputFile)"
-          Outputs="$(ApiCompatValidatePackageSemaphoreFile)"
+          Outputs="$(_ApiCompatValidatePackageSemaphoreFile)"
           Condition="'$(EnablePackageValidation)' == 'true' and '$(IsPackable)' == 'true'">
     <PropertyGroup>
       <PackageValidationBaselineName Condition="'$(PackageValidationBaselineName)' == ''">$(PackageId)</PackageValidationBaselineName>
@@ -40,21 +40,26 @@ Copyright (c) .NET Foundation. All rights reserved.
       PackageTargetPath="@(_PackageTargetPath)"
       RuntimeGraph="$(RuntimeIdentifierGraphPath)"
       NoWarn="$(NoWarn)"
+      RespectInternals="$(ApiCompatRespectInternals)"
       EnableRuleAttributesMustMatch="$(ApiCompatEnableRuleAttributesMustMatch)"
       ExcludeAttributesFiles="@(ApiCompatExcludeAttributesFile)"
       EnableRuleCannotChangeParameterName="$(ApiCompatEnableRuleCannotChangeParameterName)"
       RunApiCompat="$(RunApiCompat)"
-      EnableStrictModeForCompatibleTfms="$([MSBuild]::ValueOrDefault('$(EnableStrictModeForCompatibleTfms)', 'true'))"
+      EnableStrictModeForCompatibleTfms="$(EnableStrictModeForCompatibleTfms)"
       EnableStrictModeForCompatibleFrameworksInPackage="$(EnableStrictModeForCompatibleFrameworksInPackage)"
       EnableStrictModeForBaselineValidation="$(EnableStrictModeForBaselineValidation)"
       GenerateSuppressionFile="$(ApiCompatGenerateSuppressionFile)"
+      PreserveUnnecessarySuppressions="$(ApiCompatPreserveUnnecessarySuppressions)"
+      PermitUnnecessarySuppressions="$(ApiCompatPermitUnnecessarySuppressions)"
       SuppressionFiles="@(ApiCompatSuppressionFile)"
       SuppressionOutputFile="$(ApiCompatSuppressionOutputFile)"
       BaselinePackageTargetPath="$(_packageValidationBaselinePath)"
       RoslynAssembliesPath="$(RoslynAssembliesPath)"
-      PackageAssemblyReferences="@(PackageValidationReferencePath)" />
+      PackageAssemblyReferences="@(PackageValidationReferencePath)"
+      BaselinePackageFrameworksToIgnore="@(PackageValidationBaselineFrameworkToIgnore)" />
 
-    <Touch Files="$(ApiCompatValidatePackageSemaphoreFile)" AlwaysCreate="true" />
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(_ApiCompatValidatePackageSemaphoreFile)'))" />
+    <Touch Files="$(_ApiCompatValidatePackageSemaphoreFile)" AlwaysCreate="true" />
   </Target>
 
   <Target Name="GetReferencesForApiCompatValidatePackage"
@@ -62,7 +67,10 @@ Copyright (c) .NET Foundation. All rights reserved.
           Returns="@(ApiCompatAssemblyReferencesWithTargetFramework)">
     <ItemGroup>
       <ApiCompatAssemblyReferencesWithTargetFramework Include="$(TargetFramework)"
-                                                      ReferencePath="@(ReferencePathWithRefAssemblies, ',')" />
+                                                      TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
+                                                      ReferencePath="@(ReferencePathWithRefAssemblies, ',')">
+          <TargetPlatformMoniker Condition="'$(ApiCompatIgnoreTargetPlatformMoniker)' != 'true'">$(TargetPlatformMoniker)</TargetPlatformMoniker>
+        </ApiCompatAssemblyReferencesWithTargetFramework>
     </ItemGroup>
   </Target>
 

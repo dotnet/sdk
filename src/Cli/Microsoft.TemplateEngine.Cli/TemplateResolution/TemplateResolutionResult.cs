@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
@@ -261,7 +260,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateResolution
 
         internal static IReadOnlyDictionary<string, string?> GetAllMatchedParametersList(IEnumerable<ITemplateMatchInfo> templateMatchInfos)
         {
-            Dictionary<string, string?> parameterList = new Dictionary<string, string?>();
+            Dictionary<string, string?> parameterList = new();
             if (!templateMatchInfos.Any())
             {
                 return parameterList;
@@ -294,7 +293,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateResolution
                             matchInfo =>
                                 matchInfo.GetType() == typeof(ParameterMatchInfo)
                                  && matchInfo.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase)
-                                 && matchInfo.Kind == Abstractions.TemplateFiltering.MatchKind.Mismatch)))
+                                 && matchInfo.Kind == MatchKind.Mismatch)))
                 {
                     return true;
                 }

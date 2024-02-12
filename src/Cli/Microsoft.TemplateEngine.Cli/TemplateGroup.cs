@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
@@ -26,7 +25,7 @@ namespace Microsoft.TemplateEngine.Cli
         /// </summary>
         /// <param name="templates">the templates of the template group.</param>
         /// <exception cref="ArgumentNullException">when <paramref name="templates"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">when <paramref name="templates"/> is empty or don't have same <see cref="ITemplateInfo.GroupIdentity"/> defined.</exception>
+        /// <exception cref="ArgumentException">when <paramref name="templates"/> is empty or don't have same <see cref="ITemplateMetadata.GroupIdentity"/> defined.</exception>
         internal TemplateGroup(IEnumerable<CliTemplateInfo> templates)
         {
             _ = templates ?? throw new ArgumentNullException(paramName: nameof(templates));
@@ -62,7 +61,7 @@ namespace Microsoft.TemplateEngine.Cli
         {
             get
             {
-                HashSet<string> shortNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                HashSet<string> shortNames = new(StringComparer.OrdinalIgnoreCase);
                 foreach (ITemplateInfo template in Templates.OrderByDescending(t => t.Precedence))
                 {
                     shortNames.UnionWith(template.ShortNameList);
@@ -78,7 +77,7 @@ namespace Microsoft.TemplateEngine.Cli
         {
             get
             {
-                HashSet<string?> language = new HashSet<string?>(StringComparer.OrdinalIgnoreCase);
+                HashSet<string?> language = new(StringComparer.OrdinalIgnoreCase);
                 foreach (ITemplateInfo template in Templates)
                 {
                     language.Add(template.GetLanguage());
@@ -94,7 +93,7 @@ namespace Microsoft.TemplateEngine.Cli
         {
             get
             {
-                HashSet<string?> type = new HashSet<string?>(StringComparer.OrdinalIgnoreCase);
+                HashSet<string?> type = new(StringComparer.OrdinalIgnoreCase);
                 foreach (ITemplateInfo template in Templates)
                 {
                     type.Add(template.GetTemplateType());
@@ -110,7 +109,7 @@ namespace Microsoft.TemplateEngine.Cli
         {
             get
             {
-                HashSet<string> baselines = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                HashSet<string> baselines = new(StringComparer.OrdinalIgnoreCase);
                 foreach (ITemplateInfo template in Templates)
                 {
                     foreach (var baseline in template.BaselineInfo)
@@ -156,7 +155,7 @@ namespace Microsoft.TemplateEngine.Cli
         {
             get
             {
-                HashSet<string> authors = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                HashSet<string> authors = new(StringComparer.OrdinalIgnoreCase);
                 foreach (ITemplateInfo template in Templates)
                 {
                     if (!string.IsNullOrWhiteSpace(template.Author))

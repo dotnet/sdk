@@ -7,6 +7,11 @@
         <target state="translated">Не удалось скачать версию {0} {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">Сопоставление источников пакетов включено, но не найден источник для указанного идентификатора пакета: {0}. Дополнительные сведения см. в документации по сопоставлению источников пакетов: https://aka.ms/nuget-package-source-mapping.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToLoadNuGetSource">
         <source>Failed to load NuGet source {0}</source>
         <target state="translated">Не удалось загрузить источник NuGet {0}</target>
@@ -15,6 +20,11 @@
       <trans-unit id="FailedToLoadNuGetSourceSourceIsNotValid">
         <source>Failed to load NuGet source {0}: the source is not valid. It will be skipped in further processing.</source>
         <target state="translated">Не удалось загрузить источник NuGet {0}: недопустимый источник. Он будет пропущен при дальнейшей обработке.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedToMapSourceUnderPackageSourceMapping">
+        <source>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
+        <target state="translated">Сопоставление источников пакетов включено, но не сопоставлен источник для указанного идентификатора пакета: {0}. Дополнительные сведения см. в документации по сопоставлению источников пакетов: https://aka.ms/nuget-package-source-mapping.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToValidatePackageSigning">
@@ -30,6 +40,31 @@
       <trans-unit id="NuGetPackageSignatureVerificationSkipped">
         <source>Skipping NuGet package signature verification.</source>
         <target state="translated">Пропуск проверки подписи пакета NuGet.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionDefault">
+        <source>A version of {0} of package {1}</source>
+        <target state="translated">Версия {0} пакета {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForExactVersionMatch">
+        <source>Version {0} of package {1}</source>
+        <target state="translated">Версия {0} пакета {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerAndUpperBounds">
+        <source>A version between {0} and {1} of package {2}</source>
+        <target state="translated">Версия от {0} до {1} пакета {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerBound">
+        <source>A version higher than {0} of package {1}</source>
+        <target state="translated">Версия пакета {1} выше {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithUpperBound">
+        <source>A version less than {0} of package {1}</source>
+        <target state="translated">Версия пакета {1} ниже {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">

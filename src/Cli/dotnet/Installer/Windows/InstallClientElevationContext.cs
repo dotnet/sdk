@@ -1,7 +1,6 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Reflection;
@@ -15,13 +14,13 @@ namespace Microsoft.DotNet.Installer.Windows
     [SupportedOSPlatform("windows")]
     internal sealed class InstallClientElevationContext : InstallElevationContextBase
     {
-        private TimestampedFileLogger _log;
+        private ISynchronizingLogger _log;
 
         private Process _serverProcess;
 
         public override bool IsClient => true;
 
-        public InstallClientElevationContext(TimestampedFileLogger logger)
+        public InstallClientElevationContext(ISynchronizingLogger logger)
         {
             _log = logger;
         }
@@ -61,7 +60,7 @@ namespace Microsoft.DotNet.Installer.Windows
 
                     // Add a pipe to the logger to allow the server to send log requests. This avoids having an elevated process writing
                     // to a less privileged location. It also simplifies troubleshooting because log events will be chronologically
-                    // ordered in a single file. 
+                    // ordered in a single file.
                     _log.AddNamedPipe(WindowsUtils.CreatePipeName(_serverProcess.Id, "log"));
 
                     HasElevated = true;
@@ -76,7 +75,7 @@ namespace Microsoft.DotNet.Installer.Windows
             }
         }
 
-        private void ServerExited(Object sender, EventArgs e)
+        private void ServerExited(object sender, EventArgs e)
         {
             _log?.LogMessage($"Elevated command instance has exited.");
         }

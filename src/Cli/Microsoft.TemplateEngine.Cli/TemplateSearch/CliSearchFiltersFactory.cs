@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplateFiltering;
@@ -17,7 +16,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 
         internal CliSearchFiltersFactory(IReadOnlyList<IManagedTemplatePackage> installedPackages)
         {
-            Dictionary<string, string?> filterData = new Dictionary<string, string?>();
+            Dictionary<string, string?> filterData = new();
             foreach (IManagedTemplatePackage descriptor in installedPackages)
             {
                 filterData[descriptor.Identifier] = descriptor.Version;
@@ -51,7 +50,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
         {
             return (templatePackageSearchData) =>
             {
-                InMemoryHostSpecificDataLoader hostDataLoader = new InMemoryHostSpecificDataLoader(templatePackageSearchData);
+                InMemoryHostSpecificDataLoader hostDataLoader = new(templatePackageSearchData);
                 IEnumerable<TemplateSearchData> templates = templatePackageSearchData.Templates.Where(template => IsNotHiddenBySearchFile(template));
                 IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostDataLoader));
                 IEnumerable<Func<TemplateGroup, MatchInfo?>> groupFilters = new[]
@@ -98,7 +97,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 
             internal InMemoryHostSpecificDataLoader(TemplatePackageSearchData templatePackageSearchData)
             {
-                Dictionary<string, HostSpecificTemplateData> hostSpecificData = new Dictionary<string, HostSpecificTemplateData>();
+                Dictionary<string, HostSpecificTemplateData> hostSpecificData = new();
                 foreach (var templateData in templatePackageSearchData.Templates)
                 {
                     if (templateData.AdditionalData.TryGetValue(CliHostSearchCacheData.DataName, out object? hostDataRaw)

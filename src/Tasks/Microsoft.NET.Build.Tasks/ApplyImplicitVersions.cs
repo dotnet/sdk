@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
@@ -27,7 +26,7 @@ namespace Microsoft.NET.Build.Tasks
 
         protected override void ExecuteCore()
         {
-            List<string> buildWarnings = new List<string>();
+            List<string> buildWarnings = new();
 
             var packageReferencesToUpdate = new List<ITaskItem>();
 
@@ -41,7 +40,7 @@ namespace Microsoft.NET.Build.Tasks
                     string versionOnPackageReference = packageReference.GetMetadata(MetadataKeys.Version);
                     if (string.IsNullOrEmpty(versionOnPackageReference))
                     {
-                        packageReference.SetMetadata(MetadataKeys.Version, 
+                        packageReference.SetMetadata(MetadataKeys.Version,
                             TargetLatestRuntimePatch ? implicitVersion.LatestVersion : implicitVersion.DefaultVersion);
 
                         packageReference.SetMetadata(MetadataKeys.IsImplicitlyDefined, "true");
@@ -67,7 +66,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 var implicitPackageReferenceVersion = new ImplicitPackageReferenceVersion(item);
 
-                if (implicitPackageReferenceVersion.TargetFrameworkVersion == this.TargetFrameworkVersion)
+                if (implicitPackageReferenceVersion.TargetFrameworkVersion == TargetFrameworkVersion)
                 {
                     result.Add(implicitPackageReferenceVersion.Name, implicitPackageReferenceVersion);
                 }

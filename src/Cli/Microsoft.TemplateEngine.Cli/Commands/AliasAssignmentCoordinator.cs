@@ -1,6 +1,5 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
 
@@ -24,8 +23,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             foreach (var parameter in parameters)
             {
-                HashSet<string> aliases = new HashSet<string>(StringComparer.Ordinal);
-                List<string> errors = new List<string>();
+                HashSet<string> aliases = new(StringComparer.Ordinal);
+                List<string> errors = new();
                 if (parameter.Name.Contains(':'))
                 {
                     // Colon is reserved, template param names cannot have any.
@@ -119,7 +118,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     continue;
                 }
 
-                // if paramater name is taken
+                // if parameter name is taken
                 optionName = "--param:" + longName;
                 if (!isAliasTaken(optionName))
                 {

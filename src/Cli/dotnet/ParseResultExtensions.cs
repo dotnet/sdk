@@ -1,15 +1,14 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
-using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Parser;
+using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -30,11 +29,10 @@ namespace Microsoft.DotNet.Cli
         {
             // take from the start of the list until we hit an option/--/unparsed token
             // since commands can have arguments, we must take those as well in order to get accurate help
-            var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == TokenType.Argument || token.Type == TokenType.Command || token.Type == TokenType.Directive).Select(t => t.Value).ToList();
+            var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
             tokenList.Add("-h");
-            Parser.Instance.Parse(tokenList).Invoke();
+            Instance.Parse(tokenList).Invoke();
         }
-
 
         public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
         {
@@ -66,7 +64,8 @@ namespace Microsoft.DotNet.Cli
             /// <summary>given a string and a series of parts, ensures that all parts are present in the string in sequential order</summary>
             static bool ErrorContainsAllParts(ReadOnlySpan<char> error, string[] parts)
             {
-                foreach(var part in parts) {
+                foreach (var part in parts)
+                {
                     var foundIndex = error.IndexOf(part);
                     if (foundIndex != -1)
                     {
@@ -92,19 +91,19 @@ namespace Microsoft.DotNet.Cli
         public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
         {
             return string.IsNullOrEmpty(parseResult.RootSubCommandResult()) ||
-                Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
+                GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
         }
 
         public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
         {
-            return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+            return parseResult.CommandResult.Command.Equals(RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
         }
 
         public static bool CanBeInvoked(this ParseResult parseResult)
         {
-            return Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-                parseResult.Directives.Count() > 0 ||
-                (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(Parser.DotnetSubCommand)));
+            return GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
+                parseResult.Tokens.Any(token => token.Type == CliTokenType.Directive) ||
+                (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand)));
         }
 
         public static int HandleMissingCommand(this ParseResult parseResult)
@@ -126,37 +125,46 @@ namespace Microsoft.DotNet.Cli
             var subargs = args.ToList();
 
             // Don't remove any arguments that are being passed to the app in dotnet run
-            var runArgs = subargs.Contains("--") ? subargs.GetRange(subargs.IndexOf("--"), subargs.Count() - subargs.IndexOf("--")) : new List<string>();
-            subargs = subargs.Contains("--") ? subargs.GetRange(0, subargs.IndexOf("--")) : subargs;
+            var dashDashIndex = subargs.IndexOf("--");
 
-            subargs.RemoveAll(arg => DiagOption.Aliases.Contains(arg));
-            if (subargs[0].Equals("dotnet"))
-            {
-                subargs.RemoveAt(0);
-            }
-            subargs.RemoveAt(0); // remove top level command (ex build or publish)
-            return subargs.Concat(runArgs).ToArray();
+            var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : new List<string>(0);
+            subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
+
+            return subargs
+                .SkipWhile(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
+                .Skip(1) // remove top level command (ex build or publish)
+                .Concat(runArgs)
+                .ToArray();
         }
 
-        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult)
+        public static bool DiagOptionPrecedesSubcommand(this string[] args, string subCommand)
         {
-            if (symbolResult.Token() == default)
+            if (string.IsNullOrEmpty(subCommand))
             {
-                return parseResult.FindResultFor(Parser.DotnetSubCommand)?.GetValueOrDefault<string>();
+                return true;
             }
-            else if (symbolResult.Token().Type.Equals(TokenType.Command))
+
+            for (var i = 0; i < args.Length; i++)
             {
-                return symbolResult.Symbol.Name;
+                if (args[i].Equals(subCommand))
+                {
+                    return false;
+                }
+                else if (DiagOption.Name.Equals(args) || DiagOption.Aliases.Contains(args[i]))
+                {
+                    return true;
+                }
             }
-            else if (symbolResult.Token().Type.Equals(TokenType.Argument))
-            {
-                return symbolResult.Token().Value;
-            }
-            else
-            {
-                return string.Empty;
-            }
+
+            return false;
         }
+
+        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
+        {
+            CommandResult commandResult => commandResult.Command.Name,
+            ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value ?? string.Empty,
+            _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
+        };
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
             (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
@@ -210,10 +218,19 @@ namespace Microsoft.DotNet.Cli
         private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
         {
             var optionString = shorthand ? "-p" : "--property";
-            var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(TokenType.Option));
-            var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
-            var propertyValues = propertyOptions.SelectMany(o => o.Children.SelectMany(c => c.Tokens.Select(t=> t.Value))).ToArray();
+            var propertyOptions = parseResult.CommandResult.Children.Where(c => GetOptionTokenOrDefault(c)?.Value.Equals(optionString) ?? false);
+            var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
+
+            static CliToken GetOptionTokenOrDefault(SymbolResult symbolResult)
+            {
+                if (symbolResult is not OptionResult optionResult)
+                {
+                    return null;
+                }
+
+                return optionResult.IdentifierToken ?? new CliToken($"--{optionResult.Option.Name}", CliTokenType.Option, optionResult.Option);
+            }
         }
 
         [Conditional("DEBUG")]
@@ -231,34 +248,19 @@ namespace Microsoft.DotNet.Cli
         /// If you are inside a command handler or 'normal' System.CommandLine code then you don't need this - the parse error handling
         /// will have covered these cases.
         /// </summary>
-        public static object SafelyGetValueForOption(this ParseResult parseResult, Option optionToGet)
+        public static T SafelyGetValueForOption<T>(this ParseResult parseResult, CliOption<T> optionToGet)
         {
-            if (parseResult.FindResultFor(optionToGet) is OptionResult optionResult &&
+            if (parseResult.GetResult(optionToGet) is OptionResult optionResult &&
                 !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
             {
                 return optionResult.GetValue(optionToGet);
-            } 
-            else {
+            }
+            else
+            {
                 return default;
             }
         }
 
-        /// <summary>
-        /// Only returns the value for this option if the option is present and there are no parse errors for that option.
-        /// This allows cross-cutting code like the telemetry filters to safely get the value without throwing on null-ref errors.
-        /// If you are inside a command handler or 'normal' System.CommandLine code then you don't need this - the parse error handling
-        /// will have covered these cases.
-        /// </summary>
-        public static T SafelyGetValueForOption<T>(this ParseResult parseResult, Option<T> optionToGet)
-        {
-            if (parseResult.FindResultFor(optionToGet) is OptionResult optionResult &&
-                !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
-            {
-                return optionResult.GetValue(optionToGet);
-            } 
-            else {
-                return default;
-            }
-        }
+        public static bool HasOption(this ParseResult parseResult, CliOption option) => parseResult.GetResult(option) is not null;
     }
 }

@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../Resources.resx">
+    <body>
+      <trans-unit id="CouldNotResolveReference">
+        <source>Could not resolve reference '{0}' in any of the provided search directories.</source>
+        <target state="translated">無法在任何提供的搜尋目錄中解析參考 '{0}'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MatchingAssemblyNotFound">
+        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
+        <target state="translated">在任何搜尋目錄中都找不到符合的元件: '{0}'。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidedPathToLoadBinariesFromNotFound">
+        <source>Could not find the provided path '{0}' to load binaries from.</source>
+        <target state="translated">找不到提供的路徑 '{0}'，無法從中載入二進位檔。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProvidedStreamDoesNotHaveMetadata">
+        <source>Provided stream for assembly '{0}' doesn't have any metadata to read. from.</source>
+        <target state="translated">為元件 '{0}' 提供的資料流程沒有任何可從中讀取的中繼資料。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShouldNotBeNullAndContainAtLeastOneElement">
+        <source>Should not be null and contain at least one element.</source>
+        <target state="translated">不應為 Null 且必須包含至少一個元素。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ShouldProvideValidAssemblyName">
+        <source>Should provide a valid assembly name.</source>
+        <target state="translated">必須提供有效的元件名稱。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StreamPositionGreaterThanLength">
+        <source>Stream position is greater than it's length, so there are no contents available to read.</source>
+        <target state="translated">串流位置大於其長度，因此沒有可供讀取的內容。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

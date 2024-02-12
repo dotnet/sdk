@@ -1,20 +1,14 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using NuGet.Common;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
+using NuGet.Common;
 
 namespace Microsoft.NET.Build.Tasks
 {
     internal class NugetContentAssetPreprocessor : IContentAssetPreprocessor
     {
-        private Dictionary<string, string> _preprocessorValues = new Dictionary<string, string>();
+        private Dictionary<string, string> _preprocessorValues = new();
         private string _preprocessedOutputDirectory = null;
 
         public void ConfigurePreprocessor(string outputDirectoryBase, Dictionary<string, string> preprocessorValues)
@@ -40,7 +34,8 @@ namespace Microsoft.NET.Build.Tasks
 
                 using (FileStream input = File.OpenRead(originalAssetPath))
                 {
-                    string result = Preprocessor.Process(input, (token) => {
+                    string result = Preprocessor.Process(input, (token) =>
+                    {
                         string value;
                         if (!_preprocessorValues.TryGetValue(token, out value))
                         {

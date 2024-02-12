@@ -1,10 +1,7 @@
-// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using System.Linq;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
@@ -33,31 +30,25 @@ namespace Microsoft.DotNet.Tools.Tool.List
 
         public override int Execute()
         {
-            var table = new PrintableTable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
             var packageIdArgument = _parseResult.GetValue(ToolListCommandParser.PackageIdArgument);
             PackageId? packageId = null;
             if (!string.IsNullOrWhiteSpace(packageIdArgument))
             {
                 packageId = new PackageId(packageIdArgument);
             }
-
-            table.AddColumn(
-                LocalizableStrings.PackageIdColumn,
-                p => p.toolManifestPackage.PackageId.ToString());
-            table.AddColumn(
-                LocalizableStrings.VersionColumn,
-                p => p.toolManifestPackage.Version.ToNormalizedString());
-            table.AddColumn(
-                LocalizableStrings.CommandsColumn,
-                p => string.Join(CommandDelimiter, p.toolManifestPackage.CommandNames.Select(c => c.Value)));
-            table.AddColumn(
-                LocalizableStrings.ManifestFileColumn,
-                p => p.SourceManifest.Value);
-
             var packageEnumerable = _toolManifestInspector.Inspect().Where(
-                 (t) => PackageIdMatches(t.toolManifestPackage, packageId)
-             );
-            table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
+                (t) => PackageIdMatches(t.toolManifestPackage, packageId)
+            );
+
+            var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption);
+            if (formatValue is ToolListOutputFormat.json)
+            {
+                PrintJson(packageEnumerable);
+            }
+            else
+            {
+                PrintTable(packageEnumerable);
+            }
 
             if (packageId.HasValue && !packageEnumerable.Any())
             {
@@ -70,6 +61,40 @@ namespace Microsoft.DotNet.Tools.Tool.List
         private bool PackageIdMatches(ToolManifestPackage package, PackageId? packageId)
         {
             return !packageId.HasValue || package.PackageId.Equals(packageId);
+        }
+
+        private void PrintTable(IEnumerable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> packageEnumerable)
+        {
+            var table = new PrintableTable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
+            table.AddColumn(
+                LocalizableStrings.PackageIdColumn,
+                p => p.toolManifestPackage.PackageId.ToString());
+            table.AddColumn(
+                LocalizableStrings.VersionColumn,
+                p => p.toolManifestPackage.Version.ToNormalizedString());
+            table.AddColumn(
+                LocalizableStrings.CommandsColumn,
+                p => string.Join(CommandDelimiter, p.toolManifestPackage.CommandNames.Select(c => c.Value)));
+            table.AddColumn(
+                LocalizableStrings.ManifestFileColumn,
+                p => p.SourceManifest.Value);
+            table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
+        }
+
+        private void PrintJson(IEnumerable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> packageEnumerable)
+        {
+            var jsonData = new VersionedDataContract<LocalToolListJsonContract[]>()
+            {
+                Data = packageEnumerable.Select(p => new LocalToolListJsonContract
+                {
+                    PackageId = p.toolManifestPackage.PackageId.ToString(),
+                    Version = p.toolManifestPackage.Version.ToNormalizedString(),
+                    Commands = p.toolManifestPackage.CommandNames.Select(c => c.Value).ToArray(),
+                    Manifest = p.SourceManifest.Value
+                }).ToArray()
+            };
+            var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
+            _reporter.WriteLine(jsonText);
         }
     }
 }
