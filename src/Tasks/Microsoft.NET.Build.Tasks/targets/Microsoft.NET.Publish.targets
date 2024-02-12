@@ -194,7 +194,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                  ResourceName="CannotIncludeSymbolsInSingleFile" />
     <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(RuntimeIdentifier)' == ''"
                  ResourceName="CannotHaveSingleFileWithoutRuntimeIdentifier" />
-    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(UseAppHost)' != 'true'"
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(UseAppHost)' != 'true' and '$(PublishAot)' != 'true'"
                  ResourceName="CannotHaveSingleFileWithoutAppHost" />
     <NETSdkError Condition="'$(PublishSingleFile)' == 'true' And
                             '$(EnableCompressionInSingleFile)' == 'true' And
