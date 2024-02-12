@@ -11,7 +11,6 @@
   <Target Name="SetupWixProperties" DependsOnTargets="GetCurrentRuntimeInformation">
     <!-- AcquireWix Properties -->
     <PropertyGroup>
-      <WixVersion>$(WixPackageVersion)</WixVersion>
       <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(WixVersion).zip</WixDownloadUrl>
       <WixRoot>$(ArtifactsDir)Tools/WixTools/$(WixVersion)</WixRoot>
       <WixDestinationPath>$(WixRoot)/WixTools.$(WixVersion).zip</WixDestinationPath>
