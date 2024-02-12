@@ -32,6 +32,9 @@
     <FileSignInfo Include="PackageWithFakeNativeDep.dll" CertificateName="None" />
     <FileSignInfo Include="dotnet-tool-with-output-name.dll" CertificateName="None" />
 
+    <!-- TODO: Temp to suss out other build issues. -->
+    <FileSignInfo Include="System.Reflection.MetadataLoadContext.dll" CertificateName="None" />
+
     <!-- Third party DLLs used by tests -->
     <FileSignInfo Include="Castle.Core.dll" CertificateName="None" />
     <FileSignInfo Include="Moq.dll" CertificateName="None" />
