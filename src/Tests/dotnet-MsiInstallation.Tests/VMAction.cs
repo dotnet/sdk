@@ -306,15 +306,19 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public List<string> Directories { get; set; }
         public List<string> Files { get; set; }
 
+        public List<VMActionResult> GroupedResults { get; set; }
+
         public CommandResult ToCommandResult()
         {
+            var psi = new ProcessStartInfo
+            {
+                FileName = Filename,
+                //  This doesn't handle quoting arguments with spaces correctly, but we don't expect this to be used except for logging
+                Arguments = Arguments == null ? null : string.Join(" ", Arguments),
+            };
+
             return new CommandResult(
-                Arguments == null ? null : new ProcessStartInfo
-                {
-                    FileName = Arguments[0],
-                    //  This doesn't handle quoting arguments with spaces correctly, but we don't expect this to be used except for logging
-                    Arguments = string.Join(" ", Arguments.Skip(1)),
-                },
+                psi,
                 ExitCode,
                 StdOut,
                 StdErr);

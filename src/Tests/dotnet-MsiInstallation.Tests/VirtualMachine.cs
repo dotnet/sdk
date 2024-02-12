@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         ITestOutputHelper Log { get; }
         public VMControl VMControl { get; }
 
-        static VMStateTree _rootState;
+        VMStateTree _rootState;
         VMStateTree _currentState;
         VMStateTree _currentAppliedState;
 
@@ -43,17 +43,30 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
             else
             {
-                if (_rootState == null)
+                var snapshots = VMControl.GetSnapshots();
+                var testStartSnapshots = snapshots.Where(s => s.name.Contains("Test start", StringComparison.OrdinalIgnoreCase)).ToList();
+                if (testStartSnapshots.Count == 0)
                 {
-                    _rootState = new VMStateTree()
-                    {
-                        SnapshotId = "CF853278-1B6B-4816-8E51-FBDBE3AABA2C",
-                        SnapshotName = "Initial test state (Set network to private)",
-                    };
+                    throw new Exception("No test start snapshots found");
                 }
+                else if (testStartSnapshots.Count > 1)
+                {
+                    foreach (var snapshot in testStartSnapshots)
+                    {
+                        Log.WriteLine(snapshot.id + ": " + snapshot.name);
+                    }
+                    throw new Exception("Multiple test start snapshots found");
+                }
+                _rootState = new VMStateTree
+                {
+                    SnapshotId = testStartSnapshots[0].Item1,
+                    SnapshotName = testStartSnapshots[0].Item2
+                };
             }
 
             _currentState = _rootState;
+
+            TrimMissingSnapshots();
         }
         public void Dispose()
         {
@@ -71,6 +84,28 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                 Converters = { new JsonStringEnumConverter() }
             };
+        }
+
+        public void TrimMissingSnapshots()
+        {
+            var snapshotIds = VMControl.GetSnapshots().Select(s => s.id).ToHashSet();
+
+            Recurse(_rootState);
+
+            void Recurse(VMStateTree node)
+            {
+                var nodesToRemove = node.Actions.Where(a => !snapshotIds.Contains(a.Value.resultingState.SnapshotId)).ToList();
+                foreach (var nodeToRemove in nodesToRemove)
+                {
+                    Log.WriteLine($"Removing missing snapshot from tree: {nodeToRemove.Value.resultingState.SnapshotName}");
+                    node.Actions.Remove(nodeToRemove.Key);
+                }
+                
+                foreach (var result in node.Actions.Select(a => a.Value.resultingState))
+                {
+                    Recurse(result);
+                }
+            }
         }
 
         public VMRunAction CreateRunCommand(params string[] args)
@@ -133,6 +168,21 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
         }
 
+        void LogActionResult(SerializedVMAction action, VMActionResult result)
+        {
+            if (action.Type == VMActionType.RunCommand)
+            {
+                TestCommand.LogCommandResult(Log, result.ToCommandResult());
+            }
+            else if (action.Type == VMActionType.ActionGroup && result.GroupedResults != null)
+            {
+                for (int i=0; i<result.GroupedResults.Count; i++)
+                {
+                    LogActionResult(action.Actions[i], result.GroupedResults[i]);
+                }
+            }
+        }
+
         //  Runs a command if necessary, or returns previously recorded result.  Handles syncing to the correct state, creating a new snapshot, etc.
         public VMActionResult Apply(SerializedVMAction action)
         {
@@ -140,6 +190,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             {
                 if (_currentState.ReadOnlyActions.TryGetValue(action, out var readOnlyResult))
                 {
+                    LogActionResult(action, readOnlyResult);
                     return readOnlyResult;
                 }
             }
@@ -148,6 +199,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 if (_currentState.Actions.TryGetValue(action, out var result))
                 {
                     _currentState = result.resultingState;
+                    LogActionResult(action, result.actionResult);
                     return result.actionResult;
                 }
             }
@@ -258,14 +310,22 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
             else if (action.Type == VMActionType.ActionGroup)
             {
-                VMActionResult lastResult = VMActionResult.Success();
+                List<VMActionResult> results = new();
 
                 foreach (var subAction in action.Actions)
                 {
-                    lastResult = Run(subAction);
+                    results.Add(Run(subAction));
                 }
+                var result = VMActionResult.Success();
+                if (results.Any())
+                {
+                    result.ExitCode = results.Last().ExitCode;
+                    result.StdOut = results.Last().StdOut;
+                    result.StdErr = results.Last().StdErr;
+                }
+                result.GroupedResults = results;
 
-                return lastResult;
+                return result;
             }
             else
             {
