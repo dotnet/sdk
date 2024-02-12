@@ -496,7 +496,7 @@
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.2.24076.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>ab1a8224cdf115b65e0db5dc88d11f205068f444</Sha>
+      <Sha>bcc1d3d6f00fbcea3f454b2e35bceeaa51e604b1</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.24057.2">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>

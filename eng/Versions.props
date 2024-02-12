@@ -422,5 +422,5 @@
     <!-- This package is not being produced outside of the 2.0 branch of corefx and should not change. -->
     <CLI_NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</CLI_NETStandardLibraryNETFrameworkVersion>
   </PropertyGroup>
-  <Import Project="$(RepositoryEngineeringDir)ManualVersions.props" />
+  <Import Project="ManualVersions.props" />
 </Project>

@@ -86,6 +86,9 @@
       <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\Versions.props">
         <DestinationFolder>eng/</DestinationFolder>
       </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\ManualVersions.props">
+        <DestinationFolder>eng/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
 
       <FilesInHelixRoot Include="$(RepoRoot)artifacts\tmp\$(Configuration)\NuGet.config" />
       <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\RunTestsOnHelix.cmd" />

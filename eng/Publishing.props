@@ -206,7 +206,8 @@
       <ItemsToSignPostBuildWithPaths Include="$(ArtifactsShippingPackagesDir)*.exe" />
       <ItemsToSignPostBuildWithPaths Include="$(ArtifactsShippingPackagesDir)*.msi" />
       <ItemsToSignPostBuildWithPaths Include="$(ArtifactsNonShippingPackagesDir)*.msi" />
-      <ItemsToSignPostBuildWithPaths Include="$(ArtifactsNonShippingPackagesDir)*.zip" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
+      <!-- dotnet-toolset zips are signed in the PublishToolsetAssets target. -->
+      <ItemsToSignPostBuildWithPaths Include="$(ArtifactsNonShippingPackagesDir)*.zip" Exclude="$(ArtifactsNonShippingPackagesDir)dotnet-toolset*.zip" Condition=" '$(PublishBinariesAndBadge)' == 'true' " />
       <ItemsToSignPostBuild Remove="@(ItemsToSignPostBuild)" />
       <ItemsToSignPostBuild Include="@(ItemsToSignPostBuildWithPaths->'%(Filename)%(Extension)')" />
     </ItemGroup>
