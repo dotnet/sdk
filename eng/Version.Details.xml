@@ -4,7 +4,6 @@
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.201">
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>cf38374df0561fe6284befdc1fd0cc5c51c67bec</Sha>
-      <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.201-servicing.24106.4">
       <Uri>https://github.com/dotnet/templating</Uri>
