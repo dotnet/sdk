@@ -25,7 +25,6 @@
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="NuGet.Common" />
-    <PackageReference Include="System.Management" />
     <PackageReference Include="Microsoft.Management.Infrastructure" />
   </ItemGroup>
 

@@ -72,9 +72,17 @@ namespace Microsoft.DotNet.MsiInstallerTests
     {
         public List<string> Arguments { get; set; }
 
+        public string WorkingDirectory { get; set; }
+
         public VMRunAction(VirtualMachine vm, List<string> arguments = null) : base(vm)
         {
             Arguments = arguments ?? new List<string>();
+        }
+
+        public VMRunAction WithWorkingDirectory(string workingDirectory)
+        {
+            WorkingDirectory = workingDirectory;
+            return this;
         }
 
         protected override SerializedVMAction SerializeDerivedProperties()
@@ -83,6 +91,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             {
                 Type = VMActionType.RunCommand,
                 Arguments = Arguments,
+                WorkingDirectory = WorkingDirectory,
             };
         }
     }
@@ -193,6 +202,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
         //  Applies to RunCommand
         public List<string> Arguments { get; set; }
 
+        //  Applies to RunCommand
+        public string WorkingDirectory { get; set; }
+
         //  Applies to CopyFileToVM, CopyFolderToVM, WriteFileToVM, GetRemoteDirectory, GetRemoteFile
         public string TargetPath { get; set; }
 
@@ -262,6 +274,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                    ExplicitDescription == action.ExplicitDescription &&
                    IsReadOnly == action.IsReadOnly &&
                    ListsAreEqual(Arguments, action.Arguments) &&
+                   WorkingDirectory == action.WorkingDirectory &&
                    TargetPath == action.TargetPath &&
                    SourcePath == action.SourcePath &&
                    ContentId == action.ContentId &&
@@ -273,6 +286,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             var hashcode = new HashCode();
             hashcode.Add(Type);
+            hashcode.Add(ExplicitDescription);
+            hashcode.Add(IsReadOnly);
             if (Arguments != null)
             {
                 hashcode.Add(Arguments.Count);
@@ -281,10 +296,19 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     hashcode.Add(arg.GetHashCode());
                 }
             }
+            hashcode.Add(WorkingDirectory);
             hashcode.Add(TargetPath);
             hashcode.Add(SourcePath);
             hashcode.Add(ContentId);
             hashcode.Add(FileContents);
+            if (Actions != null)
+            {
+                hashcode.Add(Actions.Count);
+                foreach (var action in Actions)
+                {
+                    hashcode.Add(action.GetHashCode());
+                }
+            }
             return hashcode.ToHashCode();
         }
 

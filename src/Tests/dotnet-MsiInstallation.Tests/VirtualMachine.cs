@@ -159,6 +159,11 @@ namespace Microsoft.DotNet.MsiInstallerTests
             return new VMRemoteDirectory(this, path);
         }
 
+        public VMSnapshot CreateSnapshot()
+        {
+            return new VMSnapshot(this, _currentState);
+        }
+
         void SyncToCurrentState()
         {
             if (_currentAppliedState != _currentState)
@@ -242,7 +247,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             if (action.Type == VMActionType.RunCommand)
             {
-                var result = VMControl.RunCommandOnVM(action.Arguments.ToArray());
+                var result = VMControl.RunCommandOnVM(action.Arguments.ToArray(), workingDirectory: action.WorkingDirectory);
                 return new VMActionResult
                 {
                     Filename = action.Arguments[0],
@@ -466,6 +471,23 @@ namespace Microsoft.DotNet.MsiInstallerTests
             public override bool Exists => GetResult().Exists;
 
             public override List<string> Directories => GetResult().Directories;
+        }
+
+        public class VMSnapshot
+        {
+            VirtualMachine _vm;
+            VMStateTree _snapshot;
+
+            public VMSnapshot(VirtualMachine vm, VMStateTree snapshot)
+            {
+                _vm = vm;
+                _snapshot = snapshot;
+            }
+
+            public void Apply()
+            {
+                _vm._currentState = _snapshot;
+            }
         }
     }
 }

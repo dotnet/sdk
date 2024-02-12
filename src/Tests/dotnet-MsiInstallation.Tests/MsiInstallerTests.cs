@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.Utils;
 //using System.Management;
 using Microsoft.Management.Infrastructure;
 using System.Xml.Linq;
+using Microsoft.Build.Evaluation;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
@@ -33,7 +34,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         //  Reminder: Enable "Remote Service Management" firewall rule so that PSExec will run more quickly.  Make sure network is set to "Private" in Windows settings (or enable the firewall rule for public networks).
 
-        const string SdkInstallerVersion = "8.0.100";
+        const string SdkInstallerVersion = "8.0.101";
         const string SdkInstallerFileName = $"dotnet-sdk-{SdkInstallerVersion}-win-x64.exe";
 
         const string RollbackRC1 = """
@@ -84,8 +85,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.Dispose();
         }
 
-        [Fact]
-        public void InstallSdk()
+        void InstallSdk(bool deployStage2 = true)
         {
             VM.CreateRunCommand("setx", "DOTNET_NOLOGO", "true")
                 .WithDescription("Disable .NET SDK first run message")
@@ -99,7 +99,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Should()
                 .Pass();
 
-            DeployStage2Sdk();
+            if (deployStage2)
+            {
+                DeployStage2Sdk();
+            }
         }
 
         void UninstallSdk()
@@ -164,34 +167,11 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
         [Fact]
-        public async Task UseWMI()
-        {
-            var snapshots = VM.VMControl.GetSnapshots();
-
-            foreach (var snapshot in snapshots)
-            {
-                Log.WriteLine(snapshot.id + ": " + snapshot.name);
-
-                //await vm.RenameSnapshot(snapshot.id, snapshot.name + " - renamed");
-            }
-
-            //await VM.CreateSnapshotAsync("New test snapshot");
-
-            //await VM.ApplySnapshotAsync("9BA74A78-D221-436E-9875-0A3BF86CEF4A");
-
-            await Task.Yield();
-        }
-
-        [Fact]
         public void SdkInstallation()
         {
             GetInstalledSdkVersion().Should().Be("7.0.401");
 
-            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
-                .WithDescription($"Install SDK {SdkInstallerVersion}")
-                .Execute()
-                .Should()
-                .Pass();
+            InstallSdk(deployStage2: false);
 
             VM.GetRemoteDirectory($@"c:\Program Files\dotnet\sdk\{SdkInstallerVersion}")
                 .Should()
@@ -199,10 +179,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             GetInstalledSdkVersion().Should().Be(SdkInstallerVersion);
 
-            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall")
-                .Execute()
-                .Should()
-                .Pass();
+            UninstallSdk();
 
             VM.GetRemoteDirectory($@"c:\Program Files\dotnet\sdk\{SdkInstallerVersion}")
                 .Should()
@@ -245,6 +222,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
         }
 
+        //  Fixed by https://github.com/dotnet/installer/pull/18266
         [Fact]
         public void InstallStateShouldBeRemovedOnSdkUninstall()
         {
@@ -264,6 +242,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
             InstallSdk();
             InstallWorkload("wasm-tools");
             ApplyRC1Manifests();
+            
+            TestWasmWorkload();
             ApplyRC1Manifests()
                 .Should()
                 .NotHaveStdOutContaining("Installing");
@@ -275,6 +255,12 @@ namespace Microsoft.DotNet.MsiInstallerTests
             throw new NotImplementedException();
         }
 
+        [Fact]
+        public void ApplyRollbackShouldNotUpdateAdvertisingManifests()
+        {
+            throw new NotImplementedException();
+        }
+
         string GetInstalledSdkVersion()
         {
             var command = VM.CreateRunCommand("dotnet", "--version");
@@ -282,6 +268,30 @@ namespace Microsoft.DotNet.MsiInstallerTests
             var result = command.Execute();
             result.Should().Pass();
             return result.StdOut;
+        }
+
+        void TestWasmWorkload()
+        {
+            var snapshot = VM.CreateSnapshot();
+
+            VM.CreateRunCommand("dotnet", "new", "blazorwasm", "-o", "BlazorWasm")
+                .WithWorkingDirectory(@"c:\SdkTesting")
+                .Execute()
+                .Should()
+                .Pass();
+
+            var result = VM.CreateRunCommand("dotnet", "publish", "/p:RunAotCompilation=true")
+                .WithWorkingDirectory(@"c:\SdkTesting\BlazorWasm")
+                .Execute();
+
+            result.Should().Pass();
+
+            //  When publishing a blazorwasm project without the wasm-tools workload installed, the following message is displayed:
+            //  Publishing without optimizations. Although it's optional for Blazor, we strongly recommend using `wasm-tools` workload! You can install it by running `dotnet workload install wasm-tools` from the command line.
+            //  (Setting RunAotCompilation=true explicitly causes a build failure if the workload isn't installed)
+            result.Should().NotHaveStdOutContaining("Publishing without optimizations");
+
+            snapshot.Apply();
         }
 
         void CheckForDuplicateManifests()

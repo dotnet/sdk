@@ -45,9 +45,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
             _session = CimSession.Create(Environment.MachineName);
         }
 
-        public CommandResult RunCommandOnVM(params string[] args)
+        public CommandResult RunCommandOnVM(string[] args, string workingDirectory = null)
         {
-            var remoteCommand = new RemoteCommand(Log, VMMachineName, PsExecPath, args);
+            var remoteCommand = new RemoteCommand(Log, VMMachineName, PsExecPath, workingDirectory, args);
 
             for (int i=0; i<3; i++)
             {
@@ -398,16 +398,25 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             string _targetMachineName;
             string _psExecPath;
+            string _workingDirectory;
 
 
-            public RemoteCommand(ITestOutputHelper log, string targetMachineName, string psExecPath, params string[] args)
+            public RemoteCommand(ITestOutputHelper log, string targetMachineName, string psExecPath, string workingDirectory, string[] args)
                 : base(log)
             {
                 _targetMachineName = targetMachineName;
                 _psExecPath = psExecPath;
+                _workingDirectory = workingDirectory;
 
                 Arguments.Add("-nobanner");
                 Arguments.Add($@"\\{_targetMachineName}");
+
+                if (!string.IsNullOrEmpty(workingDirectory))
+                {
+                    Arguments.Add("-w");
+                    Arguments.Add(workingDirectory);
+                }
+
                 Arguments.AddRange(args);
             }
 
