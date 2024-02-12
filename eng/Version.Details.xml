@@ -35,6 +35,7 @@
       <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="3.2.2146">
+      <Uri>https://visualstudio.microsoft.com</Uri>
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis" Version="4.10.0-2.24109.17">
       <Uri>https://github.com/dotnet/roslyn</Uri>
