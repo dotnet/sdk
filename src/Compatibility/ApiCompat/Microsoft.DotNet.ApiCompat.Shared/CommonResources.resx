@@ -130,7 +130,7 @@
     <value>A file path must be passed in to successfully generate a compatibility suppression file.</value>
   </data>
   <data name="UpdateSdkVersion" xml:space="preserve">
-    <value>The minimum version required of Roslyn is '{1}' and you are using '{0}' version of the Roslyn. You can update the sdk to get the latest version.</value>
+    <value>The minimum version required of Roslyn is '{1}' and you are using version '{0}' of Roslyn. You can update the SDK to get the latest version.</value>
   </data>
   <data name="WroteSuppressions" xml:space="preserve">
     <value>Successfully wrote compatibility suppressions to '{0}'.</value>
