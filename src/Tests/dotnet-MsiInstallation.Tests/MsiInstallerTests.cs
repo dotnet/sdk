@@ -33,8 +33,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         //  Reminder: Enable "Remote Service Management" firewall rule so that PSExec will run more quickly.  Make sure network is set to "Private" in Windows settings (or enable the firewall rule for public networks).
 
-        const string TargetMachineName = "dsp-vm";
-        const string PsExecPath = @"C:\Users\Daniel\Downloads\PSTools\PsExec.exe";
         const string SdkInstallerVersion = "8.0.100";
         const string SdkInstallerFileName = $"dotnet-sdk-{SdkInstallerVersion}-win-x64.exe";
 
@@ -104,20 +102,33 @@ namespace Microsoft.DotNet.MsiInstallerTests
             DeployStage2Sdk();
         }
 
-        void ApplyRC1Manifests()
+        void UninstallSdk()
         {
-            VM.CreateActionGroup("Rollback to RC1 manifests",
-                    VM.WriteFile($@"C:\SdkTesting\rollback-rc1.json", RollbackRC1),
-                    VM.CreateRunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-rc1.json", "--skip-sign-check"))
-                .Execute().Should().Pass();
+            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall")
+                .WithDescription($"Uninstall SDK {SdkInstallerVersion}")
+                .Execute()
+                .Should()
+                .Pass();
         }
 
-        void Apply8_0_101Manifests()
+        private CommandResult ApplyManifests(string manifestContents, string rollbackID)
         {
-            VM.CreateActionGroup("Rollback to 8.0.101 manifests",
-                    VM.WriteFile($@"C:\SdkTesting\rollback-8.0.101.json", Rollback8_0_101),
-                    VM.CreateRunCommand("dotnet", "workload", "update", "--from-rollback-file", @"c:\SdkTesting\rollback-8.0.101.json", "--skip-sign-check"))
-                .Execute().Should().Pass();
+            CommandResult result = VM.CreateActionGroup("Rollback to " + rollbackID + " manifests",
+                    VM.WriteFile($@"c:\SdkTesting\rollback-{rollbackID}.json", manifestContents),
+                    VM.CreateRunCommand("dotnet", "workload", "update", "--from-rollback-file", $@"c:\SdkTesting\rollback-{rollbackID}.json", "--skip-sign-check"))
+                .Execute();
+            result.Should().Pass();
+            return result;
+        }
+
+        CommandResult ApplyRC1Manifests()
+        {
+            return ApplyManifests(RollbackRC1, "rc1");
+        }
+
+        CommandResult Apply8_0_101Manifests()
+        {
+            return ApplyManifests(Rollback8_0_101, "8.0.101");
         }
 
         [Fact]
@@ -202,7 +213,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
 
         [Fact]
-        public void WorkloadInstallation()
+        public void WorkloadInstallationAndGarbageCollection()
         {
             InstallSdk();
 
@@ -234,18 +245,35 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
         }
 
-        //[Fact(Skip = "testing")]
-        //public void InstallStateShouldBeRemovedOnSdkUninstall()
-        //{
-        //    //  This is currently broken, needs to be added to the finalizer
-        //    throw new NotImplementedException();
-        //}
+        [Fact]
+        public void InstallStateShouldBeRemovedOnSdkUninstall()
+        {
+            InstallSdk();
+            InstallWorkload("wasm-tools");
+            ApplyRC1Manifests();
+            var featureBand = new SdkFeatureBand(SdkInstallerVersion);
+            var installStatePath = $@"c:\ProgramData\dotnet\workloads\{featureBand}\InstallState\default.json";
+            VM.GetRemoteFile(installStatePath).Should().Exist();
+            UninstallSdk();
+            VM.GetRemoteFile(installStatePath).Should().NotExist();
+        }
 
-        //[Fact(Skip = "testing")]
-        //public void RepeatedUpdateToSameRollbackFile()
-        //{
-        //    //  Should not install or uninstall anything
-        //}
+        [Fact]
+        public void RepeatedUpdateToSameRollbackFile()
+        {
+            InstallSdk();
+            InstallWorkload("wasm-tools");
+            ApplyRC1Manifests();
+            ApplyRC1Manifests()
+                .Should()
+                .NotHaveStdOutContaining("Installing");
+        }
+
+        [Fact]
+        public void ShouldNotShowRebootMessage()
+        {
+            throw new NotImplementedException();
+        }
 
         string GetInstalledSdkVersion()
         {
@@ -254,16 +282,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             var result = command.Execute();
             result.Should().Pass();
             return result.StdOut;
-        }
-
-        void CleanupInstallState()
-        {
-            var featureBand = new SdkFeatureBand(SdkInstallerVersion);
-            string installStatePath = $@"\\{TargetMachineName}\c$\ProgramData\dotnet\workloads\{featureBand}\InstallState\default.json";
-            if (File.Exists(installStatePath))
-            {
-                File.Delete(installStatePath);
-            }
         }
 
         void CheckForDuplicateManifests()
@@ -331,6 +349,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             var newVersionFileContents = File.ReadAllLines(Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, ".version"));
             newVersionFileContents[1] = existingVersionFileContents[1];
 
+            //  TODO: It would be nice if the description included the date/time of the SDK build, to distinguish different snapshots
             VM.CreateActionGroup("Deploy Stage 2 SDK",
                     VM.CopyFolder(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, installedSdkFolder),
                     VM.WriteFile(vmVersionFilePath, string.Join(Environment.NewLine, newVersionFileContents)))
