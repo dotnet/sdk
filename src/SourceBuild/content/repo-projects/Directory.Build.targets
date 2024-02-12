@@ -413,7 +413,8 @@
 
     <Copy SourceFiles="@(_InnerPackageCacheFiles)"
           DestinationFiles="$(NuGetPackageRoot)%(RecursiveDir)%(Filename)%(Extension)"
-          Condition=" '@(_InnerPackageCacheFiles)' != '' " />
+          SkipUnchangedFiles="true"
+          Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
   <Target Name="CleanupRepo"
