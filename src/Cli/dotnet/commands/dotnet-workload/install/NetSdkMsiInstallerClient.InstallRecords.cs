@@ -18,7 +18,25 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 {
     internal partial class NetSdkMsiInstallerClient
     {
-        internal static readonly Guid UpgradeCodeNamespaceUuid = Guid.Parse("C743F81B-B3B5-4E77-9F6D-474EFF3A722C");
+        //  Manifest IDs are lowercased on disk, we need to map them back to the original casing to generate the right UpgradeCode
+        private static readonly string[] CasedManifestIds =
+            [
+                "Microsoft.NET.Sdk.Android",
+                "Microsoft.NET.Sdk.Aspire",
+                "Microsoft.NET.Sdk.iOS",
+                "Microsoft.NET.Sdk.MacCatalyst",
+                "Microsoft.NET.Sdk.macOS",
+                "Microsoft.NET.Sdk.Maui",
+                "Microsoft.NET.Sdk.tvOS",
+                "Microsoft.NET.Workload.Emscripten.Current",
+                "Microsoft.NET.Workload.Emscripten.net6",
+                "Microsoft.NET.Workload.Emscripten.net7",
+                "Microsoft.NET.Workload.Mono.ToolChain.Current",
+                "Microsoft.NET.Workload.Mono.ToolChain.net6",
+                "Microsoft.NET.Workload.Mono.ToolChain.net7",
+            ];
+
+        private static readonly IReadOnlyDictionary<string, string> ManifestIdCasing = CasedManifestIds.ToDictionary(id => id.ToLowerInvariant()).AsReadOnly();
 
         protected List<WorkloadManifestRecord> GetWorkloadManifestRecords()
         {
@@ -72,29 +90,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             //  To do the mapping to installed MSIs, we rely on the fact that the MSI UpgradeCode is generated in a stable fashion from the
             //  NuGet package identity and platform: Utils.CreateUuid(UpgradeCodeNamespaceUuid, $"{Package.Identity};{Platform}")
             //  The NuGet package identity used is the vanilla (non-MSI) manifest package, for example Microsoft.NET.Workload.Mono.ToolChain.Current.Manifest-8.0.100 version 8.0.0
-
-            //  Manifest IDs are lowercased on disk, we need to map them back to the original casing to generate the right UpgradeCode
-            Dictionary<string, string> manifestIDCasing = new Dictionary<string, string>();
-            foreach (var casedManifestID in new[]
-            {
-                "Microsoft.NET.Sdk.Android",
-                "Microsoft.NET.Sdk.Aspire",
-                "Microsoft.NET.Sdk.iOS",
-                "Microsoft.NET.Sdk.MacCatalyst",
-                "Microsoft.NET.Sdk.macOS",
-                "Microsoft.NET.Sdk.Maui",
-                "Microsoft.NET.Sdk.tvOS",
-                "Microsoft.NET.Workload.Emscripten.Current",
-                "Microsoft.NET.Workload.Emscripten.net6",
-                "Microsoft.NET.Workload.Emscripten.net7",
-                "Microsoft.NET.Workload.Mono.ToolChain.Current",
-                "Microsoft.NET.Workload.Mono.ToolChain.net6",
-                "Microsoft.NET.Workload.Mono.ToolChain.net7",
-            })
-            {
-                manifestIDCasing[casedManifestID.ToLowerInvariant()] = casedManifestID;
-            }
-
             string sdkManifestFolder = Path.Combine(DotNetHome, "sdk-manifests");
 
             foreach (var manifestFeatureBandFolder in Directory.GetDirectories(sdkManifestFolder))
@@ -115,7 +110,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 foreach (var manifestIDFolder in Directory.GetDirectories(manifestFeatureBandFolder))
                 {
                     var lowerCasedManifestID = Path.GetFileName(manifestIDFolder);
-                    if (manifestIDCasing.TryGetValue(lowerCasedManifestID, out string manifestID))
+                    if (ManifestIdCasing.TryGetValue(lowerCasedManifestID, out string manifestID))
                     {
                         foreach (var manifestVersionFolder in Directory.GetDirectories(manifestIDFolder))
                         {
@@ -164,7 +159,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                 }
                                 else if (relatedProductCodes.Count > 1)
                                 {
-                                    Log.LogMessage($"Found multiple product codes for {uuidName}, which is not expected for side-by-side manifests.");
+                                    Log.LogMessage($"Found multiple product codes for {uuidName}, which is not expected for side-by-side manifests: {string.Join(' ', relatedProductCodes)}");
                                 }
                                 else
                                 {
@@ -188,6 +183,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return manifestRecords;
         }
 
+        //  From dotnet/arcade: https://github.com/dotnet/arcade/blob/c3f5cbfb2829795294f5c2d9fa5a0522f47e91fb/src/Microsoft.DotNet.Build.Tasks.Workloads/src/Msi/MsiBase.wix.cs#L38
+        /// <summary>
+        /// The UUID namespace to use for generating an upgrade code.
+        /// </summary>
+        internal static readonly Guid UpgradeCodeNamespaceUuid = Guid.Parse("C743F81B-B3B5-4E77-9F6D-474EFF3A722C");
+
+
+        //  From dotnet/arcade: https://github.com/dotnet/arcade/blob/c3f5cbfb2829795294f5c2d9fa5a0522f47e91fb/src/Microsoft.DotNet.Build.Tasks.Workloads/src/Utils.cs#L128
         /// <summary>
         /// Generates a version 3 UUID given a namespace UUID and name. This is based on the algorithm described in
         /// RFC 4122 (https://tools.ietf.org/html/rfc4122), section 4.3.

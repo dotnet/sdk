@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Cli.Utils
             {
                 using RegistryKey providerKey = dependenciesKey.OpenSubKey(providerKeyName);
                 var thisProductCode = providerKey?.GetValue(null) as string ?? null;
-                if (thisProductCode == productCode)
+                if (string.Equals(thisProductCode, productCode, StringComparison.OrdinalIgnoreCase))
                 {
                     return new DependencyProvider(providerKeyName, allUsers);
                 }

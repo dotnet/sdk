@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     DependencyProvider depProvider = new DependencyProvider(manifestRecord.ProviderKeyName);
 
-                    (bool shouldBeInstalled, string reason) shouldBeInstalled(SdkFeatureBand dependentFeatureBand)
+                    (bool shouldBeInstalled, string reason) ShouldBeInstalled(SdkFeatureBand dependentFeatureBand)
                     {
                         if (!installedFeatureBands.Contains(dependentFeatureBand))
                         {
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
 
                     Log?.LogMessage($"Evaluating dependents for workload manifest, dependent: {depProvider}, ID: {manifestRecord.ManifestId}, Version: {manifestRecord.ManifestVersion}, Feature Band: {manifestRecord.ManifestFeatureBand}");
-                    UpdateDependentReferenceCounts(depProvider, shouldBeInstalled);
+                    UpdateDependentReferenceCounts(depProvider, ShouldBeInstalled);
 
                     // Recheck the registry to see if there are any remaining dependents. If not, we can
                     // remove the workload manifest. We'll add it to the list and remove the packs at the end.
@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     DependencyProvider depProvider = new DependencyProvider(packRecord.ProviderKeyName);
 
-                    (bool shouldBeInstalled, string reason) shouldBeInstalled(SdkFeatureBand dependentFeatureBand)
+                    (bool shouldBeInstalled, string reason) ShouldBeInstalled(SdkFeatureBand dependentFeatureBand)
                     {
                         if (!installedFeatureBands.Contains(dependentFeatureBand))
                         {
@@ -226,7 +226,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
 
                     Log?.LogMessage($"Evaluating dependents for workload pack, dependent: {depProvider}, MSI ID: {packRecord.MsiId}, MSI version: {packRecord.MsiNuGetVersion}");
-                    UpdateDependentReferenceCounts(depProvider, shouldBeInstalled);
+                    UpdateDependentReferenceCounts(depProvider, ShouldBeInstalled);
 
                     // Recheck the registry to see if there are any remaining dependents. If not, we can
                     // remove the workload pack. We'll add it to the list and remove the packs at the end.
