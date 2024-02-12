@@ -65,8 +65,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
                 case ConditionalType.HashSignLineComment:
                     // Most line comment conditional tags use: <comment symbol><keyword prefix><keyword>
                     // But for this one, the '#' comment symbol is all that's needed, so it uses an empty keyword prefix.
-                    // So we end up with regular conditionals suchs as '#if', '#else'
-                    // and actionables such as '##if'
+                    // So we end up with regular conditionals such as '#if', '#else'
+                    // and actions such as '##if'
                     ConditionalKeywords keywords = new ConditionalKeywords()
                     {
                         KeywordPrefix = string.Empty

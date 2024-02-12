@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             RandomMacroConfig config = new(macro, "test", "integer", 10, 100);
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, config);
 
-            Assert.Equal(1, variables.Count);
+            Assert.Single(variables);
             Assert.Equal(10, variables["test"]);
         }
 
@@ -104,7 +104,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             macro.EvaluateDeterministically(_engineEnvironmentSettings, variables, macro.CreateConfig(_engineEnvironmentSettings, deferredConfig));
 
-            Assert.Equal(1, variables.Count);
+            Assert.Single(variables);
             Assert.Equal(10, variables["test"]);
         }
 

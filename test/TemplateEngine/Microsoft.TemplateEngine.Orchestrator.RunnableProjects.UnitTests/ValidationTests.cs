@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             using IMountPoint sourceMountPoint = environmentSettings.MountPath(TestTemplatesLocation);
             RunnableProjectGenerator generator = new();
-            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, default).ConfigureAwait(false);
+            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, default);
 
             IEnumerable<ScannedTemplateInfo> filteredTemplates = loadedTemplates.Where(t => !exceptions.Contains(t.ConfigurationModel.Identity));
 
@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             using IMountPoint sourceMountPoint = environmentSettings.MountPath(SampleTemplatesLocation);
             RunnableProjectGenerator generator = new();
-            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, default).ConfigureAwait(false);
+            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, default);
             Assert.True(loadedTemplates.All(t => t.IsValid));
         }
 
@@ -48,7 +48,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             using IMountPoint sourceMountPoint = environmentSettings.MountPath(GetTestTemplateLocation("Invalid/MissingMandatoryConfig"));
             RunnableProjectGenerator generator = new();
-            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, default).ConfigureAwait(false);
+            IReadOnlyList<ScannedTemplateInfo> loadedTemplates = await generator.GetTemplatesFromMountPointInternalAsync(sourceMountPoint, default);
 
             ScannedTemplateInfo loadedTemplate = Assert.Single(loadedTemplates);
             Assert.False(loadedTemplate.IsValid);

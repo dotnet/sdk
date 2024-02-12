@@ -55,15 +55,15 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 processorState.Config.Flags[Name!] = Default.Value;
             }
 
-            return new Impl(this, tokens, _id, _initialState);
+            return new Implementation(this, tokens, _id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly SetFlag _owner;
             private readonly string? _id;
 
-            public Impl(SetFlag owner, IReadOnlyList<IToken> tokens, string? id, bool initialState)
+            public Implementation(SetFlag owner, IReadOnlyList<IToken> tokens, string? id, bool initialState)
             {
                 _owner = owner;
                 Tokens = tokens;
@@ -95,7 +95,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
                 }
                 else
                 {
-                    // consume the entire line when not emitting. Otherwise the newlines on the falg tokens get emitted
+                    // consume the entire line when not emitting. Otherwise the newlines on the flag tokens get emitted
                     processor.SeekSourceForwardUntil(processor.EncodingConfig.LineEndings, ref bufferLength, ref currentBufferPosition, consumeToken: true);
                 }
 

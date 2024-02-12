@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 ||
                 NuGetVersion.TryParse(versionString, out _)
                 ||
-                FloatRange.TryParse(versionString, out _);
+                FloatRange.TryParse(versionString!, out _);
         }
 
         public static bool IsUnrestricted(this FloatRange floatRange)
@@ -37,7 +37,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         {
             floatRange =
                 string.IsNullOrEmpty(versionString) ?
-                    UnspecifiedVersion : FloatRange.Parse(versionString);
+                    UnspecifiedVersion : FloatRange.Parse(versionString!);
 
             return floatRange.FloatBehavior != NuGetVersionFloatBehavior.None;
         }

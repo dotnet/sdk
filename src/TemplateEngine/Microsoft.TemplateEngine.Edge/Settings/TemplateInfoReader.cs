@@ -78,9 +78,9 @@ namespace Microsoft.TemplateEngine.Edge.Settings
                     List<ITemplateParameter> templateParameters = new List<ITemplateParameter>();
                     foreach (JToken item in parametersArray)
                     {
-                        if (item is JObject jobj)
+                        if (item is JObject jObj)
                         {
-                            templateParameters.Add(ParameterFromJObject(jobj));
+                            templateParameters.Add(ParameterFromJObject(jObj));
                         }
                     }
                     info.ParameterDefinitions = new ParameterDefinitionSet(templateParameters);

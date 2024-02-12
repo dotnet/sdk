@@ -225,7 +225,7 @@ namespace Microsoft.TemplateEngine.Utils
         }
 
         /// <summary>
-        /// Gets the list of template filters for template constraints defintion <paramref name="constraintDefinitions"/> <br/>
+        /// Gets the list of template filters for template constraints definition <paramref name="constraintDefinitions"/> <br/>
         /// For each constraint the template filter will be created: <br/>
         /// - if the constraint is not used in the template, does not add match disposition;<br/>
         /// - if the template meets the constraint, adds match disposition with <see cref="MatchKind.Exact"/>;<br/>

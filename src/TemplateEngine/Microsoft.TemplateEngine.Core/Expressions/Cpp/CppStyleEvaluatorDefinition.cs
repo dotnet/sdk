@@ -533,7 +533,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
         private static object? InferTypeAndConvertLiteral(string literal)
         {
-            //A propertly quoted string must be...
+            //  A properly quoted string must be...
             //  At least two characters long
             //  Start and end with the same character
             //  The character that the string starts with must be one of the supported quote kinds
@@ -556,7 +556,7 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
 
                 if ((literal.Contains(CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator)
                     || literal.Contains(CultureInfo.InvariantCulture.NumberFormat.NumberDecimalSeparator))
-                    && ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out double literalDouble))
+                    && ParserExtensions.DoubleTryParseCurrentOrInvariant(literal, out double literalDouble))
                 {
                     return literalDouble;
                 }

@@ -42,7 +42,7 @@ namespace Microsoft.TemplateEngine.Edge.Settings
         // Stores match info relative to default settings.
         // These don't have to match for the template to be a match, but they can be used to filter matches
         // in appropriate situations.
-        // For example, matching or non-matching on the default language should only be used as a final disambiguator.
+        // For example, matching or non-matching on the default language should only be used as a final disambiguation.
         // It shouldn't unconditionally disqualify a match.
         public IReadOnlyList<MatchInfo> DispositionOfDefaults => _dispositionOfDefaults.ToList();
 

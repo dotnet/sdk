@@ -221,9 +221,9 @@ namespace Microsoft.TemplateEngine
         /// Converts properties of <paramref name="token"/> to dictionary.
         /// Leaves the values as JToken.
         /// </summary>
-        internal static IReadOnlyDictionary<string, JToken> ToJTokenDictionary(this JToken token, StringComparer? comparaer = null, string? propertyName = null)
+        internal static IReadOnlyDictionary<string, JToken> ToJTokenDictionary(this JToken token, StringComparer? comparer = null, string? propertyName = null)
         {
-            Dictionary<string, JToken> result = new(comparaer ?? StringComparer.Ordinal);
+            Dictionary<string, JToken> result = new(comparer ?? StringComparer.Ordinal);
 
             foreach (JProperty property in token.PropertiesOf(propertyName))
             {
@@ -237,9 +237,9 @@ namespace Microsoft.TemplateEngine
         /// Converts properties of <paramref name="token"/> to dictionary.
         /// Values are serialized to string (as JToken). Strings are serialized as <see cref="JToken"/>, i.e. needs to be parsed prior to be used.
         /// </summary>
-        internal static IReadOnlyDictionary<string, string> ToJTokenStringDictionary(this JToken token, StringComparer? comparaer = null, string? propertyName = null)
+        internal static IReadOnlyDictionary<string, string> ToJTokenStringDictionary(this JToken token, StringComparer? comparer = null, string? propertyName = null)
         {
-            Dictionary<string, string> result = new(comparaer ?? StringComparer.Ordinal);
+            Dictionary<string, string> result = new(comparer ?? StringComparer.Ordinal);
 
             foreach (JProperty property in token.PropertiesOf(propertyName))
             {

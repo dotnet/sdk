@@ -146,7 +146,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                 using Stream packageStream = File.Create(outputPackageFileNameFullPath);
                 if (await _downloadResource.CopyNupkgToStreamAsync(
                     packinfo.Name,
-                    new NuGetVersion(packinfo.Version),
+                    new NuGetVersion(packinfo.Version!),
                     packageStream,
                     _cacheContext,
                     NullLogger.Instance,

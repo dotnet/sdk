@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Edge.BuiltInManagedProvider
         event Action SettingsChanged;
 
         /// <summary>
-        /// Returns uncached list of the template packages.
+        /// Returns non-cached list of the template packages.
         /// </summary>
         Task<IReadOnlyList<TemplatePackageData>> GetInstalledTemplatePackagesAsync(CancellationToken cancellationToken);
 

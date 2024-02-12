@@ -23,7 +23,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
         public string? Condition { get; internal init; }
 
         /// <summary>
-        /// Stores the result of condition evaluation. <see cref="EvaluateCondition(ILogger, IVariableCollection)"/> should be done before accessting this property.
+        /// Stores the result of condition evaluation. <see cref="EvaluateCondition(ILogger, IVariableCollection)"/> should be done before accessing this property.
         /// </summary>
         /// <exception cref="InvalidOperationException">when the property is accessed prior to <see cref="EvaluateCondition(ILogger, IVariableCollection)"/> method is called.</exception>
         public bool ConditionResult

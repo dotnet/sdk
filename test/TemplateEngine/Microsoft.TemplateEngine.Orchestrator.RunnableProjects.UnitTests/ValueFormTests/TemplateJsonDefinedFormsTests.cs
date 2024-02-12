@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             }
             catch
             {
-                Assert.True(false, "Should not throw on unknown value form name");
+                Assert.Fail("Should not throw on unknown value form name");
             }
 
             Assert.NotNull(runConfig);
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
             }
             catch
             {
-                Assert.True(false, "Should not throw on unknown value form name");
+                Assert.Fail("Should not throw on unknown value form name");
             }
 
             Assert.NotNull(runConfig);

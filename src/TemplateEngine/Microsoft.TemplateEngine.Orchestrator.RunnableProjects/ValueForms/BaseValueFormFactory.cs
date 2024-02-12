@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
 {
     /// <summary>
     /// Base implementation of <see cref="IValueFormFactory"/>.
-    /// When implementing a value form inherit from <see cref="ActionableValueFormFactory"/> or <see cref="ConfigurableValueFormFactory{T}"/> or <see cref="DependantValueFormFactory{T}"/> instead.
+    /// When implementing a value form inherit from <see cref="ActionableValueFormFactory"/> or <see cref="ConfigurableValueFormFactory{T}"/> or <see cref="DependentValueFormFactory{T}"/> instead.
     /// </summary>
     internal abstract class BaseValueFormFactory : IValueFormFactory
     {

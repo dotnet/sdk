@@ -15,11 +15,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
         private const string SymbolsTypePropertyName = "type";
         private const string SymbolsValuePropertyName = "value";
 
-        internal JoinMacroConfig(JoinMacro macro, string variableName, string? dataType, IReadOnlyList<(JoinType, string)> symbols, string separator = "", bool removeEmptyValues = false)
+        internal JoinMacroConfig(JoinMacro macro, string variableName, string? dataType, IReadOnlyList<(JoinType, string)> symbols, string? separator = "", bool removeEmptyValues = false)
              : base(macro, variableName, dataType)
         {
             Symbols = symbols ?? throw new ArgumentNullException(nameof(symbols));
-            Separator = separator;
+            Separator = separator ?? string.Empty;
             RemoveEmptyValues = removeEmptyValues;
         }
 
@@ -35,12 +35,12 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
             foreach (JToken entry in jArray)
             {
-                if (entry is not JObject jobj)
+                if (entry is not JObject jObj)
                 {
                     throw new TemplateAuthoringException(string.Format(LocalizableStrings.MacroConfig_Exception_ArrayShouldContainObjects, generatedSymbolConfig.VariableName, SymbolsPropertyName), generatedSymbolConfig.VariableName);
                 }
-                JoinType type = jobj.ToEnum(SymbolsTypePropertyName, JoinType.Const, ignoreCase: true);
-                string? value = jobj.ToString(SymbolsValuePropertyName)
+                JoinType type = jObj.ToEnum(SymbolsTypePropertyName, JoinType.Const, ignoreCase: true);
+                string? value = jObj.ToString(SymbolsValuePropertyName)
                     ?? throw new TemplateAuthoringException(
                         string.Format(
                             LocalizableStrings.MacroConfig_Exception_MissingValueProperty,

@@ -251,7 +251,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel
                 return null;
             }
 
-            // Attribute parseable as a bool - so we do not want to present it as a condition
+            // Attribute parsable as a bool - so we do not want to present it as a condition
             if (isRequiredToken!.TryParseBool(out _))
             {
                 return null;

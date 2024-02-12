@@ -231,7 +231,7 @@ namespace Microsoft.TemplateEngine.Utils
             return false;
         }
 
-        private static bool TryResolveFloatValue(string? literal, out double parsed) => ParserExtensions.DoubleTryParseСurrentOrInvariant(literal, out parsed);
+        private static bool TryResolveFloatValue(string? literal, out double parsed) => ParserExtensions.DoubleTryParseCurrentOrInvariant(literal, out parsed);
 
         private static bool TryResolveIntegerValue(string? literal, out long parsed) => long.TryParse(literal, out parsed);
 

@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Utils
         /// <summary>
         /// Converts <see cref="IScanTemplateInfo"/> to <see cref="ITemplateInfo"/>.
         /// </summary>
-        /// <param name="templateInfo"><see cref="IScanTemplateInfo"/> to converr.</param>
+        /// <param name="templateInfo"><see cref="IScanTemplateInfo"/> to convert.</param>
         /// <param name="locFilePath">the path to localization file to use in <see cref="ITemplateInfo"/>.</param>
         /// <param name="hostFilePath">the path to host config file to use in <see cref="ITemplateInfo"/>.</param>
         public static ITemplateInfo ToITemplateInfo(this IScanTemplateInfo templateInfo, string? locFilePath = null, string? hostFilePath = null) => new LegacyTemplateInfo(templateInfo, locFilePath, hostFilePath);

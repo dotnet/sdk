@@ -76,14 +76,14 @@ namespace Microsoft.TemplateEngine.Edge.Constraints
             {
                 List<HostInformation> hostInformation = new List<HostInformation>();
 
-                foreach (JObject jobj in args.ParseArrayOfConstraintJObjects())
+                foreach (JObject jObj in args.ParseArrayOfConstraintJObjects())
                 {
-                    string? hostName = jobj.ToString("hostname");
-                    string? version = jobj.ToString("version");
+                    string? hostName = jObj.ToString("hostname");
+                    string? version = jObj.ToString("version");
 
                     if (string.IsNullOrWhiteSpace(hostName))
                     {
-                        throw new ConfigurationException(string.Format(LocalizableStrings.HostConstraint_Error_MissingMandatoryProperty, jobj, "hostname"));
+                        throw new ConfigurationException(string.Format(LocalizableStrings.HostConstraint_Error_MissingMandatoryProperty, jObj, "hostname"));
                     }
                     if (string.IsNullOrWhiteSpace(version))
                     {

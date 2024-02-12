@@ -10,18 +10,18 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
     /// <summary>
     /// Base implementation for a <see cref="IValueFormFactory"/> for a <see cref="IValueForm"/> that has a configuration of type <typeparamref name="T"/> and needs to know all the forms defined to process a value form.
     /// </summary>
-    internal abstract class DependantValueFormFactory<T> : BaseValueFormFactory where T : class
+    internal abstract class DependentValueFormFactory<T> : BaseValueFormFactory where T : class
     {
-        protected DependantValueFormFactory(string identifier) : base(identifier) { }
+        protected DependentValueFormFactory(string identifier) : base(identifier) { }
 
         public override IValueForm FromJObject(string name, JObject? configuration)
         {
             if (configuration != null)
             {
                 T config = ReadConfiguration(configuration);
-                return new DependantValueForm(name, this, config);
+                return new DependentValueForm(name, this, config);
             }
-            return new DependantValueForm(name, this, null);
+            return new DependentValueForm(name, this, null);
         }
 
         public override IValueForm Create(string? name = null)
@@ -30,22 +30,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
             {
                 name = Identifier;
             }
-            return new DependantValueForm(name!, this, null)
+            return new DependentValueForm(name!, this, null)
             {
                 IsDefault = true
             };
         }
 
-        protected abstract T ReadConfiguration(JObject jobject);
+        protected abstract T ReadConfiguration(JObject jObject);
 
         protected abstract string Process(string value, T? configuration, IReadOnlyDictionary<string, IValueForm> otherForms);
 
-        private class DependantValueForm : BaseValueForm
+        private class DependentValueForm : BaseValueForm
         {
-            private readonly DependantValueFormFactory<T> _factory;
+            private readonly DependentValueFormFactory<T> _factory;
             private readonly T? _configuration;
 
-            internal DependantValueForm(string name, DependantValueFormFactory<T> factory, T? configuration) : base(name, factory.Identifier)
+            internal DependentValueForm(string name, DependentValueFormFactory<T> factory, T? configuration) : base(name, factory.Identifier)
             {
                 _factory = factory;
                 _configuration = configuration;

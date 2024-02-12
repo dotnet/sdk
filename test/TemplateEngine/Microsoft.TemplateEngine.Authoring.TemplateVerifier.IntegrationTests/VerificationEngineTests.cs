@@ -156,7 +156,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
 
             VerificationEngine engine = new VerificationEngine(_log);
             // Demonstrate well handling of dot files - workarounding Verify bug https://github.com/VerifyTests/Verify/issues/699
-            await engine.Execute(options).ConfigureAwait(false);
+            await engine.Execute(options);
         }
 
         [Fact]

@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms
             };
         }
 
-        protected abstract T ReadConfiguration(JObject jobject);
+        protected abstract T ReadConfiguration(JObject jObject);
 
         protected abstract string Process(string value, T? configuration);
 

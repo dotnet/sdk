@@ -228,9 +228,9 @@ namespace Microsoft.TemplateSearch.Common
             {
                 foreach (JToken item in parametersArray)
                 {
-                    if (item is JObject jobj)
+                    if (item is JObject jObj)
                     {
-                        templateParameters.Add(new BlobTemplateParameter(jobj));
+                        templateParameters.Add(new BlobTemplateParameter(jObj));
                     }
                 }
                 readParameters = true;

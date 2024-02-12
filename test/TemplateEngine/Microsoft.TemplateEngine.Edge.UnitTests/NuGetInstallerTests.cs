@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string package = PackTestTemplatesNuGetPackage(_packageManager);
 
             InstallRequest request = new InstallRequest(package);
-            Assert.True(await installer.CanInstallAsync(request, CancellationToken.None).ConfigureAwait(false));
+            Assert.True(await installer.CanInstallAsync(request, CancellationToken.None));
         }
 
         [Fact]
@@ -92,7 +92,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string package = Directory.GetCurrentDirectory();
 
             InstallRequest request = new InstallRequest(package);
-            Assert.False(await installer.CanInstallAsync(request, CancellationToken.None).ConfigureAwait(false));
+            Assert.False(await installer.CanInstallAsync(request, CancellationToken.None));
         }
 
         [Fact]
@@ -107,7 +107,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string package = typeof(NuGetInstallerTests).GetTypeInfo().Assembly.Location;
 
             InstallRequest request = new InstallRequest(package);
-            Assert.False(await installer.CanInstallAsync(request, CancellationToken.None).ConfigureAwait(false));
+            Assert.False(await installer.CanInstallAsync(request, CancellationToken.None));
         }
 
         [Theory]
@@ -126,7 +126,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest(identifier, version);
 
-            Assert.Equal(result, await installer.CanInstallAsync(request, CancellationToken.None).ConfigureAwait(false));
+            Assert.Equal(result, await installer.CanInstallAsync(request, CancellationToken.None));
         }
 
         [Fact]
@@ -143,7 +143,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             InstallRequest request = new InstallRequest(package);
 
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.True(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
@@ -177,7 +177,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string package = typeof(NuGetInstallerTests).GetTypeInfo().Assembly.Location;
 
             InstallRequest request = new InstallRequest(package);
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.False(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
@@ -200,12 +200,12 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             InstallRequest request = new InstallRequest(package);
 
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.True(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
 
-            installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.False(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
@@ -226,7 +226,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest("Microsoft.TemplateEngine.TestTemplates", "1.0.0");
 
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.True(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
@@ -264,7 +264,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest(exception);
 
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.False(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
@@ -285,7 +285,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest(nameof(VulnerablePackageException), "12.0.3");
 
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
             Assert.False(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
             Assert.Equal(InstallerErrorCode.VulnerablePackage, installResult.Error);
@@ -306,14 +306,14 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest("Microsoft.TemplateEngine.TestTemplates", "1.0.0");
 
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.True(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
 
             NuGetManagedTemplatePackage? source = installResult.TemplatePackage as NuGetManagedTemplatePackage;
             Assert.NotNull(source);
-            IReadOnlyList<CheckUpdateResult> checkUpdateResults = await installer.GetLatestVersionAsync(new[] { source! }, provider, CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<CheckUpdateResult> checkUpdateResults = await installer.GetLatestVersionAsync(new[] { source! }, provider, CancellationToken.None);
 
             Assert.Single(checkUpdateResults);
             CheckUpdateResult result = checkUpdateResults.Single();
@@ -335,7 +335,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             NuGetInstaller installer = new NuGetInstaller(new MockInstallerFactory(), engineEnvironmentSettings, _environmentSettingsHelper.CreateTemporaryFolder(), mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest(nameof(VulnerablePackageException), "1.0.0");
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.True(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
@@ -343,7 +343,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             NuGetManagedTemplatePackage? source = installResult.TemplatePackage as NuGetManagedTemplatePackage;
             Assert.NotNull(source);
             source.Version = "12.0.0";
-            IReadOnlyList<CheckUpdateResult> checkUpdateResults = await installer.GetLatestVersionAsync(new[] { source! }, provider, CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<CheckUpdateResult> checkUpdateResults = await installer.GetLatestVersionAsync(new[] { source! }, provider, CancellationToken.None);
 
             Assert.Single(checkUpdateResults);
             CheckUpdateResult result = checkUpdateResults.Single();
@@ -370,7 +370,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             {
                 Version = version
             };
-            IReadOnlyList<CheckUpdateResult> checkUpdateResults = await installer.GetLatestVersionAsync(new[] { source }, provider, CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<CheckUpdateResult> checkUpdateResults = await installer.GetLatestVersionAsync(new[] { source }, provider, CancellationToken.None);
 
             Assert.Single(checkUpdateResults);
             CheckUpdateResult result = checkUpdateResults.Single();
@@ -393,7 +393,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest("Microsoft.TemplateEngine.TestTemplates", "1.0.0");
 
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.True(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
@@ -403,7 +403,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             string mountPoint = source!.MountPointUri;
             Assert.True(File.Exists(mountPoint));
 
-            UninstallResult result = await installer.UninstallAsync(source, provider, CancellationToken.None).ConfigureAwait(false);
+            UninstallResult result = await installer.UninstallAsync(source, provider, CancellationToken.None);
 
             Assert.True(result.Success);
             Assert.Equal(source, result.TemplatePackage);
@@ -424,7 +424,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest("Microsoft.TemplateEngine.TestTemplates", "1.0.0");
 
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.True(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
@@ -437,7 +437,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.True(File.Exists(oldMountPoint));
             UpdateRequest updateRequest = new UpdateRequest(source, "1.0.1");
 
-            UpdateResult updateResult = await installer.UpdateAsync(updateRequest, provider, CancellationToken.None).ConfigureAwait(false);
+            UpdateResult updateResult = await installer.UpdateAsync(updateRequest, provider, CancellationToken.None);
             Assert.True(updateResult.Success);
             Assert.Equal(updateRequest, updateResult.UpdateRequest);
             Assert.Equal(InstallerErrorCode.Success, updateResult.Error);
@@ -470,7 +470,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             NuGetInstaller installer = new NuGetInstaller(factory, engineEnvironmentSettings, installPath, mockPackageManager, mockPackageManager);
             InstallRequest request = new InstallRequest(nameof(VulnerablePackageException), "2.0.10");
 
-            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult installResult = await installer.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.True(installResult.Success);
             Assert.Equal(request, installResult.InstallRequest);
@@ -483,7 +483,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             Assert.True(File.Exists(oldMountPoint));
             UpdateRequest updateRequest = new UpdateRequest(source, "12.0.3");
 
-            UpdateResult updateResult = await installer.UpdateAsync(updateRequest, provider, CancellationToken.None).ConfigureAwait(false);
+            UpdateResult updateResult = await installer.UpdateAsync(updateRequest, provider, CancellationToken.None);
             Assert.False(updateResult.Success);
             Assert.Equal(InstallerErrorCode.VulnerablePackage, updateResult.Error);
             updateResult.ErrorMessage.Should().NotBeNullOrEmpty();

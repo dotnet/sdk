@@ -117,7 +117,7 @@ steps:
   displayName: Install latest daily .NET version 
 
 - bash: >
-    $(Build.SourcesDirectory)/.dotnet/dotnet $(Build.SourcesDirectory)/artifacts/bin/Microsoft.TemplateSearch.TemplateDiscovery/Debug/net8.0/Microsoft.TemplateSearch.TemplateDiscovery.dll
+    $(Build.SourcesDirectory)/.dotnet/dotnet $(Build.SourcesDirectory)/artifacts/bin/Microsoft.TemplateSearch.TemplateDiscovery/Debug/net9.0/Microsoft.TemplateSearch.TemplateDiscovery.dll
     --basePath $(System.DefaultWorkingDirectory)/NugetDownloadDirectory --allowPreviewPacks -v --test --diff $(EnableDiffMode)
   displayName: Run Cache Updater
 

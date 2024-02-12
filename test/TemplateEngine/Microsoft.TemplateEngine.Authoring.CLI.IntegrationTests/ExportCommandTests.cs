@@ -28,8 +28,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             string[] exportedFiles = await RunTemplateLocalizer(
                 GetTestTemplateJsonContent(),
                 _workingDirectory,
-                args: new string[] { "localize", "export", _workingDirectory })
-                .ConfigureAwait(false);
+                args: new string[] { "localize", "export", _workingDirectory });
 
             Assert.True(exportedFiles.Length > 0);
             Assert.All(exportedFiles, p =>
@@ -43,7 +42,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         public async Task LocFilesAreExportedFirstTime()
         {
             string testTemplate = GetTestTemplateInTempDir("TemplateWithSourceName");
-            int runResult = await Program.Main(new[] { "localize", "export", testTemplate }).ConfigureAwait(false);
+            int runResult = await Program.Main(new[] { "localize", "export", testTemplate });
             Assert.Equal(0, runResult);
             string[] exportedFiles;
             string expectedExportDirectory = Path.Combine(testTemplate, ".template.config", "localize");
@@ -68,7 +67,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         public async Task EnglishLocFilesAreOverwritten()
         {
             string testTemplate = GetTestTemplateInTempDir("TemplateWithSourceName");
-            int runResult = await Program.Main(new[] { "localize", "export", testTemplate }).ConfigureAwait(false);
+            int runResult = await Program.Main(new[] { "localize", "export", testTemplate });
             Assert.Equal(0, runResult);
             string expectedExportDirectory = Path.Combine(testTemplate, ".template.config", "localize");
             string enLocFile = Path.Combine(expectedExportDirectory, "templatestrings.en.json");
@@ -87,7 +86,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             templateJsonContent.Property("author")!.Value = "New Author";
             File.WriteAllText(baseConfig, templateJsonContent.ToString());
 
-            runResult = await Program.Main(new[] { "localize", "export", testTemplate }).ConfigureAwait(false);
+            runResult = await Program.Main(new[] { "localize", "export", testTemplate });
             Assert.Equal(0, runResult);
             Assert.True(File.Exists(enLocFile));
             Assert.True(File.Exists(deLocFile));
@@ -106,7 +105,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             templateJsonContent.AddFirst(new JProperty("authoringLanguage", "de"));
             File.WriteAllText(baseConfig, templateJsonContent.ToString());
 
-            int runResult = await Program.Main(new[] { "localize", "export", testTemplate }).ConfigureAwait(false);
+            int runResult = await Program.Main(new[] { "localize", "export", testTemplate });
             Assert.Equal(0, runResult);
             string expectedExportDirectory = Path.Combine(testTemplate, ".template.config", "localize");
             string enLocFile = Path.Combine(expectedExportDirectory, "templatestrings.en.json");
@@ -124,7 +123,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             templateJsonContent.Property("author")!.Value = "New Author";
             File.WriteAllText(baseConfig, templateJsonContent.ToString());
 
-            runResult = await Program.Main(new[] { "localize", "export", testTemplate }).ConfigureAwait(false);
+            runResult = await Program.Main(new[] { "localize", "export", testTemplate });
             Assert.Equal(0, runResult);
             Assert.True(File.Exists(enLocFile));
             Assert.True(File.Exists(deLocFile));
@@ -140,8 +139,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             string[] exportedFiles = await RunTemplateLocalizer(
                 GetTestTemplateJsonContent(),
                 _workingDirectory,
-                args: new string[] { "localize", "export", _workingDirectory, "--dry-run" })
-                .ConfigureAwait(false);
+                args: new string[] { "localize", "export", _workingDirectory, "--dry-run" });
 
             Assert.Empty(exportedFiles);
         }
@@ -152,8 +150,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             string[] exportedFiles = await RunTemplateLocalizer(
                 GetTestTemplateJsonContent(),
                 _workingDirectory,
-                args: new string[] { "localize", "export", _workingDirectory, "--language", "tr", "de" })
-                .ConfigureAwait(false);
+                args: new string[] { "localize", "export", _workingDirectory, "--language", "tr", "de" });
 
             Assert.Equal(2, exportedFiles.Length);
             Assert.True(File.Exists(Path.Combine(_workingDirectory, "localize", "templatestrings.tr.json")));
@@ -168,10 +165,10 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             Directory.CreateDirectory(Path.Combine(_workingDirectory, "subdir2"));
 
             string templateJson = GetTestTemplateJsonContent();
-            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", "template.json"), templateJson).ConfigureAwait(false);
-            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir2", "template.json"), templateJson).ConfigureAwait(false);
+            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", "template.json"), templateJson);
+            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir2", "template.json"), templateJson);
 
-            int runResult = await Program.Main(new string[] { "localize", "export", _workingDirectory, "--language", "es" }).ConfigureAwait(false);
+            int runResult = await Program.Main(new string[] { "localize", "export", _workingDirectory, "--language", "es" });
             // Error: no templates found under the given folder.
             Assert.NotEqual(0, runResult);
 
@@ -186,10 +183,10 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
             Directory.CreateDirectory(Path.Combine(_workingDirectory, ".template.config"));
 
             string templateJson = GetTestTemplateJsonContent();
-            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", ".template.config", "template.json"), templateJson).ConfigureAwait(false);
-            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, ".template.config", "template.json"), templateJson).ConfigureAwait(false);
+            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", ".template.config", "template.json"), templateJson);
+            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, ".template.config", "template.json"), templateJson);
 
-            int runResult = await Program.Main(new string[] { "localize", "export", _workingDirectory, "--language", "es", "--recursive" }).ConfigureAwait(false);
+            int runResult = await Program.Main(new string[] { "localize", "export", _workingDirectory, "--language", "es", "--recursive" });
             Assert.Equal(0, runResult);
 
             Assert.True(File.Exists(Path.Combine(_workingDirectory, "subdir", ".template.config", "localize", "templatestrings.es.json")));
@@ -201,9 +198,9 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         {
             Directory.CreateDirectory(Path.Combine(_workingDirectory, "subdir"));
 
-            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", "template.json"), GetTestTemplateJsonContent()).ConfigureAwait(false);
+            await File.WriteAllTextAsync(Path.Combine(_workingDirectory, "subdir", "template.json"), GetTestTemplateJsonContent());
 
-            int runResult = await Program.Main(new string[] { "localize", "export", _workingDirectory, "--language", "es", "--recursive" }).ConfigureAwait(false);
+            int runResult = await Program.Main(new string[] { "localize", "export", _workingDirectory, "--language", "es", "--recursive" });
             // Error: no templates found under the given folder.
             Assert.NotEqual(0, runResult);
 
@@ -217,9 +214,9 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.IntegrationTests
         /// </summary>
         private static async Task<string[]> RunTemplateLocalizer(string jsonContent, string directory, params string[] args)
         {
-            await File.WriteAllTextAsync(Path.Combine(directory, "template.json"), jsonContent).ConfigureAwait(false);
+            await File.WriteAllTextAsync(Path.Combine(directory, "template.json"), jsonContent);
 
-            int runResult = await Program.Main(args).ConfigureAwait(false);
+            int runResult = await Program.Main(args);
             Assert.Equal(0, runResult);
 
             string expectedExportDirectory = Path.Combine(directory, "localize");

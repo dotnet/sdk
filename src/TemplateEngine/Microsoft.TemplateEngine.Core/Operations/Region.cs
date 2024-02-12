@@ -38,10 +38,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
         {
             IToken startToken = _start.ToToken(encoding);
             IToken endToken = _end.ToToken(encoding);
-            return new Impl(this, startToken, endToken, _include, _toggle, _id, _initialState);
+            return new Implementation(this, startToken, endToken, _include, _toggle, _id, _initialState);
         }
 
-        private class Impl : IOperation
+        private class Implementation : IOperation
         {
             private readonly IToken _endToken;
             private readonly bool _includeRegion;
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Core.Operations
             private readonly string? _id;
             private bool _waitingForEnd;
 
-            public Impl(Region owner, IToken startToken, IToken endToken, bool include, bool toggle, string? id, bool initialState)
+            public Implementation(Region owner, IToken startToken, IToken endToken, bool include, bool toggle, string? id, bool initialState)
             {
                 _definition = owner;
                 _endToken = endToken;

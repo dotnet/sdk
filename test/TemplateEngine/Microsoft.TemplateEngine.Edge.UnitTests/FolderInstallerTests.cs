@@ -32,9 +32,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             InstallRequest request = new InstallRequest(installPath);
 
-            Assert.True(await folderInstaller.CanInstallAsync(request, CancellationToken.None).ConfigureAwait(false));
+            Assert.True(await folderInstaller.CanInstallAsync(request, CancellationToken.None));
 
-            InstallResult result = await folderInstaller.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult result = await folderInstaller.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.True(result.Success);
             Assert.Equal(request, result.InstallRequest);
@@ -61,9 +61,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
 
             InstallRequest request = new InstallRequest(Path.GetTempFileName());
-            Assert.False(await folderInstaller.CanInstallAsync(request, CancellationToken.None).ConfigureAwait(false));
+            Assert.False(await folderInstaller.CanInstallAsync(request, CancellationToken.None));
 
-            InstallResult result = await folderInstaller.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult result = await folderInstaller.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.False(result.Success);
             Assert.Equal(request, result.InstallRequest);
@@ -82,9 +82,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
 
             InstallRequest request = new InstallRequest("not found");
-            Assert.False(await folderInstaller.CanInstallAsync(request, CancellationToken.None).ConfigureAwait(false));
+            Assert.False(await folderInstaller.CanInstallAsync(request, CancellationToken.None));
 
-            InstallResult result = await folderInstaller.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult result = await folderInstaller.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.False(result.Success);
             Assert.Equal(request, result.InstallRequest);
@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
 
             FolderManagedTemplatePackage source = new FolderManagedTemplatePackage(engineEnvironmentSettings, folderInstaller, provider, Path.GetRandomFileName(), DateTime.UtcNow);
-            IReadOnlyList<CheckUpdateResult> results = await folderInstaller.GetLatestVersionAsync(new[] { source }, provider, CancellationToken.None).ConfigureAwait(false);
+            IReadOnlyList<CheckUpdateResult> results = await folderInstaller.GetLatestVersionAsync(new[] { source }, provider, CancellationToken.None);
 
             Assert.Single(results);
             CheckUpdateResult result = results.Single();
@@ -124,7 +124,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
 
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => folderInstaller.GetLatestVersionAsync(null!, provider, CancellationToken.None)).ConfigureAwait(false);
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => folderInstaller.GetLatestVersionAsync(null!, provider, CancellationToken.None));
         }
 
         [Fact]
@@ -138,9 +138,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             FolderManagedTemplatePackage source = new FolderManagedTemplatePackage(engineEnvironmentSettings, folderInstaller, provider, Path.GetRandomFileName(), DateTime.UtcNow);
             //add a delay so update updates last changed time
-            await Task.Delay(100).ConfigureAwait(false);
+            await Task.Delay(100);
             UpdateRequest updateRequest = new UpdateRequest(source, "1.0.0");
-            UpdateResult result = await folderInstaller.UpdateAsync(updateRequest, provider, CancellationToken.None).ConfigureAwait(false);
+            UpdateResult result = await folderInstaller.UpdateAsync(updateRequest, provider, CancellationToken.None);
 
             Assert.True(result.Success);
             Assert.Equal(updateRequest, result.UpdateRequest);
@@ -156,7 +156,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             MockManagedTemplatePackageProvider provider = new MockManagedTemplatePackageProvider();
             IEngineEnvironmentSettings engineEnvironmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
             FolderInstaller folderInstaller = new FolderInstaller(engineEnvironmentSettings, factory);
-            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => folderInstaller.UpdateAsync(null!, provider, CancellationToken.None)).ConfigureAwait(false);
+            _ = await Assert.ThrowsAsync<ArgumentNullException>(() => folderInstaller.UpdateAsync(null!, provider, CancellationToken.None));
         }
 
         [Fact]
@@ -171,7 +171,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             InstallRequest request = new InstallRequest(installPath);
 
-            InstallResult result = await folderInstaller.InstallAsync(request, provider, CancellationToken.None).ConfigureAwait(false);
+            InstallResult result = await folderInstaller.InstallAsync(request, provider, CancellationToken.None);
 
             Assert.True(result.Success);
             Assert.Equal(request, result.InstallRequest);
@@ -183,7 +183,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             source!.MountPointUri.Should().Be(installPath);
             Directory.Exists(installPath);
 
-            UninstallResult uninstallResult = await folderInstaller.UninstallAsync(source, provider, CancellationToken.None).ConfigureAwait(false);
+            UninstallResult uninstallResult = await folderInstaller.UninstallAsync(source, provider, CancellationToken.None);
 
             Assert.True(uninstallResult.Success);
             Assert.Equal(source, uninstallResult.TemplatePackage);

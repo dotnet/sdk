@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 
@@ -28,13 +29,13 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         /// </summary>
         protected abstract Task<int> ExecuteAsync(TModel args, ILoggerFactory loggerFactory, CancellationToken cancellationToken);
 
-        private sealed class CommandAction : CliAction
+        private sealed class CommandAction : AsynchronousCliAction
         {
             private readonly ExecutableCommand<TModel> _command;
 
             public CommandAction(ExecutableCommand<TModel> command) => _command = command;
 
-            public override int Invoke(ParseResult parseResult) => InvokeAsync(parseResult).GetAwaiter().GetResult();
+            public int Invoke(ParseResult parseResult) => InvokeAsync(parseResult).GetAwaiter().GetResult();
 
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default)
             {

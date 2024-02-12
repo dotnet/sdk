@@ -148,7 +148,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(true, false, 1, new[] { "Action1", "Default instructions (action 1)" }, null)]
         [InlineData(false, true, 1, new[] { "Action2", "Default instructions (action 2)" }, null)]
         [InlineData(false, false, 0, null, null)]
-        public void TestPostActionConditioning(bool condition1, bool condition2, int expectedActionCount, string[] firstResult, string[] secondResult)
+        public void TestPostActionConditioning(bool condition1, bool condition2, int expectedActionCount, string[]? firstResult, string[]? secondResult)
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(TestTemplateJson);
             IVariableCollection vc = new VariableCollection
@@ -197,7 +197,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         [InlineData(false, true, 1, "Linux", "Linux instructions (action 2)", null)]
         [InlineData(false, true, 1, "Mac", "Mac instructions (action 2)", null)]
         [InlineData(false, true, 1, "BeOS", "Default instructions (action 2)", null)]
-        public void TestPostActionInstructionsConditioning(bool condition1, bool condition2, int expectedActionCount, string operatingSystemValue, string firstInstruction, string secondInstruction)
+        public void TestPostActionInstructionsConditioning(bool condition1, bool condition2, int expectedActionCount, string operatingSystemValue, string firstInstruction, string? secondInstruction)
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(TestTemplateJson);
             IVariableCollection vc = new VariableCollection
@@ -319,7 +319,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configString));
 
-            Assert.Equal(1, configModel.PostActionModels.Count);
+            Assert.Single(configModel.PostActionModels);
             Assert.True(configModel.PostActionModels.Single().ApplyFileRenamesToManualInstructions);
 
             Assert.Equal("Foo", configModel.PostActionModels.Single().ApplyFileRenamesToArgs.Single());
@@ -356,7 +356,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JObject.Parse(configString));
 
-            Assert.Equal(1, configModel.PostActionModels.Count);
+            Assert.Single(configModel.PostActionModels);
             Assert.True(configModel.PostActionModels.Single().ApplyFileRenamesToManualInstructions);
 
             Assert.Equal("Baz", configModel.PostActionModels.Single().ApplyFileRenamesToArgs.Single());

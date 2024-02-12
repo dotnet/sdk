@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
             var constraintManager = new TemplateConstraintManager(_sharedSettings);
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default).ConfigureAwait(false);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
 
             Assert.Equal(RuntimeInformation.IsOSPlatform(OSPlatform.Windows), evaluateResult.EvaluationStatus == TemplateConstraintResult.Status.Allowed);
 
@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var configModel = TemplateConfigModel.FromJObject(JObject.FromObject(config));
             var constraintManager = new TemplateConstraintManager(_sharedSettings);
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default).ConfigureAwait(false);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, default);
 
             var pass = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
