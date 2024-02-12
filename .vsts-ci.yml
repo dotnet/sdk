@@ -124,10 +124,11 @@ stages:
         agentOs: Windows_NT_TestAsTools
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
-            vmImage: 'windows-2019'
+            name: $(DncEngPublicBuildPool)
+            demands: ImageOverride -equals 1es-windows-2022-open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: $(DncEngInternalBuildPool)
-            demands: ImageOverride -equals windows.vs2019.amd64
+            demands: ImageOverride -equals 1es-windows-2022
         strategy:
           matrix:
             Build_Debug:
