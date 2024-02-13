@@ -209,23 +209,20 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     tfmValue = new string(tfmElement.GetString().Where(c => char.IsDigit(c) || c == '.').ToArray());
                 }
                 var result = InitializeForRuntimeConfig(runtimeConfigFilePath);
-                RuntimeConfigDetectionMessage(result, packageId, tfmValue, isGlobalTool);
-            }
-        }
 
-        private static void RuntimeConfigDetectionMessage(InitializationRuntimeConfigResult result, PackageId packageId, string tfmStr = "", bool isGlobalTool = false)
-        {
-            var global = isGlobalTool ? " -g" : "";
-            switch(result)
-            {
-                case InitializationRuntimeConfigResult.Success:
-                    break;
+                // Error if tool is incompatible
+                var global = isGlobalTool ? " -g" : "";
+                switch (result)
+                {
+                    case InitializationRuntimeConfigResult.Success:
+                        break;
 
-                default:
-                    throw new GracefulException(
-                            string.Format(
-                            CommonLocalizableStrings.ToolPackageRuntimeConfigIncompatible,
-                            packageId, tfmStr, global));
+                    default:
+                        throw new GracefulException(
+                                string.Format(
+                                CommonLocalizableStrings.ToolPackageRuntimeConfigIncompatible,
+                                packageId, tfmValue, global));
+                }
             }
         }
 
