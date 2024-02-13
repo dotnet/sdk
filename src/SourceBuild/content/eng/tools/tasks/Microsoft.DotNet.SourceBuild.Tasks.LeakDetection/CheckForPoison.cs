@@ -28,6 +28,8 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
         /// The files to check for poison and/or hash matches.  Zips and
         /// nupkgs will be extracted and checked recursively.
         /// %(Identity): Path to the initial set of files.
+        /// Add SourceBuildReferencePackage metadata and set to true to
+        /// indicate that the file comes from SBRP.
         /// </summary>
         [Required]
         public ITaskItem[] FilesToCheck { get; set; }
@@ -65,11 +67,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
         /// Intended for Linux systems with limited /tmp space, like Azure VMs.
         /// </summary>
         public string OverrideTempPath { get; set; }
-
-        /// <summary>
-        /// Array of files containing lists of non-shipping packages
-        /// </summary>
-        public ITaskItem[] NonShippingPackagesListFiles { get; set; }
 
         private static readonly string[] ZipFileExtensions =
         {
@@ -152,11 +149,13 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
 
         private const string SbrpAttributeType = "System.Reflection.AssemblyMetadataAttribute";
 
-        private record CandidateFileEntry(string ExtractedPath, string DisplayPath);
+        private const string SbrpMetadataName = "IsSourceBuildReferencePackage";
+
+        private record CandidateFileEntry(string ExtractedPath, string DisplayPath, bool IsSourceBuildReferencePackage);
 
         public override bool Execute()
         {
-            IEnumerable<PoisonedFileEntry> poisons = GetPoisonedFiles(FilesToCheck.Select(f => f.ItemSpec), HashCatalogFilePath, MarkerFileName);
+            IEnumerable<PoisonedFileEntry> poisons = GetPoisonedFiles(FilesToCheck, HashCatalogFilePath, MarkerFileName);
 
             // if we should write out the poison report, do that
             if (!string.IsNullOrWhiteSpace(PoisonReportOutputFilePath))
@@ -184,13 +183,14 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
         /// <param name="catalogedPackagesFilePath">File path to the file hash catalog</param>
         /// <param name="markerFileName">Marker file name to check for in poisoned nupkgs</param>
         /// <returns>List of poisoned packages and files found and reasons for each</returns>
-        internal IEnumerable<PoisonedFileEntry> GetPoisonedFiles(IEnumerable<string> initialCandidates, string catalogedPackagesFilePath, string markerFileName)
+        internal IEnumerable<PoisonedFileEntry> GetPoisonedFiles(IEnumerable<ITaskItem> initialCandidates, string catalogedPackagesFilePath, string markerFileName)
         {
-            IEnumerable<string> nonShippingPackages = GetAllNonShippingPackages();
             IEnumerable<CatalogPackageEntry> catalogedPackages = ReadCatalog(catalogedPackagesFilePath);
             var poisons = new List<PoisonedFileEntry>();
             var candidateQueue = new Queue<CandidateFileEntry>(initialCandidates.Select(candidate =>
-                new CandidateFileEntry(candidate, Utility.MakeRelativePath(candidate, ProjectDirPath))));
+                new CandidateFileEntry(candidate.ItemSpec,
+                    Utility.MakeRelativePath(candidate.ItemSpec, ProjectDirPath),
+                    candidate.GetMetadata(SbrpMetadataName) == "true")));
 
             if (!string.IsNullOrWhiteSpace(OverrideTempPath))
             {
@@ -208,12 +208,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
                 if (ZipFileExtensions.Concat(TarFileExtensions).Concat(TarGzFileExtensions).Any(e => candidate.ExtractedPath.ToLowerInvariant().EndsWith(e)))
                 {
                     Log.LogMessage($"Zip or NuPkg file to check: {candidate.ExtractedPath}");
-
-                    // Skip non-shipping packages
-                    if (nonShippingPackages.Contains(Path.GetFileName(candidate.ExtractedPath), StringComparer.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
 
                     var tempCheckingDir = Path.Combine(tempDir.FullName, Path.GetFileNameWithoutExtension(candidate.ExtractedPath));
                     PoisonedFileEntry result = ExtractAndCheckZipFileOnly(catalogedPackages, candidate, markerFileName, tempCheckingDir, candidateQueue);
@@ -235,21 +229,6 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             tempDir.Delete(true);
 
             return poisons;
-        }
-
-        private IEnumerable<string> GetAllNonShippingPackages()
-        {
-            if (NonShippingPackagesListFiles != null)
-            {
-                return NonShippingPackagesListFiles
-                    .SelectMany(item => File.ReadAllLines(item.ItemSpec))
-                    .Distinct()
-                    .ToList();
-            }
-            else
-            {
-                return Enumerable.Empty<string>();
-            }
         }
 
         private static PoisonedFileEntry CheckSingleFile(IEnumerable<CatalogPackageEntry> catalogedPackages, CandidateFileEntry candidate)
@@ -303,7 +282,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             try
             {
                 AssemblyName asm = AssemblyName.GetAssemblyName(fileToCheck);
-                if (!candidate.DisplayPath.Contains("SourceBuildReferencePackages") && IsAssemblyFromSbrp(fileToCheck))
+                if (!candidate.IsSourceBuildReferencePackage && IsAssemblyFromSbrp(fileToCheck))
                 {
                     poisonEntry.Type |= PoisonType.SourceBuildReferenceAssembly;
                 }
@@ -451,7 +430,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks.LeakDetection
             {
                 string displayPath = $"{candidate.DisplayPath}/{child.Replace(tempDir, string.Empty).TrimStart(Path.DirectorySeparatorChar)}";
 
-                futureFilesToCheck.Enqueue(new CandidateFileEntry(child, displayPath));
+                futureFilesToCheck.Enqueue(new CandidateFileEntry(child, displayPath, candidate.IsSourceBuildReferencePackage));
             }
 
             return poisonEntry.Type != PoisonType.None ? poisonEntry : null;

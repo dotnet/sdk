@@ -1,14 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <!--
-      All packages built in SBRP repo are copied to prereqs/package/reference.
-      Nothing gets copied to blob-feed packages cache.
-
-      This would cause an issue with validation in EnsurePackagesCreated target.
-      We need to skip it for SBRP repo.
-    -->
-    <SkipEnsurePackagesCreated>true</SkipEnsurePackagesCreated>
+    <!-- All packages built in SBRP repo are copied to prereqs/package/reference.
+         Nothing gets copied to the artifacts/packages folder. -->
 
     <!-- SBRP builds before Arcade so it also needs the bootstrap Arcade version -->
     <UseBootstrapArcade>true</UseBootstrapArcade>

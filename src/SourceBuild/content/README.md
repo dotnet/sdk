@@ -109,21 +109,21 @@ In case you don't want to / cannot prepare your environment per the requirements
         ./build.sh -sb --clean-while-building
         ```
 
-    The resulting SDK is placed at `artifacts/[your-arch]/Release/dotnet-sdk-9.0.100-[your-RID].tar.gz` (for Unix) or `artifacts/[your-arch]/Release/dotnet-sdk-9.0.100-[your-RID].zip` (for Windows).
+    The resulting SDK is placed at `artifacts/assets/Release/dotnet-sdk-9.0.100-[your-RID].tar.gz` (for Unix) or `artifacts/assets/Release/dotnet-sdk-9.0.100-[your-RID].zip` (for Windows).
 
 4. *(Optional)* **Unpack and install the .NET SDK**
     
     For Unix:
     ```bash
     mkdir -p $HOME/dotnet
-    tar zxf artifacts/[your-arch]/Release/dotnet-sdk-9.0.100-[your-RID].tar.gz -C $HOME/dotnet
+    tar zxf artifacts/assets/Release/dotnet-sdk-9.0.100-[your-RID].tar.gz -C $HOME/dotnet
     ln -s $HOME/dotnet/dotnet /usr/bin/dotnet
     ```
 
     For Windows:
     ```cmd
     mkdir %userprofile%\dotnet
-    tar -xf artifacts/<arch>/Release/dotnet-sdk-9.0.100-[your RID].zip -C %userprofile%\dotnet
+    tar -xf artifacts/assets/Release/dotnet-sdk-9.0.100-[your RID].zip -C %userprofile%\dotnet
     set "PATH=%userprofile%\dotnet;%PATH%"
     ```
     
@@ -152,7 +152,7 @@ git clone https://github.com/dotnet/dotnet .
 ./prep.sh && ./build.sh -sb --clean-while-building
 
 mkdir -p $HOME/.dotnet
-tar -zxf artifacts/x64/Release/dotnet-sdk-9.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet
+tar -zxf artifacts/assets/Release/dotnet-sdk-9.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet
 ln -s $HOME/.dotnet/dotnet /usr/bin/dotnet
 ```
 
