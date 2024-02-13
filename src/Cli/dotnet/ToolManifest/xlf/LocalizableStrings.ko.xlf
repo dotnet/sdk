@@ -36,6 +36,11 @@ For a list of locations searched, specify the "-d" option before the tool name.<
         <target state="translated">패키지 {0}에 항목이 두 개 이상 있습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolMissingRollForward">
+        <source>Missing 'rollForward' entry.</source>
+        <target state="new">Missing 'rollForward' entry.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
         <source>Expected a {0} for property '{1}'.</source>
         <target state="translated">'{1}' 속성에는 {0}이(가) 필요합니다.</target>
