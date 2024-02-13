@@ -205,9 +205,9 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             var runtimeConfigFilePath = Path.ChangeExtension(executableFilePath.ToString(), ".runtimeconfig.json");
 
             // Check if the runtimeconfig.json file is compatible with the current runtime
-            string tfmValue = "";
             if (File.Exists(runtimeConfigFilePath))
-            { 
+            {
+                string tfmValue = "";
                 JsonElement rootElement = JsonDocument.Parse(File.ReadAllText(runtimeConfigFilePath)).RootElement;
                 
                 if (rootElement.TryGetProperty("runtimeOptions", out JsonElement runtimeOptionsElement) &&
@@ -215,7 +215,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 {
                     tfmValue = new string(tfmElement.GetString().Where(c => char.IsDigit(c) || c == '.').ToArray());
                 }
-                var tfmStr = double.TryParse(tfmValue, out double tfmDouble) ? tfmDouble.ToString() : "";
                 var result = NETCoreSdkResolverNativeWrapper.InitializeForRuntimeConfig(runtimeConfigFilePath);
                 RuntimeConfigDetectionMessage(result, packageId, tfmValue, isGlobalTool);
             }
