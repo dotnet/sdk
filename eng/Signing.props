@@ -1,12 +1,12 @@
 <Project>
 
-  <ItemGroup Condition="'$(PostBuildSign)' != 'true'">
+  <!-- <ItemGroup Condition="'$(PostBuildSign)' != 'true'">
     <ItemsToSign Remove="@(ItemsToSign)" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.exe" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.msi" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <PropertyGroup>
     <ExternalCertificateId Condition="'$(ExternalCertificateId)' == ''">3PartySHA2</ExternalCertificateId>
@@ -33,7 +33,7 @@
     <FileSignInfo Include="dotnet-tool-with-output-name.dll" CertificateName="None" />
 
     <!-- TODO: Temp to suss out other build issues. -->
-    <FileSignInfo Include="System.Reflection.MetadataLoadContext.dll" CertificateName="None" />
+    <!-- <FileSignInfo Include="System.Reflection.MetadataLoadContext.dll" CertificateName="None" /> -->
 
     <!-- Third party DLLs used by tests -->
     <FileSignInfo Include="Castle.Core.dll" CertificateName="None" />
