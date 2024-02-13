@@ -10,7 +10,7 @@
 
 This Codespace can help you debug the source build of .NET. This build takes about
 45 minutes and, after completion, produces an archived .NET SDK located in
-`/workspaces/dotnet/artifacts/x64/Release`. In case you selected the `prebuilt-sdk`
+`/workspaces/dotnet/artifacts/assets/Release`. In case you selected the `prebuilt-sdk`
 Codespace, the built-from-source SDK will already be there.
 
 ## Build the SDK

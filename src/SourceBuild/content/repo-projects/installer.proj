@@ -29,7 +29,7 @@
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:CoreSetupRid=$(TargetRid)</BuildArgs>
 
     <!-- Consume the source-built Core-Setup and toolset. This line must be removed to source-build CLI without source-building Core-Setup first. -->
-    <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(SourceBuiltAssetsDir)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
 
     <BuildArgs>$(BuildArgs) /p:UsePortableLinuxSharedFramework=false</BuildArgs>
   </PropertyGroup>

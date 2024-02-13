@@ -14,43 +14,56 @@
   <Target Name="CustomRepoBuild"
           AfterTargets="RepoBuild"
           DependsOnTargets="CreateBuildInputProps;DetermineSourceBuiltSdkVersion">
-    <!-- Copy PVP to packages dir in order to package them together -->
-    <Copy SourceFiles="$(CurrentSourceBuiltPackageVersionPropsPath)" DestinationFiles="$(SourceBuiltPackagesPath)PackageVersions.props" />
-
     <PropertyGroup>
-      <SourceBuildReferencePackagesDestination>$(SourceBuiltPackagesPath)SourceBuildReferencePackages/</SourceBuildReferencePackagesDestination>
+      <SourceBuildTarballStagingDir>$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', '$(SourceBuiltArtifactsTarballName)'))</SourceBuildTarballStagingDir>
+      <SourceBuildReferencePackagesDestination>$([MSBuild]::NormalizeDirectory('$(SourceBuildTarballStagingDir)', 'SourceBuildReferencePackages'))</SourceBuildReferencePackagesDestination>
     </PropertyGroup>
+
+    <!-- Copy PVP to staging dir in order to package them together. -->
+    <Copy SourceFiles="$(CurrentSourceBuiltPackageVersionPropsPath)"
+          DestinationFiles="$(SourceBuildTarballStagingDir)PackageVersions.props" />
 
     <ItemGroup>
       <SourceBuildReferencePackagesNupkgFiles Include="$(ReferencePackagesDir)**/*.nupkg" />
     </ItemGroup>
 
-    <!-- Copy reference packages from ReferencePackagesDir to blob-feed reference packages path. -->
+    <!-- Copy reference packages from ReferencePackagesDir to staging dir. -->
     <Copy
-      Condition="'@(SourceBuildReferencePackagesNupkgFiles)' != ''"
       SourceFiles="@(SourceBuildReferencePackagesNupkgFiles)"
-      DestinationFiles="@(SourceBuildReferencePackagesNupkgFiles -> '$(SourceBuildReferencePackagesDestination)%(Filename)%(Extension)')" />
+      DestinationFiles="@(SourceBuildReferencePackagesNupkgFiles -> '$(SourceBuildReferencePackagesDestination)%(Filename)%(Extension)')"
+      Condition="'@(SourceBuildReferencePackagesNupkgFiles)' != ''" />
+
+    <ItemGroup>
+      <ArtifactsPackage Include="$(ArtifactsPackagesDir)**\*.nupkg" />
+    </ItemGroup>
+
+    <!-- Copy packages to staging dir. -->
+    <Copy SourceFiles="@(ArtifactsPackage)"
+          DestinationFolder="$(SourceBuildTarballStagingDir)"
+          Condition="'@(ArtifactsPackage)' != ''" />
 
     <PropertyGroup>
-      <SourceBuiltTarballName>$(SharedOutputPath)$(SourceBuiltArtifactsTarballName).$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</SourceBuiltTarballName>
+      <SourceBuiltTarballName>$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</SourceBuiltTarballName>
       <SourceBuiltVersionFileName>.version</SourceBuiltVersionFileName>
     </PropertyGroup>
 
-    <!-- Content of the .version file to include in the tarball -->
+    <!-- Content of the .version file to include in the tarball. Write to staging dir. -->
     <ItemGroup>
       <VersionFileContent Include="$(RepositoryCommit);$(SourceBuiltSdkVersion)" />
     </ItemGroup>
 
     <WriteLinesToFile
-      File="$(SourceBuiltPackagesPath)$(SourceBuiltVersionFileName)"
+      File="$(SourceBuildTarballStagingDir)$(SourceBuiltVersionFileName)"
       Lines="@(VersionFileContent)"
       Overwrite="true" />
 
-    <MakeDir Directories="$(SharedOutputPath)" />
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(SourceBuiltTarballName)'))" />
     <Exec Command="tar --numeric-owner -czf $(SourceBuiltTarballName) $(SourceBuiltVersionFileName) *.nupkg *.props SourceBuildReferencePackages/"
-          WorkingDirectory="$(SourceBuiltPackagesPath)" />
+          WorkingDirectory="$(SourceBuildTarballStagingDir)" />
 
     <Message Importance="High" Text="Packaged source-built artifacts to $(SourceBuiltTarballName)" />
+
+    <RemoveDir Directories="$(SourceBuildTarballStagingDir)" />
   </Target>
 
 </Project>
