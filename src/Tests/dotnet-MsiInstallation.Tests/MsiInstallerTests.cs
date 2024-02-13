@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         //  Also see https://stackoverflow.com/questions/1735978/manipulate-hyper-v-from-net
         //  Official documentation?: https://learn.microsoft.com/en-us/windows/win32/hyperv_v2/exporting-virtual-machines
         //  How to rename a snapshot: https://stackoverflow.com/questions/7599217/setting-hyper-v-snapshots-name-programmatically
+        //  There is a 50 checkpoint max
 
 
         //  Reminder: Enable "Remote Service Management" firewall rule so that PSExec will run more quickly.  Make sure network is set to "Private" in Windows settings (or enable the firewall rule for public networks).
