@@ -1,14 +1,7 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.CommandLine;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -28,8 +21,8 @@ using NuGet.Versioning;
 using NuGet.Configuration;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
-using Microsoft.DotNet.NativeWrapper;
 using System.Text.Json;
+using static Microsoft.DotNet.NativeWrapper.NETCoreSdkResolverNativeWrapper;
 
 namespace Microsoft.DotNet.Cli.ToolPackage
 {
@@ -215,23 +208,19 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                 {
                     tfmValue = new string(tfmElement.GetString().Where(c => char.IsDigit(c) || c == '.').ToArray());
                 }
-                var result = NETCoreSdkResolverNativeWrapper.InitializeForRuntimeConfig(runtimeConfigFilePath);
+                var result = InitializeForRuntimeConfig(runtimeConfigFilePath);
                 RuntimeConfigDetectionMessage(result, packageId, tfmValue, isGlobalTool);
             }
         }
 
-        private static void RuntimeConfigDetectionMessage(int result, PackageId packageId, string tfmStr = "", bool isGlobalTool = false)
+        private static void RuntimeConfigDetectionMessage(InitializationRuntimeConfigResult result, PackageId packageId, string tfmStr = "", bool isGlobalTool = false)
         {
             var global = isGlobalTool ? " -g" : "";
             switch(result)
             {
-                // RuntimeConfigDetectionResult::Success
-                case 0:
-                case 1:
-                case 2:
+                case InitializationRuntimeConfigResult.Success:
                     break;
 
-                // RuntimeConfigDetectionResult incompatible
                 default:
                     throw new GracefulException(
                             string.Format(
