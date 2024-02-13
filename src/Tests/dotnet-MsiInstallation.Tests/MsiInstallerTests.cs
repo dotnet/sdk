@@ -237,16 +237,32 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
         [Fact]
-        public void RepeatedUpdateToSameRollbackFile()
+        public void UpdateWithRollback()
         {
             InstallSdk();
             InstallWorkload("wasm-tools");
             ApplyRC1Manifests();
             
             TestWasmWorkload();
+
+            //  Second time applying same rollback file shouldn't do anything
             ApplyRC1Manifests()
                 .Should()
                 .NotHaveStdOutContaining("Installing");
+        }
+
+        [Fact]
+        public void InstallWithRollback()
+        {
+            InstallSdk();
+
+            VM.WriteFile($@"c:\SdkTesting\rollback-rc1.json", RollbackRC1)
+                .Execute().Should().Pass();
+
+            VM.CreateRunCommand("dotnet", "workload", "install", "wasm-tools", "--from-rollback-file", $@"c:\SdkTesting\rollback-rc1.json")
+                .Execute().Should().Pass();
+
+            TestWasmWorkload();
         }
 
         [Fact]
