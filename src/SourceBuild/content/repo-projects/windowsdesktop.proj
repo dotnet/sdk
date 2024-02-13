@@ -9,7 +9,6 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <!-- https://github.com/dotnet/source-build/issues/3798 -->
     <RepositoryReference Include="wpf" />
   </ItemGroup>
 

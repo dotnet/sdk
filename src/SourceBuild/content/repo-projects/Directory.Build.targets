@@ -35,7 +35,6 @@
     <RepositoryReference Remove="roslyn" />
     <RepositoryReference Remove="msbuild" />
     <RepositoryReference Remove="sdk" />
-    <RepositoryReference Remove="wpf" />
     <RepositoryReference Remove="aspnetcore" />
     <RepositoryReference Remove="razor" />
     <RepositoryReference Remove="deployment-tools" />
