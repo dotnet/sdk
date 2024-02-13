@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
     <DotNetBuildOrchestrator>true</DotNetBuildOrchestrator>
+    <RootRepo>dotnet</RootRepo>
   </PropertyGroup>
 
   <PropertyGroup Label="CalculateTargetOS">
@@ -149,8 +150,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <RootRepo>dotnet</RootRepo>
-
     <SrcDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'src'))</SrcDir>
     <ToolsDir>$([MSBuild]::NormalizeDirectory('$(RepositoryEngineeringDir)', 'tools'))</ToolsDir>
     <TasksDir>$([MSBuild]::NormalizeDirectory('$(ToolsDir)', 'tasks'))</TasksDir>
