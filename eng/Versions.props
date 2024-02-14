@@ -19,8 +19,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- command-line-api -->
-    <SystemCommandLineVersion>2.0.0-beta4.24102.1</SystemCommandLineVersion>
-    <SystemCommandLineRenderingVersion>0.4.0-alpha.24102.1</SystemCommandLineRenderingVersion>
+    <SystemCommandLineVersion>2.0.0-beta4.24112.1</SystemCommandLineVersion>
+    <SystemCommandLineRenderingVersion>0.4.0-alpha.24112.1</SystemCommandLineRenderingVersion>
     <!-- corefx -->
     <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
     <!-- msbuild -->
