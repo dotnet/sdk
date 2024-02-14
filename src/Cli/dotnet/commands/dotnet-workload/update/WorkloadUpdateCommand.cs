@@ -175,8 +175,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         _workloadInstaller.RemoveManifestsFromInstallState(sdkFeatureBand);
                     }
 
-					UpdateInstallState(useRollback, manifestsToUpdate);
-
                     _workloadResolver.RefreshWorkloadManifests();
 
                     var workloads = GetUpdatableWorkloads();
