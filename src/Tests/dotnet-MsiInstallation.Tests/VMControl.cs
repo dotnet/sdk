@@ -18,9 +18,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
     {
         public string VMName { get; set; } = "Windows 11 dev environment";
         public string VMMachineName { get; set; } = "dsp-vm";
-        public string PsExecPath = @"C:\Users\Daniel\Downloads\PSTools\PsExec.exe";
 
         const string virtNamespace = @"root\virtualization\v2";
+
+        string _psExecPath;
 
         public ITestOutputHelper Log { get; }
 
@@ -43,11 +44,21 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             Log = log;
             _session = CimSession.Create(Environment.MachineName);
+
+            if (!ToolsetInfo.TryResolveCommand("PsExec", out _psExecPath))
+            {
+                throw new Exception("Couldn't find PsExec on PATH");
+            }
+        }
+
+        public static List<string> GetVirtualMachines(ITestOutputHelper log)
+        {
+            var session = CimSession.Create(Environment.MachineName);
         }
 
         public CommandResult RunCommandOnVM(string[] args, string workingDirectory = null)
         {
-            var remoteCommand = new RemoteCommand(Log, VMMachineName, PsExecPath, workingDirectory, args);
+            var remoteCommand = new RemoteCommand(Log, VMMachineName, _psExecPath, workingDirectory, args);
 
             for (int i=0; i<3; i++)
             {
