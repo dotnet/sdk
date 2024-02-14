@@ -44,4 +44,7 @@
     <UsagePattern IdentityGlob="Microsoft.TemplateSearch.Common/8.0.*" />
     <UsagePattern IdentityGlob="Valleysoft.DockerCredsProvider/*" />
   </IgnorePatterns>
+  <Usages>
+    <Usage Id="System.Drawing.Common" Version="8.0.1" />
+  </Usages>
 </UsageData>
