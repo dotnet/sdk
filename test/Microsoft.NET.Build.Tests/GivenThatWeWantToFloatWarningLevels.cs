@@ -156,7 +156,7 @@ namespace Microsoft.NET.Build.Tests
             buildResult.StdErr.Should().Be(string.Empty);
         }
 
-        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.CurrentTargetFrameworkVersion)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, ToolsetInfo.NextTargetFrameworkVersion)]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_defaults_preview_AnalysisLevel_to_the_next_tfm(string currentTFM, string nextTFMVersionNumber)
         {
@@ -268,6 +268,10 @@ namespace Microsoft.NET.Build.Tests
         [InlineData("8.0", "", "true", "")]
         [InlineData("8", "default", "false", "Security")]
         [InlineData("8.0", "", "true", "Usage")]
+        [InlineData("9", "default", "false", "")]
+        [InlineData("9.0", "", "true", "")]
+        [InlineData("9", "default", "false", "Security")]
+        [InlineData("9.0", "", "true", "Usage")]
         [RequiresMSBuildVersionTheory("16.8")]
         public void It_maps_analysis_properties_to_globalconfig(string analysisLevel, string analysisMode, string codeAnalysisTreatWarningsAsErrors, string category)
         {
