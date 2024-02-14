@@ -35,4 +35,7 @@
          is only applicable to 8.0.1xx. -->
     <UsagePattern IdentityGlob="Valleysoft.DockerCredsProvider/*" />
   </IgnorePatterns>
+  <Usages>
+    <Usage Id="System.Drawing.Common" Version="8.0.1" />
+  </Usages>
 </UsageData>
