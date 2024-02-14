@@ -289,12 +289,12 @@
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
-        <target state="new">The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</target>
+        <target state="translated">Üzerinde işlem yapılacak proje veya çözüm dosyası. Bir dosya belirtilmezse komut geçerli dizinde dosya arar.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
-        <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
-        <target state="new">The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</target>
+        <source>PROJECT | SOLUTION</source>
+        <target state="translated">PROJECT | SOLUTION</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution_0_has_ no_projects">

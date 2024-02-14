@@ -334,7 +334,7 @@
     <value>Cannot specify the '--folder' option when writing a binary log.</value>
   </data>
   <data name="SolutionOrProjectArgumentName" xml:space="preserve">
-    <value>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</value>
+    <value>PROJECT | SOLUTION</value>
   </data>
   <data name="SolutionOrProjectArgumentDescription" xml:space="preserve">
     <value>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</value>
