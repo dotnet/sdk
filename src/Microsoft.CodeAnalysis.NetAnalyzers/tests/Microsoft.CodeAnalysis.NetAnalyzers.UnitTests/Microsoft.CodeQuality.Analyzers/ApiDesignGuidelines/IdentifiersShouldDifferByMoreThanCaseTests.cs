@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldDifferByMoreThanCaseAnalyzer,
@@ -142,7 +143,7 @@ namespace N
             }.RunAsync();
         }
 
-        [Fact]
+        [Fact, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
         public async Task FileScopedTypesInNamespaceAsync()
         {
             string fileWithClass = """
@@ -168,7 +169,7 @@ namespace N
             }.RunAsync();
         }
 
-        [Fact]
+        [Fact, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
         public async Task FileScopedTypesGlobalAsync()
         {
             string fileWithClass = """
