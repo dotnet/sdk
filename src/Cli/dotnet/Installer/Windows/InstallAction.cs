@@ -12,9 +12,5 @@ namespace Microsoft.DotNet.Installer.Windows
         Install,
         Uninstall,
         Repair,
-        Rollback,
-        MinorUpdate,
-        MajorUpgrade,
-        Downgrade,
     }
 }

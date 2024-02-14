@@ -35,4 +35,5 @@
          is only applicable to 8.0.1xx. -->
     <UsagePattern IdentityGlob="Valleysoft.DockerCredsProvider/*" />
   </IgnorePatterns>
+
 </UsageData>
