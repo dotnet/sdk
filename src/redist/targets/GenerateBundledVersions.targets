@@ -216,12 +216,16 @@
 
       <Net80AppHostRids Include="
           @(Net70AppHostRids);
+          freebsd-x64;
+          freebsd-arm64;
           " />
 
       <Net80AppHostRids Remove="win-arm" />
 
       <Net80RuntimePackRids Include="
           @(Net70RuntimePackRids);
+          freebsd-x64;
+          freebsd-arm64;
           " />
 
       <Net80RuntimePackRids Remove="win-arm" />
@@ -290,6 +294,8 @@
 
       <Net80MonoRuntimePackRids Include="
         @(Net70MonoRuntimePackRids);
+        freebsd-x64;
+        freebsd-arm64;
         " />
 
       <Net80MonoRuntimePackRids Remove="win-arm" />
@@ -331,7 +337,11 @@
 
       <Net70Crossgen2SupportedRids Include="@(Net60Crossgen2SupportedRids)" />
 
-      <Net80Crossgen2SupportedRids Include="@(Net70Crossgen2SupportedRids)" />
+      <Net80Crossgen2SupportedRids Include="
+        @(Net70Crossgen2SupportedRids);
+        freebsd-x64;
+        freebsd-arm64;
+        " />
 
       <Net80Crossgen2SupportedRids Remove="win-arm" />
 
@@ -358,6 +368,8 @@
         @(Net70ILCompilerSupportedRids);
         osx-x64;
         osx-arm64;
+        freebsd-x64;
+        freebsd-arm64;
         " />
 
       <ILCompilerSupportedRids Include="@(Net80ILCompilerSupportedRids)" />
@@ -375,6 +387,8 @@
           linux-bionic-x64;
           osx-arm64;
           osx-x64;
+          freebsd-arm64;
+          freebsd-x64;
           "
           />
 
@@ -397,7 +411,7 @@
       <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);linux-musl-arm;win-arm64" />
       <AspNetCore60RuntimePackRids Include="@(AspNetCore50RuntimePackRids);osx-arm64;linux-s390x;linux-loongarch64" />
       <AspNetCore70RuntimePackRids Include="@(AspNetCore60RuntimePackRids);linux-ppc64le" />
-      <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
+      <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids);freebsd-x64;freebsd-arm64" />
       <AspNetCore80RuntimePackRids Remove="win-arm" />
       <AspNetCore90RuntimePackRids Include="@(AspNetCore80RuntimePackRids);linux-riscv64;linux-musl-riscv64" />
       <AspNetCoreRuntimePackRids Include="@(AspNetCore90RuntimePackRids)" />
