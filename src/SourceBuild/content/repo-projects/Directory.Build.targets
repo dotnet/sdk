@@ -39,7 +39,6 @@
     <RepositoryReference Remove="sdk" />
     <RepositoryReference Remove="aspnetcore" />
     <RepositoryReference Remove="razor" />
-    <RepositoryReference Remove="deployment-tools" />
     <RepositoryReference Remove="format" />
     <RepositoryReference Remove="nuget-client" />
     <RepositoryReference Remove="fsharp" />
