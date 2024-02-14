@@ -97,9 +97,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 // Get all the potentially externally visible types in the namespace
                 IEnumerable<INamedTypeSymbol> typeMembers = @namespace.GetTypeMembers().Where(item =>
-                Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
-                MatchesConfiguredVisibility(item, context.Options, context.Compilation) &&
-                !item.IsFileLocal());
+                    Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
+                    MatchesConfiguredVisibility(item, context.Options, context.Compilation) &&
+                    !item.IsFileLocal());
 
                 if (typeMembers.Any())
                 {
