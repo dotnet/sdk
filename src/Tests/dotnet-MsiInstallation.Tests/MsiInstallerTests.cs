@@ -35,8 +35,22 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         //  Reminder: Enable "Remote Service Management" firewall rule so that PSExec will run more quickly.  Make sure network is set to "Private" in Windows settings (or enable the firewall rule for public networks).
 
-        const string SdkInstallerVersion = "8.0.101";
-        const string SdkInstallerFileName = $"dotnet-sdk-{SdkInstallerVersion}-win-x64.exe";
+        string SdkInstallerVersion
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(VM.VMTestSettings.SdkInstallerVersion))
+                {
+                    return VM.VMTestSettings.SdkInstallerVersion;
+                }
+                else
+                {
+                    return "8.0.101";
+                }
+            }
+        }
+
+        string SdkInstallerFileName => $"dotnet-sdk-{SdkInstallerVersion}-win-x64.exe";
 
         const string RollbackRC1 = """
                 {
@@ -366,9 +380,14 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         void DeployStage2Sdk()
         {
-            Log.WriteLine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
+            if (!VM.VMTestSettings.ShouldTestStage2)
+            {
+                return;
+            }
 
             var installedSdkFolder = $@"c:\Program Files\dotnet\sdk\{SdkInstallerVersion}";
+
+            Log.WriteLine($"Deploying SDK from {TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest} to {installedSdkFolder} on VM.");
 
             var vmVersionFilePath = Path.Combine(installedSdkFolder, ".version");
 

@@ -19,6 +19,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
         ITestOutputHelper Log { get; }
         public VMControl VMControl { get; }
 
+        public VMTestSettings VMTestSettings { get; }
+
         VMStateTree _rootState;
         VMStateTree _currentState;
         VMStateTree _currentAppliedState;
@@ -31,9 +33,45 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public VirtualMachine(ITestOutputHelper log)
         {
             Log = log;
-            VMControl = new VMControl(log);
 
-            _stateFile = Path.Combine(Environment.CurrentDirectory, "vmstate.json");
+            var testSettingsFile = Path.Combine(Environment.CurrentDirectory, "VMTestSettings.json");
+            if (File.Exists(testSettingsFile))
+            {
+                string json = File.ReadAllText(testSettingsFile);
+                VMTestSettings = JsonSerializer.Deserialize<VMTestSettings>(json);
+            }
+            else
+            {
+                VMTestSettings = new();
+            }
+
+            if (string.IsNullOrEmpty(VMTestSettings.VMName))
+            {
+                var virtualMachineNames = VMControl.GetVirtualMachines(Log);
+
+                if (virtualMachineNames.Count == 0)
+                {
+                    throw new Exception("No virtual machines found");
+                }
+                else if (virtualMachineNames.Count == 1)
+                {
+                    VMTestSettings.VMName = virtualMachineNames[0];
+                }
+                else if (virtualMachineNames.Count > 1)
+                {
+                    throw new Exception($"Multiple virtual machines found. Use {testSettingsFile} to specify which VM should be used for tests.");
+                }
+            }
+
+            if (string.IsNullOrEmpty(VMTestSettings.VMMachineName))
+            {
+                VMTestSettings.VMMachineName = VMTestSettings.VMName.Replace(" ", "");
+            }
+
+            VMControl = new VMControl(log, VMTestSettings.VMName, VMTestSettings.VMMachineName);
+
+
+            _stateFile = Path.Combine(Environment.CurrentDirectory, "VMState.json");
 
             //  Load root state from file, if it exists
             if (File.Exists(_stateFile))

@@ -16,8 +16,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
 {
     internal class VMControl : IDisposable
     {
-        public string VMName { get; set; } = "Windows 11 dev environment";
-        public string VMMachineName { get; set; } = "dsp-vm";
+        public string VMName { get; }
+        public string VMMachineName { get; }
 
         const string virtNamespace = @"root\virtualization\v2";
 
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
         }
 
-        public VMControl(ITestOutputHelper log)
+        public VMControl(ITestOutputHelper log, string vMName, string vMMachineName)
         {
             if (!WindowsUtils.IsAdministrator())
             {
@@ -43,6 +43,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
 
             Log = log;
+            VMName = vMName;
+            VMMachineName = vMMachineName;
+
             _session = CimSession.Create(Environment.MachineName);
 
             if (!ToolsetInfo.TryResolveCommand("PsExec", out _psExecPath))
@@ -53,7 +56,23 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public static List<string> GetVirtualMachines(ITestOutputHelper log)
         {
-            var session = CimSession.Create(Environment.MachineName);
+            if (!WindowsUtils.IsAdministrator())
+            {
+                throw new Exception("Must be running as admin to control virtual machines");
+            }
+
+            using var session = CimSession.Create(Environment.MachineName);
+
+            var vms = session.QueryInstances(virtNamespace, "WQL", "SELECT * FROM Msvm_ComputerSystem WHERE Caption='Virtual Machine'").ToList();
+
+            List<string> vmNames = new List<string>();
+
+            foreach (var vm in vms)
+            {
+                vmNames.Add((string)vm.CimInstanceProperties["ElementName"].Value);
+            }
+
+            return vmNames;
         }
 
         public CommandResult RunCommandOnVM(string[] args, string workingDirectory = null)
