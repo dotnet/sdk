@@ -113,4 +113,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Note: F# sets DefaultProjectTypeGuid in the F# SDK -->
   </PropertyGroup>
 
+  <!-- Default to the portable RID graph in the outer build as APICompat relies on it. -->
+  <PropertyGroup Condition="'$(RuntimeIdentifierGraphPath)' == ''">
+    <!-- The portable RID graph should be in the same directory as the full RID graph -->
+    <RuntimeIdentifierGraphPath>$([System.IO.Path]::GetDirectoryName($(BundledRuntimeIdentifierGraphFile)))/PortableRuntimeIdentifierGraph.json</RuntimeIdentifierGraphPath>
+  </PropertyGroup>
+
 </Project>
