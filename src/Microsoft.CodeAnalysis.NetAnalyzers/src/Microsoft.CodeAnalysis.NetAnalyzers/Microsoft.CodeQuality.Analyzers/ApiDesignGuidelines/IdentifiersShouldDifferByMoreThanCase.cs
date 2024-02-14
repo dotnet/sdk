@@ -56,7 +56,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             IEnumerable<INamedTypeSymbol> globalTypes = context.Compilation.GlobalNamespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
                     MatchesConfiguredVisibility(item, context.Options, context.Compilation) &&
-                    !IsFileLocalWrapper.FromSymbol(item).IsFileLocal);
+                    !item.IsFileLocal());
 
             CheckTypeNames(globalTypes, context);
             CheckNamespaceMembers(globalNamespaces, context);
@@ -100,7 +100,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 IEnumerable<INamedTypeSymbol> typeMembers = @namespace.GetTypeMembers().Where(item =>
                 Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
                 MatchesConfiguredVisibility(item, context.Options, context.Compilation) &&
-                !IsFileLocalWrapper.FromSymbol(item).IsFileLocal);
+                !item.IsFileLocal());
 
                 if (typeMembers.Any())
                 {
