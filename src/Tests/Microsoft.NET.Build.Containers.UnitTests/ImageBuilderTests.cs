@@ -221,7 +221,7 @@ public class ImageBuilderTests
 
         Assert.Equal(2, resultPorts.Count);
         Assert.NotNull(resultPorts["6000/tcp"] as JsonObject);
-        Assert.NotNull( resultPorts["6010/udp"] as JsonObject);
+        Assert.NotNull(resultPorts["6010/udp"] as JsonObject);
     }
 
     [Fact]
@@ -602,12 +602,56 @@ public class ImageBuilderTests
       config!["config"]?["User"]?.GetValue<string>().Should().Be(expected: userId, because: "The precedence of SetUser should override inferred user ids");
     }
 
+    [Fact]
+    public void WhenMultipleUrlSourcesAreSetOnlyAspnetcoreUrlsIsUsed()
+    {
+        var builder = FromBaseImageConfig($$"""
+        {
+            "architecture": "amd64",
+            "config": {
+                "Hostname": "",
+                "Domainname": "",
+                "User": "",
+                "Env": [
+                "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+                ],
+                "Cmd": ["bash"],
+                "Image": "sha256:d772d27ebeec80393349a4770dc37f977be2c776a01c88b624d43f93fa369d69",
+                "WorkingDir": ""
+            },
+            "created": "2023-02-04T08:14:52.000901321Z",
+            "os": "linux",
+            "rootfs": {
+                "type": "layers",
+                "diff_ids": [
+                "sha256:bd2fe8b74db65d82ea10db97368d35b92998d4ea0e7e7dc819481fe4a68f64cf",
+                "sha256:94100d1041b650c6f7d7848c550cd98c25d0bdc193d30692e5ea5474d7b3b085",
+                "sha256:53c2a75a33c8f971b4b5036d34764373e134f91ee01d8053b4c3573c42e1cf5d",
+                "sha256:49a61320e585180286535a2545be5722b09e40ad44c7c190b20ec96c9e42e4a3",
+                "sha256:8a379cce2ac272aa71aa029a7bbba85c852ba81711d9f90afaefd3bf5036dc48"
+                ]
+            }
+        }
+        """);
+
+        builder.AddEnvironmentVariable(ImageBuilder.EnvironmentVariables.ASPNETCORE_URLS, "https://*:12345");
+        builder.AddEnvironmentVariable(ImageBuilder.EnvironmentVariables.ASPNETCORE_HTTPS_PORTS, "456");
+        var builtImage = builder.Build();
+        JsonNode? result = JsonNode.Parse(builtImage.Config);
+        Assert.NotNull(result);
+        var portsObject = result["config"]?["ExposedPorts"]?.AsObject();
+        var assignedPorts = portsObject?.AsEnumerable().Select(portString => int.Parse(portString.Key.Split('/')[0])).ToArray();
+        Assert.Equal([12345], assignedPorts);
+    }
+
     private ImageBuilder FromBaseImageConfig(string baseImageConfig, [CallerMemberName] string testName = "")
     {
-        var manifest = new ManifestV2() {
+        var manifest = new ManifestV2()
+        {
             SchemaVersion = 2,
             MediaType = SchemaTypes.DockerManifestV2,
-            Config = new ManifestConfig() {
+            Config = new ManifestConfig()
+            {
                 mediaType = "",
                 size = 0,
                 digest = "sha256:0"

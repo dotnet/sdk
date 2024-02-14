@@ -34,7 +34,7 @@ public sealed class ProjectInitializer
         return tempTargetLocation;
     }
 
-    public static (Project, CapturingLogger, IDisposable) InitProject(Dictionary<string, string> bonusProps, [CallerMemberName]string projectName = "")
+    public static (Project, CapturingLogger, IDisposable) InitProject(Dictionary<string, string> bonusProps, Dictionary<string, ITaskItem[]>? bonusItems = null, [CallerMemberName] string projectName = "")
     {
         var props = new Dictionary<string, string>();
         // required parameters
@@ -52,6 +52,7 @@ public sealed class ProjectInitializer
         // default here, can be overridden by tests if needed
         props["NETCoreSdkPortableRuntimeIdentifier"] = "linux-x64";
 
+
         var safeBinlogFileName = projectName.Replace(" ", "_").Replace(":", "_").Replace("/", "_").Replace("\\", "_").Replace("*", "_");
         var loggers = new List<ILogger>
         {
@@ -68,6 +69,32 @@ public sealed class ProjectInitializer
         }
         // derived properties, since these might be set by bonusProps
         props["_TargetFrameworkVersionWithoutV"] = props["TargetFrameworkVersion"].TrimStart('v');
-        return (collection.LoadProject(_combinedTargetsLocation, props, null), logs, collection);
+        var project = collection.LoadProject(_combinedTargetsLocation, props, null);
+        if (bonusItems is not null)
+        {
+            foreach (var (itemType, items) in bonusItems)
+            {
+                foreach (var item in items)
+                {
+                    var newItem = project.AddItem(itemType, item.ItemSpec) switch
+                    {
+                    [var ni] => ni,
+                    [var ni, ..] => ni,
+                    [] => null
+                    };
+                    if (newItem is not null)
+                    {
+                        // we don't want to copy the MSBuild-reserved metadata, if any,
+                        // so only use the custom metadata
+                        var customMetadata = item.CloneCustomMetadata();
+                        foreach (var key in customMetadata)
+                        {
+                            newItem.SetMetadataValue((string)key, customMetadata[key] as string);
+                        }
+                    }
+                }
+            }
+        }
+        return (project, logs, collection);
     }
 }

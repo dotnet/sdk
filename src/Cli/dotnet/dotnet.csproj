@@ -44,6 +44,7 @@
     <EmbeddedResource Update="**\dotnet-list\*.resx" Namespace="Microsoft.DotNet.Tools.List" />
     <EmbeddedResource Update="**\dotnet-new\*.resx" Namespace="Microsoft.DotNet.Tools.New" />
     <EmbeddedResource Update="**\dotnet-pack\*.resx" Namespace="Microsoft.DotNet.Tools.Pack" />
+    <EmbeddedResource Update="**\dotnet-package\search\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Search" />
     <EmbeddedResource Update="**\dotnet-publish\*.resx" Namespace="Microsoft.DotNet.Tools.Publish" />
     <EmbeddedResource Update="**\dotnet-remove-package\*.resx" Namespace="Microsoft.DotNet.Tools.Remove.PackageReference" />
     <EmbeddedResource Update="**\dotnet-remove-reference\*.resx" Namespace="Microsoft.DotNet.Tools.Remove.ProjectToProjectReference" />
@@ -124,4 +125,13 @@
       </ReferencePath>
     </ItemGroup>
   </Target>
+
+  <!-- Global usings -->
+  <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
+  <ItemGroup>
+    <!-- Aliases -->
+    <!-- Note: '%3C' is for '<' and '%3E' is for '>' -->
+    <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />
+  </ItemGroup>
+
 </Project>

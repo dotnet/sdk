@@ -42,24 +42,24 @@
         <target state="translated">工具 '{0}' 為最新 (版本 '{1}' 資訊清單檔 {2})。</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateLocaToolToLowerVersion">
-        <source>The requested version {0} is lower than existing version {1} (manifest file {2}).</source>
-        <target state="translated">要求的版本 {0} 低於現有版本 {1} (資訊清單檔 {2})。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateLocalToolSucceeded">
         <source>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</source>
         <target state="translated">已成功將工具 '{0}' 從 '{1}' 版更新為 '{2}' 版 (資訊清單檔 {3})。</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateLocalToolToLowerVersion">
+        <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
+        <target state="translated">要求的版本 {0} 低於現有版本 {1} (資訊清單檔 {2})。使用 --allow-downgrade 選項以允許此更新。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest prerelease version (version '{1}').</source>
-        <target state="translated">已使用最新搶鮮版 ('{0}' 版) 來重新安裝工具 '{1}'。</target>
+        <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
+        <target state="translated">已使用搶鮮版本 (版本 '{1}') 來重新安裝工具 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
-        <source>Tool '{0}' was reinstalled with the latest stable version (version '{1}').</source>
-        <target state="translated">已使用最新穩定版本 ('{1}' 版) 來重新安裝工具 '{0}'。</target>
+        <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
+        <target state="translated">已使用穩定版本 (版本 '{1}') 來重新安裝工具 '{0}'。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

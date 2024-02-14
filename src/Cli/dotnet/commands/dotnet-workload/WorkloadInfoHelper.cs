@@ -56,7 +56,8 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 userProfileDir,
                 verifySignatures ?? !SignCheck.IsDotNetSigned(),
                 restoreActionConfig: restoreConfig,
-                elevationRequired: false);
+                elevationRequired: false,
+                shouldLog: false);
 
             WorkloadRecordRepo = workloadRecordRepo ?? Installer.GetWorkloadInstallationRecordRepository();
         }
@@ -66,8 +67,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         public IWorkloadInstallationRecordRepository WorkloadRecordRepo { get; private init; }
         public IWorkloadResolver WorkloadResolver { get; private init; }
 
-        public IEnumerable<WorkloadId> InstalledSdkWorkloadIds =>
-            WorkloadRecordRepo.GetInstalledWorkloads(_currentSdkFeatureBand);
+        public IEnumerable<WorkloadId> InstalledSdkWorkloadIds => WorkloadRecordRepo.GetInstalledWorkloads(_currentSdkFeatureBand);
 
         public InstalledWorkloadsCollection AddInstalledVsWorkloads(IEnumerable<WorkloadId> sdkWorkloadIds)
         {

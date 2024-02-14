@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.NativeWrapper
 {
     public class EnvironmentProvider
     {
+        private static readonly char[] s_invalidPathChars = Path.GetInvalidPathChars();
+
         private IEnumerable<string> _searchPaths;
 
         private readonly Func<string, string> _getEnvironmentVariable;
@@ -31,17 +33,12 @@ namespace Microsoft.DotNet.NativeWrapper
         {
             get
             {
-                if (_searchPaths == null)
-                {
-                    var searchPaths = new List<string>();
-
-                    searchPaths.AddRange(
-                        _getEnvironmentVariable(Constants.PATH)
-                        .Split(new char[] { Path.PathSeparator }, options: StringSplitOptions.RemoveEmptyEntries)
-                        .Select(p => p.Trim('"')));
-
-                    _searchPaths = searchPaths;
-                }
+                _searchPaths ??=
+                    _getEnvironmentVariable(Constants.PATH)
+                    .Split(new char[] { Path.PathSeparator }, options: StringSplitOptions.RemoveEmptyEntries)
+                    .Select(p => p.Trim('"'))
+                    .Where(p => p.IndexOfAny(s_invalidPathChars) == -1)
+                    .ToList();
 
                 return _searchPaths;
             }
@@ -51,7 +48,6 @@ namespace Microsoft.DotNet.NativeWrapper
         {
             var commandNameWithExtension = commandName + Constants.ExeSuffix;
             var commandPath = SearchPaths
-                .Where(p => !Path.GetInvalidPathChars().Any(c => p.Contains(c)))
                 .Select(p => Path.Combine(p, commandNameWithExtension))
                 .FirstOrDefault(File.Exists);
 
@@ -67,10 +63,15 @@ namespace Microsoft.DotNet.NativeWrapper
                 return environmentOverride;
             }
 
-            string dotnetExe = _getCurrentProcessPath();
+            string dotnetExe;
+#if NETCOREAPP
+            // The dotnet executable is loading only the .NET version of this code so there is no point checking
+            // the current process path on .NET Framework. We are expected to find dotnet on PATH.
+            dotnetExe = _getCurrentProcessPath();
 
             if (string.IsNullOrEmpty(dotnetExe) || !Path.GetFileNameWithoutExtension(dotnetExe)
                     .Equals(Constants.DotNet, StringComparison.InvariantCultureIgnoreCase))
+#endif
             {
                 string dotnetExeFromPath = GetCommandPath(Constants.DotNet);
                 
@@ -87,6 +88,13 @@ namespace Microsoft.DotNet.NativeWrapper
                 } else {
                     log?.Invoke($"GetDotnetExeDirectory: dotnet command path not found.  Using current process");
                     log?.Invoke($"GetDotnetExeDirectory: Path variable: {_getEnvironmentVariable(Constants.PATH)}");
+
+#if !NETCOREAPP
+                    // If we failed to find dotnet on PATH, we revert to the old behavior of returning the current process
+                    // path. This is really an error state but we're keeping the contract of always returning a non-empty
+                    // path for backward compatibility.
+                    dotnetExe = _getCurrentProcessPath();
+#endif
                 }
             }
 

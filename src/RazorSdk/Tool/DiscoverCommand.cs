@@ -109,8 +109,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 var extensionName = extensionNames.Values[i];
                 var replacementFileName = extensionName switch
                 {
-                    "MVC-1.0" or "MVC-1.1" => "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll",
-                    "MVC-2.0" or "MVC-2.1" => "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version2_X.dll",
+                    "MVC-1.0" or "MVC-1.1" => "Microsoft.CodeAnalysis.Razor.Compiler.Mvc.Version1_X.dll",
+                    "MVC-2.0" or "MVC-2.1" => "Microsoft.CodeAnalysis.Razor.Compiler.Mvc.Version2_X.dll",
                     _ => null,
                 };
 

@@ -90,7 +90,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var scoped = Path.Combine(intermediateOutputPath, "scopedcss", "Styles", "Pages", "Counter.rz.scp.css");
             new FileInfo(scoped).Should().Exist();
             new FileInfo(scoped).Should().Contain("b-overriden");
-            var generated = Path.Combine(intermediateOutputPath, "generated", "Microsoft.NET.Sdk.Razor.SourceGenerators", "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", "Components_Pages_Counter_razor.g.cs");
+            var generated = Path.Combine(intermediateOutputPath, "generated", "Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators", "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", "Components_Pages_Counter_razor.g.cs");
             new FileInfo(generated).Should().Exist();
             new FileInfo(generated).Should().Contain("b-overriden");
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
@@ -319,7 +319,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(generatedBundle).Should().Exist();
             var generatedProjectBundle = Path.Combine(intermediateOutputPath, "scopedcss", "projectbundle", "ComponentApp.bundle.scp.css");
             new FileInfo(generatedProjectBundle).Should().Exist();
-            var generatedCounter = Path.Combine(intermediateOutputPath, "generated", "Microsoft.NET.Sdk.Razor.SourceGenerators", "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", "Components_Pages_Counter_razor.g.cs");
+            var generatedCounter = Path.Combine(intermediateOutputPath, "generated", "Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators", "Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator", "Components_Pages_Counter_razor.g.cs");
             new FileInfo(generatedCounter).Should().Exist();
 
             var componentThumbprint = FileThumbPrint.Create(generatedCounter);
