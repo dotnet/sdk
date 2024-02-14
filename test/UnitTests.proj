@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- TODO: Temporarily skipping EndToEnd.Tests.csproj as all the tests within have not been converted to Helix tests yet. -->
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;EndToEnd.Tests\EndToEnd.Tests.csproj" />
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="containerize.UnitTests\containerize.UnitTests.csproj" />

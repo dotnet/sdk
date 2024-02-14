@@ -1,12 +1,12 @@
 <Project>
 
-  <!-- <ItemGroup Condition="'$(PostBuildSign)' != 'true'">
+  <ItemGroup Condition="'$(PostBuildSign)' != 'true'">
     <ItemsToSign Remove="@(ItemsToSign)" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.exe" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.msi" />
     <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
-  </ItemGroup> -->
+  </ItemGroup>
 
   <PropertyGroup>
     <ExternalCertificateId Condition="'$(ExternalCertificateId)' == ''">3PartySHA2</ExternalCertificateId>
