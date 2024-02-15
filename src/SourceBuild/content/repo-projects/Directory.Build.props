@@ -110,6 +110,7 @@
     <EnvironmentVariables Include="DeterministicSourcePaths=false" Condition="'$(DeterministicBuildOptOut)' == 'true'" />
 
     <EnvironmentVariables Include="SourceRoot=$(ProjectDirectory)" />
+
   </ItemGroup>
 
   <ItemGroup Condition="'$(EnableExtraDebugging)' == 'true'">
