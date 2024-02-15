@@ -168,19 +168,19 @@
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="6.0.28">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>a4df19deda7b41f52c3573a610bbc7f70d0aad1d</Sha>
+      <Sha>4c0f7dc35580c286a77d992688e924117cb24c05</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.6.0" Version="6.0.28-servicing.24113.6">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.6.0" Version="6.0.28-servicing.24114.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>a4df19deda7b41f52c3573a610bbc7f70d0aad1d</Sha>
+      <Sha>4c0f7dc35580c286a77d992688e924117cb24c05</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.6.0" Version="6.0.28-servicing.24113.6">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.6.0" Version="6.0.28-servicing.24114.9">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>a4df19deda7b41f52c3573a610bbc7f70d0aad1d</Sha>
+      <Sha>4c0f7dc35580c286a77d992688e924117cb24c05</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="6.0.28">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>a4df19deda7b41f52c3573a610bbc7f70d0aad1d</Sha>
+      <Sha>4c0f7dc35580c286a77d992688e924117cb24c05</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="6.0.27-servicing.24070.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
