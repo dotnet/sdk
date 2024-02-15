@@ -1,12 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
 
 namespace Microsoft.NET.TestFramework.ProjectConstruction
 {
+    public record BuildResult(Dictionary<string, string> properties, Dictionary<string, Build.Framework.ITaskItem[]> items);
+
+    public class NullOutputHelper() : ITestOutputHelper
+    {
+        public void WriteLine(string message)
+        {
+        }
+
+        public void WriteLine(string format, params object[] args) { }
+    }
+
     public class TestProject
     {
         public TestProject([CallerMemberName] string name = null)
@@ -16,6 +31,8 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 Name = name;
             }
         }
+
+        private readonly IDictionary<(string root, string configuration, string tfm), BuildResult> _getOutputs = new Dictionary<(string root, string configuration, string tfm), BuildResult>();
 
         /// <summary>
         /// A name for the test project that's used to isolate it from a test's root folder by appending it to the root test path.
@@ -124,6 +141,8 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 return true;
             }
         }
+
+        public List<string> ItemsToRecord { get; } = new List<string>();
 
         internal void Create(TestAsset targetTestAsset, string testProjectsSourceFolder, string targetExtension = ".csproj")
         {
@@ -276,7 +295,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 propertyGroup.Element(ns + "OutputType").SetValue("WinExe");
             }
 
-            if(this.SelfContained != "")
+            if (this.SelfContained != "")
             {
                 propertyGroup.Add(new XElement(ns + "SelfContained", String.Equals(this.SelfContained, "true", StringComparison.OrdinalIgnoreCase) ? "true" : "false"));
             }
@@ -429,41 +448,6 @@ namespace {safeThisName}
             {
                 File.WriteAllText(Path.Combine(targetFolder, kvp.Key), kvp.Value);
             }
-
-            if (PropertiesToRecord.Any())
-            {
-                string propertiesElements = "";
-                foreach (var propertyName in PropertiesToRecord)
-                {
-                    propertiesElements += $"      <LinesToWrite Include=`{propertyName}: $({propertyName})`/>" + Environment.NewLine;
-                }
-
-                string injectTargetContents =
-    $@"<Project>
-  <Target Name=`WritePropertyValues` BeforeTargets=`AfterBuild`>
-    <ItemGroup>
-{propertiesElements}
-    </ItemGroup>
-    <WriteLinesToFile
-      File=`$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\PropertyValues.txt`
-      Lines=`@(LinesToWrite)`
-      Overwrite=`true`
-      Encoding=`Unicode`
-      />
-  </Target>
-</Project>";
-
-                injectTargetContents = injectTargetContents.Replace('`', '"');
-
-                string targetPath = Path.Combine(targetFolder, "obj", Name + ".csproj.WriteValuesToFile.g.targets");
-
-                if (!Directory.Exists(Path.GetDirectoryName(targetPath)))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
-                }
-
-                File.WriteAllText(targetPath, injectTargetContents);
-            }
         }
 
         public void AddItem(string itemName, string attributeName, string attributeValue)
@@ -481,28 +465,138 @@ namespace {safeThisName}
             PropertiesToRecord.AddRange(propertyNames);
         }
 
+        public void RecordItems(params string[] itemNames)
+        {
+            ItemsToRecord.AddRange(itemNames);
+        }
+
+        private BuildResult GetBuildResult(string testRoot, string targetFramework = null, string configuration = "Debug")
+        {
+            BuildResult buildResult;
+            lock (_getOutputs)
+            {
+                var key = (testRoot, targetFramework, configuration);
+                if (!_getOutputs.TryGetValue(key, out buildResult))
+                {
+                    buildResult = GetOutputs(testRoot, targetFramework, configuration);
+                    _getOutputs.Add(key, buildResult);
+                }
+            }
+            return buildResult;
+        }
+
+        private Dictionary<string, string> ParseProperties(JsonElement root)
+        {
+            if (root.TryGetProperty("Properties", out var properties))
+            {
+                var o = JsonObject.Create(properties);
+                if (o is null) return new Dictionary<string, string>();
+
+                return o.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.ToString());
+            }
+            else
+            {
+                throw new InvalidOperationException("Expected 'properties' element in build result JSON");
+            }
+        }
+
+        // MSBuild doesn't expose this, but setting these throws.
+        private static string[] msbuildItemMetadataReservedNames = [
+                    "FullPath",
+                    "RootDir",
+                    "Filename",
+                    "Extension",
+                    "RelativeDir",
+                    "Directory",
+                    "RecursiveDir",
+                    "Identity",
+                    "ModifiedTime",
+                    "CreatedTime",
+                    "AccessedTime",
+                    "DefiningProjectFullPath",
+                    "DefiningProjectDirectory",
+                    "DefiningProjectName",
+                    "DefiningProjectExtension"
+        ];
+
+        private Dictionary<string, ITaskItem[]> ParseItems(JsonElement root)
+        {
+            if (root.TryGetProperty("Items", out var items))
+            {
+                JsonObject o = JsonObject.Create(items);
+                if (o is null) return new Dictionary<string, ITaskItem[]>();
+
+                return o.ToDictionary(kvp => kvp.Key, kvp => ReadTaskItemArray(kvp.Value));
+            }
+            else
+            {
+                throw new InvalidOperationException("Expected 'items' element in build result JSON");
+            }
+
+            static ITaskItem[] ReadTaskItemArray(JsonNode value)
+            {
+                if (value is JsonArray array)
+                {
+                    return array.Select(ReadTaskItem).ToArray();
+                }
+                else
+                {
+                    throw new InvalidOperationException("Expected array of items");
+                }
+            }
+            static ITaskItem ReadTaskItem(JsonNode node)
+            {
+                if (node is JsonObject o)
+                {
+                    var item = new TaskItem(o["Identity"].GetValue<string>());
+                    foreach (var kvp in o)
+                    {
+                        if (!msbuildItemMetadataReservedNames.Contains(kvp.Key))
+                        {
+                            item.SetMetadata(kvp.Key, kvp.Value.As<string>());
+                        }
+                    }
+                    return item;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Expected object for item");
+                }
+            }
+        }
+
+        private BuildResult GetOutputs(string testRoot, string targetFramework, string configuration)
+        {
+            var trackedProperties = PropertiesToRecord.Select(p => $"--getProperty:{p}");
+            var trackedItems = ItemsToRecord.Select(i => $"--getItem:{i}");
+            var commandResult =
+                new DotnetBuildCommand(new NullOutputHelper())
+                .WithWorkingDirectory(testRoot)
+                .WithConfiguration(configuration)
+                .WithTargetFramework(targetFramework)
+                .Execute([.. trackedProperties, .. trackedItems]);
+
+            commandResult.Should().Pass();
+            var json = JsonDocument.Parse(commandResult.StdOut);
+            var properties = ParseProperties(json.RootElement);
+            var items = ParseItems(json.RootElement);
+            return new BuildResult(properties, items);
+        }
+
         /// <returns>
         /// A dictionary of property keys to property value strings, case sensitive.
         /// Only properties added to the <see cref="PropertiesToRecord"/> member will be observed.
         /// </returns>
         public Dictionary<string, string> GetPropertyValues(string testRoot, string targetFramework = null, string configuration = "Debug")
         {
-            var propertyValues = new Dictionary<string, string>();
+            var result = GetBuildResult(testRoot, targetFramework, configuration);
+            return result.properties;
+        }
 
-            string intermediateOutputPath = Path.Combine(testRoot, Name, "obj", configuration, targetFramework ?? TargetFrameworks);
-
-            foreach (var line in File.ReadAllLines(Path.Combine(intermediateOutputPath, "PropertyValues.txt")))
-            {
-                int colonIndex = line.IndexOf(':');
-                if (colonIndex > 0)
-                {
-                    string propertyName = line.Substring(0, colonIndex);
-                    string propertyValue = line.Length == colonIndex + 1 ? String.Empty : line.Substring(colonIndex + 2);
-                    propertyValues[propertyName] = propertyValue;
-                }
-            }
-
-            return propertyValues;
+        public Dictionary<string, ITaskItem[]> GetItems(string testRoot, string targetFramework = null, string configuration = "Debug")
+        {
+            var result = GetBuildResult(testRoot, targetFramework, configuration);
+            return result.items;
         }
 
         public static bool ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion targetFrameworkVersion)
