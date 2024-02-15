@@ -173,12 +173,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache, useRollback);
                     }
 
-                    _workloadResolver.RefreshWorkloadManifests();
-
-                    var workloads = GetUpdatableWorkloads();
-
-                    _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
-
                     if (useRollback)
                     {
                         _workloadInstaller.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
@@ -187,10 +181,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         _workloadInstaller.RemoveManifestsFromInstallState(sdkFeatureBand);
                     }
+
+                    _workloadResolver.RefreshWorkloadManifests();
+
+                    var workloads = GetUpdatableWorkloads();
+
+                    _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
                 },
                 rollback: () =>
                 {
                     //  Nothing to roll back at this level, InstallWorkloadManifest and InstallWorkloadPacks handle the transaction rollback
+                    //  We will refresh the workload manifests to make sure that the resolver has the updated state after the rollback
+                    _workloadResolver.RefreshWorkloadManifests();
                 });
         }
 

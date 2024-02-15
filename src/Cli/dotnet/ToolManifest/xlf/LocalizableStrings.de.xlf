@@ -38,7 +38,7 @@ Eine Liste der durchsuchten Speicherorte erhalten Sie, indem Sie vor dem Toolnam
       </trans-unit>
       <trans-unit id="ToolMissingRollForward">
         <source>Missing 'rollForward' entry.</source>
-        <target state="new">Missing 'rollForward' entry.</target>
+        <target state="translated">Fehlender "rollForward"-Eintrag.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
