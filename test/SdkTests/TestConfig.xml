@@ -16,8 +16,6 @@
     <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildALibraryWithFSharp.It_builds_the_library_successfully" />
     <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildALibraryWithVB.It_builds_the_library_successfully" />
     <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.BuildWithTransitiveReferenceToNetCoreAppPackage" />
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_runs_a_rid_specific_app_from_the_output_folder" />
-    <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_runs_a_rid_specific_app_with_conflicts_from_the_output_folder" />
     <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_runs_the_app_from_the_output_folder" />
     <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_runs_the_app_with_conflicts_from_the_output_folder" />
     <Class Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetStandard2Library" />
@@ -257,5 +255,17 @@
             Skip="true"
             Issue=""
             Reason="Requires props file not in installer repo"/>
+     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAFrameworkDependentApp.It_publishes_with_or_without_apphost"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>
+      <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_runs_the_app_from_the_output_folder"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>   
+      <Method Name="Microsoft.NET.Build.Tests.GivenThatWeWantToBuildANetCoreApp.It_runs_the_app_with_conflicts_from_the_output_folder"
+            Skip="true"
+            Issue=""
+            Reason="Cannot run with non-existent LastRuntimeFrameworkVersion"/>   
   </SkippedTests>
 </Tests>
