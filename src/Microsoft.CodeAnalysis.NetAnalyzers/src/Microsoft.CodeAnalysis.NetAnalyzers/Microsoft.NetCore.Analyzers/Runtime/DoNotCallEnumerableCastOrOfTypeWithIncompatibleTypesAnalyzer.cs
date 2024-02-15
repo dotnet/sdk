@@ -196,6 +196,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return false;
                 }
 
+                castFrom = castFrom.OriginalDefinition;
+                castTo = castTo.OriginalDefinition;
+
                 if (castFrom.SpecialType == SpecialType.System_Object
                    || castTo.SpecialType == SpecialType.System_Object)
                 {
@@ -220,14 +223,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 //   UnmanagedTypeConstraint
                 //   Nullability annotations
 
-                switch (castFrom.OriginalDefinition.TypeKind, castTo.OriginalDefinition.TypeKind)
+                switch (castFrom.TypeKind, castTo.TypeKind)
                 {
                     case (TypeKind.Dynamic, _):
                     case (_, TypeKind.Dynamic):
                         return false;
 
                     case (TypeKind.TypeParameter, _):
-                        var castFromTypeParam = (ITypeParameterSymbol)castFrom.OriginalDefinition;
+                        var castFromTypeParam = (ITypeParameterSymbol)castFrom;
                         if (IsUnconstrainedTypeParameter(castFromTypeParam))
                         {
                             return false;
@@ -246,7 +249,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         return false;
                     case (_, TypeKind.TypeParameter):
-                        var castToTypeParam = (ITypeParameterSymbol)castTo.OriginalDefinition;
+                        var castToTypeParam = (ITypeParameterSymbol)castTo;
                         if (IsUnconstrainedTypeParameter(castToTypeParam))
                         {
                             return false;
@@ -270,32 +273,32 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             && !castTo.DerivesFrom(castFrom);
 
                     case (TypeKind.Interface, TypeKind.Class):
-                        return castTo.IsSealed && !castTo.AllInterfaces.Contains(castFrom);
+                        return castTo.IsSealed && !castTo.DerivesFrom(castFrom);
                     case (TypeKind.Class, TypeKind.Interface):
-                        return castFrom.IsSealed && !castFrom.AllInterfaces.Contains(castTo);
+                        return castFrom.IsSealed && !castFrom.DerivesFrom(castTo);
 
                     case (TypeKind.Interface, TypeKind.Struct):
-                        return !castTo.AllInterfaces.Contains(castFrom);
+                        return !castTo.DerivesFrom(castFrom);
                     case (TypeKind.Struct, TypeKind.Interface):
-                        return !castFrom.AllInterfaces.Contains(castTo);
+                        return !castFrom.DerivesFrom(castTo);
 
                     case (TypeKind.Class, TypeKind.Enum):
-                        return castFrom.OriginalDefinition.SpecialType is not SpecialType.System_Enum
-                                                                      and not SpecialType.System_ValueType;
+                        return castFrom.SpecialType is not SpecialType.System_Enum
+                                                   and not SpecialType.System_ValueType;
                     case (TypeKind.Enum, TypeKind.Class):
-                        return castTo.OriginalDefinition.SpecialType is not SpecialType.System_Enum
-                                                                    and not SpecialType.System_ValueType;
+                        return castTo.SpecialType is not SpecialType.System_Enum
+                                                 and not SpecialType.System_ValueType;
 
                     case (TypeKind.Struct, TypeKind.Enum)
-                    when castTo.OriginalDefinition is INamedTypeSymbol toEnum:
+                    when castTo is INamedTypeSymbol toEnum:
                         return !castFrom.Equals(toEnum.EnumUnderlyingType);
                     case (TypeKind.Enum, TypeKind.Struct)
-                    when castFrom.OriginalDefinition is INamedTypeSymbol fromEnum:
+                    when castFrom is INamedTypeSymbol fromEnum:
                         return !fromEnum.EnumUnderlyingType!.Equals(castTo);
 
                     case (TypeKind.Enum, TypeKind.Enum)
-                    when castFrom.OriginalDefinition is INamedTypeSymbol fromEnum
-                      && castTo.OriginalDefinition is INamedTypeSymbol toEnum:
+                    when castFrom is INamedTypeSymbol fromEnum
+                      && castTo is INamedTypeSymbol toEnum:
                         return !fromEnum.EnumUnderlyingType!.Equals(toEnum.EnumUnderlyingType);
 
                     // this is too conservative
@@ -310,14 +313,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             || CastWillAlwaysFail(fromArray.ElementType, toArray.ElementType);
 
                     case (TypeKind.Array, TypeKind.Class):
-                        return castTo.OriginalDefinition.SpecialType != SpecialType.System_Array;
+                        return castTo.SpecialType != SpecialType.System_Array;
                     case (TypeKind.Class, TypeKind.Array):
-                        return castFrom.OriginalDefinition.SpecialType != SpecialType.System_Array;
+                        return castFrom.SpecialType != SpecialType.System_Array;
 
                     case (TypeKind.Class, TypeKind.Struct):
-                        return castFrom.OriginalDefinition.SpecialType != SpecialType.System_ValueType;
+                        return castFrom.SpecialType != SpecialType.System_ValueType;
                     case (TypeKind.Struct, TypeKind.Class):
-                        return castTo.OriginalDefinition.SpecialType != SpecialType.System_ValueType;
+                        return castTo.SpecialType != SpecialType.System_ValueType;
 
                     case (_, TypeKind.Enum):
                     case (TypeKind.Enum, _):
