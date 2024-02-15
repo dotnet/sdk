@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-format", "src\dotnet-format.csproj", "{7DFBB9BC-E3A9-46EB-B225-9DFD4E57D344}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-format", "src\dotnet-format\dotnet-format.csproj", "{7DFBB9BC-E3A9-46EB-B225-9DFD4E57D344}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-format.UnitTests", "test\dotnet-format.Tests\tests\dotnet-format.UnitTests.csproj", "{4F181F8B-534F-48A6-A28B-0D11F5AEFF55}"
 EndProject
