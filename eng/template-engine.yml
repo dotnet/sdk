@@ -20,6 +20,7 @@ jobs:
               _BuildConfig: Release
               _PublishArgs: '-publish /p:DotNetPublishUsingPipelines=true'
               _CIBuild: -restore -build -sign -pack -ci
+              _HelixOnly: false
               _SignType: test
               _Test: -test
 
@@ -43,6 +44,7 @@ jobs:
               _BuildConfig: Release
               _PublishArgs: ''
               _CIBuild: -restore -build -pack -ci
+              _HelixOnly: false
               _SignType: test
               _Test: -test
 
@@ -61,5 +63,6 @@ jobs:
               _BuildConfig: Release
               _PublishArgs: ''
               _CIBuild: -restore -build -pack -ci
+              _HelixOnly: false
               _SignType: test
               _Test: -test

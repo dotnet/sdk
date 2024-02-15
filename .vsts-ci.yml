@@ -84,6 +84,7 @@ stages:
             _BuildConfig: Release
             _PublishArgs: '-publish /p:DotNetPublishUsingPipelines=true'
             _CIBuild: -restore -build -sign -pack -ci
+            _HelixOnly: true
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: test
               _Test: -test
@@ -116,6 +117,7 @@ stages:
               _BuildConfig: Debug
               _PublishArgs: ''
               _CIBuild: -restore -build -sign -pack -ci
+              _HelixOnly: true
               _SignType: test
               _Test: -test
 
@@ -135,6 +137,7 @@ stages:
               _BuildConfig: Debug
               _PublishArgs: ''
               _CIBuild: -restore -build -sign -pack -ci
+              _HelixOnly: true
               _SignType: test
 
     - template: /eng/build.yml
@@ -156,6 +159,7 @@ stages:
               _BuildConfig: Release
               _PublishArgs: ''
               _CIBuild: -restore -build -pack -ci
+              _HelixOnly: true
               _SignType: test
               _Test: -test
 
@@ -174,6 +178,7 @@ stages:
               _BuildConfig: Release
               _PublishArgs: ''
               _CIBuild: -restore -build -pack -ci
+              _HelixOnly: true
               _SignType: test
               _Test: -test
 
