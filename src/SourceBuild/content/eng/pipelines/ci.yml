@@ -7,6 +7,13 @@ trigger:
     - main
     - release/*
     - internal/release/*
+    exclude:
+    - release/*.0.2xx
+    - release/*.0.3xx
+    - release/*.0.4xx
+    - internal/release/*.0.2xx
+    - internal/release/*.0.3xx
+    - internal/release/*.0.4xx
 
 pr:
   branches:
