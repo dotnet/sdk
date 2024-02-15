@@ -82,18 +82,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.10.0-preview.2.32</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.10.0-preview.2.32</NuGetBuildTasksConsolePackageVersion>
+    <NuGetBuildTasksPackageVersion>6.10.0-preview.2.36</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.10.0-preview.2.36</NuGetBuildTasksConsolePackageVersion>
     <NuGetLocalizationPackageVersion>6.0.0-rc.278</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.10.0-preview.2.32</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.10.0-preview.2.32</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.10.0-preview.2.32</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.10.0-preview.2.32</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.10.0-preview.2.32</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.10.0-preview.2.32</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.10.0-preview.2.32</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.10.0-preview.2.32</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.10.0-preview.2.32</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.10.0-preview.2.36</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.10.0-preview.2.36</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.10.0-preview.2.36</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.10.0-preview.2.36</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.10.0-preview.2.36</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.10.0-preview.2.36</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.10.0-preview.2.36</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.10.0-preview.2.36</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.10.0-preview.2.36</NuGetVersioningPackageVersion>
     <NuGetPackagingVersion>$(NuGetPackagingPackageVersion)</NuGetPackagingVersion>
     <NuGetProjectModelVersion>$(NuGetProjectModelPackageVersion)</NuGetProjectModelVersion>
   </PropertyGroup>
