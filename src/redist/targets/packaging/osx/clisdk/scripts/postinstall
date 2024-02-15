@@ -12,7 +12,7 @@ first_run() {
     $INSTALL_DESTINATION/dotnet exec $INSTALL_DESTINATION/sdk/%SDK_VERSION%/dotnet.dll internal-reportinstallsuccess "$1" > /dev/null 2>&1 || true
 }
 
-[ -d $INSTALL_TEMP_HOME ] || mkdir $INSTALL_TEMP_HOME
+INSTALL_TEMP_HOME=$(mktemp -d) # mktemp should set 700 perm automatically
 HOME=$INSTALL_TEMP_HOME first_run
 
 exit 0

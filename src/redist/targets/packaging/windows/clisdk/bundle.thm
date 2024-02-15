@@ -40,8 +40,8 @@
         <Text Name="FilesInUseLabel" X="11" Y="121" Width="-11" Height="34" FontId="3" DisablePrefix="yes">#(loc.FilesInUseLabel)</Text>
         <Text Name="FilesInUseText" X="11" Y="150" Width="-11" Height="-86" FontId="3" DisablePrefix="yes" HexStyle="0x0000000C"></Text>
 
-        <Button Name="FilesInUseCloseRadioButton" X="300" Y="-65" Width="-11" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes" HexStyle="0x000009">#(loc.FilesInUseCloseRadioButton)</Button>
-        <Button Name="FilesInUseDontCloseRadioButton" X="300" Y="-45" Width="-11" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes" HexStyle="0x000009">#(loc.FilesInUseDontCloseRadioButton)</Button>
+        <Button Name="FilesInUseCloseRadioButton" X="165" Y="-65" Width="-11" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes" HexStyle="0x000009">#(loc.FilesInUseCloseRadioButton)</Button>
+        <Button Name="FilesInUseDontCloseRadioButton" X="165" Y="-45" Width="-11" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes" HexStyle="0x000009">#(loc.FilesInUseDontCloseRadioButton)</Button>
 
         <Button Name="FilesInUseOkButton" X="-133" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.FilesInUseOkButton)</Button>
         <Button Name="FilesInUseCancelButton" X="-32" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0">#(loc.FilesInUseCancelButton)</Button>
