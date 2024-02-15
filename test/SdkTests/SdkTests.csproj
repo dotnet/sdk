@@ -213,6 +213,10 @@
       <TestArgs>$(TestArgs) -testList SdkIntegrationTests</TestArgs>
     </PropertyGroup>
 
+    <PropertyGroup Condition="$(StabilizePackageVersion) == 'true'">
+      <!-- Add list of tests to skip in stable SDKS -->
+      <TestArgs>$(TestArgs) -testConfigFile "$(MSBuildThisFileDirectory)TestsToSkipStableSDK.xml"</TestArgs>
+    </PropertyGroup>
 
     <PropertyGroup Condition="('$(OS)' == 'Windows_NT') And ('$(Architecture)' == 'x86')">
       <!-- Add list of tests to skip on x86 -->
