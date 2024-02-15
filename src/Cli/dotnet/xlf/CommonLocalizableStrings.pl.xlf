@@ -284,7 +284,7 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
       </trans-unit>
       <trans-unit id="ToolSettingsNotFound">
         <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <target state="translated">Plik ustawień narzędzia nie istnieje dla narzędzia {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

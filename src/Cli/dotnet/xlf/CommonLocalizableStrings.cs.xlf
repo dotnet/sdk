@@ -284,7 +284,7 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
       </trans-unit>
       <trans-unit id="ToolSettingsNotFound">
         <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <target state="translated">Soubor nastavení nástroje {0} neexistuje.</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">
