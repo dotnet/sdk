@@ -170,9 +170,10 @@ namespace Microsoft.NET.TestFramework.Assertions
             return s + $"{Environment.NewLine}" +
                        $"File Name: {_commandResult.StartInfo?.FileName}{Environment.NewLine}" +
                        $"Arguments: {_commandResult.StartInfo?.Arguments}{Environment.NewLine}" +
+                       $"Working Directory: {_commandResult.StartInfo?.WorkingDirectory}{Environment.NewLine}" +
                        $"Exit Code: {_commandResult.ExitCode}{Environment.NewLine}" +
                        $"StdOut:{Environment.NewLine}{_commandResult.StdOut}{Environment.NewLine}" +
-                       $"StdErr:{Environment.NewLine}{_commandResult.StdErr}{Environment.NewLine}"; ;
+                       $"StdErr:{Environment.NewLine}{_commandResult.StdErr}{Environment.NewLine}";
         }
 
         public AndConstraint<CommandResultAssertions> HaveSkippedProjectCompilation(string skippedProject, string frameworkFullName)
@@ -217,7 +218,7 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         }
 
-        private string ReadNuPkg(string nupkgPath, params string[] filePaths) 
+        private string ReadNuPkg(string nupkgPath, params string[] filePaths)
         {
             if (nupkgPath == null)
             {
@@ -247,7 +248,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             if (expected == null)
             {
                 throw new ArgumentNullException(nameof(expected));
-            }    
+            }
 
             new FileInfo(nuspecPath).Should().Exist();
             var content = File.ReadAllText(nuspecPath);
@@ -268,7 +269,7 @@ namespace Microsoft.NET.TestFramework.Assertions
             if (expected == null)
             {
                 throw new ArgumentNullException(nameof(expected));
-            }    
+            }
 
             new FileInfo(nuspecPath).Should().Exist();
             var content = File.ReadAllText(nuspecPath);

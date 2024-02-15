@@ -574,7 +574,7 @@ namespace {safeThisName}
                 .WithWorkingDirectory(testRoot)
                 .WithConfiguration(configuration)
                 .WithTargetFramework(targetFramework)
-                .Execute([.. trackedProperties, .. trackedItems]);
+                .Execute([Name, .. trackedProperties, .. trackedItems]);
 
             commandResult.Should().Pass();
             var json = JsonDocument.Parse(commandResult.StdOut);
