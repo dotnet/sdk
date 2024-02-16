@@ -67,7 +67,7 @@
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" />
     <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
-    <ProjectReference Include="..\..\..\src\dotnet-format\dotnet-format.csproj" PrivateAssets="true" />
+    <ProjectReference Include="..\..\..\src\BuiltInTools\dotnet-format\dotnet-format.csproj" PrivateAssets="true" />
   </ItemGroup>
 
   <ItemGroup>
