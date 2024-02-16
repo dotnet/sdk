@@ -576,16 +576,25 @@ namespace {safeThisName}
                 .Execute([Name, .. trackedProperties, .. trackedItems]);
 
             commandResult.Should().Pass();
-            try
+            if (PropertiesToRecord.Count == 1 && ItemsToRecord.Count == 0)
             {
-                var json = JsonDocument.Parse(commandResult.StdOut);
-                var properties = ParseProperties(json.RootElement);
-                var items = ParseItems(json.RootElement);
-                return new BuildResult(properties, items);
+                // in the case that only a single property is requested, MSBuild returns the value on stdout directly for convenience
+                return new BuildResult(new Dictionary<string, string> { { PropertiesToRecord[0], commandResult.StdOut.Trim() } }, new Dictionary<string, ITaskItem[]>());
             }
-            catch (System.Text.Json.JsonException e)
+            else
             {
-                throw new InvalidOperationException($"Failed to parse build result JSON.\nStdOut:\n{commandResult.StdOut}", e);
+                // for multi-property or item requests, the result is a JSON object with keys "Properties", "Items", and "TargetRestults"
+                try
+                {
+                    var json = JsonDocument.Parse(commandResult.StdOut);
+                    var properties = ParseProperties(json.RootElement);
+                    var items = ParseItems(json.RootElement);
+                    return new BuildResult(properties, items);
+                }
+                catch (System.Text.Json.JsonException e)
+                {
+                    throw new InvalidOperationException($"Failed to parse build result JSON.\nStdOut:\n{commandResult.StdOut}", e);
+                }
             }
         }
 
