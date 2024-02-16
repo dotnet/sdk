@@ -2033,6 +2033,26 @@ L'ampliamento e le conversioni definite dall'utente non sono supportate con tipi
         <target state="translated">Preferisci il metodo 'IDictionary.TryGetValue(TKey, out TValue)'</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferGenericOverloadsCodeFixTitle">
+        <source>Use generic overload</source>
+        <target state="new">Use generic overload</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferGenericOverloadsDescription">
+        <source>Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.</source>
+        <target state="new">Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferGenericOverloadsMessage">
+        <source>Prefer the generic overload '{0}' instead of '{1}'</source>
+        <target state="new">Prefer the generic overload '{0}' instead of '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferGenericOverloadsTitle">
+        <source>Prefer generic overload when type is known</source>
+        <target state="new">Prefer generic overload when type is known</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferHashDataCodefixTitle">
         <source>Replace with 'HashData' method</source>
         <target state="translated">Sostituire con il metodo 'HashData'</target>

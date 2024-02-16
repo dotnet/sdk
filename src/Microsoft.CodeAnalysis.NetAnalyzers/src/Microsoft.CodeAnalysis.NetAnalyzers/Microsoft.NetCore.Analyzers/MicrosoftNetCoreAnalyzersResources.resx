@@ -1913,6 +1913,18 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="ImplementGenericMathInterfacesCorrectlyTitle" xml:space="preserve">
     <value>Use correct type parameter</value>
   </data>
+  <data name="PreferGenericOverloadsCodeFixTitle" xml:space="preserve">
+    <value>Use generic overload</value>
+  </data>
+  <data name="PreferGenericOverloadsDescription" xml:space="preserve">
+    <value>Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.</value>
+  </data>
+  <data name="PreferGenericOverloadsMessage" xml:space="preserve">
+    <value>Prefer the generic overload '{0}' instead of '{1}'</value>
+  </data>
+  <data name="PreferGenericOverloadsTitle" xml:space="preserve">
+    <value>Prefer generic overload when type is known</value>
+  </data>
   <data name="UseSpanClearInsteadOfFillCodeFixTitle" xml:space="preserve">
     <value>Use 'Clear()'</value>
   </data>
