@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -577,10 +576,17 @@ namespace {safeThisName}
                 .Execute([Name, .. trackedProperties, .. trackedItems]);
 
             commandResult.Should().Pass();
-            var json = JsonDocument.Parse(commandResult.StdOut);
-            var properties = ParseProperties(json.RootElement);
-            var items = ParseItems(json.RootElement);
-            return new BuildResult(properties, items);
+            try
+            {
+                var json = JsonDocument.Parse(commandResult.StdOut);
+                var properties = ParseProperties(json.RootElement);
+                var items = ParseItems(json.RootElement);
+                return new BuildResult(properties, items);
+            }
+            catch (System.Text.Json.JsonException e)
+            {
+                throw new InvalidOperationException($"Failed to parse build result JSON.\nStdOut:\n{commandResult.StdOut}", e);
+            }
         }
 
         /// <returns>
