@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\dotnet-format\dotnet-format.csproj" />
+    <ProjectReference Include="..\..\..\src\BuiltInTools\dotnet-format\dotnet-format.csproj" />
   </ItemGroup>
 
   <!-- Tests depend on the NetCurrent reference assemblies -->
