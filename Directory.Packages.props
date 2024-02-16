@@ -9,7 +9,6 @@
     <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.13.5" />
     <PackageVersion Include="BenchmarkDotNet" Version="0.13.5" />
     <PackageVersion Include="dotnet-format" Version="$(DotnetFormatVersion)" />
-    <PackageVersion Include="DiffPlex" Version="1.6.3" />
     <PackageVersion Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
     <PackageVersion Include="FluentAssertions.Json" Version="$(FluentAssertionsJsonVersion)" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
@@ -17,7 +16,6 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftNETCoreAppRefPackageVersion)"/>
-    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.NuGetSdkResolver" Version="$(MicrosoftBuildNuGetSdkResolverPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalyzerTestingVersion)" />
@@ -129,7 +127,7 @@
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
     <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
     <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationVersion)" />
-    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildVersion)" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
@@ -140,7 +138,7 @@
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildMinimumVersion)" />
     <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
     <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationVersion)" />
-    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildMinimumVersion)" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildMinimumVersion)" />
