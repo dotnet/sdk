@@ -114,7 +114,6 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-aspnetcore</Uri>
       <Sha>a244ff1c54c5d9c89cbd4244e3ec17e74d91a8b6</Sha>
     </Dependency>
-    </Dependency>
     <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.9.1-rc.3">
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
       <Sha>623fde83a3cd73cb479ec7fa03866c6116894dbf</Sha>
