@@ -362,8 +362,6 @@
         win-x64;
         " />
 
-      <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
-           https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
       <Net80ILCompilerSupportedRids Include="
         @(Net70ILCompilerSupportedRids);
         osx-x64;
@@ -372,7 +370,15 @@
         freebsd-arm64;
         " />
 
-      <ILCompilerSupportedRids Include="@(Net80ILCompilerSupportedRids)" />
+      <Net90ILCompilerSupportedRids Include="
+        @(Net80ILCompilerSupportedRids);
+        linux-arm;
+        linux-musl-arm;
+        " />
+
+      <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
+           https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
+      <ILCompilerSupportedRids Include="@(Net90ILCompilerSupportedRids)" />
 
       <Net80NativeAOTRuntimePackRids Include="
           ios-arm64;
@@ -395,8 +401,10 @@
       <Net90NativeAOTRuntimePackRids Include="
           @(Net80NativeAOTRuntimePackRids);
           linux-x64;
+          linux-arm;
           linux-arm64;
           linux-musl-x64;
+          linux-musl-arm;
           linux-musl-arm64;
           win-x64;
           win-arm64;
