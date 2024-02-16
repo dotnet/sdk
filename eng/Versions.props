@@ -293,10 +293,6 @@
   <PropertyGroup Label="Template versions">
     <!-- 9.0 Template versions -->
     <AspNetCorePackageVersionFor90Templates>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</AspNetCorePackageVersionFor90Templates>
-    <!-- TODO -->
-    <MicrosoftDotNetCommonItemTemplates90PackageVersion>9.0.100-alpha.1.23559.2</MicrosoftDotNetCommonItemTemplates90PackageVersion>
-    <!-- TODO -->
-    <MicrosoftDotNetCommonProjectTemplates90PackageVersion>9.0.100-alpha.1.23559.2</MicrosoftDotNetCommonProjectTemplates90PackageVersion>
     <MicrosoftDotnetWinFormsProjectTemplates90PackageVersion>$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)</MicrosoftDotnetWinFormsProjectTemplates90PackageVersion>
     <MicrosoftDotNetWpfProjectTemplates90PackageVersion>$(MicrosoftDotNetWpfProjectTemplatesPackageVersion)</MicrosoftDotNetWpfProjectTemplates90PackageVersion>
     <NUnit3Templates90PackageVersion>$(NUnit3DotNetNewTemplatePackageVersion)</NUnit3Templates90PackageVersion>

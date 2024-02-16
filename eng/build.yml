@@ -174,34 +174,34 @@ jobs:
 
       - ${{ if eq(variables['_HelixOnly'], false) }}:
         - task: PublishTestResults@2
-          displayName: Publish Test Results	
-          inputs:	
-            testResultsFormat: xUnit	
-            testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'	
-            testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'	
-            buildPlatform: '$(BuildPlatform)'	
-            buildConfiguration: '$(_BuildConfig)'	
+          displayName: Publish Test Results
+          inputs:
+            testResultsFormat: xUnit
+            testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
+            testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'
+            buildPlatform: '$(BuildPlatform)'
+            buildConfiguration: '$(_BuildConfig)'
           condition: always()
 
-      - task: CopyFiles@2	
-        displayName: Gather Logs	
-        inputs:	
-          SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-          Contents: |	
-           log/$(_BuildConfig)/**/*	
-           TestResults/$(_BuildConfig)/**/*	
+      - task: CopyFiles@2
+        displayName: Gather Logs
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+          Contents: |
+           log/$(_BuildConfig)/**/*
+           TestResults/$(_BuildConfig)/**/*
            SymStore/$(_BuildConfig)/**/*
-          TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-        continueOnError: true	
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        continueOnError: true
         condition: always()
   
-      - task: PublishBuildArtifacts@1	
-        displayName: Publish Logs to VSTS	
-        inputs:	
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-          publishLocation: Container	
-        continueOnError: true	
+      - task: PublishBuildArtifacts@1
+        displayName: Publish Logs to VSTS
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'
+          publishLocation: Container
+        continueOnError: true
         condition: always()
 
 # AoT Jobs
@@ -314,25 +314,25 @@ jobs:
               RunAoTTests: 'true'
 
       - ${{ if in(parameters.agentOs, 'Windows_NT', 'Darwin') }}:
-        - task: CopyFiles@2	
-          displayName: Gather Logs	
-          inputs:	
-            SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-            Contents: |	
-              log/$(_BuildConfig)/**/*	
-              TestResults/$(_BuildConfig)/**/*	
+        - task: CopyFiles@2
+          displayName: Gather Logs
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+            Contents: |
+              log/$(_BuildConfig)/**/*
+              TestResults/$(_BuildConfig)/**/*
               SymStore/$(_BuildConfig)/**/*
-            TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-          continueOnError: true	
+            TargetFolder: '$(Build.ArtifactStagingDirectory)'
+          continueOnError: true
           condition: always()
 
-        - task: PublishBuildArtifacts@1	
-          displayName: Publish Logs to VSTS	
-          inputs:	
-            PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-            ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-            publishLocation: Container	
-          continueOnError: true	
+        - task: PublishBuildArtifacts@1
+          displayName: Publish Logs to VSTS
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'
+            publishLocation: Container
+          continueOnError: true
           condition: always()
 
 # TemplateEngine Jobs
@@ -445,34 +445,35 @@ jobs:
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/dotnet-new.IntegrationTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run dotnet new Integration Tests
+
+      - ${{ if eq(variables['_HelixOnly'], false) }}:
+        - task: PublishTestResults@2
+          displayName: Publish Test Results
+          inputs:
+            testResultsFormat: xUnit
+            testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
+            testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'
+            buildPlatform: '$(BuildPlatform)'
+            buildConfiguration: '$(_BuildConfig)'
+          condition: always()
   
-      - task: PublishTestResults@2
-        displayName: Publish Test Results	
-        inputs:	
-          testResultsFormat: xUnit	
-          testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'	
-          testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'	
-          buildPlatform: '$(BuildPlatform)'	
-          buildConfiguration: '$(_BuildConfig)'	
-        condition: always()
-  
-      - task: CopyFiles@2	
-        displayName: Gather Logs	
-        inputs:	
-          SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-          Contents: |	
-           log/$(_BuildConfig)/**/*	
-           TestResults/$(_BuildConfig)/**/*	
+      - task: CopyFiles@2
+        displayName: Gather Logs
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+          Contents: |
+           log/$(_BuildConfig)/**/*
+           TestResults/$(_BuildConfig)/**/*
            SymStore/$(_BuildConfig)/**/*
-          TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-        continueOnError: true	
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        continueOnError: true
         condition: always()
   
-      - task: PublishBuildArtifacts@1	
-        displayName: Publish Logs to VSTS	
-        inputs:	
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-          publishLocation: Container	
-        continueOnError: true	
+      - task: PublishBuildArtifacts@1
+        displayName: Publish Logs to VSTS
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'
+          publishLocation: Container
+        continueOnError: true
         condition: always()
