@@ -1,0 +1,149 @@
+# Branches that trigger a build on commit
+trigger:
+- main
+- feature/*
+- release/*
+
+# Branches that trigger builds on PR
+pr:
+- main
+- feature/*
+- release/*
+
+jobs:
+
+- job: Windows
+  pool:
+    vmImage: 'windows-latest'
+  variables:
+    _os: Windows
+  strategy:
+    maxParallel: 4
+    matrix:
+      Debug:
+        _configuration: Debug
+      Release:
+        _configuration: Release
+  timeoutInMinutes: 30
+  steps:
+    - script: eng\common\cibuild.cmd -msbuildEngine dotnet -configuration $(_configuration) -prepareMachine /p:TestTimeout=360000
+      displayName: Build and Test
+    - task: PublishTestResults@2
+      inputs:
+        testRunner: XUnit
+        testResultsFiles: '$(Build.SourcesDirectory)\artifacts\TestResults\$(_configuration)\*.trx'
+        mergeTestResults: true
+        testRunTitle: '$(_os) $(_configuration)'
+      condition: always()
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Workspace Loader Projects
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/tests/projects/for_workspace_loader'
+        ArtifactName: '$(_os) $(_configuration) - Workspace Loader Projects'
+      continueOnError: true
+      condition: not(succeeded())
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\$(_configuration)'
+        ArtifactName: '$(_os) $(_configuration)'
+      continueOnError: true
+      condition: not(succeeded())
+
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-latest'
+  variables:
+    _os: Linux
+  strategy:
+    maxParallel: 4
+    matrix:
+      Debug:
+        _configuration: Debug
+      Release:
+        _configuration: Release
+  timeoutInMinutes: 30
+  steps:
+    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=240000
+      displayName: Build and Test
+    - task: PublishTestResults@2
+      displayName: Publish xUnit Test Results
+      inputs:
+        testRunner: XUnit
+        testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_configuration)/*.trx'
+        mergeTestResults: true
+        testRunTitle: '$(_os) $(_configuration)'
+      condition: always()
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Workspace Loader Projects
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/tests/projects/for_workspace_loader'
+        ArtifactName: '$(_os) $(_configuration) - Workspace Loader Projects'
+      continueOnError: true
+      condition: not(succeeded())
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_configuration)'
+        ArtifactName: '$(_os) $(_configuration)'
+      continueOnError: true
+      condition: not(succeeded())
+
+- job: Linux_Spanish
+  pool:
+    vmImage: 'ubuntu-latest'
+  variables:
+    _os: Linux
+    LC_ALL: es_ES.UTF-8
+  strategy:
+    maxParallel: 4
+    matrix:
+      Debug:
+        _configuration: Debug
+      Release:
+        _configuration: Release
+  timeoutInMinutes: 30
+  steps:
+    - script: ./eng/common/cibuild.sh --configuration $(_configuration) --prepareMachine /p:TestTimeout=360000
+      displayName: Build and Test
+    - task: PublishTestResults@2
+      displayName: Publish xUnit Test Results
+      inputs:
+        testRunner: XUnit
+        testResultsFiles: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_configuration)/*.trx'
+        mergeTestResults: true
+        testRunTitle: 'Spanish $(_os) $(_configuration)'
+      condition: always()
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Workspace Loader Projects
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/tests/projects/for_workspace_loader'
+        ArtifactName: 'Spanish $(_os) $(_configuration) - Workspace Loader Projects'
+      continueOnError: true
+      condition: not(succeeded())
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_configuration)'
+        ArtifactName: 'Spanish $(_os) $(_configuration)'
+      continueOnError: true
+      condition: not(succeeded())
+
+- job: Formatting_Check
+  pool:
+    vmImage: 'ubuntu-latest'
+  timeoutInMinutes: 10
+  steps:
+    - script: ./restore.sh && echo "##vso[task.setvariable variable=PATH]$(Build.SourcesDirectory)/.dotnet:${PATH}" && echo "##vso[task.setvariable variable=DOTNET_ROOT]$(Build.SourcesDirectory)/.dotnet"
+      displayName: Restore dependencies
+    - script: dotnet run --project ./src/dotnet-format.csproj -c Release -- @validate.rsp
+      displayName: Run dotnet-format
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\'
+        ArtifactName: 'Formatting Check'
+      continueOnError: true
+      condition: not(succeeded())
+      
+- template: /eng/common/templates/jobs/source-build.yml
