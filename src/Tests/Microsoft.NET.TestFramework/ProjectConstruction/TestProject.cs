@@ -593,7 +593,7 @@ namespace {safeThisName}
                 }
                 catch (System.Text.Json.JsonException e)
                 {
-                    throw new InvalidOperationException($"Failed to parse build result JSON.\nStdOut:\n{commandResult.StdOut}", e);
+                    throw new InvalidOperationException($"Failed to parse build result JSON.\nStdOut:\n```\n{commandResult.StdOut}\n```", e);
                 }
             }
         }
