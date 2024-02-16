@@ -176,7 +176,6 @@
              Targets="Restore" />
   </Target>
 
-
   <Target Name="LayoutTemplates"
         DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesForMSI" />
 
