@@ -97,13 +97,6 @@
     <SystemResourcesExtensionsPackageVersion>9.0.0-preview.2.24116.2</SystemResourcesExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
-<<<<<<< HEAD
-=======
-    <!-- Dependencies from https://github.com/dotnet/format -->
-    <dotnetformatVersion>9.0.511604</dotnetformatVersion>
-  </PropertyGroup>
-  <PropertyGroup>
->>>>>>> upstream/main
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
     <MicrosoftCodeAnalysisNetAnalyzersVersion>9.0.0-preview.24115.1</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.11.0-beta1.24115.1</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
