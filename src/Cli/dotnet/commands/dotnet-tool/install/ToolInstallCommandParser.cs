@@ -81,6 +81,7 @@ namespace Microsoft.DotNet.Cli
         private static CliCommand ConstructCommand()
         {
             CliCommand command = new("install", LocalizableStrings.CommandDescription);
+            command.Arguments.Add(PackageIdArgument);
 
             AddCommandOptions(command);
 
@@ -94,8 +95,7 @@ namespace Microsoft.DotNet.Cli
         }
 
         public static CliCommand AddCommandOptions(CliCommand command)
-        {
-            command.Arguments.Add(PackageIdArgument);
+        {   
             command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
             command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
             command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));

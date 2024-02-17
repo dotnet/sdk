@@ -25,14 +25,28 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         public override int Execute()
         {
             // Get the list of tools
-            var toolListCommand = new ToolListCommand(_parseResult);
-            var toolList = toolListCommand.Execute();
 
-            // Parse result
+            // Global 
+            var toolListCommand = new ToolListGlobalOrToolPathCommand(_parseResult);
+            var toolList = toolListCommand.GetPackages(null, null);
 
+            // local
+            var toolListLocalCommand = new ToolListLocalCommand(_parseResult);
+            var toolListLocal = toolListLocalCommand.GetPackages(null);
 
+            // For each global tool, call the update command
+            foreach (var tool in toolList)
+            {
+                var toolUpdateCommand = new ToolUpdateCommand(_parseResult);
+                toolUpdateCommand.Execute();
+            }
 
-            // For each tool, call the update command
+            // For each local tool, call the update command
+            foreach (var tool in toolListLocal)
+            {
+                var toolUpdateCommand = new ToolUpdateCommand(_parseResult);
+                toolUpdateCommand.Execute();
+            }   
             return 0;
         }
     }
