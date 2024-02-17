@@ -1,9 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldDifferByMoreThanCaseAnalyzer,
@@ -139,6 +140,56 @@ namespace N
                         GetCA1708CSharpResultAt(Member, GetSymbolDisplayString("N.F.x", "N.F.X"), ("/0/Test0.cs", 12, 26), ("/0/Test1.cs", 7, 26)),
                     }
                 }
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
+        public async Task FileScopedTypesInNamespaceAsync()
+        {
+            string fileWithClass = """
+                namespace N;
+
+                file class C
+                {
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        fileWithClass,
+                        fileWithClass
+                    }
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6514, "https://github.com/dotnet/roslyn-analyzers/issues/6514")]
+        public async Task FileScopedTypesGlobalAsync()
+        {
+            string fileWithClass = """
+                file class C
+                {
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        fileWithClass,
+                        fileWithClass
+                    }
+                },
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70
             }.RunAsync();
         }
 

@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -54,7 +54,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             IEnumerable<INamedTypeSymbol> globalTypes = context.Compilation.GlobalNamespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
-                    MatchesConfiguredVisibility(item, context.Options, context.Compilation));
+                    MatchesConfiguredVisibility(item, context.Options, context.Compilation) &&
+                    !item.IsFileLocal());
 
             CheckTypeNames(globalTypes, context);
             CheckNamespaceMembers(globalNamespaces, context);
@@ -97,7 +98,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 // Get all the potentially externally visible types in the namespace
                 IEnumerable<INamedTypeSymbol> typeMembers = @namespace.GetTypeMembers().Where(item =>
                     Equals(item.ContainingAssembly, context.Compilation.Assembly) &&
-                    MatchesConfiguredVisibility(item, context.Options, context.Compilation));
+                    MatchesConfiguredVisibility(item, context.Options, context.Compilation) &&
+                    !item.IsFileLocal());
 
                 if (typeMembers.Any())
                 {
