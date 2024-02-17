@@ -3,7 +3,7 @@
     "path": "..\\..\\sdk.sln",
     "projects": [
       "src\\BuiltInTools\\dotnet-format\\dotnet-format.csproj",
-      "test\\dotnet-format.Tests\\perf\\dotnet-format.PerformanceTests.csproj",
+      "benchmarks\\dotnet-format\\perf\\dotnet-format.PerformanceTests.csproj",
       "test\\dotnet-format.Tests\\tests\\dotnet-format.UnitTests.csproj"
     ]
   }

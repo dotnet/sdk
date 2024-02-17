@@ -487,7 +487,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format", "src\BuiltI
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.UnitTests", "test\dotnet-format.Tests\tests\dotnet-format.UnitTests.csproj", "{D7495CE7-64E5-4715-9304-799A41EC1D71}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.PerformanceTests", "test\dotnet-format.Tests\perf\dotnet-format.PerformanceTests.csproj", "{D00B26E5-CF4B-4543-97CC-18A0478D8E1D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.PerformanceTests", "benchmarks\dotnet-format\perf\dotnet-format.PerformanceTests.csproj", "{D00B26E5-CF4B-4543-97CC-18A0478D8E1D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

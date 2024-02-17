@@ -16,20 +16,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\BuiltInTools\dotnet-format\dotnet-format.csproj" />
+    <ProjectReference Include="..\..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <!-- Tests depend on the NetCurrent reference assemblies -->
   <Target Name="AddRuntimeConfigurationOptionForNetCurrent" BeforeTargets="GenerateBuildRuntimeConfigurationFiles" DependsOnTargets="ResolveFrameworkReferences">
     <ItemGroup>
-      <RuntimeHostConfigurationOption
-        Include="ReferenceAssemblies.NetCurrent.TargetingPackVersion"
-        Value="@(ResolvedTargetingPack-&gt;WithMetadataValue('Identity', 'Microsoft.NETCore.App')-&gt;WithMetadataValue('TargetFramework', '$(NetCurrent)')-&gt;Metadata('NuGetPackageVersion'))" />
-      <RuntimeHostConfigurationOption
-        Include="ReferenceAssemblies.NetCurrent.TargetFramework"
-        Value="$(NetCurrent)" />
-      <RuntimeHostConfigurationOption
-        Include="ReferenceAssemblies.NetCurrent.NuGetConfigPath"
-        Value="$(RepoRoot)NuGet.config" />
+      <RuntimeHostConfigurationOption Include="ReferenceAssemblies.NetCurrent.TargetingPackVersion" Value="@(ResolvedTargetingPack-&gt;WithMetadataValue('Identity', 'Microsoft.NETCore.App')-&gt;WithMetadataValue('TargetFramework', '$(NetCurrent)')-&gt;Metadata('NuGetPackageVersion'))" />
+      <RuntimeHostConfigurationOption Include="ReferenceAssemblies.NetCurrent.TargetFramework" Value="$(NetCurrent)" />
+      <RuntimeHostConfigurationOption Include="ReferenceAssemblies.NetCurrent.NuGetConfigPath" Value="$(RepoRoot)NuGet.config" />
     </ItemGroup>
   </Target>
 

@@ -4,8 +4,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
-#nullable enable
-
 namespace Microsoft.CodeAnalysis.Tools.Utilities
 {
     internal static class DotNetHelper

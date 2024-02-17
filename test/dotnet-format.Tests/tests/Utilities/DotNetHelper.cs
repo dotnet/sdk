@@ -6,8 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Tools.Utilities;
 using Xunit.Abstractions;
 
-#nullable enable
-
 namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
 {
     internal static partial class DotNetHelper
