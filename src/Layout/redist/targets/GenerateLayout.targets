@@ -105,20 +105,17 @@
     <Copy SourceFiles="@(ILLinkAnalyzersAssemblies)" DestinationFiles="@(ILLinkAnalyzersAssemblies->'$(AnalyzerAssembliesDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
-  <Target Name="PublishDotnetFormat"
-          BeforeTargets="Build;PublishNetSdk">
+  <Target Name="PublishDotnetFormat" AfterTargets="Build" BeforeTargets="PublishNetSdk">
     <PropertyGroup>
       <DotnetFormatDestinationDirectory>$(OutputPath)/DotnetTools/dotnet-format</DotnetFormatDestinationDirectory>
     </PropertyGroup>
 
     <ItemGroup>
-      <DotnetFormatDllFiles Include="$(Pkgdotnet-format)/tools/net9.0/any/**/*.dll" />
-      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net9.0/any/**/*.json" />
-      <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net9.0/any/**/*.config" />
+      <DotnetFormatDllFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)//$(NetCurrent)/**/*.dll" />
+      <DotnetFormatConfigFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.json" />
+      <DotnetFormatConfigFiles Include="$(ArtifactsBinDir)/dotnet-format/$(Configuration)/$(NetCurrent)/**/*.config" />
     </ItemGroup>
 
-    <Error Condition="'@(DotnetFormatDllFiles)' == ''" Text="Something moved around in dotnet-format package, adjust code here accordingly. TFM change?" />
-    <Error Condition="'@(DotnetFormatConfigFiles)' == ''" Text="Something moved around in dotnet-format package, adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(DotnetFormatDllFiles)" DestinationFiles="@(DotnetFormatDllFiles->'$(DotnetFormatDestinationDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(DotnetFormatConfigFiles)" DestinationFiles="@(DotnetFormatConfigFiles->'$(DotnetFormatDestinationDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
