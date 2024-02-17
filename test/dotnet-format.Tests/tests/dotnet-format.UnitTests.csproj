@@ -8,6 +8,7 @@
     <RollForward>LatestMajor</RollForward>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);binaries\**;projects\**</DefaultExcludesInProjectFolder>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <ItemGroup>
