@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Testing;
+using Test.Utilities;
 using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer,
@@ -823,6 +825,45 @@ class C : IInterface
     VerifyCS.Diagnostic(castRule).WithLocation(56).WithArguments("string", "TStruct?"),
                 }
             }.RunAsync();
+        }
+
+        [Fact, WorkItem(7153, "https://github.com/dotnet/roslyn-analyzers/issues/7153")]
+        public async Task GenericRecordsAndInterfaces()
+        {
+            var test = new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                LanguageVersion = LanguageVersion.CSharp10,
+                TestCode = @"
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+
+public static class Program
+{
+    public static void Main()
+    {
+        var nodeChanges = new List<INodeUpdate<GraphNode>> { new DataNodeUpdate(new DataNode(0, 0)) };
+
+        //warning CA2021: This call will always result in an empty sequence because type 'INodeUpdate<GraphNode>' is incompatible with type 'DataNodeUpdate'
+        var nodeChangesFiltered = nodeChanges.OfType<DataNodeUpdate>();
+
+        Debug.Assert(nodeChangesFiltered.Count() == 1);
+    }
+}
+
+public abstract record class GraphNode(long Id);
+public sealed record class DataNode(long Id, long Value) : GraphNode(Id);
+
+public interface INodeUpdate<out T>
+{
+    T Updated { get; }
+}
+
+public abstract record class NodeUpdate<T>(T Updated) : INodeUpdate<T> where T : GraphNode;
+public sealed record class DataNodeUpdate(DataNode Updated) : NodeUpdate<DataNode>(Updated);"
+            };
+            await test.RunAsync();
         }
 
         [Fact]

@@ -551,6 +551,25 @@
             ]
           }
         },
+        "CA2263": {
+          "id": "CA2263",
+          "shortDescription": "Prefer generic overload when type is known",
+          "fullDescription": "Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2263",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "CSharpPreferGenericOverloadsAnalyzer",
+            "languages": [
+              "C#"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2352": {
           "id": "CA2352",
           "shortDescription": "Unsafe DataSet or DataTable in serializable type can be vulnerable to remote code execution attacks",
@@ -6689,6 +6708,25 @@
             "category": "Usage",
             "isEnabledByDefault": true,
             "typeName": "BasicDetectPreviewFeatureAnalyzer",
+            "languages": [
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
+        "CA2263": {
+          "id": "CA2263",
+          "shortDescription": "Prefer generic overload when type is known",
+          "fullDescription": "Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.",
+          "defaultLevel": "note",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2263",
+          "properties": {
+            "category": "Usage",
+            "isEnabledByDefault": true,
+            "typeName": "BasicPreferGenericOverloadsAnalyzer",
             "languages": [
               "Visual Basic"
             ],
