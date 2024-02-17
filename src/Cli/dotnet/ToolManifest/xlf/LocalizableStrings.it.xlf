@@ -38,7 +38,7 @@ Per un elenco dei percorso di ricerca, specificare l'opzione "-d" prima del nome
       </trans-unit>
       <trans-unit id="ToolMissingRollForward">
         <source>Missing 'rollForward' entry.</source>
-        <target state="new">Missing 'rollForward' entry.</target>
+        <target state="translated">Voce 'rollForward' mancante.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
