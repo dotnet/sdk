@@ -3,15 +3,15 @@
   <ProductDependencies>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.103">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8e0e60adf58a813c3b8eee5eef465447116eef4e</Sha>
+      <Sha>21a62854f1b378a54a882c3f2d720aea1768707d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.103-servicing.24115.27">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.103-servicing.24117.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8e0e60adf58a813c3b8eee5eef465447116eef4e</Sha>
+      <Sha>21a62854f1b378a54a882c3f2d720aea1768707d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.103-servicing.24115.27">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.103-servicing.24117.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8e0e60adf58a813c3b8eee5eef465447116eef4e</Sha>
+      <Sha>21a62854f1b378a54a882c3f2d720aea1768707d</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.2">
