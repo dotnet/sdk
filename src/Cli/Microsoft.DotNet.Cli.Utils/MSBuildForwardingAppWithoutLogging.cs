@@ -19,6 +19,10 @@ namespace Microsoft.DotNet.Cli.Utils
         private static readonly bool UseMSBuildServer = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_USE_MSBUILD_SERVER", false);
         private static readonly string TerminalLoggerDefault = Env.GetEnvironmentVariable("DOTNET_CLI_CONFIGURE_MSBUILD_TERMINAL_LOGGER");
 
+        public static string MSBuildVersion
+        {
+            get => Microsoft.Build.Evaluation.ProjectCollection.DisplayVersion;
+        }
         private const string MSBuildExeName = "MSBuild.dll";
 
         private const string SdksDirectoryName = "Sdks";
@@ -48,11 +52,11 @@ namespace Microsoft.DotNet.Cli.Utils
         private readonly List<string> _msbuildRequiredParameters =
             [ "-maxcpucount", "-verbosity:m" ];
 
-        public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null)
+        public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string msbuildPath = null, bool includeLogo = false)
         {
             string defaultMSBuildPath = GetMSBuildExePath();
 
-            _argsToForward = argsToForward;
+            _argsToForward = includeLogo ? argsToForward : ["-nologo", ..argsToForward];
             string tlpDefault = TerminalLoggerDefault;
             // new for .NET 9 - default TL to auto (aka enable in non-CI scenarios)
             if (string.IsNullOrWhiteSpace(tlpDefault))
