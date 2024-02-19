@@ -33,7 +33,7 @@
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
-        <source>{0} is not found in NuGet feeds {1}".</source>
+        <source>{0} is not found in NuGet feeds {1}.</source>
         <target state="translated">{0} est introuvable dans les flux NuGet {1}.</target>
         <note />
       </trans-unit>
