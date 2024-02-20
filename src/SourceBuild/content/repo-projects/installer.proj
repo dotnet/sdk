@@ -21,6 +21,7 @@
     <BuildArgs>$(BuildArgs) /p:OSName=$(OSNameOverride)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PortableOSName=$(__PortableTargetOS)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:Rid=$(TargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:Architecture=$(TargetArchitecture)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:DOTNET_INSTALL_DIR=$(DotNetRoot)</BuildArgs>
 
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:AspNetCoreInstallerRid=$(TargetRid)</BuildArgs>

@@ -50,11 +50,12 @@
     <BuildRid Condition="'$(BuildRid)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</BuildRid>
 
     <HostRid Condition="'$(HostRid)' == ''">$(BuildRid)</HostRid>
-    <TargetRid Condition="'$(TargetRid)' == ''">$(BuildRid)</TargetRid>
+    <TargetRid Condition="'$(TargetRid)' == ''">$(BuildRid.Substring(0, $(BuildRid.LastIndexOf('-'))))-$(TargetArchitecture)</TargetRid>
 
-    <!-- Source-only builds are non portable. -->
-    <PortableBuild Condition="'$(PortableBuild)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</PortableBuild>
-    <PortableBuild Condition="'$(PortableBuild)' == ''">false</PortableBuild>
+    <!-- Source-only builds are non portable, except for cross-builds.
+         Source-only cross-builds default to the portable configuration so the resulting SDK works on a wider range of distros. -->
+    <PortableBuild Condition="'$(PortableBuild)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(HostArchitecture)' == '$(TargetArchitecture)'">false</PortableBuild>
+    <PortableBuild Condition="'$(PortableBuild)' == ''">true</PortableBuild>
 
     <PortableRid Condition="'$(__PortableTargetOS)' != ''">$(__PortableTargetOS)-$(TargetArchitecture)</PortableRid>
     <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'freebsd'">freebsd-$(TargetArchitecture)</PortableRid>
