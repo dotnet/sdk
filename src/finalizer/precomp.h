@@ -12,6 +12,8 @@
 #include <winreg.h>
 #include <msi.h>
 #include <pathcch.h>
+#include <shlobj.h>
+#include <shlwapi.h>
 
 // Configure some logging parameters for WiX
 #define ExitTrace LogErrorString
@@ -26,3 +28,7 @@
 #include "pathutil.h"
 #include "strutil.h"
 #include "wiutil.h"
+#include "dirutil.h"
+#include "fileutil.h"
+#include "shelutil.h"
+
