@@ -44,14 +44,10 @@
     <SystemManagementPackageVersion>4.6.0</SystemManagementPackageVersion>
     <SystemCommandLineRenderingVersion>0.4.0-alpha.24112.1</SystemCommandLineRenderingVersion>
     <SystemCommandLineVersion>2.0.0-beta4.24112.1</SystemCommandLineVersion>
-<<<<<<< HEAD
-    <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-preview.1.24113.1</MicrosoftDeploymentDotNetReleasesVersion>
+    <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-preview.1.24113.2</MicrosoftDeploymentDotNetReleasesVersion>
     <MicrosoftDiaSymReaderVersion>2.0.0</MicrosoftDiaSymReaderVersion>
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
-=======
-    <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-preview.1.24113.2</MicrosoftDeploymentDotNetReleasesVersion>
->>>>>>> upstream/main
     <MicrosoftVisualStudioSetupConfigurationInteropVersion>3.2.2146</MicrosoftVisualStudioSetupConfigurationInteropVersion>
     <MicrosoftWindowsCsWin32PackageVersion>0.3.49-beta</MicrosoftWindowsCsWin32PackageVersion>
   </PropertyGroup>
