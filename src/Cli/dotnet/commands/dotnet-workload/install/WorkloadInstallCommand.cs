@@ -124,12 +124,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return _workloadInstaller.ExitCode;
         }
 
-        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate = false, bool includePreviews = false, DirectoryPath? offlineCache = null)
+        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIdsToInstallOrUpdate, bool skipManifestUpdate = false, bool includePreviews = false, DirectoryPath? offlineCache = null)
         {
             Reporter.WriteLine();
 
             var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate>();
             var useRollback = false;
+
+            WriteSDKInstallRecordsForVSWorkloads();
 
             if (!skipManifestUpdate)
             {
@@ -148,14 +150,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     Reporter.WriteLine(LocalizableStrings.CheckForUpdatedWorkloadManifests);
                 }
-                // Update currently installed workloads
+
+
+                // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
                 var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
-                var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
+                var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIdsToInstallOrUpdate);
                 if (previouslyInstalledWorkloads.Any())
                 {
                     Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadAlreadyInstalled, string.Join(" ", previouslyInstalledWorkloads)).Yellow());
                 }
-                workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
+
+                workloadIdsToInstallOrUpdate = workloadIdsToInstallOrUpdate.Concat(installedWorkloads).Distinct();
 
                 useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
@@ -163,16 +168,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 manifestsToUpdate = useRollback ?
                     _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
                     _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
-
-                WriteSDKInstallRecordsForVSWorkloads();
             }
 
-            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
+            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIdsToInstallOrUpdate, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
 
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
             Reporter.WriteLine();
-            Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIds)));
+            Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIdsToInstallOrUpdate)));
             Reporter.WriteLine();
         }
 
@@ -196,7 +199,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             if (OperatingSystem.IsWindows())
             {
                 // The 'workload restore' command relies on this happening through the existing chain of logic, if this is massively refactored please ensure this is called.
-                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, GetInstalledWorkloads(false));
+                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, GetInstalledWorkloads(false), Reporter);
             }
 #endif
         }

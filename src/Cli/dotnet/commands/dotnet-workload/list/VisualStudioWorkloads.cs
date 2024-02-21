@@ -3,6 +3,7 @@
 
 using System.Runtime.Versioning;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -126,7 +127,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         /// ...  but these workloads don't have their corresponding packs installed as VS doesn't update its workloads as the CLI does.
         /// </summary>
         internal static void WriteSDKInstallRecordsForVSWorkloads(IInstaller workloadInstaller, IWorkloadResolver workloadResolver,
-            IEnumerable<WorkloadId> workloadsWithExistingInstallRecords)
+            IEnumerable<WorkloadId> workloadsWithExistingInstallRecords, IReporter reporter)
         {
             if (OperatingSystem.IsWindows())
             {
@@ -139,6 +140,8 @@ namespace Microsoft.DotNet.Workloads.Workload
                     // Remove workloads with an SDK installation source, as we've already created install records for them, and don't need to again.
                     var vsOnlyWorkloads = vsWorkloads.AsEnumerable().Where(w => !w.Value.Contains("SDK")).Select(w => new WorkloadId(w.Key));
                     var workloadsToWriteRecordsFor = vsOnlyWorkloads.Except(workloadsWithExistingInstallRecords);
+
+                    reporter.WriteLine($"Writing workload install records for Visual Studio workloads: {string.Join(", ", workloadsToWriteRecordsFor.Select(w => w.ToString()).ToArray())}");
                     ((NetSdkMsiInstallerClient)workloadInstaller).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
                 }
             }

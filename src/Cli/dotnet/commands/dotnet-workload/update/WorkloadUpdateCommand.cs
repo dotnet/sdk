@@ -149,7 +149,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 #if !DOT_NET_BUILD_FROM_SOURCE
             if (OperatingSystem.IsWindows())
             {
-                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, GetUpdatableWorkloads());
+                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, GetUpdatableWorkloads(), Reporter);
             }
 #endif
         }
