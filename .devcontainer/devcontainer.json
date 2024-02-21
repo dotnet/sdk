@@ -16,6 +16,10 @@
   // Add the locally installed dotnet to the path to ensure that it is activated
   // This is needed so that things like the C# extension can resolve the correct SDK version
   "remoteEnv": {
-    "PATH": "${containerWorkspaceFolder}/.dotnet:${containerEnv:PATH}"
+    "PATH": "${containerWorkspaceFolder}/.dotnet:${containerEnv:PATH}",
+    "DOTNET_MULTILEVEL_LOOKUP": "0",
+    "DOTNET_ROOT": "${containerWorkspaceFolder}/.dotnet",
+    "DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR": "${containerWorkspaceFolder}/.dotnet",
+    "NUGET_PACKAGES": "/home/vscode/.nuget/packages"
   }
 }
