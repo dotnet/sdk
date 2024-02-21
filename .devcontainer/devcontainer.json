@@ -1,5 +1,4 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v8.0/containers/dotnet
+// For format details, see https://aka.ms/devcontainer.json.
 {
   "name": "dotnet",
   "image": "mcr.microsoft.com/devcontainers/base:debian",
