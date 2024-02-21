@@ -190,8 +190,8 @@ internal class Layer
         string layerMediaType = manifestMediaType switch
         {
              // TODO: configurable? gzip always?
-            SchemaTypes.DockerManifestV2 => "application/vnd.docker.image.rootfs.diff.tar.gzip",
-            SchemaTypes.OciManifestV1 => "application/vnd.oci.image.layer.v1.tar+gzip",
+            SchemaTypes.DockerManifestV2 => SchemaTypes.DockerLayerGzip,
+            SchemaTypes.OciManifestV1 => SchemaTypes.OciLayerGzipV1,
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), manifestMediaType))
         };
 
