@@ -30,6 +30,9 @@
     <UsagePattern IdentityGlob="System.Diagnostics.EventLog/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Reflection.MetadataLoadContext/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.ProtectedData/*7.0.0*" />
+
+    <!-- Transitive dependencies from roslyn -->
+    <UsagePattern IdentityGlob="System.Diagnostics.EventLog/8.0.0" />
   </IgnorePatterns>
 
 </UsageData>
