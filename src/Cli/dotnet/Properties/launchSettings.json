@@ -1,8 +1,7 @@
 {
   "profiles": {
     "dotnet": {
-      "commandName": "Project",
-      "commandLineArgs": "list package"
+      "commandName": "Project"
     }
   }
 }
