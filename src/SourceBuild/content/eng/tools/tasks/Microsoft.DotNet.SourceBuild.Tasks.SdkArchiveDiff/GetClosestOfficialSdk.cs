@@ -29,8 +29,19 @@ public class GetClosestOfficialSdk : Microsoft.Build.Utilities.Task
         string downloadUrl = GetLatestOfficialSdkUrl(versionString, rid, extension);
 
         Log.LogMessage($"Downloading {downloadUrl}");
-        var packageResponse = await new HttpClient().GetAsync(downloadUrl);
-        packageResponse.EnsureSuccessStatusCode();
+        var handler = new HttpClientHandler()
+        {
+            AllowAutoRedirect = false
+        };
+        var client = new HttpClient(handler);
+        var redirectResponse = await client.GetAsync(downloadUrl);
+        // aka.ms returns a 301 for valid redirects and a 302 to Bing for invalid URLs
+        if (redirectResponse.StatusCode != HttpStatusCode.Moved)
+        {
+            Log.LogMessage(MessageImportance.High, $"Failed to download '{downloadUrl}': invalid aka.ms URL");
+            return true;
+        }
+        var packageResponse = await client.GetAsync(redirectResponse.Headers.Location!);
 
         var packageUriPath = packageResponse.RequestMessage!.RequestUri!.LocalPath;
         string downloadedVersion = PathWithVersions.GetVersionInPath(packageUriPath).ToString();
