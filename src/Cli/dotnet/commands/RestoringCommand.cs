@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools
             IEnumerable<string> arguments,
             bool noRestore)
         {
-            if (noRestore) 
+            if (noRestore)
             {
                 return arguments;
             }
@@ -76,19 +76,61 @@ namespace Microsoft.DotNet.Tools
         private static bool HasArgumentToExcludeFromRestore(IEnumerable<string> arguments)
             => arguments.Any(a => IsExcludedFromRestore(a));
 
-        private static readonly string[] propertyPrefixes = new string[]{ "-", "/", "--" };
+        private static readonly string[] propertyPrefixes = new string[] { "-", "/", "--" };
 
-        private static bool IsExcludedFromRestore(string argument)
-            => propertyPrefixes.Any(prefix => argument.StartsWith($"{prefix}property:TargetFramework=", StringComparison.Ordinal)) ||
-               propertyPrefixes.Any(prefix => argument.StartsWith($"{prefix}p:TargetFramework=", StringComparison.Ordinal));
+        // these properties trigger a separate restore
+        private static List<string> PropertiesToExcludeFromRestore =
+        [
+            "TargetFramework"
+        ];
 
         //  These arguments don't by themselves require that restore be run in a separate process,
         //  but if there is a separate restore process they shouldn't be passed to it
+        private static List<string> FlagsToExcludeFromRestore =
+        [
+            "getProperty",
+            "getItem",
+            "getTargetResult",
+            "t",
+            "target",
+            "consoleloggerparameters",
+            "clp"
+        ];
+
+        private static List<string> FlagsToExcludeFromSeparateRestore =
+            ComputeFlags(FlagsToExcludeFromRestore).ToList();
+        private static List<string> PropertiesToExcludeFromSeparateRestore =
+            ComputePropertySwitches(PropertiesToExcludeFromRestore).ToList();
+
+        private static IEnumerable<string> ComputePropertySwitches(List<string> properties)
+        {
+            foreach (var prefix in propertyPrefixes)
+            {
+                foreach (var property in properties)
+                {
+                    yield return $"{prefix}property:{property}=";
+                    yield return $"{prefix}p:{property}=";
+                }
+            }
+        }
+
+        private static IEnumerable<string> ComputeFlags(List<string> flags)
+        {
+            foreach (var prefix in propertyPrefixes)
+            {
+                foreach (var flag in flags)
+                {
+                    yield return $"{prefix}{flag}:";
+                }
+            }
+        }
+
+        private static bool IsExcludedFromRestore(string argument)
+            => PropertiesToExcludeFromSeparateRestore.Any(flag => argument.StartsWith(flag, StringComparison.Ordinal));
+
+
         private static bool IsExcludedFromSeparateRestore(string argument)
-            => propertyPrefixes.Any(prefix => argument.StartsWith($"{prefix}t:", StringComparison.Ordinal)) ||
-               propertyPrefixes.Any(prefix => argument.StartsWith($"{prefix}target:", StringComparison.Ordinal)) ||
-               propertyPrefixes.Any(prefix => argument.StartsWith($"{prefix}consoleloggerparameters:", StringComparison.Ordinal)) ||
-               propertyPrefixes.Any(prefix => argument.StartsWith($"{prefix}clp:", StringComparison.Ordinal));
+            => FlagsToExcludeFromSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.Ordinal));
 
         public override int Execute()
         {
