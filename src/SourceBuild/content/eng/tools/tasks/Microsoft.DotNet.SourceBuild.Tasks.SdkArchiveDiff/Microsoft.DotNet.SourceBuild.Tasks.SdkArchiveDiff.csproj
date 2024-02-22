@@ -8,4 +8,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" ExcludeAssets="Runtime" Version="$(MicrosoftBuildVersion)" />
   </ItemGroup>
+
 </Project>
