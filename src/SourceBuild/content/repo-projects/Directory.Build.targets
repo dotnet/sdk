@@ -320,7 +320,7 @@
     <PropertyGroup>
       <FullCommand>$(BuildCommand)</FullCommand>
       <FullCommand Condition="'$(LogVerbosityOptOut)' != 'true'">$(FullCommand) /v:$(LogVerbosity)</FullCommand>
-      <FullCommand Condition="'$(MinimalConsoleLogOutput)' == 'true'">$(FullCommand) &gt;&gt; $(RepoConsoleLogFile) 2&gt;&amp;1</FullCommand>
+      <FullCommand Condition="'$(MinimalConsoleLogOutput)' == 'true'">$(FullCommand) &gt; $(RepoConsoleLogFile) 2&gt;&amp;1</FullCommand>
     </PropertyGroup>
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(RepoConsoleLogFile)'));
