@@ -20,5 +20,6 @@
   </Target>
 
   <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+  <Import Project="$(RepositoryEngineeringDir)build.targets" />
 
 </Project>
