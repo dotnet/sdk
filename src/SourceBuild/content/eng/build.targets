@@ -1,0 +1,27 @@
+<Project>
+  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="FindArchiveDiffs" />
+  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetClosestOfficialSdk" />
+
+  <Target Name="ReportSdkArchiveDiffs"
+          AfterTargets="Build"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          Condition="'$(ReportSdkArchiveDiffs)' == 'true'">
+
+      <PropertyGroup>
+          <SdkArchiveDiffOutputPath>$(OutDir)</SdkArchiveDiffOutputPath>
+      </PropertyGroup>
+
+      <GetClosestOfficialSdk BuiltSdkPath="@(SdkTarballItem)">
+        <Output TaskParameter="ClosestOfficialSdkPath" PropertyName="ClosestOfficialSdkPath" />
+      </GetClosestOfficialSdk>
+
+      <FindArchiveDiffs BaselineArchive="@(SdkTarballItem)" TestArchive="$(ClosestOfficialSdkPath)">
+        <Output TaskParameter="ContentDifferences" ItemName="ContentDifferences" />
+      </FindArchiveDiffs>
+
+      <Message Text="Difference in sdk archive: %(ContentDifferences.Kind): %(ContentDifferences.Identity)" Importance="High" Condition="'%(ContentDifferences.Kind)' != 'Unchanged'"/>
+      <Delete Files="$(ClosestOfficialSdkPath)" />
+
+  </Target>
+
+</Project>
