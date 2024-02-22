@@ -4,8 +4,7 @@
 
   <Target Name="ReportSdkArchiveDiffs"
           AfterTargets="Build"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion"
-          Condition="'$(ReportSdkArchiveDiffs)' == 'true'">
+          DependsOnTargets="DetermineSourceBuiltSdkVersion">
 
       <PropertyGroup>
           <SdkArchiveDiffOutputPath>$(OutDir)</SdkArchiveDiffOutputPath>
