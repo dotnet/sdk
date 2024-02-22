@@ -42,7 +42,6 @@
     <RepositoryReference Remove="nuget-client" />
     <RepositoryReference Remove="fsharp" />
     <RepositoryReference Remove="vstest" />
-    <RepositoryReference Remove="aspire" />
     <RepositoryReference Remove="installer" />
   </ItemGroup>
 
