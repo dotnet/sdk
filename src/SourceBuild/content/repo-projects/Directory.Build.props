@@ -33,6 +33,11 @@
     <NuGetConfigFile Condition="'$(OriginalNuGetConfigFile)' != ''">$(BaseIntermediateOutputPath)$([System.IO.Path]::GetFileName('$(OriginalNuGetConfigFile)'))</NuGetConfigFile>
 
     <SourceBuiltSdksDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'source-built-sdks'))</SourceBuiltSdksDir>
+    <RepoArtifactsShippingPackagesDir Condition="'$(RepositoryName)' != 'source-build-reference-packages'">$([MSBuild]::NormalizeDirectory('$(ArtifactsShippingPackagesDir)', '$(RepositoryName)'))</RepoArtifactsShippingPackagesDir>
+    <RepoArtifactsShippingPackagesDir Condition="'$(RepositoryName)' == 'source-build-reference-packages'">$(ReferencePackagesDir)</RepoArtifactsShippingPackagesDir>
+    <RepoArtifactsNonShippingPackagesDir Condition="'$(RepositoryName)' != 'source-build-reference-packages'">$([MSBuild]::NormalizeDirectory('$(ArtifactsNonShippingPackagesDir)', '$(RepositoryName)'))</RepoArtifactsNonShippingPackagesDir>
+    <RepoArtifactsNonShippingPackagesDir Condition="'$(RepositoryName)' == 'source-build-reference-packages'">$(ReferencePackagesDir)</RepoArtifactsNonShippingPackagesDir>
+    
 
     <!-- Set the bootstrap version to the VMR's version if empty. (no bootstrap set). -->
     <ArcadeBootstrapVersion>$([MSBuild]::ValueOrDefault('$(ARCADE_BOOTSTRAP_VERSION)', '$(ArcadeSdkVersion)'))</ArcadeBootstrapVersion>
