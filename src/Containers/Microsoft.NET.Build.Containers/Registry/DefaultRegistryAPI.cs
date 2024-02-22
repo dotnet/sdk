@@ -49,7 +49,11 @@ internal class DefaultRegistryAPI : IRegistryAPI
             clientHandler = new AmazonECRMessageHandler(clientHandler);
         }
 
-        HttpClient client = new(clientHandler);
+        HttpClient client = new(clientHandler)
+        {
+            // blob upload operations can take quite a while, we should allow them to take as long as they need
+            Timeout = Timeout.InfiniteTimeSpan
+        };
 
         client.DefaultRequestHeaders.Add("User-Agent", $".NET Container Library v{Constants.Version}");
 
