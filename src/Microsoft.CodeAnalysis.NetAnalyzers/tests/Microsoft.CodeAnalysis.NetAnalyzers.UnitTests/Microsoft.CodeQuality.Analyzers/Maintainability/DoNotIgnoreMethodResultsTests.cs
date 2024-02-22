@@ -881,6 +881,29 @@ End Class
             await vbtest.RunAsync();
         }
 
+        [Fact]
+        [WorkItem(7030, "https://github.com/dotnet/roslyn-analyzers/issues/7030")]
+        public Task QueryableTake()
+        {
+            const string code = """
+                                using System.Collections.Generic;
+                                using System.Linq;
+                                
+                                class Test
+                                {
+                                    void M()
+                                    {
+                                        IQueryable<int> queryable = (new int[] { 0, 1 }).AsQueryable();
+                                        {|#0:queryable.Take(1)|};
+                                    }
+                                }
+                                """;
+            DiagnosticResult diagnosticResult = new DiagnosticResult(DoNotIgnoreMethodResultsAnalyzer.LinqMethodRule)
+                .WithLocation(0)
+                .WithArguments("M", "Take");
+            return VerifyCS.VerifyAnalyzerAsync(code, diagnosticResult);
+        }
+
         #endregion
 
         #region Helpers

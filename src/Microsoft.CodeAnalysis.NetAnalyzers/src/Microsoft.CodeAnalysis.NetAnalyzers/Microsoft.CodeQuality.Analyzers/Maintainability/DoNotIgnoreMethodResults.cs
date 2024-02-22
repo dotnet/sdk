@@ -148,6 +148,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                 INamedTypeSymbol? nunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.NUnitFrameworkAssert);
                 INamedTypeSymbol? xunitAssertType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.XunitAssert);
                 INamedTypeSymbol? linqEnumerableType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
+                INamedTypeSymbol? linqQueryableType = compilationContext.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqQueryable);
 
                 compilationContext.RegisterOperationBlockStartAction(osContext =>
                 {
@@ -200,7 +201,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 {
                                     rule = PureMethodRule;
                                 }
-                                else if (targetMethod.ContainingType.Equals(linqEnumerableType))
+                                else if (targetMethod.ContainingType.Equals(linqEnumerableType) || targetMethod.ContainingType.Equals(linqQueryableType))
                                 {
                                     rule = LinqMethodRule;
                                 }
