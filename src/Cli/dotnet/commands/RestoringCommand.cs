@@ -60,11 +60,11 @@ namespace Microsoft.DotNet.Tools
                 return null;
             }
 
-            IEnumerable<string> restoreArguments = new string[] { "-target:Restore" };
+            IEnumerable<string> restoreArguments = ["-target:Restore"];
             if (arguments != null)
             {
-                restoreArguments = restoreArguments.Concat(arguments.Where(
-                    a => !IsExcludedFromRestore(a) && !IsExcludedFromSeparateRestore(a)));
+                (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(arguments);
+                restoreArguments = [.. restoreArguments, .. newArgumentsToAdd, .. existingArgumentsToForward];
             }
 
             return new RestoreCommand(restoreArguments, msbuildPath);
@@ -84,13 +84,18 @@ namespace Microsoft.DotNet.Tools
             "TargetFramework"
         ];
 
+        private static List<string> FlagsThatTriggerSilentRestore =
+            [
+                "getProperty",
+                "getItem",
+                "getTargetResult"
+            ];
+
         //  These arguments don't by themselves require that restore be run in a separate process,
         //  but if there is a separate restore process they shouldn't be passed to it
         private static List<string> FlagsToExcludeFromRestore =
         [
-            "getProperty",
-            "getItem",
-            "getTargetResult",
+            ..FlagsThatTriggerSilentRestore,
             "t",
             "target",
             "consoleloggerparameters",
@@ -99,9 +104,34 @@ namespace Microsoft.DotNet.Tools
 
         private static List<string> FlagsToExcludeFromSeparateRestore =
             ComputeFlags(FlagsToExcludeFromRestore).ToList();
+
+        private static List<string> FlagsThatTriggerSilentSeparateRestore =
+            ComputeFlags(FlagsThatTriggerSilentRestore).ToList();
+
         private static List<string> PropertiesToExcludeFromSeparateRestore =
             ComputePropertySwitches(PropertiesToExcludeFromRestore).ToList();
 
+        private static (string[] newArgumentsToAdd, string[] existingArgumentsToForward) ProcessForwardedArgumentsForSeparateRestore(IEnumerable<string> forwardedArguments)
+        {
+            HashSet<string> newArgumentsToAdd = new();
+            List<string> existingArgumentsToForward = new();
+
+            foreach (var argument in forwardedArguments)
+            {
+
+                if (!IsExcludedFromSeparateRestore(argument) && !IsExcludedFromRestore(argument))
+                {
+                    existingArgumentsToForward.Add(argument);
+                }
+
+                if (TriggersSilentSeparateRestore(argument))
+                {
+                    newArgumentsToAdd.Add("-nologo");
+                    newArgumentsToAdd.Add("-verbosity:quiet");
+                }
+            }
+            return (newArgumentsToAdd.ToArray(), existingArgumentsToForward.ToArray());
+        }
         private static IEnumerable<string> ComputePropertySwitches(List<string> properties)
         {
             foreach (var prefix in switchPrefixes)
@@ -131,6 +161,9 @@ namespace Microsoft.DotNet.Tools
 
         private static bool IsExcludedFromSeparateRestore(string argument)
             => FlagsToExcludeFromSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.Ordinal));
+
+        private static bool TriggersSilentSeparateRestore(string argument)
+            => FlagsThatTriggerSilentSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.Ordinal));
 
         public override int Execute()
         {
