@@ -195,7 +195,7 @@ public class TargetsTests
     [InlineData("v9.0", "linux-x64", null)]
     [InlineData("v9.0", "win-x64", "ContainerUser")]
     [Theory]
-    public void CanComputeContainerUser(string tfm, string rid, string expectedUser)
+    public void CanComputeContainerUser(string tfm, string rid, string? expectedUser)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
@@ -356,5 +356,31 @@ public class TargetsTests
         instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
         var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [Fact]
+    public void AspNetFDDAppsGetAspNetBaseImage()
+    {
+        var expectedImage = "mcr.microsoft.com/dotnet/aspnet:8.0";
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.200",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = "linux-x64",
+        }, bonusItems: new()
+        {
+            [KnownStrings.Items.FrameworkReference] = KnownFrameworkReferences.WebApp
+        }, projectName: $"{nameof(AspNetFDDAppsGetAspNetBaseImage)}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    private static class KnownFrameworkReferences
+    {
+        public static Microsoft.Build.Framework.ITaskItem[] ConsoleApp { get; } = [new Microsoft.Build.Utilities.TaskItem("Microsoft.NETCore.App")];
+        public static Microsoft.Build.Framework.ITaskItem[] WebApp { get; } = [.. ConsoleApp, new Microsoft.Build.Utilities.TaskItem("Microsoft.AspNetCore.App")];
     }
 }

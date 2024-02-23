@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -20,6 +23,11 @@ namespace Microsoft.DotNet.Workloads.Workload
         public static InstallStateContents FromString(string contents)
         {
             return JsonSerializer.Deserialize<InstallStateContents>(contents, s_options);
+        }
+
+        public static InstallStateContents FromPath(string path)
+        {
+            return File.Exists(path) ? FromString(File.ReadAllText(path)) : new InstallStateContents();
         }
 
         public override string ToString()

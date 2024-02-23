@@ -102,6 +102,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 throw new InvalidOperationException("Resolver was created without provider and cannot be refreshed");
             }
+
+            _manifestProvider.RefreshWorkloadManifests();
             _manifests.Clear();
             LoadManifestsFromProvider(_manifestProvider);
             ComposeWorkloadManifests();
@@ -386,10 +388,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 return GetPacksInWorkload(workload, value.manifest).Select(p => p.packId);
             }
-
-#nullable disable
             return workload.Packs ?? Enumerable.Empty<WorkloadPackId>();
-#nullable restore
         }
 
         public IEnumerable<WorkloadInfo> GetExtendedWorkloads(IEnumerable<WorkloadId> workloadIds)
@@ -735,6 +734,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _sdkFeatureBand = sdkFeatureBand;
             }
 
+            public void RefreshWorkloadManifests() { }
             public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
             public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;

@@ -79,7 +79,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             static WorkloadSet ReadManifests(ref Utf8JsonStreamReader reader)
             {
                 JsonReader.ConsumeToken(ref reader, JsonTokenType.StartObject);
-                Dictionary<string, string> workloadSetDict = new();
+                Dictionary<string, string?> workloadSetDict = new();
 
                 while (reader.Read())
                 {
@@ -88,7 +88,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         case JsonTokenType.PropertyName:
                             var propName = reader.GetString();
                             var propValue = JsonReader.ReadString(ref reader);
-                            workloadSetDict[propName] = propValue;
+                            if (propName != null)
+                            {
+                                workloadSetDict[propName] = propValue;
+                            }
                             break;
                         case JsonTokenType.EndObject:
                             return WorkloadSet.FromDictionaryForJson(workloadSetDict, new SdkFeatureBand(new ReleaseVersion(0, 0, 0)));

@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithSource()
                 .WithVersionVariables();
 
-            var command = new DotnetTestCommand(Log).WithWorkingDirectory(testAsset.Path);
+            var command = new DotnetTestCommand(Log, disableNewOutput: true).WithWorkingDirectory(testAsset.Path);
             command.EnvironmentToRemove.Add("DOTNET_ROOT");
             command.EnvironmentToRemove.Add("DOTNET_ROOT(x86)");
             var result = command.Execute(ConsoleLoggerOutputDetailed);

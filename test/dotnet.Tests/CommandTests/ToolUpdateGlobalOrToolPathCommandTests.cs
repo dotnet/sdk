@@ -153,6 +153,36 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenAnExistedHigherversionInstallationWhenUpdateToLowerVersionItErrors()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId} --version {LowerPackageVersion} --verbosity minimal");
+
+            Action a = () => command.Execute();
+
+            a.Should().Throw<GracefulException>().And.Message
+                .Should().Contain(
+                  string.Format(LocalizableStrings.UpdateToLowerVersion, LowerPackageVersion, HigherPackageVersion));
+        }
+
+       [Fact]
+        public void GivenAnExistedHigherversionInstallationWithDowngradeFlagWhenUpdateToLowerVersionItSucceeds()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
+            _reporter.Lines.Clear();
+
+            var command = CreateUpdateCommand($"-g {_packageId} --version {LowerPackageVersion} --verbosity minimal --allow-downgrade");
+
+            command.Execute();
+
+            _reporter.Lines.First().Should().Contain(string.Format(
+                LocalizableStrings.UpdateSucceeded,
+                _packageId, HigherPackageVersion, LowerPackageVersion));
+        }
+
+        [Fact]
         public void GivenAnExistedLowerversionInstallationWhenCallWithWildCardVersionItCanPrintSuccessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -333,6 +363,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)
         {
             ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
+            var store = new ToolPackageStoreMock(
+                    new DirectoryPath(_toolsDirectory),
+                    _fileSystem);
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
@@ -341,7 +374,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     fileSystem: _fileSystem,
                     _reporter,
                     _mockFeeds
-                    )),
+                    ), new ToolPackageUninstallerMock(_fileSystem, store)),
                 (_, _) => GetMockedShellShimRepository(),
                 _environmentPathInstructionMock,
                 _reporter);

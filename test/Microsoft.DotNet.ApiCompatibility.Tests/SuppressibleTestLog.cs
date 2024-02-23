@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.ApiCompatibility.Logging;
@@ -8,8 +8,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 {
     internal class SuppressibleTestLog : ISuppressibleLog
     {
-        public List<string> errors = new();
-        public List<string> warnings = new();
+        public List<string> info = [];
+        public List<string> errors = [];
+        public List<string> warnings = [];
 
         public bool HasLoggedErrors => errors.Count != 0;
         public bool HasLoggedErrorSuppressions { get; private set; }
@@ -33,7 +34,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         public void LogWarning(string message) => warnings.Add(message);
         public void LogWarning(string code, string message) => warnings.Add($"{code} {message}");
 
-        public void LogMessage(string message) { }
-        public void LogMessage(MessageImportance importance, string message) { }
+        public void LogMessage(string message) => info.Add(message);
+        public void LogMessage(MessageImportance importance, string message) => info.Add(message);
     }
 }

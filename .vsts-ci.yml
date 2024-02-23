@@ -17,8 +17,6 @@ pr:
 variables:
   - name: teamName
     value: Roslyn-Project-System
-  - name: _DotNetPublishToBlobFeed
-    value: false
   - name: _CIBuild
     value: -restore -build -sign -pack -ci
   - name: _DotNetArtifactsCategory

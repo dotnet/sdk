@@ -42,7 +42,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", ".not-copied", "test.txt")).Should().NotExist();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/28781")]
+        [Fact]
         public void Publish_WithRazorCompileOnBuildFalse_PublishesAssembly()
         {
             var testAsset = "RazorSimpleMvc";

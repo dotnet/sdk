@@ -3,19 +3,18 @@
 
 using Microsoft.Deployment.DotNet.Releases;
 
-#nullable disable
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public struct SdkFeatureBand : IEquatable<SdkFeatureBand>, IComparable<SdkFeatureBand>
     {
         private ReleaseVersion _featureBand;
 
-        public SdkFeatureBand(string version) : this(new ReleaseVersion(version) ?? throw new ArgumentNullException(nameof(version))) { }
+        public SdkFeatureBand(string? version) : this(new ReleaseVersion(version) ?? throw new ArgumentNullException(nameof(version))) { }
 
         public SdkFeatureBand(ReleaseVersion version)
         {
             var fullVersion = version ?? throw new ArgumentNullException(nameof(version));
-            if (string.IsNullOrEmpty(version.Prerelease) || version.Prerelease.Contains("dev") || version.Prerelease.Contains("ci"))
+            if (string.IsNullOrEmpty(version.Prerelease) || version.Prerelease.Contains("dev") || version.Prerelease.Contains("ci") || version.Prerelease.Contains("rtm"))
             {
                 _featureBand = new ReleaseVersion(fullVersion.Major, fullVersion.Minor, fullVersion.SdkFeatureBand);
             }
@@ -40,7 +39,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return _featureBand.CompareTo(other._featureBand);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             return obj is SdkFeatureBand featureBand && Equals(featureBand);
         }

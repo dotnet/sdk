@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.Build.Tasks;
+
 namespace Microsoft.NET.Build.Tests
 {
     public class GivenThatWeWantToBuildWithATargetPlatform : SdkTest
@@ -89,6 +91,83 @@ namespace Microsoft.NET.Build.Tests
                 .Fail()
                 .And
                 .HaveStdOutContaining("NETSDK1139");
+        }
+
+        [Fact]
+        public void It_fails_if_targetplatformversion_is_constant_only()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "It_fails_if_targetplatformversion_is_constant_only",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+
+            string DirectoryBuildTargetsContent = $@"
+<Project>
+  <ItemGroup>
+    <SdkSupportedTargetPlatformVersion Include=""111.0"" DefineConstantsOnly=""true"" />
+    <SdkSupportedTargetPlatformVersion Include=""222.0"" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetPlatformVersion>111.0</TargetPlatformVersion>
+    <TargetPlatformIdentifier>ios</TargetPlatformIdentifier>
+    <TargetPlatformSupported>true</TargetPlatformSupported>
+  </PropertyGroup>
+</Project>
+";
+
+            File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.targets"), DirectoryBuildTargetsContent);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1140")
+                .And
+                .HaveStdOutContaining(string.Format(Strings.InvalidTargetPlatformVersion, "111.0", "ios", "222.0").Split ('\n', '\r') [0])
+                .And
+                .HaveStdOutContaining("222.0");
+        }
+
+        [Fact]
+        public void It_fails_if_targetplatformversion_is_invalid()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "It_fails_if_targetplatformversion_is_invalid",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+
+            string DirectoryBuildTargetsContent = $@"
+<Project>
+  <ItemGroup>
+    <SdkSupportedTargetPlatformVersion Include=""222.0"" />
+  </ItemGroup>
+  <PropertyGroup>
+    <TargetPlatformVersion>111.0</TargetPlatformVersion>
+    <TargetPlatformIdentifier>ios</TargetPlatformIdentifier>
+    <TargetPlatformSupported>true</TargetPlatformSupported>
+  </PropertyGroup>
+</Project>
+";
+
+            File.WriteAllText(Path.Combine(testAsset.TestRoot, "Directory.Build.targets"), DirectoryBuildTargetsContent);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdOutContaining("NETSDK1140")
+                .And
+                .HaveStdOutContaining(string.Format(Strings.InvalidTargetPlatformVersion, "111.0", "ios", "222.0").Split ('\n', '\r') [0])
+                .And
+                .HaveStdOutContaining("222.0");
         }
     }
 }

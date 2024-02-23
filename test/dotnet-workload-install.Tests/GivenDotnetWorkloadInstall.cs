@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdErrContaining(string.Format(Workloads.Workload.Install.LocalizableStrings.CannotCombineSkipManifestAndRollback, "skip-manifest-update", "from-rollback-file", "skip-manifest-update", "from-rollback-file"));
+                .HaveStdErrContaining(string.Format(Workloads.Workload.Install.LocalizableStrings.CannotCombineSkipManifestAndRollback, "skip-manifest-update", "from-rollback-file"));
         }
 
 

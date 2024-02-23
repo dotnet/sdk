@@ -20,7 +20,8 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Determines whether revocation checks can go online.
         /// </summary>
         private bool _allowOnlineRevocationChecks;
-        
+
+        /// <summary>
         /// The root directory of the package cache where MSI workload packs are stored.
         /// </summary>
         public readonly string PackageCacheRoot;

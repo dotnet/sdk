@@ -10,7 +10,7 @@ function InitializeCustomSDKToolset {
 
   # The following frameworks and tools are used only for testing.
   # Do not attempt to install them in source build.
-  if ($env:DotNetBuildFromSource -eq "true") {
+  if ($env:DotNetBuildFromSource -eq "true" -or $productBuild -or $properties -like "*DotNetBuildRepo=true*") {
     return
   }
 
@@ -154,7 +154,7 @@ function CleanOutStage0ToolsetsAndRuntimes {
       Remove-Item (Join-Path $aspnetRuntimePath "$majorVersion.*") -Recurse
       Remove-Item (Join-Path $coreRuntimePath "$majorVersion.*") -Recurse
       Remove-Item (Join-Path $wdRuntimePath "$majorVersion.*") -Recurse
-      Remove-Item (Join-Path $sdkPath "$majorVersion.*") -Recurse
+      Remove-Item (Join-Path $sdkPath "*") -Recurse
       Remove-Item (Join-Path $dotnetRoot "packs") -Recurse
       Remove-Item (Join-Path $dotnetRoot "sdk-manifests") -Recurse
       Remove-Item (Join-Path $dotnetRoot "templates") -Recurse

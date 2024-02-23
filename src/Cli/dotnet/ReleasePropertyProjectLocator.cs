@@ -251,7 +251,6 @@ namespace Microsoft.DotNet.Cli
                 Reporter.Error.WriteLine(e.Message);
             }
             return null;
-#nullable disable
         }
 
         /// <returns>Returns true if the path exists and is a project file type.</returns> 
@@ -271,14 +270,17 @@ namespace Microsoft.DotNet.Cli
         {
             Dictionary<string, string> globalProperties = new(StringComparer.OrdinalIgnoreCase);
 
-            string[] globalPropEnumerable = _parseResult.GetValue(CommonOptions.PropertiesOption);
-
-            foreach (var keyEqValString in globalPropEnumerable)
+            string[]? globalPropEnumerable = _parseResult.GetValue(CommonOptions.PropertiesOption);
+            
+            if ( globalPropEnumerable != null )
             {
-                var propertyPairs = MSBuildPropertyParser.ParseProperties(keyEqValString);
-                foreach (var propertyKeyValue in propertyPairs)
+                foreach (var keyEqValString in globalPropEnumerable)
                 {
-                    globalProperties[propertyKeyValue.key] = propertyKeyValue.value;
+                    var propertyPairs = MSBuildPropertyParser.ParseProperties(keyEqValString);
+                    foreach (var propertyKeyValue in propertyPairs)
+                    {
+                        globalProperties[propertyKeyValue.key] = propertyKeyValue.value;
+                    }
                 }
             }
             return globalProperties;
