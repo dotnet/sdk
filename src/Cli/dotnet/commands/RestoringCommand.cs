@@ -79,12 +79,12 @@ namespace Microsoft.DotNet.Tools
         private static readonly string[] switchPrefixes = ["-", "/", "--"];
 
         // these properties trigger a separate restore
-        private static List<string> PropertiesToExcludeFromRestore =
+        private static readonly string[] PropertiesToExcludeFromRestore =
         [
             "TargetFramework"
         ];
 
-        private static List<string> FlagsThatTriggerSilentRestore =
+        private static readonly string[] FlagsThatTriggerSilentRestore =
             [
                 "getProperty",
                 "getItem",
@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Tools
 
         //  These arguments don't by themselves require that restore be run in a separate process,
         //  but if there is a separate restore process they shouldn't be passed to it
-        private static List<string> FlagsToExcludeFromRestore =
+        private static readonly string[] FlagsToExcludeFromRestore =
         [
             ..FlagsThatTriggerSilentRestore,
             "t",
@@ -135,8 +135,7 @@ namespace Microsoft.DotNet.Tools
             }
             return (newArgumentsToAdd.ToArray(), existingArgumentsToForward.ToArray());
         }
-
-        private static IEnumerable<string> ComputePropertySwitches(List<string> properties)
+        private static IEnumerable<string> ComputePropertySwitches(string[] properties)
         {
             foreach (var prefix in switchPrefixes)
             {
@@ -148,7 +147,7 @@ namespace Microsoft.DotNet.Tools
             }
         }
 
-        private static IEnumerable<string> ComputeFlags(List<string> flags)
+        private static IEnumerable<string> ComputeFlags(string[] flags)
         {
             foreach (var prefix in switchPrefixes)
             {
