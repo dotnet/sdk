@@ -189,6 +189,7 @@
     <NonShippingPackagesListPrefix>NonShipping.Packages.</NonShippingPackagesListPrefix>
 
     <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
+    <ReferenceAssetsDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference-assets'))</ReferenceAssetsDir>
     <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
     <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>
 
