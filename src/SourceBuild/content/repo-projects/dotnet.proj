@@ -15,8 +15,4 @@
     <RepositoryReference Include="scenario-tests" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <RepositoryReference Include="package-source-build" />
-  </ItemGroup>
-
 </Project>

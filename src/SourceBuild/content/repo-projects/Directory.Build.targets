@@ -16,10 +16,6 @@
   <PropertyGroup>
     <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(BuildArgs)</BuildCommand>
 
-    <!-- The default PackageVersionPropsFlowType behavior (DependenciesOnly) triggers logic that looks for a
-         Version.Details.xml file. Setting the type to AllPackages will skip that logic. -->
-    <PackageVersionPropsFlowType Condition="'$(IsUtilityProject)' == 'true'">AllPackages</PackageVersionPropsFlowType>
-
     <!-- MinimalConsoleLogOutput determines if the repository build should be logged to a separate file or directly to the console. -->
     <RepoConsoleLogFile>$(ArtifactsLogDir)$(RepositoryName).log</RepoConsoleLogFile>
     <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == '' and '$(ContinuousIntegrationBuild)' == 'true'">true</MinimalConsoleLogOutput>
