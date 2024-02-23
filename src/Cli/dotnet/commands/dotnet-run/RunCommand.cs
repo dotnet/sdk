@@ -240,9 +240,18 @@ namespace Microsoft.DotNet.Tools.Run
             var project = new ProjectInstance(Project, globalProperties, null);
 
             string runProgram = project.GetPropertyValue("RunCommand");
+            string targetFrameworks = project.GetPropertyValue("TargetFrameworks");
             if (string.IsNullOrEmpty(runProgram))
             {
-                ThrowUnableToRunError(project);
+                if (string.IsNullOrEmpty(Framework) && !string.IsNullOrEmpty(targetFrameworks))
+                {
+                    Framework = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries).First();
+                    return GetTargetCommand();
+                }
+                else
+                {
+                    ThrowUnableToRunError(project);
+                }
             }
 
             string runArguments = project.GetPropertyValue("RunArguments");
