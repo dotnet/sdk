@@ -414,19 +414,21 @@
     <ItemGroup>
       <RepoManifestNonShippingPackage Include="@(RepoManifestPackage)"
                                       Condition="$([System.String]::Copy('%(Identity)').Contains('$([System.IO.Path]::DirectorySeparatorChar)NonShipping$([System.IO.Path]::DirectorySeparatorChar)'))">
-        <DestinationFolder>$(RepoArtifactsNonShippingPackagesDir)</DestinationFolder>
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(RepoArtifactsNonShippingPackagesDir)</DestinationFolder>
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</DestinationFolder>
       </RepoManifestNonShippingPackage>
 
       <RepoManifestShippingPackage Include="@(RepoManifestPackage)"
                                    Exclude="@(RepoManifestNonShippingPackage)">
-        <DestinationFolder>$(RepoArtifactsShippingPackagesDir)</DestinationFolder>
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(RepoArtifactsShippingPackagesDir)</DestinationFolder>
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</DestinationFolder>
       </RepoManifestShippingPackage>
-    </ItemGroup>
 
-    <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,
-         clear it before copying the current SBRPs.  This ensures n-1 SBRPs aren't required to build the product repos. -->
-    <RemoveDir Directories="$(ReferencePackagesDir)"
-               Condition="'$(RepositoryName)' == 'source-build-reference-packages'" />
+      <RepoManifestAsset>
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(ArtifactsAssetsDir)</DestinationFolder>
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferenceAssetsDir)</DestinationFolder>
+      </RepoManifestAsset>
+    </ItemGroup>
 
     <!-- Copy shipping packages -->
     <Copy SourceFiles="@(RepoManifestShippingPackage)"
@@ -440,7 +442,7 @@
 
     <!-- Copy assets -->
     <Copy SourceFiles="@(RepoManifestAsset)"
-          DestinationFolder="$(ArtifactsAssetsDir)"
+          DestinationFolder="%(RepoManifestAsset.DestinationFolder)"
           Condition="'@(RepoManifestAsset)' != ''" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
@@ -520,7 +522,8 @@
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">
     <PropertyGroup>
-      <_ToolPackagesRoot>$(RepoArtifactsNonShippingPackagesDir)</_ToolPackagesRoot>
+      <_ToolPackagesRoot Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(RepoArtifactsNonShippingPackagesDir)</_ToolPackagesRoot>
+      <_ToolPackagesRoot Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</_ToolPackagesRoot>
     </PropertyGroup>
 
     <ItemGroup>
