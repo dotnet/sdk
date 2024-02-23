@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\..\..\src\Assets\dotnet-format.TestsProjects\**\**\**\*"/>
+    <Content Include="..\..\..\src\Assets\dotnet-format.TestsProjects\**\**\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
 
   <!-- Tests depend on the NetCurrent reference assemblies -->
