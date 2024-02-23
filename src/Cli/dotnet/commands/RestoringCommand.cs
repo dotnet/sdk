@@ -159,13 +159,14 @@ namespace Microsoft.DotNet.Tools
         }
 
         private static bool IsExcludedFromRestore(string argument)
-            => PropertiesToExcludeFromSeparateRestore.Any(flag => argument.StartsWith(flag, StringComparison.Ordinal));
+            => PropertiesToExcludeFromSeparateRestore.Any(flag => argument.StartsWith(flag, StringComparison.OrdinalIgnoreCase));
 
 
         private static bool IsExcludedFromSeparateRestore(string argument)
-            => FlagsToExcludeFromSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.Ordinal));
+            => FlagsToExcludeFromSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
+
         private static bool TriggersSilentSeparateRestore(string argument)
-            => FlagsThatTriggerSilentSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.Ordinal));
+            => FlagsThatTriggerSilentSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
         public override int Execute()
         {
