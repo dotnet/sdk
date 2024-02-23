@@ -28,7 +28,7 @@
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Microsoft.NET.Build.Tasks.UnitTests.csproj" >
       <ExcludeAdditionalParameters>true</ExcludeAdditionalParameters>
     </SDKCustomXUnitProject>
-    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="dotnet-format.Tests\tests\dotnet-format.Unittests.csproj" />
+    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include=".\dotnet-format.Tests\tests\dotnet-format.UnitTests.csproj" />
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' == 'true'" Include="**\*.AoT.Tests.csproj" />
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) == 'Windows_NT_FullFramework'"  Include="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj">
       <TargetFramework>net472</TargetFramework>
