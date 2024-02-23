@@ -368,6 +368,33 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                 case IIncrementOrDecrementOperation inc when inc.Target == indexer &&
                                                                              inc.Parent is not IExpressionStatementOperation:
                                     return false;
+                                // C#
+                                case IVariableInitializerOperation
+                                {
+                                    Parent: IVariableDeclaratorOperation
+                                    {
+                                        Parent: IVariableDeclarationOperation
+                                        {
+                                            Parent: IVariableDeclarationGroupOperation declarationGroup
+                                        } declaration
+                                    } declarator
+                                } init when init.Value == indexer:
+                                    usageContext.UsageLocations.Add(declaration.Children.Count() is 1
+                                        ? declarationGroup.Syntax.GetLocation()
+                                        : declarator.Syntax.GetLocation());
+                                    continue;
+                                // VB
+                                case IVariableInitializerOperation
+                                {
+                                    Parent: IVariableDeclarationOperation
+                                    {
+                                        Parent: IVariableDeclarationGroupOperation declarationGroup
+                                    } declaration
+                                } init when init.Value == indexer:
+                                    usageContext.UsageLocations.Add(declarationGroup.Declarations.Length is 1
+                                        ? declarationGroup.Syntax.GetLocation()
+                                        : declaration.Syntax.GetLocation());
+                                    continue;
                             }
 
                             usageContext.UsageLocations.Add(indexer.Syntax.GetLocation());

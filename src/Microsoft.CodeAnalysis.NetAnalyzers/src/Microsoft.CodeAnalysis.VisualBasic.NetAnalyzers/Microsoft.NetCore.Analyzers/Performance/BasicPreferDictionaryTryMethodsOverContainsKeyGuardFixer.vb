@@ -1,4 +1,4 @@
-' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 Imports System.Threading
 Imports Microsoft.CodeAnalysis
@@ -43,6 +43,10 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
             Dim dictionaryAccessors As New List(Of SyntaxNode)
             Dim addStatementNode As ExecutableStatementSyntax = Nothing
             Dim changedValueNode As SyntaxNode = Nothing
+            Dim variableName As String = Nothing
+            Dim additionalNodes = 0
+            Dim localDeclarationStatement As LocalDeclarationStatementSyntax = Nothing
+            Dim variableDeclarator As VariableDeclaratorSyntax = Nothing
             For Each location As Location In diagnostic.AdditionalLocations
                 Dim node = root.FindNode(location.SourceSpan, getInnermostNodeForTie:=True)
                 Select Case node.GetType()
@@ -58,6 +62,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
                             changedValueNode = invocation.ArgumentList.Arguments(1).GetExpression()
                             addStatementNode = invocation.FirstAncestorOrSelf(Of ExpressionStatementSyntax)
+                            additionalNodes += 1
                         Else
                             dictionaryAccessors.Add(node)
                         End If
@@ -76,17 +81,26 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                         Dim assignment = DirectCast(node, AssignmentStatementSyntax)
                         changedValueNode = assignment.Right
                         addStatementNode = assignment
+                        additionalNodes += 1
+                    Case GetType(LocalDeclarationStatementSyntax)
+                        localDeclarationStatement = DirectCast(node, LocalDeclarationStatementSyntax)
+                        variableName = localDeclarationStatement.Declarators.Item(0).Names.Item(0).Identifier.ValueText
+                        additionalNodes += 1
+                    Case GetType(VariableDeclaratorSyntax)
+                        variableDeclarator = DirectCast(node, VariableDeclaratorSyntax)
+                        If variableDeclarator.Parent.GetType() <> GetType(LocalDeclarationStatementSyntax) Then
+                            Return Nothing
+                        End If
+
+                        localDeclarationStatement = DirectCast(variableDeclarator.Parent, LocalDeclarationStatementSyntax)
+                        variableName = variableDeclarator.Names.Item(0).Identifier.ValueText
+                        additionalNodes += 1
                     Case Else
                         Return Nothing
                 End Select
             Next
 
-            Dim targetAmount = diagnostic.AdditionalLocations.Count
-            If addStatementNode IsNot Nothing Then
-                targetAmount -= 1
-            End If
-
-            If targetAmount <> dictionaryAccessors.Count Then
+            If diagnostic.AdditionalLocations.Count <> dictionaryAccessors.Count + additionalNodes Then
                 Return Nothing
             End If
 
@@ -98,17 +112,20 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                     Async Function(ct As CancellationToken) As Task(Of Document)
                         Dim editor = Await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(False)
                         Dim generator = editor.Generator
+                        If variableName Is Nothing Then
+                            variableName = Value
+                        End If
 
                         Dim tryGetValueAccess = generator.MemberAccessExpression(containsKeyAccess.Expression,
                                                                                  TryGetValue)
                         Dim keyArgument = containsKeyInvocation.ArgumentList.Arguments.FirstOrDefault()
                         Dim valueAssignment =
                                 generator.LocalDeclarationStatement(dictionaryValueType,
-                                                                    Value,
+                                                                    variableName,
                                                                     generator.DefaultExpression(dictionaryValueType)).
                                 WithLeadingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed).
                                 WithoutTrailingTrivia()
-                        Dim identifierName As SyntaxNode = generator.IdentifierName(Value)
+                        Dim identifierName As SyntaxNode = generator.IdentifierName(variableName)
                         Dim tryGetValueInvocation = generator.InvocationExpression(tryGetValueAccess,
                                                                                    keyArgument,
                                                                                    generator.Argument(identifierName))
@@ -146,6 +163,14 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                             editor.ReplaceNode(dictionaryAccess, identifierName)
                         Next
 
+                        If localDeclarationStatement IsNot Nothing Then
+                            If variableDeclarator Is Nothing Then
+                                editor.RemoveNode(localDeclarationStatement)
+                            Else
+                                editor.RemoveNode(variableDeclarator)
+                            End If
+                        End If
+
                         Return editor.GetChangedDocument()
                     End Function
 
@@ -155,7 +180,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
         Private Shared Function GetTryAddAction(root As SyntaxNode, diagnostic As Diagnostic, document As Document, containsKeyAccess As MemberAccessExpressionSyntax, containsKeyInvocation As InvocationExpressionSyntax) As CodeAction
             Dim dictionaryAddLocation = diagnostic.AdditionalLocations(0)
             Dim dictionaryAddInvocation = TryCast(root.FindNode(dictionaryAddLocation.SourceSpan, getInnermostNodeForTie:=True), InvocationExpressionSyntax)
-            Dim replaceFunction = Async Function(ct as CancellationToken) As Task(Of Document)
+            Dim replaceFunction = Async Function(ct As CancellationToken) As Task(Of Document)
                                       Dim editor = Await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(False)
                                       Dim generator = editor.Generator
 
@@ -169,7 +194,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                                       End If
 
                                       Dim unary = TryCast(ifStatement.IfStatement.Condition, UnaryExpressionSyntax)
-                                      If unary IsNot Nothing And unary.IsKind(SyntaxKind.NotExpression)
+                                      If unary IsNot Nothing And unary.IsKind(SyntaxKind.NotExpression) Then
                                           If ifStatement.Statements.Count = 1 Then
                                               If ifStatement.ElseBlock Is Nothing Then
                                                   Dim invocationWithTrivia = tryAddInvocation.WithTriviaFrom(ifStatement)
@@ -184,10 +209,10 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                                               editor.RemoveNode(dictionaryAddInvocation.Parent, SyntaxRemoveOptions.KeepNoTrivia)
                                               editor.ReplaceNode(unary, tryAddInvocation)
                                           End If
-                                      Else If ifStatement.IfStatement.Condition.IsKind(SyntaxKind.InvocationExpression) And ifStatement.ElseBlock IsNot Nothing
+                                      ElseIf ifStatement.IfStatement.Condition.IsKind(SyntaxKind.InvocationExpression) And ifStatement.ElseBlock IsNot Nothing Then
                                           Dim negatedTryAddInvocation = generator.LogicalNotExpression(tryAddInvocation)
                                           editor.ReplaceNode(containsKeyInvocation, negatedTryAddInvocation)
-                                          if ifStatement.ElseBlock.Statements.Count = 1 Then
+                                          If ifStatement.ElseBlock.Statements.Count = 1 Then
                                               editor.RemoveNode(ifStatement.ElseBlock, SyntaxRemoveOptions.KeepNoTrivia)
                                           Else
                                               editor.RemoveNode(dictionaryAddInvocation.Parent, SyntaxRemoveOptions.KeepNoTrivia)

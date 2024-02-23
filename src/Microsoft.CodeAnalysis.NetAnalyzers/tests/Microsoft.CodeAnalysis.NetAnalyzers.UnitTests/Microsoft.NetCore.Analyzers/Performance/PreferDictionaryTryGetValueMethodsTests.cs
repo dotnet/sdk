@@ -463,6 +463,41 @@ namespace Test
 
             return 0;";
 
+        private const string GuardedInlineVariable = @"
+            string key = ""key"";
+            var data = new Dictionary<string, string>();
+            if ({|#0:data.ContainsKey(key)|})
+            {
+                {|#1:var a = data[key];|}
+            }
+            return 0;";
+
+        private const string GuardedInlineVariableFixed = @"
+            string key = ""key"";
+            var data = new Dictionary<string, string>();
+            if (data.TryGetValue(key, out string a))
+            {
+            }
+            return 0;";
+
+        private const string GuardedInlineVariable2 = @"
+            string key = ""key"";
+            var data = new Dictionary<string, string>();
+            if ({|#0:data.ContainsKey(key)|})
+            {
+                string {|#1:a = data[key]|}, b = """";
+            }
+            return 0;";
+
+        private const string GuardedInlineVariable2Fixed = @"
+            string key = ""key"";
+            var data = new Dictionary<string, string>();
+            if (data.TryGetValue(key, out string a))
+            {
+                string b = """";
+            }
+            return 0;";
+
         #region NoDiagnostic
 
         private const string InvalidModifiedBeforeUse = @"
@@ -1064,6 +1099,43 @@ End Namespace";
             End If
             Return 0";
 
+        private const string VbGuardedInlineVariable = @"
+            Dim key = ""key""
+            Dim data = New Dictionary(Of String, String)()
+            If {|#0:data.ContainsKey(key)|} Then
+                {|#1:Dim x As String = data(key)|}
+            End If
+            Return 0";
+
+        private const string VbGuardedInlineVariableFixed = @"
+            Dim key = ""key""
+            Dim data = New Dictionary(Of String, String)()
+
+            Dim x As String = Nothing
+
+            If data.TryGetValue(key, x) Then
+            End If
+            Return 0";
+
+        private const string VbGuardedInlineVariable2 = @"
+            Dim key = ""key""
+            Dim data = New Dictionary(Of String, String)()
+            If {|#0:data.ContainsKey(key)|} Then
+                Dim {|#1:x As String = data(key)|}, y
+            End If
+            Return 0";
+
+        private const string VbGuardedInlineVariable2Fixed = @"
+            Dim key = ""key""
+            Dim data = New Dictionary(Of String, String)()
+
+            Dim x As String = Nothing
+
+            If data.TryGetValue(key, x) Then
+                Dim y
+            End If
+            Return 0";
+
         #region NoDiagnostic
 
         private const string VbInvalidModifiedBeforeUse = @"
@@ -1225,6 +1297,8 @@ End Namespace";
         [InlineData(GuardedIndexerInSimpleAssignment, GuardedIndexerInSimpleAssignmentFixed)]
         [InlineData(GuardedIndexerInCompoundAssignment, GuardedIndexerInCompoundAssignmentFixed)]
         [InlineData(GuardedKeyInSimpleAssignment, GuardedKeyInSimpleAssignmentFixed)]
+        [InlineData(GuardedInlineVariable, GuardedInlineVariableFixed)]
+        [InlineData(GuardedInlineVariable2, GuardedInlineVariable2Fixed)]
         public Task ShouldReportDiagnostic(string codeSnippet, string fixedCodeSnippet, int additionalLocations = 1)
         {
             string testCode = CreateCSharpCode(codeSnippet);
@@ -1296,6 +1370,8 @@ End Namespace";
         [InlineData(VbGuardedIndexerInSimpleAssignment, VbGuardedIndexerInSimpleAssignmentFixed)]
         [InlineData(VbGuardedIndexerInCompoundAssignment, VbGuardedIndexerInCompoundAssignmentFixed)]
         [InlineData(VbGuardedKeyInSimpleAssignment, VbGuardedKeyInSimpleAssignmentFixed)]
+        [InlineData(VbGuardedInlineVariable, VbGuardedInlineVariableFixed)]
+        [InlineData(VbGuardedInlineVariable2, VbGuardedInlineVariable2Fixed)]
         public Task VbShouldReportDiagnostic(string codeSnippet, string fixedCodeSnippet, int additionalLocations = 1)
         {
             string testCode = CreateVbCode(codeSnippet);
