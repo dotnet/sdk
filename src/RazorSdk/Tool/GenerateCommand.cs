@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
@@ -77,9 +78,18 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             // Loading all of the extensions should succeed as the dependency checker will have already
             // loaded them.
             var extensions = new RazorExtension[ExtensionNames.Values.Count];
+            string razorCompilerPath = null;
             for (var i = 0; i < ExtensionNames.Values.Count; i++)
             {
-                extensions[i] = new AssemblyExtension(ExtensionNames.Values[i], Parent.Loader.LoadFromPath(ExtensionFilePaths.Values[i]));
+                // If the extension is the Razor compiler, we'll use the referenced assembly (instead of the SDK one).
+                // Otherwise the extension's ProvideRazorExtensionInitializerAttribute would be different from the AssemblyExtension's one,
+                // hence the extension would not be loaded properly.
+                razorCompilerPath ??= DiscoverCommand.GetRazorCompilerPath();
+                var assembly = string.Equals(ExtensionFilePaths.Values[i], razorCompilerPath, StringComparison.OrdinalIgnoreCase)
+                    ? typeof(AssemblyExtension).Assembly
+                    : Parent.Loader.LoadFromPath(ExtensionFilePaths.Values[i]);
+
+                extensions[i] = new AssemblyExtension(ExtensionNames.Values[i], assembly);
             }
 
             var version = RazorLanguageVersion.Parse(Version.Value());
