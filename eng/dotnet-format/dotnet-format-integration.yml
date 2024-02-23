@@ -1,18 +1,24 @@
-# Branches that trigger a build on commit
-trigger:
-- main
-- feature/*
-- release/*
-
-# Branches that trigger builds on PR
-pr:
-- main
-- feature/*
-- release/*
-
 jobs:
+- job: Formatting_Check
+  displayName: run dotnet-format on itself
+  pool:
+    vmImage: 'ubuntu-latest'
+  timeoutInMinutes: 10
+  steps:
+    - script: ./restore.sh && echo "##vso[task.setvariable variable=PATH]$(Build.SourcesDirectory)/.dotnet:${PATH}" && echo "##vso[task.setvariable variable=DOTNET_ROOT]$(Build.SourcesDirectory)/.dotnet"
+      displayName: Restore dependencies
+    - script: dotnet run --project ./src/BuiltInTools/dotnet-format/dotnet-format.csproj -c Release -- ./eng/dotnet-format/@validate.rsp
+      displayName: Run dotnet-format
+    - task: PublishBuildArtifacts@1
+      displayName: Publish Logs
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\'
+        ArtifactName: 'Formatting Check'
+      continueOnError: true
+      condition: not(succeeded())
 
-- job: Format
+- job: dotnet-format-integration-tests
+  displayName: run dotnet-format in real repositories
   pool:
     vmImage: 'windows-latest'
   strategy:
@@ -76,11 +82,11 @@ jobs:
         _useParentSdk: 0
   timeoutInMinutes: 60
   steps:
-    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -useParentSdk $(_useParentSdk) -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare'
+    - script: eng\dotnet-format\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -useParentSdk $(_useParentSdk) -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare'
       displayName: Prepare $(_repoName) for formatting
 
-    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -useParentSdk $(_useParentSdk) -testPath '$(Agent.TempDirectory)\temp' -stage 'format-workspace'
+    - script: eng\dotnet-format\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -useParentSdk $(_useParentSdk) -testPath '$(Agent.TempDirectory)\temp' -stage 'format-workspace'
       displayName: Run dotnet-format on $(_repoName) $(_targetSolution)
 
-    - script: eng\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -useParentSdk $(_useParentSdk) -testPath '$(Agent.TempDirectory)\temp' -stage 'format-folder'
+    - script: eng\dotnet-format\integration-test.cmd -repo '$(_repo)' -branchName '$(_branchName)' -sha '$(_sha)' -targetSolution '$(_targetSolution)' -useParentSdk $(_useParentSdk) -testPath '$(Agent.TempDirectory)\temp' -stage 'format-folder'
       displayName: Run dotnet-format on $(_repoName) repo folder
