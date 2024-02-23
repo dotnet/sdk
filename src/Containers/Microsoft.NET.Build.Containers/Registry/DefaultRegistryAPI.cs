@@ -33,6 +33,8 @@ internal class DefaultRegistryAPI : IRegistryAPI
         var innerHandler = new SocketsHttpHandler()
         {
             UseCookies = false,
+            // the rest of the HTTP stack has an infinite timeout (see below) but we should still have a reasonable timeout for the initial connection
+            ConnectTimeout = TimeSpan.FromSeconds(30)
         };
 
         // Ignore certificate for https localhost repository.
