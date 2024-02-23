@@ -76,7 +76,7 @@ namespace Microsoft.Build.Tasks
 #endif
 #if NET
             byte[] hash = System.Security.Cryptography.SHA256.HashData(utf8UpperBytes);
-            return Convert.ToHexString(hash).ToLowerInvariant();
+            return Convert.ToHexStringLower(hash);
 #endif
         }
     }

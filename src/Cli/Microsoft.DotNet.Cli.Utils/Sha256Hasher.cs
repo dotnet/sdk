@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli.Utils
         {
             byte[] bytes = Encoding.UTF8.GetBytes(text);
             byte[] hash = SHA256.HashData(bytes);
-            return Convert.ToHexString(hash).ToLowerInvariant();
+            return Convert.ToHexStringLower(hash);
         }
 
         public static string HashWithNormalizedCasing(string text)
