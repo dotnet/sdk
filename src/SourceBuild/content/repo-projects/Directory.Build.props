@@ -210,8 +210,8 @@
     -->
     <NoTargetsSdkOverride Include="Microsoft.Build.NoTargets" Group="NOTARGETS" Version="$(NoTargetsSdkVersion)" />
     <TraversalSdkOverride Include="Microsoft.Build.Traversal" Group="TRAVERSAL" Version="$(TraversalSdkVersion)" />
-    <SourceBuiltSdkOverride Include="@(NoTargetsSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(RepositoryName)' != 'source-build-reference-packages' and '$(IsUtilityProject)' != 'true'" />
-    <SourceBuiltSdkOverride Include="@(TraversalSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(RepositoryName)' != 'source-build-reference-packages' and '$(IsUtilityProject)' != 'true'" />
+    <SourceBuiltSdkOverride Include="@(NoTargetsSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(RepositoryName)' != 'source-build-reference-packages'" />
+    <SourceBuiltSdkOverride Include="@(TraversalSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(RepositoryName)' != 'source-build-reference-packages'" />
   </ItemGroup>
 
     <!-- CLI internal version is statically set by us to a version that will never show up in the wild.
