@@ -2108,4 +2108,28 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="AvoidSingleUseOfLocalJsonSerializerOptionsTitle" xml:space="preserve">
     <value>Cache and reuse 'JsonSerializerOptions' instances</value>
   </data>
+  <data name="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullTitle" xml:space="preserve">
+    <value>Do not pass a non-nullable value to 'ArgumentNullException.ThrowIfNull'</value>
+  </data>
+  <data name="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullMessage" xml:space="preserve">
+    <value>Calling 'ArgumentNullException.ThrowIfNull' and passing a non-nullable value is a no-op</value>
+  </data>
+  <data name="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullDescription" xml:space="preserve">
+    <value>'ArgumentNullException.ThrowIfNull' throws when the passed argument is 'null'. Certain constructs like non-nullable structs, 'nameof()' and 'new' expressions are known to never be null, so 'ArgumentNullException.ThrowIfNull' will never throw.</value>
+  </data>
+  <data name="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullCodeFixTitle" xml:space="preserve">
+    <value>Remove superfluous 'ArgumentNullException.ThrowIfNull' call</value>
+  </data>
+  <data name="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullTitle" xml:space="preserve">
+    <value>Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull'</value>
+  </data>
+  <data name="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullMessage" xml:space="preserve">
+    <value>Passing a nullable struct to 'ArgumentNullException.ThrowIfNull' may cause boxing</value>
+  </data>
+  <data name="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullDescription" xml:space="preserve">
+    <value>'ArgumentNullException.ThrowIfNull' accepts an 'object', so passing a nullable struct may cause the value to be boxed.</value>
+  </data>
+  <data name="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullCodeFixTitle" xml:space="preserve">
+    <value>Replace the 'ArgumentNullException.ThrowIfNull' call with a conditional</value>
+  </data>
 </root>
