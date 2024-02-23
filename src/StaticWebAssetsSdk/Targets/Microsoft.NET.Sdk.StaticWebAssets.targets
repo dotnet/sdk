@@ -53,11 +53,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
-    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ValidateStaticWebAssetsUniquePaths"
-    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
-
-  <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.CollectStaticWebAssetsToCopy"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
