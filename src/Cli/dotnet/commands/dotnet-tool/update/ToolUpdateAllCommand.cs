@@ -16,37 +16,50 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 {
     internal class ToolUpdateAllCommand : CommandBase
     {
+        private readonly bool _global;
+
         public ToolUpdateAllCommand(ParseResult parseResult)
             : base(parseResult)
         {
-
+            _global = parseResult.GetValue(ToolUpdateCommandParser.GlobalOption);
         }
 
         public override int Execute()
         {
-            // Get the list of tools
+            if (_global)
+            {
+                ToolUpdateAllGlobalCommand(_parseResult);
+            }
+            else
+            {
+                ToolUpdateAllLocalCommand(_parseResult);
+            }
+            return 0;
+        }
 
-            // Global 
-            var toolListCommand = new ToolListGlobalOrToolPathCommand(_parseResult);
+        private int ToolUpdateAllGlobalCommand(ParseResult parseResult)
+        {
+            var toolListCommand = new ToolListGlobalOrToolPathCommand(parseResult);
             var toolList = toolListCommand.GetPackages(null, null);
 
-            // local
-            var toolListLocalCommand = new ToolListLocalCommand(_parseResult);
-            var toolListLocal = toolListLocalCommand.GetPackages(null);
-
-            // For each global tool, call the update command
             foreach (var tool in toolList)
             {
-                var toolUpdateCommand = new ToolUpdateCommand(_parseResult);
+                var toolUpdateCommand = new ToolUpdateCommand(parseResult);
                 toolUpdateCommand.Execute();
             }
+            return 0;
+        }
 
-            // For each local tool, call the update command
+        private int ToolUpdateAllLocalCommand(ParseResult parseResult)
+        {
+            var toolListLocalCommand = new ToolListLocalCommand(parseResult);
+            var toolListLocal = toolListLocalCommand.GetPackages(null);
+
             foreach (var tool in toolListLocal)
             {
-                var toolUpdateCommand = new ToolUpdateCommand(_parseResult);
+                var toolUpdateCommand = new ToolUpdateCommand(parseResult);
                 toolUpdateCommand.Execute();
-            }   
+            }
             return 0;
         }
     }
