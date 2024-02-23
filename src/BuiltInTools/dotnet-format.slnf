@@ -2,8 +2,8 @@
   "solution": {
     "path": "..\\..\\sdk.sln",
     "projects": [
-      "src\\BuiltInTools\\dotnet-format\\dotnet-format.csproj",
       "benchmarks\\dotnet-format\\perf\\dotnet-format.PerformanceTests.csproj",
+      "src\\BuiltInTools\\dotnet-format\\dotnet-format.csproj",
       "test\\dotnet-format.Tests\\tests\\dotnet-format.UnitTests.csproj"
     ]
   }

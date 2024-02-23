@@ -20,6 +20,10 @@
     <ProjectReference Include="..\..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\..\src\Assets\dotnet-format.TestsProjects\**\**\**\*"/>
+  </ItemGroup>
+
   <!-- Tests depend on the NetCurrent reference assemblies -->
   <Target Name="AddRuntimeConfigurationOptionForNetCurrent" BeforeTargets="GenerateBuildRuntimeConfigurationFiles" DependsOnTargets="ResolveFrameworkReferences">
     <ItemGroup>
