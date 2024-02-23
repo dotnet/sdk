@@ -84,13 +84,18 @@ namespace Microsoft.DotNet.Tools
             "TargetFramework"
         ];
 
+        private static List<string> FlagsThatTriggerSilentRestore =
+            [
+                "getProperty",
+                "getItem",
+                "getTargetResult"
+            ];
+
         //  These arguments don't by themselves require that restore be run in a separate process,
         //  but if there is a separate restore process they shouldn't be passed to it
         private static List<string> FlagsToExcludeFromRestore =
         [
-            "getProperty",
-            "getItem",
-            "getTargetResult",
+            ..FlagsThatTriggerSilentRestore,
             "t",
             "target",
             "consoleloggerparameters",
@@ -99,6 +104,10 @@ namespace Microsoft.DotNet.Tools
 
         private static List<string> FlagsToExcludeFromSeparateRestore =
             ComputeFlags(FlagsToExcludeFromRestore).ToList();
+
+        private static List<string> FlagsThatTriggerSilentSeparateRestore =
+            ComputeFlags(FlagsThatTriggerSilentRestore).ToList();
+
         private static List<string> PropertiesToExcludeFromSeparateRestore =
             ComputePropertySwitches(PropertiesToExcludeFromRestore).ToList();
 
