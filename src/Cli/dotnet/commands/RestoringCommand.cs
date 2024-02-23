@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Tools
         private static bool HasArgumentToExcludeFromRestore(IEnumerable<string> arguments)
             => arguments.Any(a => IsExcludedFromRestore(a));
 
-        private static readonly string[] propertyPrefixes = new string[] { "-", "/", "--" };
+        private static readonly string[] switchPrefixes = ["-", "/", "--"];
 
         // these properties trigger a separate restore
         private static List<string> PropertiesToExcludeFromRestore =
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Tools
 
         private static IEnumerable<string> ComputePropertySwitches(List<string> properties)
         {
-            foreach (var prefix in propertyPrefixes)
+            foreach (var prefix in switchPrefixes)
             {
                 foreach (var property in properties)
                 {
@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Tools
 
         private static IEnumerable<string> ComputeFlags(List<string> flags)
         {
-            foreach (var prefix in propertyPrefixes)
+            foreach (var prefix in switchPrefixes)
             {
                 foreach (var flag in flags)
                 {
