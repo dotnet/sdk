@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Cli
             HelpName = LocalizableStrings.CmdConfig
         }.ForwardAsMany(o => new[] { "--config", o });
 
-        public static readonly CliOption SourceOption = new ForwardedOption<IEnumerable<string>>("--source")
+        public static readonly CliOption SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
         {
             Description = LocalizableStrings.CmdSourceDescription,
             HelpName = LocalizableStrings.CmdSource
