@@ -23,12 +23,10 @@
 
     <!-- Note: These items are showing up in solution explorer even though Visible is set to false -->
     <None Include="$(MSBuildThisFileDirectory)..\src\Assets\**\*.*"
-          Exclude="$(MSBuildThisFileDirectory)..\src\Assets\TestPackages\dotnet-new\**\*"
+          Exclude="$(MSBuildThisFileDirectory)..\src\Assets\TestPackages\dotnet-new\**\*;$(MSBuildThisFileDirectory)..\src\Assets\dotnet-format.TestsProjects\**\**\**\*"
           CopyToPublishDirectory="PreserveNewest" 
           LinkBase="Assets"
           Visible="false" />
-    <None Exclude="$(MSBuildThisFileDirectory)..\src\Assets\dotnet-format.TestsProjects\**\**\**\*" />
-
   </ItemGroup>
 
   <Target Name="TestAsTool" DependsOnTargets="Pack;_InnerGetTestsToRun">
