@@ -90,7 +90,7 @@ Si desea crear un manifiesto, utilice "dotnet new tool-manifest", normalmente en
       </trans-unit>
       <trans-unit id="RollForwardOptionDescription">
         <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
-        <target state="new">Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</target>
+        <target state="translated">Permitir que una herramienta .NET se ponga al día a versiones más recientes del runtime de .NET si el runtime al que se dirige no está instalado.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">

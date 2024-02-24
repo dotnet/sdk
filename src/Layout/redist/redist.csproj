@@ -22,7 +22,7 @@
   <Import Project="targets\PublishDotnetWatch.targets" />
   <Import Project="targets\GenerateLayout.targets" />
   <Import Project="targets\GenerateArchive.targets" />
-  <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+  <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
   <Import Project="targets\MSBuildExtensions.targets" />
 
   <ItemGroup>

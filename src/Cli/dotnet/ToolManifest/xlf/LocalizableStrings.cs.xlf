@@ -38,7 +38,7 @@ Pokud si chcete zobrazit seznam prohledaných umístění, zadejte před název 
       </trans-unit>
       <trans-unit id="ToolMissingRollForward">
         <source>Missing 'rollForward' entry.</source>
-        <target state="new">Missing 'rollForward' entry.</target>
+        <target state="translated">Chybí položka rollForward.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
