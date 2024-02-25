@@ -94,8 +94,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             return true;
         }
 
+        private const string RazorCompilerFileName = "Microsoft.CodeAnalysis.Razor.Compiler.dll";
+
+        internal static string GetRazorCompilerPath()
+            => Path.Combine(Path.GetDirectoryName(typeof(Application).Assembly.Location), RazorCompilerFileName);
+
         /// <summary>
-        /// Replaces the assembly for MVC extension v1 or v2 with the one shipped alongside SDK (as opposed to the one from NuGet).
+        /// Replaces the assembly for MVC extension with the one shipped alongside SDK (as opposed to the one from NuGet).
         /// </summary>
         /// <remarks>
         /// Needed so the Razor compiler can change its APIs without breaking legacy MVC scenarios.
@@ -107,31 +112,27 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             for (int i = 0; i < extensionNames.Values.Count; i++)
             {
                 var extensionName = extensionNames.Values[i];
-                var replacementFileName = extensionName switch
+
+                string expectedOriginalPath = extensionName switch
                 {
-                    "MVC-1.0" or "MVC-1.1" => "Microsoft.CodeAnalysis.Razor.Compiler.Mvc.Version1_X.dll",
-                    "MVC-2.0" or "MVC-2.1" => "Microsoft.CodeAnalysis.Razor.Compiler.Mvc.Version2_X.dll",
+                    "MVC-1.0" or "MVC-1.1" or "MVC-2.0" or "MVC-2.1" => "Microsoft.AspNetCore.Mvc.Razor.Extensions",
+                    "MVC-3.0" => "Microsoft.CodeAnalysis.Razor.Compiler",
                     _ => null,
                 };
 
-                if (replacementFileName != null)
+                if (expectedOriginalPath is not null)
                 {
                     var extensionFilePath = extensionFilePaths.Values[i];
-                    if (!HasExpectedFileName(extensionFilePath))
+                    if (!string.Equals(expectedOriginalPath, Path.GetFileNameWithoutExtension(extensionFilePath), StringComparison.OrdinalIgnoreCase))
                     {
                         error.WriteLine($"Extension '{extensionName}' has unexpected path '{extensionFilePath}'.");
                     }
                     else
                     {
                         currentDirectory ??= Path.GetDirectoryName(typeof(Application).Assembly.Location);
-                        extensionFilePaths.Values[i] = Path.Combine(currentDirectory, replacementFileName);
+                        extensionFilePaths.Values[i] = Path.Combine(currentDirectory, RazorCompilerFileName);
                     }
                 }
-            }
-
-            static bool HasExpectedFileName(string filePath)
-            {
-                return "Microsoft.AspNetCore.Mvc.Razor.Extensions".Equals(Path.GetFileNameWithoutExtension(filePath), StringComparison.OrdinalIgnoreCase);
             }
         }
 
