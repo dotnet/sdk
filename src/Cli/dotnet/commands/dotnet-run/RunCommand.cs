@@ -245,7 +245,7 @@ namespace Microsoft.DotNet.Tools.Run
             {
                 if (string.IsNullOrEmpty(Framework) && !string.IsNullOrEmpty(targetFrameworks))
                 {
-                    Framework = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries).First();
+                    Framework = targetFrameworks.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First();
                     return GetTargetCommand();
                 }
                 else

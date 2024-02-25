@@ -50,11 +50,6 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-        public static readonly CliOption<bool> UseBestRuntimeOption = new CliOption<bool>("--use-best-runtime")
-        {
-            Description = "For multi-targeted projects, restore and run the project for the best matching runtime, if it exists."
-        };
-
         public static readonly CliArgument<IEnumerable<string>> ApplicationArguments = new("applicationArguments")
         {
             DefaultValueFactory = _ => Array.Empty<string>(),
@@ -88,7 +83,6 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.ArchitectureOption);
             command.Options.Add(CommonOptions.OperatingSystemOption);
             command.Options.Add(CommonOptions.DisableBuildServersOption);
-            command.Options.Add(UseBestRuntimeOption);
 
             command.Arguments.Add(ApplicationArguments);
 
