@@ -14,7 +14,8 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliArgument<string> PackageIdArgument = new("packageId")
         {
             HelpName = LocalizableStrings.PackageIdArgumentName,
-            Description = LocalizableStrings.PackageIdArgumentDescription
+            Description = LocalizableStrings.PackageIdArgumentDescription,
+            DefaultValueFactory = (result) => ""
         };
 
         public static readonly CliOption<string> VersionOption = new("--version")

@@ -36,6 +36,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void UpdateAllTest()
+        {
+            var result = Parser.Instance.Parse($"dotnet tool update -g --all");
+
+            var toolUpdateCommand = new ToolUpdateCommand(
+                result);
+
+            Action a = () => toolUpdateCommand.Execute();
+
+            a.Should().Throw<GracefulException>().And.Message
+                .Should().Contain(string.Format(
+                    LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath,
+                    "--global --tool-path"));
+        }
+
+        [Fact]
         public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
             var result = Parser.Instance.Parse($"dotnet tool update --local --tool-path /tmp/folder {PackageId}");

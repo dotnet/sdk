@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly bool _global;
         private readonly string _toolPath;
         private readonly bool _all;
+        private readonly string _packageId;
 
         public ToolUpdateCommand(
             ParseResult result,
@@ -34,6 +35,20 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _global = result.GetValue(ToolUpdateCommandParser.GlobalOption);
             _toolPath = result.GetValue(ToolUpdateCommandParser.ToolPathOption);
             _all = result.GetValue(ToolUpdateCommandParser.AllUpdateOption);
+            _packageId = result.GetValue(ToolUpdateCommandParser.PackageIdArgument);
+
+            verifyArgument(result);
+        }
+
+        private void verifyArgument(ParseResult result)
+        {
+            if (!_all && _packageId == "")
+            {
+                throw new CommandParsingException(
+                        message: string.Join(Environment.NewLine,
+                                             result.Errors.Select(e => e.Message)),
+                        parseResult: result);
+            }
         }
 
         public override int Execute()

@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.List;
 
@@ -44,6 +45,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             foreach (var tool in toolList)
             {
+                string[] args= ["dotnet", "tool", "update", tool.Id.ToString(), "--global"];
+                parseResult = Parser.Instance.Parse(args);
                 var toolUpdateCommand = new ToolUpdateCommand(parseResult);
                 toolUpdateCommand.Execute();
             }
@@ -55,8 +58,17 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             var toolListLocalCommand = new ToolListLocalCommand(parseResult);
             var toolListLocal = toolListLocalCommand.GetPackages(null);
 
-            foreach (var tool in toolListLocal)
+            foreach (var (package, manifestPath) in toolListLocal)
             {
+                var argsList = new List<string> { "dotnet", "tool", "update", package.PackageId.ToString(), "--local" };
+
+                if (!string.IsNullOrEmpty(manifestPath.Value))
+                {
+                    argsList.Add("--tool-manifest");
+                    argsList.Add(manifestPath.Value);
+                }
+
+                parseResult = Parser.Instance.Parse(argsList.ToArray());
                 var toolUpdateCommand = new ToolUpdateCommand(parseResult);
                 toolUpdateCommand.Execute();
             }

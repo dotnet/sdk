@@ -56,24 +56,12 @@ namespace Microsoft.DotNet.Cli
 
             ToolInstallCommandParser.AddCommandOptions(command);
             command.Options.Add(AllowPackageDowngradeOption);
-            command.Subcommands.Add(UpdateAllCommand());
-            // command.Options.Add(AllUpdateOption);
+            command.Options.Add(AllUpdateOption);
 
             command.SetAction((parseResult) => new ToolUpdateCommand(parseResult).Execute());
 
             return command;
         }
 
-        private static CliCommand UpdateAllCommand()
-        {
-            CliCommand command = new("update", LocalizableStrings.CommandDescription);
-            command.Options.Add(GlobalOption);
-            command.Options.Add(LocalOption);
-            command.Options.Add(AllUpdateOption);
-
-            command.SetAction((parseResult) => new ToolUpdateAllCommand(parseResult).Execute());
-
-            return command;
-        }   
     }
 }
