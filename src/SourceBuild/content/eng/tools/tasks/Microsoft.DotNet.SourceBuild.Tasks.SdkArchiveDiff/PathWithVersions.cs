@@ -71,12 +71,12 @@ public static class PathWithVersions
         return true;
     }
 
-    public static string GetVersionAnonymousPath(string path)
+    public static string GetVersionlessPath(string path)
     {
-        return GetVersionAnonymousPath(path.AsSpan()).ToString();
+        return GetVersionlessPath(path.AsSpan()).ToString();
     }
 
-    public static ReadOnlySpan<char> GetVersionAnonymousPath(ReadOnlySpan<char> path)
+    public static ReadOnlySpan<char> GetVersionlessPath(ReadOnlySpan<char> path)
     {
         StringBuilder sb = new StringBuilder();
         bool altered = false;
