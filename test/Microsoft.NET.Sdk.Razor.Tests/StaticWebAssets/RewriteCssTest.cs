@@ -4,7 +4,7 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
+namespace Microsoft.NET.Sdk.Razor.Tests;
 
 public class RewriteCssTest
 {

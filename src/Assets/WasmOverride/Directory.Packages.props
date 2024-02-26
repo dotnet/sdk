@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+    <RestoreAdditionalProjectSources Condition="Exists('$(MSBuildProjectDirectory)/TestPackages/')">$(RestoreAdditionalProjectSources);$(MSBuildProjectDirectory)/TestPackages/</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+</Project>
