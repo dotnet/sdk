@@ -11,41 +11,7 @@
        - If we have a repo that is not in sdk's dependency tree, we can still build it by including it here.  -->
 
   <ItemGroup>
-    <!-- Toolsets -->
-    <RepositoryReference Include="source-build-reference-packages" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
-    <RepositoryReference Include="arcade" />
-
-    <!-- Product Repos -->
-    <RepositoryReference Include="command-line-api" />
-    <RepositoryReference Include="sourcelink" />
-    <RepositoryReference Include="diagnostics" />
-    <RepositoryReference Include="emsdk" />
-    <RepositoryReference Include="cecil" />
-    <RepositoryReference Include="symreader" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
-    <RepositoryReference Include="runtime" />
-    <RepositoryReference Include="roslyn" />
-    <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
-    <RepositoryReference Include="xdt" />
-    <RepositoryReference Include="msbuild" />
-    <RepositoryReference Include="roslyn-analyzers" />
-    <RepositoryReference Include="aspnetcore" />
-    <RepositoryReference Include="razor" />
-    <RepositoryReference Include="deployment-tools" />
-    <RepositoryReference Include="format" />
-    <RepositoryReference Include="nuget-client" />
-    <RepositoryReference Include="templating" />
-    <RepositoryReference Include="test-templates" />
-    <RepositoryReference Include="fsharp" />
-    <RepositoryReference Include="vstest" />
-    <RepositoryReference Include="sdk" />
-    <RepositoryReference Include="aspire" />
     <RepositoryReference Include="installer" />
-
-    <!-- Package source-build artifacts -->
-    <RepositoryReference Include="package-source-build" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
-
-    <!-- Testing. -->
     <RepositoryReference Include="scenario-tests" />
   </ItemGroup>
 

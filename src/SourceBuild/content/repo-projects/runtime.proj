@@ -19,6 +19,7 @@
     <BuildArgs Condition="'$(ShortStack)' != 'true'">$(BuildArgs) /p:BaseOS=$(BaseOS)</BuildArgs>
     <BuildArgs Condition="'$(DotNetBuildRuntimeWasmEnableThreads)' == 'true'">$(BuildArgs) /p:DotNetBuildRuntimeWasmEnableThreads=true</BuildArgs>
     <BuildArgs Condition="'$(DotNetBuildRuntimeNativeAOTRuntimePack)' == 'true'">$(BuildArgs) /p:DotNetBuildRuntimeNativeAOTRuntimePack=true</BuildArgs>
+    <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)pgoinstrument</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -33,8 +34,13 @@
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="cecil" />
-    <RepositoryReference Include="symreader" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <RepositoryReference Include="command-line-api" />
+    <RepositoryReference Include="emsdk" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
