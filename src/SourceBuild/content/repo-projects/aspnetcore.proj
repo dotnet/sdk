@@ -22,11 +22,16 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
-    <RepositoryReference Include="runtime" />
-    <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="roslyn" />
-    <RepositoryReference Include="roslyn-analyzers" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="xdt" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="nuget-client" />
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-reference-packages" />
+    <RepositoryReference Include="symreader" />
   </ItemGroup>
 
   <ItemGroup>

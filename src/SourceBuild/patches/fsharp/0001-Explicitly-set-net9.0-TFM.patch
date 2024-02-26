@@ -43,10 +43,10 @@ Backport: https://github.com/dotnet/source-build/issues/3663
  35 files changed, 82 insertions(+), 73 deletions(-)
 
 diff --git a/Directory.Build.props b/Directory.Build.props
-index 0fe610fc2..019d01d14 100644
+index 4682f1d8c..1da4c0161 100644
 --- a/Directory.Build.props
 +++ b/Directory.Build.props
-@@ -36,8 +36,8 @@
+@@ -34,8 +34,8 @@
      <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts/</ArtifactsDir>
      <OutputPath>$(ArtifactsDir)/bin/$(MSBuildProjectName)/$(Configuration)/</OutputPath>
      <IntermediateOutputPath>$(ArtifactsDir)obj/$(MSBuildProjectName)/$(Configuration)/</IntermediateOutputPath>
@@ -54,9 +54,9 @@ index 0fe610fc2..019d01d14 100644
 -    <FsYaccPath>$(ArtifactsDir)/bin/fsyacc/$(Configuration)/net8.0/fsyacc.dll</FsYaccPath>
 +    <FsLexPath>$(ArtifactsDir)/bin/fslex/$(Configuration)/net9.0/fslex.dll</FsLexPath>
 +    <FsYaccPath>$(ArtifactsDir)/bin/fsyacc/$(Configuration)/net9.0/fsyacc.dll</FsYaccPath>
+     <DefineConstants>NO_CHECKNULLS;BUILDING_WITH_LKG;NO_NULLCHECKING_LIB_SUPPORT;$(DefineConstants)</DefineConstants>
    </PropertyGroup>
  
-   <Import Project="$(MSBuildThisFileDirectory)/eng/Versions.props" Condition="'$(DISABLE_ARCADE)' == 'true'"/>
 diff --git a/buildtools/AssemblyCheck/AssemblyCheck.fsproj b/buildtools/AssemblyCheck/AssemblyCheck.fsproj
 index 46ffb722c..9d391689d 100644
 --- a/buildtools/AssemblyCheck/AssemblyCheck.fsproj
@@ -110,10 +110,10 @@ index fc072b7cf..4110186e5 100644
      <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
      <RollForward Condition="'$(BUILDING_USING_DOTNET)' == 'true'">LatestMajor</RollForward>
 diff --git a/eng/build.sh b/eng/build.sh
-index 3b992d6bf..3a4444081 100755
+index b8915397d..4e020e84c 100755
 --- a/eng/build.sh
 +++ b/eng/build.sh
-@@ -264,8 +264,8 @@ function BuildSolution {
+@@ -269,8 +269,8 @@ function BuildSolution {
        MSBuild "$repo_root/buildtools/buildtools.proj" /restore "$bltools" /p:Configuration=$bootstrap_config
  
        mkdir -p "$bootstrap_dir"
@@ -124,7 +124,7 @@ index 3b992d6bf..3a4444081 100755
      fi
      if [ ! -f "$bootstrap_dir/fsc.exe" ]; then
        local bltools=""
-@@ -274,7 +274,7 @@ function BuildSolution {
+@@ -279,7 +279,7 @@ function BuildSolution {
        fi
        BuildMessage="Error building bootstrap"
        MSBuild "$repo_root/Proto.sln" /restore "$bltools" /p:Configuration=$bootstrap_config
@@ -389,7 +389,7 @@ index e3c796d0b..e4926cd6c 100644
      <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
      <UnitTestType>xunit</UnitTestType>
 diff --git a/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj b/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
-index a9dd53828..a33c287be 100644
+index ec4fc441f..5d2b5a0ce 100644
 --- a/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
 +++ b/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
 @@ -3,8 +3,8 @@
@@ -469,7 +469,7 @@ index 4b6c5c534..1b20371c4 100644
  
      <AssemblyName>FSharp.Core.UnitTests</AssemblyName>
 diff --git a/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj b/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj
-index 5cfcba98c..c67b8f85d 100644
+index 8c1816177..81762e504 100644
 --- a/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj
 +++ b/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj
 @@ -1,8 +1,8 @@

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <!-- All packages built in SBRP repo are copied to prereqs/package/reference.
          Nothing gets copied to the artifacts/packages folder. -->
+    <ReferenceOnlyRepoArtifacts>true</ReferenceOnlyRepoArtifacts>
 
     <!-- SBRP builds before Arcade so it also needs the bootstrap Arcade version -->
     <UseBootstrapArcade>true</UseBootstrapArcade>
@@ -28,6 +29,14 @@
       NuGetConfigFile="$(NuGetConfigFile)"
       SourceName="source-build-reference-package-cache"
       SourcePath="$(LocalNuGetPackageCacheDirectory)" />
+  </Target>
+
+  <Target Name="ClearPreviousSBRP"
+          BeforeTargets="CopyRepoArtifacts"
+          DependsOnTargets="RepoBuild">
+    <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,
+         clear it before copying the current SBRPs.  This ensures n-1 SBRPs aren't required to build the product repos. -->
+    <RemoveDir Directories="$(ReferencePackagesDir)" />
   </Target>
 
 </Project>

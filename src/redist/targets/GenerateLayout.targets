@@ -1,29 +1,22 @@
 <Project>
   <PropertyGroup>
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
-    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet-internal\</SdkInternalLayoutPath>
+    <SdkInternalLayoutPath>$(BaseOutputPath)$(Configuration)\internal\</SdkInternalLayoutPath>
     <DownloadsFolder>$(IntermediateOutputPath)downloads\</DownloadsFolder>
   </PropertyGroup>
 
   <PropertyGroup>
     <!-- Blob storage directories are not stabilized, so these must refer to a package that does not stabilize -->
-    <!-- In source build, the layout does match, so use the runtime package versions rather than the VS redist versions -->
+    <!-- In unified build, the layout does match, so use the runtime package versions rather than the VS redist versions -->
     <AspNetCoreBlobVersion>$(VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion)</AspNetCoreBlobVersion>
-    <AspNetCoreBlobVersion Condition=" '$(DotNetBuildFromSource)' == 'true' and '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(MicrosoftAspNetCoreAppRuntimePackageVersion)</AspNetCoreBlobVersion>
+    <AspNetCoreBlobVersion Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(MicrosoftAspNetCoreAppRuntimePackageVersion)</AspNetCoreBlobVersion>
 
-    <CoreSetupBlobVersion>$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)</CoreSetupBlobVersion>
-    <CoreSetupBlobVersion Condition=" '$(DotNetBuildFromSource)' == 'true' and '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(MicrosoftNETCoreAppRuntimePackageVersion)</CoreSetupBlobVersion>
+    <NetRuntimeBlobVersion>$(VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion)</NetRuntimeBlobVersion>
+    <NetRuntimeBlobVersion Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(MicrosoftNETCoreAppRuntimePackageVersion)</NetRuntimeBlobVersion>
 
     <WindowsDesktopBlobVersion>$(VSRedistCommonWindowsDesktopSharedFrameworkx6490PackageVersion)</WindowsDesktopBlobVersion>
+    <WindowsDesktopBlobVersion Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(MicrosoftWindowsDesktopAppRuntimePackageVersion)</WindowsDesktopBlobVersion>
 
-    <!-- Because the ref packs are not serviced in every build, the blob location may vary -->
-    <!-- Note that there may need to be a tweak for source build if we rev the targeting pack, something of the form
-         <NETCoreAppTargetingPackBlobVersion Condition=" '$(DotNetBuildFromSource)' == 'true' and '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(CoreSetupBlobVersion)</NETCoreAppTargetingPackBlobVersion>
-    -->
-    <NETCoreAppTargetingPackBlobVersion>$(VSRedistCommonNetCoreTargetingPackx6490PackageVersion)</NETCoreAppTargetingPackBlobVersion>
-
-    <AspNetCoreTargetingPackBlobVersion>$(MicrosoftAspNetCoreAppRefInternalPackageVersion)</AspNetCoreTargetingPackBlobVersion>
-    <WindowsDesktopTargetingPackBlobVersion>$(VSRedistCommonWindowsDesktopTargetingPackx6490PackageVersion)</WindowsDesktopTargetingPackBlobVersion>
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
   </PropertyGroup>
 
@@ -34,11 +27,13 @@
       <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
       <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
 
-      <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">https://dotnetcli.blob.core.windows.net/dotnet/</PublicBaseURL>
+      <!-- Base url for official releases. Used to obtain some assets from older releases when necessary. -->
+      <OfficialBaseURL>https://dotnetcli.blob.core.windows.net/dotnet/</OfficialBaseURL>
+      <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">$(OfficialBaseURL)</PublicBaseURL>
 
-      <CoreSetupRid Condition="'$(CoreSetupRid)' == ''">$(HostRid)</CoreSetupRid>
-      <CoreSetupRid Condition=" ('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd') and '$(DotNetBuildFromSource)' != 'true' ">$(OSName)-$(Architecture)</CoreSetupRid>
-      <CoreSetupRid Condition="'$(DotNetBuildVertical)' != 'true' and $(CoreSetupRid.StartsWith('mariner.2.0'))">$(HostRid.Replace('mariner.2.0', 'cm.2'))</CoreSetupRid>
+      <NetRuntimeRid Condition="'$(NetRuntimeRid)' == ''">$(HostRid)</NetRuntimeRid>
+      <NetRuntimeRid Condition=" ('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd') and '$(DotNetBuildSourceOnly)' != 'true' ">$(OSName)-$(Architecture)</NetRuntimeRid>
+      <NetRuntimeRid Condition="'$(DotNetBuild)' != 'true' and $(NetRuntimeRid.StartsWith('mariner.2.0'))">$(HostRid.Replace('mariner.2.0', 'cm.2'))</NetRuntimeRid>
 
       <!-- only the runtime OSX .pkgs have a `-internal` suffix -->
       <InstallerStartSuffix Condition="$([MSBuild]::IsOSPlatform('OSX'))">-internal</InstallerStartSuffix>
@@ -46,14 +41,14 @@
       <!-- Downloaded Installers + Archives -->
 
       <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
-      <SharedFrameworkInstallerFileRid>$(CoreSetupRid)</SharedFrameworkInstallerFileRid>
+      <SharedFrameworkInstallerFileRid>$(NetRuntimeRid)</SharedFrameworkInstallerFileRid>
       <SharedFrameworkInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true' ">$(InstallerTargetArchitecture)</SharedFrameworkInstallerFileRid>
 
       <!-- Use the "x64" Rid when downloading Linux runtime dependencies Debian package. -->
-      <RuntimeDepsInstallerFileRid>$(CoreSetupRid)</RuntimeDepsInstallerFileRid>
+      <RuntimeDepsInstallerFileRid>$(NetRuntimeRid)</RuntimeDepsInstallerFileRid>
       <RuntimeDepsInstallerFileRid Condition=" '$(IsDebianBaseDistro)' == 'true' ">$(Architecture)</RuntimeDepsInstallerFileRid>
       <RuntimeDepsInstallerFileRid Condition=" '$(IsRPMBasedDistro)' == 'true' And '$(UsePortableLinuxSharedFramework)' != 'true' ">$(OSName)-$(InstallerTargetArchitecture)</RuntimeDepsInstallerFileRid>
-      <RuntimeDepsInstallerFileRid Condition=" '$(CoreSetupRid)' == 'rhel.7-x64' And '$(Architecture)' == 'Arm64' And '$(UsePortableLinuxSharedFramework)' == 'true' ">rhel.7-aarch64</RuntimeDepsInstallerFileRid>
+      <RuntimeDepsInstallerFileRid Condition=" '$(NetRuntimeRid)' == 'rhel.7-x64' And '$(Architecture)' == 'Arm64' And '$(UsePortableLinuxSharedFramework)' == 'true' ">rhel.7-aarch64</RuntimeDepsInstallerFileRid>
 
       <AlternateArchitecture Condition="'$(Architecture)' == 'x86'">x64</AlternateArchitecture>
       <AlternateArchitecture Condition="'$(Architecture)' == 'x64'">x86</AlternateArchitecture>
@@ -77,7 +72,7 @@
       <NetStandardTargetingPackTargetFramework>netstandard$(NETStandardLibraryRefPackageVersion.Split('.')[0])$(NETStandardLibraryRefPackageVersion.Split('.')[1])</NetStandardTargetingPackTargetFramework>
 
       <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
-      <SharedFrameworkRid>$(CoreSetupRid)</SharedFrameworkRid>
+      <SharedFrameworkRid>$(NetRuntimeRid)</SharedFrameworkRid>
       <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
       <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
       <CombinedFrameworkHostArchiveFileName Condition=" '$(PgoInstrument)' != 'true' ">dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
@@ -85,7 +80,7 @@
       <WinFormsAndWpfSharedFxArchiveFileName>windowsdesktop-runtime-$(MicrosoftWindowsDesktopAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</WinFormsAndWpfSharedFxArchiveFileName>
 
       <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
-      <Crossgen2Rid Condition="'$(DotNetBuildFromSource)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
+      <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
 
       <AspNetCoreInstallerRid Condition="'$(AspNetCoreInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreInstallerRid>
       <AspNetCoreInstallerRid Condition="'$(SharedFrameworkRid)' == 'rhel.6-x64'">linux-x64</AspNetCoreInstallerRid>
@@ -106,15 +101,30 @@
       <AspNetCoreSharedFxBaseRuntimeVersionFileName>aspnetcore_base_runtime.version</AspNetCoreSharedFxBaseRuntimeVersionFileName>
     </PropertyGroup>
 
+    <!-- Generate the version specific URLs to the targeting packs, runtime packs, etc. -->
+    <!-- VMR builds currently use a flat layout under the provided PublicBaseURL -->
     <PropertyGroup>
-      <CoreSetupRootUrl>$(PublicBaseURL)Runtime/</CoreSetupRootUrl>
-      <CoreSetupRootUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(PublicBaseURL)</CoreSetupRootUrl>
-      <AspNetCoreSharedFxRootUrl>$(PublicBaseURL)aspnetcore/Runtime/</AspNetCoreSharedFxRootUrl>
-      <AspNetCoreSharedFxRootUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(PublicBaseURL)</AspNetCoreSharedFxRootUrl>
-      <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/</WinFormsAndWpfSharedFxRootUrl>
-      <CoreSetupDownloadDirectory>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppRuntimePackageVersion)</CoreSetupDownloadDirectory>
-      <CombinedSharedHostAndFrameworkArchive>$(CoreSetupDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
+      <NetRuntimeRootUrl>$(PublicBaseURL)Runtime/$(NetRuntimeBlobVersion)</NetRuntimeRootUrl>
+      <NetRuntimeRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(PublicBaseURL)</NetRuntimeRootUrl>
+
+      <NetStandardTargetingPackRootUrl>$(OfficialBaseURL)Runtime/$(NETStandardTargetingPackBlobVersion)</NetStandardTargetingPackRootUrl>
+
+      <AspNetCoreSharedFxRootUrl>$(PublicBaseURL)aspnetcore/Runtime/$(AspNetCoreBlobVersion)</AspNetCoreSharedFxRootUrl>
+      <AspNetCoreSharedFxRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'">$(PublicBaseURL)</AspNetCoreSharedFxRootUrl>
+      <!-- Aspnet is not currently built in the VMR. Remove this line when https://github.com/dotnet/source-build/issues/4022 is complete. -->
+      <AspNetCoreSharedFxRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(FallbackPublicBaseURL)aspnetcore/Runtime/$(AspNetCoreBlobVersion)</AspNetCoreSharedFxRootUrl>
+
+      <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/$(WindowsDesktopBlobVersion)</WinFormsAndWpfSharedFxRootUrl>
+      <WinFormsAndWpfSharedFxRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(PublicBaseURL)</WinFormsAndWpfSharedFxRootUrl>
+
+      <ToolsetArchiveRootUrl>$(PublicBaseURL)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</ToolsetArchiveRootUrl>
+      <ToolsetArchiveRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(PublicBaseURL)</ToolsetArchiveRootUrl>
+
+      <NetRuntimeDownloadDirectory>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppRuntimePackageVersion)</NetRuntimeDownloadDirectory>
+      <CombinedSharedHostAndFrameworkArchive>$(NetRuntimeDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
     </PropertyGroup>
+
+
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And !$(Architecture.StartsWith('arm'))">
       <AlternateAppHostRid>win-$(AlternateArchitecture)</AlternateAppHostRid>
@@ -128,8 +138,7 @@
 
     <ItemGroup>
       <BundledLayoutComponent Include="CombinedSharedHostAndFrameworkArchive">
-        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
-        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(CoreSetupRootUrl)</BaseUrl>
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
         <DownloadFileName>$(CombinedFrameworkHostArchiveFileName)</DownloadFileName>
         <RelativeLayoutPath></RelativeLayoutPath>
       </BundledLayoutComponent>
@@ -199,69 +208,76 @@
 
       <BundledInstallerComponent Include="DownloadedRuntimeDepsInstallerFile"
                                  Condition="('$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true') And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedRuntimeDepsInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedSharedFrameworkInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
-        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedSharedFrameworkInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedSharedHostInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
-        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedSharedHostInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedHostFxrInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
-        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedHostFxrInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedNetCoreAppTargetingPackInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
-        <BaseUrl>$(CoreSetupRootUrl)$(NETCoreAppTargetingPackBlobVersion)</BaseUrl>
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <!-- TODO: Should we somehow obtain a .NET Standard ARM64 package? -->
       <BundledInstallerComponent Include="DownloadedNetStandardTargetingPackInstallerFile"
                            Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'osx-arm64')">
-        <BaseUrl>$(CoreSetupRootUrl)$(NETCoreAppTargetingPackBlobVersion)</BaseUrl>
-        <BaseUrl>$(CoreSetupRootUrl)3.0.0</BaseUrl>
+        <BaseUrl>$(NetStandardTargetingPackRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedNetStandardTargetingPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedNetCoreAppHostPackInstallerFile"
                      Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
-        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedNetCoreAppHostPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
+      <!-- WORKAROUND: Generating the MSIs for x86 and x64 requires the outputs from the other VMR build. Disabled for now. -->
       <BundledInstallerComponent Include="DownloadedAlternateNetCoreAppHostPackInstallerFile"
-                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+                                Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <!-- Alternate and arm64 apphosts aren't currently built in the same vertical.
+             This is an issue (see https://github.com/dotnet/source-build/issues/4114). For now, use the
+             dotnetbuilds url in VMR mode to find them. -->
+        <BaseUrl Condition="'$(DotNetBuild)' == 'true'">$(FallbackPublicBaseURL)Runtime/$(NetRuntimeBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedAlternateNetCoreAppHostPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedArm64NetCoreAppHostPackInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(CoreSetupRootUrl)$(CoreSetupBlobVersion)</BaseUrl>
+        <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
+        <!-- Alternate and arm64 apphosts aren't currently built in the same vertical.
+             This is an issue (see https://github.com/dotnet/source-build/issues/4114). For now, use the
+             dotnetbuilds url in VMR mode to find them. -->
+        <BaseUrl Condition="'$(DotNetBuild)' == 'true'">$(FallbackPublicBaseURL)Runtime/$(NetRuntimeBlobVersion)</BaseUrl>
         <DownloadFileName>$(DownloadedArm64NetCoreAppHostPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedWindowsDesktopTargetingPackInstallerFile"
                                  Condition="'$(InstallerExtension)' == '.msi' And '$(SkipBuildingInstallers)' != 'true'">
-        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopTargetingPackBlobVersion)</BaseUrl>
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedWindowsDesktopTargetingPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledLayoutComponent Include="ToolsetArchive">
-        <BaseUrl>$(PublicBaseURL)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</BaseUrl>
-        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(PublicBaseURL)</BaseUrl>
+        <BaseUrl>$(ToolsetArchiveRootUrl)</BaseUrl>
         <DownloadFileName>dotnet-toolset-internal-$(MicrosoftDotnetToolsetInternalPackageVersion).zip</DownloadFileName>
         <RelativeLayoutPath>sdk/$(Version)</RelativeLayoutPath>
       </BundledLayoutComponent>
@@ -269,8 +285,7 @@
 
     <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
       <BundledLayoutComponent Include="DownloadedAspNetCoreSharedFxArchiveFile">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobVersion)</BaseUrl>
-        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(AspNetCoreSharedFxRootUrl)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(AspNetCoreSharedFxArchiveFileName)</DownloadFileName>
         <RelativeLayoutPath></RelativeLayoutPath>
         <DirectoriesToCopy>shared/Microsoft.AspNetCore.App</DirectoriesToCopy>
@@ -280,39 +295,38 @@
            https://github.com/aspnet/AspNetCore/issues/8806 -->
       <BundledLayoutComponent Include="DownloadedAspNetTargetingPackArchiveFile"
                               Condition="'$(InstallerExtension)' == '.pkg' And '$(SkipBuildingInstallers)' != 'true' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'osx-arm64')">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreTargetingPackBlobVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(AspNetTargetingPackArchiveFileName)</DownloadFileName>
         <RelativeLayoutPath></RelativeLayoutPath>
       </BundledLayoutComponent>
 
       <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
                                  Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreTargetingPackBlobVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
                                  Condition="'$(InstallerExtension)' != '.pkg' And '$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxWixLibFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi'">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetCoreSharedFxWixLibFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="DownloadedAspNetCoreV2ModuleInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobVersion)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedAspNetCoreV2ModuleInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
 
       <BundledInstallerComponent Include="AspNetCoreSharedFxBaseRuntimeVersionFile"
                                  Condition="!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64'">
-        <BaseUrl>$(AspNetCoreSharedFxRootUrl)$(AspNetCoreBlobVersion)</BaseUrl>
-        <BaseUrl Condition=" '$(DotNetBuildFromSource)' == 'true' AND '$(DotNetBuildFromSourceFlavor)' == 'Product' ">$(AspNetCoreSharedFxRootUrl)</BaseUrl>
+        <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(AspNetCoreSharedFxBaseRuntimeVersionFileName)</DownloadFileName>
       </BundledInstallerComponent>
     </ItemGroup>
@@ -332,14 +346,14 @@
       </BundledLayoutPackage>
 
       <BundledLayoutComponent Include="WinFormsAndWpfSharedFxArchiveFile">
-        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopBlobVersion)</BaseUrl>
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(WinFormsAndWpfSharedFxArchiveFileName)</DownloadFileName>
         <DirectoriesToCopy>shared/Microsoft.WindowsDesktop.App</DirectoriesToCopy>
       </BundledLayoutComponent>
 
       <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
                                  Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
-        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)$(WindowsDesktopBlobVersion)</BaseUrl>
+        <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
     </ItemGroup>
@@ -380,7 +394,7 @@
             For example, the dotnetbuilds uri for 'file:///vmr/dotnet2/artifacts/obj/x64/Release/blob-feed/assets//aspnetcore_base_runtime.version'
             would end up 'https://dotnetbuilds.blob.core.windows.net/public//dotnet-runtime-8.0.0-rc.1.23381.3-centos.8-x64.tar.gz'. This is
             missing the runtime version number directory. -->
-    <ItemGroup Condition="'$(DotNetBuildFromSourceFlavor)' != 'Product'">
+    <ItemGroup Condition="'$(DotNetBuildOrchestrator)' != 'true'">
       <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace($(PublicBaseURL), 'https://dotnetbuilds.blob.core.windows.net/public/'))/%(ComponentToDownload.DownloadFileName)"
                       Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
         <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
@@ -502,7 +516,7 @@
   </Target>
 
   <Target Name="LayoutWorkloadUserLocalMarker"
-          Condition="'$(DotNetBuildFromSource)' == 'true'">
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <WriteLinesToFile File="$(RedistLayoutPath)metadata/workloads/$(CliProductBandVersion)00/userlocal"
                       Overwrite="true" />
   </Target>

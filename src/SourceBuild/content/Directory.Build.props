@@ -34,12 +34,15 @@
     <RootRepo Condition="'$(ShortStack)' == 'true'">runtime</RootRepo>
   </PropertyGroup>
 
+  <!-- See https://github.com/dotnet/arcade/blob/main/Documentation/UnifiedBuild/Unified-Build-Controls.md#output-controls for 
+       control set definition. -->
   <PropertyGroup Label="CalculateArch">
+    <!-- Build architecture is what we are building on. -->
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant)</BuildArchitecture>
-    <HostArchitecture Condition="'$(HostArchitecture)' == ''">$(BuildArchitecture)</HostArchitecture>
-
-    <!-- When building on non-x64 architectures, there may be no cross-compilation available, select a target architecture that is the same as the build. -->
+    <!-- The target architecture is the what the customer is targeting their outputs to run on. -->
     <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">$(BuildArchitecture)</TargetArchitecture>
+    <!-- The host architecture is the what the customer will build on. Much of the time, Host==Target. -->
+    <HostArchitecture Condition="'$(HostArchitecture)' == ''">$(TargetArchitecture)</HostArchitecture>
 
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
   </PropertyGroup>
@@ -189,6 +192,7 @@
     <NonShippingPackagesListPrefix>NonShipping.Packages.</NonShippingPackagesListPrefix>
 
     <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
+    <ReferenceAssetsDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference-assets'))</ReferenceAssetsDir>
     <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
     <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>
 
