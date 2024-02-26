@@ -6,7 +6,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
 
-namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests;
+namespace Microsoft.NET.Sdk.Razor.Tests;
 
 public class ResolveCompressedAssetsTest
 {
