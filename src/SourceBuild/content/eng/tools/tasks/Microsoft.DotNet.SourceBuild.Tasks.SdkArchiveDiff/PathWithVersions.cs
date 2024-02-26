@@ -73,7 +73,7 @@ public static class PathWithVersions
 
     public static string GetVersionAnonymousPath(string path)
     {
-        return GetVersionAnonymousPath(path).ToString();
+        return GetVersionAnonymousPath(path.AsSpan()).ToString();
     }
 
     public static ReadOnlySpan<char> GetVersionAnonymousPath(ReadOnlySpan<char> path)

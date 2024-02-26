@@ -24,7 +24,7 @@ public class GetClosestOfficialSdk : Microsoft.Build.Utilities.Task
 
     public async Task<bool> ExecuteAsync()
     {
-        var (versionString, rid, extension) = ExtractFromFilePath(BuiltSdkPath);
+        var (versionString, rid, extension) = GetInfoFromArchivePath(BuiltSdkPath);
 
         string downloadUrl = GetLatestOfficialSdkUrl(versionString, rid, extension);
 
@@ -63,7 +63,7 @@ public class GetClosestOfficialSdk : Microsoft.Build.Utilities.Task
         return $"https://aka.ms/dotnet/{channel}/daily/dotnet-sdk-{rid}{extension}";
     }
 
-    static (string Version, string Rid, string extension) ExtractFromFilePath(string path)
+    static (string Version, string Rid, string extension) GetInfoFromArchivePath(string path)
     {
         string extension;
         if (path.EndsWith(".tar.gz"))

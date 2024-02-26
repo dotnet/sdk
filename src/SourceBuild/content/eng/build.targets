@@ -16,7 +16,7 @@
         <Output TaskParameter="ContentDifferences" ItemName="ContentDifferences" />
       </FindArchiveDiffs>
 
-      <Message Text="Difference in sdk archive: %(ContentDifferences.Kind): %(ContentDifferences.Identity)" Importance="High" Condition="'%(ContentDifferences.Kind)' != 'Unchanged'"/>
+      <Message Text="Difference in sdk archive: %(ContentDifferences.Kind): %(ContentDifferences.Identity)" Importance="High" Condition="'%(ContentDifferences.Identity)' != '' AND '%(ContentDifferences.Kind)' != 'Unchanged'"/>
       <Delete Files="$(ClosestOfficialSdkPath)" Condition="'$(ClosestOfficialSdkPath)' == ''"/>
 
   </Target>
