@@ -4,24 +4,21 @@
     <!-- Need to set to false to calculate RepositoryCommit. -->
     <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
 
-    <!-- We need to extract the non-portable OS name from the non-portable RID and pass that to installer build script -->
-    <OSNameOverride>$(TargetOS)</OSNameOverride>
-    <OSNameOverride Condition="'$(PortableBuild)' != 'true'">$(TargetRid.Substring(0, $(TargetRid.IndexOf("-"))))</OSNameOverride>
-
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
 
     <!-- Restore and Build actions are already passed in by the root script. -->
     <BuildActions>$(FlagParameterPrefix)pack $(FlagParameterPrefix)publish</BuildActions>
 
-    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)runtime-id $(TargetRid)</BuildArgs>
-
     <!--
       Setting NETCoreAppMaximumVersion to a high version so that the sdk doesn't complain if we're restoring/publishing for a higher version than the sdk.
       See https://github.com/dotnet/sdk/issues/1512#issuecomment-377082883
     -->
     <BuildArgs>$(BuildArgs) /p:NETCoreAppMaximumVersion=99.9</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:OSName=$(OSNameOverride)</BuildArgs>
+    <!-- We need to extract the non-portable OS name from the non-portable RID and pass that to installer build script.
+         This should not happen except when building non-portable. installer generally extracts the OSName from the host OS,
+         or from the Rid if supplied. -->
+    <BuildArgs Condition="$(PortableBuild) != 'true'">$(BuildArgs) /p:OSName=$(TargetRid.Substring(0, $(TargetRid.IndexOf("-"))))</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PortableOSName=$(__PortableTargetOS)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:Rid=$(TargetRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:Architecture=$(TargetArchitecture)</BuildArgs>
@@ -30,10 +27,13 @@
     <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:AspNetCoreInstallerRid=$(TargetRid)</BuildArgs>
     <!-- installer always wants to build portable on FreeBSD -->
     <BuildArgs Condition="'$(TargetOS)' == 'freebsd' and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
-    <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:CoreSetupRid=$(TargetRid)</BuildArgs>
+    <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:NetRuntimeRid=$(TargetRid)</BuildArgs>
+    <!-- https://github.com/dotnet/source-build/issues/4138 -->
+    <BuildArgs Condition="'$(TargetOS)' != 'windows' and '$(TargetOS)' != 'osx'">$(BuildArgs) /p:SkipBuildingInstallers=true</BuildArgs>
 
     <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
-
+    <!-- In non-source-only scenarios, currently consume aspnetcore from the normal public base url -->
+    <BuildArgs>$(BuildArgs) /p:FallbackPublicBaseURL=https://dotnetbuilds.blob.core.windows.net/public/</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:UsePortableLinuxSharedFramework=false</BuildArgs>
 
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
@@ -74,15 +74,8 @@
 
   <ItemGroup>
     <EnvironmentVariables Include="CLIBUILD_SKIP_TESTS=true" />
-
-    <!-- Disable bundled tools until we can figure out:
-      Unable to find package dotnet-dev-certs.
-      Unable to find package dotnet-ef.
-      Unable to find package dotnet-sql-cache.
-      Unable to find package dotnet-user-secrets.
-      Unable to find package dotnet-user-jwts.
-      Unable to find package dotnet-watch.  -->
-    <EnvironmentVariables Include="CLIBUILD_SKIP_BUNDLEDDOTNETTOOLS=true" />
+    <!-- https://github.com/dotnet/source-build/issues/4115. -->
+    <EnvironmentVariables Include="PublishWindowsPdb=false" />
   </ItemGroup>
 
   <Target Name="GetInputsOutputForCreatePrivateSourceBuiltArtifactsArchive"

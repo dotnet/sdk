@@ -742,7 +742,6 @@
       <TransitiveRepositoryReference Remove="nuget-client" />
       <TransitiveRepositoryReference Remove="fsharp" />
       <TransitiveRepositoryReference Remove="vstest" />
-      <TransitiveRepositoryReference Remove="installer" />
     </ItemGroup>
   </Target>
 
