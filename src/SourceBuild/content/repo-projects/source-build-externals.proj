@@ -10,4 +10,9 @@
     <UseInnerClone>true</UseInnerClone>
   </PropertyGroup>
 
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="source-build-reference-packages" />
+  </ItemGroup>
+
 </Project>
