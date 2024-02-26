@@ -25,7 +25,6 @@
     <ItemGroup>
       <RuntimeHostConfigurationOption Include="ReferenceAssemblies.NetCurrent.TargetingPackVersion" Value="@(ResolvedTargetingPack-&gt;WithMetadataValue('Identity', 'Microsoft.NETCore.App')-&gt;WithMetadataValue('TargetFramework', '$(NetCurrent)')-&gt;Metadata('NuGetPackageVersion'))" />
       <RuntimeHostConfigurationOption Include="ReferenceAssemblies.NetCurrent.TargetFramework" Value="$(NetCurrent)" />
-      <RuntimeHostConfigurationOption Include="ReferenceAssemblies.NetCurrent.NuGetConfigPath" Value="$(RepoRoot)NuGet.config" />
     </ItemGroup>
   </Target>
 
