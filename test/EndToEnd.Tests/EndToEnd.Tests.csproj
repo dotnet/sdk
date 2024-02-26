@@ -10,7 +10,7 @@
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <CanRunTestAsTool>false</CanRunTestAsTool>
-    <DefineConstants Condition="'$(IslinuxPortable)' == 'true'">$(DefineConstants);LINUX_PORTABLE</DefineConstants>
+    <DefineConstants Condition="'$(IsLinuxPortable)' == 'true'">$(DefineConstants);LINUX_PORTABLE</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
