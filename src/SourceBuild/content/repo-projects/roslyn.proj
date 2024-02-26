@@ -28,9 +28,12 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="command-line-api" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,8 +9,12 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="nuget-client" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <RepositoryReference Include="runtime" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
 </Project>
