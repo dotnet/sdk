@@ -13,11 +13,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
         {
             if (s_projectsDirectory == null)
             {
-                // walk from /format/artifacts/bin/dotnet-format.UnitTests/Debug/netcoreapp2.1/dotnet-format.UnitTests.dll
-                // up to the repo root then down to the test projects folder.
-                var unitTestAssemblyPath = Assembly.GetExecutingAssembly().Location;
-                var repoRootPath = Directory.GetParent(unitTestAssemblyPath).Parent.Parent.Parent.Parent.FullName;
-                s_projectsDirectory = Path.Combine(repoRootPath, "src", "Assets", "dotnet-format.TestsProjects");
+                s_projectsDirectory = Path.Combine(TestContext.Current.TestAssetsDirectory, "dotnet-format.TestsProjects");
             }
 
             return s_projectsDirectory;
