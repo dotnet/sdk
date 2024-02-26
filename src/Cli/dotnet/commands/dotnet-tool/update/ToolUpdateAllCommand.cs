@@ -44,6 +44,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             foreach (var tool in toolList)
             {
+                // TBD: Call functions from install to update the functions
                 var toolUpdateCommand = new ToolUpdateCommand(parseResult);
                 toolUpdateCommand.Execute();
             }

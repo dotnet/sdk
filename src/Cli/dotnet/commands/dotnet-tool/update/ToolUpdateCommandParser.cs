@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand UpdateAllCommand()
         {
-            CliCommand command = new("update", LocalizableStrings.CommandDescription);
+            CliCommand command = new("--all", LocalizableStrings.AllUpdateOptionDescription);
             command.Options.Add(GlobalOption);
             command.Options.Add(LocalOption);
             command.Options.Add(AllUpdateOption);
