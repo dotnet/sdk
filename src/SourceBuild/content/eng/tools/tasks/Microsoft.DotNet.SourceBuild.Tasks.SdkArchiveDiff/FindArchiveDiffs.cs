@@ -41,7 +41,7 @@ public class FindArchiveDiffs : Microsoft.Build.Utilities.Task
         var baselineFiles = baseline.GetFileNames();
         var testFiles = test.GetFileNames();
         ContentDifferences =
-            GetDiffs(baselineFiles, testFiles, PathWithVersions.Equal, PathWithVersions.GetVersionAnonymousPath)
+            GetDiffs(baselineFiles, testFiles, PathWithVersions.Equal, PathWithVersions.GetVersionlessPath)
             .Select(FromDiff)
             .ToArray();
         return true;
