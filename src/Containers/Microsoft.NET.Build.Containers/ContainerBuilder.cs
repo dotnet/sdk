@@ -95,7 +95,7 @@ public static class ContainerBuilder
         logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
 
-        Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows);
+        Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(workingDir);
 
