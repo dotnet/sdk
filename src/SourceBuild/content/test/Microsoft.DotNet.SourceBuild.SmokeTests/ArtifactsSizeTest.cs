@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Formats.Tar;
+using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -20,8 +21,9 @@ public class ArtifactsSizeTest : SdkTests
 {
     private const int SizeThresholdPercentage = 25;
     private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"ArtifactsSizes/{Config.TargetRid}.txt");
-    private readonly Dictionary<string, long> BaselineFileContent = new();
+    private readonly Dictionary<string, long> Baseline = new();
     private Dictionary<string, int> FilePathCountMap = new();
+    private StringBuilder Differences = new();
 
     public ArtifactsSizeTest(ITestOutputHelper outputHelper) : base(outputHelper)
     {
@@ -31,12 +33,12 @@ public class ArtifactsSizeTest : SdkTests
             foreach (string entry in baselineFileContent)
             {
                 string[] splitEntry = entry.Split(':', StringSplitOptions.TrimEntries);
-                BaselineFileContent[splitEntry[0]] = long.Parse(splitEntry[1]);
+                Baseline[splitEntry[0]] = long.Parse(splitEntry[1]);
             }
         }
         else
         {
-            Assert.False(true, $"Baseline file `{BaselineFilePath}' does not exist. Please create the baseline file then rerun the test.");
+            Assert.Fail($"Baseline file `{BaselineFilePath}' does not exist. Please create the baseline file then rerun the test.");
         }
     }
 
@@ -48,31 +50,15 @@ public class ArtifactsSizeTest : SdkTests
         Utilities.ValidateNotNullOrWhiteSpace(Config.TargetRid, Config.TargetRidEnv);
 
         var tarEntries = ProcessSdkAndArtifactsTarballs();
+        ScanForDifferences(tarEntries);
+        UpdateBaselineFile(tarEntries);
 
-        foreach (var entry in tarEntries)
-        {
-            if (!BaselineFileContent.TryGetValue(entry.FilePath, out long baselineBytes))
-            {
-                OutputHelper.LogWarningMessage($"{entry.FilePath} does not exist in baseline. Adding it to the baseline file");
-            }
-            else
-            {
-                CompareFileSizes(entry.FilePath, entry.Bytes, baselineBytes);
-            }
-        }
-
-        try
-        {
-            string actualFilePath = Path.Combine(LogsDirectory, $"UpdatedArtifactsSizes_{Config.TargetRid}.txt");
-            File.WriteAllLines(actualFilePath, tarEntries.Select(entry => $"{entry.FilePath}: {entry.Bytes}"));
-        }
-        catch (IOException ex)
-        {
-            throw new InvalidOperationException($"An error occurred while copying the baselines file: {BaselineFilePath}", ex);
-        }
+        // Must wait to report differences until after the baseline file is updated else a failure
+        // will cause the baseline file to not be updated.
+        ReportDifferences();
     }
 
-    private (string FilePath, long Bytes)[] ProcessSdkAndArtifactsTarballs()
+    private FileSize[] ProcessSdkAndArtifactsTarballs()
     {
         string tempTarballDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(tempTarballDir);
@@ -80,13 +66,13 @@ public class ArtifactsSizeTest : SdkTests
         Utilities.ExtractTarball(Config.SdkTarballPath, tempTarballDir, OutputHelper);
         Utilities.ExtractTarball(Config.SourceBuiltArtifactsPath, tempTarballDir, OutputHelper);
 
-        (string FilePath, long Bytes)[] tarEntries = Directory.EnumerateFiles(tempTarballDir, "*", SearchOption.AllDirectories)
+        FileSize[] tarEntries = Directory.EnumerateFiles(tempTarballDir, "*", SearchOption.AllDirectories)
             .Where(filepath => !filepath.Contains("SourceBuildReferencePackages"))
             .Select(filePath =>
             {
                 string result = filePath.Substring(tempTarballDir.Length + 1);
                 result = ProcessFilePath(result);
-                return (FilePath: result, Bytes: new FileInfo(filePath).Length);
+                return new FileSize(result, new FileInfo(filePath).Length);
             })
             .OrderBy(entry => entry.FilePath)
             .ToArray();
@@ -139,23 +125,88 @@ public class ArtifactsSizeTest : SdkTests
         return filePath;
     }
 
+    private void ScanForDifferences(FileSize[] tarEntries)
+    {
+        foreach (var entry in tarEntries)
+        {
+            if (!Baseline.TryGetValue(entry.FilePath, out long baselineBytes))
+            {
+                TrackDifference($"{entry.FilePath} does not exist in baseline. Adding it to the baseline file");
+            }
+            else
+            {
+                CompareFileSizes(entry.FilePath, entry.Bytes, baselineBytes);
+                Baseline.Remove(entry.FilePath); 
+            }
+        }
+
+        foreach (var entry in Baseline)
+        {
+            TrackDifference($"`{entry.Key}` is no longer being produced. It was {entry.Value} bytes");
+        }
+    }
+
     private void CompareFileSizes(string filePath, long fileSize, long baselineSize)
     {
         if (fileSize == 0 && baselineSize != 0)
         {
-            OutputHelper.LogWarningMessage($"'{filePath}' is now 0 bytes. It was {baselineSize} bytes");
+            TrackDifference($"'{filePath}' is now 0 bytes. It was {baselineSize} bytes");
         }
         else if (fileSize != 0 && baselineSize == 0)
         {
-            OutputHelper.LogWarningMessage($"'{filePath}' is no longer 0 bytes. It is now {fileSize} bytes");
+            TrackDifference($"'{filePath}' is no longer 0 bytes. It is now {fileSize} bytes");
         }
         else if (baselineSize != 0 && (((fileSize - baselineSize) / (double)baselineSize) * 100) >= SizeThresholdPercentage)
         {
-            OutputHelper.LogWarningMessage($"'{filePath}' increased in size by more than {SizeThresholdPercentage}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
+            TrackDifference($"'{filePath}' increased in size by more than {SizeThresholdPercentage}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
         }
         else if (baselineSize != 0 && (((baselineSize - fileSize) / (double)baselineSize) * 100) >= SizeThresholdPercentage)
         {
-            OutputHelper.LogWarningMessage($"'{filePath}' decreased in size by more than {SizeThresholdPercentage}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
+            TrackDifference($"'{filePath}' decreased in size by more than {SizeThresholdPercentage}%. It was originally {baselineSize} bytes and is now {fileSize} bytes");
+        }
+    }
+
+    private void TrackDifference(string difference) => Differences.AppendLine(difference);
+
+    private void ReportDifferences()
+    {
+        if (Differences.Length > 0)
+        {
+            
+            if (Config.WarnOnSdkContentDiffs)
+            {
+                OutputHelper.LogWarningMessage(Differences.ToString());
+            }
+            else
+            {
+                OutputHelper.WriteLine(Differences.ToString());
+                Assert.Fail("Differences were found in the artifacts sizes");
+            }
+        }
+    }
+
+    private void UpdateBaselineFile(FileSize[] tarEntries)
+    {
+        try
+        {
+            string actualFilePath = Path.Combine(LogsDirectory, $"UpdatedArtifactsSizes_{Config.TargetRid}.txt");
+            File.WriteAllLines(actualFilePath, tarEntries.Select(entry => $"{entry.FilePath}: {entry.Bytes}"));
+        }
+        catch (IOException ex)
+        {
+            throw new InvalidOperationException($"An error occurred while copying the baselines file: {BaselineFilePath}", ex);
+        }
+    }
+
+    private readonly struct FileSize
+    {
+        public string FilePath { get; }
+        public long Bytes { get; }
+
+        public FileSize(string filePath, long bytes)
+        {
+            FilePath = filePath;
+            Bytes = bytes;
         }
     }
 }
