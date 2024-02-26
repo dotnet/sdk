@@ -100,12 +100,12 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
                 Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidTag), nameof(ContainerImageTag), ContainerImageTag);
             }
         }
-        else if (ContainerImageTags.Length != 0 && TryValidateTags(ContainerImageTags, out var valids, out var invalids))
+        else if (ContainerImageTags.Length != 0)
         {
-            validTags = valids;
-            if (invalids.Any())
+            (validTags, var invalidTags) = TryValidateTags(ContainerImageTags);
+            if (invalidTags.Any())
             {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidTags), nameof(ContainerImageTags), String.Join(",", invalids));
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidTags), nameof(ContainerImageTags), String.Join(",", invalidTags));
                 return !Log.HasLoggedErrors;
             }
         }
@@ -200,7 +200,7 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
         }
     }
 
-    private static bool TryValidateTags(string[] inputTags, out string[] validTags, out string[] invalidTags)
+    private static (string[] validTags, string[] invalidTags) TryValidateTags(string[] inputTags)
     {
         var v = new List<string>();
         var i = new List<string>();
@@ -215,8 +215,6 @@ public sealed class ParseContainerProperties : Microsoft.Build.Utilities.Task
                 i.Add(tag);
             }
         }
-        validTags = v.ToArray();
-        invalidTags = i.ToArray();
-        return invalidTags.Length == 0;
+        return (v.ToArray(), i.ToArray());
     }
 }

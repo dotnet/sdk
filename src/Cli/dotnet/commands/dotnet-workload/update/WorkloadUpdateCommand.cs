@@ -249,19 +249,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         }
                     }
 
-                    _workloadResolver.RefreshWorkloadManifests();
-
-                    if (string.IsNullOrWhiteSpace(_fromHistorySpecified))
-                    {
-                        var workloads = GetUpdatableWorkloads();
-                        _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
-                    }
-
-                    if (!_historyManifestOnlyOption)
-                    {
-                        UpdateInstalledWorkloadsFromHistory(sdkFeatureBand, context, offlineCache);
-                    }
-
                     if (shouldUpdateInstallState)
                     {
                         _workloadInstaller.SaveInstallStateManifestVersions(_sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
@@ -275,10 +262,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion, useInstallStateOnly: true), offlineCache);
                     }
+
+                    _workloadResolver.RefreshWorkloadManifests();
+
+                    if (string.IsNullOrWhiteSpace(_fromHistorySpecified))
+                    {
+                        var workloads = GetUpdatableWorkloads();
+                        _workloadInstaller.InstallWorkloads(workloads, sdkFeatureBand, context, offlineCache);
+                    }
+                    else if (!_historyManifestOnlyOption)
+                    {
+                        UpdateInstalledWorkloadsFromHistory(sdkFeatureBand, context, offlineCache);
+                    }
                 },
                 rollback: () =>
                 {
                     //  Nothing to roll back at this level, InstallWorkloadManifest and InstallWorkloadPacks handle the transaction rollback
+                    //  We will refresh the workload manifests to make sure that the resolver has the updated state after the rollback
+                    _workloadResolver.RefreshWorkloadManifests();
                 });
         }
 

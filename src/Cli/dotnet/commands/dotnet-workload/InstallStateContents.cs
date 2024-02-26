@@ -25,6 +25,11 @@ namespace Microsoft.DotNet.Workloads.Workload
             return JsonSerializer.Deserialize<InstallStateContents>(contents, s_options);
         }
 
+        public static InstallStateContents FromPath(string path)
+        {
+            return File.Exists(path) ? FromString(File.ReadAllText(path)) : new InstallStateContents();
+        }
+
         public override string ToString()
         {
             return JsonSerializer.Serialize<InstallStateContents>(this, s_options);

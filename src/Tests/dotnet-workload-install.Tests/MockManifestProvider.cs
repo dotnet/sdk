@@ -29,6 +29,8 @@ namespace ManifestReaderTests
 
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
 
+        public void RefreshWorkloadManifests() { }
+
         public IEnumerable<ReadableWorkloadManifest> GetManifests(bool useInstallStateOnly)
             {
                 foreach ((var id, var path, var featureBand) in _manifests)

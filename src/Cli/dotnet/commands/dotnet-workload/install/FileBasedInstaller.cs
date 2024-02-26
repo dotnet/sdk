@@ -300,7 +300,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
         {
-            var garbageCollector = new WorkloadGarbageCollector(_dotnetDir, _sdkFeatureBand, _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet);
+            var garbageCollector = new WorkloadGarbageCollector(_dotnetDir, _sdkFeatureBand, _installationRecordRepository.GetInstalledWorkloads(_sdkFeatureBand), getResolverForWorkloadSet, Reporter.Verbose);
             garbageCollector.Collect();
 
             var featureBandsWithWorkloadInstallRecords = _installationRecordRepository.GetFeatureBandsWithInstallationRecords();
@@ -462,7 +462,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             
             if (File.Exists(path))
             {
-                var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+                var installStateContents = InstallStateContents.FromString(File.ReadAllText(path));
                 installStateContents.Manifests = null;
                 File.WriteAllText(path, installStateContents.ToString());
             }
@@ -472,7 +472,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            var installStateContents = InstallStateContents.FromPath(path);
             installStateContents.Manifests = manifestContents;
             File.WriteAllText(path, installStateContents.ToString());
         }
@@ -481,7 +481,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            var installStateContents = InstallStateContents.FromPath(path);
             installStateContents.UseWorkloadSets = newMode;
             File.WriteAllText(path, installStateContents.ToString());
         }
@@ -710,8 +710,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private void WritePackInstallationRecord(PackInfo packInfo, SdkFeatureBand featureBand)
         {
-            _reporter.WriteLine(string.Format(LocalizableStrings.WritingPackInstallRecordMessage, packInfo.Id, packInfo.Version));
-            var path = GetPackInstallRecordPath(packInfo.Id, packInfo.Version, featureBand);
+            _reporter.WriteLine(string.Format(LocalizableStrings.WritingPackInstallRecordMessage, packInfo.ResolvedPackageId, packInfo.Version));
+            var path = GetPackInstallRecordPath(new WorkloadPackId(packInfo.ResolvedPackageId), packInfo.Version, featureBand);
             if (!Directory.Exists(Path.GetDirectoryName(path)))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -721,7 +721,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private void DeletePackInstallationRecord(PackInfo packInfo, SdkFeatureBand featureBand)
         {
-            var packInstallRecord = GetPackInstallRecordPath(packInfo.Id, packInfo.Version, featureBand);
+            var packInstallRecord = GetPackInstallRecordPath(new WorkloadPackId(packInfo.ResolvedPackageId), packInfo.Version, featureBand);
             if (File.Exists(packInstallRecord))
             {
                 File.Delete(packInstallRecord);

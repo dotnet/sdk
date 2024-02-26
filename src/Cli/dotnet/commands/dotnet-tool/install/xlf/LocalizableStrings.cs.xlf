@@ -88,6 +88,11 @@ Pokud chcete vytvořit manifest, použijte příkaz dotnet new tool-manifest, ob
         <target state="translated">Možnosti --prerelease a --version v jednom příkazu se nepodporují.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RollForwardOptionDescription">
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="translated">Povolí nástroji .NET přejít na novější verze modulu .NET runtime, pokud není nainstalován modul runtime, na který cílí.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">Verze balíčku nástroje, který se má nainstalovat</target>
