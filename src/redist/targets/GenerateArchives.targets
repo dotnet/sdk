@@ -20,23 +20,10 @@
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).zip"
         OverwriteDestination="true" />
 
-    <ZipFileCreateFromDirectory
-        Condition=" '$(OSName)' == 'win' "
-        SourceDirectory="$(SdkInternalLayoutPath)"
-        DestinationArchive="$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdk).zip"
-        OverwriteDestination="true" />
-
     <TarGzFileCreateFromDirectory
         Condition=" '$(OSName)' != 'win' "
         SourceDirectory="$(RedistLayoutPath)"
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).tar.gz"
-        OverwriteDestination="true"
-        IgnoreExitCode="$(IgnoreTarExitCode)"/>
-
-    <TarGzFileCreateFromDirectory
-        Condition=" '$(OSName)' != 'win' and '$(DotNetBuildFromSource)' != 'true'"
-        SourceDirectory="$(SdkInternalLayoutPath)"
-        DestinationArchive="$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdk).tar.gz"
         OverwriteDestination="true"
         IgnoreExitCode="$(IgnoreTarExitCode)"/>
     

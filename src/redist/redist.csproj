@@ -6,7 +6,7 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <ResolveAssemblyReferencesSilent>true</ResolveAssemblyReferencesSilent>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>none</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
-    <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' And '$(DotNetBuildFromSource)' == 'true'">true</BundleRuntimePacks>
+    <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,8 +15,8 @@
                         RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
                         />
 
-    <ProjectReference Include="..\SdkResolver\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildFromSource)' != 'true'" />
-    <ProjectReference Include="..\VSTemplateLocator\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <ProjectReference Include="..\SdkResolver\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <ProjectReference Include="..\VSTemplateLocator\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
