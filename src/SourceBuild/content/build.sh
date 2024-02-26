@@ -28,7 +28,6 @@ usage()
   echo "  --release-manifest <FILE>       A JSON file, an alternative source of Source Link metadata"
   echo "  --source-repository <URL>       Source Link repository URL, required when building from tarball"
   echo "  --source-version <SHA>          Source Link revision, required when building from tarball"
-  echo "  --use-mono-runtime              Output uses the mono runtime"
   echo "  --with-packages <DIR>           Use the specified directory of previously-built packages"
   echo "  --with-sdk <DIR>                Use the SDK in the specified directory for bootstrapping"
   echo ""
@@ -38,6 +37,7 @@ usage()
   echo "  --clean-while-building          Cleans each repo after building (reduces disk space usage, short: -cwb)"
   echo "  --excludeCIBinarylog            Don't output binary log (short: -nobl)"
   echo "  --prepareMachine                Prepare machine for CI run, clean up processes after build"
+  echo "  --use-mono-runtime              Output uses the mono runtime"
   echo ""
   echo "Command line arguments not listed above are passed thru to msbuild."
   echo "Arguments can also be passed in with a single hyphen."
@@ -139,9 +139,6 @@ while [[ $# > 0 ]]; do
       sourceVersion="$2"
       shift
       ;;
-    -use-mono-runtime)
-      properties="$properties /p:SourceBuildUseMonoRuntime=true"
-      ;;
     -with-packages)
       CUSTOM_PACKAGES_DIR="$(cd -P "$2" && pwd)"
       if [ ! -d "$CUSTOM_PACKAGES_DIR" ]; then
@@ -175,6 +172,9 @@ while [[ $# > 0 ]]; do
       ;;
     -preparemachine)
       prepare_machine=true
+      ;;
+    -use-mono-runtime)
+      properties="$properties /p:SourceBuildUseMonoRuntime=true"
       ;;
 
     *)
