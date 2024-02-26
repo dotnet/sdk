@@ -63,12 +63,33 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 if (!string.IsNullOrWhiteSpace(_fromHistorySpecified))
                 {
                     var workloadHistoryRecords = _workloadInstaller.GetWorkloadHistoryRecords(_sdkFeatureBand.ToString()).OrderBy(r => r.TimeStarted).ToList();
-                    if (!int.TryParse(_fromHistorySpecified, out int index) || index < 1 || index > workloadHistoryRecords.Count)
+                    var historyRecordsWithUnknownAndInitial = new List<WorkloadHistoryRecord>();
+                    historyRecordsWithUnknownAndInitial.Add(new WorkloadHistoryRecord()
+                    {
+                        StateAfterCommand = workloadHistoryRecords.First().StateBeforeCommand
+                    });
+
+                    var previous = historyRecordsWithUnknownAndInitial.First();
+
+                    foreach (var historyRecord in workloadHistoryRecords)
+                    {
+                        if (!historyRecord.StateBeforeCommand.Equals(previous.StateAfterCommand))
+                        {
+                            historyRecordsWithUnknownAndInitial.Add(new WorkloadHistoryRecord()
+                            {
+                                StateAfterCommand = historyRecord.StateBeforeCommand
+                            });
+                        }
+
+                        historyRecordsWithUnknownAndInitial.Add(historyRecord);
+                    }
+
+                    if (!int.TryParse(_fromHistorySpecified, out int index) || index < 1 || index > historyRecordsWithUnknownAndInitial.Count)
                     {
                         throw new GracefulException(LocalizableStrings.WorkloadHistoryRecordNonIntegerId, isUserError: true);
                     }
 
-                    _workloadHistoryState = workloadHistoryRecords[index - 1];
+                    _workloadHistoryState = historyRecordsWithUnknownAndInitial[index - 1];
                     return _workloadHistoryState;
                 }
 

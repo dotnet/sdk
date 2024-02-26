@@ -25,10 +25,10 @@ The `dotnet workload history` command will show the history of workload installa
 
 |ID|Date|Command|Workloads|
 |--|----|-------|---------|
-|3|2023-02-01|Update|android, maui, wasm-tools|
-| |2023-02-01|Unknown|Unknown|
-|2|2023-01-05|Install|maui, wasm-tools|
 |1|2023-01-01|Install|android|
+|2|2023-01-05|Install|maui, wasm-tools|
+| |2023-02-01|Unknown|Unknown|
+|3|2023-02-01|Update|android, maui, wasm-tools|
 
 The ID will be an identifier for the record which will start at 1 for the oldest record and increment from there.  Each record includes the workload state before and after the command was run.  The history command will compare the state after each command was run with the state recorded before the next command record.  If there is a difference, then something changed the state that was not recorded, most likely a Visual Studio installation, or an update to the .NET SDK.  In such a case an "unknown" line will be included in the output to represent this difference.
 

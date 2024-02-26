@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Workloads.Workload.History
 
         public override int Execute()
         {
-            var displayRecords = WorkloadHistoryDisplay.ProcessWorkloadHistoryRecords(_workloadInstaller.GetWorkloadHistoryRecords(_sdkFeatureBand.ToString()));
+            var displayRecords = WorkloadHistoryDisplay.ProcessWorkloadHistoryRecords(_workloadInstaller.GetWorkloadHistoryRecords(_sdkFeatureBand.ToString()), out bool unknownRecordsPresent);
 
             if (!displayRecords.Any())
             {
@@ -52,6 +52,13 @@ namespace Microsoft.DotNet.Workloads.Workload.History
             }
             else
             {
+                displayRecords.Insert(0, new WorkloadHistoryDisplay.DisplayRecord()
+                {
+                    TimeStarted = DateTimeOffset.MinValue,
+                    ID = 1,
+                    Command = "InitialState",
+                    Workloads = displayRecords.First()?.HistoryRecord?.StateBeforeCommand?.InstalledWorkloads,
+                });
                 var table = new PrintableTable<WorkloadHistoryDisplay.DisplayRecord>();
                 table.AddColumn(LocalizableStrings.Id, r => r.ID?.ToString() ?? "");
                 table.AddColumn(LocalizableStrings.Date, r => r.TimeStarted?.ToString() ?? "");
@@ -61,6 +68,12 @@ namespace Microsoft.DotNet.Workloads.Workload.History
                 Reporter.WriteLine();
                 table.PrintRows(displayRecords, l => Reporter.WriteLine(l));
                 Reporter.WriteLine();
+
+                if (unknownRecordsPresent)
+                {
+                    Reporter.WriteLine("Rows with Unlogged changes represent changes from actions other than .NET CLI workload commands. Usually this represents an update to the .NET SDK or to Visual Studio."); // todo: localize
+                    Reporter.WriteLine();
+                }
             }
 
             return 0;
