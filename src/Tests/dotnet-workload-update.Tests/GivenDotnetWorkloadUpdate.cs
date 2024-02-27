@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             IWorkloadManifestUpdater mockUpdater = new MockWorkloadManifestUpdater(resolver: workloadResolver);
 
             WorkloadUpdateCommand update = new(
-                Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-history", "1" }),
+                Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-history", "2" }),
                 Reporter.Output,
                 mockResolverFactory,
                 mockInstaller,
