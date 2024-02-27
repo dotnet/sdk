@@ -20,14 +20,6 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
                     return assetsDirectory;
                 }
 
-                var executionDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, "assets", "dotnet-format.TestsProjects");
-
-                if (Directory.Exists(executionDirectory))
-                {
-                    s_projectsDirectory = executionDirectory;
-                    return executionDirectory;
-                }
-
                 throw new ArgumentException("Can't find the project asserts directory");
             }
 

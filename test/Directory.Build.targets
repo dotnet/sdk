@@ -22,8 +22,8 @@
   <ItemGroup Condition="'$(IsTestProject)' == 'true'">
 
     <!-- Note: These items are showing up in solution explorer even though Visible is set to false -->
-    <None Include="$(MSBuildThisFileDirectory)..\src\Assets\**\*.*"
-          Exclude="$(MSBuildThisFileDirectory)..\src\Assets\TestPackages\dotnet-new\**\*;$(MSBuildThisFileDirectory)..\src\Assets\dotnet-format.TestsProjects\**\**\**\*"
+    <None Include="$(MSBuildThisFileDirectory)..\src\Assets\**\*.*;$(MSBuildThisFileDirectory)..\src\Assets\dotnet-format.TestsProjects\**\**\**\*"
+          Exclude="$(MSBuildThisFileDirectory)..\src\Assets\TestPackages\dotnet-new\**\*"
           CopyToPublishDirectory="PreserveNewest" 
           LinkBase="Assets"
           Visible="false" />
