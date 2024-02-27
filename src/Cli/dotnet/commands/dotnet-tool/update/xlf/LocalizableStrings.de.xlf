@@ -49,17 +49,17 @@
       </trans-unit>
       <trans-unit id="UpdateLocalToolToLowerVersion">
         <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
-        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</target>
+        <target state="translated">Die angeforderte Version {0} ist niedriger als die vorhandene Version {1} (Manifestdatei {2}). Verwenden Sie die Option --Downgrade zulassen, um dieses Update zuzulassen.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
         <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="needs-review-translation">Das Tool „{0}“ wurde in der neuesten Vorabversion neu installiert (Version „{1}“).</target>
+        <target state="translated">Das Tool "{0}" wurde mit der Vorabversion (Version "{1}" ) neu installiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
         <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="needs-review-translation">Das Tool "{0}" wurde in der neuesten stabilen Version neu installiert (Version {1}).</target>
+        <target state="translated">Das Tool "{0}" wurde mit der stabilen Version (Version "{1}" ) neu installiert.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

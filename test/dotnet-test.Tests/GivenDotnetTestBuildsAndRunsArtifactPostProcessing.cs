@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             string runsettings = GetRunsetting(testInstance.Path);
 
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING, "0")
                                     .Execute(
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             new PublishCommand(Log, Path.Combine(testInstance.Path, "sln.sln")).Execute("/p:Configuration=Release").Should().Pass();
 
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(FeatureFlag.DISABLE_ARTIFACTS_POSTPROCESSING, "0")
                                     .WithEnvironmentVariable("DOTNET_CLI_VSTEST_TRACE", "1")

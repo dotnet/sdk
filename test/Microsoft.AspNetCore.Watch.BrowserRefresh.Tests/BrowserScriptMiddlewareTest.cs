@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 kvp =>
                 {
                     Assert.Equal("Content-Length", kvp.Key);
-                    Assert.NotEmpty(kvp.Value);
+                    Assert.NotEqual(0, kvp.Value.Count);
                 },
                 kvp =>
                 {

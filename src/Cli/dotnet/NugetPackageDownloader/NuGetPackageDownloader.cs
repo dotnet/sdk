@@ -42,6 +42,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         private readonly bool _isNuGetTool;
 
         private bool _verifySignatures;
+        private VerbosityOptions _verbosityOptions;
 
         public NuGetPackageDownloader(
             DirectoryPath packageInstallDir,
@@ -52,7 +53,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             RestoreActionConfig restoreActionConfig = null,
             Func<IEnumerable<Task>> timer = null,
             bool verifySignatures = false,
-            bool isNuGetTool = false)
+            bool isNuGetTool = false,
+            VerbosityOptions verbosityOptions = VerbosityOptions.normal)
         {
             _packageInstallDir = packageInstallDir;
             _reporter = reporter ?? Reporter.Output;
@@ -75,6 +77,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(),
                 !_restoreActionConfig.Interactive);
             _isNuGetTool = isNuGetTool;
+            _verbosityOptions = verbosityOptions;
         }
 
         public async Task<string> DownloadPackageAsync(PackageId packageId,
@@ -132,17 +135,25 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return nupkgPath;
         }
 
+        private bool verbosityGreaterThanMinimal()
+        {
+            return _verbosityOptions != VerbosityOptions.quiet && _verbosityOptions != VerbosityOptions.q
+                && _verbosityOptions != VerbosityOptions.minimal && _verbosityOptions != VerbosityOptions.m;
+        }
+
         private void VerifySigning(string nupkgPath)
         {
+            if (!_verifySignatures && !_validationMessagesDisplayed)
+            {
+                if (verbosityGreaterThanMinimal())
+                {
+                    _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                }
+                _validationMessagesDisplayed = true;
+            }
+
             if (!_verifySignatures)
             {
-                if (!_validationMessagesDisplayed)
-                {
-                    _reporter.WriteLine(
-                        LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
-                    _validationMessagesDisplayed = true;
-                }
-
                 return;
             }
 

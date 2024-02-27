@@ -49,17 +49,17 @@
       </trans-unit>
       <trans-unit id="UpdateLocalToolToLowerVersion">
         <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
-        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</target>
+        <target state="translated">请求的版本 {0} 低于现有版本 {1} (清单文件 {2})。使用 --allow-downgrade 选项允许此更新。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
         <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="needs-review-translation">工具“{0}”已重新安装最新预发行版本(版本“{1}”)。</target>
+        <target state="translated">工具“{0}”已重新安装预发行版本(版本“{1}”)。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
         <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="needs-review-translation">工具“{0}”已重新安装最新稳定版本(版本“{1}”)。</target>
+        <target state="translated">工具“{0}”已重新安装稳定版本(版本“{1}”)。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

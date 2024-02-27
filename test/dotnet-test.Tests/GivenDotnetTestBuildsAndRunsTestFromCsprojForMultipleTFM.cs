@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute()
                 .Should().Pass();
 
-            var result = new DotnetTestCommand(Log, "-r", runtime)
+            var result = new DotnetTestCommand(Log, disableNewOutput: true, "-r", runtime)
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute(ConsoleLoggerOutputNormal);
 
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Pass();
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                        .WithWorkingDirectory(testProjectDirectory)
                                        .Execute(ConsoleLoggerOutputNormal);
 
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log, ConsoleLoggerOutputNormal)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true, ConsoleLoggerOutputNormal)
                                        .WithWorkingDirectory(testProjectDirectory)
                                        .Execute("--collect", "Code Coverage", "--results-directory", resultsDirectory);
 
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             string projectDirectory = Path.Combine(testInstance.Path, "XUnitProject");
 
-            new DotnetTestCommand(Log, ConsoleLoggerOutputNormal)
+            new DotnetTestCommand(Log, disableNewOutput: true, ConsoleLoggerOutputNormal)
                .WithWorkingDirectory(projectDirectory)
                .Execute("--framework", ToolsetInfo.CurrentTargetFramework)
                .Should().Pass();
@@ -179,7 +179,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Should()
                 .Pass();
 
-            new DotnetTestCommand(Log, ConsoleLoggerOutputNormal)
+            new DotnetTestCommand(Log, disableNewOutput: true, ConsoleLoggerOutputNormal)
                .WithWorkingDirectory(testAsset.TestRoot)
                .Execute()
                .Should().Pass();

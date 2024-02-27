@@ -49,17 +49,17 @@
       </trans-unit>
       <trans-unit id="UpdateLocalToolToLowerVersion">
         <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
-        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</target>
+        <target state="translated">要求されたバージョン {0} は、既存のバージョン {1} (マニフェスト ファイル {2}) よりも低くなっています。この更新を許可するには、--allow-downgrade オプションを使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
         <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="needs-review-translation">ツール '{0}' は、最新のプレリリース バージョン (バージョン '{1}') で再インストールされました。</target>
+        <target state="translated">ツール '{0}' がプレリリース バージョン (バージョン '{1}') で再インストールされました。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
         <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="needs-review-translation">ツール '{0}' が安定した最新バージョン (バージョン '{1}') で再インストールされました。</target>
+        <target state="translated">ツール '{0}' が安定したバージョン (バージョン '{1}') で再インストールされました。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

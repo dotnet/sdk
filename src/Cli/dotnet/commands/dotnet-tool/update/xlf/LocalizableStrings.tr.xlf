@@ -49,17 +49,17 @@
       </trans-unit>
       <trans-unit id="UpdateLocalToolToLowerVersion">
         <source>The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</source>
-        <target state="new">The requested version {0} is lower than existing version {1} (manifest file {2}). Use the --allow-downgrade option to allow this update.</target>
+        <target state="translated">İstenen {0} sürümü mevcut {1} sürümünden ({2}bildirim dosyası) düşük. Bu güncelleştirmeye izin vermek için --allow-downgrade seçeneğini kullanın.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
         <source>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</source>
-        <target state="needs-review-translation">'{0}' aracı, en yeni ön sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
+        <target state="translated">'{0}' aracı, ön sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededStableVersionNoChange">
         <source>Tool '{0}' was reinstalled with the stable version (version '{1}').</source>
-        <target state="needs-review-translation">'{0}' aracı, en son kararlı sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
+        <target state="translated">'{0}' aracı, kararlı sürüm (sürüm '{1}') ile yeniden yüklendi.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToLowerVersion">

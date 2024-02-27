@@ -61,6 +61,11 @@ namespace Microsoft.DotNet.Cli
             Description = CommonLocalizableStrings.ArchitectureOptionDescription
         };
 
+        public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
+        {
+            Description = LocalizableStrings.RollForwardOptionDescription
+        };
+
         public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
 
         public static readonly CliOption<bool> LocalOption = ToolAppliedOption.LocalOption;
@@ -87,6 +92,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ArchitectureOption);
             command.Options.Add(CreateManifestIfNeededOption);
             command.Options.Add(AllowPackageDowngradeOption);
+            command.Options.Add(RollForwardOption);
 
             command.SetAction((parseResult) => new ToolInstallCommand(parseResult).Execute());
 
@@ -111,6 +117,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(ToolCommandRestorePassThroughOptions.NoHttpCacheOption);
             command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
             command.Options.Add(VerbosityOption);
+
             return command;
         } 
     }

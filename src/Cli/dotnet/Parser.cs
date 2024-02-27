@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli
     {
         public static readonly CliRootCommand RootCommand = new()
         {
-            Directives = { new DiagramDirective(), new SuggestDirective() }
+            Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
         };
 
         internal static Dictionary<CliOption, Dictionary<CliCommand, string>> HelpDescriptionCustomizations = new();

@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var outputDll = Path.Combine(buildCommand.GetOutputDirectory(configuration: configuration).FullName, $"{testAppName}.dll");
 
             // Call vstest
-            var result = new DotnetTestCommand(Log)
+            var result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .Execute(outputDll, "--logger:console;verbosity=normal");
             if (!TestContext.IsLocalized())
             {
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var outputDll = Path.Combine(testRoot, "bin", configuration, ToolsetInfo.CurrentTargetFramework, $"{testAppName}.dll");
 
             // Call dotnet test + dll
-            var result = new DotnetTestCommand(Log)
+            var result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .Execute(outputDll, "--logger:console;verbosity=normal");
 
             result.ExitCode.Should().Be(1);
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var outputDll = Path.Combine(testRoot, "bin", configuration, ToolsetInfo.CurrentTargetFramework, $"{testAppName}.dll");
 
             // Call vstest
-            var result = new DotnetTestCommand(Log)
+            var result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .Execute(outputDll, "--arch", "wrongArchitecture");
             if (!TestContext.IsLocalized())
             {
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute()
                 .Should().Pass();
 
-            var result = new DotnetTestCommand(Log)
+            var result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .Execute(arg);
             if (!TestContext.IsLocalized())
             {
