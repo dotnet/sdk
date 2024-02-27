@@ -567,8 +567,7 @@ public static class Program
         [InlineData("-property:Configuration=Debug")]
         [InlineData("--property:Configuration=Debug")]
         [InlineData("/p:Configuration=Debug")]
-        [InlineData("-p:_IsPublishing=true;Configuration=Debug")]
-        [InlineData("-p:_IsPublishing=true;Configuration=Debug;")]
+        [InlineData("-p:Configuration=Debug;")]
         [InlineData("/property:Configuration=Debug")]
         public void PublishRelease_does_not_override_Configuration_property_across_formats(string configOpt)
         {
