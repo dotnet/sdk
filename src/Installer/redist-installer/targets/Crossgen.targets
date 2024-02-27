@@ -3,7 +3,7 @@
   <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR.
        Neither crossgen2 nor mono is supported on the loongarch64 architecture at present. -->
   <Target Name="CrossgenLayout"
-          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le' AND '$(Architecture)' != 'loongarch64' AND !('$(CROSSBUILD)' == 'true' AND '$(DotNetBuildVertical)' == 'true')"
+          Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le' AND '$(Architecture)' != 'loongarch64' AND !('$(CROSSBUILD)' == 'true' AND '$(DotNetBuild)' == 'true')"
           DependsOnTargets="SetSdkBrandingInfo">
     <PropertyGroup>
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
@@ -26,8 +26,7 @@
       </CrossGenDownloadPackageProject>
     </ItemGroup>
 
-    <MSBuild BuildInParallel="False" Projects="@(CrossGenDownloadPackageProject)">
-    </MSBuild>
+    <MSBuild Projects="@(CrossGenDownloadPackageProject)" />
 
     <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
          cross-genned. This tooling multi-targets, and we only want to cross-gen the .NET Core
@@ -145,7 +144,7 @@
     <Error Text="Potentially missed crossgen for '$(BlazorWasmTools)', directory does not exist" Condition= "!EXISTS('$(BlazorWasmTools)') " />
     <Error Text="Potentially missed crossgen for '$(NuGetPackTools)', directory does not exist" Condition= "!EXISTS('$(NuGetPackTools)') " />
     <Error Text="Potentially missed crossgen for '$(RazorTasks)', directory does not exist" Condition= "!EXISTS('$(RazorTasks)') " />
-    <Error Text="Potentially missed crossgen for '$(WindowsDesktopTools)', directory does not exist" Condition= "!EXISTS('$(WindowsDesktopTools)') AND '$(DotNetBuildFromSource)' != 'true'" />
+    <Error Text="Potentially missed crossgen for '$(WindowsDesktopTools)', directory does not exist" Condition= "!EXISTS('$(WindowsDesktopTools)') AND '$(DotNetBuildSourceOnly)' != 'true'" />
     <Error Text="Potentially missed crossgen for '$(PublishTools)', directory does not exist" Condition= "!EXISTS('$(PublishTools)') " />
     <Error Text="Potentially missed crossgen for '$(WebTools)', directory does not exist" Condition= "!EXISTS('$(WebTools)') " />
     <Error Text="Potentially missed crossgen for '$(ProjectSystemTools)', directory does not exist" Condition= "!EXISTS('$(ProjectSystemTools)') " />

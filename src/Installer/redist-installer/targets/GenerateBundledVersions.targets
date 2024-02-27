@@ -150,98 +150,102 @@
 
     <ItemGroup>
       <NetCore30RuntimePackRids Include="
-          linux-arm;
-          linux-arm64;
-          linux-musl-arm64;
-          linux-musl-x64;
-          linux-x64;
-          osx-x64;
-          rhel.6-x64;
-          tizen.4.0.0-armel;
-          tizen.5.0.0-armel;
-          win-arm;
-          win-arm64;
-          win-x64;
-          win-x86;
-          " />
+        linux-arm;
+        linux-arm64;
+        linux-musl-arm64;
+        linux-musl-x64;
+        linux-x64;
+        osx-x64;
+        rhel.6-x64;
+        tizen.4.0.0-armel;
+        tizen.5.0.0-armel;
+        win-arm;
+        win-arm64;
+        win-x64;
+        win-x86;
+        " />
 
       <NetCore31RuntimePackRids Include="@(NetCore30RuntimePackRids)" />
 
       <Net50AppHostRids Include="
-          @(NetCore31RuntimePackRids);
-          linux-musl-arm;
-          " />
+        @(NetCore31RuntimePackRids);
+        linux-musl-arm;
+        " />
 
       <Net50RuntimePackRids Include="
-          @(Net50AppHostRids);
-          browser-wasm;
-          " />
+        @(Net50AppHostRids);
+        browser-wasm;
+        " />
 
       <Net60AppHostRids Include="
-          @(Net50AppHostRids);
-          osx-arm64;
-          linux-s390x;
-          linux-loongarch64;
-          " />
+        @(Net50AppHostRids);
+        osx-arm64;
+        linux-s390x;
+        linux-loongarch64;
+        " />
 
       <Net60RuntimePackRids Include="
-          @(Net50RuntimePackRids);
-          osx-arm64;
-          linux-s390x;
-          linux-loongarch64;
-          " />
+        @(Net50RuntimePackRids);
+        osx-arm64;
+        linux-s390x;
+        linux-loongarch64;
+        " />
 
       <!-- In .NET 6 the browser-wasm runtime pack started using the Mono naming pattern -->
       <Net60RuntimePackRids Remove="browser-wasm" />
 
       <Net70AppHostRids Include="
-          @(Net60AppHostRids);
-          linux-bionic-arm;
-          linux-bionic-arm64;
-          linux-bionic-x64;
-          linux-bionic-x86;
-          linux-ppc64le;
-          " />
+        @(Net60AppHostRids);
+        linux-bionic-arm;
+        linux-bionic-arm64;
+        linux-bionic-x64;
+        linux-bionic-x86;
+        linux-ppc64le;
+        " />
 
       <Net70RuntimePackRids Include="
-          @(Net60RuntimePackRids);
-          linux-bionic-arm;
-          linux-bionic-arm64;
-          linux-bionic-x64;
-          linux-bionic-x86;
-          linux-ppc64le;
-          " />
+        @(Net60RuntimePackRids);
+        linux-bionic-arm;
+        linux-bionic-arm64;
+        linux-bionic-x64;
+        linux-bionic-x86;
+        linux-ppc64le;
+        " />
 
       <Net80AppHostRids Include="
-          @(Net70AppHostRids);
-          " />
+        @(Net70AppHostRids);
+        freebsd-x64;
+        freebsd-arm64;
+        " />
 
       <Net80AppHostRids Remove="win-arm" />
 
       <Net80RuntimePackRids Include="
-          @(Net70RuntimePackRids);
-          " />
+        @(Net70RuntimePackRids);
+        freebsd-x64;
+        freebsd-arm64;
+        " />
 
       <Net80RuntimePackRids Remove="win-arm" />
 
       <Net90AppHostRids Include="
-          @(Net80AppHostRids);
-          linux-riscv64;
-          linux-musl-riscv64;
-          " />
+        @(Net80AppHostRids);
+        linux-riscv64;
+        linux-musl-riscv64;
+        " />
 
       <Net90RuntimePackRids Include="
-          @(Net80RuntimePackRids);
-          linux-riscv64;
-          linux-musl-riscv64;
-          " />
+        @(Net80RuntimePackRids);
+        linux-riscv64;
+        linux-musl-riscv64;
+        " />
 
       <NetCoreAppHostRids Include="@(Net90AppHostRids)" />
 
       <NetCoreRuntimePackRids Include="@(Net90RuntimePackRids)" />
 
       <!--
-        In source-build, we build the current RID from source, which may be
+        In source-only builds, we build the current RID from source, which may be
         non-portable and/or not an official RID.
         These packs for the non-portable RID are distributed with the SDK:
         - NETCore.App.Host
@@ -249,7 +253,7 @@
         - AspNetCore.App.Runtime (when BundleRuntimePacks)
       -->
       <NetCoreAppHostRids
-        Condition="'$(DotNetBuildFromSource)' == 'true'"
+        Condition="'$(DotNetBuildSourceOnly)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
       <NetCoreRuntimePackRids
@@ -261,23 +265,23 @@
         Include="$(ProductMonikerRid)" />
 
       <Net60MonoRuntimePackRids Include="
-          @(Net60RuntimePackRids);
-          browser-wasm;
-          ios-arm64;
-          ios-arm;
-          iossimulator-arm64;
-          iossimulator-x64;
-          iossimulator-x86;
-          tvos-arm64;
-          tvossimulator-arm64;
-          tvossimulator-x64;
-          maccatalyst-x64;
-          maccatalyst-arm64;
-          android-arm64;
-          android-arm;
-          android-x64;
-          android-x86;
-          " />
+        @(Net60RuntimePackRids);
+        browser-wasm;
+        ios-arm64;
+        ios-arm;
+        iossimulator-arm64;
+        iossimulator-x64;
+        iossimulator-x86;
+        tvos-arm64;
+        tvossimulator-arm64;
+        tvossimulator-x64;
+        maccatalyst-x64;
+        maccatalyst-arm64;
+        android-arm64;
+        android-arm;
+        android-x64;
+        android-x86;
+        " />
 
       <!-- Mono doesn't support these RIDs -->
       <Net60MonoRuntimePackRids Remove="tizen.4.0.0-armel;tizen.5.0.0-armel" />
@@ -288,6 +292,8 @@
 
       <Net80MonoRuntimePackRids Include="
         @(Net70MonoRuntimePackRids);
+        freebsd-x64;
+        freebsd-arm64;
         " />
 
       <Net80MonoRuntimePackRids Remove="win-arm" />
@@ -315,21 +321,25 @@
       <Net50Crossgen2SupportedRids Include="linux-musl-x64;linux-x64;win-x64" />
 
       <Net60Crossgen2SupportedRids Include="
-          @(Net50Crossgen2SupportedRids);
-          linux-arm;
-          linux-arm64;
-          linux-musl-arm;
-          linux-musl-arm64;
-          osx-arm64;
-          osx-x64;
-          win-arm;
-          win-arm64;
-          win-x86;
-          " />
+        @(Net50Crossgen2SupportedRids);
+        linux-arm;
+        linux-arm64;
+        linux-musl-arm;
+        linux-musl-arm64;
+        osx-arm64;
+        osx-x64;
+        win-arm;
+        win-arm64;
+        win-x86;
+        " />
 
       <Net70Crossgen2SupportedRids Include="@(Net60Crossgen2SupportedRids)" />
 
-      <Net80Crossgen2SupportedRids Include="@(Net70Crossgen2SupportedRids)" />
+      <Net80Crossgen2SupportedRids Include="
+        @(Net70Crossgen2SupportedRids);
+        freebsd-x64;
+        freebsd-arm64;
+        " />
 
       <Net80Crossgen2SupportedRids Remove="win-arm" />
 
@@ -350,44 +360,54 @@
         win-x64;
         " />
 
-      <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
-           https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
       <Net80ILCompilerSupportedRids Include="
         @(Net70ILCompilerSupportedRids);
         osx-x64;
         osx-arm64;
+        freebsd-x64;
+        freebsd-arm64;
         " />
 
-      <ILCompilerSupportedRids Include="@(Net80ILCompilerSupportedRids)" />
+      <Net90ILCompilerSupportedRids Include="
+        @(Net80ILCompilerSupportedRids);
+        linux-arm;
+        linux-musl-arm;
+        " />
+
+      <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
+           https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
+      <ILCompilerSupportedRids Include="@(Net90ILCompilerSupportedRids)" />
 
       <Net80NativeAOTRuntimePackRids Include="
-          ios-arm64;
-          iossimulator-arm64;
-          iossimulator-x64;
-          tvos-arm64;
-          tvossimulator-arm64;
-          tvossimulator-x64;
-          maccatalyst-arm64;
-          maccatalyst-x64;
-          linux-bionic-arm64;
-          linux-bionic-x64;
-          osx-arm64;
-          osx-x64;
-          "
-          />
+        ios-arm64;
+        iossimulator-arm64;
+        iossimulator-x64;
+        tvos-arm64;
+        tvossimulator-arm64;
+        tvossimulator-x64;
+        maccatalyst-arm64;
+        maccatalyst-x64;
+        linux-bionic-arm64;
+        linux-bionic-x64;
+        osx-arm64;
+        osx-x64;
+        freebsd-arm64;
+        freebsd-x64;
+        " />
 
       <Net90NativeAOTRuntimePackRids Include="
-          @(Net80NativeAOTRuntimePackRids);
-          linux-x64;
-          linux-arm64;
-          linux-musl-x64;
-          linux-musl-arm64;
-          win-x64;
-          win-arm64;
-          browser-wasm;
-          wasi-wasm;
-          "
-          />
+        @(Net80NativeAOTRuntimePackRids);
+        linux-x64;
+        linux-arm;
+        linux-arm64;
+        linux-musl-x64;
+        linux-musl-arm;
+        linux-musl-arm64;
+        win-x64;
+        win-arm64;
+        browser-wasm;
+        wasi-wasm;
+        " />
 
       <NativeAOTRuntimePackRids Include="@(Net90NativeAOTRuntimePackRids)" />
 
@@ -395,7 +415,7 @@
       <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);linux-musl-arm;win-arm64" />
       <AspNetCore60RuntimePackRids Include="@(AspNetCore50RuntimePackRids);osx-arm64;linux-s390x;linux-loongarch64" />
       <AspNetCore70RuntimePackRids Include="@(AspNetCore60RuntimePackRids);linux-ppc64le" />
-      <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
+      <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids);freebsd-x64;freebsd-arm64" />
       <AspNetCore80RuntimePackRids Remove="win-arm" />
       <AspNetCore90RuntimePackRids Include="@(AspNetCore80RuntimePackRids);linux-riscv64;linux-musl-riscv64" />
       <AspNetCoreRuntimePackRids Include="@(AspNetCore90RuntimePackRids)" />
@@ -406,10 +426,10 @@
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
 
       <_KnownRuntimeIdentiferPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6;tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildFromSource)' != 'true'" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6" Condition="'$(DotNetBuildFromSource)' == 'true' and !$(ProductMonikerRid.StartsWith('rhel.6-'))" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildFromSource)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildFromSource)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6;tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('rhel.6-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
     </ItemGroup>
 
     <!--
@@ -497,6 +517,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BundledNETCorePlatformsPackageVersion>$(_NETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
     <BundledRuntimeIdentifierGraphFile>%24(MSBuildThisFileDirectory)RuntimeIdentifierGraph.json</BundledRuntimeIdentifierGraphFile>
     <NETCoreSdkVersion>$(Version)</NETCoreSdkVersion>
+    <SdkAnalysisLevel>$(SdkFeatureBand)</SdkAnalysisLevel>
     <NETCoreSdkRuntimeIdentifier>$(ProductMonikerRid)</NETCoreSdkRuntimeIdentifier>
     <NETCoreSdkPortableRuntimeIdentifier>$(PortableProductMonikerRid)</NETCoreSdkPortableRuntimeIdentifier>
     <_NETCoreSdkIsPreview>$(_NETCoreSdkBeingBuiltIsPreview)</_NETCoreSdkIsPreview>
