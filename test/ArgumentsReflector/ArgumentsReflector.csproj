@@ -12,11 +12,6 @@
     </Content>
   </ItemGroup>
 
-  <!-- ArgumentForwarding.Tests.csproj needs this app's publish output. -->
-  <Target Name="PublishAfterBuild"
-          AfterTargets="Build"
-          DependsOnTargets="Publish" />
-
   <!-- Global usings removal -->
   <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
   <ItemGroup>
