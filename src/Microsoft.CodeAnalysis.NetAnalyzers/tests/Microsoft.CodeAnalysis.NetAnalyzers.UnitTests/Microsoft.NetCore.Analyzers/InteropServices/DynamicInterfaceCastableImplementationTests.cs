@@ -1240,6 +1240,31 @@ public interface I2 : I
             await VerifyCSCodeFixAsync(source, fixedSource, CSharp.LanguageVersion.Preview, ReferenceAssemblies.Net.Net60);
         }
 
+        [Fact]
+        [WorkItem(7106, "htpts://github.com/dotnet/roslyn-analyzers/issues/7106")]
+        public async Task DynamicInterfaceCastableImplementation_NonStatic_NestedType()
+        {
+            string source = @"
+using System.Runtime.InteropServices;
+
+public interface IMyInterface
+{
+    void M();
+}
+
+[DynamicInterfaceCastableImplementation]
+internal interface IImpl : IMyInterface
+{
+    internal class C { }
+
+    void IMyInterface.M()
+    {
+    }
+}
+";
+            await VerifyCSAnalyzerAsync(source);
+        }
+
         private static Task VerifyCSAnalyzerAsync(string source)
         {
             return VerifyCSCodeFixAsync(source, source);

@@ -128,7 +128,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             foreach (var member in targetType.GetMembers())
             {
-                if (!member.IsImplementationOfAnyExplicitInterfaceMember() && !member.IsStatic)
+                if (!member.IsImplementationOfAnyExplicitInterfaceMember() && !member.IsStatic && !member.IsType())
                 {
                     // We don't want to emit diagnostics when the member is an accessor method.
                     if (member is not IMethodSymbol { AssociatedSymbol: IPropertySymbol or IEventSymbol })
