@@ -11,11 +11,10 @@
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
 
-    <ProjectReference Include="..\ArgumentsReflector\ArgumentsReflector.csproj" Targets="Publish" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\ArgumentsReflector\ArgumentsReflector.csproj"
                       ReferenceOutputAssembly="false"
                       OutputItemType="ArgumentsReflectorPublishItem"
-                      Targets="PublishItemsOutputGroup" />
+                      Targets="PublishItemsOutputGroup;Publish" />
   </ItemGroup>
 
   <!-- _SuppressAllTargets condition is necessary as Arcade's ExcludeFrom* infra is sub-optimal
