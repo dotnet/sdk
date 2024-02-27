@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -742,6 +742,46 @@ End Class
                                 """;
 
             return VerifyVB.VerifyAnalyzerAsync(code);
+        }
+
+        [Fact, WorkItem(6001, "https://github.com/dotnet/roslyn-analyzers/issues/6001")]
+        public Task UnreachableException_NoDiagnostic()
+        {
+            const string code = """
+                                public class ShouldNotViolate
+                                {
+                                    static ShouldNotViolate()
+                                    {
+                                        throw new System.Diagnostics.UnreachableException();
+                                    }
+                                }
+                                """;
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70
+            }.RunAsync();
+        }
+
+        [Fact, WorkItem(6001, "https://github.com/dotnet/roslyn-analyzers/issues/6001")]
+        public Task VB_UnreachableException_NoDiagnostic()
+        {
+            const string code = """
+                                Public Class ShouldNotViolate
+                                    Shared Sub New()
+                                        Throw New System.Diagnostics.UnreachableException()
+                                    End Sub
+                                End Class
+                                """;
+
+            return new VerifyVB.Test
+            {
+                TestCode = code,
+                FixedCode = code,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70
+            }.RunAsync();
         }
 
         #endregion

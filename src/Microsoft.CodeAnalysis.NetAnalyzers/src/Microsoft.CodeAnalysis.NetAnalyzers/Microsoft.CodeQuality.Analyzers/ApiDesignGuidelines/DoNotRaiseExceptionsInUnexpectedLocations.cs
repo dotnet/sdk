@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -67,6 +67,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 Compilation compilation = compilationStartContext.Compilation;
                 INamedTypeSymbol? exceptionType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemException);
+                INamedTypeSymbol? unreachableExceptionType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsUnreachableException);
                 if (exceptionType == null)
                 {
                     return;
@@ -101,7 +102,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         }
 
                         // Get ThrowOperation's ExceptionType
-                        if (throwOperation.GetThrownExceptionType() is INamedTypeSymbol thrownExceptionType && thrownExceptionType.DerivesFrom(exceptionType))
+                        if (throwOperation.GetThrownExceptionType() is INamedTypeSymbol thrownExceptionType &&
+                            thrownExceptionType.DerivesFrom(exceptionType) &&
+                            !SymbolEqualityComparer.Default.Equals(thrownExceptionType, unreachableExceptionType))
                         {
                             // If no exceptions are allowed or if the thrown exceptions is not an allowed one..
                             if (methodCategory.AllowedExceptions.IsEmpty || !methodCategory.AllowedExceptions.Any(n => thrownExceptionType.IsAssignableTo(n, compilation)))
