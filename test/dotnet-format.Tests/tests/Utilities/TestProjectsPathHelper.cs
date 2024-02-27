@@ -13,7 +13,22 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Utilities
         {
             if (s_projectsDirectory == null)
             {
-                s_projectsDirectory = Path.Combine(TestContext.Current.TestAssetsDirectory, "dotnet-format.TestsProjects");
+                var assetsDirectory = Path.Combine(TestContext.Current.TestAssetsDirectory, "dotnet-format.TestsProjects");
+                if (Directory.Exists(assetsDirectory))
+                {
+                    s_projectsDirectory = assetsDirectory;
+                    return assetsDirectory;
+                }
+
+                var executionDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, "assets", "dotnet-format.TestsProjects");
+
+                if (Directory.Exists(executionDirectory))
+                {
+                    s_projectsDirectory = executionDirectory;
+                    return executionDirectory;
+                }
+
+                throw new ArgumentException("Can't find the project asserts directory");
             }
 
             return s_projectsDirectory;
