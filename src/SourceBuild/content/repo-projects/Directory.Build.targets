@@ -322,8 +322,6 @@
                             UpdateEngCommonFiles;
                             CreateBuildInputProps;
                             SetSourceBuiltSdkOverrides">
-    <Exec Command="$(DotnetTool) build-server shutdown" />
-
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(RepositoryName)" />
     <Message Importance="High" Text="Running command:" />
     <Message Importance="High" Text="  $(BuildCommand)" />
@@ -737,7 +735,6 @@
       <TransitiveRepositoryReference Remove="roslyn" />
       <TransitiveRepositoryReference Remove="msbuild" />
       <TransitiveRepositoryReference Remove="aspnetcore" />
-      <TransitiveRepositoryReference Remove="razor" />
       <TransitiveRepositoryReference Remove="nuget-client" />
       <TransitiveRepositoryReference Remove="fsharp" />
       <TransitiveRepositoryReference Remove="vstest" />
