@@ -59,6 +59,7 @@ public class LicenseScanTests : TestBase
         "bzip2-libbzip-2010", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bzip2-libbzip-2010.LICENSE
         "cc0-1.0", // https://creativecommons.org/publicdomain/zero/1.0/legalcode
         "cc-by-3.0", // https://creativecommons.org/licenses/by/3.0/legalcode
+        "cc-by-4.0", // https://creativecommons.org/licenses/by/4.0/legalcode
         "cc-by-sa-3.0", // https://creativecommons.org/licenses/by-sa/3.0/legalcode
         "cc-by-sa-4.0", // https://creativecommons.org/licenses/by-sa/4.0/legalcode
         "cc-pd", // https://creativecommons.org/publicdomain/mark/1.0/
@@ -143,13 +144,16 @@ public class LicenseScanTests : TestBase
     {
         Assert.NotNull(Config.LicenseScanPath);
 
+        // Indicates how long until a timeout occurs for scanning a given file
+        const int FileScanTimeoutSeconds = 240;
+
         string scancodeResultsPath = Path.Combine(LogsDirectory, "scancode-results.json");
 
         // Scancode Doc: https://scancode-toolkit.readthedocs.io/en/latest/index.html
         string ignoreOptions = string.Join(" ", s_ignoredFilePatterns.Select(pattern => $"--ignore {pattern}"));
         ExecuteHelper.ExecuteProcessValidateExitCode(
             "scancode",
-            $"--license --strip-root --only-findings {ignoreOptions} --json-pp {scancodeResultsPath} {Config.LicenseScanPath}",
+            $"--license --processes 4 --timeout {FileScanTimeoutSeconds} --strip-root --only-findings {ignoreOptions} --json-pp {scancodeResultsPath} {Config.LicenseScanPath}",
             OutputHelper);
 
         JsonDocument doc = JsonDocument.Parse(File.ReadAllText(scancodeResultsPath));

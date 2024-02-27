@@ -12,6 +12,7 @@
   <ItemGroup>
     <BuiltSdkPackageOverride Include="@(ArcadeSdkOverride)" />
     <BuiltSdkPackageOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
+    <BuiltSdkPackageOverride Include="@(ArcadeCMakeSdkOverride)" />
   </ItemGroup>
 
   <ItemGroup>

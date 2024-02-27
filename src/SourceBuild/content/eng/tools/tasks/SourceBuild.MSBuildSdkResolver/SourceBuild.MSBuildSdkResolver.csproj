@@ -4,20 +4,23 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
-  <Target Name="InstallResolver">
-    <PropertyGroup>
-      <SourceBuildMSBuildSdkResolverPath>$([MSBuild]::NormalizePath('$(DotNetRoot)', 'sdk', '$(NETCoreSdkVersion)', 'SdkResolvers', '$(MSBuildProjectName)', '$(MSBuildProjectName).dll'))</SourceBuildMSBuildSdkResolverPath>
-    </PropertyGroup>
-
-    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(SourceBuildMSBuildSdkResolverPath)" />
-    <Message Text="Adding resolver to SDK: $(MSBuildProjectName) -> $(SourceBuildMSBuildSdkResolverPath)" Importance="High"  />
-  </Target>
-
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildVersion)" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" ExcludeAssets="runtime"/>
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildVersion)" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" ExcludeAssets="runtime" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <SourceBuildMSBuildSdkResolverManifestPath>$([MSBuild]::NormalizePath('$(VSMSBuildSdkResolversDir)', '$(MSBuildProjectName)', '$(MSBuildProjectName).xml'))</SourceBuildMSBuildSdkResolverManifestPath>
+  </PropertyGroup>
+
+  <Target Name="InstallResolver" BeforeTargets="PrepareForRun">
+    <WriteLinesToFile
+      File="$(SourceBuildMSBuildSdkResolverManifestPath)"
+      Lines="&lt;SdkResolver&gt;&lt;Path&gt;$(TargetPath)&lt;/Path&gt;&lt;/SdkResolver&gt;"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
 
 </Project>
