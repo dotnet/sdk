@@ -64,7 +64,8 @@
             "name": "aspire",
             "defaultRemote": "https://github.com/dotnet/aspire",
             "exclude": [
-                "src/Aspire.Dashboard/**/*"
+                "src/Aspire.Dashboard/**/*",
+                "samples/**/*"
             ]
         },
         {

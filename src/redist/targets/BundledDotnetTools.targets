@@ -28,7 +28,7 @@
       </BundledToolLayoutProject>
     </ItemGroup>
 
-    <MSBuild BuildInParallel="False" Projects="@(BundledToolLayoutProject)" />
+    <MSBuild Projects="@(BundledToolLayoutProject)" />
 
     <ItemGroup>
       <BundledToolFiles Include="%(BundledDotnetTool.RestoredPackagePath)\**\*.*" PackageToRestore="%(BundledDotnetTool.Identity)" PackageVersionToRestore="%(BundledDotnetTool.Version)" />

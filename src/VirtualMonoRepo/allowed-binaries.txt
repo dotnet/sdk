@@ -1,4 +1,5 @@
 *.bmp
+*.doc
 *.docx
 *.gif
 *.ico

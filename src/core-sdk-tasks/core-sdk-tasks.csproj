@@ -4,7 +4,7 @@
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(CoreSdkTargetFramework)</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RootNamespace>Microsoft.DotNet.Cli.Build</RootNamespace>
-    <DefineConstants Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefineConstants);SOURCE_BUILD</DefineConstants>
+    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants);SOURCE_BUILD</DefineConstants>
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -16,7 +16,7 @@
     <PackageReference Include="NuGet.Versioning" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageReference Include="System.Reflection.Metadata" Version="1.4.2" />
-    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <PackageReference Include="WindowsAzure.Storage" Version="9.3.3" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 

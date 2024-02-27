@@ -9,11 +9,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(BuildArgs)</BuildCommand>
+    <!-- Force use of dotnet msbuild (ignoring global.json contents) unless BuildWithDesktopMSBuild is explicitly set in the repo project. -->
+    <BuildArgs Condition="'$(BuildOS)' == 'windows' and '$(BuildWithDesktopMSBuild)' != 'true'">$(BuildArgs) $(FlagParameterPrefix)msbuildEngine dotnet</BuildArgs>
+  </PropertyGroup>
 
-    <!-- The default PackageVersionPropsFlowType behavior (DependenciesOnly) triggers logic that looks for a
-         Version.Details.xml file. Setting the type to AllPackages will skip that logic. -->
-    <PackageVersionPropsFlowType Condition="'$(IsUtilityProject)' == 'true'">AllPackages</PackageVersionPropsFlowType>
+  <PropertyGroup>
+    <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(BuildArgs)</BuildCommand>
 
     <!-- MinimalConsoleLogOutput determines if the repository build should be logged to a separate file or directly to the console. -->
     <RepoConsoleLogFile>$(ArtifactsLogDir)$(RepositoryName).log</RepoConsoleLogFile>
@@ -23,30 +24,11 @@
     <ProjectAssetsJsonArchiveFile>$(PackageReportDir)all-project-assets-json-files.zip</ProjectAssetsJsonArchiveFile>
     <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
     <RepoManifestFile>$([MSBuild]::NormalizePath('$(ProjectDirectory)', 'artifacts', 'RepoManifest.xml'))</RepoManifestFile>
+
+    <IntermediateSymbolsRepoDir>$(IntermediateSymbolsRootDir)$(RepositoryName)</IntermediateSymbolsRepoDir>
   </PropertyGroup>
 
-  <!-- Exclude repositories that currently don't build when not building source-only. -->
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-    <RepositoryReference Remove="roslyn" />
-    <RepositoryReference Remove="wpf" />
-    <RepositoryReference Remove="msbuild" />
-    <RepositoryReference Remove="roslyn-analyzers" />
-    <RepositoryReference Remove="aspnetcore" />
-    <RepositoryReference Remove="razor" />
-    <RepositoryReference Remove="deployment-tools" />
-    <RepositoryReference Remove="format" />
-    <RepositoryReference Remove="nuget-client" />
-    <RepositoryReference Remove="templating" />
-    <RepositoryReference Remove="test-templates" />
-    <RepositoryReference Remove="fsharp" />
-    <RepositoryReference Remove="vstest" />
-    <RepositoryReference Remove="sdk" />
-    <RepositoryReference Remove="aspire" />
-    <RepositoryReference Remove="installer" />
-  </ItemGroup>
-
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="AddSourceToNuGetConfig" />
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="ReadNuGetPackageInfos" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="RemoveInternetSourcesFromNuGetConfig" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UpdateJson" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="UpdateNuGetConfigPackageSourcesMappings" />
@@ -54,77 +36,148 @@
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageVersionsProps" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageUsageData" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageReports" />
+  
+  <!-- Wraps the transitive repo references with additional metadata -->
+  <Target Name="GetRepositoryReferenceInfo"
+          DependsOnTargets="GetTransitiveRepositoryReferences">
+    <!-- SBRP is explicitly excluded since it is output to its own special directory, $(ReferencePackagesDir). -->
+    <ItemGroup Condition="'@(TransitiveRepositoryReference)' != ''">
+      <RepositoryReferenceInfo Include="@(TransitiveRepositoryReference)"
+                               Exclude="source-build-reference-packages">
+        <ShippingSourceName>source-built-%(Identity)</ShippingSourceName>
+        <NonShippingSourceName>source-built-transport-%(Identity)</NonShippingSourceName>
+        <ShippingPackagesPath>$(ArtifactsShippingPackagesDir)/%(Identity)/</ShippingPackagesPath>
+        <NonShippingPackagesPath>$(ArtifactsNonShippingPackagesDir)/%(Identity)/</NonShippingPackagesPath>
+      </RepositoryReferenceInfo>
+    </ItemGroup>
 
-  <!-- Update NuGet feeds in the repo -->
+    <ItemGroup Condition="'@(RepositoryReferenceInfo)' != ''">
+      <DependentRepoSourceName Include="@(RepositoryReferenceInfo->'%(ShippingSourceName)')" />
+      <DependentRepoSourceName Include="@(RepositoryReferenceInfo->'%(NonShippingSourceName)')" />
+      <DependentRepoPackageFile Include="%(RepositoryReferenceInfo.ShippingPackagesPath)**" />
+      <DependentRepoPackageFile Include="%(RepositoryReferenceInfo.NonShippingPackagesPath)**" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyNuGetConfig"
+          Condition="'$(NuGetConfigFile)' != ''"
+          Inputs="$(MSBuildProjectFullPath);$(OriginalNuGetConfigFile)"
+          Outputs="$(NuGetConfigFile)">
+
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(NuGetConfigFile)'))" />
+
+    <Copy
+      SourceFiles="$(OriginalNuGetConfigFile)"
+      DestinationFiles="$(NuGetConfigFile)">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
   <Target Name="UpdateNuGetConfig"
-          BeforeTargets="Build"
-          Condition="'$(NuGetConfigFile)' != '' or '@(NuGetConfigFiles)' != ''"
+          DependsOnTargets="CopyNuGetConfig;GetRepositoryReferenceInfo"
+          Condition="'$(NuGetConfigFile)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)UpdateNuGetConfig.complete">
     <PropertyGroup>
-      <SourceBuiltNuGetSourceName>source-built</SourceBuiltNuGetSourceName>
+      <!-- Dev innerloop opt-in feed: /p:ExtraRestoreSourcePath=... -->
       <ExtraSourcesNuGetSourceName>ExtraSources</ExtraSourcesNuGetSourceName>
-      <SourceBuildSources>$(SourceBuiltNuGetSourceName)</SourceBuildSources>
-      <SourceBuildSources Condition="'$(ExtraRestoreSourcePath)' != ''">$(SourceBuildSources);$(ExtraSourcesNuGetSourceName)</SourceBuildSources>
     </PropertyGroup>
   
     <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
       <PrebuiltNuGetSourceName>prebuilt</PrebuiltNuGetSourceName>
       <PreviouslySourceBuiltNuGetSourceName>previously-source-built</PreviouslySourceBuiltNuGetSourceName>
       <ReferencePackagesNuGetSourceName>reference-packages</ReferencePackagesNuGetSourceName>
-      <SourceBuildSources>$(SourceBuildSources);$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName)</SourceBuildSources>
     </PropertyGroup>
 
-    <!-- Update the detected or manually specified NuGetConfigFile, but also allow multiple. -->
     <ItemGroup>
-      <NuGetConfigFiles Include="$(NuGetConfigFile)" />
+      <_CommonBuildSources Include="@(DependentRepoSourceName)" />
+      <_CommonBuildSources Include="$(ExtraSourcesNuGetSourceName)" Condition="'$(ExtraRestoreSourcePath)' != ''" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_BuildSources Condition="'$(DotNetBuildSourceOnly)' == 'true'"
+                     Include="$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName)" />
+      <_BuildSources Include="@(_CommonBuildSources)" />
+    </ItemGroup>
+    
+    <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <!-- When not building source-only, repositories lagging behind on the .NET SDK (e.g. tooling repos)
+          that need to utilize a VS-aligned version for development purposes may not have the latest product
+          daily build feed in their NuGet.config. This means that when a newer globally-specified .NET SDK
+          attempts to restore shared framework packages, they will not be found. Work around this by
+          ensuring that repos have the supporting SDK feed. Note that this is not required when the SDK
+          in use is a released SDK.
+
+          Currently we are using a preview .NET 9 SDK and not all repos are using the Net 9 SDK
+          If either of these are not true, set below to false.
+      -->
+      <AddNetSdkSupportingFeed>true</AddNetSdkSupportingFeed>
+      <NetSdkSupportingFeedName>net-sdk-supporting-feed</NetSdkSupportingFeedName>
+      <NetSdkSupportingFeed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json</NetSdkSupportingFeed>
+    </PropertyGroup>
+
     <RemoveInternetSourcesFromNuGetConfig
-      NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-      BuildWithOnlineSources="$(DotNetBuildWithOnlineSources)"
+      NuGetConfigFile="$(NuGetConfigFile)"
+      BuildWithOnlineFeeds="$(DotNetBuildWithOnlineFeeds)"
       KeepFeedPrefixes="@(KeepFeedPrefixes)"
       Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PrebuiltNuGetSourceName)"
                             SourcePath="$(PrebuiltPackagesPath)"
                             Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PreviouslySourceBuiltNuGetSourceName)"
                             SourcePath="$(PrebuiltSourceBuiltPackagesPath)"
                             Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(ReferencePackagesNuGetSourceName)"
                             SourcePath="$(ReferencePackagesDir)"
                             Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-                            SourceName="$(SourceBuiltNuGetSourceName)"
-                            SourcePath="$(SourceBuiltPackagesPath)" />
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
+                            SourceName="%(RepositoryReferenceInfo.ShippingSourceName)"
+                            SourcePath="%(RepositoryReferenceInfo.ShippingPackagesPath)"
+                            Condition="Exists('%(RepositoryReferenceInfo.ShippingPackagesPath)')" />
 
-    <AddSourceToNuGetConfig NuGetConfigFile="%(NuGetConfigFiles.Identity)"
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
+                            SourceName="%(RepositoryReferenceInfo.NonShippingSourceName)"
+                            SourcePath="%(RepositoryReferenceInfo.NonShippingPackagesPath)"
+                            Condition="Exists('%(RepositoryReferenceInfo.NonShippingPackagesPath)')" />
+
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(ExtraSourcesNuGetSourceName)"
                             SourcePath="$(ExtraRestoreSourcePath)"
                             Condition="'$(ExtraRestoreSourcePath)' != ''" />
 
+    <!-- See root Directory.Build.props for value. -->
+    <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
+                            SourceName="$(NetSdkSupportingFeedName)"
+                            SourcePath="$(NetSdkSupportingFeed)"
+                            Condition="'$(AddNetSdkSupportingFeed)' == 'true'" />
+
     <UpdateNuGetConfigPackageSourcesMappings
-      NuGetConfigFile="%(NuGetConfigFiles.Identity)"
-      BuildWithOnlineSources="$(DotNetBuildWithOnlineSources)"
-      SourceBuildSources="$(SourceBuildSources)" />
+      NuGetConfigFile="$(NuGetConfigFile)"
+      BuildWithOnlineFeeds="$(DotNetBuildWithOnlineFeeds)"
+      SourceBuildSources="@(_BuildSources)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)UpdateNuGetConfig.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
+
+    <ItemGroup>
+      <!-- This is defined in this target to ensure the NuGet.config file is updated before it gets embedded. If this item
+           was define globally, it would immediately get embedded with the original, unmodified version of the file. -->
+      <EmbedInBinlog Include="$(NuGetConfigFile)" />
+    </ItemGroup>
   </Target>
 
   <!-- Update the SDK version in the repo's global.json file.
        This guarantees that all repositories build with the VMR's SDK version. -->
   <Target Name="UpdateGlobalJsonVersions"
-          BeforeTargets="Build"
           Condition="'$(GlobalJsonFile)' != ''"
           Inputs="$(MSBuildProjectFullPath);$(MSBuildThisFileFullPath)"
           Outputs="$(BaseIntermediateOutputPath)UpdateGlobalJsonVersions.complete">
@@ -151,8 +204,7 @@
 
   <!-- TODO: Remove when all repos use a consistent set of eng/common files: https://github.com/dotnet/source-build/issues/3710. -->
   <Target Name="UpdateEngCommonFiles"
-          Condition="'$(UpdateEngCommonFiles)' == 'true' or '$(DotNetBuildSourceOnly)' != 'true'"
-          BeforeTargets="Build">
+          Condition="'$(UpdateEngCommonFiles)' == 'true' or '$(DotNetBuildSourceOnly)' != 'true'">
     <ItemGroup>
       <OrchestratorEngCommonFile Include="$(RepositoryEngineeringDir)common\**\*" />
     </ItemGroup>
@@ -165,12 +217,13 @@
   <!-- Before a repository builds, set up the version property files that override the repo's defaults.
        There are 3 files generated -->
   <Target Name="CreateBuildInputProps"
-          BeforeTargets="Build"
+          DependsOnTargets="GetRepositoryReferenceInfo"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CreateBuildInputProps.complete">
     <ItemGroup>
-      <_CurrentSourceBuiltPackages Include="$(SourceBuiltPackagesPath)*.nupkg"
-                                   Exclude="$(SourceBuiltPackagesPath)*.symbols.nupkg" />
+      <!-- Collect all the NuGet packages from dependent repos except for the symbols -->
+      <_CurrentSourceBuiltPackages Include="@(DependentRepoPackageFile)"
+                                   Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
       <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
     </ItemGroup>
 
@@ -233,11 +286,12 @@
 
   <!-- SkipRepoReferences is a developer innerloop switch to skip building dependencies. -->
   <Target Name="BuildRepoReferences"
+          DependsOnTargets="GetTransitiveRepositoryReferences"
           Condition="'@(RepositoryReference)' != '' and '$(SkipRepoReferences)' != 'true'">
-    <Message Importance="High" Text="Building dependencies [@(RepositoryReference)] needed by '$(RepositoryName)'." />
+    <Message Importance="High" Text="Building dependencies [@(TransitiveRepositoryReference)] needed by '$(RepositoryName)'." />
 
     <ItemGroup>
-      <_DependentProject Include="@(RepositoryReference -> '%(Identity).proj')" />
+      <_DependentProject Include="@(TransitiveRepositoryReference -> '%(Identity).proj')" />
     </ItemGroup>
 
     <MSBuild Projects="@(_DependentProject)"
@@ -246,31 +300,37 @@
              StopOnFirstFailure="true" />
   </Target>
 
-  <Target Name="Build"
-          DependsOnTargets="BuildRepoReferences"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)Build.complete">
-    <Exec Command="$(DotnetTool) build-server shutdown" />
-
-    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(RepositoryName)" />
-    <Message Importance="High" Text="Running command:" Condition="'$(BuildCommand)' != ''" />
-    <Message Importance="High" Text="  $(BuildCommand)" Condition="'$(BuildCommand)' != ''" />
-    <Message Importance="High" Text="  Log: $(RepoConsoleLogFile)" Condition="'$(BuildCommand)' != '' and '$(MinimalConsoleLogOutput)' == 'true'" />
-    <Message Importance="High" Text="  With Environment Variables:" Condition="'$(BuildCommand)' != ''" />
-    <Message Importance="High" Text="    %(EnvironmentVariables.Identity)" Condition="'$(BuildCommand)' != ''" />
-    <CallTarget Targets="RepoBuild" />
-    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(RepositoryName)...done" />
-
-    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)Build.complete" AlwaysCreate="true">
-      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
-    </Touch>
-
-    <OnError ExecuteTargets="ReportRepoError" />
+  <Target Name="SetSourceBuiltSdkOverrides"
+          Condition="'@(SourceBuiltSdkOverride)' != ''">
+    <ItemGroup>
+      <!-- Set the environment variables for MSBuild to look for our additional SDK Resolvers and or our resolver to find our source-built SDKs. -->
+      <EnvironmentVariables Include="MSBUILDADDITIONALSDKRESOLVERSFOLDER=$(VSMSBuildSdkResolversDir)" />
+      <EnvironmentVariables Include="SOURCE_BUILT_SDK_ID_%(SourceBuiltSdkOverride.Group)=%(SourceBuiltSdkOverride.Identity)" />
+      <EnvironmentVariables Include="SOURCE_BUILT_SDK_VERSION_%(SourceBuiltSdkOverride.Group)=%(SourceBuiltSdkOverride.Version)" />
+      <EnvironmentVariables Condition="'%(SourceBuiltSdkOverride.Location)' != ''" Include="SOURCE_BUILT_SDK_DIR_%(SourceBuiltSdkOverride.Group)=%(SourceBuiltSdkOverride.Location)/" />
+      <EnvironmentVariables Condition="'%(SourceBuiltSdkOverride.Location)' == ''" Include="SOURCE_BUILT_SDK_DIR_%(SourceBuiltSdkOverride.Group)=$(SourceBuiltSdksDir)%(SourceBuiltSdkOverride.Identity)/" />
+    </ItemGroup>
   </Target>
 
   <Target Name="RepoBuild"
-          Condition="'$(BuildCommand)' != ''">
+          Inputs="$(MSBuildProjectFullPath)"
+          Outputs="$(BaseIntermediateOutputPath)Build.complete"
+          Condition="'$(BuildCommand)' != ''"
+          DependsOnTargets="BuildRepoReferences;
+                            UpdateNuGetConfig;
+                            UpdateGlobalJsonVersions;
+                            UpdateEngCommonFiles;
+                            CreateBuildInputProps;
+                            SetSourceBuiltSdkOverrides">
+    <Exec Command="$(DotnetTool) build-server shutdown" />
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(RepositoryName)" />
+    <Message Importance="High" Text="Running command:" />
+    <Message Importance="High" Text="  $(BuildCommand)" />
+    <Message Importance="High" Text="  Log: $(RepoConsoleLogFile)" Condition="'$(MinimalConsoleLogOutput)' == 'true'" />
+    <Message Importance="High" Text="  With Environment Variables:"/>
+    <Message Importance="High" Text="    %(EnvironmentVariables.Identity)" />
+
     <Message Text="DirSize Before Building $(RepositoryName)" Importance="High"
              Condition=" '$(CleanWhileBuilding)' == 'true' and '$(BuildOS)' != 'windows'" />
     <Exec Command="df -h $(RepoRoot)"
@@ -279,11 +339,11 @@
     <PropertyGroup>
       <FullCommand>$(BuildCommand)</FullCommand>
       <FullCommand Condition="'$(LogVerbosityOptOut)' != 'true'">$(FullCommand) /v:$(LogVerbosity)</FullCommand>
-      <FullCommand Condition="'$(MinimalConsoleLogOutput)' == 'true'">$(FullCommand) &gt;&gt; $(RepoConsoleLogFile) 2&gt;&amp;1</FullCommand>
+      <FullCommand Condition="'$(MinimalConsoleLogOutput)' == 'true'">$(FullCommand) &gt; $(RepoConsoleLogFile) 2&gt;&amp;1</FullCommand>
     </PropertyGroup>
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(RepoConsoleLogFile)'));
-                          $(SourceBuiltPackagesPath)" />
+                          $(ArtifactsAssetsDir)" />
 
     <!-- Create directories for extra debugging. -->
     <MakeDir Directories="$(MSBuildDebugPathTargetDir);
@@ -293,154 +353,100 @@
 
     <Exec Command="$(FullCommand)"
           WorkingDirectory="$(ProjectDirectory)"
-          EnvironmentVariables="@(EnvironmentVariables)"
-          IgnoreStandardErrorWarningFormat="true" />
+          EnvironmentVariables="@(EnvironmentVariables)" />
+
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(RepositoryName)...done" />
+
+    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+    <Touch Files="$(BaseIntermediateOutputPath)Build.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
+
+    <!-- Propagate errors to the output when using the minimal console log feature. -->
+    <OnError ExecuteTargets="LogRepoBuildError" Condition="'$(MinimalConsoleLogOutput)' == 'true'" />
   </Target>
 
-  <Target Name="ReportRepoError">
+  <Target Name="LogRepoBuildError">
     <Message Importance="High" Text="$([System.IO.File]::ReadAllText('$(RepoConsoleLogFile)'))" Condition="Exists('$(RepoConsoleLogFile)') and '$(MinimalConsoleLogOutput)' == 'true'" />
     <Message Importance="High" Text="'$(RepositoryName)' failed during build." />
     <Message Importance="High" Text="See '$(RepoConsoleLogFile)' for more information." Condition="Exists('$(RepoConsoleLogFile)') and '$(MinimalConsoleLogOutput)' == 'true'" />
   </Target>
 
-  <Target Name="Package" AfterTargets="Build" />
-
-  <Target Name="GatherBuiltPackages">
-    <ItemGroup>
-      <!-- Filter out packages for WriteVersions -->
-      <_BuiltPackages Condition="'$(PackagesOutput)' != ''" Include="$(PackagesOutput)/*.nupkg" Exclude="$(PackagesOutput)/*.symbols.nupkg"/>
-      <_BuiltPackages Condition="'@(PackagesOutputList)' != ''" Include="%(PackagesOutputList.Identity)/*.nupkg" Exclude="%(PackagesOutputList.Identity)/*.symbols.nupkg"/>
-    </ItemGroup>
-  </Target>
-
-  <!--
-    Condition should be removed after source-build picks up version of Arcade that has
-    source-build infra changes for removal od inner-clone in VMR build. Until then some
-    repos will produce intermediate packages instead of repo manifest file.
-
-    https://github.com/dotnet/source-build/issues/3930
-  -->
   <Target Name="CopyRepoArtifacts"
-          AfterTargets="Package"
-          Condition="Exists($(RepoManifestFile))"
+          DependsOnTargets="RepoBuild"
+          Condition="'$(IsUtilityProject)' != 'true'"
           Inputs="$(RepoManifestFile)"
-          Outputs="$(BaseIntermediateOutputPath)ArtifactsCopy.complete">
+          Outputs="$(BaseIntermediateOutputPath)CopyRepoArtifacts.complete">
+    <Error Text="Repo manifest file doesn't exist." Condition="!Exists('$(RepoManifestFile)')" />
+
     <XmlPeek XmlInputPath="$(RepoManifestFile)"
              Query="Build/Artifact/@Path">
         <Output TaskParameter="Result" ItemName="RepoManifestArtifact" />
     </XmlPeek>
 
-    <ItemGroup>
-      <RepoManifestAsset Include="@(RepoManifestArtifact)" Condition="'%(Extension)' != '.nupkg'"/>
-      <RepoManifestPackage Include="@(RepoManifestArtifact)" Condition="'%(Extension)' == '.nupkg'"/>
-      <RepoManifestNonShippingPackage Include="@(RepoManifestPackage)" Condition="$([System.String]::Copy('%(Identity)').Contains('$([System.IO.Path]::DirectorySeparatorChar)NonShipping$([System.IO.Path]::DirectorySeparatorChar)'))"/>
+   <!-- Error if a repository doesn't produce any shipping or non-shipping artifacts. -->
+    <ItemGroup Condition="'@(RepoManifestArtifact)' == ''">
+      <_ArtifactsNotCreatedReason Include="^ There may have been a silent failure in the repo build." />
+      <_ArtifactsNotCreatedReason Include="^ To confirm, check the build log file for undetected errors that may have prevented package creation: $(RepoConsoleLogFile)" Condition="'$(MinimalConsoleLogOutput)' == 'true'" />
+      <_ArtifactsNotCreatedReason Include="^ The packages may have been written to an unexpected directory. For example, some repos used bin/ and changed to artifacts/ to match Arcade. Check RepoManifestFile in $(MSBuildProjectFullPath) (currently '$(RepoManifestFile)')" />
     </ItemGroup>
 
-    <PropertyGroup>
-      <_NupkgsDestination>$(SourceBuiltPackagesPath)</_NupkgsDestination>
-      <_NupkgsDestination Condition="'$(RepositoryName)' == 'source-build-reference-packages'">$(ReferencePackagesDir)</_NupkgsDestination>
-    </PropertyGroup>
+    <Error Text="$(RepositoryName) produced no new source-built package identities. Known possible causes:%0A@(_ArtifactsNotCreatedReason, '%0A')"
+           Condition="'@(RepoManifestArtifact)' == ''" />
 
-    <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,
-         clear it before copying the current SBRPs.  This ensures n-1 SBRPs aren't required to build the product repos. -->
-    <RemoveDir
-      Condition="'$(RepositoryName)' == 'source-build-reference-packages'"
-      Directories="$(ReferencePackagesDir)" />
+    <!-- The repo symbol archive shouldn't be copied. -->
+    <ItemGroup>
+      <RepoSymbolsArchive Include="@(RepoManifestArtifact)"
+                          Condition="$([System.String]::Copy('%(Identity)').EndsWith('Symbols.$(RepositoryName)$(ArchiveExtension)'))" />
+      <RepoManifestArtifact Remove="@(RepoSymbolsArchive)" />
+    </ItemGroup>
 
-    <!-- Copy nupkgs -->
-    <Copy
-      Condition="'@(RepoManifestPackage)' != ''"
-      SourceFiles="@(RepoManifestPackage)"
-      DestinationFolder="$(_NupkgsDestination)" />
+    <!-- Log the new repo artifacts -->
+    <Message Importance="High" Text="New artifact(s) after building $(RepositoryName):" />
+    <Message Importance="High" Text="  -> %(RepoManifestArtifact.Filename)%(RepoManifestArtifact.Extension)" />
+
+    <ItemGroup>
+      <RepoManifestPackage Include="@(RepoManifestArtifact->WithMetadataValue('Extension', '.nupkg'))" />
+      <RepoManifestAsset Include="@(RepoManifestArtifact)" Exclude="@(RepoManifestPackage)" />
+    </ItemGroup>
+
+    <!-- Prepare the repo manifest packages and group them by shipping and non-shipping. -->
+    <ItemGroup>
+      <RepoManifestNonShippingPackage Include="@(RepoManifestPackage)"
+                                      Condition="$([System.String]::Copy('%(Identity)').Contains('$([System.IO.Path]::DirectorySeparatorChar)NonShipping$([System.IO.Path]::DirectorySeparatorChar)'))">
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(RepoArtifactsNonShippingPackagesDir)</DestinationFolder>
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</DestinationFolder>
+      </RepoManifestNonShippingPackage>
+
+      <RepoManifestShippingPackage Include="@(RepoManifestPackage)"
+                                   Exclude="@(RepoManifestNonShippingPackage)">
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(RepoArtifactsShippingPackagesDir)</DestinationFolder>
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</DestinationFolder>
+      </RepoManifestShippingPackage>
+
+      <RepoManifestAsset>
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(ArtifactsAssetsDir)</DestinationFolder>
+        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferenceAssetsDir)</DestinationFolder>
+      </RepoManifestAsset>
+    </ItemGroup>
+
+    <!-- Copy shipping packages -->
+    <Copy SourceFiles="@(RepoManifestShippingPackage)"
+          DestinationFolder="%(RepoManifestShippingPackage.DestinationFolder)"
+          Condition="'@(RepoManifestShippingPackage)' != ''" />
+
+    <!-- Copy non-shipping packages -->
+    <Copy SourceFiles="@(RepoManifestNonShippingPackage)"
+          DestinationFolder="%(RepoManifestNonShippingPackage.DestinationFolder)"
+          Condition="'@(RepoManifestNonShippingPackage)' != ''" />
 
     <!-- Copy assets -->
-    <Copy
-      Condition="'@(RepoManifestAsset)' != ''"
-      SourceFiles="@(RepoManifestAsset)"
-      DestinationFolder="$(SourceBuiltAssetsDir)" />
-
-    <!-- Generate non-shipping package list -->
-    <PropertyGroup>
-      <NonShippingPackagesList Condition="'@(RepoManifestNonShippingPackage)' != ''">$(PackageListsDir)$(NonShippingPackagesListPrefix)$(RepositoryName).lst</NonShippingPackagesList>
-    </PropertyGroup>
-
-    <WriteLinesToFile
-      Condition="'$(NonShippingPackagesList)' != ''"
-      File="$(NonShippingPackagesList)"
-      Lines="@(RepoManifestNonShippingPackage->'%(Filename)%(Extension)')"
-      Overwrite="true" />
+    <Copy SourceFiles="@(RepoManifestAsset)"
+          DestinationFolder="%(RepoManifestAsset.DestinationFolder)"
+          Condition="'@(RepoManifestAsset)' != ''" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)ArtifactsCopy.complete" AlwaysCreate="true">
-      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
-    </Touch>
-  </Target>
-
-  <!--
-    This target can be removed after source-build picks up version of Arcade that has
-    source-build infra changes for removal od inner-clone in VMR build. Until then the target
-    is needed for building source-build-reference-packages and arcade repos.
-
-    https://github.com/dotnet/source-build/issues/3930
-  -->
-  <Target Name="ExtractIntermediatePackages"
-          AfterTargets="Package"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)IntermediateExtraction.complete">
-    <ItemGroup>
-      <_BuiltIntermediatePackages Condition="'$(PackagesOutput)' != ''" Include="$(PackagesOutput)/Microsoft.SourceBuild.Intermediate.*.nupkg" Exclude="$(PackagesOutput)/*.symbols.nupkg"/>
-      <_BuiltIntermediatePackages Condition="'@(PackagesOutputList)' != ''" Include="%(PackagesOutputList.Identity)/Microsoft.SourceBuild.Intermediate.*.nupkg" Exclude="%(PackagesOutputList.Identity)/*.symbols.nupkg"/>
-    </ItemGroup>
-
-    <PropertyGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
-      <_NupkgDestinationPath>$(SourceBuiltPackagesPath)</_NupkgDestinationPath>
-      <!-- SBRP packages unpack into the Reference packages directory instead of into blob-feed packages -->
-      <_NupkgDestinationPath Condition="$([System.String]::Copy(%(_BuiltIntermediatePackages.Identity)).Contains('source-build-reference-packages'))">$(ReferencePackagesDir)</_NupkgDestinationPath>
-    </PropertyGroup>
-
-    <Unzip SourceFiles="@(_BuiltIntermediatePackages)"
-           DestinationFolder="$(SourceBuiltPackagesPath)extractArtifacts/%(_BuiltIntermediatePackages.FileName)/"
-           SkipUnchangedFiles="true"
-           Condition="'@(_BuiltIntermediatePackages)' != ''" />
-
-    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
-      <SourceBuiltNupkgFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
-    </ItemGroup>
-
-    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
-      <NonShippingPackageLists Include="$(SourceBuiltPackagesPath)extractArtifacts/**/$(NonShippingPackagesListPrefix)*" />
-    </ItemGroup>
-
-    <!-- Copy lists of NonShipping packages to prebuilt-report dir -->
-    <Copy SourceFiles="@(NonShippingPackageLists)" DestinationFolder="$(PackageListsDir)" />
-
-    <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,
-         clear it before moving the current SBRPs.  This ensures n-1 SBRPs aren't required to build the product repos. -->
-    <RemoveDir
-      Condition="'$(_NupkgDestinationPath)' == '$(ReferencePackagesDir)'"
-      Directories="$(ReferencePackagesDir)" />
-
-    <Move
-      Condition="'@(SourceBuiltNupkgFiles)' != ''"
-      SourceFiles="@(SourceBuiltNupkgFiles)"
-      DestinationFiles="@(SourceBuiltNupkgFiles -> '$(_NupkgDestinationPath)%(Filename)%(Extension)')" />
-
-    <ItemGroup Condition="'@(_BuiltIntermediatePackages)' != ''">
-      <SourceBuiltAssetFiles Include="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.*" />
-      <SourceBuiltAssetFiles Remove="$(SourceBuiltPackagesPath)extractArtifacts/**/artifacts/*.nupkg" />
-    </ItemGroup>
-
-    <Move
-      Condition="'@(SourceBuiltAssetFiles)' != ''"
-      SourceFiles="@(SourceBuiltAssetFiles)"
-      DestinationFiles="@(SourceBuiltAssetFiles -> '$(SourceBuiltAssetsDir)%(Filename)%(Extension)')" />
-
-    <RemoveDir
-      Condition="Exists('$(SourceBuiltPackagesPath)extractArtifacts/')"
-      Directories="$(SourceBuiltPackagesPath)extractArtifacts/" />
-
-    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)IntermediateExtraction.complete" AlwaysCreate="true">
+    <Touch Files="$(BaseIntermediateOutputPath)CopyRepoArtifacts.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
   </Target>
@@ -448,62 +454,29 @@
   <!-- Copy restored packages from inner build to ensure they're included in the
        main build prebuilt check -->
   <Target Name="CopyInnerBuildRestoredPackages"
-          AfterTargets="Package">
+          Condition="'$(IsUtilityProject)' != 'true'">
     <ItemGroup>
       <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/sb/package-cache/**/*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(_InnerPackageCacheFiles)"
           DestinationFiles="$(NuGetPackageRoot)%(RecursiveDir)%(Filename)%(Extension)"
-          Condition=" '@(_InnerPackageCacheFiles)' != '' " />
-  </Target>
-
-  <Target Name="CopyPackage"
-          AfterTargets="Package"
-          Condition="'$(PackagesOutput)' != '' OR '@(PackagesOutputList)' != ''"
-          DependsOnTargets="GatherBuiltPackages">
-    <Copy SourceFiles="@(_BuiltPackages)"
-          DestinationFolder="$(SourceBuiltPackagesPath)"
-          Condition="'@(_BuiltPackages)'!=''"
-          SkipUnchangedFiles="true" />
-  </Target>
-
-  <Target Name="RemoveBuiltPackagesFromCache"
-          AfterTargets="Package"
-          Condition="'@(_BuiltPackages)'!=''"
-          DependsOnTargets="GatherBuiltPackages"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)RemoveBuiltPackagesFromCache.complete">
-    <ItemGroup>
-      <!-- Excluding Arcade here will keep it in the cache, because that's where we're running from.
-           Subsequent projects will get Arcade from eng/source-built-sdks. -->
-      <PackagePaths Include="@(_BuiltPackages)" Exclude="$(PackagesOutput)/Microsoft.DotNet.Arcade.Sdk.*.nupkg" />
-    </ItemGroup>
-
-    <ReadNuGetPackageInfos PackagePaths="@(PackagePaths)">
-      <Output TaskParameter="PackageInfoItems" ItemName="_BuiltPackageInfos" />
-    </ReadNuGetPackageInfos>
-
-    <!-- Copy built nupkgs from nuget packages cache directory to the previouslyRestored directory
-         and then delete all expanded files and the nupkg from the package cache so the next time
-         the package is used, it will reload the source-built version -->
-    <ItemGroup>
-      <_FilesToCopy Include="$(NuGetPackageRoot)$([System.String]::copy('%(_BuiltPackageInfos.PackageId)').ToLowerInvariant())/%(_BuiltPackageInfos.PackageVersion)/**/*.nupkg" />
-      <_FilesToDelete Include="$(NuGetPackageRoot)$([System.String]::copy('%(_BuiltPackageInfos.PackageId)').ToLowerInvariant())/%(_BuiltPackageInfos.PackageVersion)/**/*.*" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(_FilesToCopy)" DestinationFolder="$(PreviouslyRestoredPackagesPath)$(RepositoryName)/" />
-    <Delete Files="@(_FilesToDelete)" />
-
-    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)RemoveBuiltPackagesFromCache.complete" AlwaysCreate="true">
-      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
-    </Touch>
+          SkipUnchangedFiles="true"
+          Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
   <Target Name="CleanupRepo"
-          AfterTargets="RemoveBuiltPackagesFromCache"
-          Condition="'$(CleanWhileBuilding)' == 'true' and Exists('$(ProjectDirectory)artifacts')">
+          Condition="'$(IsUtilityProject)' != 'true' and
+                     '$(CleanWhileBuilding)' == 'true' and
+                     Exists('$(ProjectDirectory)artifacts')">
+    <!--
+      Some repositories (WinForms) use source generators that open files manually and keep file handles open on the compiler server (CsWin32).
+      These source generators are written incorrectly (a source generator should never do IO itself),
+      but the required features to read in binary files as input to a source generator don't exist.
+      To work around these source generators, shut down the compiler server so we can delete the obj directories.
+    -->
+    <Exec Command="$(DotnetTool) build-server shutdown --vbcscompiler" />
+
     <PropertyGroup>
       <BuildLogsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildLogs'))</BuildLogsDir>
       <BuildObjDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildObj'))</BuildObjDir>
@@ -544,21 +517,25 @@
   </Target>
 
   <Target Name="ExtractToolPackage"
-          DependsOnTargets="GatherBuiltPackages"
-          AfterTargets="Build"
+          DependsOnTargets="CopyRepoArtifacts"
           Condition="'@(BuiltSdkPackageOverride)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">
+    <PropertyGroup>
+      <_ToolPackagesRoot Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(RepoArtifactsNonShippingPackagesDir)</_ToolPackagesRoot>
+      <_ToolPackagesRoot Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</_ToolPackagesRoot>
+    </PropertyGroup>
+
     <ItemGroup>
       <_ToolPackage
         Condition="'%(BuiltSdkPackageOverride.Version)' == ''"
-        Include="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity)*.nupkg"
-        Exclude="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity)*.symbols.nupkg"
+        Include="$(_ToolPackagesRoot)%(BuiltSdkPackageOverride.Identity)*.nupkg"
+        Exclude="$(_ToolPackagesRoot)%(BuiltSdkPackageOverride.Identity)*.symbols.nupkg"
         Id="%(BuiltSdkPackageOverride.Identity)" />
       <_ToolPackage
         Condition="'%(BuiltSdkPackageOverride.Version)' != ''"
-        Include="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity).%(BuiltSdkPackageOverride.Version).nupkg"
-        Exclude="$(SourceBuiltPackagesPath)%(BuiltSdkPackageOverride.Identity).%(BuiltSdkPackageOverride.Version).symbols.nupkg"
+        Include="$(_ToolPackagesRoot)%(BuiltSdkPackageOverride.Identity).%(BuiltSdkPackageOverride.Version).nupkg"
+        Exclude="$(_ToolPackagesRoot)%(BuiltSdkPackageOverride.Identity).%(BuiltSdkPackageOverride.Version).symbols.nupkg"
         Id="%(BuiltSdkPackageOverride.Identity)" />
     </ItemGroup>
 
@@ -584,52 +561,31 @@
     </Touch>
   </Target>
 
-  <Target Name="EnsurePackagesCreated"
-          AfterTargets="CopyPackage"
-          Condition="'$(SkipEnsurePackagesCreated)' != 'true' and '$(IsUtilityProject)' != 'true'"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)EnsurePackagesCreated.complete">
-    <ItemGroup>
-      <JustSourceBuiltPackages
-        Include="$(SourceBuiltPackagesPath)*.nupkg"
-        Exclude="
-          $(SourceBuiltPackagesPath)*.symbols.nupkg;
-          @(PreviouslySourceBuiltPackages)" />
-    </ItemGroup>
+  <Target Name="ExtractSymbolsArchiveFile"
+          DependsOnTargets="CopyRepoArtifacts"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true' and
+                     '$(IsUtilityProject)' != 'true' and
+                     '@(RepoSymbolsArchive)' != ''"
+          Inputs="@(RepoSymbolsArchive)"
+          Outputs="$(IntermediateSymbolsRepoDir)">
 
-    <ItemGroup>
-      <_PackagesNotCreatedReason Include="^ There may have been a silent failure in the submodule build. To confirm, check the build log file for undetected errors that may have prevented package creation: $(RepoConsoleLogFile)" />
-      <_PackagesNotCreatedReason Include="^ This error might be a false positive if $(RepositoryName) intentionally builds no nuget packages. If so, set the SkipEnsurePackagesCreated property to true in $(MSBuildProjectFullPath)" />
-      <_PackagesNotCreatedReason Include="^ The 'bin' directory might be dirty from a previous build and the package files already existed. If so, perform a clean build, or check which packages were already in 'bin' by opening $(CurrentSourceBuiltPackageVersionPropsPath)" />
-      <_PackagesNotCreatedReason Include="^ The packages may have been written to an unexpected directory. For example, some repos used bin/ and changed to artifacts/ to match Arcade. Check PackagesOutput in $(MSBuildProjectFullPath) (currently '$(PackagesOutput)')" />
-    </ItemGroup>
+    <Error Text="There must only be a single repository symbols archive file. Found: @(RepoSymbolsArchive)"
+           Condition="@(RepoSymbolsArchive->Count()) &gt; 1" />
 
-    <Error Condition="'@(JustSourceBuiltPackages)' == ''"
-           Text="$(RepositoryName) produced no new source-built package identities. Known possible causes:%0A@(_PackagesNotCreatedReason, '%0A')" />
-
-    <ReadNuGetPackageInfos PackagePaths="@(JustSourceBuiltPackages)">
-      <Output TaskParameter="PackageInfoItems" ItemName="_JustSourceBuiltPackageInfos" />
-    </ReadNuGetPackageInfos>
-
-    <Message Importance="High" Text="New NuGet package(s) after building $(RepositoryName):" />
-    <Message Importance="High" Text="  -> %(_JustSourceBuiltPackageInfos.PackageId) %(_JustSourceBuiltPackageInfos.PackageVersion)" />
-
-    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)EnsurePackagesCreated.complete" AlwaysCreate="true">
-      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
-    </Touch>
+    <!-- Extract repo symbols tarball -->
+    <MakeDir Directories="$(IntermediateSymbolsRepoDir)" />
+    <Exec Command="tar -xzf %(RepoSymbolsArchive.Identity) -C $(IntermediateSymbolsRepoDir)" />
   </Target>
 
-  <Target Name="SetSourceBuiltSdkOverrides"
-          BeforeTargets="Build"
-          Condition="'@(SourceBuiltSdkOverride)' != ''">
-    <ItemGroup>
-      <EnvironmentVariables Include="SOURCE_BUILT_SDK_ID_%(SourceBuiltSdkOverride.Group)=%(SourceBuiltSdkOverride.Identity)" />
-      <EnvironmentVariables Include="SOURCE_BUILT_SDK_VERSION_%(SourceBuiltSdkOverride.Group)=%(SourceBuiltSdkOverride.Version)" />
-      <EnvironmentVariables Condition="'%(SourceBuiltSdkOverride.Location)' != ''" Include="SOURCE_BUILT_SDK_DIR_%(SourceBuiltSdkOverride.Group)=%(SourceBuiltSdkOverride.Location)/" />
-      <EnvironmentVariables Condition="'%(SourceBuiltSdkOverride.Location)' == ''" Include="SOURCE_BUILT_SDK_DIR_%(SourceBuiltSdkOverride.Group)=$(SourceBuiltSdksDir)%(SourceBuiltSdkOverride.Identity)/" />
-    </ItemGroup>
-  </Target>
+  <Target Name="Build"
+          DependsOnTargets="
+    BuildRepoReferences;
+    RepoBuild;
+    CopyRepoArtifacts;
+    CopyInnerBuildRestoredPackages;
+    ExtractToolPackage;
+    ExtractSymbolsArchiveFile;
+    CleanupRepo" />
 
   <Target Name="WritePrebuiltUsageData"
           DependsOnTargets="GetAllProjectDirectories"
@@ -637,7 +593,7 @@
           Outputs="$(BaseIntermediateOutputPath)WritePrebuiltUsageData.complete">
     <!-- Save the PVP snapshot of each build step to be evaluated while building the report. -->
     <ItemGroup>
-      <PackageVersionPropsSnapshotFiles Include="$(SharedIntermediateOutputPath)PackageVersions.*.Snapshot.props" />
+      <PackageVersionPropsSnapshotFiles Include="$(PackageVersionsDir)PackageVersions.*.Snapshot.props" />
     </ItemGroup>
     <Copy SourceFiles="@(PackageVersionPropsSnapshotFiles)" DestinationFolder="$(PackageReportDir)snapshots/" />
 
@@ -647,7 +603,7 @@
       <!-- Only contains packages when building. -->
       <TarballPrebuiltPackageFiles Include="$(PrebuiltPackagesPath)*.nupkg" />
 
-      <SourceBuiltPackageFiles Include="$(SourceBuiltBlobFeedDir)**/*.nupkg" />
+      <SourceBuiltPackageFiles Include="$(ArtifactsPackagesDir)**/*.nupkg" />
       <SourceBuiltPackageFiles Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
       <ReferencePackageFiles Include="$(ReferencePackagesDir)**/*.nupkg" />
 
@@ -753,5 +709,77 @@
 
   <Target Name="GetProjectDirectory" Outputs="$(ProjectDirectory)" />
   <Target Name="GetRepositoryReferences" Outputs="@(RepositoryReference)" />
+
+  <!-- Returns the repository references of this project and all the projects this project references, recursively -->
+  <Target Name="GetTransitiveRepositoryReferences" Outputs="@(TransitiveRepositoryReference)">
+    <ItemGroup>
+      <_TransitiveRepositoryReference Include="@(RepositoryReference)" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(RepositoryReference->'%(Identity).proj')"
+             Targets="GetTransitiveRepositoryReferences"
+             BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_DependencyTransitiveRepositoryReference" />
+    </MSBuild>
+
+    <!-- When items are transferred between projects, they get metadata indicating their source (e.g. MSBuildSourceProjectFile).
+         This is problematic because it causes introduces distinctness on the items. For example, an arcade RepositoryReference
+         that comes from both msbuild and source-build-externals will be treated as two separate items. But we only want one arcade
+         reference. To prevent this from happening, we need to remove the extra metadata so the two references can be seen as duplicates. -->
+    <ItemGroup>
+      <_TransitiveRepositoryReference Include="@(_DependencyTransitiveRepositoryReference)"
+                                      RemoveMetadata="MSBuildSourceProjectFile;MSBuildSourceTargetName;OriginalItemSpec" />
+      <TransitiveRepositoryReference Include="@(_TransitiveRepositoryReference)" KeepDuplicates="false" />
+    </ItemGroup>
+
+    <!-- Exclude repositories that currently don't build when not building source-only. -->
+    <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <TransitiveRepositoryReference Remove="roslyn" />
+      <TransitiveRepositoryReference Remove="msbuild" />
+      <TransitiveRepositoryReference Remove="aspnetcore" />
+      <TransitiveRepositoryReference Remove="razor" />
+      <TransitiveRepositoryReference Remove="nuget-client" />
+      <TransitiveRepositoryReference Remove="fsharp" />
+      <TransitiveRepositoryReference Remove="vstest" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Outputs a dependency graph of the repos, in YAML form, to the console. -->
+  <Target Name="ShowDependencyGraph">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="GetDependencyGraphString"
+             Properties="DependencyGraphIndent=">
+      <Output TaskParameter="TargetOutputs" PropertyName="DependencyGraphString" />
+    </MSBuild>
+
+    <!-- Replace the '_' placeholder with spaces -->
+    <Message Importance="High" Text="$(DependencyGraphString.Replace('_', ' ').Trim())" />
+  </Target>
+
+  <!-- Recursively walks the repo dependency graph gathering each repo's dependencies which are returned as a YAML string representation -->
+  <Target Name="GetDependencyGraphString"
+          DependsOnTargets="GetTransitiveRepositoryReferences"
+          Outputs="$(DependencyGraphString)">
+    <PropertyGroup>
+      <!-- Each step deeper in the graph builds up the indentation used for the YAML representation.
+           Use '_' as a placeholder for the space ' ' character since trailing spaces aren't handled well as property values. -->
+      <_NextIndent>$(DependencyGraphIndent)__</_NextIndent>
+    </PropertyGroup>
+    
+    <!-- For each of the current project's direct repo dependencies, recursively call the target to get each of there dependency graphs -->
+    <MSBuild Projects="@(RepositoryReference->'%(Identity).proj')"
+             Targets="GetDependencyGraphString"
+             Properties="DependencyGraphIndent=$(_NextIndent)">
+      <Output TaskParameter="TargetOutputs" ItemName="_DependencyGraphString" />
+    </MSBuild>
+
+    <!-- Append all the separate dependency graph snippets together -->
+    <PropertyGroup>
+      <!-- Ensure the item `;` separators are removed from the the target output -->
+      <_DependencyGraphString>@(_DependencyGraphString, '')</_DependencyGraphString>
+      <_LineBreak>%0a</_LineBreak>
+      <DependencyGraphString>$(DependencyGraphIndent)-_$(RepositoryName)$(_LineBreak)$(_DependencyGraphString)</DependencyGraphString>
+    </PropertyGroup>
+  </Target>
 
 </Project>

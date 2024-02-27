@@ -1,6 +1,6 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Matt Thalman <mthalman@microsoft.com>
-Date: Thu, 18 Jan 2024 10:43:54 -0600
+Date: Fri, 23 Feb 2024 09:48:43 -0600
 Subject: [PATCH] Set NetRoslyn value for VMR build
 
 Backport: https://github.com/dotnet/roslyn/pull/71704
@@ -9,14 +9,14 @@ Backport: https://github.com/dotnet/roslyn/pull/71704
  1 file changed, 1 insertion(+)
 
 diff --git a/eng/targets/TargetFrameworks.props b/eng/targets/TargetFrameworks.props
-index d36aba87611..6061394d5e9 100644
+index a7643fcbcfd..054428128b3 100644
 --- a/eng/targets/TargetFrameworks.props
 +++ b/eng/targets/TargetFrameworks.props
-@@ -49,6 +49,7 @@
+@@ -51,6 +51,7 @@
          <NetRoslynToolset>$(NetCurrent)</NetRoslynToolset>
          <NetRoslynSourceBuild>$(NetCurrent);$(NetPrevious)</NetRoslynSourceBuild>
          <NetRoslynAll>$(NetCurrent);$(NetPrevious)</NetRoslynAll>
 +        <NetRoslyn>$(NetCurrent)</NetRoslyn>
+         <NetRoslynBuildHostNetCoreVersion>$(NetCurrent)</NetRoslynBuildHostNetCoreVersion>
        </PropertyGroup>
      </When>
- 

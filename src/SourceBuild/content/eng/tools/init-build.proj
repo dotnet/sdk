@@ -67,13 +67,17 @@
              Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
 
     <MSBuild Projects="tasks\SourceBuild.MSBuildSdkResolver\SourceBuild.MSBuildSdkResolver.csproj"
-             Targets="Build;InstallResolver" />
+             Targets="Build" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)BuildMSBuildSdkResolver.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
   </Target>
+
+  <PropertyGroup>
+    <SourceBuildMSBuildSdkResolverManifestPath>$([MSBuild]::NormalizePath('$(VSMSBuildSdkResolversDir)', 'SourceBuild.MSBuildSdkResolver', 'SourceBuild.MSBuildSdkResolver.xml'))</SourceBuildMSBuildSdkResolverManifestPath>
+  </PropertyGroup>
 
   <!-- Build msbuild tasks. -->
   <Target Name="BuildXPlatTasks"

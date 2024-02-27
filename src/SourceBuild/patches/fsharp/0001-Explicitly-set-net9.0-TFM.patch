@@ -43,7 +43,7 @@ Backport: https://github.com/dotnet/source-build/issues/3663
  35 files changed, 82 insertions(+), 73 deletions(-)
 
 diff --git a/Directory.Build.props b/Directory.Build.props
-index 10c539090..824602dcb 100644
+index 4682f1d8c..1da4c0161 100644
 --- a/Directory.Build.props
 +++ b/Directory.Build.props
 @@ -34,8 +34,8 @@
@@ -54,9 +54,9 @@ index 10c539090..824602dcb 100644
 -    <FsYaccPath>$(ArtifactsDir)/bin/fsyacc/$(Configuration)/net8.0/fsyacc.dll</FsYaccPath>
 +    <FsLexPath>$(ArtifactsDir)/bin/fslex/$(Configuration)/net9.0/fslex.dll</FsLexPath>
 +    <FsYaccPath>$(ArtifactsDir)/bin/fsyacc/$(Configuration)/net9.0/fsyacc.dll</FsYaccPath>
+     <DefineConstants>NO_CHECKNULLS;BUILDING_WITH_LKG;NO_NULLCHECKING_LIB_SUPPORT;$(DefineConstants)</DefineConstants>
    </PropertyGroup>
  
-   <Import Project="$(MSBuildThisFileDirectory)/eng/Versions.props" Condition="'$(DISABLE_ARCADE)' == 'true'"/>
 diff --git a/buildtools/AssemblyCheck/AssemblyCheck.fsproj b/buildtools/AssemblyCheck/AssemblyCheck.fsproj
 index 46ffb722c..9d391689d 100644
 --- a/buildtools/AssemblyCheck/AssemblyCheck.fsproj
@@ -110,10 +110,10 @@ index fc072b7cf..4110186e5 100644
      <UseAppHost Condition="'$(DotNetBuildFromSource)' == 'true'">false</UseAppHost>
      <RollForward Condition="'$(BUILDING_USING_DOTNET)' == 'true'">LatestMajor</RollForward>
 diff --git a/eng/build.sh b/eng/build.sh
-index 3b992d6bf..3a4444081 100755
+index b8915397d..4e020e84c 100755
 --- a/eng/build.sh
 +++ b/eng/build.sh
-@@ -264,8 +264,8 @@ function BuildSolution {
+@@ -269,8 +269,8 @@ function BuildSolution {
        MSBuild "$repo_root/buildtools/buildtools.proj" /restore "$bltools" /p:Configuration=$bootstrap_config
  
        mkdir -p "$bootstrap_dir"
@@ -124,7 +124,7 @@ index 3b992d6bf..3a4444081 100755
      fi
      if [ ! -f "$bootstrap_dir/fsc.exe" ]; then
        local bltools=""
-@@ -274,7 +274,7 @@ function BuildSolution {
+@@ -279,7 +279,7 @@ function BuildSolution {
        fi
        BuildMessage="Error building bootstrap"
        MSBuild "$repo_root/Proto.sln" /restore "$bltools" /p:Configuration=$bootstrap_config
@@ -389,7 +389,7 @@ index e3c796d0b..e4926cd6c 100644
      <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
      <UnitTestType>xunit</UnitTestType>
 diff --git a/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj b/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
-index a9dd53828..a33c287be 100644
+index ec4fc441f..5d2b5a0ce 100644
 --- a/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
 +++ b/tests/FSharp.Compiler.ComponentTests/FSharp.Compiler.ComponentTests.fsproj
 @@ -3,8 +3,8 @@
@@ -469,7 +469,7 @@ index 4b6c5c534..1b20371c4 100644
  
      <AssemblyName>FSharp.Core.UnitTests</AssemblyName>
 diff --git a/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj b/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj
-index 5cfcba98c..c67b8f85d 100644
+index 8c1816177..81762e504 100644
 --- a/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj
 +++ b/tests/FSharp.Test.Utilities/FSharp.Test.Utilities.fsproj
 @@ -1,8 +1,8 @@
@@ -522,7 +522,7 @@ index 9706167ff..e02746a8e 100644
      <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
      <!-- Turn off "This function is for use by compiled F# code and should not be used directly" -->
 diff --git a/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.Runner/HistoricalBenchmark.Runner.fsproj b/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.Runner/HistoricalBenchmark.Runner.fsproj
-index 13add7032..4bbae272f 100644
+index fe6d95f90..9f81af284 100644
 --- a/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.Runner/HistoricalBenchmark.Runner.fsproj
 +++ b/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.Runner/HistoricalBenchmark.Runner.fsproj
 @@ -1,7 +1,7 @@
@@ -533,9 +533,9 @@ index 13add7032..4bbae272f 100644
 +        <TargetFramework>net9.0</TargetFramework>
          <GenerateDocumentationFile>true</GenerateDocumentationFile>
          <RootNamespace>HistoricalBenchmark.Utilities</RootNamespace>
-     </PropertyGroup>
+         <NoWarn>$(NoWarn);NETSDK1206</NoWarn>
 diff --git a/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.fsproj b/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.fsproj
-index 2534ba292..feef2eaf7 100644
+index 09ca5cb69..575bb32a3 100644
 --- a/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.fsproj
 +++ b/tests/benchmarks/FCSBenchmarks/BenchmarkComparison/HistoricalBenchmark.fsproj
 @@ -2,7 +2,7 @@
@@ -548,7 +548,7 @@ index 2534ba292..feef2eaf7 100644
      <Configurations>Release</Configurations>
    </PropertyGroup>
 diff --git a/tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks/FSharp.Compiler.Benchmarks.fsproj b/tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks/FSharp.Compiler.Benchmarks.fsproj
-index 55968eddd..e62ac8b85 100644
+index 043de02d3..d10a33cb6 100644
 --- a/tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks/FSharp.Compiler.Benchmarks.fsproj
 +++ b/tests/benchmarks/FCSBenchmarks/CompilerServiceBenchmarks/FSharp.Compiler.Benchmarks.fsproj
 @@ -2,7 +2,7 @@
@@ -561,7 +561,7 @@ index 55968eddd..e62ac8b85 100644
      <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
    </PropertyGroup>
 diff --git a/tests/benchmarks/FCSBenchmarks/FCSSourceFiles/FCSSourceFiles.fsproj b/tests/benchmarks/FCSBenchmarks/FCSSourceFiles/FCSSourceFiles.fsproj
-index 3774aa870..03c11414e 100644
+index 92255adb4..e2f32b3ee 100644
 --- a/tests/benchmarks/FCSBenchmarks/FCSSourceFiles/FCSSourceFiles.fsproj
 +++ b/tests/benchmarks/FCSBenchmarks/FCSSourceFiles/FCSSourceFiles.fsproj
 @@ -2,7 +2,7 @@

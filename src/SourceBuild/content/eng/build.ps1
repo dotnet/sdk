@@ -41,28 +41,24 @@ function Get-Usage() {
 
 # Set the NUGET_PACKAGES dir so that we don't accidentally pull some packages from the global location,
 # They should be pulled from the local feeds.
-$env:NUGET_PACKAGES="$RepoRoot\prereqs\packages\restored\"
+$env:NUGET_PACKAGES="$RepoRoot\.packages\"
 
 if ($help) {
   Get-Usage
   exit 0
 }
 
-$arguments=""
-if ($cleanWhileBuilding) {
-  $arguments += " /p:CleanWhileBuilding=true"
-}
-
 function Build {
   InitializeToolset
 
   $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
+  $cwb = if ($cleanWhileBuilding) { '/p:CleanWhileBuilding=true' } else { '' }
   $buildProj = Join-Path $RepoRoot 'build.proj'
 
   MSBuild $buildProj `
     $bl `
     /p:Configuration=$configuration `
-    $arguments `
+    $cwb `
     @properties
 }
 
@@ -75,6 +71,11 @@ try {
     exit 0
   }
 
+  if ($ci) {
+    if (-not $excludeCIBinarylog) {
+      $binaryLog = $true
+    }
+  }
 
   Build
 }
