@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.NetCore.CSharp.Analyzers.Performance;
 using Microsoft.NetCore.VisualBasic.Analyzers.Performance;
+using Test.Utilities;
 using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
@@ -320,64 +321,64 @@ class C
     }
 }
 ");
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is 0", "!enumerable.Any()");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not 0", "enumerable.Any()");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsGreaterThanZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is > 0", "enumerable.Any()");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotGreaterThanZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not > 0", "!enumerable.Any()");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsGreaterThanOrEqualToZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is >= 0");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotGreaterThanOrEqualToZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not >= 0");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsLessThanOrEqualToZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is <= 0", "!enumerable.Any()");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotLessThanOrEqualToZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not <= 0", "enumerable.Any()");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsLessThanZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is < 0");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotLessThanZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not < 0");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is 1");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not 1");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsGreaterThanOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is > 1");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotGreaterThanOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not > 1");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsGreaterThanOrEqualToOnePattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is >= 1", "enumerable.Any()");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotGreaterThanOrEqualToOnePattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not >= 1", "!enumerable.Any()");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsLessThanOrEqualToOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is <= 1");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotLessThanOrEqualToOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not <= 1");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsLessThanOnePattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is < 1", "!enumerable.Any()");
 
-        [Fact]
+        [Fact, WorkItem(7207, "https://github.com/dotnet/roslyn-analyzers/issues/7207")]
         public Task IsNotLessThanOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not < 1");
 
         private Task VerifyDiagnosticForPatternAsync(string pattern, string fixedPattern)
