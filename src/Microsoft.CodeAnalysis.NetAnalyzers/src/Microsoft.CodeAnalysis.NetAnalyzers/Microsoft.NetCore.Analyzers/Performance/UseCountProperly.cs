@@ -159,14 +159,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
             if (syncMethods.Count > 0 || asyncMethods.Count > 0)
             {
                 context.RegisterOperationAction(operationContext => AnalyzeInvocationOperation(
-                        operationContext, linqExpressionType, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), allowedTypesForCA1836),
+                    operationContext, linqExpressionType, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), allowedTypesForCA1836),
                     OperationKind.Invocation);
             }
 
             if (!allowedTypesForCA1836.IsEmpty)
             {
                 context.RegisterOperationAction(operationContext => AnalyzePropertyReference(
-                        operationContext, linqExpressionType, allowedTypesForCA1836),
+                    operationContext, linqExpressionType, allowedTypesForCA1836),
                     OperationKind.PropertyReference);
             }
 
@@ -274,7 +274,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
             // Analyze argument operation, potentially 0.Equals(obj.Count).
             else if (parentOperation is IArgumentOperation argumentOperation &&
-                     argumentOperation.Parent is IInvocationOperation argumentParentInvocationOperation)
+                argumentOperation.Parent is IInvocationOperation argumentParentInvocationOperation)
             {
                 parentOperation = argumentParentInvocationOperation;
                 shouldReplace = AnalyzeParentInvocationOperation(argumentParentInvocationOperation, isInstance: false);
@@ -484,8 +484,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     ReportCA1827(context, shouldNegateAny, operationKey!, methodName, parent);
                 }
                 else if (allowedTypesForCA1836.Contains(type.OriginalDefinition) &&
-                         TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
-                         !IsPropertyGetOfIsEmptyUsingThisInstance(context, invocationOperation, isEmptyPropertySymbol!))
+                   TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
+                   !IsPropertyGetOfIsEmptyUsingThisInstance(context, invocationOperation, isEmptyPropertySymbol!))
                 {
                     ReportCA1836(context, operationKey!, shouldNegateIsEmpty, parent);
                 }
@@ -537,7 +537,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             IMethodSymbol methodSymbol = invocationOperation.TargetMethod;
 
             return string.Equals(methodSymbol.Name, WellKnownMemberNames.ObjectEquals, StringComparison.Ordinal)
-                   && IsInRangeInclusive((uint)methodSymbol.ContainingType.SpecialType, (uint)SpecialType.System_Int32, (uint)SpecialType.System_UInt64);
+                && IsInRangeInclusive((uint)methodSymbol.ContainingType.SpecialType, (uint)SpecialType.System_Int32, (uint)SpecialType.System_UInt64);
         }
 
         private static bool IsLeftCountComparison(IBinaryOperation binaryOperation, out bool shouldNegate)
@@ -557,12 +557,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         case BinaryOperatorKind.Equals:
                         case BinaryOperatorKind.LessThanOrEqual:
                             shouldNegate = false;
-
                             break;
                         case BinaryOperatorKind.NotEquals:
                         case BinaryOperatorKind.GreaterThan:
                             shouldNegate = true;
-
                             break;
                         default:
                             return false;
@@ -574,11 +572,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         case BinaryOperatorKind.LessThan:
                             shouldNegate = false;
-
                             break;
                         case BinaryOperatorKind.GreaterThanOrEqual:
                             shouldNegate = true;
-
                             break;
                         default:
                             return false;
@@ -609,13 +605,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         case BinaryOperatorKind.Equals:
                         case BinaryOperatorKind.GreaterThanOrEqual:
                             shouldNegate = false;
-
                             break;
 
                         case BinaryOperatorKind.LessThan:
                         case BinaryOperatorKind.NotEquals:
                             shouldNegate = true;
-
                             break;
 
                         default:
@@ -628,12 +622,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         case BinaryOperatorKind.LessThanOrEqual:
                             shouldNegate = true;
-
                             break;
 
                         case BinaryOperatorKind.GreaterThan:
                             shouldNegate = false;
-
                             break;
 
                         default:
@@ -651,8 +643,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static bool TypeContainsVisibleProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType propertyType, out ISymbol? propertySymbol)
             => TypeContainsVisibleProperty(context, type, propertyName, propertyType, propertyType, out propertySymbol);
 
-        private static bool TypeContainsVisibleProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType lowerBound, SpecialType upperBound,
-            out ISymbol? propertySymbol)
+        private static bool TypeContainsVisibleProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType lowerBound, SpecialType upperBound, out ISymbol? propertySymbol)
         {
             if (TypeContainsMember(context, type, propertyName, lowerBound, upperBound, out bool isPropertyValidAndVisible, out propertySymbol!))
             {
@@ -693,10 +684,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 if (type.GetMembers(propertyName).FirstOrDefault() is IPropertySymbol property)
                 {
                     isPropertyValidAndVisible = !property.IsStatic &&
-                                                IsInRangeInclusive((uint)property.Type.SpecialType, (uint)lowerBound, (uint)upperBound) &&
-                                                property.GetMethod != null &&
-                                                context.Compilation.IsSymbolAccessibleWithin(property, context.ContainingSymbol.ContainingType) &&
-                                                context.Compilation.IsSymbolAccessibleWithin(property.GetMethod, context.ContainingSymbol.ContainingType);
+                        IsInRangeInclusive((uint)property.Type.SpecialType, (uint)lowerBound, (uint)upperBound) &&
+                        property.GetMethod != null &&
+                        context.Compilation.IsSymbolAccessibleWithin(property, context.ContainingSymbol.ContainingType) &&
+                        context.Compilation.IsSymbolAccessibleWithin(property.GetMethod, context.ContainingSymbol.ContainingType);
 
                     propertySymbol = property;
 
@@ -753,12 +744,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
             ISymbol containingSymbol = context.ContainingSymbol;
 
             return containingSymbol is IMethodSymbol methodSymbol &&
-                   // Is within the body of a property getter?
-                   methodSymbol.MethodKind == MethodKind.PropertyGet &&
-                   // Is the getter of the IsEmpty property.
-                   methodSymbol.AssociatedSymbol == isEmptyPropertySymbol &&
-                   // Is 'this' instance?
-                   operation?.GetInstanceType() == containingSymbol.ContainingType;
+                // Is within the body of a property getter?
+                methodSymbol.MethodKind == MethodKind.PropertyGet &&
+                // Is the getter of the IsEmpty property.
+                methodSymbol.AssociatedSymbol == isEmptyPropertySymbol &&
+                // Is 'this' instance?
+                operation?.GetInstanceType() == containingSymbol.ContainingType;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
