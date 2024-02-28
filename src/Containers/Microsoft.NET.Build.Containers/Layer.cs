@@ -184,8 +184,8 @@ internal class Layer
             }
         }
 
-        string contentHash = Convert.ToHexString(hash).ToLowerInvariant();
-        string uncompressedContentHash = Convert.ToHexString(uncompressedHash).ToLowerInvariant();
+        string contentHash = Convert.ToHexStringLower(hash);
+        string uncompressedContentHash = Convert.ToHexStringLower(uncompressedHash);
 
         string layerMediaType = manifestMediaType switch
         {
