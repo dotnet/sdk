@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
         private string GetBaseDirectory() =>
 #if NET451
-            return AppDomain.CurrentDomain.BaseDirectory;
+            AppDomain.CurrentDomain.BaseDirectory;
 #else
             AppContext.BaseDirectory;
 #endif
