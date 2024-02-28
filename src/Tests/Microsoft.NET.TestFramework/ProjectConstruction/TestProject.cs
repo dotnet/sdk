@@ -495,7 +495,7 @@ namespace {safeThisName}
             }
             else
             {
-                throw new InvalidOperationException("Expected 'properties' element in build result JSON");
+                return new();
             }
         }
 
@@ -529,7 +529,7 @@ namespace {safeThisName}
             }
             else
             {
-                throw new InvalidOperationException("Expected 'items' element in build result JSON");
+                return new();
             }
 
             static ITaskItem[] ReadTaskItemArray(JsonNode value)
