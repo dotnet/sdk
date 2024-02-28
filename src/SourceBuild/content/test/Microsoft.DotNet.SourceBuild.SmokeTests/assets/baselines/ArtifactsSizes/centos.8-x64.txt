@@ -3096,7 +3096,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_7_recommen
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_all_warnaserror.globalconfig: 29701
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_all.globalconfig: 27752
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default_warnaserror.globalconfig: 3272
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig: 584
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig: 829
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_minimum_warnaserror.globalconfig: 11410
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_minimum.globalconfig: 9089
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_none_warnaserror.globalconfig: 16373
@@ -3446,7 +3446,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_all_warnaserror.globalconfig: 6211
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_all.globalconfig: 6040
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_default_warnaserror.globalconfig: 726
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_default.globalconfig: 340
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_default.globalconfig: 461
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_minimum_warnaserror.globalconfig: 4702
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_minimum.globalconfig: 4497
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_none_warnaserror.globalconfig: 5165
