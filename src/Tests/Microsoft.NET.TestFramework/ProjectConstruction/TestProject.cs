@@ -568,12 +568,13 @@ namespace {safeThisName}
         {
             var trackedProperties = PropertiesToRecord.Select(p => $"--getProperty:{p}");
             var trackedItems = ItemsToRecord.Select(i => $"--getItem:{i}");
+            var additionalProperties = AdditionalProperties.Select(p => $"/p:{p.Key}={p.Value}");
             var commandResult =
                 new DotnetBuildCommand(new NullOutputHelper())
                 .WithWorkingDirectory(testRoot)
                 .WithConfiguration(configuration)
                 .WithTargetFramework(targetFramework)
-                .Execute([Name, .. trackedProperties, .. trackedItems]);
+                .Execute([Name, .. trackedProperties, .. trackedItems, .. additionalProperties]);
 
             commandResult.Should().Pass();
             if (PropertiesToRecord.Count == 1 && ItemsToRecord.Count == 0)
