@@ -11,7 +11,7 @@
         <Output TaskParameter="BestSdkTarballItem" PropertyName="_TestSdkArchivePath"/>
       </GetSingleTarballItem>
 
-      <GetClosestOfficialSdk BuiltSdkPath="$(_TestSdkArchivePath)" Condition="'@(_TestSdkArchivePath)' != ''">
+      <GetClosestOfficialSdk BuiltSdkPath="$(_TestSdkArchivePath)" Condition="'$(_TestSdkArchivePath)' != ''">
         <Output TaskParameter="ClosestOfficialSdkPath" PropertyName="ClosestOfficialSdkPath" />
       </GetClosestOfficialSdk>
 
