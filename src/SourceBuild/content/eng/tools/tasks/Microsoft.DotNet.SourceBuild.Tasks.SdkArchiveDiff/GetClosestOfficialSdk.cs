@@ -26,7 +26,7 @@ public class GetClosestOfficialSdk : Microsoft.Build.Utilities.Task
 
         string downloadUrl = GetLatestOfficialSdkUrl(versionString, rid, extension);
 
-        Log.LogMessage($"Downloading {downloadUrl}");
+        Log.LogMessage(MessageImportance.High, $"Downloading {downloadUrl}");
         var handler = new HttpClientHandler()
         {
             AllowAutoRedirect = false
