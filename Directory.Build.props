@@ -18,21 +18,21 @@
          may target a lower version of .NET -->
     <ResolverTargetFramework>net8.0</ResolverTargetFramework>
     <!-- Source build does not need to worry about running on VS for Mac -->
-    <ResolverTargetFramework Condition="'$(DotNetBuildFromSource)' == 'true'">$(SdkTargetFramework)</ResolverTargetFramework>
+    <ResolverTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SdkTargetFramework)</ResolverTargetFramework>
 
     <!-- NU1701 Disable implicit package target fallback, and disable warning for when we explicitly add it (currently needed for
          Microsoft.ApplicationInsights) -->
     <!-- NU1507 Disable multi-feed check as .NET uses multiple internal feeds intentionally -->
     <NoWarn>$(NoWarn);NU1701;NU1507</NoWarn>
     <!-- do not enable analyzers on source build-->
-    <EnforceCodeStyleInBuild Condition="'$(DotNetBuildFromSource)' != 'true'">true</EnforceCodeStyleInBuild>
+    <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
 
     <!-- <ArtifactsShippingSymbolsDir>$(ArtifactsDir)symbols\$(Configuration)\Shipping</ArtifactsShippingSymbolsDir> -->
 
     <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants);CI_BUILD</DefineConstants>
     <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants);MICROSOFT_ENABLE_TELEMETRY</DefineConstants>
-    <DefineConstants Condition="'$(DotNetBuildFromSource)' == 'true'">$(DefineConstants);DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
+    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants);DOT_NET_BUILD_FROM_SOURCE</DefineConstants>
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>

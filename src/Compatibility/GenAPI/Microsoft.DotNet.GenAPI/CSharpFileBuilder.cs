@@ -115,21 +115,6 @@ namespace Microsoft.DotNet.GenAPI
                     .DeclarationExt(typeMember, _symbolFilter)
                     .AddMemberAttributes(_syntaxGenerator, typeMember, _attributeDataSymbolFilter);
 
-                // workaround until we have Roslyn with https://github.com/dotnet/roslyn/pull/71760/
-                if (typeMember.IsRefLikeType &&
-                    typeDeclaration is StructDeclarationSyntax structDeclaration)
-                {
-                    if (structDeclaration.Modifiers.Any(m => m.Text == "ref"))
-                    {
-                        Debug.Fail("remove this workaround");
-                    }
-                    else
-                    {
-                        SyntaxToken refToken = SyntaxFactory.Token(SyntaxKind.RefKeyword);
-                        typeDeclaration = structDeclaration.AddModifiers(refToken);
-                    }
-                }
-
                 typeDeclaration = Visit(typeDeclaration, typeMember);
 
                 namespaceNode = _syntaxGenerator.AddMembers(namespaceNode, typeDeclaration);

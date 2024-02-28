@@ -2975,7 +2975,6 @@ namespace Microsoft.DotNet.GenAPI.Tests
         public void TestExplicitInterfaceNonGenericCollections()
         {
             RunTest(original: """
-                    #nullable disable
                     using System;
                     using System.Collections;
                     namespace a
@@ -2990,7 +2989,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             object ICollection.SyncRoot { get { throw null; } }
                             bool IList.IsFixedSize { get { throw null; } }
                             bool IList.IsReadOnly { get { throw null; } }
-                            object IList.this[int index] { get { throw null; } set { } }
+                            object? IList.this[int index] { get { throw null; } set { } }
                             public int Add(string value) { throw null; }
                             public void AddRange(string[] value) { }
                             public void AddRange(MyStringCollection value) { }
@@ -3004,11 +3003,11 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public void RemoveAt(int index) { }
                             void ICollection.CopyTo(Array array, int index) { }
                             IEnumerator IEnumerable.GetEnumerator() { throw null; }
-                            int IList.Add(object value) { throw null; }
-                            bool IList.Contains(object value) { throw null; }                            
-                            int IList.IndexOf(object value) { throw null; }
-                            void IList.Insert(int index, object value) { }
-                            void IList.Remove(object value) { }
+                            int IList.Add(object? value) { throw null; }
+                            bool IList.Contains(object? value) { throw null; }                            
+                            int IList.IndexOf(object? value) { throw null; }
+                            void IList.Insert(int index, object? value) { }
+                            void IList.Remove(object? value) { }
                         }
 
                         #pragma warning restore CS8597
@@ -3025,7 +3024,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             object System.Collections.ICollection.SyncRoot { get { throw null; } }
                             bool System.Collections.IList.IsFixedSize { get { throw null; } }
                             bool System.Collections.IList.IsReadOnly { get { throw null; } }
-                            object System.Collections.IList.this[int index] { get { throw null; } set { } }
+                            object? System.Collections.IList.this[int index] { get { throw null; } set { } }
                             public int Add(string value) { throw null; }
                             public void AddRange(MyStringCollection value) { }
                             public void AddRange(string[] value) { }
@@ -3039,11 +3038,11 @@ namespace Microsoft.DotNet.GenAPI.Tests
                             public void RemoveAt(int index) { }
                             void System.Collections.ICollection.CopyTo(System.Array array, int index) { }
                             System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-                            int System.Collections.IList.Add(object value) { throw null; }
-                            bool System.Collections.IList.Contains(object value) { throw null; }
-                            int System.Collections.IList.IndexOf(object value) { throw null; }
-                            void System.Collections.IList.Insert(int index, object value) { }
-                            void System.Collections.IList.Remove(object value) { }
+                            int System.Collections.IList.Add(object? value) { throw null; }
+                            bool System.Collections.IList.Contains(object? value) { throw null; }
+                            int System.Collections.IList.IndexOf(object? value) { throw null; }
+                            void System.Collections.IList.Insert(int index, object? value) { }
+                            void System.Collections.IList.Remove(object? value) { }
                         }
                     }
                     """,

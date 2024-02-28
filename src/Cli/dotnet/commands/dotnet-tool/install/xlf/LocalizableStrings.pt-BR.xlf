@@ -88,6 +88,11 @@ Se quiser criar um manifesto, use `dotnet new tool-manifest`, normalmente no dir
         <target state="translated">Não há suporte para as opções --prerelease e --version no mesmo comando.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RollForwardOptionDescription">
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="translated">Permitir que uma ferramenta .NET seja revertida para versões mais recentes do runtime do .NET se o runtime ao qual ela se destina não estiver instalado.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">A versão do pacote da ferramenta a ser instalada.</target>

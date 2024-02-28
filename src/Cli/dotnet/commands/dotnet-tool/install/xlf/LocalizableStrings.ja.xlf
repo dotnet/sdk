@@ -88,6 +88,11 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
         <target state="translated">--prerelease および --version オプションは同じコマンド内ではサポートされません</target>
         <note />
       </trans-unit>
+      <trans-unit id="RollForwardOptionDescription">
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="translated">対象となるランタイムがインストールされていない場合、.NET ツールが新しいバージョンの .NET ランタイムにロールフォワードできるようにします。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">インストールするツール パッケージのバージョン。</target>

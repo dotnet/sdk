@@ -22,8 +22,8 @@
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\MSBuildPropertyNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
-    <Compile Remove="commands\dotnet-workload\list\VisualStudioWorkloads.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
-    <Compile Remove="$(RepoRoot)\src\Cli\dotnet\Installer\Windows\Security\*.cs" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <Compile Remove="commands\dotnet-workload\list\VisualStudioWorkloads.cs" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+    <Compile Remove="$(RepoRoot)\src\Cli\dotnet\Installer\Windows\Security\*.cs" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <EmbeddedResource Include="commands\dotnet-new\*.zip" />
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
     <EmbeddedResource Update="*.resx" Namespace="Microsoft.DotNet.Tools" />
@@ -100,8 +100,8 @@
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
-    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" Condition="'$(DotNetBuildFromSource)' != 'true'" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="all" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="all" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
   </ItemGroup>
   <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
     <PackageReference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
