@@ -11,10 +11,10 @@ using System.Threading.Tasks;
 
 public abstract class Archive : IDisposable
 {
-    public static async Task<Archive> Create(string path)
+    public static async Task<Archive> Create(string path, CancellationToken cancellationToken = default)
     {
         if (path.EndsWith(".tar.gz"))
-            return await TarArchive.Create(path);
+            return await TarArchive.Create(path, cancellationToken);
         else if (path.EndsWith(".zip"))
             return ZipFileArchive.Create(path);
         else
@@ -40,7 +40,7 @@ public abstract class Archive : IDisposable
             _extractedFolder = extractedFolder;
         }
 
-        public static async Task<TarArchive> Create(string path, CancellationToken cancellationToken = default)
+        public static new async Task<TarArchive> Create(string path, CancellationToken cancellationToken = default)
         {
             var tmpFolder = Directory.CreateTempSubdirectory(nameof(FindArchiveDiffs));
             using (var gzStream = File.OpenRead (path))
@@ -90,7 +90,7 @@ public abstract class Archive : IDisposable
             _archive = archive;
         }
 
-        public static new ZipFileArchive Create(string path)
+        public static ZipFileArchive Create(string path)
         {
             return new ZipFileArchive(new ZipArchive(File.OpenRead(path)));
         }

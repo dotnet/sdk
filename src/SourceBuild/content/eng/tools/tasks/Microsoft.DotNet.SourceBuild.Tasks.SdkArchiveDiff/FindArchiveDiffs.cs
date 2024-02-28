@@ -5,12 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Task = System.Threading.Tasks.Task;
 
-public class FindArchiveDiffs : Microsoft.Build.Utilities.Task
+public class FindArchiveDiffs : Microsoft.Build.Utilities.Task, ICancelableTask
 {
     public class ArchiveItem
     {
@@ -25,6 +26,13 @@ public class FindArchiveDiffs : Microsoft.Build.Utilities.Task
 
     [Output]
     public ITaskItem[] ContentDifferences { get; set; } = [];
+
+    private CancellationTokenSource _cancellationTokenSource = new();
+    private CancellationToken cancellationToken => _cancellationTokenSource.Token;
+    public void Cancel()
+    {
+        _cancellationTokenSource.Cancel();
+    }
 
     public override bool Execute()
     {
