@@ -162,12 +162,12 @@
     <SystemTextEncodingCodePagesPackageVersion>9.0.0-preview.2.24125.1</SystemTextEncodingCodePagesPackageVersion>
     <SystemResourcesExtensionsPackageVersion>9.0.0-preview.2.24125.1</SystemResourcesExtensionsPackageVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.0-rc.1.23414.4</MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>9.0.0-preview.2.24123.1</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>9.0.0-preview.2.24125.1</MicrosoftNETCorePlatformsPackageVersion>
     <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.0-preview.2.24125.1</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
-    <VSRedistCommonNetCoreTargetingPackx6490PackageVersion>9.0.0-preview.2.24123.1</VSRedistCommonNetCoreTargetingPackx6490PackageVersion>
+    <VSRedistCommonNetCoreTargetingPackx6490PackageVersion>9.0.0-preview.2.24125.1</VSRedistCommonNetCoreTargetingPackx6490PackageVersion>
     <MicrosoftNETCoreAppRuntimewinx64PackageVersion>9.0.0-preview.2.24125.1</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRuntimewinx64PackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
-    <MicrosoftNETCoreAppHostwinx64PackageVersion>9.0.0-preview.2.24123.1</MicrosoftNETCoreAppHostwinx64PackageVersion>
+    <MicrosoftNETCoreAppHostwinx64PackageVersion>9.0.0-preview.2.24125.1</MicrosoftNETCoreAppHostwinx64PackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.2.24125.1</MicrosoftNETCoreAppRefPackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
   </PropertyGroup>

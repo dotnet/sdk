@@ -562,7 +562,6 @@
     <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.24057.2">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
       <Sha>bfde902a10d7b672f4fc7e844198ede405dbb9c6</Sha>
-      <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.24057.2">
