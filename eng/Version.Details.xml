@@ -35,13 +35,15 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>fab69efde7d2458dfb23e01b686842cf6d7f576d</Sha>
     </Dependency>
-    <!-- Change blob version in GenerateLayout.targets if this is unpinned to service targeting pack -->
-    <!-- No new netstandard.library planned for 3.1 timeframe at this time. -->
-    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
-      <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.NETCore.Platforms" Version="9.0.0-preview.2.24125.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>fab69efde7d2458dfb23e01b686842cf6d7f576d</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.HostModel" Version="9.0.0-preview.2.24125.1">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>fab69efde7d2458dfb23e01b686842cf6d7f576d</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="9.0.0-preview.2.24125.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>fab69efde7d2458dfb23e01b686842cf6d7f576d</Sha>
     </Dependency>
@@ -51,13 +53,11 @@
       <Sha>fab69efde7d2458dfb23e01b686842cf6d7f576d</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
-    <Dependency Name="Microsoft.NET.HostModel" Version="9.0.0-preview.2.24125.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>fab69efde7d2458dfb23e01b686842cf6d7f576d</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="9.0.0-preview.2.24125.1">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>fab69efde7d2458dfb23e01b686842cf6d7f576d</Sha>
+    <!-- Change blob version in GenerateLayout.targets if this is unpinned to service targeting pack -->
+    <!-- No new netstandard.library planned for 3.1 timeframe at this time. -->
+    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
+      <Uri>https://github.com/dotnet/core-setup</Uri>
+      <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.2.24121.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
@@ -72,12 +72,6 @@
     <Dependency Name="Microsoft.Build" Version="17.10.0-preview-24123-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>56c003594af2772b8a5f4c58023f239a431154fa</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.10.0-preview-24122-01">
-      <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>d4cb14fe4d2e6df0327308feab18ccbb2046246c</Sha>
-      <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Build.Localization" Version="17.10.0-preview-24123-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
@@ -113,12 +107,6 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>28580f7c690ff7ce97afc3eb03771e72adac3ff4</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.10.0-2.24125.1">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>28580f7c690ff7ce97afc3eb03771e72adac3ff4</Sha>
-      <SourceBuild RepoName="roslyn" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis" Version="4.10.0-2.24125.1">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>28580f7c690ff7ce97afc3eb03771e72adac3ff4</Sha>
@@ -142,6 +130,12 @@
     <Dependency Name="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.10.0-2.24125.1">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>28580f7c690ff7ce97afc3eb03771e72adac3ff4</Sha>
+    </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.10.0-2.24125.1">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>28580f7c690ff7ce97afc3eb03771e72adac3ff4</Sha>
+      <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="9.0.0-preview.3.24124.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -219,12 +213,6 @@
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>f2323247155845f00166ebeca5cffdebff410b49</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.10.0-preview-24123-01">
-      <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>f2323247155845f00166ebeca5cffdebff410b49</Sha>
-      <SourceBuild RepoName="vstest" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.10.0-preview-24123-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>f2323247155845f00166ebeca5cffdebff410b49</Sha>
@@ -232,6 +220,12 @@
     <Dependency Name="Microsoft.TestPlatform.Build" Version="17.10.0-preview-24123-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>f2323247155845f00166ebeca5cffdebff410b49</Sha>
+    </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.10.0-preview-24123-01">
+      <Uri>https://github.com/microsoft/vstest</Uri>
+      <Sha>f2323247155845f00166ebeca5cffdebff410b49</Sha>
+      <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.0-preview.2.24125.1">
       <Uri>https://github.com/dotnet/runtime</Uri>
@@ -306,12 +300,6 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspnetcore" Version="9.0.0-preview.3.24124.1">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
-      <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Analyzers" Version="9.0.0-preview.3.24124.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
@@ -325,6 +313,22 @@
       <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Mvc.Api.Analyzers" Version="9.0.0-preview.3.24124.1">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0-preview.3.24124.1">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.3.24124.1">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.3.24124.1">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.JSInterop" Version="9.0.0-preview.3.24124.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
     </Dependency>
@@ -351,22 +355,6 @@
       <Uri>https://github.com/dotnet/razor</Uri>
       <Sha>dbb0fb5c0b742887931ba5e78ebf49998096a748</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
-    </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0-preview.3.24124.1">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.3.24124.1">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.3.24124.1">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="9.0.0-preview.3.24124.1">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>db01a95c38c1966664f311d5507c600f210f475d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.2.1" Version="1.0.2-beta4.22406.1">
       <Uri>https://github.com/dotnet/test-templates</Uri>
@@ -532,14 +520,6 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>d5b02a4900c4d521cb48b8f0d7e3f28175268f7c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24112.3">
-      <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>c041bcdab75f5447be8bd11ddcfbe8e639f13f32</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24112.3">
-      <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>c041bcdab75f5447be8bd11ddcfbe8e639f13f32</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.DotNet.XliffTasks" Version="9.0.0-beta.24114.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>d5b02a4900c4d521cb48b8f0d7e3f28175268f7c</Sha>
@@ -549,6 +529,14 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>d5b02a4900c4d521cb48b8f0d7e3f28175268f7c</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24112.3">
+      <Uri>https://github.com/dotnet/arcade-services</Uri>
+      <Sha>c041bcdab75f5447be8bd11ddcfbe8e639f13f32</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24112.3">
+      <Uri>https://github.com/dotnet/arcade-services</Uri>
+      <Sha>c041bcdab75f5447be8bd11ddcfbe8e639f13f32</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.2.24076.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
