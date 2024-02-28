@@ -12,7 +12,7 @@ jobs:
       displayName: Publish Logs
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)\artifacts\log\'
-        ArtifactName: 'Formatting Check'
+        ArtifactName: 'dotnet-format formatting Check'
       continueOnError: true
       condition: not(succeeded())
 
