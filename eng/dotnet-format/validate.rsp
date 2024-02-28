@@ -1,4 +1,4 @@
-./format.sln
+./src/BuiltInTools/dotnet-format.slnf
 --exclude
 ./tests/projects/
 --verify-no-changes

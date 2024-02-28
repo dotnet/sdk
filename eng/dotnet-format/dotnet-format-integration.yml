@@ -1,13 +1,12 @@
 jobs:
 - job: Formatting_Check
-  displayName: run dotnet-format on itself
   pool:
     vmImage: 'ubuntu-latest'
   timeoutInMinutes: 10
   steps:
     - script: ./restore.sh && echo "##vso[task.setvariable variable=PATH]$(Build.SourcesDirectory)/.dotnet:${PATH}" && echo "##vso[task.setvariable variable=DOTNET_ROOT]$(Build.SourcesDirectory)/.dotnet"
       displayName: Restore dependencies
-    - script: dotnet run --project ./src/BuiltInTools/dotnet-format/dotnet-format.csproj -c Release -- ./eng/dotnet-format/@validate.rsp
+    - script: dotnet run --project ./src/BuiltInTools/dotnet-format/dotnet-format.csproj -c Release -- @eng/dotnet-format/validate.rsp
       displayName: Run dotnet-format
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
@@ -17,8 +16,7 @@ jobs:
       continueOnError: true
       condition: not(succeeded())
 
-- job: dotnet-format-integration-tests
-  displayName: run dotnet-format in real repositories
+- job: dotnet_format_integration_tests
   pool:
     vmImage: 'windows-latest'
   strategy:
