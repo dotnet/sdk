@@ -2,17 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Immutable;
 using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
-using static ArchiveExtensions;
 
 public abstract class Archive : IDisposable
 {
@@ -133,5 +128,33 @@ public abstract class Archive : IDisposable
         {
             _archive.Dispose();
         }
+    }
+
+    public static (string Version, string Rid, string extension) GetInfoFromArchivePath(string path)
+    {
+        string extension;
+        if (path.EndsWith(".tar.gz"))
+        {
+            extension = ".tar.gz";
+        }
+        else if (path.EndsWith(".zip"))
+        {
+            extension = ".zip";
+        }
+        else
+        {
+            throw new ArgumentException($"Invalid archive extension '{path}': must end with .tar.gz or .zip");
+        }
+
+        string filename = Path.GetFileName(path)[..^extension.Length];
+        var dashDelimitedParts = filename.Split('-');
+        var (rid, versionString) = dashDelimitedParts switch
+        {
+            ["dotnet", "sdk", var first, var second, var third, var fourth] when PathWithVersions.IsVersionString(first) => (third + '-' + fourth, first + '-' + second),
+            ["dotnet", "sdk", var first, var second, var third, var fourth] when PathWithVersions.IsVersionString(third) => (first + '-' + second, third + '-' + fourth),
+            _ => throw new ArgumentException($"Invalid archive file name '{filename}': file name should include full build version and rid in the format dotnet-sdk-<version>-<rid>{extension} or dotnet-sdk-<rid>-<version>{extension}")
+        };
+
+        return (versionString, rid, extension);
     }
 }
