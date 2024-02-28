@@ -92,3 +92,8 @@
 /test/containerize.UnitTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.IntegrationTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.UnitTests @dotnet/sdk-container-builds-maintainers
+
+# dotnet-format
+/benchmarks/dotnet-format @dotnet/roslyn-ide
+/src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
+/test/dotnet-format.Tests @dotnet/roslyn-ide
