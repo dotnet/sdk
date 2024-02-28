@@ -1,18 +1,23 @@
 <Project>
   <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="FindArchiveDiffs" />
   <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetClosestOfficialSdk" />
+  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetSingleTarballItem" />
 
   <Target Name="ReportSdkArchiveDiffs"
           AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion" >
 
-      <Message Text="No SDK archive to compare against." Importance="High" Condition="'@(SdkTarballItem)' == ''" />
-      <GetClosestOfficialSdk BuiltSdkPath="@(SdkTarballItem)" Condition="'@(SdkTarballItem)' != ''">
+      <GetSingleTarballItem SdkTarballItems="@(SdkTarballItem)">
+        <Output TaskParameter="BestSdkTarballItem" PropertyName="_TestSdkArchivePath"/>
+      </GetSingleTarballItem>
+
+      <GetClosestOfficialSdk BuiltSdkPath="$(_TestSdkArchivePath)" Condition="'@(_TestSdkArchivePath)' != ''">
         <Output TaskParameter="ClosestOfficialSdkPath" PropertyName="ClosestOfficialSdkPath" />
       </GetClosestOfficialSdk>
 
-      <Message Text="Failed to find closest official SDK archive." Importance="High" Condition="'@(SdkTarballItem)' != '' AND '$(ClosestOfficialSdkPath)' == ''" />
-      <FindArchiveDiffs BaselineArchive="@(SdkTarballItem)" TestArchive="$(ClosestOfficialSdkPath)" Condition="'@(SdkTarballItem)' != '' AND '$(ClosestOfficialSdkPath)' != ''">
+      <Message Text="Failed to find closest official SDK archive." Importance="High" Condition="'$(_TestSdkArchivePath)' != '' AND '$(ClosestOfficialSdkPath)' == ''" />
+
+      <FindArchiveDiffs BaselineArchive="$(_TestSdkArchivePath)" TestArchive="$(ClosestOfficialSdkPath)" Condition="'$(_TestSdkArchivePath)' != '' AND '$(ClosestOfficialSdkPath)' != ''">
         <Output TaskParameter="ContentDifferences" ItemName="ContentDifferences" />
       </FindArchiveDiffs>
 
