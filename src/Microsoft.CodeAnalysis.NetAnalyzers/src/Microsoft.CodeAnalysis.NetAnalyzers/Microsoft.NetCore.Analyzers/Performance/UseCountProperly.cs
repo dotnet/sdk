@@ -282,7 +282,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
             else if (parentOperation is IIsPatternOperation isPatternOperation)
             {
-                shouldReplace = AnalyzeIsPatternOperation(isPatternOperation);
+                shouldReplace = AnalyzeIsPatternOperation(isPatternOperation, out shouldNegateIsEmpty);
                 operationKey = OperationIsPattern;
             }
 
@@ -321,25 +321,43 @@ namespace Microsoft.NetCore.Analyzers.Performance
             return true;
         }
 
-        private static bool AnalyzeIsPatternOperation(IIsPatternOperation isPatternOperation)
+        private static bool AnalyzeIsPatternOperation(IIsPatternOperation isPatternOperation, out bool shouldNegateIsEmpty)
         {
+            shouldNegateIsEmpty = true;
+
             if (isPatternOperation.Pattern is INegatedPatternOperation negatedPattern)
             {
+                if (negatedPattern.Pattern is IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.GreaterThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
+                    or IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.GreaterThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } })
+                {
+                    shouldNegateIsEmpty = false;
+
+                    return true;
+                }
+
                 return negatedPattern.Pattern is IConstantPatternOperation { Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
-                    or IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.GreaterThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
-                    or IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.GreaterThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } };
+                    or IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.LessThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } };
             }
 
-            if (isPatternOperation.Pattern is IConstantPatternOperation constantPattern)
+            if (isPatternOperation.Pattern is IConstantPatternOperation { Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } })
             {
-                return constantPattern.Value is ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } };
+                shouldNegateIsEmpty = false;
+
+                return true;
             }
 
             if (isPatternOperation.Pattern is IRelationalPatternOperation relationalPattern)
             {
+                if (relationalPattern is { OperatorKind: BinaryOperatorKind.LessThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } }
+                    or { OperatorKind: BinaryOperatorKind.LessThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } })
+                {
+                    shouldNegateIsEmpty = false;
+
+                    return true;
+                }
+
                 return relationalPattern is { OperatorKind: BinaryOperatorKind.GreaterThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
-                    or { OperatorKind: BinaryOperatorKind.GreaterThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } }
-                    or { OperatorKind: BinaryOperatorKind.LessThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } };
+                    or { OperatorKind: BinaryOperatorKind.GreaterThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } };
             }
 
             return false;

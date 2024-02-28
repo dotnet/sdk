@@ -93,6 +93,20 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
                         break;
                     }
+                case UseCountProperlyAnalyzer.OperationIsPattern:
+                    {
+                        if (node is IsPatternExpressionSyntax isPattern &&
+                            TryGetExpressionAndInvocationArguments(
+                                sourceExpression: isPattern.Expression,
+                                isAsync: isAsync,
+                                expression: out expression,
+                                arguments: out arguments))
+                        {
+                            return true;
+                        }
+
+                        break;
+                    }
             }
 
             expression = default;

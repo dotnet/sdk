@@ -339,10 +339,10 @@ class C
         public Task IsNotGreaterThanOrEqualToZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not >= 0");
 
         [Fact]
-        public Task IsLessThanOrEqualToZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is <= 0");
+        public Task IsLessThanOrEqualToZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is <= 0", "!enumerable.Any()");
 
         [Fact]
-        public Task IsNotLessThanOrEqualToZeroPattern_Diagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not <= 0");
+        public Task IsNotLessThanOrEqualToZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not <= 0", "enumerable.Any()");
 
         [Fact]
         public Task IsLessThanZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is < 0");
@@ -417,7 +417,7 @@ class C
             return new VerifyCS.Test
             {
                 TestCode = code,
-                // FixedCode = fixedCode,
+                FixedCode = fixedCode,
                 ExpectedDiagnostics = { diagnosticResult },
                 LanguageVersion = LanguageVersion.CSharp9
             }.RunAsync();
