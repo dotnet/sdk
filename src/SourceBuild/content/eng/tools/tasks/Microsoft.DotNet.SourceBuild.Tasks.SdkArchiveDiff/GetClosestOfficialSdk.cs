@@ -85,7 +85,7 @@ public class GetClosestOfficialSdk : Microsoft.Build.Utilities.Task
         {
             ["dotnet", "sdk", var first, var second, var third, var fourth] when PathWithVersions.IsVersionString(first) => (third + '-' + fourth, first + '-' + second),
             ["dotnet", "sdk", var first, var second, var third, var fourth] when PathWithVersions.IsVersionString(third) => (first + '-' + second, third + '-' + fourth),
-            _ => throw new ArgumentException($"Invalid archive file name '{filename}': file name should include full build full build full build full build full build full build full build full build full build version and rid")
+            _ => throw new ArgumentException($"Invalid archive file name '{filename}': file name should include full build version and rid in the format dotnet-sdk-<version>-<rid>{extension} or dotnet-sdk-<rid>-<version>{extension}")
         };
 
         return (versionString, rid, extension);
