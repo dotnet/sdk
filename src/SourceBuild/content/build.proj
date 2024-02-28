@@ -21,4 +21,11 @@
 
   <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
+  <!-- Intentionally below the import to appear at the end. -->
+  <Target Name="LogBuildOutputFolders"
+          AfterTargets="Build">
+   <Message Importance="high" Text="Shipping packages are located in '$(ArtifactsShippingPackagesDir)'." />
+   <Message Importance="high" Text="Shipping assets are located in '$(ArtifactsAssetsDir)'." />
+  </Target>
+
 </Project>
