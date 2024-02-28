@@ -284,7 +284,7 @@ Varsayılan değer 'false' olur. Ancak çalışma zamanı tanımlayıcısı beli
       </trans-unit>
       <trans-unit id="ToolSettingsNotFound">
         <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <target state="translated">{0} aracı için araç ayarları dosyası mevcut değil.</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

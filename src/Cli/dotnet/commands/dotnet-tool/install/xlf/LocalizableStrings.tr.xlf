@@ -90,7 +90,7 @@ Bir bildirim oluşturmak istiyorsanız 'dotnet new tool-manifest' ifadesini kull
       </trans-unit>
       <trans-unit id="RollForwardOptionDescription">
         <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
-        <target state="new">Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</target>
+        <target state="translated">Hedeflediği çalışma zamanı yüklü değilse, bir .NET aracının daha yeni .NET çalışma zamanı sürümlerine ileri alınmasına izin verin.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">

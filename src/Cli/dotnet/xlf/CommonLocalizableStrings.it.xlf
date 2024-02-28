@@ -284,7 +284,7 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
       </trans-unit>
       <trans-unit id="ToolSettingsNotFound">
         <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <target state="translated">Il file delle impostazioni dello strumento non esiste per lo strumento {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

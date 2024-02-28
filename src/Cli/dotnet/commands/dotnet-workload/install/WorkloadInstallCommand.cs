@@ -232,6 +232,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         installer.InstallWorkloadManifest(manifestUpdate, context, offlineCache, rollback);
                     }
 
+                    if (usingRollback)
+                    {
+                        installer.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
+                    }
+
                     _workloadResolver.RefreshWorkloadManifests();
 
                     installer.InstallWorkloads(workloadIds, sdkFeatureBand, context, offlineCache);
@@ -243,10 +248,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                     }
 
-                    if (usingRollback)
-                    {
-                        installer.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
-                    }
                 },
                 rollback: () =>
                 {
@@ -258,6 +259,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         installer.GetWorkloadInstallationRecordRepository()
                             .DeleteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                     }
+
+                    //  Refresh the workload manifests to make sure that the resolver has the updated state after the rollback
+                    _workloadResolver.RefreshWorkloadManifests();
                 });
 
         }

@@ -284,7 +284,7 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
       </trans-unit>
       <trans-unit id="ToolSettingsNotFound">
         <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <target state="translated">O arquivo de configurações de ferramenta não existe para a ferramenta {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

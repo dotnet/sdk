@@ -38,7 +38,7 @@ Aranan konumların bir listesi için aracın adından önce "-d" seçeneğini be
       </trans-unit>
       <trans-unit id="ToolMissingRollForward">
         <source>Missing 'rollForward' entry.</source>
-        <target state="new">Missing 'rollForward' entry.</target>
+        <target state="translated">‘RollForward’ girişi eksik.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
