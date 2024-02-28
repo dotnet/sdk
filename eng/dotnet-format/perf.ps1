@@ -40,7 +40,7 @@ try {
         }
     }
     
-    Invoke-Expression 'cd test\dotnet-format.Tests\perf'
+    Invoke-Expression 'cd  benchmarks\dotnet-format\perf\'
     
     if ($micro) {
         # Default case, run very small tests
