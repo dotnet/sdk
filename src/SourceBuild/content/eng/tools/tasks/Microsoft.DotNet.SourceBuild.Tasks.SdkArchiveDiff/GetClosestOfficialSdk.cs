@@ -4,10 +4,11 @@
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 
-public class GetClosestOfficialSdk : Microsoft.Build.Utilities.Task
+public class GetClosestOfficialSdk : Microsoft.Build.Utilities.Task, ICancelableTask
 {
     [Required]
     public required string BuiltSdkPath { get; init; }
@@ -20,8 +21,16 @@ public class GetClosestOfficialSdk : Microsoft.Build.Utilities.Task
         return Task.Run(ExecuteAsync).Result;
     }
 
+    private CancellationTokenSource _cancellationTokenSource = new();
+    private CancellationToken cancellationToken => _cancellationTokenSource.Token;
+    public void Cancel()
+    {
+        _cancellationTokenSource.Cancel();
+    }
+
     public async Task<bool> ExecuteAsync()
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var (versionString, rid, extension) = Archive.GetInfoFromArchivePath(BuiltSdkPath);
 
         string downloadUrl = GetLatestOfficialSdkUrl(versionString, rid, extension);
@@ -32,14 +41,14 @@ public class GetClosestOfficialSdk : Microsoft.Build.Utilities.Task
             AllowAutoRedirect = false
         };
         var client = new HttpClient(handler);
-        var redirectResponse = await client.GetAsync(downloadUrl);
+        var redirectResponse = await client.GetAsync(downloadUrl, cancellationToken);
         // aka.ms returns a 301 for valid redirects and a 302 to Bing for invalid URLs
         if (redirectResponse.StatusCode != HttpStatusCode.Moved)
         {
             Log.LogMessage(MessageImportance.High, $"Failed to download '{downloadUrl}': invalid aka.ms URL");
             return true;
         }
-        var packageResponse = await client.GetAsync(redirectResponse.Headers.Location!);
+        var packageResponse = await client.GetAsync(redirectResponse.Headers.Location!, cancellationToken);
 
         var packageUriPath = packageResponse.RequestMessage!.RequestUri!.LocalPath;
         string downloadedVersion = PathWithVersions.GetVersionInPath(packageUriPath).ToString();
@@ -48,7 +57,7 @@ public class GetClosestOfficialSdk : Microsoft.Build.Utilities.Task
         Log.LogMessage($"Copying {packageUriPath} to {ClosestOfficialSdkPath}");
         using (var file = File.Create(ClosestOfficialSdkPath))
         {
-            await packageResponse.Content.CopyToAsync(file);
+            await packageResponse.Content.CopyToAsync(file, cancellationToken);
         }
 
         return true;
