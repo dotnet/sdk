@@ -43,6 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         internal const string OperationEqualsArgument = nameof(OperationEqualsArgument);
         internal const string OperationBinaryLeft = nameof(OperationBinaryLeft);
         internal const string OperationBinaryRight = nameof(OperationBinaryRight);
+        internal const string OperationIsPattern = nameof(OperationIsPattern);
         internal const string OperationKey = nameof(OperationKey);
         internal const string IsAsyncKey = nameof(IsAsyncKey);
 
@@ -107,28 +108,29 @@ namespace Microsoft.NetCore.Analyzers.Performance
             ImmutableHashSet<IMethodSymbol>.Builder syncMethods = ImmutableHashSet.CreateBuilder<IMethodSymbol>();
             ImmutableHashSet<IMethodSymbol>.Builder asyncMethods = ImmutableHashSet.CreateBuilder<IMethodSymbol>();
 
-            INamedTypeSymbol? namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
+            WellKnownTypeProvider typeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+            INamedTypeSymbol? namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
             IEnumerable<IMethodSymbol>? methods = namedType?.GetMembers(Count).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(syncMethods, methods);
 
             methods = namedType?.GetMembers(LongCount).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(syncMethods, methods);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqQueryable);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqQueryable);
             methods = namedType?.GetMembers(Count).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(syncMethods, methods);
 
             methods = namedType?.GetMembers(LongCount).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(syncMethods, methods);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftEntityFrameworkCoreEntityFrameworkQueryableExtensions);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftEntityFrameworkCoreEntityFrameworkQueryableExtensions);
             methods = namedType?.GetMembers(CountAsync).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(asyncMethods, methods);
 
             methods = namedType?.GetMembers(LongCountAsync).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(asyncMethods, methods);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataEntityQueryableExtensions);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataEntityQueryableExtensions);
             methods = namedType?.GetMembers(CountAsync).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(asyncMethods, methods);
 
@@ -138,33 +140,33 @@ namespace Microsoft.NetCore.Analyzers.Performance
             // Allowed types that should report a CA1836 diagnosis given that there is proven benefit on doing so.
             ImmutableHashSet<ITypeSymbol>.Builder allowedTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentBag1);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentBag1);
             allowedTypesBuilder.AddIfNotNull(namedType);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentDictionary2);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentDictionary2);
             allowedTypesBuilder.AddIfNotNull(namedType);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentQueue1);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentQueue1);
             allowedTypesBuilder.AddIfNotNull(namedType);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentStack1);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentStack1);
             allowedTypesBuilder.AddIfNotNull(namedType);
 
             ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836 = allowedTypesBuilder.ToImmutable();
 
-            var linqExpressionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+            var linqExpressionType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
 
             if (syncMethods.Count > 0 || asyncMethods.Count > 0)
             {
                 context.RegisterOperationAction(operationContext => AnalyzeInvocationOperation(
-                    operationContext, linqExpressionType, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), allowedTypesForCA1836),
+                        operationContext, linqExpressionType, syncMethods.ToImmutable(), asyncMethods.ToImmutable(), allowedTypesForCA1836),
                     OperationKind.Invocation);
             }
 
             if (!allowedTypesForCA1836.IsEmpty)
             {
                 context.RegisterOperationAction(operationContext => AnalyzePropertyReference(
-                    operationContext, linqExpressionType, allowedTypesForCA1836),
+                        operationContext, linqExpressionType, allowedTypesForCA1836),
                     OperationKind.PropertyReference);
             }
 
@@ -272,11 +274,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
             // Analyze argument operation, potentially 0.Equals(obj.Count).
             else if (parentOperation is IArgumentOperation argumentOperation &&
-                argumentOperation.Parent is IInvocationOperation argumentParentInvocationOperation)
+                     argumentOperation.Parent is IInvocationOperation argumentParentInvocationOperation)
             {
                 parentOperation = argumentParentInvocationOperation;
                 shouldReplace = AnalyzeParentInvocationOperation(argumentParentInvocationOperation, isInstance: false);
                 operationKey = OperationEqualsArgument;
+            }
+            else if (parentOperation is IIsPatternOperation isPatternOperation)
+            {
+                shouldReplace = AnalyzeIsPatternOperation(isPatternOperation);
+                operationKey = OperationIsPattern;
             }
 
             return shouldReplace;
@@ -312,6 +319,30 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             return true;
+        }
+
+        private static bool AnalyzeIsPatternOperation(IIsPatternOperation isPatternOperation)
+        {
+            if (isPatternOperation.Pattern is INegatedPatternOperation negatedPattern)
+            {
+                return negatedPattern.Pattern is IConstantPatternOperation { Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
+                    or IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.GreaterThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
+                    or IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.GreaterThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } };
+            }
+
+            if (isPatternOperation.Pattern is IConstantPatternOperation constantPattern)
+            {
+                return constantPattern.Value is ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } };
+            }
+
+            if (isPatternOperation.Pattern is IRelationalPatternOperation relationalPattern)
+            {
+                return relationalPattern is { OperatorKind: BinaryOperatorKind.GreaterThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
+                    or { OperatorKind: BinaryOperatorKind.GreaterThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } }
+                    or { OperatorKind: BinaryOperatorKind.LessThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } };
+            }
+
+            return false;
         }
 
         private static void AnalyzeCountInvocationOperation(OperationAnalysisContext context, IInvocationOperation invocationOperation)
@@ -435,8 +466,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     ReportCA1827(context, shouldNegateAny, operationKey!, methodName, parent);
                 }
                 else if (allowedTypesForCA1836.Contains(type.OriginalDefinition) &&
-                   TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
-                   !IsPropertyGetOfIsEmptyUsingThisInstance(context, invocationOperation, isEmptyPropertySymbol!))
+                         TypeContainsVisibleProperty(context, type, IsEmpty, SpecialType.System_Boolean, out ISymbol? isEmptyPropertySymbol) &&
+                         !IsPropertyGetOfIsEmptyUsingThisInstance(context, invocationOperation, isEmptyPropertySymbol!))
                 {
                     ReportCA1836(context, operationKey!, shouldNegateIsEmpty, parent);
                 }
@@ -488,7 +519,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             IMethodSymbol methodSymbol = invocationOperation.TargetMethod;
 
             return string.Equals(methodSymbol.Name, WellKnownMemberNames.ObjectEquals, StringComparison.Ordinal)
-                && IsInRangeInclusive((uint)methodSymbol.ContainingType.SpecialType, (uint)SpecialType.System_Int32, (uint)SpecialType.System_UInt64);
+                   && IsInRangeInclusive((uint)methodSymbol.ContainingType.SpecialType, (uint)SpecialType.System_Int32, (uint)SpecialType.System_UInt64);
         }
 
         private static bool IsLeftCountComparison(IBinaryOperation binaryOperation, out bool shouldNegate)
@@ -508,10 +539,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         case BinaryOperatorKind.Equals:
                         case BinaryOperatorKind.LessThanOrEqual:
                             shouldNegate = false;
+
                             break;
                         case BinaryOperatorKind.NotEquals:
                         case BinaryOperatorKind.GreaterThan:
                             shouldNegate = true;
+
                             break;
                         default:
                             return false;
@@ -523,9 +556,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         case BinaryOperatorKind.LessThan:
                             shouldNegate = false;
+
                             break;
                         case BinaryOperatorKind.GreaterThanOrEqual:
                             shouldNegate = true;
+
                             break;
                         default:
                             return false;
@@ -556,11 +591,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         case BinaryOperatorKind.Equals:
                         case BinaryOperatorKind.GreaterThanOrEqual:
                             shouldNegate = false;
+
                             break;
 
                         case BinaryOperatorKind.LessThan:
                         case BinaryOperatorKind.NotEquals:
                             shouldNegate = true;
+
                             break;
 
                         default:
@@ -573,10 +610,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     {
                         case BinaryOperatorKind.LessThanOrEqual:
                             shouldNegate = true;
+
                             break;
 
                         case BinaryOperatorKind.GreaterThan:
                             shouldNegate = false;
+
                             break;
 
                         default:
@@ -594,7 +633,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static bool TypeContainsVisibleProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType propertyType, out ISymbol? propertySymbol)
             => TypeContainsVisibleProperty(context, type, propertyName, propertyType, propertyType, out propertySymbol);
 
-        private static bool TypeContainsVisibleProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType lowerBound, SpecialType upperBound, out ISymbol? propertySymbol)
+        private static bool TypeContainsVisibleProperty(OperationAnalysisContext context, ITypeSymbol type, string propertyName, SpecialType lowerBound, SpecialType upperBound,
+            out ISymbol? propertySymbol)
         {
             if (TypeContainsMember(context, type, propertyName, lowerBound, upperBound, out bool isPropertyValidAndVisible, out propertySymbol!))
             {
@@ -635,10 +675,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 if (type.GetMembers(propertyName).FirstOrDefault() is IPropertySymbol property)
                 {
                     isPropertyValidAndVisible = !property.IsStatic &&
-                        IsInRangeInclusive((uint)property.Type.SpecialType, (uint)lowerBound, (uint)upperBound) &&
-                        property.GetMethod != null &&
-                        context.Compilation.IsSymbolAccessibleWithin(property, context.ContainingSymbol.ContainingType) &&
-                        context.Compilation.IsSymbolAccessibleWithin(property.GetMethod, context.ContainingSymbol.ContainingType);
+                                                IsInRangeInclusive((uint)property.Type.SpecialType, (uint)lowerBound, (uint)upperBound) &&
+                                                property.GetMethod != null &&
+                                                context.Compilation.IsSymbolAccessibleWithin(property, context.ContainingSymbol.ContainingType) &&
+                                                context.Compilation.IsSymbolAccessibleWithin(property.GetMethod, context.ContainingSymbol.ContainingType);
 
                     propertySymbol = property;
 
@@ -647,6 +687,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 isPropertyValidAndVisible = default;
                 propertySymbol = default;
+
                 return false;
             }
         }
@@ -694,12 +735,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
             ISymbol containingSymbol = context.ContainingSymbol;
 
             return containingSymbol is IMethodSymbol methodSymbol &&
-                // Is within the body of a property getter?
-                methodSymbol.MethodKind == MethodKind.PropertyGet &&
-                // Is the getter of the IsEmpty property.
-                methodSymbol.AssociatedSymbol == isEmptyPropertySymbol &&
-                // Is 'this' instance?
-                operation?.GetInstanceType() == containingSymbol.ContainingType;
+                   // Is within the body of a property getter?
+                   methodSymbol.MethodKind == MethodKind.PropertyGet &&
+                   // Is the getter of the IsEmpty property.
+                   methodSymbol.AssociatedSymbol == isEmptyPropertySymbol &&
+                   // Is 'this' instance?
+                   operation?.GetInstanceType() == containingSymbol.ContainingType;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

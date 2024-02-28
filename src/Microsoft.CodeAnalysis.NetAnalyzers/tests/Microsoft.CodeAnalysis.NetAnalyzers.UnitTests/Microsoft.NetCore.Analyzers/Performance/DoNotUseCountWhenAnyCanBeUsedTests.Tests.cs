@@ -1,13 +1,17 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.Testing;
 using Microsoft.NetCore.CSharp.Analyzers.Performance;
 using Microsoft.NetCore.VisualBasic.Analyzers.Performance;
 using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>;
+
     public abstract class DoNotUseCountWhenAnyCanBeUsedTests : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
         protected DoNotUseCountWhenAnyCanBeUsedTests(TestsSourceCodeProvider sourceProvider, VerifierBase verifier)
@@ -316,6 +320,132 @@ class C
     }
 }
 ");
+        [Fact]
+        public Task IsZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is 0", "!enumerable.Any()");
+
+        [Fact]
+        public Task IsNotZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not 0", "enumerable.Any()");
+
+        [Fact]
+        public Task IsGreaterThanZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is > 0", "enumerable.Any()");
+
+        [Fact]
+        public Task IsNotGreaterThanZeroPattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not > 0", "!enumerable.Any()");
+
+        [Fact]
+        public Task IsGreaterThanOrEqualToZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is >= 0");
+
+        [Fact]
+        public Task IsNotGreaterThanOrEqualToZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not >= 0");
+
+        [Fact]
+        public Task IsLessThanOrEqualToZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is <= 0");
+
+        [Fact]
+        public Task IsNotLessThanOrEqualToZeroPattern_Diagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not <= 0");
+
+        [Fact]
+        public Task IsLessThanZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is < 0");
+
+        [Fact]
+        public Task IsNotLessThanZeroPattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not < 0");
+
+        [Fact]
+        public Task IsOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is 1");
+
+        [Fact]
+        public Task IsNotOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not 1");
+
+        [Fact]
+        public Task IsGreaterThanOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is > 1");
+
+        [Fact]
+        public Task IsNotGreaterThanOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not > 1");
+
+        [Fact]
+        public Task IsGreaterThanOrEqualToOnePattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is >= 1", "enumerable.Any()");
+
+        [Fact]
+        public Task IsNotGreaterThanOrEqualToOnePattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is not >= 1", "!enumerable.Any()");
+
+        [Fact]
+        public Task IsLessThanOrEqualToOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is <= 1");
+
+        [Fact]
+        public Task IsNotLessThanOrEqualToOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not <= 1");
+
+        [Fact]
+        public Task IsLessThanOnePattern_Diagnostic() => VerifyDiagnosticForPatternAsync("enumerable.Count() is < 1", "!enumerable.Any()");
+
+        [Fact]
+        public Task IsNotLessThanOnePattern_NoDiagnostic() => VerifyNoDiagnosticForPatternAsync("enumerable.Count() is not < 1");
+
+        private Task VerifyDiagnosticForPatternAsync(string pattern, string fixedPattern)
+        {
+            string code = $$"""
+                            using System.Collections.Generic;
+                            using System.Linq;
+
+                            class Program
+                            {
+                                void M(IEnumerable<string> enumerable)
+                                {
+                                    if ({|#0:{{pattern}}|})
+                                    {
+                                    }
+                                }
+                            }
+                            """;
+            string fixedCode = $$"""
+                                 using System.Collections.Generic;
+                                 using System.Linq;
+
+                                 class Program
+                                 {
+                                     void M(IEnumerable<string> enumerable)
+                                     {
+                                         if ({{fixedPattern}})
+                                         {
+                                         }
+                                     }
+                                 }
+                                 """;
+            DiagnosticResult diagnosticResult = new DiagnosticResult(UseCountProperlyAnalyzer.s_rule_CA1827)
+                .WithArguments("Count")
+                .WithLocation(0);
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                // FixedCode = fixedCode,
+                ExpectedDiagnostics = { diagnosticResult },
+                LanguageVersion = LanguageVersion.CSharp9
+            }.RunAsync();
+        }
+
+        private Task VerifyNoDiagnosticForPatternAsync(string pattern)
+        {
+            string code = $$"""
+                            using System.Collections.Generic;
+                            using System.Linq;
+
+                            class Program
+                            {
+                                void M(IEnumerable<string> enumerable)
+                                {
+                                    if ({{pattern}})
+                                    {
+                                    }
+                                }
+                            }
+                            """;
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                LanguageVersion = LanguageVersion.CSharp9
+            }.RunAsync();
+        }
     }
 
     public class CSharpDoNotUseLongCountWhenAnyCanBeUsedTestsEnumerable
