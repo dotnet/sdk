@@ -15,7 +15,7 @@
       differently from the ArcadeBuildFromSource MSBuild arg. Including both args is fine, but the
       custom sourcebuild arg is the one that's required. This avoids running bootstrapping twice.
     -->
-    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)sourcebuild</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)sourcebuild $(FlagParameterPrefix)tfm $(NetCurrent) /p:SourceBuildBootstrapTfm=$(NetCurrent)</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
