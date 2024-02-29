@@ -12,17 +12,17 @@
       </GetSingleArchiveItem>
 
       <GetClosestOfficialSdk BuiltSdkPath="$(_BuiltSdkArchivePath)" Condition="'$(_BuiltSdkArchivePath)' != ''">
-        <Output TaskParameter="ClosestOfficialSdkPath" PropertyName="ClosestOfficialSdkPath" />
+        <Output TaskParameter="ClosestOfficialSdkPath" PropertyName="_ClosestOfficialSdkPath" />
       </GetClosestOfficialSdk>
 
-      <Message Text="Failed to find closest official SDK archive." Importance="High" Condition="'$(_BuiltSdkArchivePath)' != '' AND '$(ClosestOfficialSdkPath)' == ''" />
+      <Message Text="Failed to find closest official SDK archive." Importance="High" Condition="'$(_BuiltSdkArchivePath)' != '' AND '$(_ClosestOfficialSdkPath)' == ''" />
 
-      <FindArchiveDiffs BaselineArchive="$(_BuiltSdkArchivePath)" TestArchive="$(ClosestOfficialSdkPath)" Condition="'$(_BuiltSdkArchivePath)' != '' AND '$(ClosestOfficialSdkPath)' != ''">
-        <Output TaskParameter="ContentDifferences" ItemName="ContentDifferences" />
+      <FindArchiveDiffs BaselineArchive="$(_BuiltSdkArchivePath)" TestArchive="$(_ClosestOfficialSdkPath)" Condition="'$(_BuiltSdkArchivePath)' != '' AND '$(_ClosestOfficialSdkPath)' != ''">
+        <Output TaskParameter="ContentDifferences" ItemName="_ContextDifferences" />
       </FindArchiveDiffs>
 
-      <Message Text="Difference in sdk archive: %(ContentDifferences.Kind): %(ContentDifferences.Identity)" Importance="High" Condition="'%(ContentDifferences.Identity)' != '' AND '%(ContentDifferences.Kind)' != 'Unchanged'"/>
-      <Delete Files="$(ClosestOfficialSdkPath)" Condition="'$(ClosestOfficialSdkPath)' == ''"/>
+      <Message Text="Difference in sdk archive: %(_ContextDifferences.Kind): %(_ContextDifferences.Identity)" Importance="High" Condition="'%(_ContextDifferences.Identity)' != '' AND '%(_ContextDifferences.Kind)' != 'Unchanged'"/>
+      <Delete Files="$(_ClosestOfficialSdkPath)" Condition="'$(_ClosestOfficialSdkPath)' == ''"/>
 
   </Target>
 
