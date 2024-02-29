@@ -87,6 +87,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
     </ItemGroup>
 
+    <!-- TODO: keep current semantics of SelfContained for PFR, and make a copy of PFR that does only the publish-specific stuff.
+         Change the below back to SelfContained, and pass PublishSelfContained to the copy.
+         This is to decouple build from publish, so that /t:Publish /p:PublishSelfContained=true works and can reuse existing Build target outputs
+         without setting _IsPublishing. -->
     <ProcessFrameworkReferences FrameworkReferences="@(FrameworkReference)"
                                 KnownFrameworkReferences="@(KnownFrameworkReference)"
                                 KnownRuntimePacks="@(KnownRuntimePack)"
@@ -96,7 +100,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 TargetPlatformVersion="$(TargetPlatformVersion)"
                                 TargetingPackRoot="$(NetCoreTargetingPackRoot)"
                                 RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
-                                SelfContained="$(SelfContained)"
+                                SelfContained="$(PublishSelfContained)"
                                 ReadyToRunEnabled="$(PublishReadyToRun)"
                                 ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
                                 PublishAot="$(PublishAot)"
@@ -117,7 +121,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 SilenceEnableSingleFileAnalyzerUnsupportedWarning="$(_SilenceEnableSingleFileAnalyzerUnsupportedWarning)"
                                 MinNonEolTargetFrameworkForSingleFile="$(_MinNonEolTargetFrameworkForSingleFile)"
                                 AotUseKnownRuntimePackForTarget="$(PublishAotUsingRuntimePack)"
-                                RuntimeIdentifier="$(RuntimeIdentifier)"
+                                RuntimeIdentifier="$(PublishRuntimeIdentifier)"
                                 RuntimeIdentifiers="$(RuntimeIdentifiers)"
                                 RuntimeFrameworkVersion="$(RuntimeFrameworkVersion)"
                                 TargetLatestRuntimePatch="$(TargetLatestRuntimePatch)"
@@ -429,6 +433,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="'$(RuntimeIdentifier)' == '' or '$(SelfContained)' != 'true'">
       <PackageConflictPlatformManifests Include="@(PlatformManifestsFromTargetingPacks)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(RuntimeIdentifier)' == '' or '$(PublishSelfContained)' != 'true'">
+      <PublishPackageConflictPlatformManifests Include="@(PlatformManifestsFromTargetingPacks)" />
     </ItemGroup>
 
     <ItemGroup>

@@ -77,11 +77,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishSelfContained>true</PublishSelfContained>
   </PropertyGroup>
 
-
-  <!-- Edit SelfContained to match the value of PublishSelfContained if we are publishing.
-       This Won't affect t:/Publish (because of _IsPublishing), and also won't override a global SelfContained property.-->
-  <PropertyGroup Condition="'$(_IsPublishing)' == 'true' and ('$(PublishSelfContained)' == 'true' or '$(PublishSelfContained)' == 'false')">
+  <!-- Edit SelfContained to match the value of PublishSelfContained if we are publishing for .NET 8.0 or lower.
+       This Won't affect t:/Publish (because of _IsPublishing), and also won't override a global SelfContained property.
+       Limit inference to TFMS 8.0 or below. -->
+  <PropertyGroup Condition="'$(_IsPublishing)' == 'true' and
+                            ('$(PublishSelfContained)' == 'true' or '$(PublishSelfContained)' == 'false') and
+                            $([MSBuild]::VersionLessThanOrEquals($(_TargetFrameworkVersionWithoutV), '8.0'))">
     <SelfContained>$(PublishSelfContained)</SelfContained>
+  </PropertyGroup>
+
+  <!-- Do the opposite inference... -->
+  <PropertyGroup Condition="'$(SelfContained)' == 'true' or '$(SelfContained)' == 'false'">
+    <PublishSelfContained Condition="'$(PublishSelfContained)' == ''">$(SelfContained)</PublishSelfContained>
   </PropertyGroup>
 
   <!-- Automatically infer the RuntimeIdentifier for properties that require it.
@@ -97,24 +104,41 @@ Copyright (c) .NET Foundation. All rights reserved.
                  '$(RuntimeIdentifier)' == '' and
                  '$(_IsExecutable)' == 'true' and '$(IsTestProject)' != 'true' and
                  '$(IsRidAgnostic)' != 'true' and
+                 '$(SelfContained)' == 'true'
+                 ">true</UseCurrentRuntimeIdentifier>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(PublishUseCurrentRuntimeIdentifier)' == ''">
+    <PublishUseCurrentRuntimeIdentifier Condition="
+                 '$(PublishRuntimeIdentifier)' == '' and
+                 '$(_IsExecutable)' == 'true' and '$(IsTestProject)' != 'true' and
+                 '$(IsRidAgnostic)' != 'true' and
                  (
-                   '$(SelfContained)' == 'true' or
-                   ('$(_IsPublishing)' == 'true' and
-                      (
-                        '$(PublishReadyToRun)' == 'true' or
-                        '$(PublishSingleFile)' == 'true' or
-                        '$(PublishAot)' == 'true'
-                      )
-                   )
-                 )">true</UseCurrentRuntimeIdentifier>
+                   '$(PublishSelfContained)' == 'true' or
+                   '$(PublishReadyToRun)' == 'true' or
+                   '$(PublishSingleFile)' == 'true' or
+                   '$(PublishAot)' == 'true'
+                 )">true</PublishUseCurrentRuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == 'true'">
     <RuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(_IsPublishing)' == 'true' and '$(PublishRuntimeIdentifier)' != ''">
+  <PropertyGroup Condition="'$(PublishUseCurrentRuntimeIdentifier)' == 'true'">
+    <PublishRuntimeIdentifier>$(NETCoreSdkPortableRuntimeIdentifier)</PublishRuntimeIdentifier>
+  </PropertyGroup>
+
+  <!-- Limit PublishRID => RID inference to 8.0 and below. -->
+  <PropertyGroup Condition="'$(_IsPublishing)' == 'true' and
+                            '$(PublishRuntimeIdentifier)' != '' and
+                            $([MSBuild]::VersionLessThanOrEquals($(_TargetFrameworkVersionWithoutV), '8.0'))">
     <RuntimeIdentifier>$(PublishRuntimeIdentifier)</RuntimeIdentifier>
+  </PropertyGroup>
+
+  <!-- Do the opposite inference... -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <PublishRuntimeIdentifier Condition="'$(PublishRuntimeIdentifier)' == ''">$(RuntimeIdentifier)</PublishRuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(PlatformTarget)' == ''">
@@ -175,6 +199,12 @@ Copyright (c) .NET Foundation. All rights reserved.
                               $([MSBuild]::VersionLessThan($(_TargetFrameworkVersionWithoutV), '8.0'))">true</SelfContained>
     
     <SelfContained Condition="'$(SelfContained)' == ''">false</SelfContained>
+
+    <!-- TODO: dedup this. -->
+    <PublishSelfContained Condition="'$(PublishSelfContained)' == '' and
+                                     ('$(SelfContained)' == 'true' or '$(SelfContained)' == 'false')
+                                    ">$(SelfContained)</PublishSelfContained>
+
     <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser'))">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_IsPublishing)' == 'true' and '$(PublishAot)' == 'true'">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_RuntimeIdentifierUsesAppHost)' == ''">true</_RuntimeIdentifierUsesAppHost>

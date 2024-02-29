@@ -183,11 +183,11 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [InlineData(false, false)] // publish rid overrides rid in project file if publishing
-        [InlineData(true, false)] // publish rid doesnt override global rid
-        [InlineData(true, true)] // publish rid doesnt override global rid, even if global
+        [InlineData(true, false)] // publish rid doesn't override global rid
+        [InlineData(true, true)] // publish rid doesn't override global rid, even if global
         public void PublishRuntimeIdentifierSetsRuntimeIdentifierAndDoesOrDoesntOverrideRID(bool runtimeIdentifierIsGlobal, bool publishRuntimeIdentifierIsGlobal)
         {
-            string tfm = ToolsetInfo.CurrentTargetFramework;
+            string tfm = "net8.0"; // ToolsetInfo.CurrentTargetFramework;
             string publishRuntimeIdentifier = "win-x64";
             string runtimeIdentifier = "win-x86";
 
@@ -267,7 +267,7 @@ namespace Microsoft.NET.Publish.Tests
         public void SomePublishPropertiesInferSelfContained(string property, bool useFrameworkDependentDefaultTargetFramework)
         {
             // Note: there is a bug with PublishAot I think where this test will fail for Aot if the testname is too long. Do not make it longer.
-            var tfm = useFrameworkDependentDefaultTargetFramework ? ToolsetInfo.CurrentTargetFramework : "net7.0"; // net 7 is the last non FDD default TFM at the time of this PR.
+            var tfm = useFrameworkDependentDefaultTargetFramework ? "net8.0" : "net7.0"; // net 7 is the last non FDD default TFM at the time of this PR.
             var testProject = new TestProject()
             {
                 IsExe = true,

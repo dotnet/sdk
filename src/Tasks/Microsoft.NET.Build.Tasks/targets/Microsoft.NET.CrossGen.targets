@@ -21,7 +21,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRunComposite Condition="'$(PublishReadyToRunComposite)' == '' and '$(PublishSingleFile)' == 'true'  and '$(PublishReadyToRun)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' >= '7.0'">true</PublishReadyToRunComposite>
     <PublishReadyToRunComposite Condition="'$(PublishReadyToRunComposite)' == '' and '$(_TargetFrameworkVersionWithoutV)' >= '6.0'">false</PublishReadyToRunComposite>
     <PublishReadyToRunComposite Condition="'$(PublishReadyToRunComposite)' == ''">true</PublishReadyToRunComposite>
-    <PublishReadyToRunComposite Condition="'$(PublishReadyToRunUseCrossgen2)' != 'true' or '$(SelfContained)' != 'true'">false</PublishReadyToRunComposite>
+    <PublishReadyToRunComposite Condition="'$(PublishReadyToRunUseCrossgen2)' != 'true' or '$(PublishSelfContained)' != 'true'">false</PublishReadyToRunComposite>
     <PublishReadyToRunUseRuntimePackOptimizationData Condition="'$(PublishReadyToRunUseRuntimePackOptimizationData)' == ''">true</PublishReadyToRunUseRuntimePackOptimizationData>
     <PublishReadyToRunPerfmapFormatVersion Condition="'$(PublishReadyToRunPerfmapFormatVersion)' == ''">1</PublishReadyToRunPerfmapFormatVersion>
   </PropertyGroup>
@@ -298,7 +298,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                             RuntimeFrameworks="@(RuntimeFramework)"
                             ExcludedPackageReferences="@(_ExcludeFromPublishPackageReference)"
-                            IsSelfContained="$(SelfContained)"
+                            IsSelfContained="$(PublishSelfContained)"
                             PreserveStoreLayout="false">
 
       <Output TaskParameter="ResolvedAssets" ItemName="CrossgenResolvedAssembliesToPublish" />
@@ -396,16 +396,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Even if app is not self-contained, crossgen requires closure of implementation assemblies. Resolve conflicts
          of the runtime pack assets as though we were copying them locally, and add them to the R2R implementation
          assembly list. -->
-    <ItemGroup Condition="'$(SelfContained)' != 'true'">
+    <ItemGroup Condition="'$(PublishSelfContained)' != 'true'">
       <_ReadyToRunImplementationAssemblies Include="@(_ManagedRuntimePackAssembly)" ReferenceOnly="true" />
     </ItemGroup>
 
-    <ResolvePackageFileConflicts Condition="'$(SelfContained)' != 'true'"
+    <ResolvePackageFileConflicts Condition="'$(PublishSelfContained)' != 'true'"
                                  ReferenceCopyLocalPaths="@(_ReadyToRunImplementationAssemblies)">
       <Output TaskParameter="ReferenceCopyLocalPathsWithoutConflicts" ItemName="_ReadyToRunImplementationAssembliesWithoutConflicts" />
     </ResolvePackageFileConflicts>
 
-    <ItemGroup Condition="'$(SelfContained)' != 'true'">
+    <ItemGroup Condition="'$(PublishSelfContained)' != 'true'">
       <_ReadyToRunImplementationAssemblies Remove="@(_ReadyToRunImplementationAssemblies)" />
       <_ReadyToRunImplementationAssemblies Include="@(_ReadyToRunImplementationAssembliesWithoutConflicts)" />
     </ItemGroup>
