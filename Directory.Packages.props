@@ -6,8 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="BenchmarkDotNet.Annotations" Version="0.13.5" />
-    <PackageVersion Include="BenchmarkDotNet" Version="0.13.5" />
     <PackageVersion Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
     <PackageVersion Include="FluentAssertions.Json" Version="$(FluentAssertionsJsonVersion)" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
