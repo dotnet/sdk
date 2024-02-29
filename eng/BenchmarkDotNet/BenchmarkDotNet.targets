@@ -1,6 +1,0 @@
-<Project>
-
-  <!-- TODO: Move perf.ps1 infra into this file and hook it into Arcade's test infrastructure. -->
-  <Target Name="RunTests" />
-
-</Project>
