@@ -22,13 +22,6 @@ jobs:
   strategy:
     maxParallel: 8
     matrix:
-      format:
-        _repo: "https://github.com/dotnet/format"
-        _repoName: "dotnet/format"
-        _targetSolution: "format.sln"
-        _branchName: "main"
-        _sha: "c3b6ef4e4a480cae887bbf47fd674bfab380ef4e"
-        _useParentSdk: 0
       roslyn:
         _repo: "https://github.com/dotnet/roslyn"
         _repoName: "dotnet/roslyn"
