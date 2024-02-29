@@ -21,13 +21,9 @@ public abstract class Archive : IDisposable
             throw new NotSupportedException("Unsupported archive type");
     }
 
-    public abstract bool Contains(string relativePath);
-
     public abstract string[] GetFileNames();
 
-    public abstract string[] GetFileLines(string relativePath);
-
-    public abstract Task<byte[]> GetFileBytesAsync(string relativePath);
+    public abstract bool Contains(string relativePath);
 
     public abstract void Dispose();
 
@@ -61,19 +57,6 @@ public abstract class Archive : IDisposable
             return Directory.GetFiles(_extractedFolder, "*", SearchOption.AllDirectories).Select(f => f.Substring(_extractedFolder.Length + 1)).ToArray();
         }
 
-        public override string[] GetFileLines(string relativePath)
-        {
-            return File.ReadAllLines(Path.Combine(_extractedFolder, relativePath));
-        }
-
-        public override Task<byte[]> GetFileBytesAsync(string relativePath)
-        {
-            var filePath = Path.Combine(_extractedFolder, relativePath);
-            if (!File.Exists(filePath))
-                return Task.FromResult<byte[]>([]);
-            return File.ReadAllBytesAsync(Path.Combine(_extractedFolder, relativePath));
-        }
-
         public override void Dispose()
         {
             if (Directory.Exists(_extractedFolder))
@@ -103,25 +86,6 @@ public abstract class Archive : IDisposable
         public override string[] GetFileNames()
         {
             return _archive.Entries.Select(e => e.FullName).ToArray();
-        }
-
-        public override string[] GetFileLines(string relativePath)
-        {
-            var entry = _archive.GetEntry(relativePath);
-            if (entry == null)
-                throw new ArgumentException("File not found");
-            return entry.Lines();
-        }
-        public override Task<byte[]> GetFileBytesAsync(string relativePath)
-        {
-            using (var entry = _archive.GetEntry(relativePath)?.Open())
-            {
-                if (entry == null)
-                {
-                    return Task.FromResult<byte[]>([]);
-                }
-                return entry.ReadToEndAsync();
-            }
         }
 
         public override void Dispose()
