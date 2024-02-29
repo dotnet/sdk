@@ -11,7 +11,7 @@ jobs:
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/'
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'dotnet-format formatting Check'
       continueOnError: true
       condition: not(succeeded())
