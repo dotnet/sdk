@@ -80,16 +80,16 @@ public static class PathWithVersions
         StringBuilder sb = new StringBuilder();
         bool altered = false;
         ReadOnlySpan<char> myPath = path;
-        while (TryGetPathLeaf(myPath, out var directory, out var directoryPart))
+        while (TryGetPathLeaf(myPath, out var root, out var leaf))
         {
-            sb = sb.Insert(0, Path.DirectorySeparatorChar);
-            var versionOrDirectory = ReplaceVersionString(directoryPart);
+            var versionOrDirectory = ReplaceVersionString(leaf);
             if (versionOrDirectory == VersionPlaceholder)
             {
                 altered = true;
             }
             sb = sb.Insert(0, versionOrDirectory);
-            myPath = directory;
+            sb = sb.Insert(0, Path.DirectorySeparatorChar);
+            myPath = root;
         }
         if (!altered)
             return path;

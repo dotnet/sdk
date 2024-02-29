@@ -43,13 +43,13 @@ public class FindArchiveDiffs : Microsoft.Build.Utilities.Task, ICancelableTask
     {
         var baselineTask = Archive.Create(BaselineArchive.ItemSpec);
         var testTask = Archive.Create(TestArchive.ItemSpec);
-        Task.WaitAll(baselineTask, testTask);
+        Task.WaitAll([baselineTask, testTask], cancellationToken);
         using var baseline = await baselineTask;
         using var test = await testTask;
         var baselineFiles = baseline.GetFileNames();
         var testFiles = test.GetFileNames();
         ContentDifferences =
-            GetDiffs(baselineFiles, testFiles, PathWithVersions.Equal, PathWithVersions.GetVersionlessPath)
+            GetDiffs(baselineFiles, testFiles, PathWithVersions.Equal, PathWithVersions.GetVersionlessPath, cancellationToken)
             .Select(FromDiff)
             .ToArray();
         return true;
@@ -73,8 +73,10 @@ public class FindArchiveDiffs : Microsoft.Build.Utilities.Task, ICancelableTask
         string[] originalPathsWithVersions,
         string[] modifiedPathsWithVersions,
         Func<string, string, bool> equalityComparer,
-        Func<string, string>? formatter = null)
+        Func<string, string>? formatter = null,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         formatter ??= static s => s;
         // Edit distance algorithm: https://en.wikipedia.org/wiki/Longest_common_subsequence
 
@@ -93,6 +95,7 @@ public class FindArchiveDiffs : Microsoft.Build.Utilities.Task, ICancelableTask
         // Compute edit distance
         for (int i = 1; i <= originalPathsWithVersions.Length; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             for (int j = 1; j <= modifiedPathsWithVersions.Length; j++)
             {
                 if (equalityComparer(originalPathsWithVersions[i - 1], modifiedPathsWithVersions[j - 1]))
@@ -113,6 +116,7 @@ public class FindArchiveDiffs : Microsoft.Build.Utilities.Task, ICancelableTask
         List<(string, DifferenceKind)> formattedDiff = [];
         while (row > 0 || col > 0)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var baselineItem = originalPathsWithVersions[row - 1];
             var testItem = modifiedPathsWithVersions[col - 1];
             if (row > 0 && col > 0 && PathWithVersions.Equal(baselineItem, testItem))
