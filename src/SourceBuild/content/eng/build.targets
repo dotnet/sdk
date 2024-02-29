@@ -1,23 +1,23 @@
 <Project>
   <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="FindArchiveDiffs" />
   <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetClosestOfficialSdk" />
-  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetSingleTarballItem" />
+  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetSingleArchiveItem" />
 
   <Target Name="ReportSdkArchiveDiffs"
           AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion" >
 
-      <GetSingleTarballItem SdkTarballItems="@(SdkTarballItem)">
-        <Output TaskParameter="BestSdkTarballItem" PropertyName="_TestSdkArchivePath"/>
-      </GetSingleTarballItem>
+      <GetSingleArchiveItem SdkArchiveItems="@(SdkTarballItem)">
+        <Output TaskParameter="BestSdkArchiveItem" PropertyName="_BuiltSdkArchivePath"/>
+      </GetSingleArchiveItem>
 
-      <GetClosestOfficialSdk BuiltSdkPath="$(_TestSdkArchivePath)" Condition="'$(_TestSdkArchivePath)' != ''">
+      <GetClosestOfficialSdk BuiltSdkPath="$(_BuiltSdkArchivePath)" Condition="'$(_BuiltSdkArchivePath)' != ''">
         <Output TaskParameter="ClosestOfficialSdkPath" PropertyName="ClosestOfficialSdkPath" />
       </GetClosestOfficialSdk>
 
-      <Message Text="Failed to find closest official SDK archive." Importance="High" Condition="'$(_TestSdkArchivePath)' != '' AND '$(ClosestOfficialSdkPath)' == ''" />
+      <Message Text="Failed to find closest official SDK archive." Importance="High" Condition="'$(_BuiltSdkArchivePath)' != '' AND '$(ClosestOfficialSdkPath)' == ''" />
 
-      <FindArchiveDiffs BaselineArchive="$(_TestSdkArchivePath)" TestArchive="$(ClosestOfficialSdkPath)" Condition="'$(_TestSdkArchivePath)' != '' AND '$(ClosestOfficialSdkPath)' != ''">
+      <FindArchiveDiffs BaselineArchive="$(_BuiltSdkArchivePath)" TestArchive="$(ClosestOfficialSdkPath)" Condition="'$(_BuiltSdkArchivePath)' != '' AND '$(ClosestOfficialSdkPath)' != ''">
         <Output TaskParameter="ContentDifferences" ItemName="ContentDifferences" />
       </FindArchiveDiffs>
 
