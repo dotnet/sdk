@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.Build.Framework;
 
 public class GetValidArchiveItems : Microsoft.Build.Utilities.Task
@@ -21,15 +22,16 @@ public class GetValidArchiveItems : Microsoft.Build.Utilities.Task
         List<ITaskItem> archiveItems = new();
         foreach (var item in ArchiveItems)
         {
+            var filename = Path.GetFileName(item.ItemSpec);
             try
             {
                 // Ensure the version and RID info can be parsed from the item
-                _ = Archive.GetInfoFromFileName(item.ItemSpec, ArchiveName);
+                _ = Archive.GetInfoFromFileName(filename, ArchiveName);
                 archiveItems.Add(item);
             }
             catch (ArgumentException e)
             {
-                Log.LogMessage(MessageImportance.High, e.Message);
+                Log.LogMessage($"'{item.ItemSpec}' is not a valid archive name: '{e.Message}'");
                 continue;
             }
         }
