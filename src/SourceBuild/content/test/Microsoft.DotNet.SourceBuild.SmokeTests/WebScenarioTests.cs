@@ -30,7 +30,7 @@ public class WebScenarioTests : SdkTests
     {
         foreach (DotNetLanguage language in new[] { DotNetLanguage.CSharp, DotNetLanguage.FSharp })
         {
-            yield return new(nameof(WebScenarioTests), language, DotNetTemplate.Web,    DotNetActions.Build | DotNetActions.Run | (DotNetHelper.ShouldPublishComplex() ? DotNetActions.None : DotNetActions.PublishComplex));
+            yield return new(nameof(WebScenarioTests), language, DotNetTemplate.Web,    DotNetActions.Build | DotNetActions.Run | (DotNetHelper.ShouldPublishComplex() ? DotNetActions.PublishComplex : DotNetActions.None));
             yield return new(nameof(WebScenarioTests), language, DotNetTemplate.Mvc,    DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish) { NoHttps = true };
             yield return new(nameof(WebScenarioTests), language, DotNetTemplate.WebApi, DotNetActions.Build | DotNetActions.Run | DotNetActions.Publish);
         }
