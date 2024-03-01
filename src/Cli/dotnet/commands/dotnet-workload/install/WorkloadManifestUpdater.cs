@@ -94,6 +94,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             await UpdateManifestWithVersionAsync("Microsoft.NET.Workloads", includePreviews: true, _sdkFeatureBand, new NuGetVersion(correctedVersion), offlineCache);
         }
 
+        private void PrintWorkloadSetTransition(string newVersion)
+        {
+            var currentVersion = _workloadResolver.GetWorkloadVersion();
+            if (currentVersion == null)
+            {
+                _reporter.WriteLine(string.Format(LocalizableStrings.NewWorkloadSet, newVersion));
+            }
+            else
+            {
+                _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetUpgrade, currentVersion, newVersion));
+            }
+        }
+
         public async static Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
         {
             try
@@ -327,9 +340,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     // Create version file later used as part of installing the workload set in the file-based installer and in the msi-based installer
                     using PackageArchiveReader packageReader = new(packagePath);
                     var downloadedPackageVersion = packageReader.NuspecReader.GetVersion();
-                    var correctedPackageVersion = WorkloadSetPackageVersionToWorkloadSetVersion(_sdkFeatureBand, downloadedPackageVersion.ToString()); // $"{downloadedPackageVersion.Major}.0.{downloadedPackageVersion.Minor}.{downloadedPackageVersion.Patch}"
-                        // + (string.IsNullOrWhiteSpace(downloadedPackageVersion.Release) ? string.Empty : '-' + downloadedPackageVersion.Release);
+                    var correctedPackageVersion = WorkloadSetPackageVersionToWorkloadSetVersion(_sdkFeatureBand, downloadedPackageVersion.ToString());
                     File.WriteAllText(Path.Combine(adManifestPath, "packageVersion.txt"), correctedPackageVersion);
+                    PrintWorkloadSetTransition(correctedPackageVersion);
                 }
 
                 if (_displayManifestUpdates)
