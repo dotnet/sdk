@@ -8,6 +8,9 @@
           DependsOnTargets="DetermineSourceBuiltSdkVersion"
           Condition="'$(ShortStack)' != 'true'" >
 
+      <Message Text="Comparing built SDK against closest official build"
+               Importance="High"/>
+
       <GetValidArchiveItems ArchiveItems="@(SdkTarballItem)"
                             ArchiveName="dotnet-sdk">
         <Output TaskParameter="ValidArchiveItems"

@@ -122,6 +122,15 @@ public abstract class Archive : IDisposable
             .Replace(Version, "")
             .Replace(packageName, "")
             .Trim('-', '.', '_');
+
+        // A RID with '.' must have a version number after the first '.' in each part of the RID. For example, alpine.3.10-arm64.
+        // Otherwise, it's likely an archive of another type of file that we don't handle here, for example, .msi.wixpack.zip.
+        var ridParts = Rid.Split('-');
+        foreach(var item in ridParts.SelectMany(p => p.Split('.').Skip(1)))
+        {
+            if (!int.TryParse(item, out _))
+                throw new ArgumentException($"Invalid Rid '{Rid}' in archive file name '{filename}'. Expected RID with '.' to be part of a version. This likely means the file is an archive of a different file type.");
+        }
         return (Version, Rid, extension);
     }
 }
