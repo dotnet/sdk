@@ -43,6 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         internal const string OperationEqualsArgument = nameof(OperationEqualsArgument);
         internal const string OperationBinaryLeft = nameof(OperationBinaryLeft);
         internal const string OperationBinaryRight = nameof(OperationBinaryRight);
+        internal const string OperationIsPattern = nameof(OperationIsPattern);
         internal const string OperationKey = nameof(OperationKey);
         internal const string IsAsyncKey = nameof(IsAsyncKey);
 
@@ -107,28 +108,29 @@ namespace Microsoft.NetCore.Analyzers.Performance
             ImmutableHashSet<IMethodSymbol>.Builder syncMethods = ImmutableHashSet.CreateBuilder<IMethodSymbol>();
             ImmutableHashSet<IMethodSymbol>.Builder asyncMethods = ImmutableHashSet.CreateBuilder<IMethodSymbol>();
 
-            INamedTypeSymbol? namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
+            WellKnownTypeProvider typeProvider = WellKnownTypeProvider.GetOrCreate(context.Compilation);
+            INamedTypeSymbol? namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqEnumerable);
             IEnumerable<IMethodSymbol>? methods = namedType?.GetMembers(Count).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(syncMethods, methods);
 
             methods = namedType?.GetMembers(LongCount).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(syncMethods, methods);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqQueryable);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqQueryable);
             methods = namedType?.GetMembers(Count).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(syncMethods, methods);
 
             methods = namedType?.GetMembers(LongCount).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(syncMethods, methods);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftEntityFrameworkCoreEntityFrameworkQueryableExtensions);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.MicrosoftEntityFrameworkCoreEntityFrameworkQueryableExtensions);
             methods = namedType?.GetMembers(CountAsync).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(asyncMethods, methods);
 
             methods = namedType?.GetMembers(LongCountAsync).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(asyncMethods, methods);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataEntityQueryableExtensions);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDataEntityQueryableExtensions);
             methods = namedType?.GetMembers(CountAsync).OfType<IMethodSymbol>().Where(m => m.Parameters.Length <= 2);
             AddIfNotNull(asyncMethods, methods);
 
@@ -138,21 +140,21 @@ namespace Microsoft.NetCore.Analyzers.Performance
             // Allowed types that should report a CA1836 diagnosis given that there is proven benefit on doing so.
             ImmutableHashSet<ITypeSymbol>.Builder allowedTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentBag1);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentBag1);
             allowedTypesBuilder.AddIfNotNull(namedType);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentDictionary2);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentDictionary2);
             allowedTypesBuilder.AddIfNotNull(namedType);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentQueue1);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentQueue1);
             allowedTypesBuilder.AddIfNotNull(namedType);
 
-            namedType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentStack1);
+            namedType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemCollectionsConcurrentConcurrentStack1);
             allowedTypesBuilder.AddIfNotNull(namedType);
 
             ImmutableHashSet<ITypeSymbol> allowedTypesForCA1836 = allowedTypesBuilder.ToImmutable();
 
-            var linqExpressionType = context.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+            var linqExpressionType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
 
             if (syncMethods.Count > 0 || asyncMethods.Count > 0)
             {
@@ -278,6 +280,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 shouldReplace = AnalyzeParentInvocationOperation(argumentParentInvocationOperation, isInstance: false);
                 operationKey = OperationEqualsArgument;
             }
+            else if (parentOperation is IIsPatternOperation isPatternOperation)
+            {
+                shouldReplace = AnalyzeIsPatternOperation(isPatternOperation, out shouldNegateIsEmpty);
+                operationKey = OperationIsPattern;
+            }
 
             return shouldReplace;
         }
@@ -312,6 +319,65 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Analyzes different patterns of ".Count() is …".
+        /// </summary>
+        /// <param name="isPatternOperation">The pattern.</param>
+        /// <param name="shouldNegateIsEmpty">
+        /// Determines if the resulting rewritten call to ".Any()" should be negated.
+        /// When we want the call to be negated, we set 'shouldNegateIsEmpty' to 'false', since 'shouldNegateIsEmpty' = '!shouldNegateAny'.
+        /// This negation happens before 'ReportCA1827()' is called.
+        /// </param>
+        /// <returns></returns>
+        private static bool AnalyzeIsPatternOperation(IIsPatternOperation isPatternOperation, out bool shouldNegateIsEmpty)
+        {
+            shouldNegateIsEmpty = true;
+
+            // Handles ".Count() is not …" patterns.
+            if (isPatternOperation.Pattern is INegatedPatternOperation negatedPattern)
+            {
+                // Handles the ".Count() is not > 0" and ".Count() is not >= 1" patterns.
+                if (negatedPattern.Pattern is IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.GreaterThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
+                    or IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.GreaterThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } })
+                {
+                    shouldNegateIsEmpty = false;
+
+                    return true;
+                }
+
+                // Handles the ".Count() is not 0" and ".Count() is not <= 0" patterns.
+                return negatedPattern.Pattern is IConstantPatternOperation { Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
+                    or IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.LessThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } };
+            }
+
+            // Handles the ".Count() is 0" pattern.
+            if (isPatternOperation.Pattern is IConstantPatternOperation { Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } })
+            {
+                shouldNegateIsEmpty = false;
+
+                return true;
+            }
+
+            // Handles the ".Count() </<=/>/>= …" patterns.
+            if (isPatternOperation.Pattern is IRelationalPatternOperation relationalPattern)
+            {
+                // Handles the ".Count() is < 1" and ".Count() is <= 0" patterns.
+                if (relationalPattern is { OperatorKind: BinaryOperatorKind.LessThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } }
+                    or { OperatorKind: BinaryOperatorKind.LessThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } })
+                {
+                    shouldNegateIsEmpty = false;
+
+                    return true;
+                }
+
+                // Handles the ".Count() is > 0" and ".Count() is >= 1" patterns.
+                return relationalPattern is { OperatorKind: BinaryOperatorKind.GreaterThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
+                    or { OperatorKind: BinaryOperatorKind.GreaterThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } };
+            }
+
+            return false;
         }
 
         private static void AnalyzeCountInvocationOperation(OperationAnalysisContext context, IInvocationOperation invocationOperation)
@@ -647,6 +713,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 isPropertyValidAndVisible = default;
                 propertySymbol = default;
+
                 return false;
             }
         }
