@@ -1,8 +1,6 @@
-<!-- Platform needs to be set with TreatAsLocalProperty since it is a global property and cannot be overridden otherwise. -->
-<Project Sdk="Microsoft.DotNet.CMake.Sdk" TreatAsLocalProperty="Platform">
+<Project Sdk="Microsoft.DotNet.CMake.Sdk">
 
   <PropertyGroup>
-    <Platform Condition="'$(Platform)' == '' Or $(Platform) == 'AnyCPU'">$(Architecture)</Platform>
     <!-- We use forward slashes in the ArtifactsDir path because backslashes in the CMakeLists.txt are escape characters. -->
     <ArtifactsDirForCMake>$([System.String]::Copy($(ArtifactsDir)).Replace('\','/'))</ArtifactsDirForCMake>
     <CMakeLists>CMakeLists.txt</CMakeLists>
