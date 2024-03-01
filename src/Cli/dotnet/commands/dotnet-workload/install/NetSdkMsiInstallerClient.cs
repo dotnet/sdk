@@ -292,7 +292,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             VerifyPackage(msi);
             DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
 
-            InstallAction plannedAction = PlanPackage(msi, state, requestedAction, installedVersion, out IEnumerable<string> relatedProducts);
+            InstallAction plannedAction = PlanPackage(msi, state, requestedAction, installedVersion);
 
             if (plannedAction != InstallAction.None)
             {
