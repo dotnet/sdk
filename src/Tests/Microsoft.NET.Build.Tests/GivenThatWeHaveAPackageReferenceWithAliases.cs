@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Tests
         public void CanBuildProjectWithPackageReferencesWithConflictingTypes()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
-            var packageReferences = GetPackageReferencesWithConflictingTypes(targetFramework, packageNames: new string[] { "A", "B" });
+            var packageReferences = GetPackageReferencesWithConflictingTypes(targetFramework, packageNames: new string[] { "ConflictingA", "ConflictingB" });
 
             TestProject testProject = new TestProject()
             {
@@ -49,7 +49,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [RequiresMSBuildVersionFact("16.8.0", Skip = "https://github.com/dotnet/sdk/issues/38268")]
+        [RequiresMSBuildVersionFact("16.8.0")]
         public void CanBuildProjectWithMultiplePackageReferencesWithAliases()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
@@ -98,7 +98,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
 
-            var packageReferenceA = GetPackageReference(targetFramework, "A", ClassLibMultipleClasses);
+            var packageReferenceA = GetPackageReference(targetFramework, "MultipleClasses", ClassLibMultipleClasses);
 
             TestProject testProject = new TestProject()
             {
