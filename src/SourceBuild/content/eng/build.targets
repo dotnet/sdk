@@ -1,28 +1,41 @@
 <Project>
-  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="FindArchiveDiffs" />
+  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetValidArchiveItems" />
   <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetClosestOfficialSdk" />
-  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetSingleArchiveItem" />
+  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="FindArchiveDiffs" />
 
   <Target Name="ReportSdkArchiveDiffs"
           AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion" >
 
-      <GetSingleArchiveItem SdkArchiveItems="@(SdkTarballItem)">
-        <Output TaskParameter="BestSdkArchiveItem" PropertyName="_BuiltSdkArchivePath"/>
-      </GetSingleArchiveItem>
+      <GetValidArchiveItems ArchiveItems="@(SdkTarballItem)"
+                            ArchiveName="dotnet-sdk"
+                            Condition="'@(SdkTarballItem->Count())' != '0'">
+        <Output TaskParameter="ValidArchiveItems"
+                ItemName="_BuiltSdkArchivePath"/>
+      </GetValidArchiveItems>
 
-      <GetClosestOfficialSdk BuiltSdkPath="$(_BuiltSdkArchivePath)" Condition="'$(_BuiltSdkArchivePath)' != ''">
-        <Output TaskParameter="ClosestOfficialSdkPath" PropertyName="_ClosestOfficialSdkPath" />
+      <Error Message="Multiple valid dotnet-sdk archives found."
+             Condition="'@(_BuiltSdkArchivePath->Count())' != '1'" />
+
+      <GetClosestOfficialSdk BuiltArchivePath="@(_BuiltSdkArchivePath)"
+                             Condition="'@(_BuiltSdkArchivePath)' != ''">
+        <Output TaskParameter="ClosestOfficialArchivePath"
+                PropertyName="_ClosestOfficialSdkPath" />
       </GetClosestOfficialSdk>
 
-      <Message Text="Failed to find closest official SDK archive." Importance="High" Condition="'$(_BuiltSdkArchivePath)' != '' AND '$(_ClosestOfficialSdkPath)' == ''" />
-
-      <FindArchiveDiffs BaselineArchive="$(_BuiltSdkArchivePath)" TestArchive="$(_ClosestOfficialSdkPath)" Condition="'$(_BuiltSdkArchivePath)' != '' AND '$(_ClosestOfficialSdkPath)' != ''">
-        <Output TaskParameter="ContentDifferences" ItemName="_ContextDifferences" />
+      <FindArchiveDiffs BaselineArchive="@(_BuiltSdkArchivePath)"
+                        TestArchive="$(_ClosestOfficialSdkPath)"
+                        Condition="'@(_BuiltSdkArchivePath)' != '' AND '$(_ClosestOfficialSdkPath)' != ''">
+        <Output TaskParameter="ContentDifferences"
+                ItemName="_ContentDifferences" />
       </FindArchiveDiffs>
 
-      <Message Text="Difference in sdk archive: %(_ContextDifferences.Kind): %(_ContextDifferences.Identity)" Importance="High" Condition="'%(_ContextDifferences.Identity)' != '' AND '%(_ContextDifferences.Kind)' != 'Unchanged'"/>
-      <Delete Files="$(_ClosestOfficialSdkPath)" Condition="'$(_ClosestOfficialSdkPath)' == ''"/>
+      <Message Text="Difference in sdk archive: %(_ContentDifferences.Kind): %(_ContentDifferences.Identity)"
+               Importance="High"
+               Condition="'%(_ContentDifferences.Identity)' != '' AND '%(_ContentDifferences.Kind)' != 'Unchanged'"/>
+
+      <Delete Files="$(_ClosestOfficialSdkPath)"
+              Condition="'$(_ClosestOfficialSdkPath)' == ''"/>
 
   </Target>
 
