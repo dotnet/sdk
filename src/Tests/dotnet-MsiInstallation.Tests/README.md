@@ -23,12 +23,12 @@ Detailed steps:
 - [Enable Hyper-V](https://learn.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v)
 - For the tests to remotely control the VM, your host computer needs to be able to access the VM over the network.  To enable this, you need to create a virtual switch for the VM which will also be shared by the host PC.  In Hyper-V Manager, click on your desktop and then go to Virtual Switch Manager. 
 
-![Image of Hyper-V Manager showing switch manager dialog](https://github.com/dotnet/sdk/assets/23152278/64ea359c-a5b6-4c40-9698-e89843ddd21c)
+![Image of Hyper-V Manager showing switch manager dialog](images/virtual-switch-manager.png)
 
 
 Create a new Virtual Switch connected to your external network adapter, and check the box that says "Allow management operating system to share this network adapter."
 
-![Image showing creation of a network switch](https://github.com/dotnet/sdk/assets/23152278/2134d692-6eaf-4d54-bcbf-1aeb98bfa15c)
+![Image showing creation of a network switch](images/network-switch-creation.png)
 
 - Create a Hyper-V Virtual machine. The simplest way is to use 'Quick Create' and modify the settings after creation -- it will find an appropriate ISO for you. If you need a more specific build, you can follow the steps at https://learn.microsoft.com/virtualization/hyper-v-on-windows/quick-start/create-virtual-machine. Either way, apply the following modifications:
   - You will need to choose a name for the virtual machine (used by the host) and a machine name for it when setting up Windows inside the VM.  You can choose whatever names you want, but "Test VM" and "TestVM" are good defaults.
@@ -37,7 +37,7 @@ Create a new Virtual Switch connected to your external network adapter, and chec
   - Make sure that you create a generation 2 VM so UEFI is supported (this occurs by default in Quick Create if it is supported on your machine, which needs TPM 2.0.)
   
   
-![The generation 2 box should be selected](https://github.com/dotnet/sdk/assets/23152278/5062e3d5-10fd-47c6-a066-c5662de1db6b)
+![The generation 2 box should be selected](images/virtual-machine-generation-2.png)
 
   - Right click the VM and go to settings. Under Security, check "Enable Trusted Platform Module" (and possibly the "Encrypt state..." checkbox under it), which is required to install Windows 11
   - Start the VM and install Windows
