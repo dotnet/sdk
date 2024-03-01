@@ -49,13 +49,13 @@ static class Diff
         // Edit distance algorithm: https://en.wikipedia.org/wiki/Longest_common_subsequence
         // cancellationToken.ThrowIfCancellationRequested();
         formatter ??= static s => s;
-        List<(string, DifferenceKind)> diff = [];
 
         // Optimization: remove common prefix
         int i = 0;
+        List<(string, DifferenceKind)> prefix = [];
         while (i < baselineSequence.Length && i < testSequence.Length && equalityComparer(baselineSequence[i], testSequence[i]))
         {
-            diff.Add((formatter(baselineSequence[i]), DifferenceKind.Unchanged));
+            prefix.Add((formatter(baselineSequence[i]), DifferenceKind.Unchanged));
             i++;
         }
 
@@ -93,13 +93,11 @@ static class Diff
         // Trace back the edits
         int row = baselineSequence.Length;
         int col = testSequence.Length;
-
+        List<(string, DifferenceKind)> diff = [];
         while (row > 0 || col > 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            var baselineItem = baselineSequence[row - 1];
-            var testItem = testSequence[col - 1];
-            if (row > 0 && col > 0 && equalityComparer(baselineItem, testItem))
+            if (row > 0 && col > 0 && equalityComparer(baselineSequence[row - 1], testSequence[col - 1]))
             {
                 diff.Add((formatter(baselineSequence[row - 1]), DifferenceKind.Unchanged));
                 row--;
@@ -121,7 +119,8 @@ static class Diff
             }
         }
         diff.Reverse();
-        return diff;
+        prefix.AddRange(diff);
+        return prefix;
     }
 
 }
