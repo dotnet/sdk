@@ -2,11 +2,13 @@ jobs:
 - job: Formatting_Check
   pool:
     vmImage: 'ubuntu-latest'
-  timeoutInMinutes: 10
+  timeoutInMinutes: 60
   steps:
     - script: ./restore.sh && echo "##vso[task.setvariable variable=PATH]$(Build.SourcesDirectory)/.dotnet:${PATH}" && echo "##vso[task.setvariable variable=DOTNET_ROOT]$(Build.SourcesDirectory)/.dotnet"
       displayName: Restore dependencies
-    - script: source ./eng/dogfood.sh && dotnet run --project ./src/BuiltInTools/dotnet-format/dotnet-format.csproj -c Release -- @eng/dotnet-format/validate.rsp
+    - script: source ./eng/dogfood.sh && ./build.sh
+      displayName: build
+    - script: dotnet run --project ./src/BuiltInTools/dotnet-format/dotnet-format.csproj -c Release -- @eng/dotnet-format/validate.rsp
       displayName: Run dotnet-format
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
