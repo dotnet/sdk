@@ -5,16 +5,17 @@
 
   <Target Name="ReportSdkArchiveDiffs"
           AfterTargets="Build"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion" >
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          Condition="'$(ShortStack)' != 'true'" >
 
       <GetValidArchiveItems ArchiveItems="@(SdkTarballItem)"
-                            ArchiveName="dotnet-sdk"
-                            Condition="'@(SdkTarballItem->Count())' != '0'">
+                            ArchiveName="dotnet-sdk">
         <Output TaskParameter="ValidArchiveItems"
                 ItemName="_BuiltSdkArchivePath"/>
       </GetValidArchiveItems>
 
-      <Error Message="Multiple valid dotnet-sdk archives found."
+      <!-- There should only be 1 SDK archive -->
+      <Error Text="Multiple valid dotnet-sdk archives found."
              Condition="'@(_BuiltSdkArchivePath->Count())' != '1'" />
 
       <GetClosestOfficialSdk BuiltArchivePath="@(_BuiltSdkArchivePath)"
