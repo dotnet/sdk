@@ -305,7 +305,7 @@ if [[ "$sourceOnly" == "true" ]]; then
   fi
 
   if [ ! -d "$scriptroot/.git" ]; then
-    echo "ERROR: $scriptroot is not a git repository. Please run prep.sh add initialize Source Link metadata."
+    echo "ERROR: $scriptroot is not a git repository."
     exit 1
   fi
 
