@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -182,6 +183,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        // advertisingPackagePath is the path to the workload set MSI nupkg in the advertising package.
         public string InstallWorkloadSet(CliTransaction transaction, string advertisingPackagePath)
         {
             var pathToReturn = string.Empty;
@@ -206,7 +208,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             var featureBand = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath));
             var packageVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, "packageVersion.txt"));
             string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), new SdkFeatureBand(featureBand)).ToString();
-            string msiPackageVersion = packageVersion;
+            string msiPackageVersion = WorkloadManifestUpdater.WorkloadSetVersionToWorkloadSetPackageVersion(packageVersion);
 
             Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({packageVersion}) to {msiPackageId} ({msiPackageVersion}).");
 

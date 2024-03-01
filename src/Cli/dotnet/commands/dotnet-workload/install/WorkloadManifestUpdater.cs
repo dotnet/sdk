@@ -90,7 +90,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public async void DownloadWorkloadSet(string version, DirectoryPath? offlineCache = null)
         {
-            await UpdateManifestWithVersionAsync("Microsoft.NET.Workloads", includePreviews: true, _sdkFeatureBand, new NuGetVersion(version), offlineCache);
+            var correctedVersion = WorkloadSetVersionToWorkloadSetPackageVersion(version);
+            await UpdateManifestWithVersionAsync("Microsoft.NET.Workloads", includePreviews: true, _sdkFeatureBand, new NuGetVersion(correctedVersion), offlineCache);
         }
 
         public async static Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
@@ -145,6 +146,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 File.Delete(filePath);
             }
+        }
+
+        public static string WorkloadSetVersionToWorkloadSetPackageVersion(string setVersion)
+        {
+            var splitVersion = setVersion.Split('.');
+            return string.Join('.', splitVersion.Skip(2).Prepend(splitVersion[0]));
+        }
+
+        public static string WorkloadSetPackageVersionToWorkloadSetVersion(string packageVersion)
+        {
+            var splitVersion = packageVersion.Split('.');
+            return string.Join('.', splitVersion.Skip(1).Prepend("0").Prepend(splitVersion[0]));
         }
 
         public static void AdvertiseWorkloadUpdates()
@@ -307,9 +320,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 if (id.Equals("Microsoft.NET.Workloads"))
                 {
+                    // Create version file later used as part of installing the workload set in the file-based installer and in the msi-based installer
                     using PackageArchiveReader packageReader = new(packagePath);
                     var downloadedPackageVersion = packageReader.NuspecReader.GetVersion();
-                    File.WriteAllText(Path.Combine(adManifestPath, "packageVersion.txt"), downloadedPackageVersion.ToString());
+                    var correctedPackageVersion = WorkloadSetPackageVersionToWorkloadSetVersion(downloadedPackageVersion.ToString()); // $"{downloadedPackageVersion.Major}.0.{downloadedPackageVersion.Minor}.{downloadedPackageVersion.Patch}"
+                        // + (string.IsNullOrWhiteSpace(downloadedPackageVersion.Release) ? string.Empty : '-' + downloadedPackageVersion.Release);
+                    File.WriteAllText(Path.Combine(adManifestPath, "packageVersion.txt"), correctedPackageVersion);
                 }
 
                 if (_displayManifestUpdates)
