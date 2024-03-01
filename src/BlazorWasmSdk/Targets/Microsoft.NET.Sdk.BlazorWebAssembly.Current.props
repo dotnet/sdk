@@ -22,7 +22,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <TrimMode Condition="'$(TrimMode)' == ''">partial</TrimMode>
     <TrimmerRemoveSymbols Condition="'$(TrimmerRemoveSymbols)' == ''">false</TrimmerRemoveSymbols>
 
+    <!-- Disable accelerated builds in Visual Studio -->
+    <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
+
     <!-- Static web assets defaults -->
+    <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Root</StaticWebAssetProjectMode>
     <StaticWebAssetsAdditionalPublishProperties>$(StaticWebAssetsAdditionalPublishProperties);_PublishingBlazorWasmProject=true</StaticWebAssetsAdditionalPublishProperties>
     <StaticWebAssetsAdditionalEmbeddedPublishProperties>$(StaticWebAssetsAdditionalEmbeddedPublishProperties);_PublishingBlazorWasmProject=true</StaticWebAssetsAdditionalEmbeddedPublishProperties>
 

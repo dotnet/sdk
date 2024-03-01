@@ -74,7 +74,10 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     [Output]
     public string? ComputedContainerBaseImage { get; private set; }
 
-    private bool IsAspNetCoreProject => FrameworkReferences.Length > 0 && FrameworkReferences.Any(x => x.ItemSpec.Equals("Microsoft.AspnetCore.App", StringComparison.Ordinal));
+    private bool IsAspNetCoreProject =>
+        FrameworkReferences.Length > 0
+        && FrameworkReferences.Any(x => x.ItemSpec.Equals("Microsoft.AspNetCore.App", StringComparison.OrdinalIgnoreCase));
+
     private bool IsMuslRid => TargetRuntimeIdentifier.StartsWith("linux-musl", StringComparison.Ordinal);
     private bool IsBundledRuntime => IsSelfContained;
     private bool NeedsNightlyImages => IsAotPublished;

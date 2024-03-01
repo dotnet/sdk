@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             if (!skipManifestUpdate)
             {
                 var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-                if (File.Exists(installStateFilePath))
+                if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) && File.Exists(installStateFilePath) && InstallStateContents.FromString(File.ReadAllText(installStateFilePath)).Manifests is not null)
                 {
                     //  If there is a rollback state file, then we don't want to automatically update workloads when a workload is installed
                     //  To update to a new version, the user would need to run "dotnet workload update"
@@ -263,6 +263,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         installer.InstallWorkloadManifest(manifestUpdate, context, offlineCache, rollback);
                     }
 
+                    if (usingRollback)
+                    {
+                        installer.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
+                    }
+
+                    installer.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : workloadSetVersion);
+
                     _workloadResolver.RefreshWorkloadManifests();
 
                     installer.InstallWorkloads(workloadIds, sdkFeatureBand, context, offlineCache);
@@ -273,13 +280,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                     }
-
-                    if (usingRollback)
-                    {
-                        installer.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
-                    }
-
-                    installer.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : workloadSetVersion);
                 },
                 rollback: () =>
                 {
@@ -291,6 +291,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         installer.GetWorkloadInstallationRecordRepository()
                             .DeleteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                     }
+
+                    //  Refresh the workload manifests to make sure that the resolver has the updated state after the rollback
+                    _workloadResolver.RefreshWorkloadManifests();
                 });
 
         }

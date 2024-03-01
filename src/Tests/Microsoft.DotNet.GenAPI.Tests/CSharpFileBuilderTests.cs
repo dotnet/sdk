@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     {
                     }
 
-                    public readonly partial struct PublicReadonlyRefStruct
+                    public readonly ref partial struct PublicReadonlyRefStruct
                     {
                     }
 
@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                     {
                     }
 
-                    public partial struct PublicRefStruct
+                    public ref partial struct PublicRefStruct
                     {
                     }
 
@@ -2919,7 +2919,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 expected: """                
                 namespace N
                 {
-                    public partial struct C<T>
+                    public ref partial struct C<T>
                         where T : unmanaged
                     {
                         public required (string? k, dynamic v, nint n) X { get { throw null; } init { } }
