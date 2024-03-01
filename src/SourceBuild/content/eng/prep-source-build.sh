@@ -2,7 +2,7 @@
 
 ### Usage: $0
 ###
-###   Prepares the environment to be built by downloading Private.SourceBuilt.Artifacts.*.tar.gz and
+###   Prepares the environment for a source build by downloading Private.SourceBuilt.Artifacts.*.tar.gz and
 ###   installing the version of dotnet referenced in global.json
 ###
 ### Options:
@@ -20,7 +20,7 @@ set -euo pipefail
 IFS=$'\n\t'
 
 source="${BASH_SOURCE[0]}"
-SCRIPT_ROOT="$(cd -P "$( dirname "$0" )" && pwd)"
+REPO_ROOT="$( cd -P "$( dirname "$0" )/../" && pwd )"
 
 function print_help () {
     sed -n '/^### /,/^$/p' "$source" | cut -b 5-
@@ -79,7 +79,7 @@ done
 
 # Attempting to bootstrap without an SDK will fail. So either the --no-sdk flag must be passed
 # or a pre-existing .dotnet SDK directory must exist.
-if [ "$buildBootstrap" == true ] && [ "$installDotnet" == false ] && [ ! -d "$SCRIPT_ROOT/.dotnet" ]; then
+if [ "$buildBootstrap" == true ] && [ "$installDotnet" == false ] && [ ! -d "$REPO_ROOT/.dotnet" ]; then
   echo "  ERROR: --no-sdk requires --no-bootstrap or a pre-existing .dotnet SDK directory.  Exiting..."
   exit 1
 fi
@@ -93,7 +93,7 @@ fi
 
 # Check if Private.SourceBuilt artifacts archive exists
 artifactsBaseFileName="Private.SourceBuilt.Artifacts"
-packagesArchiveDir="$SCRIPT_ROOT/prereqs/packages/archive/"
+packagesArchiveDir="$REPO_ROOT/prereqs/packages/archive/"
 if [ "$downloadArtifacts" == true ] && [ -f ${packagesArchiveDir}${artifactsBaseFileName}.*.tar.gz ]; then
   echo "  Private.SourceBuilt.Artifacts.*.tar.gz exists...it will not be downloaded"
   downloadArtifacts=false
@@ -107,7 +107,7 @@ if [ "$downloadPrebuilts" == true ] && [ -f ${packagesArchiveDir}${prebuiltsBase
 fi
 
 # Check if dotnet is installed
-if [ "$installDotnet" == true ] && [ -d "$SCRIPT_ROOT/.dotnet" ]; then
+if [ "$installDotnet" == true ] && [ -d "$REPO_ROOT/.dotnet" ]; then
   echo "  ./.dotnet SDK directory exists...it will not be installed"
   installDotnet=false;
 fi
@@ -117,7 +117,7 @@ function DownloadArchive {
   isRequired="$2"
   artifactsRid="$3"
 
-  packageVersionsPath="$SCRIPT_ROOT/eng/Versions.props"
+  packageVersionsPath="$REPO_ROOT/eng/Versions.props"
   notFoundMessage="No source-built $archiveType found to download..."
 
   echo "  Looking for source-built $archiveType to download..."
@@ -145,17 +145,17 @@ function DownloadArchive {
 }
 
 function BootstrapArtifacts {
-  DOTNET_SDK_PATH="$SCRIPT_ROOT/.dotnet"
+  DOTNET_SDK_PATH="$REPO_ROOT/.dotnet"
 
   # Create working directory for running bootstrap project
   workingDir=$(mktemp -d)
   echo "  Building bootstrap previously source-built in $workingDir"
 
   # Copy bootstrap project to working dir
-  cp "$SCRIPT_ROOT/eng/bootstrap/buildBootstrapPreviouslySB.csproj" "$workingDir"
+  cp "$REPO_ROOT/eng/bootstrap/buildBootstrapPreviouslySB.csproj" "$workingDir"
 
   # Copy NuGet.config from the installer repo to have the right feeds
-  cp "$SCRIPT_ROOT/src/installer/NuGet.config" "$workingDir"
+  cp "$REPO_ROOT/src/installer/NuGet.config" "$workingDir"
 
   # Get PackageVersions.props from existing prev-sb archive
   echo "  Retrieving PackageVersions.props from existing archive"
@@ -165,7 +165,7 @@ function BootstrapArtifacts {
   fi
 
   # Run restore on project to initiate download of bootstrap packages
-  "$DOTNET_SDK_PATH/dotnet" restore "$workingDir/buildBootstrapPreviouslySB.csproj" /bl:artifacts/log/prep-bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/log/prep-bootstrap.log /p:ArchiveDir="$packagesArchiveDir" /p:BootstrapOverrideVersionsProps="$SCRIPT_ROOT/eng/bootstrap/OverrideBootstrapVersions.props"
+  "$DOTNET_SDK_PATH/dotnet" restore "$workingDir/buildBootstrapPreviouslySB.csproj" /bl:artifacts/log/prep-bootstrap.binlog /fileLoggerParameters:LogFile=artifacts/log/prep-bootstrap.log /p:ArchiveDir="$packagesArchiveDir" /p:BootstrapOverrideVersionsProps="$REPO_ROOT/eng/bootstrap/OverrideBootstrapVersions.props"
 
   # Remove working directory
   rm -rf "$workingDir"
@@ -178,7 +178,7 @@ if [ "$installDotnet" == true ]; then
   (source ./eng/common/tools.sh && InitializeDotNetCli true)
 
   # TODO: Remove once runtime dependency is gone (https://github.com/dotnet/runtime/issues/93666)
-  bash .dotnet/dotnet-install.sh --install-dir "$SCRIPT_ROOT/.dotnet" --channel 8.0 --runtime dotnet
+  bash .dotnet/dotnet-install.sh --install-dir "$REPO_ROOT/.dotnet" --channel 8.0 --runtime dotnet
 fi
 
 # Read the eng/Versions.props to get the archives to download and download them
