@@ -321,12 +321,24 @@ namespace Microsoft.NetCore.Analyzers.Performance
             return true;
         }
 
+        /// <summary>
+        /// Analyzes different patterns of ".Count() is …".
+        /// </summary>
+        /// <param name="isPatternOperation">The pattern.</param>
+        /// <param name="shouldNegateIsEmpty">
+        /// Determines if the resulting rewritten call to ".Any()" should be negated.
+        /// When we want the call to be negated, we set 'shouldNegateIsEmpty' to 'false', since 'shouldNegateIsEmpty' = '!shouldNegateAny'.
+        /// This negation happens before 'ReportCA1827()' is called.
+        /// </param>
+        /// <returns></returns>
         private static bool AnalyzeIsPatternOperation(IIsPatternOperation isPatternOperation, out bool shouldNegateIsEmpty)
         {
             shouldNegateIsEmpty = true;
 
+            // Handles ".Count() is not …" patterns.
             if (isPatternOperation.Pattern is INegatedPatternOperation negatedPattern)
             {
+                // Handles the ".Count() is not > 0" and ".Count() is not >= 1" patterns.
                 if (negatedPattern.Pattern is IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.GreaterThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
                     or IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.GreaterThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } })
                 {
@@ -335,10 +347,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return true;
                 }
 
+                // Handles the ".Count() is not 0" and ".Count() is not <= 0" patterns.
                 return negatedPattern.Pattern is IConstantPatternOperation { Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
                     or IRelationalPatternOperation { OperatorKind: BinaryOperatorKind.LessThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } };
             }
 
+            // Handles the ".Count() is 0" pattern.
             if (isPatternOperation.Pattern is IConstantPatternOperation { Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } })
             {
                 shouldNegateIsEmpty = false;
@@ -346,8 +360,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return true;
             }
 
+            // Handles the ".Count() </<=/>/>= …" patterns.
             if (isPatternOperation.Pattern is IRelationalPatternOperation relationalPattern)
             {
+                // Handles the ".Count() is < 1" and ".Count() is <= 0" patterns.
                 if (relationalPattern is { OperatorKind: BinaryOperatorKind.LessThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } }
                     or { OperatorKind: BinaryOperatorKind.LessThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } })
                 {
@@ -356,6 +372,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return true;
                 }
 
+                // Handles the ".Count() is > 0" and ".Count() is >= 1" patterns.
                 return relationalPattern is { OperatorKind: BinaryOperatorKind.GreaterThan, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 0 } } }
                     or { OperatorKind: BinaryOperatorKind.GreaterThanOrEqual, Value: ILiteralOperation { ConstantValue: { HasValue: true, Value: 1 } } };
             }
