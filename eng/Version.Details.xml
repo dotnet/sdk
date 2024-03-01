@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="9.0.0-preview.2.24111.9">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>9699f39112b2aea89a05a74199baf9049db85537</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.100-preview.3.24128.4">
       <Uri>https://github.com/dotnet/templating</Uri>
       <Sha>b63ff5ac82544258f7462049f735d691e8af8fd6</Sha>
