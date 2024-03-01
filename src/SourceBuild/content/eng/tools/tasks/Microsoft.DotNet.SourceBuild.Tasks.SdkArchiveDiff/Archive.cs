@@ -39,8 +39,8 @@ public abstract class Archive : IDisposable
         public static new async Task<TarArchive> Create(string path, CancellationToken cancellationToken = default)
         {
             var tmpFolder = Directory.CreateTempSubdirectory(nameof(FindArchiveDiffs));
-            using (var gzStream = File.OpenRead (path))
-            using (var gzipStream = new GZipStream (gzStream, CompressionMode.Decompress))
+            using (var gzStream = File.OpenRead(path))
+            using (var gzipStream = new GZipStream(gzStream, CompressionMode.Decompress))
             {
                 await TarFile.ExtractToDirectoryAsync(gzipStream, tmpFolder.FullName, true, cancellationToken);
             }
@@ -94,31 +94,34 @@ public abstract class Archive : IDisposable
         }
     }
 
-    public static (string Version, string Rid, string extension) GetInfoFromArchivePath(string path)
+    private static string GetArchiveExtension(string path)
     {
-        string extension;
         if (path.EndsWith(".tar.gz"))
         {
-            extension = ".tar.gz";
+            return ".tar.gz";
         }
         else if (path.EndsWith(".zip"))
         {
-            extension = ".zip";
+            return ".zip";
         }
         else
         {
             throw new ArgumentException($"Invalid archive extension '{path}': must end with .tar.gz or .zip");
         }
+    }
 
-        string filename = Path.GetFileName(path)[..^extension.Length];
-        var dashDelimitedParts = filename.Split('-');
-        var (rid, versionString) = dashDelimitedParts switch
-        {
-            ["dotnet", "sdk", var first, var second, var third, var fourth] when PathWithVersions.IsVersionString(first) => (third + '-' + fourth, first + '-' + second),
-            ["dotnet", "sdk", var first, var second, var third, var fourth] when PathWithVersions.IsVersionString(third) => (first + '-' + second, third + '-' + fourth),
-            _ => throw new ArgumentException($"Invalid archive file name '{filename}': file name should include full build version and rid in the format dotnet-sdk-<version>-<rid>{extension} or dotnet-sdk-<rid>-<version>{extension}")
-        };
-
-        return (versionString, rid, extension);
+    public static (string Version, string Rid, string extension) GetInfoFromFileName(string filename, string packageName)
+    {
+        var extension = GetArchiveExtension(filename);
+        var Version = VersionIdentifier.GetVersion(filename);
+        if (Version is null)
+            throw new ArgumentException("Invalid archive file name '{filename}': No valid version found in file name.");
+        // Once we've removed the version, package name, and extension, we should be left with the RID
+        var Rid = filename
+            .Replace(extension, "")
+            .Replace(Version, "")
+            .Replace(packageName, "")
+            .Trim('-', '.', '_');
+        return (Version, Rid, extension);
     }
 }

@@ -5,24 +5,27 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Build.Framework;
 
-public class GetSingleArchiveItem : Microsoft.Build.Utilities.Task
+public class GetValidArchiveItems : Microsoft.Build.Utilities.Task
 {
     [Required]
-    public required ITaskItem[] SdkArchiveItems { get; init; }
+    public required ITaskItem[] ArchiveItems { get; init; }
+
+    [Required]
+    public required string ArchiveName { get; init; }
 
     [Output]
-    public string BestSdkArchiveItem { get; set; } = "";
+    public ITaskItem[] ValidArchiveItems { get; set; } = [];
 
     public override bool Execute()
     {
-        List<string> archiveItems = new ();
-        foreach(var item in SdkArchiveItems)
+        List<ITaskItem> archiveItems = new();
+        foreach (var item in ArchiveItems)
         {
             try
             {
                 // Ensure the version and RID info can be parsed from the item
-                _ = Archive.GetInfoFromArchivePath(item.ItemSpec);
-                archiveItems.Add(item.ItemSpec);
+                _ = Archive.GetInfoFromFileName(item.ItemSpec, ArchiveName);
+                archiveItems.Add(item);
             }
             catch (ArgumentException e)
             {
@@ -30,20 +33,20 @@ public class GetSingleArchiveItem : Microsoft.Build.Utilities.Task
                 continue;
             }
         }
-        switch (archiveItems.Count){
+        switch (archiveItems.Count)
+        {
             case 0:
                 Log.LogMessage(MessageImportance.High, "No valid archive items found");
-                BestSdkArchiveItem = "";
-                break;
+                ValidArchiveItems = [];
+                return false;
             case 1:
                 Log.LogMessage(MessageImportance.High, $"{archiveItems[0]} is the only valid archive item found");
-                BestSdkArchiveItem = archiveItems[0];
+                ValidArchiveItems = archiveItems.ToArray();
                 break;
             default:
-                archiveItems.Sort((a,b) => a.Length - b.Length);
+                archiveItems.Sort((a, b) => a.ItemSpec.Length - b.ItemSpec.Length);
                 Log.LogMessage(MessageImportance.High, $"Multiple valid archive items found: '{string.Join("', '", archiveItems)}'");
-                BestSdkArchiveItem = archiveItems[0];
-                Log.LogMessage(MessageImportance.High, $"Choosing '{BestSdkArchiveItem}");
+                ValidArchiveItems = archiveItems.ToArray();
                 break;
         }
         return true;
