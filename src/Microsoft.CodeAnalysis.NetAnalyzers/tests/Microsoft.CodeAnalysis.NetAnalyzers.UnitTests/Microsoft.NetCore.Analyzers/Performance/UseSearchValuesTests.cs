@@ -1080,33 +1080,12 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = Net80,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = languageVersion,
                 TestCode = source,
                 FixedCode = expected,
                 TestState = { OutputKind = topLevelStatements ? OutputKind.ConsoleApplication : null },
             }.RunAsync();
         }
-
-        // TEMP - need newer version of Microsoft.CodeAnalysis.Analyzer.Testing
-        // Replace with 'ReferenceAssemblies.Net.Net80'
-        private static readonly Lazy<ReferenceAssemblies> _lazyNet80 =
-            new(() =>
-            {
-                if (!NuGet.Frameworks.NuGetFramework.Parse("net8.0").IsPackageBased)
-                {
-                    // The NuGet version provided at runtime does not recognize the 'net8.0' target framework
-                    throw new NotSupportedException("The 'net8.0' target framework is not supported by this version of NuGet.");
-                }
-
-                return new ReferenceAssemblies(
-                    "net8.0",
-                    new PackageIdentity(
-                        "Microsoft.NETCore.App.Ref",
-                        "8.0.0-preview.7.23375.6"),
-                    System.IO.Path.Combine("ref", "net8.0"));
-            });
-
-        public static ReferenceAssemblies Net80 => _lazyNet80.Value;
     }
 }

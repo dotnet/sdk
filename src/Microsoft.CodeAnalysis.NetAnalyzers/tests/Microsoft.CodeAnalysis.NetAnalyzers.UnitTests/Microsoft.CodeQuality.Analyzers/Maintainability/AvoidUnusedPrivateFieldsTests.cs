@@ -258,7 +258,7 @@ public class Class
         {
             await new VerifyCS.Test
             {
-                ReferenceAssemblies = AdditionalMetadataReferences.Net80,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 TestCode = @"
 using System.Runtime.CompilerServices;
 
