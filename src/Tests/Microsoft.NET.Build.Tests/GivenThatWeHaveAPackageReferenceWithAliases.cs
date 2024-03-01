@@ -43,8 +43,9 @@ namespace Microsoft.NET.Build.Tests
             sources.AddRange(packagesPaths);
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute()
+            var buildCommand = new BuildCommand(testAsset)
+                .WithWorkingDirectory(testAsset.Path);
+            buildCommand.Execute("-bl")
                 .Should()
                 .Pass();
         }
@@ -87,8 +88,9 @@ namespace Microsoft.NET.Build.Tests
             List<string> sources = new List<string>() { NuGetConfigWriter.DotnetCoreBlobFeed, Path.GetDirectoryName(packageReferenceA.NupkgPath), Path.GetDirectoryName(packageReferenceB.NupkgPath) };
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute()
+            var buildCommand = new BuildCommand(testAsset)
+                .WithWorkingDirectory(testAsset.Path);
+            buildCommand.Execute("-bl")
                 .Should()
                 .Pass();
         }
@@ -123,8 +125,9 @@ namespace Microsoft.NET.Build.Tests
             List<string> sources = new List<string>() { NuGetConfigWriter.DotnetCoreBlobFeed, Path.GetDirectoryName(packageReferenceA.NupkgPath) };
             NuGetConfigWriter.Write(testAsset.TestRoot, sources);
 
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute()
+            var buildCommand = new BuildCommand(testAsset)
+                .WithWorkingDirectory(testAsset.Path);            
+            buildCommand.Execute("-bl")
                 .Should()
                 .Pass();
         }
