@@ -44,6 +44,7 @@ namespace Microsoft.DotNet.Cli
             CliCommand command = new("--all", LocalizableStrings.AllUpdateOptionDescription);
             command.Options.Add(GlobalOption);
             command.Options.Add(LocalOption);
+            ToolInstallCommandParser.AddCommandOptions(command);
 
             command.SetAction((parseResult) => new ToolUpdateAllCommand(parseResult).Execute());
 
