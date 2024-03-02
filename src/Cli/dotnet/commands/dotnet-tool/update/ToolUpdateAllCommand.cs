@@ -77,7 +77,15 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             }
         }
 
-        private string[] BuildUpdateCommandArguments(string toolId, bool isGlobal, string toolPath, string configFile, string[] addSource, string framework, bool prerelease, VerbosityOptions verbosity, string manifestPath)
+        private string[] BuildUpdateCommandArguments(string toolId,
+            bool isGlobal,
+            string toolPath,
+            string configFile,
+            string[] addSource,
+            string framework,
+            bool prerelease,
+            VerbosityOptions verbosity,
+            string manifestPath)
         {
             List<string> args = new List<string> { "dotnet", "tool", "update", toolId };
 
