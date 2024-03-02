@@ -35,10 +35,6 @@
   <Target Name="CreateSdkSymbolsTarball"
           AfterTargets="Build"
           DependsOnTargets="RepackageSymbols">
-    <ItemGroup>
-      <SdkTarballItem Include="$(ArtifactsAssetsDir)dotnet-sdk-*$(ArchiveExtension)" />
-    </ItemGroup>
-
     <PropertyGroup>
       <SdkSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-sdk-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
 
