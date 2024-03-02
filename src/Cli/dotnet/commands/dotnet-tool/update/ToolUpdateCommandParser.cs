@@ -44,14 +44,13 @@ namespace Microsoft.DotNet.Cli
         private static CliCommand ConstructCommand()
         {
             CliCommand command = new("update", LocalizableStrings.CommandDescription);
-            // TBD: whether to include argument based on if --all
-            // TBD: errors occurs if empty argument is passed when creating toolLocalUpdate and toolGlobalUpdate
-            // TBD: make PackageIdArgument a subcommand
-            command.Arguments.Add(PackageIdArgument);
+            //  dotnet tool update all
+            command.Subcommands.Add(ToolUpdateAllCommandParser.GetCommand());
 
+
+            command.Arguments.Add(PackageIdArgument);
             ToolInstallCommandParser.AddCommandOptions(command);
             command.Options.Add(AllowPackageDowngradeOption);
-            command.Subcommands.Add(ToolUpdateAllCommandParser.GetCommand());
 
             command.SetAction((parseResult) => new ToolUpdateCommand(parseResult).Execute());
 

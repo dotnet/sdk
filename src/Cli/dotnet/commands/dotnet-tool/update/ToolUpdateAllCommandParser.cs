@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            CliCommand command = new("all", LocalizableStrings.AllUpdateOptionDescription);
+            CliCommand command = new("--all", LocalizableStrings.AllUpdateOptionDescription);
             command.Options.Add(GlobalOption);
             command.Options.Add(LocalOption);
 
