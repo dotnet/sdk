@@ -32,18 +32,6 @@ namespace Microsoft.DotNet.Tools.Tool.Uninstall
 
             _global = result.GetValue(ToolUninstallCommandParser.GlobalOption);
             _toolPath = result.GetValue(ToolUninstallCommandParser.ToolPathOption);
-            verifyArgument(result);
-        }
-
-        private void verifyArgument(ParseResult result)
-        {
-            if (result.GetValue(ToolInstallCommandParser.PackageIdArgument) == "")
-            {
-                throw new CommandParsingException(
-                        message: string.Join(Environment.NewLine,
-                                             result.Errors.Select(e => e.Message)),
-                        parseResult: result);
-            }
         }
 
         public override int Execute()

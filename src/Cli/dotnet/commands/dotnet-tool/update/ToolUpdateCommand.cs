@@ -14,8 +14,6 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly ToolUpdateGlobalOrToolPathCommand _toolUpdateGlobalOrToolPathCommand;
         private readonly bool _global;
         private readonly string _toolPath;
-        private readonly bool _all;
-        private readonly string _packageId;
 
         public ToolUpdateCommand(
             ParseResult result,
@@ -34,21 +32,6 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             _global = result.GetValue(ToolUpdateCommandParser.GlobalOption);
             _toolPath = result.GetValue(ToolUpdateCommandParser.ToolPathOption);
-            _all = result.GetValue(ToolUpdateCommandParser.AllUpdateOption);
-            _packageId = result.GetValue(ToolUpdateCommandParser.PackageIdArgument);
-
-            verifyArgument(result);
-        }
-
-        private void verifyArgument(ParseResult result)
-        {
-            if (!_all && _packageId == "")
-            {
-                throw new CommandParsingException(
-                        message: string.Join(Environment.NewLine,
-                                             result.Errors.Select(e => e.Message)),
-                        parseResult: result);
-            }
         }
 
         public override int Execute()
@@ -58,11 +41,6 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
 
             ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
-
-            if (_all)
-            {
-                return new ToolUpdateAllCommand(_parseResult).Execute();
-            }
 
             if (_global || !string.IsNullOrWhiteSpace(_toolPath))
             {
