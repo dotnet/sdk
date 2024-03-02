@@ -29,68 +29,55 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         {
             if (_global)
             {
-                ToolUpdateAllGlobalCommand(_parseResult);
+                UpdateAllGlobalTools();
             }
             else
             {
-                ToolUpdateAllLocalCommand(_parseResult);
+                UpdateAllLocalTools();
             }
             return 0;
         }
 
-        private int ToolUpdateAllGlobalCommand(ParseResult parseResult)
+        private void UpdateAllGlobalTools()
         {
-            var toolListCommand = new ToolListGlobalOrToolPathCommand(parseResult);
+            var toolListCommand = new ToolListGlobalOrToolPathCommand(_parseResult);
             var toolList = toolListCommand.GetPackages(null, null);
-
-            foreach (var tool in toolList)
-            {
-                List<string> args = BuildUpdateCommandArguments(
-                    toolId: tool.Id.ToString(),
-                    isGlobal: true,
-                    toolPath: null,
-                    configFile: parseResult.GetValue(ToolUpdateAllCommandParser.ConfigOption),
-                    addSource: parseResult.GetValue(ToolUpdateAllCommandParser.AddSourceOption),
-                    framework: parseResult.GetValue(ToolUpdateAllCommandParser.FrameworkOption),
-                    prerelease: parseResult.GetValue(ToolUpdateAllCommandParser.PrereleaseOption),
-                    verbosity: parseResult.GetValue(ToolUpdateAllCommandParser.VersionOption),
-                    manifestPath: null
-                    );
-                ParseResult toolParseResult = Parser.Instance.Parse(args.ToArray());
-                var toolUpdateCommand = new ToolUpdateCommand(toolParseResult);
-                toolUpdateCommand.Execute();
-            }
-            return 0;
+            UpdateTools(toolList.Select(tool => tool.Id.ToString()), true, null);
         }
 
-        private int ToolUpdateAllLocalCommand(ParseResult parseResult)
+        private void UpdateAllLocalTools()
         {
-            var toolListLocalCommand = new ToolListLocalCommand(parseResult);
+            var toolListLocalCommand = new ToolListLocalCommand(_parseResult);
             var toolListLocal = toolListLocalCommand.GetPackages(null);
-
             foreach (var (package, manifestPath) in toolListLocal)
             {
-                // var argsList = new List<string> { "dotnet", "tool", "update", package.PackageId.ToString(), "--local" };
-                List<string> argsList = BuildUpdateCommandArguments(
-                    toolId: package.PackageId.ToString(),
-                    isGlobal: false,
-                    toolPath: parseResult.GetValue(ToolUpdateAllCommandParser.ToolPathOption),
-                    configFile: parseResult.GetValue(ToolUpdateAllCommandParser.ConfigOption),
-                    addSource: parseResult.GetValue(ToolUpdateAllCommandParser.AddSourceOption),
-                    framework: parseResult.GetValue(ToolUpdateAllCommandParser.FrameworkOption),
-                    prerelease: parseResult.GetValue(ToolUpdateAllCommandParser.PrereleaseOption),
-                    verbosity: parseResult.GetValue(ToolUpdateAllCommandParser.VersionOption),
-                    manifestPath: manifestPath.Value
-                    );
+                UpdateTools(new[] { package.PackageId.ToString() }, false, manifestPath.Value);
+            }
+        }
 
-                ParseResult toolParseResult = Parser.Instance.Parse(argsList.ToArray());
+        private void UpdateTools(IEnumerable<string> toolIds, bool isGlobal, string manifestPath)
+        {
+            foreach (var toolId in toolIds)
+            {
+                var args = BuildUpdateCommandArguments(
+                    toolId: toolId,
+                    isGlobal: isGlobal,
+                    toolPath: _parseResult.GetValue(ToolUpdateAllCommandParser.ToolPathOption),
+                    configFile: _parseResult.GetValue(ToolUpdateAllCommandParser.ConfigOption),
+                    addSource: _parseResult.GetValue(ToolUpdateAllCommandParser.AddSourceOption),
+                    framework: _parseResult.GetValue(ToolUpdateAllCommandParser.FrameworkOption),
+                    prerelease: _parseResult.GetValue(ToolUpdateAllCommandParser.PrereleaseOption),
+                    verbosity: _parseResult.GetValue(ToolUpdateAllCommandParser.VerbosityOption),
+                    manifestPath: manifestPath
+                );
+
+                var toolParseResult = Parser.Instance.Parse(args);
                 var toolUpdateCommand = new ToolUpdateCommand(toolParseResult);
                 toolUpdateCommand.Execute();
             }
-            return 0;
         }
 
-        private List<string> BuildUpdateCommandArguments(string toolId, bool isGlobal, string toolPath, string configFile, string[] addSource, string framework, bool prerelease, string verbosity, string manifestPath)
+        private string[] BuildUpdateCommandArguments(string toolId, bool isGlobal, string toolPath, string configFile, string[] addSource, string framework, bool prerelease, VerbosityOptions verbosity, string manifestPath)
         {
             List<string> args = new List<string> { "dotnet", "tool", "update", toolId };
 
@@ -101,7 +88,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             else if (!string.IsNullOrEmpty(toolPath))
             {
                 args.AddRange(new[] { "--tool-path", toolPath });
-            } else
+            }
+            else
             {
                 args.Add("--local");
             }
@@ -131,16 +119,12 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             if (!string.IsNullOrEmpty(manifestPath))
             {
-                args.AddRange(new[] {"--tool-manifest", manifestPath});
+                args.AddRange(new[] { "--tool-manifest", manifestPath });
             }
 
+            args.AddRange(new[] { "--verbosity", verbosity.ToString() });
 
-            if (!string.IsNullOrEmpty(verbosity))
-            {
-                args.AddRange(new[] { "-v", verbosity });
-            }
-
-            return args;
+            return args.ToArray();
         }
 
     }
