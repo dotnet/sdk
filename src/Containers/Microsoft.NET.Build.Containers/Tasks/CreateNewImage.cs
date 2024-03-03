@@ -120,9 +120,17 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         (string[] entrypoint, string[] cmd) = DetermineEntrypointAndCmd(baseImageEntrypoint: imageBuilder.BaseImageConfig.GetEntrypoint());
         imageBuilder.SetEntrypointAndCmd(entrypoint, cmd);
 
-        foreach (ITaskItem label in Labels)
+        if (GenerateLabels)
         {
-            imageBuilder.AddLabel(label.ItemSpec, label.GetMetadata("Value"));
+            foreach (ITaskItem label in Labels)
+            {
+                imageBuilder.AddLabel(label.ItemSpec, label.GetMetadata("Value"));
+            }
+
+            if (GenerateDigestLabel)
+            {
+                imageBuilder.AddBaseImageDigestLabel();
+            }
         }
 
         SetEnvironmentVariables(imageBuilder, ContainerEnvironmentVariables);

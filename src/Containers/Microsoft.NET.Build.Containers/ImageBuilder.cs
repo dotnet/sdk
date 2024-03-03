@@ -87,6 +87,11 @@ internal sealed class ImageBuilder
         _baseImageConfig.AddLayer(l);
     }
 
+    internal void AddBaseImageDigestLabel()
+    {
+        AddLabel("org.opencontainers.image.base.digest", _manifest.GetDigest());
+    }
+
     /// <summary>
     /// Adds a label to a base image.
     /// </summary>
