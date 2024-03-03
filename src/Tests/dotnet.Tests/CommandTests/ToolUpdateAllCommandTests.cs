@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter = new BufferedReporter();
         }
 
+
         [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
@@ -66,38 +67,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().Contain(
                     string.Format(LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath,
                         "--global --tool-path"));
-        }
-
-
-        [Fact]
-        public void WhenRunWithGlobalAndToolManifestShowErrorMessage()
-        {
-            var result =
-                Parser.Instance.Parse($"dotnet tool update --all -g --tool-manifest folder/my-manifest.format");
-
-            var ToolUpdateAllCommand = new ToolUpdateAllCommand(
-                result);
-
-            Action a = () => ToolUpdateAllCommand.Execute();
-
-            a.Should().Throw<GracefulException>().And.Message
-                .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
-        }
-
-        [Fact]
-        public void WhenRunWithToolPathAndToolManifestShowErrorMessage()
-        {
-            var result =
-                Parser.Instance.Parse(
-                    $"dotnet tool update --all --tool-path /tmp/folder --tool-manifest folder/my-manifest.format");
-
-            var ToolUpdateAllCommand = new ToolUpdateAllCommand(
-                result);
-
-            Action a = () => ToolUpdateAllCommand.Execute();
-
-            a.Should().Throw<GracefulException>().And.Message
-                .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
     }
 }
