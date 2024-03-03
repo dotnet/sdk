@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.List;
 
@@ -27,6 +28,10 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
         public override int Execute()
         {
+            ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
+                _parseResult,
+                LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
+
             if (_global)
             {
                 UpdateAllGlobalTools();
