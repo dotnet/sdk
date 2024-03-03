@@ -172,7 +172,7 @@
              In addition, the 'nice' property names are currently set by NuGet Pack targets and so we have to use the private/generic names here.  -->
     <PropertyGroup Label="Source control label assignment" Condition="'$(ContainerGenerateLabels)' == 'true' and '$(PublishRepositoryUrl)' == 'true'">
       <!-- Sourcelink gives us the .git suffix, but scanning tools aren't looking for that so we trim it off here. -->
-      <_TrimmedRepositoryUrl Condition="'$(RepositoryType)' == 'git' and '$(PrivateRepositoryUrl)' != '' and $(PrivateRepositoryUrl.EndsWith('.git'))">$(PrivateRepositoryUrl.Substring(0, $(PrivateRepositoryUrl.IndexOf('.git'))))</_TrimmedRepositoryUrl>
+      <_TrimmedRepositoryUrl Condition="'$(RepositoryType)' == 'git' and '$(PrivateRepositoryUrl)' != '' and $(PrivateRepositoryUrl.EndsWith('.git'))">$(PrivateRepositoryUrl.Substring(0, $(PrivateRepositoryUrl.LastIndexOf('.git'))))</_TrimmedRepositoryUrl>
       <_TrimmedRepositoryUrl Condition="'$(_TrimmedRepositoryUrl)' == '' and '$(PrivateRepositoryUrl)' != ''">$(PrivateRepositoryUrl)</_TrimmedRepositoryUrl>
     </PropertyGroup>
     <ItemGroup Label="Source control label assignment" Condition="'$(ContainerGenerateLabels)' == 'true' and '$(PublishRepositoryUrl)' == 'true'">
