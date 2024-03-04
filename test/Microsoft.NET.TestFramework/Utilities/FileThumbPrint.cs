@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Security.Cryptography;
 
 namespace Microsoft.NET.TestFramework.Utilities
 {
+    [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
     public class FileThumbPrint : IEquatable<FileThumbPrint>
     {
         private FileThumbPrint(string path, DateTime lastWriteTimeUtc, string hash)
@@ -61,5 +63,10 @@ namespace Microsoft.NET.TestFramework.Utilities
         }
 
         public override int GetHashCode() => LastWriteTimeUtc.GetHashCode();
+
+        private string GetDebuggerDisplay()
+        {
+            return $"{Hash} - {LastWriteTimeUtc.ToShortDateString()} - {Path}";
+        }
     }
 }

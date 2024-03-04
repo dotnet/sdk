@@ -63,7 +63,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         protected virtual string ComputeBaselineFolder() =>
-            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "src", "Tests", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
+            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
 
         protected virtual string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
 

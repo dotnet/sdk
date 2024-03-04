@@ -52,41 +52,33 @@ Integration with static web assets:
 
 <PropertyGroup Condition="'$(DisableScopedCssBundling)' != 'true'">
 
-  <ResolveStaticWebAssetsInputsDependsOn>
-    $(ResolveStaticWebAssetsInputsDependsOn);
+  <ResolveNonComputedAssetsDependsOn>
+    $(ResolveNonComputedAssetsDependsOn);
     UpdateLegacyPackageScopedCssBundles;
     _AddScopedCssBundles;
-  </ResolveStaticWebAssetsInputsDependsOn>
+  </ResolveNonComputedAssetsDependsOn>
 
-  <GenerateComputedBuildStaticWebAssetsDependsOn>
-    $(GenerateComputedBuildStaticWebAssetsDependsOn);
+  <CompressFilesDependsOn>
+    $(CompressFilesDependsOn);
     _ResolveBundlingConfiguration;
     _GenerateScopedCssFiles;
     BundleScopedCssFiles;
-  </GenerateComputedBuildStaticWebAssetsDependsOn>
-
-  <ResolveScopedCssOutputsDependsOn>
-    $(ResolveScopedCssOutputsDependsOn);
-  </ResolveScopedCssOutputsDependsOn>
+  </CompressFilesDependsOn>
 
 </PropertyGroup>
 
 <PropertyGroup Condition="'$(DisableScopedCssBundling)' == 'true'">
 
-  <ResolveStaticWebAssetsInputsDependsOn>
-    $(ResolveStaticWebAssetsInputsDependsOn);
+  <ResolveNonComputedAssetsDependsOn>
+    $(ResolveNonComputedAssetsDependsOn);
     UpdateLegacyPackageScopedCssBundles;
     _AddGeneratedScopedCssFiles;
-  </ResolveStaticWebAssetsInputsDependsOn>
+  </ResolveNonComputedAssetsDependsOn>
 
-  <GenerateComputedBuildStaticWebAssetsDependsOn>
+  <CompressFilesDependsOn>
     _GenerateScopedCssFiles;
-    $(GenerateComputedBuildStaticWebAssetsDependsOn);
-  </GenerateComputedBuildStaticWebAssetsDependsOn>
-
-  <ResolveScopedCssOutputsDependsOn>
-    $(ResolveScopedCssOutputsDependsOn);
-  </ResolveScopedCssOutputsDependsOn>
+    $(CompressFilesDependsOn);
+  </CompressFilesDependsOn>
 
 </PropertyGroup>
 
