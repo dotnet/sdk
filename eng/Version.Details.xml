@@ -152,7 +152,8 @@
     <Dependency Name="NuGet.Build.Tasks" Version="6.10.0-preview.2.44">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>39c4f37d4baa00ee0b815fb394de7d51a58b17ab</Sha>
-      <SourceBuildTarball RepoName="nuget-client" ManagedOnly="true" />    </Dependency>
+      <SourceBuildTarball RepoName="nuget-client" ManagedOnly="true" />
+    </Dependency>
     <Dependency Name="NuGet.Build.Tasks.Console" Version="6.10.0-preview.2.44">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>39c4f37d4baa00ee0b815fb394de7d51a58b17ab</Sha>
