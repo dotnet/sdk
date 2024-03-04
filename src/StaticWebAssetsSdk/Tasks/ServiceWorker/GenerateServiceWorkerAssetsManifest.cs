@@ -5,9 +5,8 @@ using System.Runtime.Serialization.Json;
 using System.Security.Cryptography;
 using Microsoft.Build.Framework;
 
-namespace Microsoft.NET.Sdk.BlazorWebAssembly
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
-    // Only used in legacy builds (5.0 and earlier)
     public partial class GenerateServiceWorkerAssetsManifest : Task
     {
         [Required]
