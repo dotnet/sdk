@@ -223,7 +223,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var installStatePath = Path.Combine(Path.GetTempPath(), "dotnetTestPath", "metadata", "workloads", versionNumber, "InstallState", "default.json");
             var contents = new InstallStateContents();
             contents.UseWorkloadSets = true;
-            var versionFile = "userProfileDir\\sdk-advertising\\8.0.0\\microsoft.net.workloads\\packageVersion.txt";
+            var versionFile = Path.Combine("userProfileDir", "sdk-advertising", "8.0.0", "microsoft.net.workloads", "packageVersion.txt");
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
