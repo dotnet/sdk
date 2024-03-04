@@ -81,9 +81,6 @@ index ------------
 -./sdk/x.y.z/Containers/containerize/ko/Microsoft.DotNet.Cli.Utils.resources.dll
 -./sdk/x.y.z/Containers/containerize/ko/Microsoft.NET.Build.Containers.resources.dll
 -./sdk/x.y.z/Containers/containerize/ko/System.CommandLine.resources.dll
--./sdk/x.y.z/Containers/containerize/Microsoft.Build.dll
--./sdk/x.y.z/Containers/containerize/Microsoft.Build.Framework.dll
--./sdk/x.y.z/Containers/containerize/Microsoft.Build.Utilities.Core.dll
 -./sdk/x.y.z/Containers/containerize/Microsoft.DotNet.Cli.Utils.dll
 -./sdk/x.y.z/Containers/containerize/Microsoft.Extensions.Configuration.Abstractions.dll
 -./sdk/x.y.z/Containers/containerize/Microsoft.Extensions.Configuration.Binder.dll
@@ -99,8 +96,6 @@ index ------------
 -./sdk/x.y.z/Containers/containerize/Microsoft.Extensions.Options.dll
 -./sdk/x.y.z/Containers/containerize/Microsoft.Extensions.Primitives.dll
 -./sdk/x.y.z/Containers/containerize/Microsoft.NET.Build.Containers.dll
--./sdk/x.y.z/Containers/containerize/Microsoft.NET.StringTools.dll
--./sdk/x.y.z/Containers/containerize/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
 -./sdk/x.y.z/Containers/containerize/MSBuild.dll
 -./sdk/x.y.z/Containers/containerize/Newtonsoft.Json.dll
 -./sdk/x.y.z/Containers/containerize/NuGet.Common.dll
@@ -129,13 +124,8 @@ index ------------
 -./sdk/x.y.z/Containers/containerize/runtimes/win/
 -./sdk/x.y.z/Containers/containerize/runtimes/win/lib/
 -./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/
--./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
--./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
 -./sdk/x.y.z/Containers/containerize/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
 -./sdk/x.y.z/Containers/containerize/System.CommandLine.dll
--./sdk/x.y.z/Containers/containerize/System.Configuration.ConfigurationManager.dll
--./sdk/x.y.z/Containers/containerize/System.Diagnostics.EventLog.dll
--./sdk/x.y.z/Containers/containerize/System.Reflection.MetadataLoadContext.dll
 -./sdk/x.y.z/Containers/containerize/System.Security.Cryptography.Pkcs.dll
 -./sdk/x.y.z/Containers/containerize/System.Security.Cryptography.ProtectedData.dll
 -./sdk/x.y.z/Containers/containerize/tr/
@@ -182,8 +172,6 @@ index ------------
 -./sdk/x.y.z/Containers/tasks/net472/ko/Microsoft.NET.Build.Containers.resources.dll
 -./sdk/x.y.z/Containers/tasks/net472/ko/System.CommandLine.resources.dll
 -./sdk/x.y.z/Containers/tasks/net472/Microsoft.Bcl.AsyncInterfaces.dll
--./sdk/x.y.z/Containers/tasks/net472/Microsoft.Build.dll
--./sdk/x.y.z/Containers/tasks/net472/Microsoft.Build.Framework.dll
 -./sdk/x.y.z/Containers/tasks/net472/Microsoft.DotNet.Cli.Utils.dll
 -./sdk/x.y.z/Containers/tasks/net472/Microsoft.DotNet.Cli.Utils.dll.config
 -./sdk/x.y.z/Containers/tasks/net472/Microsoft.Extensions.DependencyInjection.Abstractions.dll
@@ -193,12 +181,9 @@ index ------------
 -./sdk/x.y.z/Containers/tasks/net472/Microsoft.Extensions.Logging.dll
 -./sdk/x.y.z/Containers/tasks/net472/Microsoft.Extensions.Options.dll
 -./sdk/x.y.z/Containers/tasks/net472/Microsoft.Extensions.Primitives.dll
--./sdk/x.y.z/Containers/tasks/net472/Microsoft.IO.Redist.dll
 -./sdk/x.y.z/Containers/tasks/net472/Microsoft.NET.Build.Containers.deps.json
 -./sdk/x.y.z/Containers/tasks/net472/Microsoft.NET.Build.Containers.dll
 -./sdk/x.y.z/Containers/tasks/net472/Microsoft.NET.Build.Containers.dll.config
--./sdk/x.y.z/Containers/tasks/net472/Microsoft.NET.StringTools.dll
--./sdk/x.y.z/Containers/tasks/net472/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
 -./sdk/x.y.z/Containers/tasks/net472/Newtonsoft.Json.dll
 -./sdk/x.y.z/Containers/tasks/net472/NuGet.Common.dll
 -./sdk/x.y.z/Containers/tasks/net472/NuGet.Configuration.dll
@@ -223,19 +208,13 @@ index ------------
 -./sdk/x.y.z/Containers/tasks/net472/ru/Microsoft.NET.Build.Containers.resources.dll
 -./sdk/x.y.z/Containers/tasks/net472/ru/System.CommandLine.resources.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Buffers.dll
--./sdk/x.y.z/Containers/tasks/net472/System.Collections.Immutable.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.CommandLine.dll
--./sdk/x.y.z/Containers/tasks/net472/System.Configuration.ConfigurationManager.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Diagnostics.DiagnosticSource.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Memory.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Numerics.Vectors.dll
--./sdk/x.y.z/Containers/tasks/net472/System.Reflection.Metadata.dll
--./sdk/x.y.z/Containers/tasks/net472/System.Reflection.MetadataLoadContext.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Runtime.CompilerServices.Unsafe.dll
--./sdk/x.y.z/Containers/tasks/net472/System.Security.Principal.Windows.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Text.Encodings.Web.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Text.Json.dll
--./sdk/x.y.z/Containers/tasks/net472/System.Threading.Tasks.Dataflow.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.Threading.Tasks.Extensions.dll
 -./sdk/x.y.z/Containers/tasks/net472/System.ValueTuple.dll
 -./sdk/x.y.z/Containers/tasks/net472/tr/
@@ -254,14 +233,6 @@ index ------------
  ./sdk/x.y.z/Containers/tasks/netx.y/
  ./sdk/x.y.z/Containers/tasks/netx.y/cs/
  ./sdk/x.y.z/Containers/tasks/netx.y/cs/Microsoft.DotNet.Cli.Utils.resources.dll
-@@ ------------ @@
- ./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.deps.json
- ./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.StringTools.dll
--./sdk/x.y.z/Containers/tasks/netx.y/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/MSBuild.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/Newtonsoft.Json.dll
- ./sdk/x.y.z/Containers/tasks/netx.y/NuGet.Common.dll
 @@ ------------ @@
  ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
  ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
