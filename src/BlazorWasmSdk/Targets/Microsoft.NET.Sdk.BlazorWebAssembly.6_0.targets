@@ -84,8 +84,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </GeneratePublishWasmBootJsonDependsOn>
   </PropertyGroup>
 
-  <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
-
   <Target Name="_BlazorWasmNativeForBuild" DependsOnTargets="_GatherBlazorFilesToBuild;WasmBuildApp" Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'" />
 
   <Target Name="_GatherBlazorFilesToBuild">
