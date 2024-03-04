@@ -33,6 +33,7 @@ usage()
   echo ""
 
   echo "Advanced settings:"
+  echo "  --build-tests                   Build repository tests. May not be supported with --source-only"
   echo "  --ci                            Set when running on CI server"
   echo "  --clean-while-building          Cleans each repo after building (reduces disk space usage, short: -cwb)"
   echo "  --excludeCIBinarylog            Don't output binary log (short: -nobl)"
@@ -161,6 +162,9 @@ while [[ $# > 0 ]]; do
       ;;
 
     # Advanced settings
+    -build-tests)
+      properties="$properties /p:DotNetBuildTests=true"
+      ;;
     -ci)
       ci=true
       ;;
