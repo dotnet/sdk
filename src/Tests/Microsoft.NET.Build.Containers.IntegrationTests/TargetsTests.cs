@@ -199,7 +199,7 @@ public class TargetsTests
         else
         {
             labels.Should().NotBeEmpty("Should have evaluated some labels by default")
-                .And.NotContain(label => LabelMatch("org.opencontainers.image.base.source", expectedBaseImage, label));
+                .And.NotContain(label => LabelMatch("org.opencontainers.image.base.name", expectedBaseImage, label));
         };
     }
 
