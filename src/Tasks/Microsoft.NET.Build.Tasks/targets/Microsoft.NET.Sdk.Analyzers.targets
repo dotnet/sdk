@@ -115,9 +115,9 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="$(EnableNETAnalyzers)" />
 
   <Import Project="$(MSBuildThisFileDirectory)..\codestyle\cs\build\Microsoft.CodeAnalysis.CSharp.CodeStyle.targets"
-          Condition="$(EnforceCodeStyleInBuild) And '$(Language)' == 'C#'" />
+          Condition="'$(Language)' == 'C#'" />
   <Import Project="$(MSBuildThisFileDirectory)..\codestyle\vb\build\Microsoft.CodeAnalysis.VisualBasic.CodeStyle.targets"
-          Condition="$(EnforceCodeStyleInBuild) And '$(Language)' == 'VB'" />
+          Condition="'$(Language)' == 'VB'" />
 
   <!-- .NET Analyzers -->
   <ItemGroup Condition="$(EnableNETAnalyzers)">
