@@ -16,7 +16,7 @@
       However, if you wanted to build the finalizer project directly, the Architecture will use the logic above to be set properly, and thus maintain the correct OutputPath.
       Note: The redist-installer project does use Architecture. The Arcade SDK does not use either BuildArchitecture or Architecture.
     -->
-    <Platform Condition="$(SetPlatformFromArchitecture) == 'true' And ('$(Platform)' == '' Or $(Platform) == 'AnyCPU')">$(Architecture)</Platform>
+    <Platform Condition="'$(Platform)' == '' Or $(Platform) == 'AnyCPU'">$(Architecture)</Platform>
   </PropertyGroup>
 
   <Import Project="..\..\Directory.Build.props" />
