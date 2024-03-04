@@ -8,7 +8,8 @@ jobs:
       displayName: Restore dependencies
     - script: dotnet run --project .\src\BuiltInTools\dotnet-format\dotnet-format.csproj -c Release -- @eng\dotnet-format\validate.rsp
       displayName: Run dotnet-format
-    - task: PublishBuildArtifacts@1
+    - task: PublishBuildArtifacts@
+    1
       displayName: Publish Logs
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'

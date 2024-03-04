@@ -190,6 +190,7 @@ jobs:
            log/$(_BuildConfig)/**/*	
            TestResults/$(_BuildConfig)/**/*	
            SymStore/$(_BuildConfig)/**/*
+           tmp/$(_BuildConfig)/**/*.binlog
           TargetFolder: '$(Build.ArtifactStagingDirectory)'	
         continueOnError: true	
         condition: always()
@@ -321,6 +322,7 @@ jobs:
               log/$(_BuildConfig)/**/*	
               TestResults/$(_BuildConfig)/**/*	
               SymStore/$(_BuildConfig)/**/*
+              tmp/$(_BuildConfig)/**/*.binlog
             TargetFolder: '$(Build.ArtifactStagingDirectory)'	
           continueOnError: true	
           condition: always()
@@ -463,6 +465,7 @@ jobs:
            log/$(_BuildConfig)/**/*	
            TestResults/$(_BuildConfig)/**/*	
            SymStore/$(_BuildConfig)/**/*
+           tmp/$(_BuildConfig)/**/*.binlog
           TargetFolder: '$(Build.ArtifactStagingDirectory)'	
         continueOnError: true	
         condition: always()
