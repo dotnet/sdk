@@ -10,7 +10,11 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <Target Name="Build">
-    <Message Text="Build Environment: $(TargetArchitecture) $(Configuration) $(TargetOS) $(TargetRid)" Importance="high" />
+    <PropertyGroup>
+      <SourceOnlyInfoText Condition="'$(DotNetBuildSourceOnly)' == 'true'"> (source-only)</SourceOnlyInfoText>
+    </PropertyGroup>
+
+    <Message Text="Build Environment$(SourceOnlyInfoText): $(TargetArchitecture) $(Configuration) $(TargetOS) $(TargetRid)" Importance="high" />
 
     <MSBuild Projects="$(ToolsDir)init-build.proj;
                        $(RepoProjectsDir)$(RootRepo).proj"
