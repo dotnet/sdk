@@ -4,9 +4,9 @@ jobs:
     vmImage: 'windows-latest'
   timeoutInMinutes: 60
   steps:
-    - script: ./restore.cmd && ./artifacts/sdk-build-env.bat
+    - script: .\restore.cmd ; .\artifacts\sdk-build-env.bat
       displayName: Restore dependencies
-    - script: dotnet run --project ./src/BuiltInTools/dotnet-format/dotnet-format.csproj -c Release -- @eng/dotnet-format/validate.rsp
+    - script: dotnet run --project .\src\BuiltInTools\dotnet-format\dotnet-format.csproj -c Release -- @eng\dotnet-format\validate.rsp
       displayName: Run dotnet-format
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
