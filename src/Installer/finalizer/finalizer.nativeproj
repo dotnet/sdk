@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.DotNet.CMake.Sdk">
 
+  <Import Project="..\Directory.Build.props" />
+
   <PropertyGroup>
     <!-- We use forward slashes in the ArtifactsDir path because backslashes in the CMakeLists.txt are escape characters. -->
     <ArtifactsDirForCMake>$([System.String]::Copy($(ArtifactsDir)).Replace('\','/'))</ArtifactsDirForCMake>
