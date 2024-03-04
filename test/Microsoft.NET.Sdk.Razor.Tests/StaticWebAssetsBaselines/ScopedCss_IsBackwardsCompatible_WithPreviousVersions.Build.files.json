@@ -1,3 +1,14 @@
 [
-  "${IntermediateOutputPath}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css"
+  "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}",
+  "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\site.css.gz",
+  "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\pkg-direct-dep.js.gz",
+  "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\pkg-transitive-dep.js.gz",
+  "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\site.css.gz",
+  "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js.gz",
+  "${IntermediateOutputPath}\\compressed\\3l3iiotdb6.gz",
+  "${IntermediateOutputPath}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css",
+  "${IntermediateOutputPath}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css.gz",
+  "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css.gz",
+  "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js.gz",
+  "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js.gz"
 ]

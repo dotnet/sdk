@@ -403,6 +403,8 @@
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\icudt_no_CJK.dat.gz",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\mscorlib.wasm.gz",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\netstandard.wasm.gz",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm-minimal.bundle.scp.css.gz",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm-minimal.styles.css.gz",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\blazorwasm-minimal.styles.css",
   "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\blazorwasm-minimal.bundle.scp.css",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.AspNetCore.Authorization.wasm",
