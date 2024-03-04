@@ -6,7 +6,8 @@
   <Target Name="ReportSdkArchiveDiffs"
           AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion"
-          Condition="'$(ShortStack)' != 'true'" >
+          Condition="'$(ShortStack)' != 'true' AND '$(PortableBuild)' == 'true'" >
+          <!-- ShortStack doesn't produce an SDK, and GetClosestOfficialSdk doesn't support finding non-portable SDKs -->
 
       <Message Text="Comparing built SDK against closest official build"
                Importance="High"/>
@@ -34,9 +35,16 @@
                 ItemName="_ContentDifferences" />
       </FindArchiveDiffs>
 
-      <Message Text="Difference in sdk archive: %(_ContentDifferences.Kind): %(_ContentDifferences.Identity)"
+      <ItemGroup>
+        <_changedFiles Include="@(_ContentDifferences)" Condition="'%(_contentDifferences.Kind)' != 'Unchanged'" />
+      </ItemGroup>
+
+      <Message Text="Difference in sdk archive: %(_changedFiles.Kind): %(_changedFiles.Identity)"
                Importance="High"
-               Condition="'%(_ContentDifferences.Identity)' != '' AND '%(_ContentDifferences.Kind)' != 'Unchanged'"/>
+               Condition="'@(_changedFiles->Count())' != '0'"/>
+      <Message Text="No differences in sdk archive file contents"
+               Importance="High"
+               Condition="'@(_changedFiles->Count())' == '0'" />
 
       <Delete Files="$(_ClosestOfficialSdkPath)"
               Condition="'$(_ClosestOfficialSdkPath)' == ''"/>
