@@ -6,7 +6,9 @@ jobs:
   steps:
     - script: .\restore.cmd
       displayName: Restore dependencies
-    - script: .\artifacts\sdk-build-env.bat;  dotnet run --project .\src\BuiltInTools\dotnet-format\dotnet-format.csproj -c Release -- @eng\dotnet-format\validate.rsp
+    - script: |
+        .\artifacts\sdk-build-env.bat
+         dotnet run --project .\src\BuiltInTools\dotnet-format\dotnet-format.csproj -c Release -- @eng\dotnet-format\validate.rsp
       displayName: Run dotnet-format
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
