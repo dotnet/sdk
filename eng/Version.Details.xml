@@ -262,10 +262,6 @@
       <Uri>https://github.com/dotnet/wpf</Uri>
       <Sha>089e48a18e84ba199d813b572acd6ca3781be27b</Sha>
     </Dependency>
-    <Dependency Name="System.Drawing.Common" Version="8.0.0">
-      <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>e4ede9b8979b9d2b1b1d4383f30a791414f0625b</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0-preview.3.24153.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>b2dd5b427ba5c21cdc5572d0d9bf94598721c2f7</Sha>
