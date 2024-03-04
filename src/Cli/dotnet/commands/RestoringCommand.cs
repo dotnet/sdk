@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tools
             userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
             Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
             SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
-            AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f)));
+            AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
 
             if (!noRestore)
             {
