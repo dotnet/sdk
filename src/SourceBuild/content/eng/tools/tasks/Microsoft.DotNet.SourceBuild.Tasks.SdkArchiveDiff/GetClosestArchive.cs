@@ -52,7 +52,7 @@ public abstract class GetClosestArchive : Microsoft.Build.Utilities.Task, ICance
     /// <summary>
     /// Get the URL of the latest official archive for the given version string and RID.
     /// </summary>
-    public abstract Task<string?> GetLatestOfficialArchiveUrl();
+    public abstract Task<string?> GetClosestOfficialArchiveUrl();
 
     public abstract Task<string?> GetClosestOfficialArchiveVersion();
 
