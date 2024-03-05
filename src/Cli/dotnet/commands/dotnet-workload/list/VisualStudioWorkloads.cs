@@ -140,10 +140,13 @@ namespace Microsoft.DotNet.Workloads.Workload
                 var vsWorkloadsAsWorkloadIds = vsWorkloads.AsEnumerable().Select(w => new WorkloadId(w.Key));
                 var workloadsToWriteRecordsFor = vsWorkloadsAsWorkloadIds.Except(workloadsWithExistingInstallRecords);
 
-                reporter.WriteLine(
-                    string.Format(LocalizableStrings.WriteCLIRecordForVisualStudioWorkloadMessage,
-                    string.Join(", ", workloadsToWriteRecordsFor.Select(w => w.ToString()).ToArray()))
-                );
+                if (workloadsToWriteRecordsFor.Any())
+                {
+                    reporter.WriteLine(
+                        string.Format(LocalizableStrings.WriteCLIRecordForVisualStudioWorkloadMessage,
+                        string.Join(", ", workloadsToWriteRecordsFor.Select(w => w.ToString()).ToArray()))
+                    );
+                }
 
                 ((NetSdkMsiInstallerClient)workloadInstaller).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
             }
