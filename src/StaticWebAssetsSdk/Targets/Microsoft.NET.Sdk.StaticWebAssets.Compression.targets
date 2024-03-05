@@ -54,7 +54,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       **/*.ras;
       **/*.rf;
       **/*.rgb;
-      **/*.svgz;
       **/*.tif
       **/*.tiff;
       **/*.wbmp;
@@ -144,6 +143,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       **/*.ogv;
       **/*.webm;
       **/*.jfif;
+      **/*.svgz;
       **/*.jpe;
       **/*.pnz;
       **/*.aac;
