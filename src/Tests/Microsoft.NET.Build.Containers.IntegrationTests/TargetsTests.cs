@@ -295,8 +295,8 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-extra")]
-    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-jammy-chiseled-extra")]
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra")]
     [Theory]
     public void AOTAppsWithCulturesGetExtraImages(string rid, string expectedImage)
     {
