@@ -78,8 +78,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
-        <source>Writing workload install records for Visual Studio workloads: '{0}'</source>
-        <target state="new">Writing workload install records for Visual Studio workloads: '{0}'</target>
+        <source>Writing install records for Visual Studio workloads: '{0}'</source>
+        <target state="new">Writing install records for Visual Studio workloads: '{0}'</target>
         <note />
       </trans-unit>
     </body>

@@ -518,7 +518,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             foreach (var workload in workloadsToWriteRecordsFor)
             {
-                Log?.LogMessage($"The workload with id: {workload} was detected as being from VS only and having no SDK records. Creating one now under feature band ${_sdkFeatureBand}.");
+                Log?.LogMessage($"The workload with id: {workload} was detected as being from VS only and having no SDK records. Creating one now under feature band {_sdkFeatureBand}.");
                 RecordRepository.WriteWorkloadInstallationRecord(workload, _sdkFeatureBand);
             }
         }
