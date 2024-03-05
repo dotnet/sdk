@@ -15,7 +15,7 @@ public class GetClosestOfficialSdk : GetClosestArchive
     private string? closestVersion;
     private string? closestUrl;
 
-    public override async Task<string?> GetLatestOfficialArchiveUrl()
+    public override async Task<string?> GetClosestOfficialArchiveUrl()
     {
         // Channel in the form of 9.0.1xx
         var channel = BuiltVersion[..5] + "xx";
@@ -38,7 +38,7 @@ public class GetClosestOfficialSdk : GetClosestArchive
         {
             return closestVersion;
         }
-        _ = await GetLatestOfficialArchiveUrl();
+        _ = await GetClosestOfficialArchiveUrl();
         return closestVersion;
     }
 }
