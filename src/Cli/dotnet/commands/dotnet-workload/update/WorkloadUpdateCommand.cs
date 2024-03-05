@@ -122,7 +122,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         {
             Reporter.WriteLine();
 
-
             var workloadIds = GetUpdatableWorkloads();
             WriteSDKInstallRecordsForVSWorkloads(workloadIds);
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
