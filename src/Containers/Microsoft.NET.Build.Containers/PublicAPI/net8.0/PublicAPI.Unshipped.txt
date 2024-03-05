@@ -73,6 +73,8 @@ Microsoft.NET.Build.Containers.ManifestV2
 Microsoft.NET.Build.Containers.ManifestV2.Config.get -> Microsoft.NET.Build.Containers.ManifestConfig
 Microsoft.NET.Build.Containers.ManifestV2.Config.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.GetDigest() -> string!
+Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.get -> string?
+Microsoft.NET.Build.Containers.ManifestV2.KnownDigest.set -> void
 Microsoft.NET.Build.Containers.ManifestV2.Layers.get -> System.Collections.Generic.List<Microsoft.NET.Build.Containers.ManifestLayer>!
 Microsoft.NET.Build.Containers.ManifestV2.Layers.init -> void
 Microsoft.NET.Build.Containers.ManifestV2.ManifestV2() -> void
@@ -256,12 +258,6 @@ Microsoft.NET.Build.Containers.ManifestLayer.Equals(Microsoft.NET.Build.Containe
 ~override Microsoft.NET.Build.Containers.Descriptor.Equals(object obj) -> bool
 Microsoft.NET.Build.Containers.ManifestLayer.Deconstruct(out string! mediaType, out long size, out string! digest, out string![]? urls) -> void
 Microsoft.NET.Build.Containers.Descriptor.Equals(Microsoft.NET.Build.Containers.Descriptor other) -> bool
-~override Microsoft.NET.Build.Containers.ManifestV2.ToString() -> string
-static Microsoft.NET.Build.Containers.ManifestV2.operator !=(Microsoft.NET.Build.Containers.ManifestV2 left, Microsoft.NET.Build.Containers.ManifestV2 right) -> bool
-static Microsoft.NET.Build.Containers.ManifestV2.operator ==(Microsoft.NET.Build.Containers.ManifestV2 left, Microsoft.NET.Build.Containers.ManifestV2 right) -> bool
-override Microsoft.NET.Build.Containers.ManifestV2.GetHashCode() -> int
-~override Microsoft.NET.Build.Containers.ManifestV2.Equals(object obj) -> bool
-Microsoft.NET.Build.Containers.ManifestV2.Equals(Microsoft.NET.Build.Containers.ManifestV2 other) -> bool
 ~override Microsoft.NET.Build.Containers.ManifestListV2.ToString() -> string
 static Microsoft.NET.Build.Containers.ManifestListV2.operator !=(Microsoft.NET.Build.Containers.ManifestListV2 left, Microsoft.NET.Build.Containers.ManifestListV2 right) -> bool
 static Microsoft.NET.Build.Containers.ManifestListV2.operator ==(Microsoft.NET.Build.Containers.ManifestListV2 left, Microsoft.NET.Build.Containers.ManifestListV2 right) -> bool
