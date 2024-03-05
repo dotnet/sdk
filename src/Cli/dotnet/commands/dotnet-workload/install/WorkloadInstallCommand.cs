@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return _workloadInstaller.ExitCode;
         }
 
-        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIdsToInstallOrUpdate, bool skipManifestUpdate = false, bool includePreviews = false, DirectoryPath? offlineCache = null)
+        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate = false, bool includePreviews = false, DirectoryPath? offlineCache = null)
         {
             Reporter.WriteLine();
 
@@ -154,13 +154,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
                 var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
-                var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIdsToInstallOrUpdate);
+                var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
                 if (previouslyInstalledWorkloads.Any())
                 {
                     Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadAlreadyInstalled, string.Join(" ", previouslyInstalledWorkloads)).Yellow());
                 }
 
-                workloadIdsToInstallOrUpdate = workloadIdsToInstallOrUpdate.Concat(installedWorkloads).Distinct();
+                workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
 
                 useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
@@ -170,12 +170,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
 
-            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIdsToInstallOrUpdate, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
+            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
 
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
             Reporter.WriteLine();
-            Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIdsToInstallOrUpdate)));
+            Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIds)));
             Reporter.WriteLine();
         }
 

@@ -122,9 +122,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         {
             Reporter.WriteLine();
 
-            WriteSDKInstallRecordsForVSWorkloads();
 
             var workloadIds = GetUpdatableWorkloads();
+            WriteSDKInstallRecordsForVSWorkloads(workloadIds);
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
 
             var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
@@ -144,12 +144,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
         }
 
-        private void WriteSDKInstallRecordsForVSWorkloads()
+        private void WriteSDKInstallRecordsForVSWorkloads(IEnumerable<WorkloadId> updateableWorkloads)
         {
 #if !DOT_NET_BUILD_FROM_SOURCE
             if (OperatingSystem.IsWindows())
             {
-                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, GetUpdatableWorkloads(), Reporter);
+                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, updateableWorkloads, Reporter);
             }
 #endif
         }
