@@ -10,3 +10,4 @@ CA1871 | Performance | Info | DoNotPassNonNullableValueToArgumentNullExceptionTh
 CA2262 | Usage | Info | ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectly, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2262)
 CA2263 | Usage | Info | PreferGenericOverloadsAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2263)
 CA2264 | Usage | Warning | DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2264)
+CA2265 | Usage | Warning | DoNotCompareSpanToNullAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2265)

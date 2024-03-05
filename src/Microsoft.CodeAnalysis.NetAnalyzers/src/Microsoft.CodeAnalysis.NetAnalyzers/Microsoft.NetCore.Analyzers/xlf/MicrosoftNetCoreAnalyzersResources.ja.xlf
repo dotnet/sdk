@@ -623,6 +623,31 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">ImmutableCollection 値で ToImmutableCollection を呼び出さないでください</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotCompareSpanToDefaultMessage">
+        <source>Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</source>
+        <target state="new">Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCompareSpanToNullIsEmptyCodeFixTitle">
+        <source>Use 'IsEmpty'</source>
+        <target state="new">Use 'IsEmpty'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCompareSpanToNullMessage">
+        <source>Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</source>
+        <target state="new">Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCompareSpanToNullOrDefaultDescription">
+        <source>Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</source>
+        <target state="new">Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCompareSpanToNullOrDefaultTitle">
+        <source>Do not compare Span&lt;T&gt; to 'null' or 'default'</source>
+        <target state="new">Do not compare Span&lt;T&gt; to 'null' or 'default'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
         <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
         <target state="translated">TaskCompletionSource には、基になるタスクを制御する TaskCreationOptions を使用するコンストラクターと、そのタスクに格納されているオブジェクトの状態を使用するコンストラクターがあります。TaskCreationOptions の代わりに TaskContinuationOptions を誤って渡すと、呼び出しでオプションが状態として処理されます。</target>

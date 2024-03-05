@@ -623,6 +623,31 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
         <target state="translated">Nevolejte ToImmutableCollection pro hodnotu ImmutableCollection</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotCompareSpanToDefaultMessage">
+        <source>Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</source>
+        <target state="new">Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCompareSpanToNullIsEmptyCodeFixTitle">
+        <source>Use 'IsEmpty'</source>
+        <target state="new">Use 'IsEmpty'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCompareSpanToNullMessage">
+        <source>Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</source>
+        <target state="new">Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCompareSpanToNullOrDefaultDescription">
+        <source>Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</source>
+        <target state="new">Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotCompareSpanToNullOrDefaultTitle">
+        <source>Do not compare Span&lt;T&gt; to 'null' or 'default'</source>
+        <target state="new">Do not compare Span&lt;T&gt; to 'null' or 'default'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
         <source>TaskCompletionSource has constructors that take TaskCreationOptions that control the underlying Task, and constructors that take object state that's stored in the task.  Accidentally passing a TaskContinuationOptions instead of a TaskCreationOptions will result in the call treating the options as state.</source>
         <target state="translated">TaskCompletionSource má konstruktory, které přijímají možnosti TaskCreationOptions určující příslušnou úlohu, a konstruktory, které přijímají stav objektu uložený v úloze. Když se místo TaskCreationOptions omylem předá TaskContinuationOptions, způsobí to, že volání bude možnosti považovat za stav.</target>

@@ -2132,4 +2132,19 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullCodeFixTitle" xml:space="preserve">
     <value>Replace the 'ArgumentNullException.ThrowIfNull' call with a conditional</value>
   </data>
+  <data name="DoNotCompareSpanToNullOrDefaultDescription" xml:space="preserve">
+    <value>Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</value>
+  </data>
+  <data name="DoNotCompareSpanToNullMessage" xml:space="preserve">
+    <value>Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</value>
+  </data>
+  <data name="DoNotCompareSpanToDefaultMessage" xml:space="preserve">
+    <value>Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</value>
+  </data>
+  <data name="DoNotCompareSpanToNullOrDefaultTitle" xml:space="preserve">
+    <value>Do not compare Span&lt;T&gt; to 'null' or 'default'</value>
+  </data>
+  <data name="DoNotCompareSpanToNullIsEmptyCodeFixTitle" xml:space="preserve">
+    <value>Use 'IsEmpty'</value>
+  </data>
 </root>
