@@ -185,7 +185,7 @@ public class TargetsTests
         {
             ["ContainerGenerateLabelsImageBaseName"] = includeBaseImageLabels.ToString(),
             ["ContainerBaseImage"] = expectedBaseImage,
-            ["ContainerGenerateLabels"] = includeBaseImageLabels.ToString()
+            ["ContainerGenerateLabels"] = true.ToString()
         }, projectName: $"{nameof(ShouldIncludeBaseImageLabelsUnlessUserOptsOut)}_{includeBaseImageLabels}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
