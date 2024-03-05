@@ -141,7 +141,7 @@
       <ContainerGenerateLabelsImageTitle Condition="'$(ContainerGenerateLabelsImageTitle)' == ''">true</ContainerGenerateLabelsImageTitle>
       <ContainerGenerateLabelsImageBaseDigest Condition="'$(ContainerGenerateLabelsImageBaseDigest)' == ''">true</ContainerGenerateLabelsImageBaseDigest>
       <ContainerGenerateLabelsImageBaseName Condition="'$(ContainerGenerateLabelsImageBaseName)' == ''">true</ContainerGenerateLabelsImageBaseName>
-      <ContainerGenerateLabelsDotnetToolset Condition="'$(ContainerGenerateLabelsDotnetToolset)' == ''"></ContainerGenerateLabelsDotnetToolset>
+      <ContainerGenerateLabelsDotnetToolset Condition="'$(ContainerGenerateLabelsDotnetToolset)' == ''">true</ContainerGenerateLabelsDotnetToolset>
     </PropertyGroup>
 
     <PropertyGroup Label="Defaults for Container Labels">
