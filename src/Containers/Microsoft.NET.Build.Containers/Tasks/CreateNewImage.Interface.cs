@@ -153,7 +153,7 @@ partial class CreateNewImage
     public bool GenerateLabels { get; set; }
 
     /// <summary>
-    /// If true, the tooling will generate an 'org.opencontainers.image.base.digest' label on the generated images containing the digest of the chosen base image.
+    /// If true, the tooling will generate an <c>org.opencontainers.image.base.digest</c> label on the generated images containing the digest of the chosen base image.
     /// </summary>
     /// <remarks>
     /// Normally this would have been handled in the container targets, but we do not currently _fetch_ the digest of the base image in pure MSBuild, so we do it during generation-time.
