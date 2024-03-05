@@ -285,7 +285,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       </trans-unit>
       <trans-unit id="ToolSettingsNotFound">
         <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="new">Tool settings file does not exist for the tool {0}.</target>
+        <target state="translated">도구 {0}에 대한 도구 설정 파일이 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Update">

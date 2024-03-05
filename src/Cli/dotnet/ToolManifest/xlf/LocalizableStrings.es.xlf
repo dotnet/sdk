@@ -38,7 +38,7 @@ Para obtener una lista de ubicaciones buscadas, especifique la opción "-d" dela
       </trans-unit>
       <trans-unit id="ToolMissingRollForward">
         <source>Missing 'rollForward' entry.</source>
-        <target state="new">Missing 'rollForward' entry.</target>
+        <target state="translated">Falta la entrada "rollForward".</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">

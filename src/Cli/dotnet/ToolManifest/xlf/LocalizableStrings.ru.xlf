@@ -38,7 +38,7 @@ For a list of locations searched, specify the "-d" option before the tool name.<
       </trans-unit>
       <trans-unit id="ToolMissingRollForward">
         <source>Missing 'rollForward' entry.</source>
-        <target state="new">Missing 'rollForward' entry.</target>
+        <target state="translated">Отсутствует запись "rollForward".</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">

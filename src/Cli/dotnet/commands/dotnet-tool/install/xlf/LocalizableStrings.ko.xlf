@@ -90,7 +90,7 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
       </trans-unit>
       <trans-unit id="RollForwardOptionDescription">
         <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
-        <target state="new">Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</target>
+        <target state="translated">대상으로 하는 런타임이 설치되지 않은 경우 .NET 도구가 최신 버전의 .NET 런타임으로 롤포워드하도록 허용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">

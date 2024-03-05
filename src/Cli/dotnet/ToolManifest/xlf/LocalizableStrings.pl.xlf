@@ -38,7 +38,7 @@ Aby uzyskać listę przeszukiwanych lokalizacji, określ opcję „-d” przed n
       </trans-unit>
       <trans-unit id="ToolMissingRollForward">
         <source>Missing 'rollForward' entry.</source>
-        <target state="new">Missing 'rollForward' entry.</target>
+        <target state="translated">Brak wpisu „rollForward”.</target>
         <note />
       </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">

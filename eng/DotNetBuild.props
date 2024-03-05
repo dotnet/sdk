@@ -7,7 +7,9 @@
     <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
   </PropertyGroup>
 
-  <Target Name="ConfigureInnerBuildArg" BeforeTargets="GetSourceBuildCommandConfiguration">
+  <Target Name="ConfigureInnerBuildArg"
+          BeforeTargets="GetSourceBuildCommandConfiguration"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <PropertyGroup>
       <InnerBuildArgs>$(InnerBuildArgs) /p:Projects="$(InnerSourceBuildRepoRoot)\source-build.slnf"</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) /p:UseSharedCompilation=false</InnerBuildArgs>
@@ -17,9 +19,7 @@
   <Target Name="GetSdkCategorizedIntermediateNupkgContents"
           BeforeTargets="GetCategorizedIntermediateNupkgContents">
     <ItemGroup>
-      <!--
-        Add the internal toolset zip required by dotnet/installer.
-      -->
+      <!-- Add the internal toolset zip required by dotnet/installer. -->
       <IntermediateNupkgArtifactFile Include="$(CurrentRepoSourceBuildArtifactsPackagesDir)NonShipping\dotnet-toolset-internal-*.zip" />
     </ItemGroup>
   </Target>
