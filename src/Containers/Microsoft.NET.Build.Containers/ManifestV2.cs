@@ -50,7 +50,7 @@ public class ManifestV2
     /// <summary>
     /// Gets the digest for this manifest.
     /// </summary>
-    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(JsonSerializer.SerializeToNode(this)?.ToJsonString(new JsonSerializerOptions() { WriteIndented = true }).ReplaceLineEndings("\r") ?? string.Empty);
+    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(JsonSerializer.SerializeToNode(this)?.ToJsonString() ?? string.Empty);
 }
 
 public record struct ManifestConfig(string mediaType, long size, string digest);
