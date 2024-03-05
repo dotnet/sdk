@@ -137,8 +137,8 @@ namespace Microsoft.DotNet.Workloads.Workload
                 GetInstalledWorkloads(workloadResolver, vsWorkloads);
 
                 // Remove VS workloads with an SDK installation record, as we've already created the records for them, and don't need to again.
-                var vsOnlyWorkloads = vsWorkloads.AsEnumerable().Where(w => !w.Value.Contains("SDK")).Select(w => new WorkloadId(w.Key));
-                var workloadsToWriteRecordsFor = vsOnlyWorkloads.Except(workloadsWithExistingInstallRecords);
+                var vsWorkloadsAsWorkloadIds = vsWorkloads.AsEnumerable().Select(w => new WorkloadId(w.Key));
+                var workloadsToWriteRecordsFor = vsWorkloadsAsWorkloadIds.Except(workloadsWithExistingInstallRecords);
 
                 reporter.WriteLine(
                     string.Format(LocalizableStrings.WriteCLIRecordForVisualStudioWorkloadMessage,
