@@ -151,7 +151,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     Reporter.WriteLine(LocalizableStrings.CheckForUpdatedWorkloadManifests);
                 }
 
-
                 // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
                 var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
                 var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
