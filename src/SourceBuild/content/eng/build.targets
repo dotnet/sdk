@@ -22,15 +22,13 @@
       <Error Text="Multiple valid dotnet-sdk archives found."
              Condition="'@(_BuiltSdkArchivePath->Count())' != '1'" />
 
-      <GetClosestOfficialSdk BuiltArchivePath="@(_BuiltSdkArchivePath)"
-                             Condition="'@(_BuiltSdkArchivePath)' != ''">
+      <GetClosestOfficialSdk BuiltArchivePath="@(_BuiltSdkArchivePath)">
         <Output TaskParameter="ClosestOfficialArchivePath"
                 PropertyName="_ClosestOfficialSdkPath" />
       </GetClosestOfficialSdk>
 
       <FindArchiveDiffs BaselineArchive="@(_BuiltSdkArchivePath)"
-                        TestArchive="$(_ClosestOfficialSdkPath)"
-                        Condition="'@(_BuiltSdkArchivePath)' != '' AND '$(_ClosestOfficialSdkPath)' != ''">
+                        TestArchive="$(_ClosestOfficialSdkPath)">
         <Output TaskParameter="ContentDifferences"
                 ItemName="_ContentDifferences" />
       </FindArchiveDiffs>
