@@ -166,7 +166,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var wwwRootFiles = Directory.Exists(wwwRootFolder) ?
                 Directory.GetFiles(wwwRootFolder, "*", fileEnumerationOptions)
                     .Select(f => _baselineFactory.TemplatizeFilePath(f, null, null, intermediateOutputPath, publishFolder, null)) :
-                Array.Empty<string>();
+                [];
 
             // Computed publish assets must exist on disk (we do this check to quickly identify when something is not being
             // generated vs when its being copied to the wrong place)
