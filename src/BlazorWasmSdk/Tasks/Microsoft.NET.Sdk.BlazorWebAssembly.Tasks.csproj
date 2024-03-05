@@ -64,8 +64,6 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <!-- C:\work\dotnet-sdk\src\StaticWebAssetsSdk\Tasks\Data\ -->
-    <!-- C:\work\dotnet-sdk\src\BlazorWasmSdk\Tasks\ -->
     <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAsset.cs" />
   </ItemGroup>
 
