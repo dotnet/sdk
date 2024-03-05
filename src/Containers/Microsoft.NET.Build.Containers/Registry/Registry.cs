@@ -270,7 +270,8 @@ internal sealed class Registry
             using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, matchingManifest.digest, cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
-            var manifest = await manifestResponse.Content.ReadAsJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
+            var manifest = await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
             manifest.KnownDigest = matchingManifest.digest;
             return await ReadSingleImageAsync(
                 repositoryName,
