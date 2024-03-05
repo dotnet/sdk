@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-// Copied from https://github.com/dotnet/arcade/blob/903d35c426248ade56719db5bc0947cd7634b297/eng/common/native/init-distro-rid.sh
+// Copied from https://github.com/dotnet/arcade/blob/db45698020f58f88eef75b23b2598a59872918f6/src/Microsoft.DotNet.VersionTools/lib/src/BuildManifest/VersionIdentifier.cs
 // Conflicting MSBuild versions and some customizations make it difficult to use the Arcade assembly.
 public static class VersionIdentifier
 {
