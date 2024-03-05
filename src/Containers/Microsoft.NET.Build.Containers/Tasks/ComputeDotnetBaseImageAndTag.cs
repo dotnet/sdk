@@ -81,7 +81,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     private bool IsMuslRid => TargetRuntimeIdentifier.StartsWith("linux-musl", StringComparison.Ordinal);
     private bool IsBundledRuntime => IsSelfContained;
 
-    // as of this writing, the -extra images are on stable MCR, but the -aot images are still on nightly. This means AOT, invariant apps need the /nightly/ base.
+    // as of March 2024, the -extra images are on stable MCR, but the -aot images are still on nightly. This means AOT, invariant apps need the /nightly/ base.
     private bool NeedsNightlyImages => IsAotPublished && UsesInvariantGlobalization;
     private bool AllowsExperimentalTagInference => String.IsNullOrEmpty(ContainerFamily);
 
