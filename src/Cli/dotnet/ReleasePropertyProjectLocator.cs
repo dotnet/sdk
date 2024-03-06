@@ -22,7 +22,6 @@ namespace Microsoft.DotNet.Cli
     {
         public struct DependentCommandOptions
         {
-#nullable enable
             public IEnumerable<string> SlnOrProjectArgs = Enumerable.Empty<string>();
             public string? FrameworkOption;
             public string? ConfigurationOption;

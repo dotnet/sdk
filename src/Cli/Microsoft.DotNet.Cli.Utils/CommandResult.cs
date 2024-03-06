@@ -11,10 +11,10 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public ProcessStartInfo StartInfo { get; }
         public int ExitCode { get; }
-        public string StdOut { get; }
-        public string StdErr { get; }
+        public string? StdOut { get; }
+        public string? StdErr { get; }
 
-        public CommandResult(ProcessStartInfo startInfo, int exitCode, string stdOut, string stdErr)
+        public CommandResult(ProcessStartInfo startInfo, int exitCode, string? stdOut, string? stdErr)
         {
             StartInfo = startInfo;
             ExitCode = exitCode;

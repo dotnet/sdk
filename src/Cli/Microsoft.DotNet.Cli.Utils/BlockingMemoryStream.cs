@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
             if (_remaining.Count == 0)
             {
-                byte[] tmp;
+                byte[]? tmp;
                 if (!_buffers.TryTake(out tmp, Timeout.Infinite) || tmp.Length == 0)
                 {
                     return 0;
@@ -40,13 +40,13 @@ namespace Microsoft.DotNet.Cli.Utils
             if (_remaining.Count <= count)
             {
                 count = _remaining.Count;
-                Buffer.BlockCopy(_remaining.Array, _remaining.Offset, buffer, offset, count);
-                _remaining = default(ArraySegment<byte>);
+                Buffer.BlockCopy(_remaining.Array!, _remaining.Offset, buffer, offset, count);
+                _remaining = default;
             }
             else
             {
-                Buffer.BlockCopy(_remaining.Array, _remaining.Offset, buffer, offset, count);
-                _remaining = new ArraySegment<byte>(_remaining.Array, _remaining.Offset + count, _remaining.Count - count);
+                Buffer.BlockCopy(_remaining.Array!, _remaining.Offset, buffer, offset, count);
+                _remaining = new ArraySegment<byte>(_remaining.Array!, _remaining.Offset + count, _remaining.Count - count);
             }
             return count;
         }

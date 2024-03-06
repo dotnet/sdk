@@ -15,9 +15,9 @@ namespace Microsoft.DotNet.Cli.Utils
 
         ICommand CaptureStdErr();
 
-        ICommand ForwardStdOut(TextWriter to = null, bool onlyIfVerbose = false, bool ansiPassThrough = true);
+        ICommand ForwardStdOut(TextWriter? to = null, bool onlyIfVerbose = false, bool ansiPassThrough = true);
 
-        ICommand ForwardStdErr(TextWriter to = null, bool onlyIfVerbose = false, bool ansiPassThrough = true);
+        ICommand ForwardStdErr(TextWriter? to = null, bool onlyIfVerbose = false, bool ansiPassThrough = true);
 
         ICommand OnOutputLine(Action<string> handler);
 

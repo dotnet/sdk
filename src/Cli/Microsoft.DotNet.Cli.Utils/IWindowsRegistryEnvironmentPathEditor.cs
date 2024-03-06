@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Cli.Utils
 {
     internal interface IWindowsRegistryEnvironmentPathEditor
     {
-        string Get(SdkEnvironmentVariableTarget sdkEnvironmentVariableTarget);
+        string? Get(SdkEnvironmentVariableTarget sdkEnvironmentVariableTarget);
         void Set(string value, SdkEnvironmentVariableTarget sdkEnvironmentVariableTarget);
     }
 

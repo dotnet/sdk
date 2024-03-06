@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Cli.Utils
             }
 
             [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-            internal static extern SafeWaitHandle CreateJobObjectW(IntPtr lpJobAttributes, string lpName);
+            internal static extern SafeWaitHandle CreateJobObjectW(IntPtr lpJobAttributes, string? lpName);
 
             [DllImport("kernel32.dll", SetLastError = true)]
             internal static extern bool SetInformationJobObject(IntPtr hJob, JobObjectInfoClass jobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength);

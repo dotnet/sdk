@@ -15,17 +15,14 @@ namespace Microsoft.DotNet.Cli.Utils
         public static void Correct()
         {
             var pathEditor = new WindowsRegistryEnvironmentPathEditor();
-            var dotDefaultPath =
-                pathEditor.Get(
-                    SdkEnvironmentVariableTarget.DotDefault);
+            var dotDefaultPath = pathEditor.Get(SdkEnvironmentVariableTarget.DotDefault);
             if (NeedCorrection(dotDefaultPath, out var correctedPath))
             {
-                pathEditor.Set(correctedPath,
-                    SdkEnvironmentVariableTarget.DotDefault);
+                pathEditor.Set(correctedPath, SdkEnvironmentVariableTarget.DotDefault);
             }
         }
 
-        internal static bool NeedCorrection(string existingPath, out string correctedPath)
+        internal static bool NeedCorrection(string? existingPath, out string correctedPath)
         {
             correctedPath = string.Empty;
             if (string.IsNullOrWhiteSpace(existingPath))
@@ -33,7 +30,7 @@ namespace Microsoft.DotNet.Cli.Utils
                 return false;
             }
 
-            IEnumerable<string> paths = existingPath.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+            IEnumerable<string> paths = existingPath!.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
 
             var inCorrectToolsPaths =
                 paths.Where(p => p.EndsWith(DotnetToolsSuffix, StringComparison.OrdinalIgnoreCase));

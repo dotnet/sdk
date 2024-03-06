@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Utils
         private readonly IBuiltInCommandEnvironment _environment;
         private readonly StreamForwarder _stdOut;
         private readonly StreamForwarder _stdErr;
-        private string _workingDirectory;
+        private string? _workingDirectory;
 
         public string CommandName { get; }
         public string CommandArgs => string.Join(" ", _commandArgs);
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
                     if (!string.IsNullOrEmpty(_workingDirectory))
                     {
-                        _environment.SetWorkingDirectory(_workingDirectory);
+                        _environment.SetWorkingDirectory(_workingDirectory!);
                     }
 
                     var taskOut = _stdOut.BeginRead(new StreamReader(outStream));
@@ -168,12 +168,12 @@ namespace Microsoft.DotNet.Cli.Utils
             throw new NotImplementedException();
         }
 
-        public ICommand ForwardStdErr(TextWriter to = null, bool onlyIfVerbose = false, bool ansiPassThrough = true)
+        public ICommand ForwardStdErr(TextWriter? to = null, bool onlyIfVerbose = false, bool ansiPassThrough = true)
         {
             throw new NotImplementedException();
         }
 
-        public ICommand ForwardStdOut(TextWriter to = null, bool onlyIfVerbose = false, bool ansiPassThrough = true)
+        public ICommand ForwardStdOut(TextWriter? to = null, bool onlyIfVerbose = false, bool ansiPassThrough = true)
         {
             throw new NotImplementedException();
         }

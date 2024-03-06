@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public static void Setup()
         {
-            CultureInfo language = GetOverriddenUILanguage();
+            CultureInfo? language = GetOverriddenUILanguage();
             if (language != null)
             {
                 ApplyOverrideToCurrentProcess(language);
@@ -54,10 +54,10 @@ namespace Microsoft.DotNet.Cli.Utils
         /// </summary>
         /// <returns>The custom language that was set by the user.
         /// DOTNET_CLI_UI_LANGUAGE > VSLANG. Returns null if none are set.</returns>
-        private static CultureInfo GetOverriddenUILanguage()
+        private static CultureInfo? GetOverriddenUILanguage()
         {
             // DOTNET_CLI_UI_LANGUAGE=<culture name> is the main way for users to customize the CLI's UI language.
-            string dotnetCliLanguage = Environment.GetEnvironmentVariable(DOTNET_CLI_UI_LANGUAGE);
+            string? dotnetCliLanguage = Environment.GetEnvironmentVariable(DOTNET_CLI_UI_LANGUAGE);
             if (dotnetCliLanguage != null)
             {
                 try
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
             // VSLANG=<lcid> is set by VS and we respect that as well so that we will respect the VS 
             // language preference if we're invoked by VS. 
-            string vsLang = Environment.GetEnvironmentVariable(VSLANG);
+            string? vsLang = Environment.GetEnvironmentVariable(VSLANG);
             if (vsLang != null && int.TryParse(vsLang, out int vsLcid))
             {
                 try
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         private static void SetIfNotAlreadySet(string environmentVariableName, string value)
         {
-            string currentValue = Environment.GetEnvironmentVariable(environmentVariableName);
+            string? currentValue = Environment.GetEnvironmentVariable(environmentVariableName);
             if (currentValue == null)
             {
                 Environment.SetEnvironmentVariable(environmentVariableName, value);
@@ -111,10 +111,10 @@ namespace Microsoft.DotNet.Cli.Utils
             Debug.Assert(RuntimeInformation.IsOSPlatform(OSPlatform.Windows));
             try
             {
-                using RegistryKey windowsVersionRegistry = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
-                var buildNumber = windowsVersionRegistry.GetValue("CurrentBuildNumber").ToString();
+                using RegistryKey? windowsVersionRegistry = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
+                var buildNumber = windowsVersionRegistry?.GetValue("CurrentBuildNumber")?.ToString();
                 const int buildNumberThatOfficialySupportsUTF8 = 18363;
-                return int.Parse(buildNumber) >= buildNumberThatOfficialySupportsUTF8 || ForceUniversalEncodingOptInEnabled();
+                return int.Parse(buildNumber!) >= buildNumberThatOfficialySupportsUTF8 || ForceUniversalEncodingOptInEnabled();
             }
             catch (Exception ex) when (ex is SecurityException || ex is ObjectDisposedException)
             {

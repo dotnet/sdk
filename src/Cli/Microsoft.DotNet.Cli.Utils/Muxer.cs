@@ -9,16 +9,9 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         public static readonly string MuxerName = "dotnet";
 
-        private readonly string _muxerPath;
+        private readonly string? _muxerPath;
 
-        internal string SharedFxVersion
-        {
-            get
-            {
-                var depsFile = new FileInfo(GetDataFromAppDomain("FX_DEPS_FILE"));
-                return depsFile.Directory.Name;
-            }
-        }
+        internal string SharedFxVersion => new FileInfo(GetDataFromAppDomain("FX_DEPS_FILE")!).Directory!.Name;
 
         public string MuxerPath
         {
@@ -41,7 +34,7 @@ namespace Microsoft.DotNet.Cli.Utils
 #endif
         }
 
-        public static string GetDataFromAppDomain(string propertyName)
+        public static string? GetDataFromAppDomain(string propertyName)
         {
             return AppContext.GetData(propertyName) as string;
         }
