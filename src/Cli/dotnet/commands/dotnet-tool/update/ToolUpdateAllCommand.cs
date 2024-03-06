@@ -9,6 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.List;
 
@@ -21,47 +23,122 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         public ToolUpdateAllCommand(ParseResult parseResult)
             : base(parseResult)
         {
-            _global = parseResult.GetValue(ToolUpdateCommandParser.GlobalOption);
+            _global = parseResult.GetValue(ToolUpdateAllCommandParser.GlobalOption);
         }
 
         public override int Execute()
         {
+            ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
+                _parseResult,
+                LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
+
             if (_global)
             {
-                ToolUpdateAllGlobalCommand(_parseResult);
+                UpdateAllGlobalTools();
             }
             else
             {
-                ToolUpdateAllLocalCommand(_parseResult);
+                UpdateAllLocalTools();
             }
             return 0;
         }
 
-        private int ToolUpdateAllGlobalCommand(ParseResult parseResult)
+        private void UpdateAllGlobalTools()
         {
-            var toolListCommand = new ToolListGlobalOrToolPathCommand(parseResult);
+            var toolListCommand = new ToolListGlobalOrToolPathCommand(_parseResult);
             var toolList = toolListCommand.GetPackages(null, null);
-
-            foreach (var tool in toolList)
-            {
-                // TBD: Call functions from install to update the functions
-                var toolUpdateCommand = new ToolUpdateCommand(parseResult);
-                toolUpdateCommand.Execute();
-            }
-            return 0;
+            UpdateTools(toolList.Select(tool => tool.Id.ToString()), true, null);
         }
 
-        private int ToolUpdateAllLocalCommand(ParseResult parseResult)
+        private void UpdateAllLocalTools()
         {
-            var toolListLocalCommand = new ToolListLocalCommand(parseResult);
+            var toolListLocalCommand = new ToolListLocalCommand(_parseResult);
             var toolListLocal = toolListLocalCommand.GetPackages(null);
-
-            foreach (var tool in toolListLocal)
+            foreach (var (package, manifestPath) in toolListLocal)
             {
-                var toolUpdateCommand = new ToolUpdateCommand(parseResult);
+                UpdateTools(new[] { package.PackageId.ToString() }, false, manifestPath.Value);
+            }
+        }
+
+        private void UpdateTools(IEnumerable<string> toolIds, bool isGlobal, string manifestPath)
+        {
+            foreach (var toolId in toolIds)
+            {
+                var args = BuildUpdateCommandArguments(
+                    toolId: toolId,
+                    isGlobal: isGlobal,
+                    toolPath: _parseResult.GetValue(ToolUpdateAllCommandParser.ToolPathOption),
+                    configFile: _parseResult.GetValue(ToolUpdateAllCommandParser.ConfigOption),
+                    addSource: _parseResult.GetValue(ToolUpdateAllCommandParser.AddSourceOption),
+                    framework: _parseResult.GetValue(ToolUpdateAllCommandParser.FrameworkOption),
+                    prerelease: _parseResult.GetValue(ToolUpdateAllCommandParser.PrereleaseOption),
+                    verbosity: _parseResult.GetValue(ToolUpdateAllCommandParser.VerbosityOption),
+                    manifestPath: manifestPath
+                );
+
+                var toolParseResult = Parser.Instance.Parse(args);
+                var toolUpdateCommand = new ToolUpdateCommand(toolParseResult);
                 toolUpdateCommand.Execute();
             }
-            return 0;
         }
+
+        private string[] BuildUpdateCommandArguments(string toolId,
+            bool isGlobal,
+            string toolPath,
+            string configFile,
+            string[] addSource,
+            string framework,
+            bool prerelease,
+            VerbosityOptions verbosity,
+            string manifestPath)
+        {
+            List<string> args = new List<string> { "dotnet", "tool", "update", toolId };
+
+            if (isGlobal)
+            {
+                args.Add("--global");
+            }
+            else if (!string.IsNullOrEmpty(toolPath))
+            {
+                args.AddRange(new[] { "--tool-path", toolPath });
+            }
+            else
+            {
+                args.Add("--local");
+            }
+
+            if (!string.IsNullOrEmpty(configFile))
+            {
+                args.AddRange(new[] { "--configFile", configFile });
+            }
+
+            if (addSource != null && addSource.Length > 0)
+            {
+                foreach (var source in addSource)
+                {
+                    args.AddRange(new[] { "--add-source", source });
+                }
+            }
+
+            if (!string.IsNullOrEmpty(framework))
+            {
+                args.AddRange(new[] { "--framework", framework });
+            }
+
+            if (prerelease)
+            {
+                args.Add("--prerelease");
+            }
+
+            if (!string.IsNullOrEmpty(manifestPath))
+            {
+                args.AddRange(new[] { "--tool-manifest", manifestPath });
+            }
+
+            args.AddRange(new[] { "--verbosity", verbosity.ToString() });
+
+            return args.ToArray();
+        }
+
     }
 }
