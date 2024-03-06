@@ -40,7 +40,7 @@
         <SdkArchiveDiffsReport>$(ArtifactsLogDir)SdkArchiveDiffs.csv</SdkArchiveDiffsReport>
       </PropertyGroup>
 
-      <WriteLinesToFile File="$(SdkArchiveDiffsReport)" Lines="%(_ContentDifference.Kind), %(_ContentDifferences.Identity)" />
+      <WriteLinesToFile File="$(SdkArchiveDiffsReport)" Lines="%(_ContentDifference.Kind), %(_ContentDifferences.Identity)" Overwrite="true" WriteOnlyWhenDifferent="true" />
 
       <Message Text="Difference in sdk archive: %(_changedFiles.Kind): %(_changedFiles.Identity)"
                Importance="High"
