@@ -138,12 +138,12 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>6.0.28-servicing.24155.18</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
-    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>6.0.28</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>6.0.28-servicing.24155.18</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>6.0.28-servicing.24155.18</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzersPackageVersion>6.0.28-servicing.24155.18</MicrosoftAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>6.0.28</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>6.0.29-servicing.24156.10</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>6.0.29</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>6.0.29-servicing.24156.10</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>6.0.29-servicing.24156.10</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzersPackageVersion>6.0.29-servicing.24156.10</MicrosoftAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>6.0.29</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>6.0.3-1.22213.1</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
     <MicrosoftCodeAnalysisRazorToolingInternalVersion>6.0.3-1.22213.1</MicrosoftCodeAnalysisRazorToolingInternalVersion>
     <MicrosoftAspNetCoreRazorSourceGeneratorToolingInternalPackageVersion>6.0.3-1.22213.1</MicrosoftAspNetCoreRazorSourceGeneratorToolingInternalPackageVersion>
