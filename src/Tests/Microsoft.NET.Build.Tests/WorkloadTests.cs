@@ -95,7 +95,7 @@ namespace Microsoft.NET.Build.Tests
                 .BeEquivalentTo(("microsoft-net-sdk-missingtestworkload", "microsoft.net.sdk.missingtestworkload"));
         }
 
-        [Fact]
+        [CoreMSBuildOnlyFact]
         public void It_should_fail_to_restore_without_workload_when_multitargeted()
         {
             var testProject = new TestProject()
