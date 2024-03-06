@@ -87,14 +87,14 @@
       <Sha>ca66024e6da7cced9921216763386bd43f400fbf</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="dotnet-format" Version="9.0.515401">
+    <Dependency Name="dotnet-format" Version="9.0.515501">
       <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>a8002e38ae10922926adf567d4dad7321063fad4</Sha>
+      <Sha>165a007e8b2f25f040838789a8d3db09e30dd013</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.format" Version="9.0.515401">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.format" Version="9.0.515501">
       <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>a8002e38ae10922926adf567d4dad7321063fad4</Sha>
+      <Sha>165a007e8b2f25f040838789a8d3db09e30dd013</Sha>
       <SourceBuild RepoName="format" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.10.0-3.24155.13">
