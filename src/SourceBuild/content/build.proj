@@ -20,6 +20,7 @@
   </Target>
 
   <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
-  <Import Project="$(RepositoryEngineeringDir)build.targets" />
+  <!-- ShortStack doesn't produce an SDK, and GetClosestOfficialSdk doesn't support finding non-portable SDKs -->
+  <Import Project="$(RepositoryEngineeringDir)sdkArchiveDiff.targets" Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true'" />
 
 </Project>
