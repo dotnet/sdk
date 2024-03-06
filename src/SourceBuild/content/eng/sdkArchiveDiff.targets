@@ -34,13 +34,22 @@
 
       <ItemGroup>
         <_changedFiles Include="@(_ContentDifferences)" Condition="'%(_contentDifferences.Kind)' != 'Unchanged'" />
+        <_sdkFilesDiff Include="@(_ContentDifferences)" Condition="'%(_contentDifferences.Kind)' == 'Added'" >
+          <DiffIndicator>+</DiffIndicator>
+        </_sdkFilesDiff>
+        <_sdkFilesDiff Include="@(_ContentDifferences)" Condition="'%(_contentDifferences.Kind)' == 'Removed'" >
+          <DiffIndicator>-</DiffIndicator>
+        </_sdkFilesDiff>
+        <_sdkFilesDiff Include="@(_ContentDifferences)" Condition="'%(_contentDifferences.Kind)' == 'Unchanged'" >
+          <DiffIndicator> </DiffIndicator>
+        </_sdkFilesDiff>
       </ItemGroup>
 
       <PropertyGroup>
-        <SdkArchiveDiffsReport>$(ArtifactsLogDir)SdkArchiveDiffs.csv</SdkArchiveDiffsReport>
+        <SdkArchiveDiffsReport>$(ArtifactsLogDir)SdkArchiveContent.diff</SdkArchiveDiffsReport>
       </PropertyGroup>
 
-      <WriteLinesToFile File="$(SdkArchiveDiffsReport)" Lines="%(_ContentDifference.Kind), %(_ContentDifferences.Identity)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+      <WriteLinesToFile File="$(SdkArchiveDiffsReport)" Lines="%(_sdkFilesDiff.DiffIndicator) %(_sdkFilesDiff.Identity)" Overwrite="true" WriteOnlyWhenDifferent="true" />
 
       <Message Text="Difference in sdk archive: %(_changedFiles.Kind): %(_changedFiles.Identity)"
                Importance="High"
