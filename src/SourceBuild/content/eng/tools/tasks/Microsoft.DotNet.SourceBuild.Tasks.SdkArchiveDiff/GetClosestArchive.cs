@@ -82,7 +82,7 @@ public abstract class GetClosestArchive : Microsoft.Build.Utilities.Task, ICance
 
         var packageUriPath = packageResponse.RequestMessage!.RequestUri!.LocalPath;
 
-        ClosestOfficialArchivePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + $".{ArchiveName}-{BuiltVersion}-{BuiltRid}.closest.{ArchiveExtension}");
+        ClosestOfficialArchivePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + "." + Path.GetFileName(packageUriPath));
         Log.LogMessage($"Copying {packageUriPath} to {ClosestOfficialArchivePath}");
         using (var file = File.Create(ClosestOfficialArchivePath))
         {
