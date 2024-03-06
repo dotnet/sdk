@@ -68,7 +68,7 @@ public abstract class GetClosestArchive : Microsoft.Build.Utilities.Task, ICance
         (BuiltVersion, BuiltRid, ArchiveExtension) = Archive.GetInfoFromFileName(filename, ArchiveName);
         Log.LogMessage($"Finding closest official archive for '{ArchiveName}' version '{BuiltVersion}' RID '{BuiltRid}'");
 
-        string? downloadUrl = await GetLatestOfficialArchiveUrl();
+        string? downloadUrl = await GetClosestOfficialArchiveUrl();
         if (downloadUrl == null)
         {
             Log.LogError($"Failed to find a download URL for '{ArchiveName}' version '{BuiltVersion}' RID '{BuiltRid}'");
