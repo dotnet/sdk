@@ -37,7 +37,7 @@
       </ItemGroup>
 
       <PropertyGroup>
-        <SdkArchiveDiffsReport>$(ArtifactsLogDir)\SdkArchiveDiffs\SdkArchiveDiffs.csv</SdkArchiveDiffsReport>
+        <SdkArchiveDiffsReport>$(ArtifactsLogDir)SdkArchiveDiffs.csv</SdkArchiveDiffsReport>
       </PropertyGroup>
 
       <WriteLinesToFile File="$(SdkArchiveDiffsReport)" Lines="%(_ContentDifference.Kind), %(_ContentDifferences.Identity)" />
