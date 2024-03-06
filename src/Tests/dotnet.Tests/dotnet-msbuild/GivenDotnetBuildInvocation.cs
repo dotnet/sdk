@@ -64,6 +64,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "-o", "myoutput", "-f", "tfm", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
                                   "-target:Restore -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild",
                                   "-property:TargetFramework=tfm -verbosity:diag -property:OutputPath=<cwd>myoutput -property:_CommandLineDefinedOutputPath=true /ArbitrarySwitchForMSBuild")]
+        [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" }, "-target:Restore -nologo -verbosity:quiet", "-property:TargetFramework=tfm -getItem:Compile -getProperty:TargetFramework -getTargetResult:Build")]
         public void MsbuildInvocationIsCorrectForSeparateRestore(
             string[] args,
             string expectedAdditionalArgsForRestore,
