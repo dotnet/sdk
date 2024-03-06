@@ -117,7 +117,8 @@
     </Touch>
   </Target>
 
-  <Target Name="BuildSdkArchiveDiff" >
+  <Target Name="BuildSdkArchiveDiff"
+          Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true'" >
     <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff\Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff.csproj"
              Targets="Restore"
              Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />

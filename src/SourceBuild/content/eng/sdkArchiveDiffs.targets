@@ -1,13 +1,12 @@
 <Project>
+
   <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetValidArchiveItems" />
   <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetClosestOfficialSdk" />
   <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="FindArchiveDiffs" />
 
   <Target Name="ReportSdkArchiveDiffs"
           AfterTargets="Build"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion"
-          Condition="'$(ShortStack)' != 'true' AND '$(PortableBuild)' == 'true'" >
-          <!-- ShortStack doesn't produce an SDK, and GetClosestOfficialSdk doesn't support finding non-portable SDKs -->
+          DependsOnTargets="DetermineSourceBuiltSdkVersion">
 
       <Message Text="Comparing built SDK against closest official build"
                Importance="High"/>
@@ -37,6 +36,12 @@
         <_changedFiles Include="@(_ContentDifferences)" Condition="'%(_contentDifferences.Kind)' != 'Unchanged'" />
       </ItemGroup>
 
+      <PropertyGroup>
+        <SdkArchiveDiffsReport>$(ArtifactsLogDir)\SdkArchiveDiffs\SdkArchiveDiffs.csv</SdkArchiveDiffsReport>
+      </PropertyGroup>
+
+      <WriteLinesToFile File="$(SdkArchiveDiffsReport)" Lines="%(_ContentDifference.Kind), %(_ContentDifferences.Identity)" />
+
       <Message Text="Difference in sdk archive: %(_changedFiles.Kind): %(_changedFiles.Identity)"
                Importance="High"
                Condition="'@(_changedFiles->Count())' != '0'"/>
@@ -44,9 +49,7 @@
                Importance="High"
                Condition="'@(_changedFiles->Count())' == '0'" />
 
-      <Delete Files="$(_ClosestOfficialSdkPath)"
-              Condition="'$(_ClosestOfficialSdkPath)' == ''"/>
-
+      <Delete Files="$(_ClosestOfficialSdkPath)" />
   </Target>
 
 </Project>
