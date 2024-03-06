@@ -266,6 +266,10 @@
         Condition="'$(BundleRuntimePacks)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
+      <ILCompilerSupportedRids
+        Condition="'$(BundleNativeAotCompiler)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <Net60MonoRuntimePackRids Include="
           @(Net60RuntimePackRids);
           browser-wasm;
