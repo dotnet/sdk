@@ -418,7 +418,7 @@
     <comment>{0} is the command used</comment>
   </data>
   <data name="GenerateDigestLabelWithoutGenerateLabels" xml:space="preserve">
-    <value>CONTAINER20030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</value>
+    <value>CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</value>
     <comment>{StrBegin="CONTAINER2030: "}</comment>
   </data>
 </root>
