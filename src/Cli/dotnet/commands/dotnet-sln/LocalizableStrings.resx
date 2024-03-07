@@ -177,4 +177,49 @@
   <data name="SolutionFolderHeader" xml:space="preserve">
     <value>Solution Folder(s)</value>
   </data>
+  <data name="ConfigurationAddCommand" xml:space="preserve">
+    <value>Add new config or platform to a solution file.</value>
+  </data>
+  <data name="ConfigurationAddConfigAlreadyExists" xml:space="preserve">
+    <value>Solution config {0} already exists.</value>
+  </data>
+  <data name="ConfigurationAddCopyFromConfigDoesNotExists" xml:space="preserve">
+    <value>Solution config {0} to copy from, does not exists.</value>
+  </data>
+  <data name="ConfigurationAddCopyFromPlatformDoesNotExists" xml:space="preserve">
+    <value>Solution platform {0} to copy from, does not exists.</value>
+  </data>
+  <data name="ConfigurationAddNewConfigOptionUpdateProjMissing" xml:space="preserve">
+    <value>Update project options is not specified.</value>
+  </data>
+  <data name="ConfigurationAddNewConfigPlatformNameMissing" xml:space="preserve">
+    <value>Specify at least one config or platform to add.</value>
+  </data>
+  <data name="ConfigurationAddOptionCopySettingsFrom" xml:space="preserve">
+    <value>Existing config or platform to copy project settings from.</value>
+  </data>
+  <data name="ConfigurationAddOptionNewConfigName" xml:space="preserve">
+    <value>New config to add to the solution.</value>
+  </data>
+  <data name="ConfigurationAddOptionNewPlatformName" xml:space="preserve">
+    <value>New platform to add to the solution.</value>
+  </data>
+  <data name="ConfigurationAddOptionUpdateProjects" xml:space="preserve">
+    <value>Indicates whether to update project config or platform settings.</value>
+  </data>
+  <data name="ConfigurationAddPlatformAlreadyExists" xml:space="preserve">
+    <value>Solution platform {0} already exists.</value>
+  </data>
+  <data name="ConfigurationAddSlnMissing" xml:space="preserve">
+    <value>Solution file does not exists.</value>
+  </data>
+  <data name="ConfigurationArgumentSlnDescription" xml:space="preserve">
+    <value>The solution file to operate on. If not specified, the command will search the current directory for one.</value>
+  </data>
+  <data name="ConfigurationCommand" xml:space="preserve">
+    <value>Configuration Manager commands for .NET CLI.</value>
+  </data>
+  <data name="FileHeaderMissingError" xml:space="preserve">
+    <value>Expected file header not found</value>
+  </data>
 </root>

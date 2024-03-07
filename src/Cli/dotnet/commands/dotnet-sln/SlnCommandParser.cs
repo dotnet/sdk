@@ -29,9 +29,11 @@ namespace Microsoft.DotNet.Cli
             DocumentedCommand command = new("sln", DocsLink, LocalizableStrings.AppFullName);
 
             command.Arguments.Add(SlnArgument);
+            //command.Subcommands.Add(SlnConfigurationParser.GetCommand());
             command.Subcommands.Add(SlnAddParser.GetCommand());
             command.Subcommands.Add(SlnListParser.GetCommand());
             command.Subcommands.Add(SlnRemoveParser.GetCommand());
+            command.Subcommands.Add(SlnConfigurationParser.GetCommand());
 
             command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
