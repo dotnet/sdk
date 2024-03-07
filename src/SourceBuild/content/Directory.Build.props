@@ -203,6 +203,7 @@
   <PropertyGroup>
     <XPlatSourceBuildTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.XPlat', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.XPlat.dll'))</XPlatSourceBuildTasksAssembly>
     <LeakDetectionTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.LeakDetection', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.dll'))</LeakDetectionTasksAssembly>
+    <SdkArchiveDiffTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff.dll'))</SdkArchiveDiffTasksAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnablePoison)' == 'true'">
