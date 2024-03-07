@@ -144,13 +144,54 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 var expected = LoadExpectedFilesBaseline(manifest.ManifestType, suffix, name)
                     .OrderBy(f => f, StringComparer.Ordinal);
 
-                existingFiles.Should().BeEquivalentTo(expected);
+                AssertFilesCore(existingFiles, expected);
             }
             else
             {
                 File.WriteAllText(
                     GetExpectedFilesPath(suffix, name, manifest.ManifestType),
                     JsonSerializer.Serialize(existingFiles, BaselineSerializationOptions));
+            }
+        }
+
+        private void AssertFilesCore(IEnumerable<string> existingFiles, IEnumerable<string> expected)
+        {
+            var existingSet = new HashSet<string>(existingFiles);
+            var expectedSet = new HashSet<string>(expected);
+            var different = new HashSet<string>(existingFiles);
+
+            different.SymmetricExceptWith(expectedSet);
+
+            var messages = new List<string>();
+            if (existingSet.Count < expectedSet.Count)
+            {
+                messages.Add("The build produced less files than expected.");
+            }
+            else if (expectedSet.Count < existingSet.Count)
+            {
+                messages.Add("The build produced more files than expected.");
+            }
+            else if (different.Count > 0)
+            {
+                messages.Add("The build produced different files than expected.");
+            }
+
+            ComputeDifferences(expectedSet, different, messages);
+            messages.Should().BeEmpty(because: string.Join(Environment.NewLine, messages));
+
+            static void ComputeDifferences(HashSet<string> existingSet, HashSet<string> different, List<string> messages)
+            {
+                foreach (var file in different)
+                {
+                    if (existingSet.Contains(file))
+                    {
+                        messages.Add($"The file '{file}' is not in the baseline.");
+                    }
+                    else
+                    {
+                        messages.Add($"The file '{file}' is missing from the build.");
+                    }
+                }
             }
         }
 
