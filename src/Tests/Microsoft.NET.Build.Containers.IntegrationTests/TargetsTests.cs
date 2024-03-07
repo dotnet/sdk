@@ -150,6 +150,31 @@ public class TargetsTests
         };
     }
 
+    [InlineData("https://git.cosmere.com/shard/whimsy.git", "https://git.cosmere.com/shard/whimsy")]
+    [InlineData("https://repos.git.cosmere.com/shard/whimsy.git", "https://repos.git.cosmere.com/shard/whimsy")]
+    [Theory]
+    public void ShouldTrimTrailingGitSuffixFromRepoUrls(string repoUrl, string expectedLabel)
+    {
+        var commitHash = "abcdef";
+
+        static string NormalizeString(string s) => s.Replace(':', '_').Replace('/', '_');
+
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["PublishRepositoryUrl"] = true.ToString(),
+            ["PrivateRepositoryUrl"] = repoUrl,
+            ["SourceRevisionId"] = commitHash,
+            ["RepositoryType"] = "git"
+        }, projectName: $"{nameof(ShouldNotIncludeSourceControlLabelsUnlessUserOptsIn)}_{NormalizeString(repoUrl)}_{NormalizeString(expectedLabel)}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerConfig }, new[] { logger }, null, out var outputs).Should().BeTrue("Build should have succeeded but failed due to {0}", String.Join("\n", logger.AllMessages));
+        var labels = instance.GetItems(ContainerLabel);
+
+        labels.Should().NotBeEmpty("Should have evaluated some labels by default")
+            .And.ContainSingle(label => LabelMatch("org.opencontainers.image.source", expectedLabel, label), String.Join(",", logger.AllMessages));
+    }
+
     [InlineData("7.0.100", "v7.0", "7.0")]
     [InlineData("7.0.100-preview.7", "v7.0", "7.0")]
     [InlineData("7.0.100-rc.1", "v7.0", "7.0")]
@@ -295,8 +320,8 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
-    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-extra")]
-    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-jammy-chiseled-extra")]
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra")]
     [Theory]
     public void AOTAppsWithCulturesGetExtraImages(string rid, string expectedImage)
     {
