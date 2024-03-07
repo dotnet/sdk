@@ -395,14 +395,6 @@
                                    AssetPath="%(NuPkgContentForMSBuildExtensionsRelativePaths.Identity)" />
   </Target>
 
-  <!-- The msdia140typelib_clr0200.dll file is not MIT licensed (and it only used on Windows). Remove it, so
-       we can MIT license the published dotnet -->
-  <Target Name="RemoveMSDiaTypeLib"
-          AfterTargets="Build"
-          Condition="'$(OSName)' != 'win'">
-    <Delete Files="$(OutputPath)/TestHost/msdia140typelib_clr0200.dll" />
-  </Target>
-
   <Target Name="PublishSdks"
           AfterTargets="Build">
     <ItemGroup>
