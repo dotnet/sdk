@@ -893,5 +893,16 @@ namespace Microsoft.NET.Build.Containers.Resources
                 return ResourceManager.GetString("UnrecognizedMediaType", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER20030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created..
+        /// </summary>
+        internal static string GenerateDigestLabelWithoutGenerateLabels
+        {
+            get
+            {
+                return ResourceManager.GetString("GenerateDigestLabelWithoutGenerateLabels", resourceCulture);
+            }
+        }
     }
 }

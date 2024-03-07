@@ -13,6 +13,8 @@ public class ImageBuilderTests
 {
     private readonly TestLoggerFactory _loggerFactory;
 
+    private static readonly string StaticKnownDigestValue = "sha256:338c0b702da88157ba4bb706678e43346ece2e4397b888d59fb2d9f6113c8070";
+
     public ImageBuilderTests(ITestOutputHelper output)
     {
         _loggerFactory = new TestLoggerFactory(output);
@@ -681,8 +683,8 @@ public class ImageBuilderTests
         JsonNode? result = JsonNode.Parse(builtImage.Config);
         Assert.NotNull(result);
         var labels = result["config"]?["Labels"]?.AsObject();
-        var digest = labels?.AsEnumerable().First(label => label.Key == "org.opencontainers.image.base.digest");
-        digest?.Value.Should().NotBeNull();
+        var digest = labels?.AsEnumerable().First(label => label.Key == "org.opencontainers.image.base.digest").Value!;
+        digest.GetValue<string>().Should().Be(StaticKnownDigestValue);
     }
 
     private ImageBuilder FromBaseImageConfig(string baseImageConfig, [CallerMemberName] string testName = "")
@@ -695,9 +697,10 @@ public class ImageBuilderTests
             {
                 mediaType = "",
                 size = 0,
-                digest = "sha256:0"
+                digest = "sha256:"
             },
-            Layers = new List<ManifestLayer>()
+            Layers = new List<ManifestLayer>(),
+            KnownDigest = StaticKnownDigestValue
         };
         return new ImageBuilder(manifest, new ImageConfig(baseImageConfig), _loggerFactory.CreateLogger(testName));
     }
