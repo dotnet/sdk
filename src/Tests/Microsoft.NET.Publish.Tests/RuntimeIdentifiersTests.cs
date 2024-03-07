@@ -274,25 +274,11 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = tfm,
             };
             testProject.AdditionalProperties[property] = "true";
+            // mimic calling `dotnet publish`
+            testProject.AdditionalProperties["_IsPublishing"] = "true";
 
             testProject.RecordProperties("SelfContained");
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: $"{property}-{useFrameworkDependentDefaultTargetFramework}");
-
-            var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
-            if (property == "PublishTrimmed" && !useFrameworkDependentDefaultTargetFramework)
-            {
-                publishCommand
-                   .Execute()
-                   .Should()
-                   .Fail();
-            }
-            else
-            {
-                publishCommand
-                    .Execute()
-                    .Should()
-                    .Pass();
-            }
 
             var properties = testProject.GetPropertyValues(testAsset.TestRoot, targetFramework: tfm, configuration: useFrameworkDependentDefaultTargetFramework ? "Release" : "Debug");
 

@@ -61,6 +61,15 @@ namespace Microsoft.NET.TestFramework.Commands
             return this;
         }
 
+        private TestCommand WithArguments(params string[] arguments)
+        {
+            Arguments.AddRange(arguments);
+            return this;
+        }
+        public TestCommand WithConfiguration(string config) => config is null ? this : WithArguments("--configuration", config);
+
+        public TestCommand WithTargetFramework(string tfm) => tfm is null ? this : WithArguments("--framework", tfm);
+
         private SdkCommandSpec CreateCommandSpec(IEnumerable<string> args)
         {
             var commandSpec = CreateCommand(args);
@@ -119,7 +128,7 @@ namespace Microsoft.NET.TestFramework.Commands
         }
 
         public virtual CommandResult Execute(IEnumerable<string> args)
-        { 
+        {
             var command = CreateCommandSpec(args)
                 .ToCommand(_doNotEscapeArguments)
                 .CaptureStdOut()
