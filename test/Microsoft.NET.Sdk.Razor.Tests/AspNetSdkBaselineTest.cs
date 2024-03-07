@@ -113,6 +113,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .Where(a => a.SourceType is StaticWebAsset.SourceTypes.Computed &&
                             a.AssetKind is not StaticWebAsset.AssetKinds.Publish);
 
+            foreach ( var asset in computedFiles )
+            {
+                if (string.Equals(asset.AssetTraitName, "Content-Encoding", StringComparison.Ordinal) &&
+                    !string.Equals(Path.GetFileName(asset.Identity), Path.GetFileName(asset.RelativePath), StringComparison.Ordinal))
+                {
+                    asset.Identity = Path.GetFullPath(Path.Combine(asset.ContentRoot, asset.RelativePath));
+                }
+            }
+
             // We keep track of assets that need to be copied to the output folder.
             // In addition to that, we copy assets that are defined somewhere different
             // from their content root folder when the content root does not match the output folder.
@@ -177,7 +186,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
 
             ComputeDifferences(expectedSet, different, messages);
-            messages.Should().BeEmpty(because: string.Join(Environment.NewLine, messages));
+            string.Join(Environment.NewLine, messages).Should().BeEmpty();
 
             static void ComputeDifferences(HashSet<string> existingSet, HashSet<string> different, List<string> messages)
             {
