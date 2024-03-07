@@ -1,18 +1,11 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Tests.XUnit;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
 using Microsoft.Extensions.Logging;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 {

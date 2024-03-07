@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-using System.IO;
 using Microsoft.CodeAnalysis.Tools.Tests.Utilities;
 using Microsoft.CodeAnalysis.Tools.Workspaces;
-using Xunit;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
 {
