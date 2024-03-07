@@ -145,6 +145,19 @@
   "${OutputPath}\\wwwroot\\serviceworkers\\my-service-worker.js.gz",
   "${OutputPath}\\wwwroot\\styles.css",
   "${OutputPath}\\wwwroot\\wwwroot\\exampleJsInterop.js",
+  "${OutputPath}\\wwwroot\\Fake-License.txt",
+  "${OutputPath}\\wwwroot\\Fake-License.txt.br",
+  "${OutputPath}\\wwwroot\\Fake-License.txt.gz",
   "${OutputPath}\\wwwroot\\_content\\RazorClassLibrary\\styles.css",
-  "${OutputPath}\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js"
+  "${OutputPath}\\wwwroot\\_content\\RazorClassLibrary\\styles.css.br",
+  "${OutputPath}\\wwwroot\\_content\\RazorClassLibrary\\styles.css.gz",
+  "${OutputPath}\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js",
+  "${OutputPath}\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.br",
+  "${OutputPath}\\wwwroot\\_content\\RazorClassLibrary\\wwwroot\\exampleJsInterop.js.gz",
+  "${OutputPath}\\wwwroot\\blazorwasm.styles.css",
+  "${OutputPath}\\wwwroot\\blazorwasm.styles.css.br",
+  "${OutputPath}\\wwwroot\\blazorwasm.styles.css.gz",
+  "${OutputPath}\\wwwroot\\index.html",
+  "${OutputPath}\\wwwroot\\index.html.br",
+  "${OutputPath}\\wwwroot\\index.html.gz"
 ]

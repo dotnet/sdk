@@ -63,7 +63,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var build = new BuildCommand(projectDirectory, "blazorwasm");
             build.WithWorkingDirectory(projectDirectory.TestRoot);
-            build.Execute()
+            build.Execute("/bl")
                 .Should()
                 .Pass();
 
@@ -86,7 +86,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
-                    thumbPrint[j].Equals(newThumbPrint[j]).Should().BeTrue();
+                    thumbPrint[j].Equals(newThumbPrint[j]).Should().BeTrue($"because {thumbPrint[j].Hash} should be the same as {newThumbPrint[j].Hash} for file {thumbPrint[j].Path}");
                 }
             }
         }

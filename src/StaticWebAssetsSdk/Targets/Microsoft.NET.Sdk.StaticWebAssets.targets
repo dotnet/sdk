@@ -256,7 +256,25 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GenerateStaticWebAssetsManifestDependsOn>$(GenerateStaticWebAssetsManifestDependsOn);ResolveStaticWebAssetsInputs</GenerateStaticWebAssetsManifestDependsOn>
 
-    <ResolveStaticWebAssetsInputsDependsOn>UpdateExistingPackageStaticWebAssets;ResolveProjectStaticWebAssets;ResolveEmbeddedProjectsStaticWebAssets;ResolveReferencedProjectsStaticWebAssets;$(ResolveStaticWebAssetsInputsDependsOn)</ResolveStaticWebAssetsInputsDependsOn>
+    <!-- Stage to resolve any asset that is not computed during this build step. This includes:
+      * Assets from packages and referenced projects.
+      * Assets from target frameworks embedded into this TFM.
+      * Assets from this project that are discovered.
+
+      Any target that needs to generate assets can hook into this target to ensure that all assets from the project
+      and its dependencies have been resolved.
+    -->
+    <ResolveNonComputedAssetsDependsOn>
+      UpdateExistingPackageStaticWebAssets;
+      ResolveProjectStaticWebAssets;
+      ResolveEmbeddedProjectsStaticWebAssets;
+      ResolveReferencedProjectsStaticWebAssets;
+    </ResolveNonComputedAssetsDependsOn>
+
+    <ResolveStaticWebAssetsInputsDependsOn>
+      ResolveNonComputedAssets;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
 
     <GetCopyToOutputDirectoryItemsDependsOn>$(GetCopyToOutputDirectoryItemsDependsOn);AddStaticWebAssetsManifest</GetCopyToOutputDirectoryItemsDependsOn>
 
@@ -493,6 +511,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="ResolveStaticWebAssetsInputs" DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)" />
+
+  <Target Name="ResolveNonComputedAssets" DependsOnTargets="$(ResolveNonComputedAssetsDependsOn)" />
 
   <Target Name="ResolveProjectStaticWebAssets"
     Condition="'$(NoBuild)' != 'true'"

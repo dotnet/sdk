@@ -19,8 +19,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);_AddServiceWorkerAssets</ResolveStaticWebAssetsInputsDependsOn>
-    <GenerateComputedPublishStaticWebAssetsDependsOn>$(GenerateComputedPublishStaticWebAssetsDependsOn);_WritePublishServiceWorkerAssetsManifest</GenerateComputedPublishStaticWebAssetsDependsOn>
-    <GenerateComputedBuildStaticWebAssetsDependsOn>$(GenerateComputedBuildStaticWebAssetsDependsOn);_WriteBuildServiceWorkerAssetsManifest</GenerateComputedBuildStaticWebAssetsDependsOn>
+    <GenerateComputedPublishStaticWebAssetsDependsOn>$(GenerateComputedPublishStaticWebAssetsDependsOn)</GenerateComputedPublishStaticWebAssetsDependsOn>
+    <GenerateComputedBuildStaticWebAssetsDependsOn>$(GenerateComputedBuildStaticWebAssetsDependsOn)</GenerateComputedBuildStaticWebAssetsDependsOn>
+    <CompressFilesForPublishDependsOn>$(CompressFilesForPublishDependsOn);_WritePublishServiceWorkerAssetsManifest</CompressFilesForPublishDependsOn>
+    <CompressFilesDependsOn>$(CompressFilesDependsOn);_WriteBuildServiceWorkerAssetsManifest;</CompressFilesDependsOn>
   </PropertyGroup>
 
   <Target Name="_AddServiceWorkerAssets" DependsOnTargets="_ComputeServiceWorkerAssets">
