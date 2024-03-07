@@ -11,7 +11,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 
 <Project>
-  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateServiceWorkerAssetsManifest" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateServiceWorkerAssetsManifest"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
   <PropertyGroup>
     <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);_AddServiceWorkerAssets</ResolveStaticWebAssetsInputsDependsOn>
