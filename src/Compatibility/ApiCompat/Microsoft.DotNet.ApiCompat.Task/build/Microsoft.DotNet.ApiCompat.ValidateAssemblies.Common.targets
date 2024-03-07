@@ -1,7 +1,7 @@
 <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
 <Project>
   <PropertyGroup>
-    <ApiCompatValidateAssembliesSemaphoreFile>$(IntermediateOutputPath)$(MSBuildThisFileName).semaphore</ApiCompatValidateAssembliesSemaphoreFile>
+    <_ApiCompatValidateAssembliesSemaphoreFile>$(IntermediateOutputPath)$(MSBuildThisFileName).semaphore</_ApiCompatValidateAssembliesSemaphoreFile>
     <ApiCompatValidateAssembliesDependsOn>CollectApiCompatInputs;$(ApiCompatValidateAssembliesDependsOn)</ApiCompatValidateAssembliesDependsOn>
   </PropertyGroup>
 
@@ -10,8 +10,8 @@
                   @(ApiCompatRightAssemblies);
                   @(ApiCompatSuppressionFile);
                   $(ApiCompatSuppressionOutputFile)"
-          Outputs="$(ApiCompatValidateAssembliesSemaphoreFile)"
-          Condition="'@(ApiCompatLeftAssemblies)' != '' and '@(ApiCompatRightAssemblies)' != ''"
+          Outputs="$(_ApiCompatValidateAssembliesSemaphoreFile)"
+          Condition="'@(ApiCompatLeftAssemblies)' != '' and '@(ApiCompatRightAssemblies)' != '' and '$(DesignTimeBuild)' != 'true'"
           DependsOnTargets="$(ApiCompatValidateAssembliesDependsOn)">
     <Microsoft.DotNet.ApiCompat.Task.ValidateAssembliesTask
       RoslynAssembliesPath="$(RoslynAssembliesPath)"
@@ -33,6 +33,6 @@
       CreateWorkItemPerAssembly="true"
       LeftAssembliesTransformationPattern="@(ApiCompatLeftAssembliesTransformationPattern)"
       RightAssembliesTransformationPattern="@(ApiCompatRightAssembliesTransformationPattern)"
-      SemaphoreFile="$(ApiCompatValidateAssembliesSemaphoreFile)" />
+      SemaphoreFile="$(_ApiCompatValidateAssembliesSemaphoreFile)" />
   </Target>
 </Project>

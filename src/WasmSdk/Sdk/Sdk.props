@@ -16,14 +16,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- WASM projects defaults to browser-wasm -->
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">browser-wasm</RuntimeIdentifier>
     <UseMonoRuntime>true</UseMonoRuntime>
-    
     <SelfContained>true</SelfContained>
     <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
+
+    <!-- Disable accelerated builds in Visual Studio as the Wasm SDK needs to post process the outputs from the build and the feature won't work as expected. -->
+    <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
 
     <_WasmSdkImportsMicrosoftNETSdkPublish Condition="'$(UsingMicrosoftNETSdkPublish)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkPublish>
     <_WasmSdkImportsMicrosoftNETSdkStaticWebAssets Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkStaticWebAssets>
   </PropertyGroup>
-  
+
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
   <Import Project="$(_WebAssemblyPropsFile)" Condition="'$(_WebAssemblyPropsFile)' != ''" />

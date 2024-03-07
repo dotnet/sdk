@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-install" "1" "2022-10-10" "" ".NET Documentation"
+.TH "dotnet-tool-install" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet tool install
 .PP
@@ -28,6 +28,7 @@ dotnet-tool-install - Installs the specified .NET tool on your machine.
 .nf
 \f[C]
 dotnet tool install <PACKAGE_NAME> -g|--global
+    [-a|--arch <ARCHITECTURE>]
     [--add-source <SOURCE>] [--configfile <FILE>] [--disable-parallel]
     [--framework <FRAMEWORK>] [--ignore-failed-sources] [--interactive]
     [--no-cache] [--prerelease]
@@ -35,6 +36,7 @@ dotnet tool install <PACKAGE_NAME> -g|--global
     [--version <VERSION_NUMBER>]
 
 dotnet tool install <PACKAGE_NAME> --tool-path <PATH>
+    [-a|--arch <ARCHITECTURE>]
     [--add-source <SOURCE>] [--configfile <FILE>] [--disable-parallel]
     [--framework <FRAMEWORK>] [--ignore-failed-sources] [--interactive]
     [--no-cache] [--prerelease]
@@ -42,7 +44,9 @@ dotnet tool install <PACKAGE_NAME> --tool-path <PATH>
     [--version <VERSION_NUMBER>]
 
 dotnet tool install <PACKAGE_NAME> [--local]
-    [--add-source <SOURCE>] [--configfile <FILE>] [--disable-parallel]
+    [-a|--arch <ARCHITECTURE>]
+    [--add-source <SOURCE>] [--configfile <FILE>]
+    [--create-manifest-if-needed] [--disable-parallel]
     [--framework <FRAMEWORK>] [--ignore-failed-sources] [--interactive]
     [--no-cache] [--prerelease]
     [--tool-manifest <PATH>] [-v|--verbosity <LEVEL>]
@@ -61,6 +65,8 @@ To install a global tool in the default location, use the \f[V]--global\f[R] opt
 To install a global tool in a custom location, use the \f[V]--tool-path\f[R] option.
 .IP \[bu] 2
 To install a local tool, omit the \f[V]--global\f[R] and \f[V]--tool-path\f[R] options.
+.SS Installation locations
+.SS Global tools
 .PP
 Global tools are installed in the following directories by default when you specify the \f[V]-g\f[R] or \f[V]--global\f[R] option:
 .PP
@@ -85,8 +91,18 @@ T}@T{
 T}
 .TE
 .PP
-Local tools are added to a \f[I]dotnet-tools.json\f[R] file in a \f[I].config\f[R] directory under the current directory.
-If a manifest file doesn\[cq]t exist yet, create it by running the following command:
+Executables are generated in these folders for each globally installed tool, although the actual tool binaries are nested deep into the sibling \f[V].store\f[R] directory.
+.SS \f[V]--tool-path\f[R] tools
+.PP
+Local tools with explicit tool paths are stored wherever you specified the \f[V]--tool-path\f[R] parameter to point to.
+They\[cq]re stored in the same way as global tools: an executable binary with the actual binaries in a sibling \f[V].store\f[R] directory.
+.SS Local tools
+.PP
+Local tools are stored in the NuGet global directory, whatever you\[cq]ve set that to be.
+There are shim files in \f[V]$HOME/.dotnet/toolResolverCache\f[R] for each local tool that point to where the tools are within that location.
+.PP
+References to local tools are added to a \f[I]dotnet-tools.json\f[R] file in a \f[I].config\f[R] directory under the current directory.
+If a manifest file doesn\[cq]t exist yet, create it by using the \f[V]--create-manifest-if-needed\f[R] option or by running the following command:
 .IP
 .nf
 \f[C]
@@ -104,6 +120,14 @@ Name/ID of the NuGet package that contains the .NET tool to install.
 .RE
 .SH OPTIONS
 .IP \[bu] 2
+\f[B]\f[VB]-a|--arch <ARCHITECTURE>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the target architecture.
+This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
+For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--arch x86\f[R] sets the RID to \f[V]win-x86\f[R].
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]--add-source <SOURCE>\f[B]\f[R]
 .RS 2
 .PP
@@ -120,6 +144,26 @@ The NuGet configuration file (\f[I]nuget.config\f[R]) to use.
 If specified, only the settings from this file will be used.
 If not specified, the hierarchy of configuration files from the current directory will be used.
 For more information, see Common NuGet Configurations.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--create-manifest-if-needed\f[B]\f[R]
+.RS 2
+.PP
+Applies to local tools.
+To find a manifest, the search algorithm searches up the directory tree for \f[V]dotnet-tools.json\f[R] or a \f[V].config\f[R] folder that contains a \f[V]dotnet-tools.json\f[R] file.
+.PP
+If a tool-manifest can\[cq]t be found and the \f[V]--create-manifest-if-needed\f[R] option is set to false, the \f[V]CannotFindAManifestFile\f[R] error occurs.
+.PP
+If a tool-manifest can\[cq]t be found and the \f[V]--create-manifest-if-needed\f[R] option is set to true, the tool creates a manifest automatically.
+It chooses a folder for the manifest as follows:
+.IP \[bu] 2
+Walk up the directory tree searching for a directory that has a \f[V].git\f[R] subfolder.
+If one is found, create the manifest in that directory.
+.IP \[bu] 2
+If the previous step doesn\[cq]t find a directory, walk up the directory tree searching for a directory that has a \f[V].sln/git\f[R] file.
+If one is found, create the manifest in that directory.
+.IP \[bu] 2
+If neither of the previous two steps finds a directory, create the manifest in the current working directory.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--disable-parallel\f[B]\f[R]
@@ -172,7 +216,7 @@ Can\[cq]t be combined with the \f[V]--global\f[R] option or the \f[V]--tool-path
 \f[B]\f[VB]--no-cache\f[B]\f[R]
 .RS 2
 .PP
-Do not cache packages and HTTP requests.
+Don\[cq]t cache packages and HTTP requests.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--prerelease\f[B]\f[R]

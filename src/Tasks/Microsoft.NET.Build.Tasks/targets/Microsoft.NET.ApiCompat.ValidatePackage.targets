@@ -11,7 +11,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project>
   <PropertyGroup>
-    <ApiCompatValidatePackageSemaphoreFile>$(IntermediateOutputPath)$(MSBuildThisFileName).semaphore</ApiCompatValidatePackageSemaphoreFile>
+    <_ApiCompatValidatePackageSemaphoreFile>$(IntermediateOutputPath)$(MSBuildThisFileName).semaphore</_ApiCompatValidatePackageSemaphoreFile>
     <!-- Add any custom targets that need to run before package validation to the following property. -->
     <RunPackageValidationDependsOn>CollectApiCompatInputs;_GetReferencePathFromInnerProjects;$(RunPackageValidationDependsOn)</RunPackageValidationDependsOn>
   </PropertyGroup>
@@ -22,7 +22,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Inputs="@(NuGetPackInput);
                   @(ApiCompatSuppressionFile);
                   $(ApiCompatSuppressionOutputFile)"
-          Outputs="$(ApiCompatValidatePackageSemaphoreFile)"
+          Outputs="$(_ApiCompatValidatePackageSemaphoreFile)"
           Condition="'$(EnablePackageValidation)' == 'true' and '$(IsPackable)' == 'true'">
     <PropertyGroup>
       <PackageValidationBaselineName Condition="'$(PackageValidationBaselineName)' == ''">$(PackageId)</PackageValidationBaselineName>
@@ -58,8 +58,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       PackageAssemblyReferences="@(PackageValidationReferencePath)"
       BaselinePackageFrameworksToIgnore="@(PackageValidationBaselineFrameworkToIgnore)" />
 
-    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(ApiCompatValidatePackageSemaphoreFile)'))" />
-    <Touch Files="$(ApiCompatValidatePackageSemaphoreFile)" AlwaysCreate="true" />
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(_ApiCompatValidatePackageSemaphoreFile)'))" />
+    <Touch Files="$(_ApiCompatValidatePackageSemaphoreFile)" AlwaysCreate="true" />
   </Target>
 
   <Target Name="GetReferencesForApiCompatValidatePackage"

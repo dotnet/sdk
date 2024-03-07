@@ -53,11 +53,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
-    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ValidateStaticWebAssetsUniquePaths"
-    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
-
-  <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.CollectStaticWebAssetsToCopy"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
@@ -554,5 +549,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.JSModules.targets" Condition="'$(JSModulesEnabled)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Compression.targets" Condition="'$(CompressionEnabled)' == 'true'" />
+
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
 </Project>

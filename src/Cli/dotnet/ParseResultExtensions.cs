@@ -4,9 +4,11 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.DotNet.Cli.Parser;
+using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli
 {
@@ -123,37 +125,46 @@ namespace Microsoft.DotNet.Cli
             var subargs = args.ToList();
 
             // Don't remove any arguments that are being passed to the app in dotnet run
-            var runArgs = subargs.Contains("--") ? subargs.GetRange(subargs.IndexOf("--"), subargs.Count() - subargs.IndexOf("--")) : new List<string>();
-            subargs = subargs.Contains("--") ? subargs.GetRange(0, subargs.IndexOf("--")) : subargs;
+            var dashDashIndex = subargs.IndexOf("--");
 
-            subargs.RemoveAll(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg));
-            if (subargs[0].Equals("dotnet"))
-            {
-                subargs.RemoveAt(0);
-            }
-            subargs.RemoveAt(0); // remove top level command (ex build or publish)
-            return subargs.Concat(runArgs).ToArray();
+            var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : new List<string>(0);
+            subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
+
+            return subargs
+                .SkipWhile(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
+                .Skip(1) // remove top level command (ex build or publish)
+                .Concat(runArgs)
+                .ToArray();
         }
 
-        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult)
+        public static bool DiagOptionPrecedesSubcommand(this string[] args, string subCommand)
         {
-            if (symbolResult.Token() == default)
+            if (string.IsNullOrEmpty(subCommand))
             {
-                return parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>();
+                return true;
             }
-            else if (symbolResult.Token().Type.Equals(CliTokenType.Command))
+
+            for (var i = 0; i < args.Length; i++)
             {
-                return ((System.CommandLine.Parsing.CommandResult)symbolResult).Command.Name;
+                if (args[i].Equals(subCommand))
+                {
+                    return false;
+                }
+                else if (DiagOption.Name.Equals(args) || DiagOption.Aliases.Contains(args[i]))
+                {
+                    return true;
+                }
             }
-            else if (symbolResult.Token().Type.Equals(CliTokenType.Argument))
-            {
-                return symbolResult.Token().Value;
-            }
-            else
-            {
-                return string.Empty;
-            }
+
+            return false;
         }
+
+        private static string GetSymbolResultValue(ParseResult parseResult, SymbolResult symbolResult) => symbolResult switch
+        {
+            CommandResult commandResult => commandResult.Command.Name,
+            ArgumentResult argResult => argResult.Tokens.FirstOrDefault()?.Value ?? string.Empty,
+            _ => parseResult.GetResult(DotnetSubCommand)?.GetValueOrDefault<string>()
+        };
 
         public static bool BothArchAndOsOptionsSpecified(this ParseResult parseResult) =>
             (parseResult.HasOption(CommonOptions.ArchitectureOption) ||
@@ -207,10 +218,19 @@ namespace Microsoft.DotNet.Cli
         private static IEnumerable<string> GetRunPropertyOptions(ParseResult parseResult, bool shorthand)
         {
             var optionString = shorthand ? "-p" : "--property";
-            var options = parseResult.CommandResult.Children.Where(c => c.Token().Type.Equals(CliTokenType.Option));
-            var propertyOptions = options.Where(o => o.Token().Value.Equals(optionString));
+            var propertyOptions = parseResult.CommandResult.Children.Where(c => GetOptionTokenOrDefault(c)?.Value.Equals(optionString) ?? false);
             var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
             return propertyValues;
+
+            static CliToken GetOptionTokenOrDefault(SymbolResult symbolResult)
+            {
+                if (symbolResult is not OptionResult optionResult)
+                {
+                    return null;
+                }
+
+                return optionResult.IdentifierToken ?? new CliToken($"--{optionResult.Option.Name}", CliTokenType.Option, optionResult.Option);
+            }
         }
 
         [Conditional("DEBUG")]

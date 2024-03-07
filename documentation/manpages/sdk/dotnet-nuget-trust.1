@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-trust" "1" "2022-11-08" "" ".NET Documentation"
+.TH "dotnet-nuget-trust" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet nuget trust
 .PP
@@ -41,7 +41,8 @@ For details on what the nuget.config schema looks like, refer to the NuGet confi
 .RS
 .PP
 This command requires a certificate root store that is valid for both code signing and timestamping.
-See NuGet signed package verification for details.
+Also, this command may not be supported on some combinations of operating system and .NET SDK.
+For more information, see NuGet signed package verification.
 .RE
 .SH OPTIONS
 .IP \[bu] 2

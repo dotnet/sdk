@@ -129,7 +129,7 @@ Run "dotnet --debug <command>" which will launch dotnet and pause waiting for us
 ```shell
 build.cmd # to have a full build first
 .\artifacts\sdk-build-env.bat
-cd src\Tests\YOURTEST.Tests # cd to the test folder that contains the test csproj file
+cd test\YOURTEST.Tests # cd to the test folder that contains the test csproj file
 dotnet test --filter "FullyQualifiedName~TESTNAME" # run individual test
 ```
 

@@ -7,6 +7,16 @@
         <target state="translated">[Směrný plán]</target>
         <note />
       </trans-unit>
+      <trans-unit id="BaselineTargetFrameworkIgnoredButPresentInCurrentPackage">
+        <source>Target framework '{0}' in the baseline package is ignored but exists in the current package.</source>
+        <target state="new">Target framework '{0}' in the baseline package is ignored but exists in the current package.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BaselineTargetFrameworksIgnored">
+        <source>Target frameworks '{0}' were ignored from the baseline package.</source>
+        <target state="new">Target frameworks '{0}' were ignored from the baseline package.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="EmptyPackagePath">
         <source>Package path is empty. Please provide a valid package path.</source>
         <target state="translated">Cesta k balíčku je prázdná. Zadejte prosím platnou cestu k balíčku.</target>

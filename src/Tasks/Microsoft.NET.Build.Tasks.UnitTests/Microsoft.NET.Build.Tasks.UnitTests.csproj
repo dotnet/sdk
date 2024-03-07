@@ -13,10 +13,10 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="FluentAssertions.Json" />
-    <PackageReference Include="Microsoft.Build.Framework" />
+    <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
     <PackageReference Include="NuGet.ProjectModel" />
@@ -30,12 +30,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" />
-    <ProjectReference Include="..\..\Tests\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\..\..\test\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\..\Tests\Common\Program.UnitTests.cs" />
+    <Compile Include="..\..\..\test\Common\Program.UnitTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,5 +45,5 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  
+
 </Project>
