@@ -14,23 +14,7 @@ index ------------
  ./packs/Microsoft.AspNetCore.App.Ref/
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/
 @@ ------------ @@
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.JSInterop.xml
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.Net.Http.Headers.dll
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/Microsoft.Net.Http.Headers.xml
-+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Diagnostics.DiagnosticSource.dll
-+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Diagnostics.DiagnosticSource.xml
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Diagnostics.EventLog.dll
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Diagnostics.EventLog.xml
-+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Formats.Asn1.dll
-+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Formats.Asn1.xml
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.IO.Pipelines.dll
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.IO.Pipelines.xml
- ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.Cryptography.Xml.dll
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Security.Cryptography.Xml.xml
-+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Encodings.Web.dll
-+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Encodings.Web.xml
-+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Json.dll
-+./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Text.Json.xml
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Threading.RateLimiting.dll
  ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref/netx.y/System.Threading.RateLimiting.xml
 -./packs/Microsoft.NETCore.App.Host.portable-rid/
@@ -126,35 +110,6 @@ index ------------
  ./sdk/x.y.z/DotnetTools/dotnet-format/tr/dotnet-format.resources.dll
  ./sdk/x.y.z/DotnetTools/dotnet-format/tr/Microsoft.CodeAnalysis.CSharp.Features.resources.dll
 @@ ------------ @@
- ./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.JsonWebTokens.dll
- ./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.Logging.dll
- ./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.IdentityModel.Tokens.dll
-+./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/runtimes/
-+./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/runtimes/browser/
-+./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/runtimes/browser/lib/
-+./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/runtimes/browser/lib/netx.y/
-+./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll
- ./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/System.IdentityModel.Tokens.Jwt.dll
-+./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/System.Text.Encodings.Web.dll
-+./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/System.Text.Json.dll
- ./sdk/x.y.z/DotnetTools/dotnet-user-secrets/
- ./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/
- ./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/
-@@ ------------ @@
- ./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/Microsoft.Extensions.FileSystemGlobbing.dll
- ./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/Microsoft.Extensions.Primitives.dll
- ./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/Newtonsoft.Json.dll
-+./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/runtimes/
-+./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/runtimes/browser/
-+./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/runtimes/browser/lib/
-+./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/runtimes/browser/lib/netx.y/
-+./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll
-+./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/System.Text.Encodings.Web.dll
-+./sdk/x.y.z/DotnetTools/dotnet-user-secrets/x.y.z/tools/netx.y/any/System.Text.Json.dll
- ./sdk/x.y.z/DotnetTools/dotnet-watch/
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/
-@@ ------------ @@
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.CSharp.Features.dll
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.CSharp.Workspaces.dll
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.dll
@@ -169,26 +124,21 @@ index ------------
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/middleware/Microsoft.AspNetCore.Watch.BrowserRefresh.dll
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/pl/
 @@ ------------ @@
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/ru/Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/ru/Microsoft.CodeAnalysis.Workspaces.resources.dll
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/ru/System.CommandLine.resources.dll
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/unix/
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/unix/lib/
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/unix/lib/netx.y/
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/unix/lib/netx.y/System.Drawing.Common.dll
-+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/browser/
-+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/browser/lib/
-+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/browser/lib/netx.y/
-+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/
- ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Drawing.Common.dll
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
-+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Text.Encoding.CodePages.dll
-+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Collections.Immutable.dll
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.CommandLine.dll
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.AttributedModel.dll
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.Convention.dll
@@ -200,10 +150,6 @@ index ------------
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.ProtectedData.dll
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Permissions.dll
 -./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Windows.Extensions.dll
-+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Reflection.Metadata.dll
-+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Text.Encoding.CodePages.dll
-+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Text.Encodings.Web.dll
-+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Text.Json.dll
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/tr/
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/tr/dotnet-watch.resources.dll
  ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/tr/Microsoft.CodeAnalysis.CSharp.Features.resources.dll
@@ -259,21 +205,11 @@ index ------------
 -./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.ProtectedData.dll
  ./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
  ./sdk/x.y.z/FSharp/System.CodeDom.dll
-+./sdk/x.y.z/FSharp/System.Collections.Immutable.dll
  ./sdk/x.y.z/FSharp/System.Configuration.ConfigurationManager.dll
 +./sdk/x.y.z/FSharp/System.Diagnostics.EventLog.dll
  ./sdk/x.y.z/FSharp/System.Drawing.Common.dll
-+./sdk/x.y.z/FSharp/System.Formats.Asn1.dll
-+./sdk/x.y.z/FSharp/System.Reflection.Metadata.dll
  ./sdk/x.y.z/FSharp/System.Resources.Extensions.dll
  ./sdk/x.y.z/FSharp/System.Security.Cryptography.Pkcs.dll
- ./sdk/x.y.z/FSharp/System.Security.Cryptography.ProtectedData.dll
- ./sdk/x.y.z/FSharp/System.Security.Cryptography.Xml.dll
- ./sdk/x.y.z/FSharp/System.Security.Permissions.dll
-+./sdk/x.y.z/FSharp/System.Threading.Tasks.Dataflow.dll
- ./sdk/x.y.z/FSharp/System.Windows.Extensions.dll
- ./sdk/x.y.z/FSharp/tr/
- ./sdk/x.y.z/FSharp/tr/FSharp.Build.resources.dll
 @@ ------------ @@
  ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
  ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
@@ -329,13 +265,6 @@ index ------------
  ./sdk/x.y.z/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
  ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
- ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Drawing.Common.dll
- ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
- ./sdk/x.y.z/runtimes/win/lib/netx.y/System.ServiceProcess.ServiceController.dll
-+./sdk/x.y.z/runtimes/win/lib/netx.y/System.Text.Encoding.CodePages.dll
- ./sdk/x.y.z/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
- ./sdk/x.y.z/SDKPrecomputedAssemblyReferences.cache
- ./sdk/x.y.z/SdkResolvers/
 @@ ------------ @@
  ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Buffers.dll
  ./sdk/x.y.z/Sdks/Microsoft.NET.ILLink.Tasks/tools/net472/System.Collections.Immutable.dll
@@ -361,16 +290,6 @@ index ------------
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/System.Runtime.CompilerServices.Unsafe.dll
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/net472/System.Text.Encodings.Web.dll
 @@ ------------ @@
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.deps.json
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/rzc.runtimeconfig.json
-+./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/System.Collections.Immutable.dll
-+./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/System.Reflection.Metadata.dll
-+./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/System.Text.Encoding.CodePages.dll
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web.ProjectSystem/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web.ProjectSystem/Sdk/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web.ProjectSystem/Sdk/Sdk.props
-@@ ------------ @@
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/tools/net472/Microsoft.NET.Sdk.Web.Tasks.dll
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/tools/netx.y/
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/tools/netx.y/Microsoft.NET.Sdk.Web.Tasks.dll
@@ -387,28 +306,18 @@ index ------------
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/System.Runtime.CompilerServices.Unsafe.dll
  ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/net472/System.Text.Encodings.Web.dll
 @@ ------------ @@
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk/tools/netx.y/zh-Hant/Microsoft.NET.Build.Tasks.resources.dll
  ./sdk/x.y.z/Sdks/NuGet.Build.Tasks.Pack/
  ./sdk/x.y.z/System.CodeDom.dll
-+./sdk/x.y.z/System.Collections.Immutable.dll
  ./sdk/x.y.z/System.CommandLine.dll
 -./sdk/x.y.z/System.ComponentModel.Composition.dll
  ./sdk/x.y.z/System.Configuration.ConfigurationManager.dll
  ./sdk/x.y.z/System.Diagnostics.EventLog.dll
  ./sdk/x.y.z/System.Drawing.Common.dll
-+./sdk/x.y.z/System.Formats.Asn1.dll
-+./sdk/x.y.z/System.Reflection.Metadata.dll
- ./sdk/x.y.z/System.Reflection.MetadataLoadContext.dll
- ./sdk/x.y.z/System.Resources.Extensions.dll
- ./sdk/x.y.z/System.Security.Cryptography.Pkcs.dll
 @@ ------------ @@
  ./sdk/x.y.z/System.Security.Cryptography.Xml.dll
  ./sdk/x.y.z/System.Security.Permissions.dll
  ./sdk/x.y.z/System.ServiceProcess.ServiceController.dll
-+./sdk/x.y.z/System.Text.Encoding.CodePages.dll
 +./sdk/x.y.z/System.Text.Encodings.Web.dll
-+./sdk/x.y.z/System.Text.Json.dll
-+./sdk/x.y.z/System.Threading.Tasks.Dataflow.dll
  ./sdk/x.y.z/System.Windows.Extensions.dll
 -./sdk/x.y.z/testhost-1.0.runtimeconfig.json
 -./sdk/x.y.z/testhost-1.1.runtimeconfig.json
