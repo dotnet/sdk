@@ -309,7 +309,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     _dependent);
             }
 
-            return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion, "workloadset.json");
+            return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
         }
 
         /// <summary>

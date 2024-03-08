@@ -126,12 +126,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                             DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
                             if (string.IsNullOrWhiteSpace(_workloadSetVersion))
                             {
-                                UpdateWorkloads(_includePreviews, offlineCache, context);
+                                CalculateManifestUpdatesAndUpdateWorkloads(_includePreviews, offlineCache, context);
                             }
                             else
                             {
-                                var workloadSetLocation = HandleWorkloadUpdateFromVersion(context, offlineCache);
-                                CalculateManifestUpdatesAndUpdateWorkloads(false, true, workloadSetLocation, offlineCache, context);
+                                (var workloadVersion, var manifestUpdates) = HandleWorkloadUpdateFromVersion(context, offlineCache);
+                                UpdateWorkloads(false, manifestUpdates, workloadVersion, offlineCache, context);
                             }
                         });
                 }
@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             return _workloadInstaller.ExitCode;
         }
 
-        public void UpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null, ITransactionContext context = null)
+        public void CalculateManifestUpdatesAndUpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null, ITransactionContext context = null)
         {
             Reporter.WriteLine();
 
@@ -163,25 +163,26 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
 
-            string workloadSetLocation = null;
+            string workloadVersion = null;
+            IEnumerable<ManifestVersionUpdate> manifestsToUpdate;
             if (useWorkloadSets)
             {
-                workloadSetLocation = InstallWorkloadSet(context);
+                (workloadVersion, manifestsToUpdate) = InstallWorkloadSet(context);
+            }
+            else
+            {
+                manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
 
-            CalculateManifestUpdatesAndUpdateWorkloads(useRollback, useWorkloadSets, workloadSetLocation, offlineCache, context);
+            UpdateWorkloads(useRollback, manifestsToUpdate, workloadVersion, offlineCache, context);
         }
 
-        private void CalculateManifestUpdatesAndUpdateWorkloads(bool useRollback, bool useWorkloadSets, string workloadSetLocation, DirectoryPath? offlineCache, ITransactionContext context)
+        private void UpdateWorkloads(bool useRollback, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, string workloadVersion, DirectoryPath? offlineCache, ITransactionContext context)
         {
             var workloadIds = GetUpdatableWorkloads();
-            var manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                useWorkloadSets ? _workloadManifestUpdater.CalculateManifestRollbacks(workloadSetLocation) :
-                _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
 
-            var workloadSetVersion = workloadSetLocation is null ? null : Path.GetFileName(Path.GetDirectoryName(workloadSetLocation));
-
-            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, workloadSetVersion, useRollback, context, offlineCache);
+            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, workloadVersion, useRollback, context, offlineCache);
 
             WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 

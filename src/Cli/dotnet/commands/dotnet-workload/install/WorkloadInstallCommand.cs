@@ -136,9 +136,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         }
                         else
                         {
-                            var workloadSetLocation = HandleWorkloadUpdateFromVersion(context, offlineCache);
-                            var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestRollbacks(workloadSetLocation);
-                            InstallWorkloadsAndGarbageCollect(workloadSetLocation, context, workloadIds, manifestsToUpdate, offlineCache, false);
+                            (var workloadVersion, var manifests) = HandleWorkloadUpdateFromVersion(context, offlineCache);
+                            InstallWorkloadsAndGarbageCollect(workloadVersion, context, workloadIds, manifests, offlineCache, false);
                         }
                     });
                 }
@@ -159,7 +158,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate>();
             var useRollback = false;
-            string workloadSetLocation = null;
+            string workloadVersion = null;
 
             if (!skipManifestUpdate)
             {
@@ -194,22 +193,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                 if (useWorkloadSets)
                 {
-                    workloadSetLocation = InstallWorkloadSet(context);
+                    (workloadVersion, manifestsToUpdate) = InstallWorkloadSet(context);
                 }
-
-                manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                    useWorkloadSets ? _workloadManifestUpdater.CalculateManifestRollbacks(workloadSetLocation) :
-                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+                else
+                {
+                    manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                        _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+                }
             }
 
-            InstallWorkloadsAndGarbageCollect(workloadSetLocation, context, workloadIds, manifestsToUpdate, offlineCache, useRollback);
+            InstallWorkloadsAndGarbageCollect(workloadVersion, context, workloadIds, manifestsToUpdate, offlineCache, useRollback);
         }
 
-        private void InstallWorkloadsAndGarbageCollect(string workloadSetLocation, ITransactionContext context, IEnumerable<WorkloadId> workloadIds, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, bool useRollback)
+        private void InstallWorkloadsAndGarbageCollect(string workloadVersion, ITransactionContext context, IEnumerable<WorkloadId> workloadIds, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, bool useRollback)
         {
-            var workloadSetVersion = workloadSetLocation is null ? null : Path.GetDirectoryName(workloadSetLocation);
-
-            InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, workloadSetVersion, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
+            InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, workloadVersion, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
 
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 

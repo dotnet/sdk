@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         IEnumerable<ManifestUpdateWithWorkloads> CalculateManifestUpdates();
 
         IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath);
+        IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files);
 
         Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand);
 

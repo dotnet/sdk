@@ -57,5 +57,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void DeleteUpdatableWorkloadsFile() { }
 
         public void DownloadWorkloadSet(string version, DirectoryPath? offlineCache) => throw new NotImplementedException();
+        public IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files) => _manifestUpdates.Select(t => t.ManifestUpdate);
     }
 }

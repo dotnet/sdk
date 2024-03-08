@@ -1,12 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Workloads.Workload;
@@ -425,21 +420,29 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     foreach (var workloadSetDirectory in Directory.GetDirectories(workloadSetsRoot))
                     {
                         WorkloadSet? workloadSet = null;
-                        var jsonFile = Path.Combine(workloadSetDirectory, "workloadset.json");
-                        if (File.Exists(jsonFile))
+                        foreach (var jsonFile in Directory.GetFiles(workloadSetDirectory, "*.workloadset.json"))
                         {
-                            workloadSet = WorkloadSet.FromJson(File.ReadAllText(jsonFile), _sdkVersionBand);
+                            var newWorkloadSet = WorkloadSet.FromJson(File.ReadAllText(jsonFile), _sdkVersionBand);
+                            if (workloadSet == null)
+                            {
+                                workloadSet = newWorkloadSet;
+                            }
+                            else
+                            {
+                                //  If there are multiple workloadset.json files, merge them
+                                foreach (var kvp in newWorkloadSet.ManifestVersions)
+                                {
+                                    workloadSet.ManifestVersions.Add(kvp.Key, kvp.Value);
+                                }
+                            }
                         }
-
-                        var baselineWorkloadSet = Path.Combine(workloadSetDirectory, "baseline.workloadset.json");
-                        if (File.Exists(baselineWorkloadSet))
-                        {
-                            workloadSet = WorkloadSet.FromJson(File.ReadAllText(baselineWorkloadSet), _sdkVersionBand);
-                            workloadSet.IsBaselineWorkloadSet = true;
-                        }
-
                         if (workloadSet != null)
                         {
+                            if (File.Exists(Path.Combine(workloadSetDirectory, "baseline.workloadset.json")))
+                            {
+                                workloadSet.IsBaselineWorkloadSet = true;
+                            }
+
                             workloadSet.Version = Path.GetFileName(workloadSetDirectory);
                             availableWorkloadSets[workloadSet.Version] = workloadSet;
                         }

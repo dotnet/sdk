@@ -106,8 +106,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         PathUtility.DeleteFileAndEmptyParents(file);
                     }
                 });
-            
-            return Path.Combine(workloadSetPath, "workloadset.json");
+
+            return workloadSetPath;
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)

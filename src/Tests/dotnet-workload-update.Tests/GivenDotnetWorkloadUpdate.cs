@@ -384,7 +384,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                     };
             (var dotnetPath, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
 
-            updateCommand.UpdateWorkloads();
+            updateCommand.CalculateManifestUpdatesAndUpdateWorkloads();
 
             packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
             packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
@@ -414,7 +414,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                     };
             (_, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", installedFeatureBand: "6.0.300");
 
-            updateCommand.UpdateWorkloads();
+            updateCommand.CalculateManifestUpdatesAndUpdateWorkloads();
 
             packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
             packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
