@@ -85,12 +85,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return packs;
         }
 
-        public string InstallWorkloadSet(CliTransaction transaction, string advertisingPackagePath)
+        public string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath)
         {
             var workloadSetVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
             var workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
-            transaction.Run(
-                action: context =>
+            context.Run(
+                action: () =>
                 {
                     Directory.CreateDirectory(workloadSetPath);
 

@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             return installStateContents.UseWorkloadSets ?? false;
         }
 
-        protected string HandleWorkloadUpdateFromVersion(CliTransaction transaction, DirectoryPath? offlineCache)
+        protected string HandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache)
         {
             // Ensure workload set mode is set to 'workloadset'
             // Do not skip checking the mode first, as setting it triggers
@@ -115,14 +115,14 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
 
             _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
-            return InstallWorkloadSet(transaction);
+            return InstallWorkloadSet(context);
         }
 
-        public string InstallWorkloadSet(CliTransaction transaction)
+        public string InstallWorkloadSet(ITransactionContext context)
         {
             var advertisingPackagePath = Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads");
             PrintWorkloadSetTransition(File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)));
-            return _workloadInstaller.InstallWorkloadSet(transaction, advertisingPackagePath);
+            return _workloadInstaller.InstallWorkloadSet(context, advertisingPackagePath);
         }
 
         private void PrintWorkloadSetTransition(string newVersion)

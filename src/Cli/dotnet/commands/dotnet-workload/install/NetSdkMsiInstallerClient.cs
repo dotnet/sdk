@@ -259,11 +259,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         }
 
         // advertisingPackagePath is the path to the workload set MSI nupkg in the advertising package.
-        public string InstallWorkloadSet(CliTransaction transaction, string advertisingPackagePath)
+        public string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath)
         {
             var pathToReturn = string.Empty;
-            transaction.Run(
-                action: context =>
+            context.Run(
+                action: () =>
                 {
                     pathToReturn = ModifyWorkloadSet(advertisingPackagePath, InstallAction.Install);
                 },

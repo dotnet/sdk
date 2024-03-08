@@ -129,6 +129,6 @@
     <comment>{Locked="dotnet workload search"}</comment>
   </data>
   <data name="WorkloadSetVersion" xml:space="preserve">
-    <value>Workload set version: {0}</value>
+    <value>Workload version: {0}</value>
   </data>
 </root>

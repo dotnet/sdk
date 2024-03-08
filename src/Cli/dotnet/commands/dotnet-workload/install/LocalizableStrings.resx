@@ -347,12 +347,12 @@
     <value>Manifest MSI not found in NuGet package {0}</value>
   </data>
   <data name="WorkloadSetVersionOptionDescription" xml:space="preserve">
-    <value>Update to the specified workload set.</value>
+    <value>Update to the specified workload version.</value>
   </data>
   <data name="NewWorkloadSet" xml:space="preserve">
-    <value>Installing new workload set with version {0}.</value>
+    <value>Installing workload version {0}.</value>
   </data>
   <data name="WorkloadSetUpgrade" xml:space="preserve">
-    <value>Updating workload set version from {0} to {1}.</value>
+    <value>Updating workload version from {0} to {1}.</value>
   </data>
 </root>

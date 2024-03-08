@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
-        public string InstallWorkloadSet(CliTransaction transaction, string advertisingPackagePath)
+        public string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath)
         {
             var version = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath ?? string.Empty));
             Directory.CreateDirectory(advertisingPackagePath);
