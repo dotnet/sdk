@@ -362,6 +362,56 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled")]
+    [Theory]
+    public void TrimmedAppsWithoutCulturesGetbaseImages(string rid, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishTrimmed] = true.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = true.ToString()
+        }, projectName: $"{nameof(TrimmedAppsWithCulturesGetExtraImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [InlineData(true, false, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
+    [InlineData(true, false, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData(false, true, "linux-musl-x64", true, "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-alpine-aot")]
+    [InlineData(false, true, "linux-musl-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+
+    [InlineData(true, false, "linux-x64", true, "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled")]
+    [InlineData(true, false, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra")]
+    [InlineData(false, true, "linux-x64", true, "mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-jammy-chiseled-aot")]
+    [InlineData(false, true, "linux-x64", false, "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra")]
+    [Theory]
+    public void TheBigMatrixOfTrimmingInference(bool trimmed, bool aot, string rid, bool invariant, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishTrimmed] = trimmed.ToString(),
+            [KnownStrings.Properties.PublishAot] = aot.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = invariant.ToString()
+        }, projectName: $"{nameof(TrimmedAppsWithCulturesGetExtraImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
     [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0-alpine")]
     [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0")]
     [Theory]
