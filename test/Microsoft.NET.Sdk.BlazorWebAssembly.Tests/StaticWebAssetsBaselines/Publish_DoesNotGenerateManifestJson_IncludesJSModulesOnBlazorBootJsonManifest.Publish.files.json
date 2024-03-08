@@ -217,8 +217,14 @@
   "${OutputPath}\\wwwroot\\_framework\\netstandard.wasm.br",
   "${OutputPath}\\wwwroot\\_framework\\netstandard.wasm.gz",
   "${OutputPath}\\wwwroot\\blazorwasm-minimal.lib.module.js",
+  "${OutputPath}\\wwwroot\\blazorwasm-minimal.lib.module.js.br",
+  "${OutputPath}\\wwwroot\\blazorwasm-minimal.lib.module.js.gz",
   "${OutputPath}\\wwwroot\\css\\app.css",
+  "${OutputPath}\\wwwroot\\css\\app.css.br",
+  "${OutputPath}\\wwwroot\\css\\app.css.gz",
   "${OutputPath}\\wwwroot\\index.html",
+  "${OutputPath}\\wwwroot\\index.html.br",
+  "${OutputPath}\\wwwroot\\index.html.gz",
   "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
   "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
   "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.wasm",
@@ -654,6 +660,12 @@
   "${OutputPath}\\wwwroot\\_framework\\netstandard.wasm.br",
   "${OutputPath}\\wwwroot\\_framework\\netstandard.wasm.gz",
   "${OutputPath}\\wwwroot\\blazorwasm-minimal.lib.module.js",
+  "${OutputPath}\\wwwroot\\blazorwasm-minimal.lib.module.js.br",
+  "${OutputPath}\\wwwroot\\blazorwasm-minimal.lib.module.js.gz",
   "${OutputPath}\\wwwroot\\css\\app.css",
-  "${OutputPath}\\wwwroot\\index.html"
+  "${OutputPath}\\wwwroot\\css\\app.css.br",
+  "${OutputPath}\\wwwroot\\css\\app.css.gz",
+  "${OutputPath}\\wwwroot\\index.html",
+  "${OutputPath}\\wwwroot\\index.html.br",
+  "${OutputPath}\\wwwroot\\index.html.gz"
 ]

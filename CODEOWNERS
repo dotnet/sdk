@@ -18,13 +18,13 @@
 /src/Assets/TestProjects/BlazorHostedRID/ @dotnet/aspnet-blazor-eng
 /src/Assets/TestProjects/BlazorWasmMinimal/ @dotnet/aspnet-blazor-eng
 /src/Assets/TestProjects/BlazorWasmWithLibrary/ @dotnet/aspnet-blazor-eng
-/src/RazorSdk/ @dotnet/aspnet-blazor-eng
+/src/RazorSdk/ @dotnet/razor-compiler
 /test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/ @dotnet/aspnet-blazor-eng
-/test/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/aspnet-blazor-eng
-/test/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/aspnet-blazor-eng
+/test/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/razor-compiler
+/test/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/razor-compiler
 /src/Assets/TestPackages/PackageLibraryDirectDependency/ @dotnet/aspnet-blazor-eng
 /src/Assets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
-/src/src/Assets/TestProjects/Razor*/ @dotnet/aspnet-blazor-eng
+/src/src/Assets/TestProjects/Razor*/ @dotnet/razor-compiler
 
 # Area-Wasm
 /src/WasmSdk @lewing @radical @pavelsavara @maraf

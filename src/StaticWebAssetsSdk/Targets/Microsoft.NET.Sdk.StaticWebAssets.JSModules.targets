@@ -33,28 +33,28 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <GenerateJSModuleManifest Condition="$(GenerateJSModuleManifest) == ''">true</GenerateJSModuleManifest>
-    <ResolveStaticWebAssetsInputsDependsOn>
-      $(ResolveStaticWebAssetsInputsDependsOn);
+    <ResolveNonComputedAssetsDependsOn>
+      $(ResolveNonComputedAssetsDependsOn);
       _AddJsModulesToStaticWebAssets;
-    </ResolveStaticWebAssetsInputsDependsOn>
+    </ResolveNonComputedAssetsDependsOn>
 
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GenerateJSModuleManifest)' == 'true'">
-    <StaticWebAssetsPrepareForRunDependsOn>
-      $(StaticWebAssetsPrepareForRunDependsOn);
+    <CompressFilesDependsOn>
+      $(CompressFilesDependsOn);
       _GenerateBuildJsModuleManifest;
-    </StaticWebAssetsPrepareForRunDependsOn>
+    </CompressFilesDependsOn>
 
-    <StaticWebAssetsPrepareForPublishDependsOn>
-      $(StaticWebAssetsPrepareForPublishDependsOn);
+    <CompressFilesForPublishDependsOn>
+      $(CompressFilesForPublishDependsOn);
       _GeneratePublishJsModuleManifest;
-    </StaticWebAssetsPrepareForPublishDependsOn>
+    </CompressFilesForPublishDependsOn>
 
-    <ResolveStaticWebAssetsInputsDependsOn>
-      $(ResolveStaticWebAssetsInputsDependsOn);
+    <ResolveNonComputedAssetsDependsOn>
+      $(ResolveNonComputedAssetsDependsOn);
       _AddBuildJsModuleManifest;
-    </ResolveStaticWebAssetsInputsDependsOn>
+    </ResolveNonComputedAssetsDependsOn>
 
     <ResolvePublishStaticWebAssetsDependsOn>
       $(ResolvePublishStaticWebAssetsDependsOn);
