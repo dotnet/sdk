@@ -5,6 +5,12 @@
   <PropertyGroup>
     <RepositoryName>$(MSBuildProjectName)</RepositoryName>
     <GitInfoRepoPropsFile>$(GitInfoDir)$(RepositoryName).props</GitInfoRepoPropsFile>
+    <BuildInParallel Condition="'$(BuildInParallel)' == ''">true</BuildInParallel>
+    <RunEachTargetSeparately>false</RunEachTargetSeparately>
+    <!-- If this is a dev build with parallelism enabled, ensure that RunEachTargetSeparately is true so that StopOnFirstFailure will be honored.
+         This improves the dev experience because it will fail the build as soon as an error occurs rather than waiting for all parallel projects
+         to finish. This isn't enabled in CI builds because it has a slight perf impact. -->
+    <RunEachTargetSeparately Condition="'$(BuildInParallel)' == 'true' and '$(ContinuousIntegrationBuild)' != 'true'">true</RunEachTargetSeparately>
   </PropertyGroup>
 
   <Import Project="$(GitInfoRepoPropsFile)" Condition="Exists('$(GitInfoRepoPropsFile)')" />

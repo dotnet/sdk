@@ -146,7 +146,6 @@
     <EnableDefaultItems Condition="'$(MSBuildProjectExtension)' == '.proj'">false</EnableDefaultItems>
 
     <LogVerbosity Condition="'$(LogVerbosity)'==''">minimal</LogVerbosity>
-    <BuildInParallel Condition="'$(BuildInParallel)'==''">false</BuildInParallel>
 
     <ShellExtension Condition="'$(BuildOS)' == 'windows'">.cmd</ShellExtension>
     <ShellExtension Condition="'$(BuildOS)' != 'windows'">.sh</ShellExtension>
