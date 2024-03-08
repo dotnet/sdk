@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
                 table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
 
-                var installState = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.dotnetPath), "default.json"));
+                var installState = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.DotnetPath), "default.json"));
                 if (installState.UseWorkloadSets == true)
                 {
                     Reporter.WriteLine();

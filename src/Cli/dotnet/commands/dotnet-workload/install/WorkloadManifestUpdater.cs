@@ -94,19 +94,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             await UpdateManifestWithVersionAsync("Microsoft.NET.Workloads", includePreviews: true, _sdkFeatureBand, new NuGetVersion(correctedVersion), offlineCache);
         }
 
-        private void PrintWorkloadSetTransition(string newVersion)
-        {
-            var currentVersion = _workloadResolver.GetWorkloadVersion();
-            if (currentVersion == null)
-            {
-                _reporter.WriteLine(string.Format(LocalizableStrings.NewWorkloadSet, newVersion));
-            }
-            else
-            {
-                _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetUpgrade, currentVersion, newVersion));
-            }
-        }
-
         public async static Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
         {
             try
@@ -126,7 +113,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 AdManifestSentinelIsDueForUpdate() &&
                 UpdatedAdManifestPackagesExistAsync().GetAwaiter().GetResult())
             {
-                await UpdateAdvertisingManifestsAsync(false);
+                await UpdateAdvertisingManifestsAsync(false, ShouldUseWorkloadSetMode(_sdkFeatureBand, _userProfileDir));
                 var sentinelPath = GetAdvertisingManifestSentinelPath(_sdkFeatureBand);
                 if (File.Exists(sentinelPath))
                 {
@@ -137,6 +124,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     File.Create(sentinelPath).Close();
                 }
             }
+        }
+
+        public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
+            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            return installStateContents.UseWorkloadSets ?? false;
         }
 
         private void WriteUpdatableWorkloadsFile()
@@ -340,9 +334,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     // Create version file later used as part of installing the workload set in the file-based installer and in the msi-based installer
                     using PackageArchiveReader packageReader = new(packagePath);
                     var downloadedPackageVersion = packageReader.NuspecReader.GetVersion();
-                    var correctedPackageVersion = WorkloadSetPackageVersionToWorkloadSetVersion(_sdkFeatureBand, downloadedPackageVersion.ToString());
-                    File.WriteAllText(Path.Combine(adManifestPath, "packageVersion.txt"), correctedPackageVersion);
-                    PrintWorkloadSetTransition(correctedPackageVersion);
+                    var workloadSetVersion = WorkloadSetPackageVersionToWorkloadSetVersion(_sdkFeatureBand, downloadedPackageVersion.ToString());
+                    File.WriteAllText(Path.Combine(adManifestPath, Constants.workloadSetVersionFileName), workloadSetVersion);
                 }
 
                 if (_displayManifestUpdates)

@@ -212,10 +212,8 @@ namespace Microsoft.DotNet.Installer.Windows
             if (IsElevated)
             {
                 // Create the parent folder for the state file and set up all required ACLs
-                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
                 installStateContents.UseWorkloadSets = newMode;
-                File.WriteAllText(path, installStateContents.ToString());
-                SecurityUtils.SecureFile(path);
+                CreateSecureFileInDirectory(path, installStateContents.ToString());
             }
             else if (IsClient)
             {
@@ -243,10 +241,8 @@ namespace Microsoft.DotNet.Installer.Windows
             if (IsElevated)
             {
                 // Create the parent folder for the state file and set up all required ACLs
-                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
                 installStateContents.WorkloadSetVersion = workloadSetVersion;
-                File.WriteAllText(path, installStateContents.ToString());
-                SecurityUtils.SecureFile(path);
+                CreateSecureFileInDirectory(path, installStateContents.ToString());
             }
             else if (IsClient)
             {
@@ -537,19 +533,21 @@ namespace Microsoft.DotNet.Installer.Windows
             if (IsElevated)
             {
                 // Create the parent folder for the state file and set up all required ACLs
-                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
-
-                
                 installStateContents.Manifests = manifestContents;
-                File.WriteAllText(path, installStateContents.ToString());
-
-                SecurityUtils.SecureFile(path);
+                CreateSecureFileInDirectory(path, installStateContents.ToString());
             }
             else if (IsClient)
             {
                 InstallResponseMessage respone = Dispatcher.SendSaveInstallStateManifestVersions(sdkFeatureBand, manifestContents);
                 ExitOnFailure(respone, $"Failed to write install state file: {path}");
             }
+        }
+
+        private void CreateSecureFileInDirectory(string path, string contents)
+        {
+            SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
+            File.WriteAllText(path, contents);
+            SecurityUtils.SecureFile(path);
         }
     }
 }

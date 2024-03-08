@@ -8,6 +8,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -108,7 +109,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             var version = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath ?? string.Empty));
             Directory.CreateDirectory(advertisingPackagePath);
-            File.WriteAllText(Path.Combine(advertisingPackagePath, "packageVersion.txt"), version);
+            File.WriteAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName), version);
             return Path.Combine(Path.GetDirectoryName(advertisingPackagePath ?? string.Empty), "installed.workloadset.json");
         }
 

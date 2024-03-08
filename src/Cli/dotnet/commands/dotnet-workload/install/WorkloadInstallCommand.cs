@@ -18,7 +18,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     {
         private readonly bool _skipManifestUpdate;
         private readonly IReadOnlyCollection<string> _workloadIds;
-        private readonly string _workloadSetVersion;
 
         public WorkloadInstallCommand(
             ParseResult parseResult,
@@ -128,17 +127,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
                     else
                     {
-                        // Ensure workload set mode is set to 'workloadset'
-                        // Do not skip checking the mode first, as setting it triggers
-                        // an admin authorization popup for MSI-based installs.
-                        if (!GetInstallStateMode(_sdkFeatureBand, _dotnetPath))
-                        {
-                            _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
-                        }
-
-                        _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
                         var transaction = new CliTransaction();
-                        var workloadSetLocation = InstallWorkloadSet(transaction);
+                        var workloadSetLocation = HandleWorkloadUpdateFromVersion(transaction, offlineCache);
                         var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestRollbacks(workloadSetLocation);
                         InstallWorkloadsAndGarbageCollect(workloadSetLocation, transaction, workloadIds, manifestsToUpdate, offlineCache, false);
                     }
@@ -195,7 +185,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
                 workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
 
-                var useWorkloadSets = GetInstallStateMode(_sdkFeatureBand, _dotnetPath);
+                var useWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
                 useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();

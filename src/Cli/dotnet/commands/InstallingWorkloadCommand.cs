@@ -34,6 +34,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly SdkFeatureBand _sdkFeatureBand;
         protected readonly ReleaseVersion _targetSdkVersion;
         protected readonly string _fromRollbackDefinition;
+        protected string _workloadSetVersion;
         protected readonly PackageSourceLocation _packageSourceLocation;
         protected readonly IWorkloadResolverFactory _workloadResolverFactory;
         protected IWorkloadResolver _workloadResolver;
@@ -96,16 +97,45 @@ namespace Microsoft.DotNet.Workloads.Workload
                     manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
                     ).ToDictionaryForJson();
 
-        public static bool GetInstallStateMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+        public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
             var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
             return installStateContents.UseWorkloadSets ?? false;
         }
 
+        protected string HandleWorkloadUpdateFromVersion(CliTransaction transaction, DirectoryPath? offlineCache)
+        {
+            // Ensure workload set mode is set to 'workloadset'
+            // Do not skip checking the mode first, as setting it triggers
+            // an admin authorization popup for MSI-based installs.
+            if (!ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
+            {
+                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+            }
+
+            _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
+            return InstallWorkloadSet(transaction);
+        }
+
         public string InstallWorkloadSet(CliTransaction transaction)
         {
-            return _workloadInstaller.InstallWorkloadSet(transaction, Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads"));
+            var advertisingPackagePath = Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads");
+            PrintWorkloadSetTransition(File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)));
+            return _workloadInstaller.InstallWorkloadSet(transaction, advertisingPackagePath);
+        }
+
+        private void PrintWorkloadSetTransition(string newVersion)
+        {
+            var currentVersion = _workloadResolver.GetWorkloadVersion();
+            if (currentVersion == null)
+            {
+                Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));
+            }
+            else
+            {
+                Reporter.WriteLine(string.Format(Strings.WorkloadSetUpgrade, currentVersion, newVersion));
+            }
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)

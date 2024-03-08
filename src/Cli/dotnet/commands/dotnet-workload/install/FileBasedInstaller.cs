@@ -87,23 +87,27 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public string InstallWorkloadSet(CliTransaction transaction, string advertisingPackagePath)
         {
-            var workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", File.ReadAllText(Path.Combine(advertisingPackagePath, "packageVersion.txt")), "workloadset.json");
+            var workloadSetVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
+            var workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
             transaction.Run(
                 action: context =>
                 {
-                    Directory.CreateDirectory(Path.GetDirectoryName(workloadSetPath));
+                    Directory.CreateDirectory(workloadSetPath);
 
-                    File.Copy(Path.Combine(advertisingPackagePath, "workloadset.json"), workloadSetPath, overwrite: true);
+                    foreach (var file in Directory.EnumerateFiles(advertisingPackagePath))
+                    {
+                        File.Copy(file, Path.Combine(workloadSetPath, Path.GetFileName(file)), overwrite: true);
+                    }
                 },
                 rollback: () =>
                 {
-                    if (advertisingPackagePath is not null)
+                    foreach (var file in Directory.EnumerateFiles(workloadSetPath))
                     {
-                        PathUtility.DeleteFileAndEmptyParents(advertisingPackagePath);
+                        PathUtility.DeleteFileAndEmptyParents(file);
                     }
                 });
             
-            return workloadSetPath;
+            return Path.Combine(workloadSetPath, "workloadset.json");
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)

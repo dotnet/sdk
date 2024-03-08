@@ -20,7 +20,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private readonly bool _printRollbackDefinitionOnly;
         private readonly bool _fromPreviousSdk;
         private readonly string _workloadSetMode;
-        private readonly string _workloadSetVersion;
 
         public WorkloadUpdateCommand(
             ParseResult parseResult,
@@ -74,7 +73,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
                     _includePreviews,
-                    GetInstallStateMode(_sdkFeatureBand, _dotnetPath),
+                    ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath),
                     string.IsNullOrWhiteSpace(_fromCacheOption) ?
                         null :
                         new DirectoryPath(_fromCacheOption))
@@ -117,17 +116,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     }
                     else
                     {
-                        // Ensure workload set mode is set to 'workloadset'
-                        // Do not skip checking the mode first, as setting it triggers
-                        // an admin authorization popup for MSI-based installs.
-                        if (!GetInstallStateMode(_sdkFeatureBand, _dotnetPath))
-                        {
-                            _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
-                        }
-
-                        _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
                         var transaction = new CliTransaction();
-                        var workloadSetLocation = InstallWorkloadSet(transaction);
+                        var workloadSetLocation = HandleWorkloadUpdateFromVersion(transaction, offlineCache);
                         CalculateManifestUpdatesAndUpdateWorkloads(false, true, workloadSetLocation, offlineCache, transaction);
                     }
                 }
@@ -147,12 +137,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
 
             var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-            var useWorkloadSets = GetInstallStateMode(_sdkFeatureBand, _dotnetPath);
+            var useWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
 
             if (useRollback && useWorkloadSets)
             {
                 // Rollback files are only for loose manifests. Update the mode to be loose manifests.
-                // TODO: add message explaining this (to Reporter)
+                Reporter.WriteLine(LocalizableStrings.UpdateFromRollbackSwitchesModeToLooseManifests);
                 _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
                 useWorkloadSets = false;
             }

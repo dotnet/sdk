@@ -281,11 +281,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             // Resolve the package ID for the manifest payload package
             var featureBand = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath));
-            var packageVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, "packageVersion.txt"));
+            var workloadSetVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
             string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), new SdkFeatureBand(featureBand)).ToString();
-            string msiPackageVersion = WorkloadManifestUpdater.WorkloadSetVersionToWorkloadSetPackageVersion(packageVersion);
+            string msiPackageVersion = WorkloadManifestUpdater.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion);
 
-            Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({packageVersion}) to {msiPackageId} ({msiPackageVersion}).");
+            Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({workloadSetVersion}) to {msiPackageId} ({msiPackageVersion}).");
 
             // Retrieve the payload from the MSI package cache.
             MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, null);
@@ -301,10 +301,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 ExecutePackage(msi, plannedAction, msiPackageId);
 
                 // Update the reference count against the MSI.
-                UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
+                UpdateDependent(
+                    plannedAction == InstallAction.Uninstall ?
+                        InstallRequestType.RemoveDependent :
+                        InstallRequestType.AddDependent,
+                    msi.Manifest.ProviderKeyName,
+                    _dependent);
             }
 
-            return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", packageVersion, "workloadset.json");
+            return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion, "workloadset.json");
         }
 
         /// <summary>
