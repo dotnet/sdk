@@ -297,7 +297,8 @@
     <MSBuild Projects="@(_DependentProject)"
              Targets="Build"
              BuildInParallel="$(BuildInParallel)"
-             StopOnFirstFailure="true" />
+             StopOnFirstFailure="true"
+             RunEachTargetSeparately="$(RunEachTargetSeparately)" />
   </Target>
 
   <Target Name="SetSourceBuiltSdkOverrides"
@@ -460,9 +461,13 @@
       <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/sb/package-cache/**/*" />
     </ItemGroup>
 
+    <!-- Retries can be necessary due to file locking when parallel builds are enabled and multiple repos
+         are trying to write their restored packages to this location.
+         See https://github.com/dotnet/installer/pull/18824#issuecomment-1986371287 -->
     <Copy SourceFiles="@(_InnerPackageCacheFiles)"
           DestinationFiles="$(NuGetPackageRoot)%(RecursiveDir)%(Filename)%(Extension)"
           SkipUnchangedFiles="true"
+          Retries="5"
           Condition="'@(_InnerPackageCacheFiles)' != ''" />
   </Target>
 
