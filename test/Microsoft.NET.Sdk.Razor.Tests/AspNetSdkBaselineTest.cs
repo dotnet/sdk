@@ -63,7 +63,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         protected virtual string ComputeBaselineFolder() =>
-            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "src", "Tests", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
+            Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
 
         protected virtual string EmbeddedResourcePrefix => string.Join('.', "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
 
@@ -144,13 +144,54 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 var expected = LoadExpectedFilesBaseline(manifest.ManifestType, suffix, name)
                     .OrderBy(f => f, StringComparer.Ordinal);
 
-                existingFiles.Should().BeEquivalentTo(expected);
+                AssertFilesCore(existingFiles, expected);
             }
             else
             {
                 File.WriteAllText(
                     GetExpectedFilesPath(suffix, name, manifest.ManifestType),
                     JsonSerializer.Serialize(existingFiles, BaselineSerializationOptions));
+            }
+        }
+
+        private void AssertFilesCore(IEnumerable<string> existingFiles, IEnumerable<string> expected)
+        {
+            var existingSet = new HashSet<string>(existingFiles);
+            var expectedSet = new HashSet<string>(expected);
+            var different = new HashSet<string>(existingFiles);
+
+            different.SymmetricExceptWith(expectedSet);
+
+            var messages = new List<string>();
+            if (existingSet.Count < expectedSet.Count)
+            {
+                messages.Add("The build produced less files than expected.");
+            }
+            else if (expectedSet.Count < existingSet.Count)
+            {
+                messages.Add("The build produced more files than expected.");
+            }
+            else if (different.Count > 0)
+            {
+                messages.Add("The build produced different files than expected.");
+            }
+
+            ComputeDifferences(expectedSet, different, messages);
+            string.Join(Environment.NewLine, messages).Should().BeEmpty();
+
+            static void ComputeDifferences(HashSet<string> existingSet, HashSet<string> different, List<string> messages)
+            {
+                foreach (var file in different)
+                {
+                    if (existingSet.Contains(file))
+                    {
+                        messages.Add($"The file '{file}' is not in the baseline.");
+                    }
+                    else
+                    {
+                        messages.Add($"The file '{file}' is missing from the build.");
+                    }
+                }
             }
         }
 
@@ -166,7 +207,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var wwwRootFiles = Directory.Exists(wwwRootFolder) ?
                 Directory.GetFiles(wwwRootFolder, "*", fileEnumerationOptions)
                     .Select(f => _baselineFactory.TemplatizeFilePath(f, null, null, intermediateOutputPath, publishFolder, null)) :
-                Array.Empty<string>();
+                [];
 
             // Computed publish assets must exist on disk (we do this check to quickly identify when something is not being
             // generated vs when its being copied to the wrong place)

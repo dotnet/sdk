@@ -8,8 +8,37 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
+#if WASM_TASKS
+    internal class StaticWebAsset
+#else
     public class StaticWebAsset
+#endif
     {
+        public StaticWebAsset()
+        {            
+        }
+
+        public StaticWebAsset(StaticWebAsset asset)
+        {
+            Identity = asset.Identity;
+            SourceType = asset.SourceType;
+            SourceId = asset.SourceId;
+            ContentRoot = asset.ContentRoot;
+            BasePath = asset.BasePath;
+            RelativePath = asset.RelativePath;
+            AssetKind = asset.AssetKind;
+            AssetMode = asset.AssetMode;
+            AssetRole = asset.AssetRole;
+            AssetMergeBehavior = asset.AssetMergeBehavior;
+            AssetMergeSource = asset.AssetMergeSource;
+            RelatedAsset = asset.RelatedAsset;
+            AssetTraitName = asset.AssetTraitName;
+            AssetTraitValue = asset.AssetTraitValue;
+            CopyToOutputDirectory = asset.CopyToOutputDirectory;
+            CopyToPublishDirectory = asset.CopyToPublishDirectory;
+            OriginalItemSpec = asset.OriginalItemSpec;
+        }
+
         public string Identity { get; set; }
 
         public string SourceId { get; set; }
@@ -232,7 +261,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 case SourceTypes.Package:
                     break;
                 default:
-                    throw new InvalidOperationException($"Unknown mergeTarget type '{SourceType}' for '{Identity}'.");
+                    throw new InvalidOperationException($"Unknown source type '{SourceType}' for '{Identity}'.");
             };
 
             if (string.IsNullOrEmpty(SourceId))

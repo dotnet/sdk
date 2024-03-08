@@ -4,6 +4,7 @@
     <BlazorWasmSdkRoot>$(RepoRoot)\src\BlazorWasmSdk\</BlazorWasmSdkRoot>
     <PackageId>Microsoft.NET.Sdk.BlazorWebAssembly</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
+    <DefineConstants>$(DefineConstants);WASM_TASKS</DefineConstants>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -63,6 +64,7 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
+    <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAsset.cs" />
   </ItemGroup>
 
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">

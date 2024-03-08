@@ -17,6 +17,148 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveCompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 
   <PropertyGroup>
+
+    <EnableDefaultCompressedItems Condition="'$(EnableDefaultCompressedItems)' == '' and '$(_TargetingNET90OrLater)' == 'true'">true</EnableDefaultCompressedItems>
+    <!-- File extensions associated with formats that are not already compressed. -->
+    <CompressionIncludePatterns Condition="'$(EnableDefaultCompressedItems)' == 'true'">
+      $(CompressionIncludePatterns);
+      **/*.js;
+      **/*.css;
+      **/*.html;
+      **/*.json;
+      **/*.mjs;
+      **/*.xml;
+      **/*.htm;
+      **/*.wasm;
+      **/*.txt;
+      **/*.dll;
+      **/*.pdb;
+      **/*.dat;
+      **/*.jsx;
+      **/*.markdown;
+      **/*.md;
+      **/*.webmanifest;
+      **/*.bmp;
+      **/*.svg;
+      **/*.otf;
+      **/*.art;
+      **/*.cmx;
+      **/*.cod;
+      **/*.dib;
+      **/*.ico;
+      **/*.ief;
+      **/*.pbm;
+      **/*.pgm;
+      **/*.pnm;
+      **/*.ppm;
+      **/*.ras;
+      **/*.rf;
+      **/*.rgb;
+      **/*.tif
+      **/*.tiff;
+      **/*.wbmp;
+      **/*.xbm;
+      **/*.xpm;
+      **/*.xwd;
+      **/*.aif;
+      **/*.aifc;
+      **/*.aif;
+      **/*.au;
+      **/*.m3u;
+      **/*.mid;
+      **/*.midi;
+      **/*.ra;
+      **/*.ram;
+      **/*.smd;
+      **/*.smx;
+      **/*.smz;
+      **/*.wav;
+      **/*.323;
+      **/*.appcache;
+      **/*.asm;
+      **/*.bas;
+      **/*.c;
+      **/*.cnf;
+      **/*.cpp;
+      **/*.csv;
+      **/*.disco;
+      **/*.dlm;
+      **/*.dtd;
+      **/*.etx;
+      **/*.h;
+      **/*.hdml;
+      **/*.htc;
+      **/*.htt;
+      **/*.hxt;
+      **/*.ical;
+      **/*.icalendar;
+      **/*.ics;
+      **/*.ifb;
+      **/*.map;
+      **/*.mno;
+      **/*.odc;
+      **/*.rtx;
+      **/*.sct;
+      **/*.sgml;
+      **/*.tsv;
+      **/*.uls;
+      **/*.vbs;
+      **/*.vcf;
+      **/*.vcs;
+      **/*.vml;
+      **/*.wml;
+      **/*.wmls;
+      **/*.wsdl;
+      **/*.xdr;
+      **/*.xsd;
+      **/*.xsf;
+      **/*.xsl;
+      **/*.xslt;
+    </CompressionIncludePatterns>
+
+    <!-- File extensions that should not be compressed because the associated format is already compressed. -->
+    <CompressionExcludePatterns Condition="'$(EnableDefaultCompressedItems)' == 'true'">
+      $(CompressionExcludePatterns);
+      **/*.gz;
+      **/*.br;
+      **/*.jpeg;
+      **/*.jpg;
+      **/*.png;
+      **/*.gif;
+      **/*.webp;
+      **/*.woff;
+      **/*.woff2;
+      **/*.m4v;
+      **/*.mov;
+      **/*.movie;
+      **/*.mp2;
+      **/*.mp4;
+      **/*.mp4v;
+      **/*.mpa;
+      **/*.mpe;
+      **/*.mpeg;
+      **/*.mpg;
+      **/*.mpv2;
+      **/*.ogg;
+      **/*.ogv;
+      **/*.webm;
+      **/*.jfif;
+      **/*.svgz;
+      **/*.jpe;
+      **/*.pnz;
+      **/*.aac;
+      **/*.adt;
+      **/*.adts;
+      **/*.m4a;
+      **/*.mp3;
+      **/*.oga;
+      **/*.wax;
+      **/*.wma;
+    </CompressionExcludePatterns>
+
+  </PropertyGroup>
+
+  <PropertyGroup>
     <BuildCompressionFormats>$(BuildCompressionFormats);gzip</BuildCompressionFormats>
     <PublishCompressionFormats>$(PublishCompressionFormats);gzip;brotli</PublishCompressionFormats>
     <DisableBuildCompression Condition="'$(DisableBuildCompression)' == ''">false</DisableBuildCompression>
@@ -25,7 +167,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
-    <ResolveCompressedFilesDependsOn>$(ResolveCompressedFilesDependsOn)</ResolveCompressedFilesDependsOn>
+    <ResolveCompressedFilesDependsOn>ResolveNonComputedAssets;$(ResolveCompressedFilesDependsOn)</ResolveCompressedFilesDependsOn>
     <ResolveCompressedFilesForPublishDependsOn>$(ResolveCompressedFilesForPublishDependsOn)</ResolveCompressedFilesForPublishDependsOn>
     <CompressFilesDependsOn>$(CompressFilesDependsOn)</CompressFilesDependsOn>
     <CompressFilesForPublishDependsOn>$(CompressFilesForPublishDependsOn)</CompressFilesForPublishDependsOn>
@@ -52,6 +194,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(ResolvePublishStaticWebAssetsDependsOn);
       _ResolveCompressedFilesForPublish;
     </ResolvePublishStaticWebAssetsDependsOn>
+
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
@@ -71,7 +214,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       IncludePatterns="$(CompressionIncludePatterns)"
       ExcludePatterns="$(CompressionExcludePatterns)"
       ExplicitAssets="@(AssetToCompress)"
-      OutputPath="$(IntermediateOutputPath)\compressed">
+      OutputPath="$(IntermediateOutputPath)compressed">
 
       <Output
         TaskParameter="AssetsToCompress"
@@ -80,6 +223,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ResolveCompressedAssets>
 
     <ItemGroup>
+      <_StaticWebAssetExcludedFromPack Include="@(_CompressedStaticWebAssets)" />
       <StaticWebAsset Include="@(_CompressedStaticWebAssets)" RemoveMetadata="RelatedAssetOriginalItemSpec" />
     </ItemGroup>
 
@@ -102,7 +246,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       IncludePatterns="$(CompressionIncludePatterns)"
       ExcludePatterns="$(CompressionExcludePatterns)"
       ExplicitAssets="@(AssetToCompress)"
-      OutputPath="$(IntermediateOutputPath)\compressed\publish">
+      OutputPath="$(IntermediateOutputPath)compressed\publish">
 
       <Output
         TaskParameter="AssetsToCompress"

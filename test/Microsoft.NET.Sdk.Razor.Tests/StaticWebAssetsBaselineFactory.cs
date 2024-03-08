@@ -99,7 +99,7 @@ public class StaticWebAssetsBaselineFactory
             null,
             null,
             null,
-            null).Replace('\\', '/');
+            runtimeIdentifier).Replace('\\', '/');
 
         asset.ContentRoot = TemplatizeFilePath(
             asset.ContentRoot,
@@ -115,7 +115,7 @@ public class StaticWebAssetsBaselineFactory
             projectRoot,
             null,
             null,
-            null);
+            runtimeIdentifier);
 
         asset.OriginalItemSpec = TemplatizeFilePath(
             asset.OriginalItemSpec,

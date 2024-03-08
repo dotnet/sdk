@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
+using NuGet.ContentModel;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 
@@ -37,6 +38,12 @@ public class ResolveCompressedAssetsTest
             Identity = ItemSpec,
             OriginalItemSpec = OriginalItemSpec,
             RelativePath = Path.GetFileName(ItemSpec),
+            ContentRoot = Path.GetDirectoryName(ItemSpec),
+            SourceType = StaticWebAsset.SourceTypes.Discovered,
+            SourceId = "App",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary
         }.ToTaskItem();
 
         var gzipExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
@@ -75,6 +82,12 @@ public class ResolveCompressedAssetsTest
             Identity = ItemSpec,
             OriginalItemSpec = OriginalItemSpec,
             RelativePath = Path.GetFileName(ItemSpec),
+            ContentRoot = Path.GetDirectoryName(ItemSpec),
+            SourceType = StaticWebAsset.SourceTypes.Discovered,
+            SourceId = "App",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary
         }.ToTaskItem();
 
         var task = new ResolveCompressedAssets()
@@ -110,6 +123,12 @@ public class ResolveCompressedAssetsTest
             Identity = ItemSpec,
             OriginalItemSpec = OriginalItemSpec,
             RelativePath = Path.GetFileName(ItemSpec),
+            ContentRoot = Path.GetDirectoryName(ItemSpec),
+            SourceType = StaticWebAsset.SourceTypes.Discovered,
+            SourceId = "App",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
         }.ToTaskItem();
 
         var task = new ResolveCompressedAssets()
@@ -144,6 +163,12 @@ public class ResolveCompressedAssetsTest
             Identity = ItemSpec,
             OriginalItemSpec = OriginalItemSpec,
             RelativePath = Path.GetFileName(ItemSpec),
+            ContentRoot = Path.GetDirectoryName(ItemSpec),
+            SourceType = StaticWebAsset.SourceTypes.Discovered,
+            SourceId = "App",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
         }.ToTaskItem();
 
         var gzipExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
@@ -183,6 +208,12 @@ public class ResolveCompressedAssetsTest
             Identity = ItemSpec,
             OriginalItemSpec = OriginalItemSpec,
             RelativePath = Path.GetFileName(ItemSpec),
+            ContentRoot = Path.GetDirectoryName(ItemSpec),
+            SourceType = StaticWebAsset.SourceTypes.Discovered,
+            SourceId = "App",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary
         }.ToTaskItem();
 
         // Act/Assert
@@ -234,6 +265,12 @@ public class ResolveCompressedAssetsTest
             Identity = ItemSpec,
             OriginalItemSpec = OriginalItemSpec,
             RelativePath = Path.GetFileName(ItemSpec),
+            ContentRoot = Path.GetDirectoryName(ItemSpec),
+            SourceType = StaticWebAsset.SourceTypes.Discovered,
+            SourceId = "App",
+            AssetKind = StaticWebAsset.AssetKinds.All,
+            AssetMode = StaticWebAsset.AssetModes.All,
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
         }.ToTaskItem();
 
         // Act/Assert

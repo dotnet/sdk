@@ -17,6 +17,25 @@
   ],
   "Assets": [
     {
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\test.js.gz",
+      "SourceId": "RazorComponentAppMultitarget",
+      "SourceType": "Discovered",
+      "ContentRoot": "${ProjectPath}\\wwwroot\\",
+      "BasePath": "/",
+      "RelativePath": "test.js.gz",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "PreferTarget",
+      "AssetMergeSource": "Server",
+      "RelatedAsset": "${ProjectPath}\\wwwroot\\test.js",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\test.js.gz"
+    },
+    {
       "Identity": "${ProjectPath}\\wwwroot\\test.js",
       "SourceId": "RazorComponentAppMultitarget",
       "SourceType": "Discovered",

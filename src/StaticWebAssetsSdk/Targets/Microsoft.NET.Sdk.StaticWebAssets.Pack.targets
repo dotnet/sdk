@@ -99,6 +99,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     </ItemGroup>
 
+    <ItemGroup>
+      <_PackStaticWebAssetCandidates Include="@(StaticWebAsset)" Exclude="@(_StaticWebAssetExcludedFromPack)" />
+    </ItemGroup>
+
     <!-- The logic for computing the static web assets to pack, is the same logic that we use to determine what assets we need
       to provide when a referencing project asks for a list of static web assets on our current project. For example, this
       avoids us including things like the transitive bundles for scoped css in the package.
@@ -121,7 +125,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     -->
     <ComputeReferenceStaticWebAssetItems
-      Assets="@(StaticWebAsset)"
+      Assets="@(_PackStaticWebAssetCandidates)"
       ProjectMode="$(StaticWebAssetProjectMode)"
       AssetKind="Publish"
       Source="$(PackageId)"
