@@ -110,6 +110,8 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkRefer
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkReferences.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsAotPublished.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsAotPublished.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsTrimmed.get -> bool
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsTrimmed.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.get -> string!

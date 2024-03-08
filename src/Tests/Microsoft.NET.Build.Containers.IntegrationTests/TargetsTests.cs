@@ -341,6 +341,27 @@ public class TargetsTests
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }
 
+    [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine-extra")]
+    [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled-extra")]
+    [Theory]
+    public void TrimmedAppsWithCulturesGetExtraImages(string rid, string expectedImage)
+    {
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = rid,
+            [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
+            [KnownStrings.Properties.PublishTrimmed] = true.ToString(),
+            [KnownStrings.Properties.InvariantGlobalization] = false.ToString()
+        }, projectName: $"{nameof(TrimmedAppsWithCulturesGetExtraImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
     [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0-alpine")]
     [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:7.0")]
     [Theory]
@@ -398,7 +419,7 @@ public class TargetsTests
         }, projectName: $"{nameof(AspNetFDDAppsGetAspNetBaseImage)}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
-        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        instance.Build(new[] { ComputeContainerBaseImage }, [logger], null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
         var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
         computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
     }

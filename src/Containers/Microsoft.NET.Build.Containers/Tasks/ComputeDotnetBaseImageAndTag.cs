@@ -46,7 +46,6 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     [Required]
     public string TargetRuntimeIdentifier { get; set; }
 
-
     /// <summary>
     /// If a project is self-contained then it includes a runtime, and so the runtime-deps image should be used.
     /// </summary>
@@ -56,6 +55,8 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     /// If a project is AOT-published then not only is it self-contained, but it can also remove some other deps - we can use the dotnet/nightly/runtime-deps variant here aot
     /// </summary>
     public bool IsAotPublished { get; set; }
+
+    public bool IsTrimmed { get; set; }
 
     /// <summary>
     /// If the project is AOT'd the aot image variant doesn't contain ICU and TZData, so we use this flag to see if we need to use the `-extra` variant that does contain those packages.
@@ -141,7 +142,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                     tag += IsMuslRid switch
                     {
                         true => "-alpine",
-                        false => "" // TODO: should we default here to chiseled iamges for < 8 apps?
+                        false => "" // TODO: should we default here to chiseled images for < 8 apps?
                     };
                     Log.LogMessage("Selected base image tag {0}", tag);
                     return true;
@@ -153,16 +154,17 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                     {
                         true => "-alpine",
                         // default to chiseled for AOT, non-musl Apps
-                        false when IsAotPublished => "-jammy-chiseled", // TODO: should we default here to jammy-chiseled for non-musl RIDs?
+                        false when IsAotPublished || IsTrimmed => "-jammy-chiseled", // TODO: should we default here to jammy-chiseled for non-musl RIDs?
                         // default to jammy for non-AOT, non-musl Apps
                         false => ""
                     };
 
                     // now choose the variant, if any - if globalization then -extra, else -aot
-                    tag += (IsAotPublished, UsesInvariantGlobalization) switch
+                    tag += (IsAotPublished, IsTrimmed, UsesInvariantGlobalization) switch
                     {
-                        (true, false) => "-extra",
-                        (true, true) => "-aot",
+                        (true, _, false) => "-extra",
+                        (_, true, false) => "-extra",
+                        (true, _, true) => "-aot",
                         _ => ""
                     };
                     Log.LogMessage("Selected base image tag {0}", tag);
