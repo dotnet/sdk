@@ -74,7 +74,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 }
                 """;
 
-        //VMControl VM { get; }
         VirtualMachine VM { get; }
 
         public WorkloadTests(ITestOutputHelper log) : base(log)
@@ -171,7 +170,19 @@ namespace Microsoft.DotNet.MsiInstallerTests
         [Fact]
         public void SdkInstallation()
         {
-            GetInstalledSdkVersion().Should().Be("7.0.401");
+            var command = VM.CreateRunCommand("dotnet", "--version");
+            command.IsReadOnly = true;
+
+            string originalSdkVersion;
+            var versionResult = command.Execute();
+            if (versionResult.ExitCode == 0)
+            {
+                originalSdkVersion = versionResult.StdOut;
+            }
+            else
+            {
+                originalSdkVersion = null;
+            }
 
             InstallSdk(deployStage2: false);
 
@@ -187,7 +198,16 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Should()
                 .NotExist();
 
-            GetInstalledSdkVersion().Should().Be("7.0.401");
+            if (originalSdkVersion != null)
+            {
+                GetInstalledSdkVersion().Should().Be(originalSdkVersion);
+            }
+            else
+            {
+                VM.GetRemoteDirectory($@"c:\Program Files\dotnet")
+                    .Should()
+                    .NotExist();
+            }
         }
 
 
