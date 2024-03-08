@@ -46,12 +46,12 @@ Create a new Virtual Switch connected to your external network adapter, and chec
 - In network settings inside the VM OS Windows Network Settings, switch the network connection type to Private Network, and turn on Network discovery and File and printer sharing.
 
 The first setting can be found in the 'Ethernet' or 'Wireless Connection' tab at the top.
-![image](https://github.com/dotnet/sdk/assets/23152278/7ddd317d-eca3-47e9-a07b-88bcab8d96a2)
+![image](images/private-network.png)
 
 Network Discovery and File Sharing is found under the 'advanced' tab, then under Advanced Sharing Settings.
-![image](https://github.com/dotnet/sdk/assets/23152278/08d9fbfc-a603-4da4-b98f-129a2ee90c7b)
+![image](images/advanced-network-settings.png)
 
-![image](https://github.com/dotnet/sdk/assets/23152278/ccb891bf-d30d-4555-b0fb-88216c63c21e)
+![image](images/file-and-printer-sharing.png)
 
 
 - Inside the VM, set the HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\LocalAccountTokenFilterPolicy registry value to 1 ([reference](https://learn.microsoft.com/en-us/troubleshoot/windows-server/windows-security/user-account-control-and-remote-restriction)).  This will allow you to access the admin share (`\\TestVM\c$`). Note that the PC Name could be different from the VM name, and you should use that instead if it's different, such as if the PC is named `WINDEV2401EVAL`.
