@@ -107,7 +107,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
 
     private bool ComputeRepositoryAndTag([NotNullWhen(true)] out string? repository, [NotNullWhen(true)] out string? tag)
     {
-        if (ComputeVersionPart() is (string baseVersionPart, bool versionAllowsUsingAOTAndExtrasImages))
+        if (ComputeVersionPart() is (string baseVersionPart, SemanticVersion parsedVersion, bool versionAllowsUsingAOTAndExtrasImages))
         {
             Log.LogMessage("Computed base version tag of {0} from TFM {1} and SDK {2}", baseVersionPart, TargetFrameworkVersion, SdkVersion);
             if (baseVersionPart is null)
@@ -133,6 +133,22 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                 // for the inferred image tags, 'family' aka 'flavor' comes after the 'version' portion (including any preview/rc segments).
                 // so it's safe to just append here
                 tag += $"-{ContainerFamily}";
+                Log.LogMessage("Using user-provided ContainerFamily");
+
+                // we can do one final check here: if the containerfamily is the 'default' for the RID
+                // in question, and the app is globalized, we can help and add -extra so the app will actually run
+
+                if (
+                    (!IsMuslRid && ContainerFamily == "jammy-chiseled") // default for linux RID
+                    && !UsesInvariantGlobalization
+                    && versionAllowsUsingAOTAndExtrasImages
+                    // the extras only became available on the stable tags of the FirstVersionWithNewTaggingScheme
+                    && (!parsedVersion.IsPrerelease && parsedVersion.Major == FirstVersionWithNewTaggingScheme))
+                {
+                    Log.LogMessage("Using extra variant because the application needs globalization");
+                    tag += "-extra";
+                }
+
                 return true;
             }
             else
@@ -180,18 +196,18 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         }
     }
 
-    private (string, bool)? ComputeVersionPart()
+    private (string, SemanticVersion, bool)? ComputeVersionPart()
     {
         if (SemanticVersion.TryParse(TargetFrameworkVersion, out var tfm) && tfm.Major < FirstVersionWithNewTaggingScheme)
         {
             // < 8 TFMs don't support the -aot and -extras images
-            return ($"{tfm.Major}.{tfm.Minor}", false);
+            return ($"{tfm.Major}.{tfm.Minor}", tfm, false);
         }
         else if (SemanticVersion.TryParse(SdkVersion, out var version))
         {
             if (ComputeVersionInternal(version, tfm) is string majMinor)
             {
-                return (majMinor, true);
+                return (majMinor, version, true);
             }
             else
             {

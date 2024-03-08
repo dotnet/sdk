@@ -260,7 +260,7 @@ public class TargetsTests
     [InlineData("8.0.100-preview.2", "v8.0", "jammy", "8.0.0-preview.2-jammy")]
     [InlineData("8.0.100-preview.2", "v8.0", "jammy-chiseled", "8.0.0-preview.2-jammy-chiseled")]
     [InlineData("8.0.100-rc.2", "v8.0", "jammy-chiseled", "8.0.0-rc.2-jammy-chiseled")]
-    [InlineData("8.0.100", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled")]
+    [InlineData("8.0.100", "v8.0", "jammy-chiseled", "8.0-jammy-chiseled-extra")]
     [Theory]
     public void CanTakeContainerBaseFamilyIntoAccount(string sdkVersion, string tfmMajMin, string containerFamily, string expectedTag)
     {
@@ -376,6 +376,47 @@ public class TargetsTests
             [KnownStrings.Properties.PublishAot] = true.ToString(),
             [KnownStrings.Properties.InvariantGlobalization] = true.ToString(),
         }, projectName: $"{nameof(AOTAppsLessThan8DoNotGetAOTImages)}_{rid}_{expectedImage}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [Fact]
+    public void FDDConsoleAppWithCulturesAndOptingIntoChiseledGetsExtras()
+    {
+        var expectedImage = "mcr.microsoft.com/dotnet/runtime:8.0-jammy-chiseled-extra";
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = "linux-x64",
+            [KnownStrings.Properties.ContainerFamily] = "jammy-chiseled",
+            [KnownStrings.Properties.InvariantGlobalization] = false.ToString(),
+        }, projectName: $"{nameof(FDDConsoleAppWithCulturesAndOptingIntoChiseledGetsExtras)}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        var computedBaseImageTag = instance.GetProperty(ContainerBaseImage)?.EvaluatedValue;
+        computedBaseImageTag.Should().BeEquivalentTo(expectedImage);
+    }
+
+    [Fact]
+    public void FDDAspNetAppWithCulturesAndOptingIntoChiseledGetsExtras()
+    {
+        var expectedImage = "mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled-extra";
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["NetCoreSdkVersion"] = "8.0.100",
+            ["TargetFrameworkVersion"] = "v8.0",
+            [KnownStrings.Properties.ContainerRuntimeIdentifier] = "linux-x64",
+            [KnownStrings.Properties.ContainerFamily] = "jammy-chiseled",
+            [KnownStrings.Properties.InvariantGlobalization] = false.ToString(),
+        }, bonusItems: new()
+        {
+            [KnownStrings.Items.FrameworkReference] = KnownFrameworkReferences.WebApp
+        }, projectName: $"{nameof(FDDAspNetAppWithCulturesAndOptingIntoChiseledGetsExtras)}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
         instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
