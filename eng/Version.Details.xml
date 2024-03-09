@@ -333,9 +333,9 @@
       <Sha>02fe27cd6a9b001c8feb7938e6ef4b3799745759</Sha>
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.23577.6">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-source-build-externals</Uri>
-      <Sha>0f0f1f0f33830f27ed0ff357145d2464b96b1a3e</Sha>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="8.0.0-alpha.1.24158.3">
+      <Uri>https://github.com/dotnet/source-build-externals</Uri>
+      <Sha>7a9b99e457a2b9792a3c17ccaf95d80038725108</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.24061.1">
