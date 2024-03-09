@@ -100,7 +100,7 @@
     </PropertyGroup>
 
     <!-- In VMR inner-build copy to local storage, do not push to AzDO -->
-    <PropertyGroup Condition="'$(ArcadeInnerBuildFromSource)' == 'true' or '$(DotNetBuildPhase)' == 'InnerRepo'">
+    <PropertyGroup Condition="'$(DotNetBuildPhase)' == 'InnerRepo'">
       <PushToLocalStorage>true</PushToLocalStorage>
     </PropertyGroup>
 
