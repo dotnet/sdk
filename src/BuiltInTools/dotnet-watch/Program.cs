@@ -19,8 +19,8 @@ namespace Microsoft.DotNet.Watcher
         private readonly string _workingDirectory;
         private readonly string _muxerPath;
         private readonly CancellationTokenSource _cts;
+        private readonly bool _suppressEmojis;
         private IReporter _reporter;
-        private ConsoleInputReader _requester;
 
         public Program(IConsole console, string workingDirectory, string muxerPath)
         {
@@ -33,9 +33,8 @@ namespace Microsoft.DotNet.Watcher
             _cts = new CancellationTokenSource();
             console.CancelKeyPress += OnCancelKeyPress;
 
-            var suppressEmojis = ShouldSuppressEmojis();
-            _reporter = CreateReporter(verbose: true, quiet: false, console: _console, suppressEmojis);
-            _requester = new ConsoleInputReader(_console, quiet: false, suppressEmojis);
+            _suppressEmojis = ShouldSuppressEmojis();
+            _reporter = CreateReporter(verbose: true, quiet: false, console: _console);
         }
 
         public static async Task<int> Main(string[] args)
@@ -88,9 +87,7 @@ namespace Microsoft.DotNet.Watcher
             }
 
             // update reporter as configured by options
-            var suppressEmojis = ShouldSuppressEmojis();
-            _reporter = CreateReporter(options.Verbose, options.Quiet, _console, suppressEmojis);
-            _requester = new ConsoleInputReader(_console, quiet: options.Quiet, suppressEmojis);
+            _reporter = CreateReporter(options.Verbose, options.Quiet, _console);
 
             try
             {
@@ -224,7 +221,8 @@ namespace Microsoft.DotNet.Watcher
 
             if (enableHotReload)
             {
-                await using var watcher = new HotReloadDotNetWatcher(_reporter, _requester, fileSetFactory, watchOptions, _console, _workingDirectory, _muxerPath);
+                var consoleInput = new ConsoleInputReader(_console, quiet: options.Quiet, _suppressEmojis);
+                await using var watcher = new HotReloadDotNetWatcher(_reporter, consoleInput, fileSetFactory, watchOptions, _console, _workingDirectory, _muxerPath);
                 await watcher.WatchAsync(context, cancellationToken);
             }
             else
@@ -327,8 +325,8 @@ namespace Microsoft.DotNet.Watcher
             return 0;
         }
 
-        private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console, bool suppressEmojis)
-            => new ConsoleReporter(console, verbose || IsGlobalVerbose(), quiet, suppressEmojis);
+        private IReporter CreateReporter(bool verbose, bool quiet, IConsole console)
+            => new ConsoleReporter(console, verbose || IsGlobalVerbose(), quiet, _suppressEmojis);
 
         private static bool IsGlobalVerbose()
         {
