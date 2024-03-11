@@ -21,9 +21,11 @@ namespace Microsoft.DotNet.Watcher.Tests
                 .WithSource()
                 .Path;
 
-            using var app = new Program(console, testAsset, "");
+            var reporter = new ConsoleReporter(console, verbose: true, quiet: false, suppressEmojis: false);
+            using var app = new Program(console, reporter, workingDirectory: testAsset, muxerPath: "", suppressEmojis: false);
+            var options = CommandLineOptions.Parse(["run"], reporter, out var errorCode);
 
-            var run = app.RunAsync(new[] { "run" });
+            var run = app.RunAsync(options);
 
             await console.CancelKeyPressSubscribed.TimeoutAfter(TimeSpan.FromSeconds(30));
             console.ConsoleCancelKey();

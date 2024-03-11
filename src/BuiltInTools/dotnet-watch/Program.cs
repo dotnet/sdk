@@ -16,25 +16,23 @@ namespace Microsoft.DotNet.Watcher
     internal sealed class Program : IDisposable
     {
         private readonly IConsole _console;
+        private readonly IReporter _reporter;
         private readonly string _workingDirectory;
         private readonly string _muxerPath;
-        private readonly CancellationTokenSource _cts;
         private readonly bool _suppressEmojis;
-        private IReporter _reporter;
+        private readonly CancellationTokenSource _cts = new();
 
-        public Program(IConsole console, string workingDirectory, string muxerPath)
+        public Program(IConsole console, IReporter reporter, string workingDirectory, string muxerPath, bool suppressEmojis)
         {
-            Ensure.NotNull(console, nameof(console));
             Ensure.NotNullOrEmpty(workingDirectory, nameof(workingDirectory));
 
+            _reporter = reporter;
             _console = console;
             _workingDirectory = workingDirectory;
             _muxerPath = muxerPath;
-            _cts = new CancellationTokenSource();
-            console.CancelKeyPress += OnCancelKeyPress;
+            _suppressEmojis = suppressEmojis;
 
-            _suppressEmojis = ShouldSuppressEmojis();
-            _reporter = CreateReporter(verbose: true, quiet: false, console: _console);
+            console.CancelKeyPress += OnCancelKeyPress;
         }
 
         public static async Task<int> Main(string[] args)
@@ -65,8 +63,22 @@ namespace Microsoft.DotNet.Watcher
                 // Register listeners that load Roslyn-related assemblies from the `Roslyn/bincore` directory.
                 RegisterAssemblyResolutionEvents(sdkRootDirectory);
 
-                using var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory(), muxerPath);
-                return await program.RunAsync(args);
+                var console = PhysicalConsole.Singleton;
+
+                var suppressEmojis = ShouldSuppressEmojis();
+                var verbose = bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE"), out bool globalVerbose) && globalVerbose;
+
+                var options = CommandLineOptions.Parse(args, new ConsoleReporter(console, verbose, quiet: false, suppressEmojis), out var errorCode);
+                if (options == null)
+                {
+                // an error reported or help printed:
+                    return errorCode;
+                }
+
+                var reporter = new ConsoleReporter(console, verbose || options.Verbose, options.Quiet, suppressEmojis);
+                using var program = new Program(console, reporter, Directory.GetCurrentDirectory(), muxerPath, suppressEmojis);
+
+                return await program.RunAsync(options);
             }
             catch (Exception ex)
             {
@@ -76,19 +88,8 @@ namespace Microsoft.DotNet.Watcher
             }
         }
 
-        internal async Task<int> RunAsync(string[] args)
+        internal async Task<int> RunAsync(CommandLineOptions options)
         {
-            var options = CommandLineOptions.Parse(args, _reporter, out var errorCode);
-
-            // an error reported or help printed:
-            if (options == null)
-            {
-                return errorCode;
-            }
-
-            // update reporter as configured by options
-            _reporter = CreateReporter(options.Verbose, options.Quiet, _console);
-
             try
             {
                 if (_cts.IsCancellationRequested)
@@ -323,15 +324,6 @@ namespace Microsoft.DotNet.Watcher
             }
 
             return 0;
-        }
-
-        private IReporter CreateReporter(bool verbose, bool quiet, IConsole console)
-            => new ConsoleReporter(console, verbose || IsGlobalVerbose(), quiet, _suppressEmojis);
-
-        private static bool IsGlobalVerbose()
-        {
-            bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE"), out bool globalVerbose);
-            return globalVerbose;
         }
 
         public void Dispose()
