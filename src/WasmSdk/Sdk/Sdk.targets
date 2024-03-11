@@ -25,6 +25,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       This will go away once the wasm build is updated to do this directly.
   -->
 
-  <Import Project="$(MSBuildThisFileDirectory)..\Targets\Microsoft.NET.Sdk.WebAssembly.9_0.temp.targets" Condition="'$(_WasmTargetingNET90OrLater)' == 'true'" />
-  <Import Project="$(MSBuildThisFileDirectory)..\Targets\Microsoft.NET.Sdk.WebAssembly.6_0.temp.targets" Condition="'$(_WasmTargetingNET90OrLater)' != 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.WebAssembly.9_0.temp.targets" Condition="'$(_WasmTargetingNET90OrLater)' == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.WebAssembly.6_0.temp.targets" Condition="'$(_WasmTargetingNET90OrLater)' != 'true'" />
 </Project>
