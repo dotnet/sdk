@@ -21,22 +21,15 @@ namespace Microsoft.DotNet.Watcher
     {
         public static DotNetWatchOptions Default { get; } = new DotNetWatchOptions
         (
-            SuppressHandlingStaticContentFiles: IsEnvironmentSet("DOTNET_WATCH_SUPPRESS_STATIC_FILE_HANDLING"),
-            SuppressMSBuildIncrementalism: IsEnvironmentSet("DOTNET_WATCH_SUPPRESS_MSBUILD_INCREMENTALISM"),
-            SuppressLaunchBrowser: IsEnvironmentSet("DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER"),
-            SuppressBrowserRefresh: IsEnvironmentSet("DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH"),
-            SuppressEmojis: IsEnvironmentSet("DOTNET_WATCH_SUPPRESS_EMOJIS"),
-            TestFlags: Environment.GetEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS") is { } value ? Enum.Parse<TestFlags>(value) : TestFlags.None
+            SuppressHandlingStaticContentFiles: EnvironmentVariables.SuppressHandlingStaticContentFiles,
+            SuppressMSBuildIncrementalism: EnvironmentVariables.SuppressMSBuildIncrementalism,
+            SuppressLaunchBrowser: EnvironmentVariables.SuppressLaunchBrowser,
+            SuppressBrowserRefresh: EnvironmentVariables.SuppressBrowserRefresh,
+            SuppressEmojis: EnvironmentVariables.SuppressEmojis,
+            TestFlags: EnvironmentVariables.TestFlags
         );
 
         public bool NonInteractive { get; set; }
-
-        public bool RunningAsTest { get => ((TestFlags & TestFlags.RunningAsTest) != TestFlags.None); }
-
-        private static bool IsEnvironmentSet(string key)
-        {
-            var envValue = Environment.GetEnvironmentVariable(key);
-            return envValue == "1" || string.Equals(envValue, "true", StringComparison.OrdinalIgnoreCase);
-        }
+        public bool RunningAsTest { get => (TestFlags & TestFlags.RunningAsTest) != TestFlags.None; }
     }
 }

@@ -10,20 +10,16 @@ namespace Microsoft.DotNet.Watcher.Tools
     {
         private readonly IReporter _reporter;
         private readonly ConsoleInputReader _requester;
-        private readonly IConsole _console;
         private bool? _restartImmediatelySessionPreference; // Session preference
 
         public RudeEditDialog(IReporter reporter, ConsoleInputReader requester, IConsole console)
         {
             _reporter = reporter;
             _requester = requester;
-            _console = console;
 
-            var alwaysRestart = Environment.GetEnvironmentVariable("DOTNET_WATCH_RESTART_ON_RUDE_EDIT");
-
-            if (alwaysRestart == "1" || string.Equals(alwaysRestart, "true", StringComparison.OrdinalIgnoreCase))
+            if (EnvironmentVariables.RestartOnRudeEdit)
             {
-                _reporter.Verbose($"DOTNET_WATCH_RESTART_ON_RUDE_EDIT = '{alwaysRestart}'. Restarting without prompt.");
+                _reporter.Verbose($"DOTNET_WATCH_RESTART_ON_RUDE_EDIT = 'true'. Restarting without prompt.");
                 _restartImmediatelySessionPreference = true;
             }
         }

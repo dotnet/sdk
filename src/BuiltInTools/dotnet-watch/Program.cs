@@ -43,11 +43,7 @@ namespace Microsoft.DotNet.Watcher
                 Debug.Assert(muxerPath != null);
                 Debug.Assert(Path.GetFileNameWithoutExtension(muxerPath) == "dotnet", $"Invalid muxer path {muxerPath}");
 
-#if DEBUG
-                var sdkRootDirectory = Environment.GetEnvironmentVariable("DOTNET_WATCH_DEBUG_SDK_DIRECTORY");
-#else
-                var sdkRootDirectory = "";
-#endif
+                var sdkRootDirectory = EnvironmentVariables.SdkRootDirectory;
 
                 // We can register the MSBuild that is bundled with the SDK to perform MSBuild things.
                 // In production deployment dotnet-watch is in a nested folder of the SDK's root, we'll back up to it.
@@ -64,14 +60,13 @@ namespace Microsoft.DotNet.Watcher
                 RegisterAssemblyResolutionEvents(sdkRootDirectory);
 
                 var console = PhysicalConsole.Singleton;
-
-                var suppressEmojis = ShouldSuppressEmojis();
-                var verbose = bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE"), out bool globalVerbose) && globalVerbose;
+                var suppressEmojis = EnvironmentVariables.SuppressEmojis;
+                var verbose = EnvironmentVariables.VerboseCliOutput;
 
                 var options = CommandLineOptions.Parse(args, new ConsoleReporter(console, verbose, quiet: false, suppressEmojis), out var errorCode);
                 if (options == null)
                 {
-                // an error reported or help printed:
+                    // an error reported or help printed:
                     return errorCode;
                 }
 
@@ -161,7 +156,7 @@ namespace Microsoft.DotNet.Watcher
                 waitOnError: true,
                 trace: true);
 
-            if (FileWatcherFactory.IsPollingEnabled)
+            if (EnvironmentVariables.IsPollingEnabled)
             {
                 _reporter.Output("Polling file watcher is enabled");
             }
@@ -330,13 +325,6 @@ namespace Microsoft.DotNet.Watcher
         {
             _console.CancelKeyPress -= OnCancelKeyPress;
             _cts.Dispose();
-        }
-
-        private static bool ShouldSuppressEmojis()
-        {
-            var suppressEmojisEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_WATCH_SUPPRESS_EMOJIS");
-            var suppressEmojis = suppressEmojisEnvironmentVariable == "1" || string.Equals(suppressEmojisEnvironmentVariable, "true", StringComparison.OrdinalIgnoreCase);
-            return suppressEmojis;
         }
 
         private static void RegisterAssemblyResolutionEvents(string sdkRootDirectory)

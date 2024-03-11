@@ -8,11 +8,9 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class LaunchBrowserFilter : IWatchFilter, IAsyncDisposable
+    internal sealed class LaunchBrowserFilter(DotNetWatchOptions dotNetWatchOptions) : IWatchFilter, IAsyncDisposable
     {
         private static readonly Regex NowListeningRegex = new(@"Now listening on: (?<url>.*)\s*$", RegexOptions.None | RegexOptions.Compiled, TimeSpan.FromSeconds(10));
-        private readonly DotNetWatchOptions _options;
-        private readonly string? _browserPath;
         private bool _attemptedBrowserLaunch;
         private Process? _browserProcess;
         private IReporter? _reporter;
@@ -20,17 +18,11 @@ namespace Microsoft.DotNet.Watcher.Tools
         private CancellationToken _cancellationToken;
         private DotNetWatchContext? _watchContext;
 
-        public LaunchBrowserFilter(DotNetWatchOptions dotNetWatchOptions)
-        {
-            _options = dotNetWatchOptions;
-            _browserPath = Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");
-        }
-
         public ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
             Debug.Assert(context.ProcessSpec != null);
 
-            if (_options.SuppressLaunchBrowser)
+            if (dotNetWatchOptions.SuppressLaunchBrowser)
             {
                 return default;
             }
@@ -51,7 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     context.ProcessSpec.OnOutput += (_, eventArgs) => Console.WriteLine(eventArgs.Data);
                     context.ProcessSpec.OnOutput += OnOutput;
                 }
-                else if (_options.TestFlags.HasFlag(TestFlags.BrowserRequired))
+                else if (dotNetWatchOptions.TestFlags.HasFlag(TestFlags.BrowserRequired))
                 {
                     _reporter.Error("Test requires browser to launch");
                 }
@@ -117,13 +109,13 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var fileName = Uri.TryCreate(_launchPath, UriKind.Absolute, out _) ? _launchPath : launchUrl + "/" + _launchPath;
             var args = string.Empty;
-            if (!string.IsNullOrEmpty(_browserPath))
+            if (EnvironmentVariables.BrowserPath is { } browserPath)
             {
                 args = fileName;
-                fileName = _browserPath;
+                fileName = browserPath;
             }
 
-            if (_options.TestFlags != TestFlags.None)
+            if (dotNetWatchOptions.TestFlags != TestFlags.None)
             {
                 _reporter.Output($"Launching browser: {fileName} {args}");
                 return;

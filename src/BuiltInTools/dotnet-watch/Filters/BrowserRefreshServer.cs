@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask<IEnumerable<string>> StartAsync(CancellationToken cancellationToken)
         {
-            var envHostName = Environment.GetEnvironmentVariable("DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME");
+            var envHostName = EnvironmentVariables.AutoReloadWSHostName;
             var hostName = envHostName ?? "127.0.0.1";
 
             var supportsTLS = await SupportsTLS();
