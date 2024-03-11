@@ -3,48 +3,31 @@
 
 namespace Microsoft.Extensions.Tools.Internal
 {
-    /// <summary>
-    /// This API supports infrastructure and is not intended to be used
-    /// directly from your code. This API may change or be removed in future releases.
-    /// </summary>
-    internal sealed class ConsoleRequester : IRequester
+    internal sealed class ConsoleInputReader(IConsole console, bool quiet, bool suppressEmojis)
     {
         private readonly object _writeLock = new();
 
-        public ConsoleRequester(IConsole console, bool quiet, bool suppressEmojis)
-        {
-            Ensure.NotNull(console, nameof(console));
-
-            Console = console;
-            IsQuiet = quiet;
-            SuppressEmojis = suppressEmojis;
-        }
-
-        private IConsole Console { get; }
-        private bool IsQuiet { get; set; }
-        private bool SuppressEmojis { get; set; }
-
         public async Task<ConsoleKey> GetKeyAsync(string prompt, Func<ConsoleKey, bool> validateInput, CancellationToken cancellationToken)
         {
-            if (IsQuiet)
+            if (quiet)
             {
                 return ConsoleKey.Escape;
             }
 
-            var questionMark = SuppressEmojis ? "?" : "❔";
+            var questionMark = suppressEmojis ? "?" : "❔";
             while (true)
             {
                 WriteLine($"  {questionMark} {prompt}");
 
                 lock (_writeLock)
                 {
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.Out.Write($"  {questionMark} ");
-                    Console.ResetColor();
+                    console.ForegroundColor = ConsoleColor.DarkGray;
+                    console.Out.Write($"  {questionMark} ");
+                    console.ResetColor();
                 }
 
                 var tcs = new TaskCompletionSource<ConsoleKey>(TaskCreationOptions.RunContinuationsAsynchronously);
-                Console.KeyPressed += KeyPressed;
+                console.KeyPressed += KeyPressed;
                 try
                 {
                     return await tcs.Task.WaitAsync(cancellationToken);
@@ -55,7 +38,7 @@ namespace Microsoft.Extensions.Tools.Internal
                 }
                 finally
                 {
-                    Console.KeyPressed -= KeyPressed;
+                    console.KeyPressed -= KeyPressed;
                 }
 
                 void KeyPressed(ConsoleKeyInfo key)
@@ -77,9 +60,9 @@ namespace Microsoft.Extensions.Tools.Internal
             {
                 lock (_writeLock)
                 {
-                    Console.ForegroundColor = color;
-                    Console.Out.WriteLine(message);
-                    Console.ResetColor();
+                    console.ForegroundColor = color;
+                    console.Out.WriteLine(message);
+                    console.ResetColor();
                 }
             }
         }

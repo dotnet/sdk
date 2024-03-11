@@ -9,11 +9,11 @@ namespace Microsoft.DotNet.Watcher.Tools
     internal sealed class RudeEditDialog
     {
         private readonly IReporter _reporter;
-        private readonly IRequester _requester;
+        private readonly ConsoleInputReader _requester;
         private readonly IConsole _console;
         private bool? _restartImmediatelySessionPreference; // Session preference
 
-        public RudeEditDialog(IReporter reporter, IRequester requester, IConsole console)
+        public RudeEditDialog(IReporter reporter, ConsoleInputReader requester, IConsole console)
         {
             _reporter = reporter;
             _requester = requester;

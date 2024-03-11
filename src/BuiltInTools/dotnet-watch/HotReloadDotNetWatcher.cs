@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Watcher
         private readonly string _workingDirectory;
         private readonly string _muxerPath;
 
-        public HotReloadDotNetWatcher(IReporter reporter, IRequester requester, IFileSetFactory fileSetFactory, DotNetWatchOptions dotNetWatchOptions, IConsole console, string workingDirectory, string muxerPath)
+        public HotReloadDotNetWatcher(IReporter reporter, ConsoleInputReader requester, IFileSetFactory fileSetFactory, DotNetWatchOptions dotNetWatchOptions, IConsole console, string workingDirectory, string muxerPath)
         {
             Ensure.NotNull(reporter, nameof(reporter));
             Ensure.NotNull(requester, nameof(requester));

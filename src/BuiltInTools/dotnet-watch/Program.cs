@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Watcher
         private readonly string _muxerPath;
         private readonly CancellationTokenSource _cts;
         private IReporter _reporter;
-        private IRequester _requester;
+        private ConsoleInputReader _requester;
 
         public Program(IConsole console, string workingDirectory, string muxerPath)
         {
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Watcher
 
             var suppressEmojis = ShouldSuppressEmojis();
             _reporter = CreateReporter(verbose: true, quiet: false, console: _console, suppressEmojis);
-            _requester = new ConsoleRequester(_console, quiet: false, suppressEmojis);
+            _requester = new ConsoleInputReader(_console, quiet: false, suppressEmojis);
         }
 
         public static async Task<int> Main(string[] args)
@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Watcher
             // update reporter as configured by options
             var suppressEmojis = ShouldSuppressEmojis();
             _reporter = CreateReporter(options.Verbose, options.Quiet, _console, suppressEmojis);
-            _requester = new ConsoleRequester(_console, quiet: options.Quiet, suppressEmojis);
+            _requester = new ConsoleInputReader(_console, quiet: options.Quiet, suppressEmojis);
 
             try
             {
