@@ -8,19 +8,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
 {
     public class WorkloadTests : SdkTest, IDisposable
     {
-        //  Remote execution notes:
-        //  psexec / uses Admin share (C$)
-        //  ddrits / cloudtest
-        //  sysinternals: filemon / regmon
-        //  May need to run winrm quickconfig to use WMI
-        //  How to apply snapshot via C#: https://stackoverflow.com/questions/60173096/hyperv-wmi-apply-snapshot-in-c-sharp
-        //  Also see https://stackoverflow.com/questions/1735978/manipulate-hyper-v-from-net
-        //  Official documentation?: https://learn.microsoft.com/en-us/windows/win32/hyperv_v2/exporting-virtual-machines
-        //  How to rename a snapshot: https://stackoverflow.com/questions/7599217/setting-hyper-v-snapshots-name-programmatically
-        //  There is a 50 checkpoint max
-
-
-        //  Reminder: Enable "Remote Service Management" firewall rule so that PSExec will run more quickly.  Make sure network is set to "Private" in Windows settings (or enable the firewall rule for public networks).
 
         string SdkInstallerVersion
         {

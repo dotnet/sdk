@@ -159,8 +159,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var snapshotService = _session.EnumerateInstances(virtNamespace, "Msvm_VirtualSystemSnapshotService").First();
 
-            //var settingData = _session.CreateInstance(virtNamespace, new CimInstance("CIM_SettingData"));
-
             CimMethodParametersCollection cimMethodParameters = new CimMethodParametersCollection {
                 CimMethodParameter.Create("AffectedSystem", VMInstance, CimType.Reference, CimFlags.In),
                 CimMethodParameter.Create("SnapshotType", 2, CimType.UInt16, CimFlags.In),
@@ -172,15 +170,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             var result = _session.InvokeMethod(virtNamespace, snapshotService, "CreateSnapshot", cimMethodParameters);
 
             await WaitForJobSuccess(result);
-
-            //var updatedSnapshots = GetSnapshots().ToDictionary(s => s.id, s => s.name);
-            //foreach (var snapshot in updatedSnapshots)
-            //{
-            //    if (!existingSnapshots.ContainsKey(snapshot.Key))
-            //    {
-            //        Log.WriteLine($"Created snapshot {snapshot.Value} ({snapshot.Key})");
-            //    }
-            //}
 
             var newSnapshot = GetSnapshots().Single(s => !existingSnapshots.ContainsKey(s.id));
 
@@ -249,12 +238,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             {
                 return;
             }
-
-            //bool isAlreadyRunning = getCurrentState() == 2;
-            //if (running == isAlreadyRunning)
-            //{
-            //    return;
-            //}
 
             Log.WriteLine($"Changing EnabledState from {getCurrentState()} to {targetState}");
 
@@ -359,70 +342,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
             ShuttingDown = 4,
             NotApplicable = 5,
             EnabledButOffline = 6,
-            //NoContact = 7,
-            //LostCommunication = 8,
-            //DisabledNoRedundancy = 9,
-            //InTest = 10,
-            //Deferred = 11,
-            //Quiesce = 12,
-            //Starting = 13,
-            //Snapshotting = 14,
-            //Saving = 15,
-            //Stopping = 16,
-            //Pausing = 17,
-            //Resuming = 18,
-            //FastSnapshotting = 19,
-            //FastSaving = 20,
-            //StartingUp = 21,
-            //PoweringDown = 22,
-            //PoweringUp = 23,
-            //SavingState = 24,
-            //RestoringState = 25,
-            //Paused = 26,
-            //Resumed = 27,
-            //Suspended = 28,
-            //StartingUpService = 29,
-            //UndoingSnapshot = 30,
-            //ImportingSnapshot = 31,
-            //ExportingSnapshot = 32,
-            //MergingSnapshot = 33,
-            //RemovingSnapshot = 34,
-            //ApplyingSnapshot = 35,
-            //Killing = 36,
-            //StoppingService = 37,
-            //SuspendedWithSavedState = 38,
-            //StartingUpWithSavedState = 39,
-            //InService = 40,
-            //NoRecovery = 41,
-            //Last = 42
+           
         }
-
-        //private class CimObserver<T> : IObserver<T>
-        //{
-        //    TaskCompletionSource<T> _tcs;
-        //    Management.Infrastructure.Generic.CimAsyncResult<T> _result;
-
-        //    public Task<T> Task => _tcs.Task;
-
-        //    public CimObserver(Management.Infrastructure.Generic.CimAsyncResult<T> result)
-        //    {
-        //        _tcs = new TaskCompletionSource<T>();
-        //        _result = result;
-        //        _result.Subscribe(this);
-        //    }
-
-        //    public void OnCompleted()
-        //    {
-        //    }
-        //    public void OnError(Exception error)
-        //    {
-        //        _tcs.SetException(error);
-        //    }
-        //    public void OnNext(T value)
-        //    {
-        //        _tcs.SetResult(value);
-        //    }
-        //}
 
         class RemoteCommand : TestCommand
         {

@@ -12,21 +12,6 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
-    //  Core actions:
-    //  - Run command
-    //  - Copy file to VM
-    //  - Enumerate and read files / directories
-    //    - Is this actually an action?
-
-    //  Run command
-    //  - Install .NET SDK (From SdkTesting folder)
-    //  - Uninstall .NET SDK
-    //  - Workload install / uninstall
-    //  - Apply rollback file
-    //  - Get .NET version - this shouldn't change state
-    //  Copy file to VM
-    //  - Deploy stage 2 SDK
-
     abstract class VMAction
     {
         public VirtualMachine VM { get; }
@@ -316,7 +301,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
         public static bool operator !=(SerializedVMAction left, SerializedVMAction right) => !(left == right);
     }
 
-    //  Do we need a separate VMActionResult, or should we just use CommandResult?
     class VMActionResult
     {
         public string Filename { get; set; }
