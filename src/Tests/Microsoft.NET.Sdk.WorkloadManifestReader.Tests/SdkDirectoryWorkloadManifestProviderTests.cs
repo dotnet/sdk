@@ -494,7 +494,7 @@ namespace ManifestReaderTests
             {
                 "sdk": {
                     "version": "8.0.200",
-                    "workloadSetVersion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 },
                 "msbuild-sdks": {
                     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.23254.2",
@@ -536,7 +536,7 @@ namespace ManifestReaderTests
             {
                 "sdk": {
                     "version": "8.0.200",
-                    "workloadSetVersion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 },
                 "msbuild-sdks": {
                     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.23254.2",
@@ -565,7 +565,7 @@ namespace ManifestReaderTests
             File.WriteAllText(globalJsonPath, """
             {
                 "sdk": {
-                    "workloadSetVersion": [ "8.0.202" ]
+                    "workloadVersion": [ "8.0.202" ]
                 }
             }
             """);
@@ -885,7 +885,7 @@ namespace ManifestReaderTests
             {
                 "sdk": {
                     "version": "8.0.200",
-                    "workloadSetVersion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 },
                 "msbuild-sdks": {
                     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.23254.2",

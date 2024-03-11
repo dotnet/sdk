@@ -109,31 +109,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 try
                 {
-                    var transaction = new CliTransaction();
-                    transaction.RollbackStarted = () =>
+                    DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersion))
                     {
-                        Reporter.WriteLine(LocalizableStrings.RollingBackInstall);
-                    };
-                    // Don't hide the original error if roll back fails, but do log the rollback failure
-                    transaction.RollbackFailed = ex =>
+                        CalculateManifestUpdatesAndUpdateWorkloads(_includePreviews, offlineCache);
+                    }
+                    else
                     {
-                        Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message));
-                    };
-
-                    transaction.Run(
-                        action: context =>
+                        RunInNewTransaction(context =>
                         {
-                            DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
-                            if (string.IsNullOrWhiteSpace(_workloadSetVersion))
-                            {
-                                CalculateManifestUpdatesAndUpdateWorkloads(_includePreviews, offlineCache, context);
-                            }
-                            else
-                            {
-                                (var workloadVersion, var manifestUpdates) = HandleWorkloadUpdateFromVersion(context, offlineCache);
-                                UpdateWorkloads(false, manifestUpdates, workloadVersion, offlineCache, context);
-                            }
+                            (var workloadVersion, var manifestUpdates) = HandleWorkloadUpdateFromVersion(context, offlineCache);
+                            UpdateWorkloads(false, manifestUpdates, workloadVersion, offlineCache, context);
                         });
+                    }
                 }
                 catch (Exception e)
                 {
@@ -146,7 +134,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             return _workloadInstaller.ExitCode;
         }
 
-        public void CalculateManifestUpdatesAndUpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null, ITransactionContext context = null)
+        public void CalculateManifestUpdatesAndUpdateWorkloads(bool includePreviews = false, DirectoryPath? offlineCache = null)
         {
             Reporter.WriteLine();
 
@@ -165,17 +153,20 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
 
             string workloadVersion = null;
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate;
-            if (useWorkloadSets)
+            RunInNewTransaction(context =>
             {
-                (workloadVersion, manifestsToUpdate) = InstallWorkloadSet(context);
-            }
-            else
-            {
-                manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
-            }
+                if (useWorkloadSets)
+                {
+                    (workloadVersion, manifestsToUpdate) = InstallWorkloadSet(context);
+                }
+                else
+                {
+                    manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+                }
 
-            UpdateWorkloads(useRollback, manifestsToUpdate, workloadVersion, offlineCache, context);
+                UpdateWorkloads(useRollback, manifestsToUpdate, workloadVersion, offlineCache, context);
+            });
         }
 
         private void UpdateWorkloads(bool useRollback, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, string workloadVersion, DirectoryPath? offlineCache, ITransactionContext context)
@@ -262,6 +253,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
 
             return workloads;
+        }
+
+        private void RunInNewTransaction(Action<ITransactionContext> a)
+        {
+            var transaction = new CliTransaction();
+            transaction.RollbackStarted = () =>
+            {
+                Reporter.WriteLine(LocalizableStrings.RollingBackInstall);
+            };
+            // Don't hide the original error if roll back fails, but do log the rollback failure
+            transaction.RollbackFailed = ex =>
+            {
+                Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message));
+            };
+
+            transaction.Run(context => a(context));
         }
     }
 }
