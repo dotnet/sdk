@@ -7,8 +7,10 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class ComputeReferenceStaticWebAssetItemsTest
+    public class ComputeReferenceStaticWebAssetItemsTest : IDisposable
     {
+        private readonly List<string> _files = [];
+
         [Fact]
         public void IncludesAssetsFromCurrentProjectAsReferencedAssets()
         {
@@ -342,6 +344,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             string assetKind,
             string assetMode)
         {
+            var candidateFullPath = Path.GetFullPath(itemSpec);
+            if (!File.Exists(candidateFullPath))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(candidateFullPath));
+                File.WriteAllText(candidateFullPath, itemSpec);
+                _files.Add(candidateFullPath);
+            }
             var result = new StaticWebAsset()
             {
                 Identity = Path.GetFullPath(itemSpec),
@@ -384,6 +393,23 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             };
 
             return result.ToTaskItem();
+        }
+
+        public void Dispose()
+        {
+            foreach (var file in _files)
+            {
+                try
+                {
+                    if (File.Exists(file))
+                    {
+                        File.Delete(file);
+                    }
+                }
+                catch
+                {
+                }
+            }
         }
     }
 }

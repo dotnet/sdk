@@ -164,7 +164,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
             var serviceWorkerFile = Path.Combine(publishOutputDirectory, "wwwroot", "serviceworkers", "my-service-worker.js");
-            var version = File.ReadAllLines(serviceWorkerFile).Last();
+            var version = File.ReadAllLines(serviceWorkerFile).First();
             var match = Regex.Match(version, "\\/\\* Manifest version: (.{8}) \\*\\/");
             match.Success.Should().BeTrue();
             match.Groups.Count.Should().Be(2);
@@ -180,7 +180,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             publishCommand = new PublishCommand(testInstance, "blazorwasm");
             publishCommand.Execute().Should().Pass();
 
-            var updatedVersion = File.ReadAllLines(serviceWorkerFile).Last();
+            var updatedVersion = File.ReadAllLines(serviceWorkerFile).First();
             var updatedMatch = Regex.Match(updatedVersion, "\\/\\* Manifest version: (.{8}) \\*\\/");
 
             updatedMatch.Success.Should().BeTrue();
@@ -214,7 +214,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
             var serviceWorkerFile = Path.Combine(publishOutputDirectory, "wwwroot", "serviceworkers", "my-service-worker.js");
-            var version = File.ReadAllLines(serviceWorkerFile).Last();
+            var version = File.ReadAllLines(serviceWorkerFile).First();
             var match = Regex.Match(version, "\\/\\* Manifest version: (.{8}) \\*\\/");
             match.Success.Should().BeTrue();
             match.Groups.Count.Should().Be(2);
@@ -226,7 +226,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorwasm"));
             publishCommand.Execute().Should().Pass();
 
-            var updatedVersion = File.ReadAllLines(serviceWorkerFile).Last();
+            var updatedVersion = File.ReadAllLines(serviceWorkerFile).First();
             var updatedMatch = Regex.Match(updatedVersion, "\\/\\* Manifest version: (.{8}) \\*\\/");
 
             updatedMatch.Success.Should().BeTrue();

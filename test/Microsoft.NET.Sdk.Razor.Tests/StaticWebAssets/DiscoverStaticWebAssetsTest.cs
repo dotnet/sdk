@@ -8,8 +8,10 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class DiscoverStaticWebAssetsTest
+    public class DiscoverStaticWebAssetsTest : IDisposable
     {
+        private readonly List<string> _files = [];
+
         [Fact]
         public void DiscoversMatchingAssetsBasedOnPattern()
         {
@@ -18,14 +20,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new DiscoverStaticWebAssets
+            var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
-                Candidates = new[]
-                {
+                CandidateAssets =
+                [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"))
-                },
-                Pattern = "wwwroot\\**",
+                ],
+                RelativePathPattern = "wwwroot\\**",
+                SourceType = "Discovered",
                 SourceId = "MyProject",
                 ContentRoot = "wwwroot",
                 BasePath = "_content/Path"
@@ -35,9 +38,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true);
-            task.DiscoveredStaticWebAssets.Length.Should().Be(1);
-            var asset = task.DiscoveredStaticWebAssets[0];
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
             asset.GetMetadata(nameof(StaticWebAsset.SourceId)).Should().Be("MyProject");
             asset.GetMetadata(nameof(StaticWebAsset.SourceType)).Should().Be("Discovered");
@@ -63,14 +66,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new DiscoverStaticWebAssets
+            var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
-                Candidates = new[]
-                {
+                CandidateAssets =
+                [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), relativePath: "subdir/candidate.js")
-                },
-                Pattern = "wwwroot\\**",
+                ],
+                RelativePathPattern = "wwwroot\\**",
+                SourceType = "Discovered",
                 SourceId = "MyProject",
                 ContentRoot = "wwwroot",
                 BasePath = "_content/Path"
@@ -80,9 +84,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true);
-            task.DiscoveredStaticWebAssets.Length.Should().Be(1);
-            var asset = task.DiscoveredStaticWebAssets[0];
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
             asset.GetMetadata(nameof(StaticWebAsset.SourceId)).Should().Be("MyProject");
             asset.GetMetadata(nameof(StaticWebAsset.SourceType)).Should().Be("Discovered");
@@ -108,14 +112,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new DiscoverStaticWebAssets
+            var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
-                Candidates = new[]
-                {
+                CandidateAssets =
+                [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), targetPath: Path.Combine("wwwroot", "subdir", "candidate.publish.js"))
-                },
-                Pattern = "wwwroot\\**",
+                ],
+                RelativePathPattern = "wwwroot\\**",
+                SourceType = "Discovered",
                 SourceId = "MyProject",
                 ContentRoot = "wwwroot",
                 BasePath = "_content/Path"
@@ -125,9 +130,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true);
-            task.DiscoveredStaticWebAssets.Length.Should().Be(1);
-            var asset = task.DiscoveredStaticWebAssets[0];
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
             asset.GetMetadata(nameof(StaticWebAsset.SourceId)).Should().Be("MyProject");
             asset.GetMetadata(nameof(StaticWebAsset.SourceType)).Should().Be("Discovered");
@@ -153,14 +158,15 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new DiscoverStaticWebAssets
+            var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
-                Candidates = new[]
-                {
+                CandidateAssets =
+                [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), link: Path.Combine("wwwroot", "subdir", "candidate.link.js"))
-                },
-                Pattern = "wwwroot\\**",
+                ],
+                RelativePathPattern = "wwwroot\\**",
+                SourceType = "Discovered",
                 SourceId = "MyProject",
                 ContentRoot = "wwwroot",
                 BasePath = "_content/Path"
@@ -170,9 +176,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true);
-            task.DiscoveredStaticWebAssets.Length.Should().Be(1);
-            var asset = task.DiscoveredStaticWebAssets[0];
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
             asset.GetMetadata(nameof(StaticWebAsset.SourceId)).Should().Be("MyProject");
             asset.GetMetadata(nameof(StaticWebAsset.SourceType)).Should().Be("Discovered");
@@ -198,15 +204,16 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new DiscoverStaticWebAssets
+            var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
-                Candidates = new[]
-                {
+                CandidateAssets =
+                [
                     CreateCandidate(Path.Combine("wwwroot", "candidate.js"), copyToPublishDirectory: "Never"),
                     CreateCandidate(Path.Combine("wwwroot", "candidate.publish.js"), relativePath: "candidate.js")
-                },
-                Pattern = "wwwroot\\**",
+                ],
+                RelativePathPattern = "wwwroot\\**",
+                SourceType = "Discovered",
                 SourceId = "MyProject",
                 ContentRoot = "wwwroot",
                 BasePath = "_content/Path"
@@ -216,10 +223,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true);
-            task.DiscoveredStaticWebAssets.Length.Should().Be(2);
-            var buildAsset = task.DiscoveredStaticWebAssets.Single(a => a.ItemSpec == Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
-            var publishAsset = task.DiscoveredStaticWebAssets.Single(a => a.ItemSpec == Path.GetFullPath(Path.Combine("wwwroot", "candidate.publish.js")));
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ", errorMessages)}");
+            task.Assets.Length.Should().Be(2);
+            var buildAsset = task.Assets.Single(a => a.ItemSpec == Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
+            var publishAsset = task.Assets.Single(a => a.ItemSpec == Path.GetFullPath(Path.Combine("wwwroot", "candidate.publish.js")));
             buildAsset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
             buildAsset.GetMetadata(nameof(StaticWebAsset.AssetKind)).Should().Be("Build");
             buildAsset.GetMetadata(nameof(StaticWebAsset.CopyToOutputDirectory)).Should().Be("Never");
@@ -250,11 +257,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new DiscoverStaticWebAssets
+            var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
-                Candidates = new[]
-                {
+                CandidateAssets =
+                [
                     CreateCandidate(
                         Path.Combine("wwwroot","candidate.js"),
                         copyToOutputDirectory: copyToOutputDirectoryFirst,
@@ -265,8 +272,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                         relativePath: "candidate.js",
                         copyToOutputDirectory: copyToOutputDirectorySecond,
                         copyToPublishDirectory: copyToPublishDirectorySecond)
-                },
-                Pattern = "wwwroot\\**",
+                ],
+                RelativePathPattern = "wwwroot\\**",
+                SourceType = "Discovered",
                 SourceId = "MyProject",
                 ContentRoot = "wwwroot",
                 BasePath = "_content/Path"
@@ -303,14 +311,15 @@ for path 'candidate.js'");
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new DiscoverStaticWebAssets
+            var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
-                Candidates = new[]
-                {
+                CandidateAssets =
+                [
                     CreateCandidate("wwwroot\\candidate.js")
-                },
-                Pattern = "wwwroot\\**",
+                ],
+                RelativePathPattern = "wwwroot\\**",
+                SourceType = "Discovered",
                 SourceId = "MyProject",
                 ContentRoot = "wwwroot",
                 BasePath = givenPath
@@ -320,9 +329,9 @@ for path 'candidate.js'");
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true);
-            task.DiscoveredStaticWebAssets.Length.Should().Be(1);
-            var asset = task.DiscoveredStaticWebAssets[0];
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
             asset.GetMetadata(nameof(StaticWebAsset.BasePath)).Should().Be(expectedPath);
         }
@@ -353,14 +362,15 @@ for path 'candidate.js'");
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new DiscoverStaticWebAssets
+            var task = new DefineStaticWebAssets
             {
                 BuildEngine = buildEngine.Object,
-                Candidates = new[]
-                {
+                CandidateAssets =
+                [
                     CreateCandidate("wwwroot\\candidate.js")
-                },
-                Pattern = "wwwroot\\**",
+                ],
+                RelativePathPattern = "wwwroot\\**",
+                SourceType = "Discovered",
                 SourceId = "MyProject",
                 ContentRoot = contentRoot,
                 BasePath = "base"
@@ -370,9 +380,9 @@ for path 'candidate.js'");
             var result = task.Execute();
 
             // Assert
-            result.Should().Be(true);
-            task.DiscoveredStaticWebAssets.Length.Should().Be(1);
-            var asset = task.DiscoveredStaticWebAssets[0];
+            result.Should().Be(true, $"Errors: {Environment.NewLine}  {string.Join($"{Environment.NewLine}  ",errorMessages)}");
+            task.Assets.Length.Should().Be(1);
+            var asset = task.Assets[0];
             asset.ItemSpec.Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
             asset.GetMetadata(nameof(StaticWebAsset.ContentRoot)).Should().Be(expected);
         }
@@ -386,6 +396,13 @@ for path 'candidate.js'");
             string copyToOutputDirectory = null,
             string copyToPublishDirectory = null)
         {
+            var candidateFullPath = Path.GetFullPath(itemSpec);
+            if (!File.Exists(candidateFullPath))
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(candidateFullPath));
+                File.WriteAllText(candidateFullPath, itemSpec);
+                _files.Add(candidateFullPath);
+            }
             return new TaskItem(itemSpec, new Dictionary<string, string>
             {
                 ["RelativePath"] = relativePath ?? "",
@@ -394,6 +411,23 @@ for path 'candidate.js'");
                 ["CopyToOutputDirectory"] = copyToOutputDirectory ?? "",
                 ["CopyToPublishDirectory"] = copyToPublishDirectory ?? ""
             });
+        }
+
+        public void Dispose()
+        {
+            foreach (var file in _files)
+            {
+                try
+                {
+                    if (File.Exists(file))
+                    {
+                        File.Delete(file);
+                    }
+                }
+                catch
+                {
+                }
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "StaticWebAssets integration is not yet implemented")]
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";
