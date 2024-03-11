@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var version = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath ?? string.Empty));
             Directory.CreateDirectory(advertisingPackagePath);
             File.WriteAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName), version);
-            return Path.Combine(Path.GetDirectoryName(advertisingPackagePath ?? string.Empty), "installed.workloadset.json");
+            return Path.GetDirectoryName(advertisingPackagePath ?? string.Empty);
         }
 
         public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null) => throw new NotImplementedException();

@@ -234,8 +234,15 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             }
             finally
             {
-                File.Delete(versionFile);
-                File.Delete(installStatePath);
+                if (File.Exists(versionFile))
+                {
+                    File.Delete(versionFile);
+                }
+
+                if (File.Exists(installStatePath))
+                {
+                    File.Delete(installStatePath);
+                }
             }
 
             workloadInstaller.InstalledManifests.Count.Should().Be(1);

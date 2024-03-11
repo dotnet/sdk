@@ -121,7 +121,11 @@ namespace Microsoft.DotNet.Workloads.Workload
         public (string version, IEnumerable<ManifestVersionUpdate> updates) InstallWorkloadSet(ITransactionContext context)
         {
             var advertisingPackagePath = Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads");
-            PrintWorkloadSetTransition(File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)));
+            if (File.Exists(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)))
+            {
+                // This file isn't created in tests.
+                PrintWorkloadSetTransition(File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)));
+            }
             var workloadSetPath = _workloadInstaller.InstallWorkloadSet(context, advertisingPackagePath);
             var files = Directory.EnumerateFiles(workloadSetPath, "*.workloadset.json");
             var version = Path.GetFileName(workloadSetPath);
