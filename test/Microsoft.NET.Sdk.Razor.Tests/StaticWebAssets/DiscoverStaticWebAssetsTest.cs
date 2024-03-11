@@ -8,10 +8,8 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class DiscoverStaticWebAssetsTest : IDisposable
+    public class DiscoverStaticWebAssetsTest
     {
-        private readonly List<string> _files = [];
-
         [Fact]
         public void DiscoversMatchingAssetsBasedOnPattern()
         {
@@ -396,38 +394,17 @@ for path 'candidate.js'");
             string copyToOutputDirectory = null,
             string copyToPublishDirectory = null)
         {
-            var candidateFullPath = Path.GetFullPath(itemSpec);
-            if (!File.Exists(candidateFullPath))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(candidateFullPath));
-                File.WriteAllText(candidateFullPath, itemSpec);
-                _files.Add(candidateFullPath);
-            }
             return new TaskItem(itemSpec, new Dictionary<string, string>
             {
                 ["RelativePath"] = relativePath ?? "",
                 ["TargetPath"] = targetPath ?? "",
                 ["Link"] = link ?? "",
                 ["CopyToOutputDirectory"] = copyToOutputDirectory ?? "",
-                ["CopyToPublishDirectory"] = copyToPublishDirectory ?? ""
+                ["CopyToPublishDirectory"] = copyToPublishDirectory ?? "",
+                // Add these to avoid accessing the disk to compute them
+                ["Integrity"] = "integrity",
+                ["Fingerprint"] = "fingerprint",
             });
-        }
-
-        public void Dispose()
-        {
-            foreach (var file in _files)
-            {
-                try
-                {
-                    if (File.Exists(file))
-                    {
-                        File.Delete(file);
-                    }
-                }
-                catch
-                {
-                }
-            }
         }
     }
 }

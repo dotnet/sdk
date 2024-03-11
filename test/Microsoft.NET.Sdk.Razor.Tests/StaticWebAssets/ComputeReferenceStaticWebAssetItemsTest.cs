@@ -7,10 +7,8 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    public class ComputeReferenceStaticWebAssetItemsTest : IDisposable
+    public class ComputeReferenceStaticWebAssetItemsTest
     {
-        private readonly List<string> _files = [];
-
         [Fact]
         public void IncludesAssetsFromCurrentProjectAsReferencedAssets()
         {
@@ -344,13 +342,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             string assetKind,
             string assetMode)
         {
-            var candidateFullPath = Path.GetFullPath(itemSpec);
-            if (!File.Exists(candidateFullPath))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(candidateFullPath));
-                File.WriteAllText(candidateFullPath, itemSpec);
-                _files.Add(candidateFullPath);
-            }
             var result = new StaticWebAsset()
             {
                 Identity = Path.GetFullPath(itemSpec),
@@ -368,6 +359,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 CopyToOutputDirectory = "",
                 CopyToPublishDirectory = "",
                 OriginalItemSpec = itemSpec,
+                // Add these to avoid accessing the disk to compute them
+                Integrity = "integrity",
+                Fingerprint = "fingerprint",
             };
 
             result.ApplyDefaults();
@@ -393,23 +387,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             };
 
             return result.ToTaskItem();
-        }
-
-        public void Dispose()
-        {
-            foreach (var file in _files)
-            {
-                try
-                {
-                    if (File.Exists(file))
-                    {
-                        File.Delete(file);
-                    }
-                }
-                catch
-                {
-                }
-            }
         }
     }
 }
