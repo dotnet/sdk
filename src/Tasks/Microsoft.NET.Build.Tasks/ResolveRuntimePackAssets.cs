@@ -16,6 +16,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public ITaskItem[] SatelliteResourceLanguages { get; set; } = Array.Empty<ITaskItem>();
 
+        public ITaskItem[] RuntimeFrameworks { get; set; }        
+
         public bool DesignTimeBuild { get; set; }
 
         public bool DisableTransitiveFrameworkReferenceDownloads { get; set; }
@@ -26,6 +28,14 @@ namespace Microsoft.NET.Build.Tasks
         protected override void ExecuteCore()
         {
             var runtimePackAssets = new List<ITaskItem>();
+
+            // Find any RuntimeFrameworks that matches with FrameworkReferences, so that we can apply that RuntimeFrameworks profile to the corresponding RuntimePack
+            // Matches the RuntimeFramework with the FrameworkReference by comparing the FrameworkName metadata
+            List<ITaskItem> matchingRuntimeFrameworks = FrameworkReferences
+                .SelectMany(fxReference => RuntimeFrameworks
+                    .Where(rtFx => fxReference.ItemSpec.Equals(rtFx.GetMetadata(MetadataKeys.FrameworkName), StringComparison.OrdinalIgnoreCase) &&
+                                   !string.IsNullOrEmpty(rtFx.GetMetadata("Profile"))))
+                .ToList();
 
             HashSet<string> frameworkReferenceNames = new(FrameworkReferences.Select(item => item.ItemSpec), StringComparer.OrdinalIgnoreCase);
 
@@ -54,6 +64,12 @@ namespace Microsoft.NET.Build.Tasks
                         continue;
                     }
                 }
+
+                // For any RuntimeFrameworks that matches with FrameworkReferences, we can apply that RuntimeFrameworks profile to the corresponding RuntimePack
+                // Matches the RuntimeFramework with the RuntimePack by comparing the FrameworkName metadata. 'profile' will be an empty string if no matching RuntimeFramework is found
+                string profile = String.Join(";", matchingRuntimeFrameworks
+                    .Where(matchingRTReference => runtimePack.GetMetadata("FrameworkName").Equals(matchingRTReference.ItemSpec))
+                    .Select(matchingRTReference => matchingRTReference.GetMetadata("Profile")));
 
                 string runtimePackRoot = runtimePack.GetMetadata(MetadataKeys.PackageDirectory);
 
@@ -91,7 +107,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     var runtimePackAlwaysCopyLocal = runtimePack.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
 
-                    AddRuntimePackAssetsFromManifest(runtimePackAssets, runtimePackRoot, runtimeListPath, runtimePack, runtimePackAlwaysCopyLocal);
+                    AddRuntimePackAssetsFromManifest(runtimePackAssets, runtimePackRoot, runtimeListPath, runtimePack, runtimePackAlwaysCopyLocal, profile);
                 }
                 else
                 {
@@ -103,13 +119,26 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         private void AddRuntimePackAssetsFromManifest(List<ITaskItem> runtimePackAssets, string runtimePackRoot,
-            string runtimeListPath, ITaskItem runtimePack, bool runtimePackAlwaysCopyLocal)
+            string runtimeListPath, ITaskItem runtimePack, bool runtimePackAlwaysCopyLocal, string profile)
         {
             var assetSubPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             XDocument frameworkListDoc = XDocument.Load(runtimeListPath);
             foreach (var fileElement in frameworkListDoc.Root.Elements("File"))
             {
+                // profile feature is only supported in net9.0 and later. We would ignore it for previous versions.
+                if (!string.IsNullOrEmpty(profile))
+                {
+                    var profileAttributeValue = fileElement.Attribute("Profile")?.Value;
+
+                    var assemblyProfiles = profileAttributeValue?.Split(';');
+                    if (profileAttributeValue == null || !assemblyProfiles.Contains(profile, StringComparer.OrdinalIgnoreCase))
+                    {
+                        //  Assembly wasn't in the profile specified, so don't reference it
+                        continue;
+                    }
+                }
+
                 //  Call GetFullPath to normalize slashes
                 string assetPath = Path.GetFullPath(Path.Combine(runtimePackRoot, fileElement.Attribute("Path").Value));
 
