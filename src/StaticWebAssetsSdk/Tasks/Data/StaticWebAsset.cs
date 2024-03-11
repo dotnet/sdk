@@ -222,7 +222,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         }
 
         private (string Fingerprint, string Integrity) ComputeFingerprintAndIntegrity() =>
-            ComputeFingerprintAndIdentity(Identity, OriginalItemSpec);
+            (Fingerprint, Integrity) switch
+            {
+                (not null, not null) => (Fingerprint, Integrity),
+                _ => ComputeFingerprintAndIdentity(Identity, OriginalItemSpec)
+            };
 
         internal static (string fingerprint, string integrity) ComputeFingerprintAndIdentity(string identity, string originalItemSpec)
         {

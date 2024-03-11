@@ -9,8 +9,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 {
     public class ComputeStaticWebAssetsForCurrentProjectTest
     {
-        private readonly List<string> _files = [];
-
         [Fact]
         public void IncludesAssetsFromCurrentProject()
         {
