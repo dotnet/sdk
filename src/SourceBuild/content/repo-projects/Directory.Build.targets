@@ -93,12 +93,6 @@
       <_CommonBuildSources Include="@(DependentRepoSourceName)" />
       <_CommonBuildSources Include="$(ExtraSourcesNuGetSourceName)" Condition="'$(ExtraRestoreSourcePath)' != ''" />
     </ItemGroup>
-
-    <ItemGroup>
-      <_BuildSources Condition="'$(DotNetBuildSourceOnly)' == 'true'"
-                     Include="$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName)" />
-      <_BuildSources Include="@(_CommonBuildSources)" />
-    </ItemGroup>
     
     <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
       <!-- When not building source-only, repositories lagging behind on the .NET SDK (e.g. tooling repos)
@@ -115,6 +109,14 @@
       <NetSdkSupportingFeedName>net-sdk-supporting-feed</NetSdkSupportingFeedName>
       <NetSdkSupportingFeed>https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json</NetSdkSupportingFeed>
     </PropertyGroup>
+
+    <ItemGroup>
+      <_BuildSources Include="$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName)"
+                     Condition="'$(DotNetBuildSourceOnly)' == 'true'"/>
+      <_BuildSources Include="@(_CommonBuildSources)" />
+      <_BuildSources Include="$(NetSdkSupportingFeedName)"
+                     Condition="'$(AddNetSdkSupportingFeed)' == 'true'" />
+    </ItemGroup>
 
     <RemoveInternetSourcesFromNuGetConfig
       NuGetConfigFile="$(NuGetConfigFile)"
