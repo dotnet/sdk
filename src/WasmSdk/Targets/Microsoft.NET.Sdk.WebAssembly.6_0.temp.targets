@@ -62,8 +62,7 @@
       Extensions="@(WasmBootConfigExtension)"
       TargetFrameworkVersion="$(TargetFrameworkVersion)"
       ModuleAfterConfigLoaded="@(WasmModuleAfterConfigLoaded)"
-      ModuleAfterRuntimeReady="@(WasmModuleAfterRuntimeReady)"
-      IsPublish="false" />
+      ModuleAfterRuntimeReady="@(WasmModuleAfterRuntimeReady)" />
 
     <ItemGroup>
       <FileWrites Include="$(_PatchWasmBuildBootJsonPath)" />

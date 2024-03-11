@@ -129,20 +129,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <!-- Temporary, we need to generate blazor.boot.json before we define it,
-      so we hook a target that does the same thing as _ResolveWasmOutputs but
-      in addition generates blazor.boot.json so that the build passes.
-
-      This will go away once the wasm build is updated to do this directly.
-  -->
-  <Import
-    Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.BlazorWebAssembly.9_0.temp.targets"
-    Condition="'$(_TargetingNET80OrLater)' == 'true'" />
-
-  <Import
-    Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.BlazorWebAssembly.6_0.temp.targets"
-    Condition="'$(_TargetingNET80OrLater)' != 'true'" />
-
   <!-- Just print a message here, static web assets takes care of all the copying -->
   <Target Name="_BlazorCopyFilesToOutputDirectory" AfterTargets="CopyFilesToOutputDirectory">
     <Message Importance="High" Text="$(MSBuildProjectName) (Blazor output) -&gt; $(TargetDir)wwwroot" Condition="'$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
