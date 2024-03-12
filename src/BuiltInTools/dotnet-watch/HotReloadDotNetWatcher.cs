@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.Build.Graph;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
@@ -46,7 +47,7 @@ namespace Microsoft.DotNet.Watcher
 
         public async Task WatchAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            Debug.Assert(context.ProcessSpec != null);
+            Debug.Assert(context.ProjectGraph != null);
 
             var processSpec = context.ProcessSpec;
 
@@ -149,7 +150,7 @@ namespace Microsoft.DotNet.Watcher
                         }
                         else
                         {
-                            if (MayRequireRecompilation(context, fileItems) is { } newFile)
+                            if (MayRequireRecompilation(context.ProjectGraph, fileItems) is { } newFile)
                             {
                                 _reporter.Output($"New file: {GetRelativeFilePath(newFile.FilePath)}. Rebuilding the application.");
                                 break;
@@ -245,7 +246,7 @@ namespace Microsoft.DotNet.Watcher
             }
         }
 
-        private static FileItem? MayRequireRecompilation(DotNetWatchContext context, FileItem[] fileInfo)
+        private static FileItem? MayRequireRecompilation(ProjectGraph projectGraph, FileItem[] fileInfo)
         {
             // This method is invoked when a new file is added to the workspace. To determine if we need to
             // recompile, we'll see if it's any of the usual suspects (.cs, .cshtml, .razor) files.
@@ -270,7 +271,7 @@ namespace Microsoft.DotNet.Watcher
                 }
 
                 if (filePath.EndsWith(".cshtml", StringComparison.Ordinal) &&
-                    context.ProjectGraph!.GraphRoots.FirstOrDefault() is { } project &&
+                    projectGraph.GraphRoots.FirstOrDefault() is { } project &&
                     project.ProjectInstance.GetPropertyValue("AddCshtmlFilesToDotNetWatchList") is not "false")
                 {
                     // For cshtml files, runtime compilation can opt out of watching cshtml files.

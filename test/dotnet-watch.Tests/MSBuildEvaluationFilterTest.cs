@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Tools.Internal;
 using Moq;
 
 namespace Microsoft.DotNet.Watcher.Tools
@@ -21,6 +22,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 HotReloadEnabled = false,
                 Iteration = 0,
+                ProcessSpec = new ProcessSpec(),
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
 
             await filter.ProcessAsync(context, default);
@@ -45,6 +49,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 HotReloadEnabled = false,
                 Iteration = 0,
+                ProcessSpec = new ProcessSpec(),
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
 
             await filter.ProcessAsync(context, default);
@@ -71,6 +78,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 HotReloadEnabled = false,
                 Iteration = 0,
                 SuppressMSBuildIncrementalism = true,
+                ProcessSpec = new ProcessSpec(),
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
 
             await filter.ProcessAsync(context, default);
@@ -109,6 +119,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 HotReloadEnabled = false,
                 Iteration = 0,
+                ProcessSpec = new ProcessSpec(),
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
 
             await filter.ProcessAsync(context, default);

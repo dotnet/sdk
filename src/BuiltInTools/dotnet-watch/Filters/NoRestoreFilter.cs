@@ -13,7 +13,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            Debug.Assert(context.ProcessSpec != null);
             Debug.Assert(!context.HotReloadEnabled);
 
             if (context.SuppressMSBuildIncrementalism)

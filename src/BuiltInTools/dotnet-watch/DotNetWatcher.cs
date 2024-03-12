@@ -38,8 +38,6 @@ namespace Microsoft.DotNet.Watcher
 
         public async Task WatchAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            Debug.Assert(context.ProcessSpec != null);
-
             var cancelledTaskSource = new TaskCompletionSource();
             cancellationToken.Register(state => ((TaskCompletionSource)state!).TrySetResult(),
                 cancelledTaskSource);

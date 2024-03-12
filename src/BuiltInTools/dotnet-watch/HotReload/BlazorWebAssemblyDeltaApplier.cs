@@ -29,8 +29,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public override void Initialize(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            Debug.Assert(context.ProcessSpec != null);
-
             base.Initialize(context, cancellationToken);
 
             // Configure the app for EnC

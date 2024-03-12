@@ -14,7 +14,6 @@ namespace Microsoft.DotNet.Watcher
         {
             public List<string> DotNetStartupHooks { get; } = new();
             public List<string> AspNetCoreHostingStartupAssemblies { get; } = new();
-
         }
 
         public string? Executable { get; set; }

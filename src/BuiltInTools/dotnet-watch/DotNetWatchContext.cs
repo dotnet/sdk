@@ -10,29 +10,18 @@ namespace Microsoft.DotNet.Watcher.Tools
     internal sealed class DotNetWatchContext
     {
         public required bool HotReloadEnabled { get; init; }
-
-        public IReporter Reporter { get; init; } = NullReporter.Singleton;
-
-        public ProcessSpec? ProcessSpec { get; init; } = default!;
+        public required IReporter Reporter { get; init; }
+        public required ProcessSpec ProcessSpec { get; init; }
+        public required LaunchSettingsProfile LaunchSettingsProfile { get; init; }
+        public bool SuppressMSBuildIncrementalism { get; init; }
+        public ProjectGraph? ProjectGraph { get; init; }
+        public string? TargetFramework { get; init; }
+        public IReadOnlyList<(string name, string value)>? BuildProperties { get; init; }
 
         public FileSet? FileSet { get; set; }
-
-        public int Iteration { get; set; } = -1;
-
         public FileItem? ChangedFile { get; set; }
-
+        public int Iteration { get; set; } = -1;
         public bool RequiresMSBuildRevaluation { get; set; }
-
-        public bool SuppressMSBuildIncrementalism { get; set; }
-
         public BrowserRefreshServer? BrowserRefreshServer { get; set; }
-
-        public LaunchSettingsProfile LaunchSettingsProfile { get; init; } = default!;
-
-        public ProjectGraph? ProjectGraph { get; set; }
-
-        public string? TargetFramework { get; init; }
-
-        public IReadOnlyList<(string name, string value)>? BuildProperties { get; init; }
     }
 }

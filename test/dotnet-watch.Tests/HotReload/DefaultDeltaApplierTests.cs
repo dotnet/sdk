@@ -25,7 +25,9 @@ namespace Microsoft.DotNet.Watcher.Tests
                 HotReloadEnabled = true,
                 ProcessSpec = process,
                 FileSet = fileSet,
-                Iteration = 0
+                Iteration = 0,
+                LaunchSettingsProfile = new(),
+                Reporter = NullReporter.Singleton,
             };
 
             // Act

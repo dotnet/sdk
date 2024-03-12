@@ -25,8 +25,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            Debug.Assert(context.ProcessSpec != null);
-
             while (!cancellationToken.IsCancellationRequested)
             {
                 var arguments = new List<string>()

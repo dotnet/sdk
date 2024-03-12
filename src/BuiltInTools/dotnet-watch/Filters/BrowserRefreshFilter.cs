@@ -24,8 +24,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            Debug.Assert(context.ProcessSpec != null);
-
             if (_options.SuppressBrowserRefresh)
             {
                 return;

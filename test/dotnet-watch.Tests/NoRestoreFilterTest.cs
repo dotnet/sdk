@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Tools.Internal;
+
 namespace Microsoft.DotNet.Watcher.Tools
 {
     public class NoRestoreFilterTest
@@ -19,7 +21,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec
                 {
                     Arguments = _arguments,
-                }
+                },
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
 
             // Act
@@ -42,7 +46,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec
                 {
                     Arguments = _arguments,
-                }
+                },
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
             await filter.ProcessAsync(context, default);
 
@@ -72,6 +78,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                     Arguments = _arguments,
                 },
                 SuppressMSBuildIncrementalism = true,
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
             await filter.ProcessAsync(context, default);
 
@@ -98,7 +106,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec
                 {
                     Arguments = _arguments,
-                }
+                },
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
             await filter.ProcessAsync(context, default);
 
@@ -125,7 +135,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec
                 {
                     Arguments = new[] { "run", "-f", ToolsetInfo.CurrentTargetFramework, "--", "foo=bar" },
-                }
+                },
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
             await filter.ProcessAsync(context, default);
 
@@ -152,7 +164,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec
                 {
                     Arguments = new[] { "test", "--filter SomeFilter" },
-                }
+                },
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
             await filter.ProcessAsync(context, default);
 
@@ -180,7 +194,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec
                 {
                     Arguments = arguments,
-                }
+                },
+                Reporter = NullReporter.Singleton,
+                LaunchSettingsProfile = new()
             };
             await filter.ProcessAsync(context, default);
 

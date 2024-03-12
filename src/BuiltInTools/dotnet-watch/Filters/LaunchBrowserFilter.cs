@@ -20,8 +20,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
         {
-            Debug.Assert(context.ProcessSpec != null);
-
             if (options.SuppressLaunchBrowser)
             {
                 return default;
@@ -131,7 +129,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private static bool CanLaunchBrowser(DotNetWatchContext context, out string? launchUrl)
         {
-            Debug.Assert(context.ProcessSpec != null);
             Debug.Assert(context.FileSet?.Project != null);
 
             launchUrl = null;

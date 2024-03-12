@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -18,6 +19,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask<bool> TryHandleFileChange(DotNetWatchContext context, FileItem file, CancellationToken cancellationToken)
         {
+            Debug.Assert(context.ProjectGraph != null);
+
             HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.ScopedCssHandler);
             if (!file.FilePath.EndsWith(".razor.css", StringComparison.Ordinal) &&
                 !file.FilePath.EndsWith(".cshtml.css", StringComparison.Ordinal))
@@ -27,7 +30,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             _reporter.Verbose($"Handling file change event for scoped css file {file.FilePath}.");
-            if (!RebuildScopedCss(context.ProjectGraph!, file.ProjectPath))
+            if (!RebuildScopedCss(context.ProjectGraph, file.ProjectPath))
             {
                 HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.ScopedCssHandler);
                 return false;
