@@ -1163,6 +1163,11 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
         <target state="translated">stackalloc nicht in Schleifen verwenden</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseThreadVolatileReadWriteCodeFixTitle">
+        <source>Replace obsolete call</source>
+        <target state="new">Replace obsolete call</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">Regelmäßige Aktivitäten mit einer höheren Frequenz belasten die CPU und beeinflussen energiesparende Leerlauftimer, mit denen die Anzeige sowie die Festplatten ausgeschaltet werden.</target>

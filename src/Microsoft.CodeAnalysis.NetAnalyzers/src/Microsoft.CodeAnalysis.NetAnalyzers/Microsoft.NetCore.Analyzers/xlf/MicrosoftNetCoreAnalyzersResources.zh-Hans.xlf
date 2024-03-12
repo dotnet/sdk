@@ -1163,6 +1163,11 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查 (C# 'is' operator/IL 'isi
         <target state="translated">不要循环使用 stackalloc</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseThreadVolatileReadWriteCodeFixTitle">
+        <source>Replace obsolete call</source>
+        <target state="new">Replace obsolete call</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">频率较高的定期活动会使 CPU 处于忙状态并且干扰具有节能功能(关闭显示器和硬盘)的空闲计时器。</target>

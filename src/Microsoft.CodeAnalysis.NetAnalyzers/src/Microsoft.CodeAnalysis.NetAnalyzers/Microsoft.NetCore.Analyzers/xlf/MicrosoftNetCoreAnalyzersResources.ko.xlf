@@ -1163,6 +1163,11 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <target state="translated">루프에서 stackalloc을 사용하면 안 됨</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseThreadVolatileReadWriteCodeFixTitle">
+        <source>Replace obsolete call</source>
+        <target state="new">Replace obsolete call</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">정기적인 작업의 실행 빈도가 높아지면 CPU 사용률도 높아져 디스플레이 및 하드 디스크를 끄는 절전 유휴 타이머에 방해가 됩니다.</target>

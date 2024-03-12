@@ -1163,6 +1163,11 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <target state="translated">No utilizar stackalloc en los bucles</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseThreadVolatileReadWriteCodeFixTitle">
+        <source>Replace obsolete call</source>
+        <target state="new">Replace obsolete call</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">Una actividad periódica más frecuente ocupará la CPU e interferirá con los temporizadores de inactividad para ahorro de energía que apagan el monitor y los discos duros.</target>

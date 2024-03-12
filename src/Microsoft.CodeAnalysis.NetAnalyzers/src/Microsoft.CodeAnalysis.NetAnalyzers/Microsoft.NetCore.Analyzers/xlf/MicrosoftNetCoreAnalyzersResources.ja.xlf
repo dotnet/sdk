@@ -1163,6 +1163,11 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">stackalloc はループ内で使用不可</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseThreadVolatileReadWriteCodeFixTitle">
+        <source>Replace obsolete call</source>
+        <target state="new">Replace obsolete call</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">頻度の高い定期的な動作は CPU のビジー状態を維持し、画面およびハード ディスクの電源を切る節電アイドル タイマーに影響します。</target>

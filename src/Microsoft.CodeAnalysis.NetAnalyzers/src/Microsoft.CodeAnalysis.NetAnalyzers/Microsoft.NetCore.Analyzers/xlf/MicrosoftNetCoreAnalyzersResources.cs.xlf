@@ -1163,6 +1163,11 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
         <target state="translated">Nepoužívat stackalloc ve smyčkách</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseThreadVolatileReadWriteCodeFixTitle">
+        <source>Replace obsolete call</source>
+        <target state="new">Replace obsolete call</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">Častější pravidelná aktivita bude zatěžovat procesor a ovlivňovat časovače neaktivity, které šetří energii a vypínají displej a pevné disky.</target>

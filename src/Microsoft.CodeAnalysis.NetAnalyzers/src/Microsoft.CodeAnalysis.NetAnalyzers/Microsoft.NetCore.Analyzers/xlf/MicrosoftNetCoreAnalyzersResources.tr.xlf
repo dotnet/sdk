@@ -1163,6 +1163,11 @@ Genel türlerde genişletme ve kullanıcı tanımlı dönüştürmeler desteklen
         <target state="translated">Döngüler içinde stackalloc kullanmayın</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotUseThreadVolatileReadWriteCodeFixTitle">
+        <source>Replace obsolete call</source>
+        <target state="new">Replace obsolete call</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
         <source>Higher-frequency periodic activity will keep the CPU busy and interfere with power-saving idle timers that turn off the display and hard disks.</source>
         <target state="translated">Daha yüksek frekanslı düzenli etkinlik, CPU’nun meşgul kalmasına neden olmasının yanı sıra ekranı ve sabit diskleri kapatarak güç tasarrufu sağlayan boşta süreölçerlerini etkileyebilir.</target>
