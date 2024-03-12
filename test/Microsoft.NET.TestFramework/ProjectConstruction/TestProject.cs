@@ -357,8 +357,9 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 var customAfterDirectoryBuildTargetsPath = new FileInfo(Path.Combine(targetFolder, "obj", "Custom.After.Directory.Build.targets"));
                 customAfterDirectoryBuildTargetsPath.Directory.Create();
 
-                propertyGroup.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", customAfterDirectoryBuildTargetsPath.FullName));
-
+                propertyGroup.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", $"$(CustomAfterDirectoryBuildTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
+                propertyGroup.Add(new XElement(ns + "CustomAfterMicrosoftCommonCrossTargetingTargets", $"$(CustomAfterMicrosoftCommonCrossTargetingTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
+                
                 var customAfterDirectoryBuildTargets = new XDocument(new XElement(ns + "Project"));
 
                 var target = new XElement(ns + "Target",
