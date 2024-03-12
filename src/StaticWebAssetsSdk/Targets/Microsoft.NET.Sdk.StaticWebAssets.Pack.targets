@@ -13,7 +13,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 <Project ToolsVersion="14.0">
 
   <UsingTask
-    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAsssetsPropsFile"
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsPropsFile"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
@@ -137,7 +137,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Generates a props file that goes in build\Microsoft.AspNetCore.StaticWebAssets.props
          and that describes the static web assets for the package.
      -->
-    <GenerateStaticWebAsssetsPropsFile
+    <GenerateStaticWebAssetsPropsFile
       StaticWebAssets="@(_PackStaticWebAssets)"
       TargetPropsFilePath="$(_GeneratedStaticWebAssetsPropsFile)" />
 
