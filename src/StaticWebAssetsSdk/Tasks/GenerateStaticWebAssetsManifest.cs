@@ -4,6 +4,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Build.Framework;
+using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -40,6 +41,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public ITaskItem[] Assets { get; set; }
 
         [Required]
+        public ITaskItem[] Endpoints { get; set; }
+
+        [Required]
         public string ManifestPath { get; set; }
 
         public override bool Execute()
@@ -47,6 +51,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             try
             {
                 var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem);
+
+                var endpoints = Endpoints.OrderBy(a => a.ItemSpec).Select(StaticWebAssetEndpoint.FromTaskItem).ToArray();
 
                 var assetsByTargetPath = assets.GroupBy(a => a.ComputeTargetPath("", '/'), StringComparer.OrdinalIgnoreCase);
                 foreach (var group in assetsByTargetPath)
@@ -75,7 +81,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         ManifestType,
                         referencedProjectsConfiguration,
                         discoveryPatterns,
-                        assets.ToArray()));
+                        assets.ToArray(),
+                        endpoints));
             }
             catch (Exception ex)
             {
