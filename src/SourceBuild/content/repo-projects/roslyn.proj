@@ -12,7 +12,6 @@
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
 
     <!-- roslyn by default builds with desktop msbuild (xcopy-msbuild) -->
-    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)msbuildEngine dotnet</BuildArgs>
     <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
     <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
     <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSkipApplyOptimizationData true</BuildArgs>
@@ -29,13 +28,16 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="command-line-api" />
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
   <ItemGroup>
-    <SourceBuiltSdkOverride Include="@(WindowsDesktopSdkOverride)" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+    <SourceBuiltSdkOverride Include="@(WindowsDesktopSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   </ItemGroup>
 
 </Project>

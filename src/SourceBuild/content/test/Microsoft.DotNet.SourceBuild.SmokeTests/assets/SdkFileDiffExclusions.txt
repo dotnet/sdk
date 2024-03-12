@@ -61,27 +61,12 @@ msft,./sdk/x.y.z/Extensions/dump/*
 # https://github.com/dotnet/msbuild/issues/9213
 msft,./sdk/x.y.z/**/System.Windows.Extensions.dll
 msft,./sdk/x.y.z/**/System.Security.Permissions.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Diagnostics.EventLog.dll
 
-# netfx runtimes for dotnet-watch - https://github.com/dotnet/source-build/issues/3285
-msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.Elfie.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.Win32.SystemEvents.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/*
-msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Configuration.ConfigurationManager.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Drawing.Common.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Cryptography.ProtectedData.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Security.Permissions.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Windows.Extensions.dll
-
-# netfx runtimes for dotnet-format - https://github.com/dotnet/source-build/issues/3509
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.Elfie.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Win32.SystemEvents.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/runtimes/*
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Configuration.ConfigurationManager.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Drawing.Common.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.ProtectedData.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll
-msft,./sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll
+# Exclude format and watch tools due to too much noise
+msft,./sdk/x.y.z/DotnetTools/dotnet-format/**
+sb,./sdk/x.y.z/DotnetTools/dotnet-format/**
+msft,./sdk/x.y.z/DotnetTools/dotnet-watch/**
+sb,./sdk/x.y.z/DotnetTools/dotnet-watch/**
 
 # netfx runtimes for fsharp - https://github.com/dotnet/source-build/issues/3290
 msft,./sdk/x.y.z/FSharp/Microsoft.VisualStudio.Setup.Configuration.Interop.dll
@@ -93,7 +78,14 @@ msft,./sdk/x.y.z/FSharp/runtimes/win/lib/netx.y/System.Security.Cryptography.Pro
 msft,./sdk/x.y.z/runtimes/win/lib/netx.y/Microsoft.Win32.SystemEvents.dll
 msft,./sdk/x.y.z/runtimes/win/lib/netx.y/System.Drawing.Common.dll
 
-# runtime components in roslyn layout - https://github.com/dotnet/source-build/issues/3286
-# Expected - build is filtering components present in target platform.
-msft,./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll
-msft,./sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll
+# runtime components in roslyn layout - https://github.com/dotnet/source-build/issues/4016
+sb,./sdk/x.y.z/Roslyn/bincore/System.Collections.Immutable.dll
+sb,./sdk/x.y.z/Roslyn/bincore/System.Reflection.Metadata.dll
+
+# https://github.com/dotnet/source-build/issues/4079
+sb,./sdk/x.y.z/*/Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll
+sb,./sdk/x.y.z/*/Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll
+sb,./sdk/x.y.z/*/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
+sb,./sdk/x.y.z/*/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
+sb,./sdk/x.y.z/*/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
+msft,./sdk/x.y.z/Extensions/*/*

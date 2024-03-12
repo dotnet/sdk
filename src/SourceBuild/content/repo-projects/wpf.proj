@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <BuildWithDesktopMSBuild>true</BuildWithDesktopMSBuild>
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildArgs>

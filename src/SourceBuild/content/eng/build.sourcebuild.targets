@@ -1,27 +1,12 @@
 <Project>
 
   <PropertyGroup>
-    <SkipErrorOnPrebuilts>true</SkipErrorOnPrebuilts>
     <SmokeTestsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'test', 'Microsoft.DotNet.SourceBuild.SmokeTests'))</SmokeTestsDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnablePoison)' == 'true'">
     <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
   </PropertyGroup>
-
-  <!-- Copies the output assets of the builds to the output path. -->
-  <Target Name="CopyBinariesToBinFolder"
-          AfterTargets="Build">
-    <ItemGroup>
-      <BinariesToCopy Include="$(SourceBuiltAssetsDir)*.*"
-                      Exclude="$(SourceBuiltAssetsDir)*.nupkg;$(SourceBuiltAssetsDir)*.requires_nupkg_signing" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(BinariesToCopy)"
-          DestinationFolder="$(SharedOutputPath)"
-          SkipUnchangedFiles="true"
-          Condition="'@(BinariesToCopy)'!=''" />
-  </Target>
 
   <!-- After building, generate a prebuilt usage report. -->
   <Target Name="ReportPrebuiltUsage"
@@ -30,45 +15,17 @@
     <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj" Targets="WritePrebuiltUsageData;ReportPrebuiltUsage" />
   </Target>
 
-  <Target Name="DiscoverSymbolsTarballs"
-          AfterTargets="Build">
-    <ItemGroup>
-      <SymbolsTarball Include="$(SharedOutputPath)Symbols.*$(ArchiveExtension)" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="ExtractSymbolsTarballs"
-          AfterTargets="Build"
-          DependsOnTargets="DiscoverSymbolsTarballs"
-          Outputs="%(SymbolsTarball.Identity)">
-
-    <PropertyGroup>
-      <Filename>$([System.IO.Path]::GetFileName('%(SymbolsTarball.Identity)'))</Filename>
-      <RepositoryName>$(Filename.Split('.')[1])</RepositoryName>
-      <UnifiedSymbolsLayout>$(ArtifactsTmpDir)Symbols</UnifiedSymbolsLayout>
-      <DestinationFolder>$(UnifiedSymbolsLayout)/$(RepositoryName)</DestinationFolder>
-    </PropertyGroup>
-
-    <MakeDir Directories="$(DestinationFolder)" />
-    <Exec Command="tar -xzf %(SymbolsTarball.Identity) -C $(DestinationFolder)"
-          WorkingDirectory="$(SymbolsRoot)" />
-
-    <Delete Files="%(SymbolsTarball.Identity)" />
-  </Target>
-
   <!-- After building, repackage symbols into a single tarball. -->
   <Target Name="RepackageSymbols"
           AfterTargets="Build"
-          DependsOnTargets="
-            DetermineSourceBuiltSdkVersion;
-            DiscoverSymbolsTarballs;
-            ExtractSymbolsTarballs">
+          DependsOnTargets="DetermineSourceBuiltSdkVersion">
     <PropertyGroup>
-      <UnifiedSymbolsTarball>$(SharedOutputPath)dotnet-symbols-all-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</UnifiedSymbolsTarball>
+      <UnifiedSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-all-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</UnifiedSymbolsTarball>
     </PropertyGroup>
 
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(UnifiedSymbolsTarball)'))" />
     <Exec Command="tar --numeric-owner -czf $(UnifiedSymbolsTarball) *"
-          WorkingDirectory="$(UnifiedSymbolsLayout)" />
+          WorkingDirectory="$(IntermediateSymbolsRootDir)" />
 
     <Message Importance="High" Text="Packaged all symbols in '$(UnifiedSymbolsTarball)'" />
   </Target>
@@ -78,34 +35,30 @@
   <Target Name="CreateSdkSymbolsTarball"
           AfterTargets="Build"
           DependsOnTargets="RepackageSymbols">
-    <ItemGroup>
-      <SdkTarballItem Include="$(SharedOutputPath)dotnet-sdk-*$(ArchiveExtension)" />
-    </ItemGroup>
-
     <PropertyGroup>
-      <SdkSymbolsLayout>$(ArtifactsTmpDir)SdkSymbols</SdkSymbolsLayout>
-      <SdkSymbolsTarball>$(SharedOutputPath)dotnet-symbols-sdk-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
-      <SdkLayout>$(ArtifactsTmpDir)Sdk</SdkLayout>
+      <SdkSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-sdk-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
+
+      <IntermediateSdkSymbolsLayout>$(BaseIntermediateOutputPath)SdkSymbols</IntermediateSdkSymbolsLayout>
+      <IntermediateSdkLayout>$(BaseIntermediateOutputPath)Sdk</IntermediateSdkLayout>
       <SdkTarball>%(SdkTarballItem.Identity)</SdkTarball>
     </PropertyGroup>
 
-    <MakeDir Directories="$(SdkLayout)" />
-    <Exec Command="tar -xzf $(SdkTarball) -C $(SdkLayout)"
-          WorkingDirectory="$(SharedOutputPath)" />
+    <MakeDir Directories="$(IntermediateSdkLayout)" />
+    <Exec Command="tar -xzf $(SdkTarball) -C $(IntermediateSdkLayout)" />
 
-    <CreateSdkSymbolsLayout SdkLayoutPath="$(SdkLayout)"
-                            AllSymbolsPath="$(UnifiedSymbolsLayout)"
-                            SdkSymbolsLayoutPath="$(SdkSymbolsLayout)"
+    <CreateSdkSymbolsLayout SdkLayoutPath="$(IntermediateSdkLayout)"
+                            AllSymbolsPath="$(IntermediateSymbolsRootDir)"
+                            SdkSymbolsLayoutPath="$(IntermediateSdkSymbolsLayout)"
                             FailOnMissingPDBs="false" />
 
     <Exec Command="tar --numeric-owner -czf $(SdkSymbolsTarball) *"
-          WorkingDirectory="$(SdkSymbolsLayout)" />
+          WorkingDirectory="$(IntermediateSdkSymbolsLayout)" />
 
     <Message Importance="High" Text="Packaged sdk symbols in '$(SdkSymbolsTarball)'" />
 
-    <RemoveDir Directories="$(UnifiedSymbolsLayout)" />
-    <RemoveDir Directories="$(SdkSymbolsLayout)" />
-    <RemoveDir Directories="$(SdkLayout)" />
+    <RemoveDir Directories="$(IntermediateSymbolsRootDir)" />
+    <RemoveDir Directories="$(IntermediateSdkSymbolsLayout)" />
+    <RemoveDir Directories="$(IntermediateSdkLayout)" />
   </Target>
 
   <!--
@@ -126,21 +79,22 @@
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ReportPoisonUsage.complete" >
     <ItemGroup>
-      <FinalCliTarball Include="$(SharedOutputPath)**/*$(ArchiveExtension)" />
+      <!-- Exclude the Private.SourceBuilt.Artifacts archive from poison usage scan. -->
+      <PoisonFileToCheck Include="$(ArtifactsAssetsDir)*$(ArchiveExtension)" />
+      <PoisonFileToCheck Remove="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName)*" />
+      <!-- Include shipping nuget packages. -->
+      <PoisonFileToCheck Include="$(ArtifactsShippingPackagesDir)*.nupkg" />
+      <!-- Add and mark SBRP packages to validate that they have the correct poison attribute. -->
+      <PoisonFileToCheck Include="$(ReferencePackagesDir)**\*.nupkg" IsSourceBuildReferencePackage="true" />
     </ItemGroup>
 
-    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Checking @(FinalCliTarball) for poisoned files." />
+    <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Checking @(PoisonFileToCheck) for poisoned files." />
 
-    <ItemGroup>
-      <NonShippingPackagesList Include="$(PackageListsDir)**/$(NonShippingPackagesListPrefix)*" />
-    </ItemGroup>
-
-    <CheckForPoison FilesToCheck="@(FinalCliTarball)"
+    <CheckForPoison FilesToCheck="@(PoisonFileToCheck)"
                     ProjectDirPath="$(RepoRoot)"
                     HashCatalogFilePath="$(PoisonReportDataFile)"
                     MarkerFileName="$(PoisonMarkerFile)"
-                    PoisonReportOutputFilePath="$(PoisonUsageReportFile)"
-                    NonShippingPackagesListFiles="@(NonShippingPackagesList)" />
+                    PoisonReportOutputFilePath="$(PoisonUsageReportFile)" />
 
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done checking for poison." />
 
@@ -170,8 +124,8 @@
 
   <Target Name="RunSmokeTest">
     <ItemGroup>
-      <SdkTarballItem Include="$(SharedOutputPath)**/dotnet-sdk*$(ArchiveExtension)" />
-      <SourceBuiltArtifactsItem Include="$(SharedOutputPath)**/$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)" />
+      <SdkTarballItem Include="$(ArtifactsAssetsDir)dotnet-sdk*$(ArchiveExtension)" />
+      <SourceBuiltArtifactsItem Include="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -182,7 +136,8 @@
     </PropertyGroup>
 
     <!-- Multiple loggers are specified so that results are captured in trx and pipelines can fail with AzDO pipeline warnings -->
-    <Exec Command="$(DotnetTool) test $(SmokeTestsDir) --logger:trx --logger:'console;verbosity=$(SmokeTestConsoleVerbosity)' -c $(Configuration)"
+    <!-- Workaround https://github.com/dotnet/source-build/issues/4003 by disabling VSTestUseMSBuildOutput -->
+    <Exec Command="$(DotnetTool) test $(SmokeTestsDir) --logger:trx --logger:'console;verbosity=$(SmokeTestConsoleVerbosity)' -c $(Configuration) -p:VSTestUseMSBuildOutput=false"
           IgnoreStandardErrorWarningFormat="true"
           EnvironmentVariables="
             SMOKE_TESTS_SDK_TARBALL_PATH=$(SdkTarballPath);
@@ -217,17 +172,18 @@
           DependsOnTargets="DetermineSourceBuiltSdkVersion"
           Condition="'@(SmokeTestsPrereqs->Count())' != '0'">
     <PropertyGroup>
-      <SmokeTestPrereqsTarballName>$(SharedOutputPath)dotnet-smoke-test-prereqs.$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</SmokeTestPrereqsTarballName>
+      <SmokeTestPrereqsTarball>$(ArtifactsAssetsDir)dotnet-smoke-test-prereqs.$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</SmokeTestPrereqsTarball>
       <SmokeTestsPrereqPackagesDir>$(SmokeTestsArtifactsDir)prereq-packages/</SmokeTestsPrereqPackagesDir>
     </PropertyGroup>
 
     <Copy SourceFiles="@(SmokeTestsPrereqs)"
           DestinationFolder="$(SmokeTestsPrereqPackagesDir)" />
 
-    <Exec Command="tar --numeric-owner -czf $(SmokeTestPrereqsTarballName) ."
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(SmokeTestPrereqsTarball)'))" />
+    <Exec Command="tar --numeric-owner -czf $(SmokeTestPrereqsTarball) ."
           WorkingDirectory="$(SmokeTestsPrereqPackagesDir)"/>
 
-    <Message Importance="High" Text="Packaged smoke-test prereqs in '$(SmokeTestPrereqsTarballName)'" />
+    <Message Importance="High" Text="Packaged smoke-test prereqs in '$(SmokeTestPrereqsTarball)'" />
   </Target>
 
   <Target Name="CreatePrebuiltsTarball"
@@ -250,13 +206,14 @@
           DependsOnTargets="DetermineSourceBuiltSdkVersion"
           Condition="'@(PrebuiltFile->Count())' != '0'">
     <PropertyGroup>
-      <TarballFilePath>$(SharedOutputPath)$(SourceBuiltPrebuiltsTarballName).$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</TarballFilePath>
-      <TarballWorkingDir>$(ResultingPrebuiltPackagesDir)</TarballWorkingDir>
+      <PrebuiltsTarball>$(ArtifactsAssetsDir)$(SourceBuiltPrebuiltsTarballName).$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</PrebuiltsTarball>
+      <PrebuiltsTarballWorkingDir>$(ResultingPrebuiltPackagesDir)</PrebuiltsTarballWorkingDir>
     </PropertyGroup>
 
-    <Exec Command="tar --numeric-owner -zcf $(TarballFilePath) -C $(TarballWorkingDir) ." />
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(PrebuiltsTarball)'))" />
+    <Exec Command="tar --numeric-owner -zcf $(PrebuiltsTarball) -C $(PrebuiltsTarballWorkingDir) ." />
 
-    <Message Text="Tarball '$(TarballFilePath)' was successfully created from '$(TarballWorkingDir)'" Importance="High" />
+    <Message Text="Tarball '$(PrebuiltsTarball)' was successfully created from '$(PrebuiltsTarballWorkingDir)'" Importance="High" />
   </Target>
 
   <Target Name="ErrorOnPrebuilts"

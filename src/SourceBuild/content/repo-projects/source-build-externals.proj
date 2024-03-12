@@ -7,7 +7,12 @@
 
       Modified files make developer experience worse, as they would need to be manually reverted.
     -->
-    <BuildArgs>$(BuildArgs) /p:UseInnerClone=true</BuildArgs>
+    <UseInnerClone>true</UseInnerClone>
   </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="source-build-reference-packages" />
+  </ItemGroup>
 
 </Project>

@@ -1,8 +1,9 @@
 <Project>
 
   <PropertyGroup>
-    <_SuppressSdkImports Condition="'$(DotNetBuildFromSource)' == 'true'">true</_SuppressSdkImports>
     <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+    <DotNetBuildOrchestrator>true</DotNetBuildOrchestrator>
+    <RootRepo>dotnet</RootRepo>
   </PropertyGroup>
 
   <PropertyGroup Label="CalculateTargetOS">
@@ -14,27 +15,35 @@
     <BuildOS Condition="$([MSBuild]::IsOSPlatform('SOLARIS'))">solaris</BuildOS>
     <BuildOS Condition="$([MSBuild]::IsOSPlatform('HAIKU'))">haiku</BuildOS>
     <BuildOS Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">windows</BuildOS>
-    <HostOS Condition="'$(HostOS)' == ''">$(BuildOS)</HostOS>
     <TargetOS Condition="'$(TargetOS)' == ''">$(BuildOS)</TargetOS>
+    <HostOS Condition="'$(HostOS)' == ''">$(TargetOS)</HostOS>
   </PropertyGroup>
 
+  <!-- This is a list of cases where we aren't producing a whole SDK, just a runtime. This list should be kept in sync with https://github.com/dotnet/runtime/blob/main/eng/SourceBuild.props#L26 -->
+  <PropertyGroup Label="ShortStacks">
+    <ShortStack Condition="'$(TargetOS)' == 'wasi'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'browser'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'ios'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'iossimulator'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'tvos'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'tvossimulator'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'maccatalyst'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'android'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'linux-bionic'">true</ShortStack>
+    <!-- Short stack builds stop at runtime, not the whole SDK -->
+    <RootRepo Condition="'$(ShortStack)' == 'true'">runtime</RootRepo>
+  </PropertyGroup>
+
+  <!-- See https://github.com/dotnet/arcade/blob/main/Documentation/UnifiedBuild/Unified-Build-Controls.md#output-controls for 
+       control set definition. -->
   <PropertyGroup Label="CalculateArch">
+    <!-- Build architecture is what we are building on. -->
     <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant)</BuildArchitecture>
-    <HostArchitecture Condition="'$(HostArchitecture)' == ''">$(BuildArchitecture)</HostArchitecture>
+    <!-- The target architecture is the what the customer is targeting their outputs to run on. -->
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">$(BuildArchitecture)</TargetArchitecture>
+    <!-- The host architecture is the what the customer will build on. Much of the time, Host==Target. -->
+    <HostArchitecture Condition="'$(HostArchitecture)' == ''">$(TargetArchitecture)</HostArchitecture>
 
-    <!-- When building on non-x64 architectures, there may be no cross-compilation available, select a target architecture that is the same as the build. -->
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'arm'">arm</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'armv6'">armv6</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'armel'">armel</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'arm64'">arm64</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'loongarch64'">loongarch64</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 's390x'">s390x</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' and '$(BuildArchitecture)' == 'ppc64le'">ppc64le</TargetArchitecture>
-
-    <TargetArchitecture Condition="'$(OverrideTargetRid)' != ''">$(OverrideTargetRid.Substring($(OverrideTargetRid.LastIndexOf('-'))).TrimStart('-'))</TargetArchitecture>
-    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
-
-    <Platform Condition="'$(Platform)' == '' and '$(InferPlatformFromTargetArchitecture)' == 'true'">$(TargetArchitecture)</Platform>
     <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
   </PropertyGroup>
 
@@ -43,8 +52,13 @@
     <BuildRid>$(__DistroRid)</BuildRid>
     <BuildRid Condition="'$(BuildRid)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</BuildRid>
 
-    <HostRid Condition="'$(HostRid)' == ''">$(BuildRid)</HostRid>
-    <TargetRid Condition="'$(TargetRid)' == ''">$(BuildRid)</TargetRid>
+    <TargetRid Condition="'$(TargetRid)' == ''">$(BuildRid.Substring(0, $(BuildRid.LastIndexOf('-'))))-$(TargetArchitecture)</TargetRid>
+    <HostRid Condition="'$(HostRid)' == ''">$(TargetRid)</HostRid>
+
+    <!-- Source-only builds are non portable, except for cross-builds.
+         Source-only cross-builds default to the portable configuration so the resulting SDK works on a wider range of distros. -->
+    <PortableBuild Condition="'$(PortableBuild)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(BuildArchitecture)' == '$(TargetArchitecture)'">false</PortableBuild>
+    <PortableBuild Condition="'$(PortableBuild)' == ''">true</PortableBuild>
 
     <PortableRid Condition="'$(__PortableTargetOS)' != ''">$(__PortableTargetOS)-$(TargetArchitecture)</PortableRid>
     <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'freebsd'">freebsd-$(TargetArchitecture)</PortableRid>
@@ -54,13 +68,15 @@
     <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</PortableRid>
 
     <TargetRid Condition="'$(PortableBuild)' == 'true' and '$(PortableRid)' != ''">$(PortableRid)</TargetRid>
+    <TargetRid Condition="'$(ShortStack)' == 'true' and '$(TargetOS)' != 'windows'">$(TargetOS)-$(TargetArchitecture)</TargetRid>
+    <TargetRid Condition="'$(ShortStack)' == 'true' and '$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</TargetRid>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
 
   <!-- Init basic Arcade props, if the project importing this file doesn't use Arcade.
        Keep in sync with props/targets in the Arcade.Sdk. -->
-  <PropertyGroup Condition="'$(_SuppressSdkImports)' == 'true' or '$(SkipArcadeSdkImport)' == 'true'">
+  <PropertyGroup Condition="'$(SkipArcadeSdkImport)' == 'true'">
     <!-- RepoLayout.props -->
     <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' != ''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)'))</NuGetPackageRoot>
     <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(NUGET_PACKAGES)' != ''">$([MSBuild]::NormalizeDirectory('$(NUGET_PACKAGES)'))</NuGetPackageRoot>
@@ -82,6 +98,9 @@
     <ArtifactsObjDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'obj'))</ArtifactsObjDir>
     <ArtifactsBinDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'bin'))</ArtifactsBinDir>
     <ArtifactsLogDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'log', '$(Configuration)'))</ArtifactsLogDir>
+    <ArtifactsPackagesDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'packages', '$(Configuration)'))</ArtifactsPackagesDir>
+    <ArtifactsNonShippingPackagesDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsPackagesDir)', 'NonShipping'))</ArtifactsNonShippingPackagesDir>
+    <ArtifactsShippingPackagesDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsPackagesDir)', 'Shipping'))</ArtifactsShippingPackagesDir>
     <RepositoryEngineeringDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'eng'))</RepositoryEngineeringDir>
 
     <!-- ProjectLayout.props -->
@@ -98,11 +117,15 @@
 
     <!-- TargetFrameworkDefaults.props -->
     <NetCurrent>net9.0</NetCurrent>
+
+    <!-- Set up the build phase since the orchestrator switch is passed.
+         From RepoDefaults.props. -->
+    <DotNetBuild>true</DotNetBuild>
+    <DotNetBuildPhase>Orchestrator</DotNetBuildPhase>
   </PropertyGroup>
 
   <!-- Manually import the Versions.props file when the Arcade SDK isn't used. -->
-  <Import Project="$(RepositoryEngineeringDir)Versions.props"
-          Condition="'$(_SuppressSdkImports)' == 'true' or '$(SkipArcadeSdkImport)' == 'true'" />
+  <Import Project="$(RepositoryEngineeringDir)Versions.props" Condition="'$(SkipArcadeSdkImport)' == 'true'" />
 
   <PropertyGroup>
     <!-- We have no projects targeting multiple frameworks, so don't include in output path. -->
@@ -111,10 +134,8 @@
     <IsShipping>false</IsShipping>
     <!-- It's not unusual to build with a preview SDK -->
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
-    <!-- Builds from the VMR are by definition vertical builds. -->
-    <DotNetBuildVertical Condition="'$(DotNetBuildVertical)' == ''">true</DotNetBuildVertical>
-    <!-- By default, the VMR builds with online sources. -->
-    <BuildWithOnlineSources Condition="'$(BuildWithOnlineSources)' == '' and '$(DotNetBuildVertical)' == 'true'">true</BuildWithOnlineSources>
+    <!-- By default, the VMR builds with online sources when not building source-only. -->
+    <DotNetBuildWithOnlineFeeds Condition="'$(DotNetBuildWithOnlineFeeds)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</DotNetBuildWithOnlineFeeds>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -125,7 +146,6 @@
     <EnableDefaultItems Condition="'$(MSBuildProjectExtension)' == '.proj'">false</EnableDefaultItems>
 
     <LogVerbosity Condition="'$(LogVerbosity)'==''">minimal</LogVerbosity>
-    <BuildInParallel Condition="'$(BuildInParallel)'==''">false</BuildInParallel>
 
     <ShellExtension Condition="'$(BuildOS)' == 'windows'">.cmd</ShellExtension>
     <ShellExtension Condition="'$(BuildOS)' != 'windows'">.sh</ShellExtension>
@@ -137,8 +157,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <RootRepo>dotnet</RootRepo>
-
     <SrcDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'src'))</SrcDir>
     <ToolsDir>$([MSBuild]::NormalizeDirectory('$(RepositoryEngineeringDir)', 'tools'))</ToolsDir>
     <TasksDir>$([MSBuild]::NormalizeDirectory('$(ToolsDir)', 'tasks'))</TasksDir>
@@ -148,18 +166,14 @@
     <KeysDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'keys'))</KeysDir>
     <PrereqsPackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'packages'))</PrereqsPackagesDir>
 
-    <!-- When SB mode, the initial arcade is unzipped to a the "ArcadeBootStrap" dir.
+    <!-- When SB mode, the initial arcade is unzipped to the "ArcadeBootstrapPackage" dir.
          When running in VBPOC, the bootstrap package is the arcade restored at the beginning of the build. -->
-    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildFromSource)' == 'true'">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'ArcadeBootstrapPackage'))</ArcadeBootstrapPackageDir>
-    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildFromSource)' != 'true'">$(NuGetPackageRoot)</ArcadeBootstrapPackageDir>
+    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildSourceOnly)' == 'true'">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'ArcadeBootstrapPackage'))</ArcadeBootstrapPackageDir>
+    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(NuGetPackageRoot)</ArcadeBootstrapPackageDir>
 
-    <!-- Shared output and intermediate output path folders that are architecture and configuration specific. -->
-    <SharedOutputPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', '$(TargetArchitecture)', '$(Configuration)'))</SharedOutputPath>
-    <SharedIntermediateOutputPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', '$(TargetArchitecture)', '$(Configuration)'))</SharedIntermediateOutputPath>
-
-    <SourceBuiltBlobFeedDir>$([MSBuild]::NormalizeDirectory('$(SharedIntermediateOutputPath)', 'blob-feed'))</SourceBuiltBlobFeedDir>
-    <SourceBuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(SourceBuiltBlobFeedDir)', 'packages'))</SourceBuiltPackagesPath>
-    <SourceBuiltAssetsDir>$([MSBuild]::NormalizeDirectory('$(SourceBuiltBlobFeedDir)', 'assets'))</SourceBuiltAssetsDir>
+    <VSMSBuildSdkResolversDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'toolset', 'VSSdkResolvers'))</VSMSBuildSdkResolversDir>
+    <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>
+    <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
 
     <PrebuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'prebuilt'))</PrebuiltPackagesPath>
     <PreviouslyRestoredPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'previouslyRestored'))</PreviouslyRestoredPackagesPath>
@@ -177,6 +191,7 @@
     <NonShippingPackagesListPrefix>NonShipping.Packages.</NonShippingPackagesListPrefix>
 
     <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
+    <ReferenceAssetsDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference-assets'))</ReferenceAssetsDir>
     <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
     <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>
 
@@ -187,6 +202,7 @@
   <PropertyGroup>
     <XPlatSourceBuildTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.XPlat', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.XPlat.dll'))</XPlatSourceBuildTasksAssembly>
     <LeakDetectionTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.LeakDetection', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.dll'))</LeakDetectionTasksAssembly>
+    <SdkArchiveDiffTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff.dll'))</SdkArchiveDiffTasksAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnablePoison)' == 'true'">
