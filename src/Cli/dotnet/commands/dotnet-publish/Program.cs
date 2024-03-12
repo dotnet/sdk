@@ -33,7 +33,6 @@ namespace Microsoft.DotNet.Tools.Publish
             var msbuildArgs = new List<string>()
             {
                 "-target:Publish",
-                "--property:_IsPublishing=true" // This property will not hold true for MSBuild /t:Publish or in VS.
             };
 
             IEnumerable<string> slnOrProjectArgs = parseResult.GetValue(PublishCommandParser.SlnOrProjectArgument);

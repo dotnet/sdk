@@ -79,7 +79,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 
   <!-- Edit SelfContained to match the value of PublishSelfContained if we are publishing.
-       This Won't affect t:/Publish (because of _IsPublishing), and also won't override a global SelfContained property.-->
+       This won't override a global SelfContained property.-->
   <PropertyGroup Condition="'$(_IsPublishing)' == 'true' and ('$(PublishSelfContained)' == 'true' or '$(PublishSelfContained)' == 'false')">
     <SelfContained>$(PublishSelfContained)</SelfContained>
   </PropertyGroup>

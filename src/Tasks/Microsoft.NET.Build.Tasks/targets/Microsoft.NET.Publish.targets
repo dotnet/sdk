@@ -142,12 +142,20 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <Target Name="_PublishBuildAlternative"
-          Condition="'$(NoBuild)' != 'true'"
-          DependsOnTargets="Build;$(_CorePublishTargets)" />
+          Condition="'$(NoBuild)' != 'true'">
+    <MSBuild
+      Projects="$(MSBuildProjectFile)"
+      Targets="Build;$(_CorePublishTargets)"
+      Properties="_IsPublishing=true" />
+  </Target>
 
   <Target Name="_PublishNoBuildAlternative"
-          Condition="'$(NoBuild)' == 'true'"
-          DependsOnTargets="$(_PublishNoBuildAlternativeDependsOn)" />
+          Condition="'$(NoBuild)' == 'true'">
+    <MSBuild
+      Projects="$(MSBuildProjectFile)"
+      Targets="$(_PublishNoBuildAlternativeDependsOn)"
+      Properties="_IsPublishing=true" />
+  </Target>
 
   <Target Name="Publish"
           Condition="$(IsPublishable) == 'true'"
