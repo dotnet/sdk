@@ -13,14 +13,14 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly IFileSetFactory _fileSetFactory;
         private readonly ProcessRunner _processRunner;
         private readonly IReporter _reporter;
-        private readonly string _muxerPath;
+        private readonly EnvironmentOptions _options;
 
-        public DotNetBuildFilter(IFileSetFactory fileSetFactory, ProcessRunner processRunner, IReporter reporter, string muxerPath)
+        public DotNetBuildFilter(EnvironmentOptions options, IFileSetFactory fileSetFactory, ProcessRunner processRunner, IReporter reporter)
         {
             _fileSetFactory = fileSetFactory;
             _processRunner = processRunner;
             _reporter = reporter;
-            _muxerPath = muxerPath;
+            _options = options;
         }
 
         public async ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                 var processSpec = new ProcessSpec
                 {
-                    Executable = _muxerPath,
+                    Executable = _options.MuxerPath,
                     Arguments = arguments,
                     WorkingDirectory = context.ProcessSpec.WorkingDirectory,
                 };

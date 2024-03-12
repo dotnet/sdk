@@ -15,8 +15,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         private const string WatchTargetsFileName = "DotNetWatch.targets";
 
         private readonly IReporter _reporter;
-        private readonly DotNetWatchOptions _dotNetWatchOptions;
-        private readonly string _muxerPath;
+        private readonly EnvironmentOptions _environmentOptions;
         private readonly string _projectFile;
         private readonly OutputSink _outputSink;
         private readonly ProcessRunner _processRunner;
@@ -24,9 +23,8 @@ namespace Microsoft.DotNet.Watcher.Internal
         private readonly IReadOnlyList<string> _buildFlags;
 
         public MsBuildFileSetFactory(
-            DotNetWatchOptions dotNetWatchOptions,
+            EnvironmentOptions environmentOptions,
             IReporter reporter,
-            string muxerPath,
             string projectFile,
             string? targetFramework,
             IReadOnlyList<(string, string)>? buildProperties,
@@ -35,8 +33,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             bool trace)
         {
             _reporter = reporter;
-            _dotNetWatchOptions = dotNetWatchOptions;
-            _muxerPath = muxerPath;
+            _environmentOptions = environmentOptions;
             _projectFile = projectFile;
             _outputSink = outputSink ?? new OutputSink();
             _processRunner = new ProcessRunner(reporter);
@@ -65,7 +62,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                         $"/p:_DotNetWatchListFile={watchList}",
                     };
 
-                    if (_dotNetWatchOptions.SuppressHandlingStaticContentFiles)
+                    if (_environmentOptions.SuppressHandlingStaticContentFiles)
                     {
                         arguments.Add("/p:DotNetWatchContentFiles=false");
                     }
@@ -74,7 +71,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                     var processSpec = new ProcessSpec
                     {
-                        Executable = _muxerPath,
+                        Executable = _environmentOptions.MuxerPath,
                         WorkingDirectory = projectDir,
                         Arguments = arguments,
                         OutputCapture = capture

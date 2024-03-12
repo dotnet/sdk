@@ -12,16 +12,14 @@ namespace Microsoft.DotNet.Watcher.Tools
     {
         // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
         private static readonly Version s_minimumSupportedVersion = new(6, 0);
-        private readonly DotNetWatchOptions _options;
+        private readonly EnvironmentOptions _options;
         private readonly IReporter _reporter;
-        private readonly string _muxerPath;
         private BrowserRefreshServer? _refreshServer;
 
-        public BrowserRefreshFilter(DotNetWatchOptions options, IReporter reporter, string muxerPath)
+        public BrowserRefreshFilter(EnvironmentOptions options, IReporter reporter)
         {
             _options = options;
             _reporter = reporter;
-            _muxerPath = muxerPath;
         }
 
         public async ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
@@ -57,7 +55,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     return;
                 }
 
-                _refreshServer = new BrowserRefreshServer(_options, context.Reporter, _muxerPath);
+                _refreshServer = new BrowserRefreshServer(_options, context.Reporter);
                 context.BrowserRefreshServer = _refreshServer;
                 var serverUrls = string.Join(',', await _refreshServer.StartAsync(cancellationToken));
                 context.Reporter.Verbose($"Refresh server running at {serverUrls}.");

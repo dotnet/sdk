@@ -22,10 +22,10 @@ namespace Microsoft.DotNet.Watcher.Tests
                 .Path;
 
             var reporter = new ConsoleReporter(console, verbose: true, quiet: false, suppressEmojis: false);
-            using var app = new Program(console, reporter, workingDirectory: testAsset, muxerPath: "", suppressEmojis: false);
-            var options = CommandLineOptions.Parse(["run"], reporter, out var errorCode);
+            var options = CommandLineOptions.Parse(["run"], reporter, out var _);
+            var app = new Program(console, reporter, options, new EnvironmentOptions(WorkingDirectory: testAsset, MuxerPath: ""));
 
-            var run = app.RunAsync(options);
+            var run = app.RunAsync();
 
             await console.CancelKeyPressSubscribed.TimeoutAfter(TimeSpan.FromSeconds(30));
             console.ConsoleCancelKey();

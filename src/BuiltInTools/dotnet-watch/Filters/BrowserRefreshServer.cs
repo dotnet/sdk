@@ -29,19 +29,17 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web);
         private readonly List<(WebSocket clientSocket, string? sharedSecret)> _clientSockets = new();
         private readonly RSA _rsa;
-        private readonly DotNetWatchOptions _options;
+        private readonly EnvironmentOptions _options;
         private readonly IReporter _reporter;
-        private readonly string _muxerPath;
         private readonly TaskCompletionSource _terminateWebSocket;
         private readonly TaskCompletionSource _clientConnected;
         private IHost? _refreshServer;
 
-        public BrowserRefreshServer(DotNetWatchOptions options, IReporter reporter, string muxerPath)
+        public BrowserRefreshServer(EnvironmentOptions options, IReporter reporter)
         {
             _rsa = RSA.Create(2048);
             _options = options;
             _reporter = reporter;
-            _muxerPath = muxerPath;
             _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _clientConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         }
@@ -261,7 +259,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             try
             {
-                using var process = Process.Start(_muxerPath, "dev-certs https --check --quiet");
+                using var process = Process.Start(_options.MuxerPath, "dev-certs https --check --quiet");
                 await process.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
                 return process.ExitCode == 0;
             }

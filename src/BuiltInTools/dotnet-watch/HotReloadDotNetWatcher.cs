@@ -17,35 +17,30 @@ namespace Microsoft.DotNet.Watcher
         private readonly IReporter _reporter;
         private readonly IConsole _console;
         private readonly ProcessRunner _processRunner;
-        private readonly DotNetWatchOptions _dotNetWatchOptions;
+        private readonly EnvironmentOptions _environmentOptions;
+        private readonly CommandLineOptions _options;
         private readonly IWatchFilter[] _filters;
         private readonly RudeEditDialog? _rudeEditDialog;
-        private readonly string _workingDirectory;
-        private readonly string _muxerPath;
 
-        public HotReloadDotNetWatcher(IReporter reporter, ConsoleInputReader requester, IFileSetFactory fileSetFactory, DotNetWatchOptions dotNetWatchOptions, IConsole console, string workingDirectory, string muxerPath)
+        public HotReloadDotNetWatcher(IReporter reporter, IConsole console, IFileSetFactory fileSetFactory, EnvironmentOptions environmentOptions, CommandLineOptions options)
         {
-            Ensure.NotNull(reporter, nameof(reporter));
-            Ensure.NotNull(requester, nameof(requester));
-            Ensure.NotNullOrEmpty(workingDirectory, nameof(workingDirectory));
-
             _reporter = reporter;
             _processRunner = new ProcessRunner(reporter);
-            _dotNetWatchOptions = dotNetWatchOptions;
+            _environmentOptions = environmentOptions;
+            _options = options;
             _console = console;
-            _workingDirectory = workingDirectory;
-            _muxerPath = muxerPath;
 
             _filters = new IWatchFilter[]
             {
-                new DotNetBuildFilter(fileSetFactory, _processRunner, _reporter, muxerPath),
-                new LaunchBrowserFilter(dotNetWatchOptions),
-                new BrowserRefreshFilter(dotNetWatchOptions, _reporter, muxerPath),
+                new DotNetBuildFilter(environmentOptions, fileSetFactory, _processRunner, _reporter),
+                new LaunchBrowserFilter(environmentOptions),
+                new BrowserRefreshFilter(environmentOptions, _reporter),
             };
 
-            if (!dotNetWatchOptions.NonInteractive)
+            if (!options.NonInteractive)
             {
-                _rudeEditDialog = new(reporter, requester, _console);
+                var consoleInput = new ConsoleInputReader(_console, options.Quiet, environmentOptions.SuppressEmojis);
+                _rudeEditDialog = new RudeEditDialog(reporter, consoleInput, _console);
             }
         }
 
@@ -58,9 +53,9 @@ namespace Microsoft.DotNet.Watcher
             var forceReload = new CancellationTokenSource();
             var hotReloadEnabledMessage = "Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.";
 
-            if (!_dotNetWatchOptions.NonInteractive)
+            if (!_options.NonInteractive)
             {
-                _reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_dotNetWatchOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
+                _reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_environmentOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
 
                 _console.KeyPressed += (key) =>
                 {
@@ -339,7 +334,7 @@ namespace Microsoft.DotNet.Watcher
 
             if (rootVariableName != null && string.IsNullOrEmpty(Environment.GetEnvironmentVariable(rootVariableName)))
             {
-                processSpec.EnvironmentVariables[rootVariableName] = Path.GetDirectoryName(_muxerPath)!;
+                processSpec.EnvironmentVariables[rootVariableName] = Path.GetDirectoryName(_environmentOptions.MuxerPath)!;
             }
 
             if (context.LaunchSettingsProfile.EnvironmentVariables is { } envVariables)
@@ -356,9 +351,9 @@ namespace Microsoft.DotNet.Watcher
         private string GetRelativeFilePath(string path)
         {
             var relativePath = path;
-            if (path.StartsWith(_workingDirectory, StringComparison.Ordinal) && path.Length > _workingDirectory.Length)
+            if (path.StartsWith(_environmentOptions.WorkingDirectory, StringComparison.Ordinal) && path.Length > _environmentOptions.WorkingDirectory.Length)
             {
-                relativePath = path.Substring(_workingDirectory.Length);
+                relativePath = path.Substring(_environmentOptions.WorkingDirectory.Length);
 
                 return $".{(relativePath.StartsWith(Path.DirectorySeparatorChar) ? string.Empty : Path.DirectorySeparatorChar)}{relativePath}";
             }

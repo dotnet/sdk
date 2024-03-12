@@ -14,27 +14,25 @@ namespace Microsoft.DotNet.Watcher
     {
         private readonly IReporter _reporter;
         private readonly ProcessRunner _processRunner;
-        private readonly DotNetWatchOptions _dotnetWatchOptions;
+        private readonly EnvironmentOptions _environmentOptions;
         private readonly StaticFileHandler _staticFileHandler;
         private readonly IWatchFilter[] _filters;
-        private readonly string _muxerPath;
 
-        public DotNetWatcher(IReporter reporter, IFileSetFactory fileSetFactory, DotNetWatchOptions dotNetWatchOptions, string muxerPath)
+        public DotNetWatcher(IReporter reporter, IFileSetFactory fileSetFactory, EnvironmentOptions environmentOptions)
         {
             Ensure.NotNull(reporter, nameof(reporter));
 
             _reporter = reporter;
             _processRunner = new ProcessRunner(reporter);
-            _dotnetWatchOptions = dotNetWatchOptions;
+            _environmentOptions = environmentOptions;
             _staticFileHandler = new StaticFileHandler(reporter);
-            _muxerPath = muxerPath;
 
             _filters = new IWatchFilter[]
             {
                 new MSBuildEvaluationFilter(fileSetFactory),
                 new NoRestoreFilter(),
-                new LaunchBrowserFilter(dotNetWatchOptions),
-                new BrowserRefreshFilter(dotNetWatchOptions, _reporter, muxerPath),
+                new LaunchBrowserFilter(environmentOptions),
+                new BrowserRefreshFilter(environmentOptions, _reporter),
             };
         }
 
@@ -47,8 +45,8 @@ namespace Microsoft.DotNet.Watcher
                 cancelledTaskSource);
 
             var processSpec = context.ProcessSpec;
-            processSpec.Executable = _muxerPath;
-            var initialArguments = processSpec.Arguments?.ToArray() ?? Array.Empty<string>();
+            processSpec.Executable = _environmentOptions.MuxerPath;
+            var initialArguments = processSpec.Arguments?.ToArray() ?? [];
 
             if (context.SuppressMSBuildIncrementalism)
             {

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class LaunchBrowserFilter(DotNetWatchOptions dotNetWatchOptions) : IWatchFilter, IAsyncDisposable
+    internal sealed class LaunchBrowserFilter(EnvironmentOptions options) : IWatchFilter, IAsyncDisposable
     {
         private static readonly Regex NowListeningRegex = new(@"Now listening on: (?<url>.*)\s*$", RegexOptions.None | RegexOptions.Compiled, TimeSpan.FromSeconds(10));
         private bool _attemptedBrowserLaunch;
@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             Debug.Assert(context.ProcessSpec != null);
 
-            if (dotNetWatchOptions.SuppressLaunchBrowser)
+            if (options.SuppressLaunchBrowser)
             {
                 return default;
             }
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     context.ProcessSpec.OnOutput += (_, eventArgs) => Console.WriteLine(eventArgs.Data);
                     context.ProcessSpec.OnOutput += OnOutput;
                 }
-                else if (dotNetWatchOptions.TestFlags.HasFlag(TestFlags.BrowserRequired))
+                else if (options.TestFlags.HasFlag(TestFlags.BrowserRequired))
                 {
                     _reporter.Error("Test requires browser to launch");
                 }
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 fileName = browserPath;
             }
 
-            if (dotNetWatchOptions.TestFlags != TestFlags.None)
+            if (options.TestFlags != TestFlags.None)
             {
                 _reporter.Output($"Launching browser: {fileName} {args}");
                 return;
