@@ -8,15 +8,8 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class ScopedCssFileHandler
+    internal sealed class ScopedCssFileHandler(IReporter reporter, BrowserRefreshServer? browserRefreshServer)
     {
-        private readonly IReporter _reporter;
-
-        public ScopedCssFileHandler(IReporter reporter)
-        {
-            _reporter = reporter;
-        }
-
         public async ValueTask<bool> TryHandleFileChange(DotNetWatchContext context, FileItem file, CancellationToken cancellationToken)
         {
             Debug.Assert(context.ProjectGraph != null);
@@ -29,14 +22,14 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return default;
             }
 
-            _reporter.Verbose($"Handling file change event for scoped css file {file.FilePath}.");
+            reporter.Verbose($"Handling file change event for scoped css file {file.FilePath}.");
             if (!RebuildScopedCss(context.ProjectGraph, file.ProjectPath))
             {
                 HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.ScopedCssHandler);
                 return false;
             }
-            await HandleBrowserRefresh(context.BrowserRefreshServer, file, cancellationToken);
-            _reporter.Output("Hot reload of scoped css succeeded.", emoji: "🔥");
+            await HandleBrowserRefresh(browserRefreshServer, file, cancellationToken);
+            reporter.Output("Hot reload of scoped css succeeded.", emoji: "🔥");
             HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.ScopedCssHandler);
             return true;
         }
@@ -50,7 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
 
             var projectInstance = project.ProjectInstance.DeepCopy();
-            var logger = _reporter.IsVerbose ? new[] { new Build.Logging.ConsoleLogger() } : null;
+            var logger = reporter.IsVerbose ? new[] { new Build.Logging.ConsoleLogger() } : null;
             return projectInstance.Build("GenerateComputedBuildStaticWebAssets", logger);
         }
 

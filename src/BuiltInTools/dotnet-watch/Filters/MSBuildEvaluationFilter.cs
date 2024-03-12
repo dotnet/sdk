@@ -26,35 +26,35 @@ namespace Microsoft.DotNet.Watcher.Tools
             _factory = factory;
         }
 
-        public async ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
+        public async ValueTask ProcessAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken)
         {
             if (context.SuppressMSBuildIncrementalism)
             {
-                context.RequiresMSBuildRevaluation = true;
-                context.FileSet = await _factory.CreateAsync(cancellationToken);
+                state.RequiresMSBuildRevaluation = true;
+                state.FileSet = await _factory.CreateAsync(cancellationToken);
                 return;
             }
 
-            if (context.Iteration == 0 || RequiresMSBuildRevaluation(context))
+            if (state.Iteration == 0 || RequiresMSBuildRevaluation(context, state))
             {
-                context.RequiresMSBuildRevaluation = true;
+                state.RequiresMSBuildRevaluation = true;
             }
 
-            if (context.RequiresMSBuildRevaluation)
+            if (state.RequiresMSBuildRevaluation)
             {
                 context.Reporter.Verbose("Evaluating dotnet-watch file set.");
 
-                context.FileSet = await _factory.CreateAsync(cancellationToken);
-                _msbuildFileTimestamps = GetMSBuildFileTimeStamps(context);
+                state.FileSet = await _factory.CreateAsync(cancellationToken);
+                _msbuildFileTimestamps = GetMSBuildFileTimeStamps(state);
             }
         }
 
-        private bool RequiresMSBuildRevaluation(DotNetWatchContext context)
+        private bool RequiresMSBuildRevaluation(DotNetWatchContext context, WatchState state)
         {
-            Debug.Assert(context.Iteration > 0);
+            Debug.Assert(state.Iteration > 0);
             Debug.Assert(_msbuildFileTimestamps != null);
 
-            var changedFile = context.ChangedFile;
+            var changedFile = state.ChangedFile;
             if (changedFile != null && IsMsBuildFileExtension(changedFile.Value.FilePath))
             {
                 return true;
@@ -79,12 +79,12 @@ namespace Microsoft.DotNet.Watcher.Tools
             return false;
         }
 
-        private List<(string fileName, DateTime lastModifiedUtc)> GetMSBuildFileTimeStamps(DotNetWatchContext context)
+        private List<(string fileName, DateTime lastModifiedUtc)> GetMSBuildFileTimeStamps(WatchState state)
         {
-            Debug.Assert(context.FileSet != null);
+            Debug.Assert(state.FileSet != null);
 
             var msbuildFiles = new List<(string fileName, DateTime lastModifiedUtc)>();
-            foreach (var file in context.FileSet)
+            foreach (var file in state.FileSet)
             {
                 if (!string.IsNullOrEmpty(file.FilePath) && IsMsBuildFileExtension(file.FilePath))
                 {

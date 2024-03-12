@@ -12,28 +12,22 @@ namespace Microsoft.DotNet.Watcher.Tests
         [Fact]
         public void Initialize_ConfiguresEnvironmentVariables()
         {
-            // Arrange
             var applier = new DefaultDeltaApplier(Mock.Of<IReporter>()) { SuppressNamedPipeForTests = true };
             var process = new ProcessSpec();
-            var fileSet = new FileSet(null, new[]
-            {
+            var fileSet = new FileSet(projectInfo: null,
+            [
                 new FileItem {  FilePath = "Test.cs" },
-            });
+            ]);
 
-            var context = new DotNetWatchContext
+            var state = new WatchState()
             {
-                HotReloadEnabled = true,
+                Iteration = 0,
                 ProcessSpec = process,
                 FileSet = fileSet,
-                Iteration = 0,
-                LaunchSettingsProfile = new(),
-                Reporter = NullReporter.Singleton,
             };
 
-            // Act
-            applier.Initialize(context, default);
+            applier.Initialize(state, CancellationToken.None);
 
-            // Assert
             Assert.Equal("debug", process.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"]);
             Assert.NotEmpty(process.EnvironmentVariables["DOTNET_HOTRELOAD_NAMEDPIPE_NAME"]);
             Assert.NotEmpty(process.EnvironmentVariables.DotNetStartupHooks);

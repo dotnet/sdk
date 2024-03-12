@@ -178,6 +178,16 @@ namespace Microsoft.DotNet.Watcher
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = enableHotReload,
+                ProjectGraph = projectGraph,
+                Reporter = reporter,
+                SuppressMSBuildIncrementalism = environmentOptions.SuppressMSBuildIncrementalism,
+                LaunchSettingsProfile = launchProfile,
+                TargetFramework = options.TargetFramework,
+                BuildProperties = options.BuildProperties,
+            };
+
+            var state = new WatchState()
+            {
                 ProcessSpec = new ProcessSpec
                 {
                     WorkingDirectory = projectDirectory,
@@ -187,24 +197,18 @@ namespace Microsoft.DotNet.Watcher
                     {
                         ["DOTNET_WATCH"] = "1"
                     },
-                },
-                ProjectGraph = projectGraph,
-                Reporter = reporter,
-                SuppressMSBuildIncrementalism = environmentOptions.SuppressMSBuildIncrementalism,
-                LaunchSettingsProfile = launchProfile,
-                TargetFramework = options.TargetFramework,
-                BuildProperties = options.BuildProperties,
+                }
             };
 
             if (enableHotReload)
             {
                 await using var watcher = new HotReloadDotNetWatcher(reporter, console, fileSetFactory, environmentOptions, options);
-                await watcher.WatchAsync(context, cancellationToken);
+                await watcher.WatchAsync(context, state, cancellationToken);
             }
             else
             {
                 await using var watcher = new DotNetWatcher(reporter, fileSetFactory, environmentOptions);
-                await watcher.WatchAsync(context, cancellationToken);
+                await watcher.WatchAsync(context, state, cancellationToken);
             }
 
             return 0;

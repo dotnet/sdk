@@ -12,30 +12,24 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class DefaultDeltaApplier : SingleProcessDeltaApplier
+    internal sealed class DefaultDeltaApplier(IReporter reporter) : SingleProcessDeltaApplier
     {
         private static readonly string _namedPipeName = Guid.NewGuid().ToString();
-        private readonly IReporter _reporter;
         private Task<ImmutableArray<string>>? _capabilitiesTask;
         private NamedPipeServerStream? _pipe;
 
-        public DefaultDeltaApplier(IReporter reporter)
-        {
-            _reporter = reporter;
-        }
-
         internal bool SuppressNamedPipeForTests { get; set; }
 
-        public override void Initialize(DotNetWatchContext context, CancellationToken cancellationToken)
+        public override void Initialize(WatchState state, CancellationToken cancellationToken)
         {
-            base.Initialize(context, cancellationToken);
+            base.Initialize(state, cancellationToken);
 
             if (!SuppressNamedPipeForTests)
             {
                 _pipe = new NamedPipeServerStream(_namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
                 _capabilitiesTask = Task.Run(async () =>
                 {
-                    _reporter.Verbose($"Connecting to the application.");
+                    reporter.Verbose($"Connecting to the application.");
 
                     await _pipe.WaitForConnectionAsync(cancellationToken);
 
@@ -46,30 +40,30 @@ namespace Microsoft.DotNet.Watcher.Tools
                 });
             }
 
-            if (context.Iteration == 0)
+            if (state.Iteration == 0)
             {
                 var deltaApplier = Path.Combine(AppContext.BaseDirectory, "hotreload", "Microsoft.Extensions.DotNetDeltaApplier.dll");
-                context.ProcessSpec.EnvironmentVariables.DotNetStartupHooks.Add(deltaApplier);
+                state.ProcessSpec.EnvironmentVariables.DotNetStartupHooks.Add(deltaApplier);
 
                 // Configure the app for EnC
-                context.ProcessSpec.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
-                context.ProcessSpec.EnvironmentVariables["DOTNET_HOTRELOAD_NAMEDPIPE_NAME"] = _namedPipeName;
+                state.ProcessSpec.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
+                state.ProcessSpec.EnvironmentVariables["DOTNET_HOTRELOAD_NAMEDPIPE_NAME"] = _namedPipeName;
             }
         }
 
-        public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(DotNetWatchContext context, CancellationToken cancellationToken)
+        public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
             => _capabilitiesTask ?? Task.FromResult(ImmutableArray<string>.Empty);
 
-        public override async Task<ApplyStatus> Apply(DotNetWatchContext context, ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
             if (_capabilitiesTask is null || !_capabilitiesTask.IsCompletedSuccessfully || _pipe is null || !_pipe.IsConnected)
             {
                 // The client isn't listening
-                _reporter.Verbose("No client connected to receive delta updates.");
+                reporter.Verbose("No client connected to receive delta updates.");
                 return ApplyStatus.Failed;
             }
 
-            var applicableUpdates = await FilterApplicableUpdatesAsync(context, updates, cancellationToken);
+            var applicableUpdates = await FilterApplicableUpdatesAsync(updates, cancellationToken);
             if (applicableUpdates.Count == 0)
             {
                 return ApplyStatus.NoChangesApplied;
@@ -102,13 +96,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                 var numBytes = await _pipe.ReadAsync(bytes, cancellationToken);
                 if (numBytes != 1)
                 {
-                    _reporter.Verbose($"Apply confirmation: Received {numBytes} bytes.");
+                    reporter.Verbose($"Apply confirmation: Received {numBytes} bytes.");
                     return false;
                 }
 
                 if (bytes[0] != UpdatePayload.ApplySuccessValue)
                 {
-                    _reporter.Verbose($"Apply confirmation: Received value: '{bytes[0]}'.");
+                    reporter.Verbose($"Apply confirmation: Received value: '{bytes[0]}'.");
                     return false;
                 }
 
@@ -117,7 +111,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             catch (Exception ex)
             {
                 // Log it, but we'll treat this as a failed apply.
-                _reporter.Verbose(ex.Message);
+                reporter.Verbose(ex.Message);
                 return false;
             }
             finally

@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private bool _canUseNoRestore;
         private string[]? _noRestoreArguments;
 
-        public ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
+        public ValueTask ProcessAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken)
         {
             Debug.Assert(!context.HotReloadEnabled);
 
@@ -20,9 +20,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return default;
             }
 
-            if (context.Iteration == 0)
+            if (state.Iteration == 0)
             {
-                var arguments = context.ProcessSpec.Arguments ?? Array.Empty<string>();
+                var arguments = state.ProcessSpec.Arguments ?? Array.Empty<string>();
                 _canUseNoRestore = CanUseNoRestore(arguments, context.Reporter);
                 if (_canUseNoRestore)
                 {
@@ -33,14 +33,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
             else if (_canUseNoRestore)
             {
-                if (context.RequiresMSBuildRevaluation)
+                if (state.RequiresMSBuildRevaluation)
                 {
                     context.Reporter.Verbose("Cannot use --no-restore since msbuild project files have changed.");
                 }
                 else
                 {
                     context.Reporter.Verbose("Modifying command to use --no-restore");
-                    context.ProcessSpec.Arguments = _noRestoreArguments;
+                    state.ProcessSpec.Arguments = _noRestoreArguments;
                 }
             }
 

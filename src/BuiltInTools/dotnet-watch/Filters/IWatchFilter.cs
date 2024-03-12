@@ -5,6 +5,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal interface IWatchFilter
     {
-        ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken);
+        ValueTask ProcessAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken);
     }
 }

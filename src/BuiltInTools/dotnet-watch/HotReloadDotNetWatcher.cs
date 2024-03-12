@@ -45,11 +45,11 @@ namespace Microsoft.DotNet.Watcher
             }
         }
 
-        public async Task WatchAsync(DotNetWatchContext context, CancellationToken cancellationToken)
+        public async Task WatchAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken)
         {
             Debug.Assert(context.ProjectGraph != null);
 
-            var processSpec = context.ProcessSpec;
+            var processSpec = state.ProcessSpec;
 
             var forceReload = new CancellationTokenSource();
             var hotReloadEnabledMessage = "Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.";
@@ -75,17 +75,17 @@ namespace Microsoft.DotNet.Watcher
 
             while (true)
             {
-                context.Iteration++;
+                state.Iteration++;
 
                 for (var i = 0; i < _filters.Length; i++)
                 {
-                    await _filters[i].ProcessAsync(context, cancellationToken);
+                    await _filters[i].ProcessAsync(context, state, cancellationToken);
                 }
 
-                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (context.Iteration + 1).ToString(CultureInfo.InvariantCulture);
-                processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = context.LaunchSettingsProfile?.LaunchProfileName ?? string.Empty;
+                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (state.Iteration + 1).ToString(CultureInfo.InvariantCulture);
+                processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = context.LaunchSettingsProfile.LaunchProfileName ?? string.Empty;
 
-                var fileSet = context.FileSet;
+                var fileSet = state.FileSet;
                 if (fileSet == null)
                 {
                     _reporter.Error("Failed to find a list of files to watch");
@@ -105,9 +105,12 @@ namespace Microsoft.DotNet.Watcher
                     return;
                 }
 
-                if (context.Iteration == 0)
+                if (state.Iteration == 0)
                 {
-                    ConfigureExecutable(context, processSpec);
+                    var project = state.FileSet?.Project;
+                    Debug.Assert(project != null);
+
+                    ConfigureExecutable(processSpec, project, context.LaunchSettingsProfile);
                 }
 
                 using var currentRunCancellationSource = new CancellationTokenSource();
@@ -119,11 +122,11 @@ namespace Microsoft.DotNet.Watcher
 
                 try
                 {
-                    using var hotReload = new HotReload(_reporter);
+                    using var hotReload = new HotReload(_reporter, context.ProjectGraph, state.BrowserRefreshServer);
 
                     // Solution must be initialized before we start watching for file changes to avoid race condition
                     // when the solution captures state of the file after the changes has already been made.
-                    await hotReload.InitializeAsync(context, cancellationToken);
+                    await hotReload.InitializeAsync(state, cancellationToken);
 
                     _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{processSpec.GetArgumentsDisplay()}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
@@ -289,11 +292,8 @@ namespace Microsoft.DotNet.Watcher
             return default;
         }
 
-        private void ConfigureExecutable(DotNetWatchContext context, ProcessSpec processSpec)
+        private void ConfigureExecutable(ProcessSpec processSpec, ProjectInfo project, LaunchSettingsProfile launchSettingsProfile)
         {
-            var project = context.FileSet?.Project;
-            Debug.Assert(project != null);
-
             // RunCommand property specifies the host to use to run the project.
             // RunArguments then specifies the arguments to the host.
             // Arguments to the executable should follow the host arguments.
@@ -323,9 +323,9 @@ namespace Microsoft.DotNet.Watcher
                 processSpec.WorkingDirectory = project.RunWorkingDirectory;
             }
 
-            if (!string.IsNullOrEmpty(context.LaunchSettingsProfile.ApplicationUrl))
+            if (!string.IsNullOrEmpty(launchSettingsProfile.ApplicationUrl))
             {
-                processSpec.EnvironmentVariables["ASPNETCORE_URLS"] = context.LaunchSettingsProfile.ApplicationUrl;
+                processSpec.EnvironmentVariables["ASPNETCORE_URLS"] = launchSettingsProfile.ApplicationUrl;
             }
 
             var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
@@ -338,7 +338,7 @@ namespace Microsoft.DotNet.Watcher
                 processSpec.EnvironmentVariables[rootVariableName] = Path.GetDirectoryName(_environmentOptions.MuxerPath)!;
             }
 
-            if (context.LaunchSettingsProfile.EnvironmentVariables is { } envVariables)
+            if (launchSettingsProfile.EnvironmentVariables is { } envVariables)
             {
                 foreach (var entry in envVariables)
                 {

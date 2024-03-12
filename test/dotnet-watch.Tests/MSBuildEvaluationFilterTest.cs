@@ -21,23 +21,27 @@ namespace Microsoft.DotNet.Watcher.Tools
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec(),
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new()
             };
 
-            await filter.ProcessAsync(context, default);
+            var state = new WatchState()
+            {
+                Iteration = 0,
+                ProcessSpec = new ProcessSpec()
+            };
 
-            context.Iteration++;
-            context.ChangedFile = new FileItem { FilePath = "Test.csproj" };
-            context.RequiresMSBuildRevaluation = false;
+            await filter.ProcessAsync(context, state, CancellationToken.None);
+
+            state.Iteration++;
+            state.ChangedFile = new FileItem { FilePath = "Test.csproj" };
+            state.RequiresMSBuildRevaluation = false;
 
             // Act
-            await filter.ProcessAsync(context, default);
+            await filter.ProcessAsync(context, state, CancellationToken.None);
 
             // Assert
-            Assert.True(context.RequiresMSBuildRevaluation);
+            Assert.True(state.RequiresMSBuildRevaluation);
         }
 
         [Fact]
@@ -48,23 +52,27 @@ namespace Microsoft.DotNet.Watcher.Tools
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec(),
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new()
             };
 
-            await filter.ProcessAsync(context, default);
+            var state = new WatchState()
+            {
+                Iteration = 0,
+                ProcessSpec = new ProcessSpec()
+            };
 
-            context.Iteration++;
-            context.ChangedFile = new FileItem { FilePath = "Controller.cs" };
-            context.RequiresMSBuildRevaluation = false;
+            await filter.ProcessAsync(context, state, CancellationToken.None);
+
+            state.Iteration++;
+            state.ChangedFile = new FileItem { FilePath = "Controller.cs" };
+            state.RequiresMSBuildRevaluation = false;
 
             // Act
-            await filter.ProcessAsync(context, default);
+            await filter.ProcessAsync(context, state, CancellationToken.None);
 
             // Assert
-            Assert.False(context.RequiresMSBuildRevaluation);
+            Assert.False(state.RequiresMSBuildRevaluation);
             Mock.Get(_fileSetFactory).Verify(v => v.CreateAsync(It.IsAny<CancellationToken>()), Times.Once());
         }
 
@@ -76,24 +84,28 @@ namespace Microsoft.DotNet.Watcher.Tools
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
-                Iteration = 0,
                 SuppressMSBuildIncrementalism = true,
-                ProcessSpec = new ProcessSpec(),
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new()
             };
 
-            await filter.ProcessAsync(context, default);
+            var state = new WatchState()
+            {
+                Iteration = 0,
+                ProcessSpec = new ProcessSpec()
+            };
 
-            context.Iteration++;
-            context.ChangedFile = new FileItem { FilePath = "Controller.cs" };
-            context.RequiresMSBuildRevaluation = false;
+            await filter.ProcessAsync(context, state, CancellationToken.None);
+
+            state.Iteration++;
+            state.ChangedFile = new FileItem { FilePath = "Controller.cs" };
+            state.RequiresMSBuildRevaluation = false;
 
             // Act
-            await filter.ProcessAsync(context, default);
+            await filter.ProcessAsync(context, state, CancellationToken.None);
 
             // Assert
-            Assert.True(context.RequiresMSBuildRevaluation);
+            Assert.True(state.RequiresMSBuildRevaluation);
             Mock.Get(_fileSetFactory).Verify(v => v.CreateAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
         }
 
@@ -115,26 +127,31 @@ namespace Microsoft.DotNet.Watcher.Tools
                     ["Proj.csproj"] = new DateTime(1000),
                 }
             };
+
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec(),
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new()
             };
 
-            await filter.ProcessAsync(context, default);
-            context.RequiresMSBuildRevaluation = false;
-            context.ChangedFile = new FileItem { FilePath = "Controller.cs" };
-            context.Iteration++;
+            var state = new WatchState()
+            {
+                Iteration = 0,
+                ProcessSpec = new ProcessSpec()
+            };
+
+            await filter.ProcessAsync(context, state, CancellationToken.None);
+            state.RequiresMSBuildRevaluation = false;
+            state.ChangedFile = new FileItem { FilePath = "Controller.cs" };
+            state.Iteration++;
             filter.Timestamps["Proj.csproj"] = new DateTime(1007);
 
             // Act
-            await filter.ProcessAsync(context, default);
+            await filter.ProcessAsync(context, state, CancellationToken.None);
 
             // Assert
-            Assert.True(context.RequiresMSBuildRevaluation);
+            Assert.True(state.RequiresMSBuildRevaluation);
         }
 
         private class TestableMSBuildEvaluationFilter : MSBuildEvaluationFilter

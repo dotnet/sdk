@@ -36,13 +36,13 @@ namespace Microsoft.DotNet.Watcher
             };
         }
 
-        public async Task WatchAsync(DotNetWatchContext context, CancellationToken cancellationToken)
+        public async Task WatchAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken)
         {
             var cancelledTaskSource = new TaskCompletionSource();
             cancellationToken.Register(state => ((TaskCompletionSource)state!).TrySetResult(),
                 cancelledTaskSource);
 
-            var processSpec = context.ProcessSpec;
+            var processSpec = state.ProcessSpec;
             processSpec.Executable = _environmentOptions.MuxerPath;
             var initialArguments = processSpec.Arguments?.ToArray() ?? [];
 
@@ -53,23 +53,23 @@ namespace Microsoft.DotNet.Watcher
 
             while (true)
             {
-                context.Iteration++;
+                state.Iteration++;
 
                 // Reset arguments
                 processSpec.Arguments = initialArguments;
 
                 for (var i = 0; i < _filters.Length; i++)
                 {
-                    await _filters[i].ProcessAsync(context, cancellationToken);
+                    await _filters[i].ProcessAsync(context, state, cancellationToken);
                 }
 
                 // Reset for next run
-                context.RequiresMSBuildRevaluation = false;
+                state.RequiresMSBuildRevaluation = false;
 
-                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (context.Iteration + 1).ToString(CultureInfo.InvariantCulture);
-                processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = context.LaunchSettingsProfile?.LaunchProfileName ?? string.Empty;
+                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (state.Iteration + 1).ToString(CultureInfo.InvariantCulture);
+                processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = context.LaunchSettingsProfile.LaunchProfileName ?? string.Empty;
 
-                var fileSet = context.FileSet;
+                var fileSet = state.FileSet;
                 if (fileSet == null)
                 {
                     _reporter.Error("Failed to find a list of files to watch");
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Watcher
                         finishedTask = await Task.WhenAny(processTask, fileSetTask, cancelledTaskSource.Task);
                         if (finishedTask == fileSetTask
                             && fileSetTask.Result is FileItem fileItem &&
-                            await _staticFileHandler.TryHandleFileChange(context.BrowserRefreshServer, fileItem, combinedCancellationSource.Token))
+                            await _staticFileHandler.TryHandleFileChange(state.BrowserRefreshServer, fileItem, combinedCancellationSource.Token))
                         {
                             // We're able to handle the file change event without doing a full-rebuild.
                         }
@@ -136,15 +136,15 @@ namespace Microsoft.DotNet.Watcher
                     if (finishedTask == processTask)
                     {
                         // Process exited. Redo evalulation
-                        context.RequiresMSBuildRevaluation = true;
+                        state.RequiresMSBuildRevaluation = true;
                         // Now wait for a file to change before restarting process
-                        context.ChangedFile = await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳"));
+                        state.ChangedFile = await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳"));
                     }
                     else
                     {
                         Debug.Assert(finishedTask == fileSetTask);
                         var changedFile = fileSetTask.Result;
-                        context.ChangedFile = changedFile;
+                        state.ChangedFile = changedFile;
                         Debug.Assert(changedFile != null, "ChangedFile should only be null when cancelled");
                         _reporter.Output($"File changed: {changedFile.Value.FilePath}");
                     }

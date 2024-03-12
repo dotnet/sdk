@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             _options = options;
         }
 
-        public async ValueTask ProcessAsync(DotNetWatchContext context, CancellationToken cancellationToken)
+        public async ValueTask ProcessAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -44,28 +44,28 @@ namespace Microsoft.DotNet.Watcher.Tools
                     arguments.AddRange(context.BuildProperties.Select(p => $"/p:{p.name}={p.value}"));
                 }
 
-                if (context.Iteration == 0 || (context.ChangedFile?.FilePath is string changedFile && changedFile.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)))
+                if (state.Iteration == 0 || (state.ChangedFile?.FilePath is string changedFile && changedFile.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)))
                 {
                     arguments.Add("/restore");
                 }
 
-                var processSpec = new ProcessSpec
+                var buildProcessSpec = new ProcessSpec
                 {
                     Executable = _options.MuxerPath,
                     Arguments = arguments,
-                    WorkingDirectory = context.ProcessSpec.WorkingDirectory,
+                    WorkingDirectory = state.ProcessSpec.WorkingDirectory,
                 };
 
                 _reporter.Output("Building...", emoji: "🔧");
-                var exitCode = await _processRunner.RunAsync(processSpec, cancellationToken);
-                context.FileSet = await _fileSetFactory.CreateAsync(cancellationToken);
+                var exitCode = await _processRunner.RunAsync(buildProcessSpec, cancellationToken);
+                state.FileSet = await _fileSetFactory.CreateAsync(cancellationToken);
                 if (exitCode == 0)
                 {
                     return;
                 }
 
                 // If the build fails, we'll retry until we have a successful build.
-                using var fileSetWatcher = new FileSetWatcher(context.FileSet, _reporter);
+                using var fileSetWatcher = new FileSetWatcher(state.FileSet, _reporter);
                 await fileSetWatcher.GetChangedFileAsync(cancellationToken, () => _reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳"));
             }
         }
