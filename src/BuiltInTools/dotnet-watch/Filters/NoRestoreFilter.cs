@@ -6,12 +6,12 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class NoRestoreFilter : IWatchFilter
+    internal sealed class NoRestoreFilter(DotNetWatchContext context) : IWatchFilter
     {
         private bool _canUseNoRestore;
         private string[]? _noRestoreArguments;
 
-        public ValueTask ProcessAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken)
+        public ValueTask ProcessAsync(WatchState state, CancellationToken cancellationToken)
         {
             Debug.Assert(!context.HotReloadEnabled);
 

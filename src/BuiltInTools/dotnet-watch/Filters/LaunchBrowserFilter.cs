@@ -4,19 +4,19 @@
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class LaunchBrowserFilter(EnvironmentOptions options) : IWatchFilter, IAsyncDisposable
+    internal sealed class LaunchBrowserFilter(DotNetWatchContext context, EnvironmentOptions options) : IWatchFilter, IAsyncDisposable
     {
-        private static readonly Regex NowListeningRegex = new(@"Now listening on: (?<url>.*)\s*$", RegexOptions.None | RegexOptions.Compiled, TimeSpan.FromSeconds(10));
+        private static readonly Regex s_nowListeningRegex = new(@"Now listening on: (?<url>.*)\s*$", RegexOptions.None | RegexOptions.Compiled, TimeSpan.FromSeconds(10));
+
         private bool _attemptedBrowserLaunch;
         private Process? _browserProcess;
         private string? _launchPath;
         private CancellationToken _cancellationToken;
 
-        public ValueTask ProcessAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken)
+        public ValueTask ProcessAsync(WatchState state, CancellationToken cancellationToken)
         {
             if (options.SuppressLaunchBrowser)
             {
@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     return;
                 }
 
-                var match = NowListeningRegex.Match(eventArgs.Data);
+                var match = s_nowListeningRegex.Match(eventArgs.Data);
                 if (match.Success)
                 {
                     var launchUrl = match.Groups["url"].Value;

@@ -2,29 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
-using System.Diagnostics;
 using Microsoft.Build.Graph;
-using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class BrowserRefreshFilter : IWatchFilter, IAsyncDisposable
+    internal sealed class BrowserRefreshFilter(DotNetWatchContext context, EnvironmentOptions options) : IWatchFilter, IAsyncDisposable
     {
         // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
         private static readonly Version s_minimumSupportedVersion = new(6, 0);
-        private readonly EnvironmentOptions _options;
-        private readonly IReporter _reporter;
+
         private BrowserRefreshServer? _refreshServer;
 
-        public BrowserRefreshFilter(EnvironmentOptions options, IReporter reporter)
+        public async ValueTask ProcessAsync(WatchState state, CancellationToken cancellationToken)
         {
-            _options = options;
-            _reporter = reporter;
-        }
-
-        public async ValueTask ProcessAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken)
-        {
-            if (_options.SuppressBrowserRefresh)
+            if (options.SuppressBrowserRefresh)
             {
                 return;
             }
@@ -33,30 +24,30 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 if (context.ProjectGraph is null)
                 {
-                    _reporter.Verbose("Unable to determine if this project is a webapp.");
+                    context.Reporter.Verbose("Unable to determine if this project is a webapp.");
                     return;
                 }
-                else if (!IsSupportedVersion(context.ProjectGraph))
+
+                if (!IsSupportedVersion(context.ProjectGraph))
                 {
-                    _reporter.Warn(
+                    context.Reporter.Warn(
                         "Skipping configuring browser-refresh middleware since the target framework version is not supported." +
                         " For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.");
                     return;
                 }
-                else if (IsWebApp(context.ProjectGraph))
+
+                if (!IsWebApp(context.ProjectGraph))
                 {
-                    _reporter.Verbose("Configuring the app to use browser-refresh middleware.");
-                }
-                else
-                {
-                    _reporter.Verbose("Skipping configuring browser-refresh middleware since this is not a webapp.");
+                    context.Reporter.Verbose("Skipping configuring browser-refresh middleware since this is not a webapp.");
                     return;
                 }
 
-                _refreshServer = new BrowserRefreshServer(_options, _reporter);
+                context.Reporter.Verbose("Configuring the app to use browser-refresh middleware.");
+
+                _refreshServer = new BrowserRefreshServer(options, context.Reporter);
                 state.BrowserRefreshServer = _refreshServer;
                 var serverUrls = string.Join(',', await _refreshServer.StartAsync(cancellationToken));
-                _reporter.Verbose($"Refresh server running at {serverUrls}.");
+                context.Reporter.Verbose($"Refresh server running at {serverUrls}.");
                 state.ProcessSpec.EnvironmentVariables["ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT"] = serverUrls;
                 state.ProcessSpec.EnvironmentVariables["ASPNETCORE_AUTO_RELOAD_WS_KEY"] = _refreshServer.ServerKey;
 
@@ -64,14 +55,14 @@ namespace Microsoft.DotNet.Watcher.Tools
                 state.ProcessSpec.EnvironmentVariables.DotNetStartupHooks.Add(pathToMiddleware);
                 state.ProcessSpec.EnvironmentVariables.AspNetCoreHostingStartupAssemblies.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
             }
-            else if (!_options.SuppressBrowserRefresh)
+            else if (_refreshServer != null)
             {
                 // We've detected a change. Notify the browser.
-                await (_refreshServer?.SendWaitMessageAsync(cancellationToken) ?? default);
+                await _refreshServer.SendWaitMessageAsync(cancellationToken);
             }
         }
 
-        private bool IsSupportedVersion(ProjectGraph context)
+        private static bool IsSupportedVersion(ProjectGraph context)
         {
             if (context.GraphRoots.FirstOrDefault() is not { } projectNode)
             {

@@ -134,7 +134,6 @@ namespace Microsoft.DotNet.Watcher
                 options.TargetFramework,
                 options.BuildProperties,
                 outputSink: null,
-                waitOnError: true,
                 trace: true);
 
             if (EnvironmentVariables.IsPollingEnabled)
@@ -202,13 +201,13 @@ namespace Microsoft.DotNet.Watcher
 
             if (enableHotReload)
             {
-                await using var watcher = new HotReloadDotNetWatcher(reporter, console, fileSetFactory, environmentOptions, options);
-                await watcher.WatchAsync(context, state, cancellationToken);
+                await using var watcher = new HotReloadDotNetWatcher(context, console, fileSetFactory, environmentOptions, options);
+                await watcher.WatchAsync(state, cancellationToken);
             }
             else
             {
-                await using var watcher = new DotNetWatcher(reporter, fileSetFactory, environmentOptions);
-                await watcher.WatchAsync(context, state, cancellationToken);
+                await using var watcher = new DotNetWatcher(context, fileSetFactory, environmentOptions);
+                await watcher.WatchAsync(state, cancellationToken);
             }
 
             return 0;
@@ -283,10 +282,9 @@ namespace Microsoft.DotNet.Watcher
                 options.TargetFramework,
                 options.BuildProperties,
                 outputSink: null,
-                waitOnError: false,
                 trace: false);
 
-            var files = await fileSetFactory.CreateAsync(cancellationToken);
+            var files = await fileSetFactory.CreateAsync(waitOnError: false, cancellationToken);
 
             if (files == null)
             {

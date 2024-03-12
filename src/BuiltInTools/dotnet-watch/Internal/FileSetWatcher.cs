@@ -5,27 +5,15 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    internal sealed class FileSetWatcher : IDisposable
+    internal sealed class FileSetWatcher(FileSet fileSet, IReporter reporter) : IDisposable
     {
-        private readonly FileWatcher _fileWatcher;
-        private readonly FileSet? _fileSet;
+        private readonly FileWatcher _fileWatcher = new(reporter);
 
-        public FileSetWatcher(FileSet? fileSet, IReporter reporter)
+        public async Task<FileItem?> GetChangedFileAsync(Action startedWatching, CancellationToken cancellationToken)
         {
-            Ensure.NotNull(fileSet, nameof(fileSet));
-
-            _fileSet = fileSet;
-            _fileWatcher = new FileWatcher(reporter);
-        }
-
-        public async Task<FileItem?> GetChangedFileAsync(CancellationToken cancellationToken, Action startedWatching)
-        {
-            if ( _fileSet != null )
+            foreach (var file in fileSet)
             {
-                foreach (var file in _fileSet)
-                {
-                    _fileWatcher.WatchDirectory(Path.GetDirectoryName(file.FilePath));
-                }
+                _fileWatcher.WatchDirectory(Path.GetDirectoryName(file.FilePath));
             }
 
             var tcs = new TaskCompletionSource<FileItem?>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -33,13 +21,10 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             void FileChangedCallback(string path, bool newFile)
             {
-                if ( _fileSet != null )
+                if (fileSet.TryGetValue(path, out var fileItem))
                 {
-                    if (_fileSet.TryGetValue(path, out var fileItem))
-                    {
-                        tcs.TrySetResult(fileItem);
-                    }
-                }     
+                    tcs.TrySetResult(fileItem);
+                }
             }
 
             _fileWatcher.OnFileChange += FileChangedCallback;
@@ -51,13 +36,9 @@ namespace Microsoft.DotNet.Watcher.Internal
         }
 
         public Task<FileItem?> GetChangedFileAsync(CancellationToken cancellationToken)
-        {
-            return GetChangedFileAsync(cancellationToken, () => { });
-        }
+            => GetChangedFileAsync(() => { }, cancellationToken);
 
         public void Dispose()
-        {
-            _fileWatcher.Dispose();
-        }
+            => _fileWatcher.Dispose();
     }
 }

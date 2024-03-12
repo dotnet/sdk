@@ -12,14 +12,14 @@ namespace Microsoft.DotNet.Watcher.Tools
         [Fact]
         public async Task ProcessAsync_LeavesArgumentsUnchangedOnFirstRun()
         {
-            var filter = new NoRestoreFilter();
-
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new()
             };
+
+            var filter = new NoRestoreFilter(context);
 
             var state = new WatchState()
             {
@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(context, state, default);
+            await filter.ProcessAsync(state, default);
 
             Assert.Same(_arguments, state.ProcessSpec.Arguments);
         }
@@ -37,14 +37,14 @@ namespace Microsoft.DotNet.Watcher.Tools
         [Fact]
         public async Task ProcessAsync_LeavesArgumentsUnchangedIfMsBuildRevaluationIsRequired()
         {
-            var filter = new NoRestoreFilter();
-
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new()
             };
+
+            var filter = new NoRestoreFilter(context);
 
             var state = new WatchState()
             {
@@ -55,13 +55,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
             state.ChangedFile = new FileItem { FilePath = "Test.proj" };
             state.RequiresMSBuildRevaluation = true;
             state.Iteration++;
 
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
             Assert.Same(_arguments, state.ProcessSpec.Arguments);
         }
@@ -69,8 +69,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [Fact]
         public async Task ProcessAsync_LeavesArgumentsUnchangedIfOptimizationIsSuppressed()
         {
-            var filter = new NoRestoreFilter();
-
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
@@ -79,6 +77,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                 LaunchSettingsProfile = new()
             };
 
+            var filter = new NoRestoreFilter(context);
+
             var state = new WatchState()
             {
                 Iteration = 0,
@@ -88,12 +88,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
             state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
             Assert.Same(_arguments, state.ProcessSpec.Arguments);
         }
@@ -101,9 +101,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         [Fact]
         public async Task ProcessAsync_AddsNoRestoreSwitch()
         {
-            // Arrange
-            var filter = new NoRestoreFilter();
-
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
@@ -120,30 +117,29 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            var filter = new NoRestoreFilter(context);
+
+            await filter.ProcessAsync(state, CancellationToken.None);
 
             state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            // Act
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
-            // Assert
             Assert.Equal(new[] { "run", "--no-restore" }, state.ProcessSpec.Arguments);
         }
 
         [Fact]
         public async Task ProcessAsync_AddsNoRestoreSwitch_WithAdditionalArguments()
         {
-            // Arrange
-            var filter = new NoRestoreFilter();
-
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new()
             };
+
+            var filter = new NoRestoreFilter(context);
 
             var state = new WatchState()
             {
@@ -154,30 +150,27 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
             state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            // Act
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
-            // Assert
             Assert.Equal(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework, "--", "foo=bar"], state.ProcessSpec.Arguments);
         }
 
         [Fact]
         public async Task ProcessAsync_AddsNoRestoreSwitch_ForTestCommand()
         {
-            // Arrange
-            var filter = new NoRestoreFilter();
-
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new()
             };
+
+            var filter = new NoRestoreFilter(context);
 
             var state = new WatchState()
             {
@@ -188,23 +181,19 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
             state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            // Act
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
-            // Assert
             Assert.Equal(["test", "--no-restore", "--filter SomeFilter"], state.ProcessSpec.Arguments);
         }
 
         [Fact]
         public async Task ProcessAsync_DoesNotModifyArgumentsForUnknownCommands()
         {
-            // Arrange
-            var filter = new NoRestoreFilter();
             var arguments = new[] { "ef", "database", "update" };
 
             var context = new DotNetWatchContext
@@ -213,6 +202,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new()
             };
+
+            var filter = new NoRestoreFilter(context);
 
             var state = new WatchState()
             {
@@ -223,15 +214,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
             state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            // Act
-            await filter.ProcessAsync(context, state, CancellationToken.None);
+            await filter.ProcessAsync(state, CancellationToken.None);
 
-            // Assert
             Assert.Same(arguments, state.ProcessSpec.Arguments);
         }
     }

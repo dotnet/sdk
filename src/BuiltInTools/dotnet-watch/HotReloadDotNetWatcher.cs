@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Graph;
@@ -9,45 +10,44 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 using Microsoft.Extensions.Tools.Internal;
-using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
 namespace Microsoft.DotNet.Watcher
 {
     internal sealed class HotReloadDotNetWatcher : IAsyncDisposable
     {
-        private readonly IReporter _reporter;
+        private readonly DotNetWatchContext _context;
         private readonly IConsole _console;
         private readonly ProcessRunner _processRunner;
         private readonly EnvironmentOptions _environmentOptions;
         private readonly CommandLineOptions _options;
-        private readonly IWatchFilter[] _filters;
+        private readonly ImmutableArray<IWatchFilter> _filters;
         private readonly RudeEditDialog? _rudeEditDialog;
 
-        public HotReloadDotNetWatcher(IReporter reporter, IConsole console, IFileSetFactory fileSetFactory, EnvironmentOptions environmentOptions, CommandLineOptions options)
+        public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IFileSetFactory fileSetFactory, EnvironmentOptions environmentOptions, CommandLineOptions options)
         {
-            _reporter = reporter;
-            _processRunner = new ProcessRunner(reporter);
+            _context = context;
+            _processRunner = new ProcessRunner(context.Reporter);
             _environmentOptions = environmentOptions;
             _options = options;
             _console = console;
 
-            _filters = new IWatchFilter[]
-            {
-                new DotNetBuildFilter(environmentOptions, fileSetFactory, _processRunner, _reporter),
-                new LaunchBrowserFilter(environmentOptions),
-                new BrowserRefreshFilter(environmentOptions, _reporter),
-            };
+            _filters =
+            [
+                new DotNetBuildFilter(context, environmentOptions, fileSetFactory, _processRunner),
+                new LaunchBrowserFilter(context, environmentOptions),
+                new BrowserRefreshFilter(context, environmentOptions),
+            ];
 
             if (!options.NonInteractive)
             {
                 var consoleInput = new ConsoleInputReader(_console, options.Quiet, environmentOptions.SuppressEmojis);
-                _rudeEditDialog = new RudeEditDialog(reporter, consoleInput, _console);
+                _rudeEditDialog = new RudeEditDialog(context.Reporter, consoleInput, _console);
             }
         }
 
-        public async Task WatchAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken)
+        public async Task WatchAsync(WatchState state, CancellationToken cancellationToken)
         {
-            Debug.Assert(context.ProjectGraph != null);
+            Debug.Assert(_context.ProjectGraph != null);
 
             var processSpec = state.ProcessSpec;
 
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Watcher
 
             if (!_options.NonInteractive)
             {
-                _reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_environmentOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
+                _context.Reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_environmentOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
 
                 _console.KeyPressed += (key) =>
                 {
@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Watcher
             }
             else
             {
-                _reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
+                _context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
             }
 
             while (true)
@@ -79,16 +79,16 @@ namespace Microsoft.DotNet.Watcher
 
                 for (var i = 0; i < _filters.Length; i++)
                 {
-                    await _filters[i].ProcessAsync(context, state, cancellationToken);
+                    await _filters[i].ProcessAsync(state, cancellationToken);
                 }
 
                 processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (state.Iteration + 1).ToString(CultureInfo.InvariantCulture);
-                processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = context.LaunchSettingsProfile.LaunchProfileName ?? string.Empty;
+                processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = _context.LaunchSettingsProfile.LaunchProfileName ?? string.Empty;
 
                 var fileSet = state.FileSet;
                 if (fileSet == null)
                 {
-                    _reporter.Error("Failed to find a list of files to watch");
+                    _context.Reporter.Error("Failed to find a list of files to watch");
                     return;
                 }
 
@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.Watcher
 
                 if (!fileSet.Project.IsNetCoreApp60OrNewer())
                 {
-                    _reporter.Error($"Hot reload based watching is only supported in .NET 6.0 or newer apps. Update the project's launchSettings.json to disable this feature.");
+                    _context.Reporter.Error($"Hot reload based watching is only supported in .NET 6.0 or newer apps. Update the project's launchSettings.json to disable this feature.");
                     return;
                 }
 
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Watcher
                     var project = state.FileSet?.Project;
                     Debug.Assert(project != null);
 
-                    ConfigureExecutable(processSpec, project, context.LaunchSettingsProfile);
+                    ConfigureExecutable(processSpec, project, _context.LaunchSettingsProfile);
                 }
 
                 using var currentRunCancellationSource = new CancellationTokenSource();
@@ -118,20 +118,20 @@ namespace Microsoft.DotNet.Watcher
                     cancellationToken,
                     currentRunCancellationSource.Token,
                     forceReload.Token);
-                using var fileSetWatcher = new HotReloadFileSetWatcher(fileSet, _reporter);
+                using var fileSetWatcher = new HotReloadFileSetWatcher(fileSet, _context.Reporter);
 
                 try
                 {
-                    using var hotReload = new HotReload(_reporter, context.ProjectGraph, state.BrowserRefreshServer);
+                    using var hotReload = new HotReload(_context.Reporter, _context.ProjectGraph, state.BrowserRefreshServer);
 
                     // Solution must be initialized before we start watching for file changes to avoid race condition
                     // when the solution captures state of the file after the changes has already been made.
                     await hotReload.InitializeAsync(state, cancellationToken);
 
-                    _reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{processSpec.GetArgumentsDisplay()}'");
+                    _context.Reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{processSpec.GetArgumentsDisplay()}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
 
-                    _reporter.Output("Started", emoji: "🚀");
+                    _context.Reporter.Output("Started", emoji: "🚀");
 
                     Task<FileItem[]?> fileSetTask;
                     Task finishedTask;
@@ -147,15 +147,15 @@ namespace Microsoft.DotNet.Watcher
                             {
                                 // Only show this error message if the process exited non-zero due to a normal process exit.
                                 // Don't show this if dotnet-watch killed the inner process due to file change or CTRL+C by the user
-                                _reporter.Error($"Application failed to start: {processTask.Exception?.InnerException?.Message}");
+                                _context.Reporter.Error($"Application failed to start: {processTask.Exception?.InnerException?.Message}");
                             }
                             break;
                         }
                         else
                         {
-                            if (MayRequireRecompilation(context.ProjectGraph, fileItems) is { } newFile)
+                            if (MayRequireRecompilation(_context.ProjectGraph, fileItems) is { } newFile)
                             {
-                                _reporter.Output($"New file: {GetRelativeFilePath(newFile.FilePath)}. Rebuilding the application.");
+                                _context.Reporter.Output($"New file: {GetRelativeFilePath(newFile.FilePath)}. Rebuilding the application.");
                                 break;
                             }
                             else if (fileItems.All(f => f.IsNewFile))
@@ -173,17 +173,18 @@ namespace Microsoft.DotNet.Watcher
 
                             if (fileItems.Length == 1)
                             {
-                                _reporter.Output($"File changed: {GetRelativeFilePath(fileItems[0].FilePath)}.");
+                                _context.Reporter.Output($"File changed: {GetRelativeFilePath(fileItems[0].FilePath)}.");
                             }
                             else
                             {
-                                _reporter.Output($"Files changed: {string.Join(", ", fileItems.Select(f => GetRelativeFilePath(f.FilePath)))}");
+                                _context.Reporter.Output($"Files changed: {string.Join(", ", fileItems.Select(f => GetRelativeFilePath(f.FilePath)))}");
                             }
+
                             var start = Stopwatch.GetTimestamp();
-                            if (await hotReload.TryHandleFileChange(context, fileItems, combinedCancellationSource.Token))
+                            if (await hotReload.TryHandleFileChange(_context, fileItems, combinedCancellationSource.Token))
                             {
                                 var totalTime = TimeSpan.FromTicks(Stopwatch.GetTimestamp() - start);
-                                _reporter.Verbose($"Hot reload change handled in {totalTime.TotalMilliseconds}ms.", emoji: "🔥");
+                                _context.Reporter.Verbose($"Hot reload change handled in {totalTime.TotalMilliseconds}ms.", emoji: "🔥");
                             }
                             else
                             {
@@ -193,7 +194,7 @@ namespace Microsoft.DotNet.Watcher
                                 }
                                 else
                                 {
-                                    _reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
+                                    _context.Reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
                                 }
                                 break;
                             }
@@ -210,17 +211,17 @@ namespace Microsoft.DotNet.Watcher
                     {
                         // Only show this error message if the process exited non-zero due to a normal process exit.
                         // Don't show this if dotnet-watch killed the inner process due to file change or CTRL+C by the user
-                        _reporter.Error($"Exited with error code {processTask.Result}");
+                        _context.Reporter.Error($"Exited with error code {processTask.Result}");
                     }
                     else
                     {
-                        _reporter.Output("Exited");
+                        _context.Reporter.Output("Exited");
                     }
 
                     if (finishedTask == processTask)
                     {
                         // Now wait for a file to change before restarting process
-                        _reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳");
+                        _context.Reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳");
                         await fileSetWatcher.GetChangedFileAsync(cancellationToken, forceWaitForNewUpdate: true);
                     }
                     else
@@ -232,7 +233,7 @@ namespace Microsoft.DotNet.Watcher
                 {
                     if (e is not OperationCanceledException)
                     {
-                        _reporter.Verbose($"Caught top-level exception from hot reload: {e}");
+                        _context.Reporter.Verbose($"Caught top-level exception from hot reload: {e}");
                     }
 
                     if (!currentRunCancellationSource.IsCancellationRequested)
@@ -243,7 +244,7 @@ namespace Microsoft.DotNet.Watcher
                     if (forceReload.IsCancellationRequested)
                     {
                         _console.Clear();
-                        _reporter.Output("Restart requested.", emoji: "🔄");
+                        _context.Reporter.Output("Restart requested.", emoji: "🔄");
                     }
                 }
             }

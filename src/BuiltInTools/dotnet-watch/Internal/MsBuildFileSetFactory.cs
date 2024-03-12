@@ -19,7 +19,6 @@ namespace Microsoft.DotNet.Watcher.Internal
         private readonly string _projectFile;
         private readonly OutputSink _outputSink;
         private readonly ProcessRunner _processRunner;
-        private readonly bool _waitOnError;
         private readonly IReadOnlyList<string> _buildFlags;
 
         public MsBuildFileSetFactory(
@@ -29,7 +28,6 @@ namespace Microsoft.DotNet.Watcher.Internal
             string? targetFramework,
             IReadOnlyList<(string, string)>? buildProperties,
             OutputSink? outputSink,
-            bool waitOnError,
             bool trace)
         {
             _reporter = reporter;
@@ -38,11 +36,9 @@ namespace Microsoft.DotNet.Watcher.Internal
             _outputSink = outputSink ?? new OutputSink();
             _processRunner = new ProcessRunner(reporter);
             _buildFlags = InitializeArgs(FindTargetsFile(), targetFramework, buildProperties, trace);
-
-            _waitOnError = waitOnError;
         }
 
-        public async Task<FileSet?> CreateAsync(CancellationToken cancellationToken)
+        public async Task<FileSet?> CreateAsync(bool waitOnError, CancellationToken cancellationToken)
         {
             var watchList = Path.GetTempFileName();
             try
@@ -137,6 +133,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                             result.RunCommand,
                             result.RunArguments,
                             result.RunWorkingDirectory);
+
                         return new FileSet(projectInfo, fileItems);
                     }
 
@@ -152,35 +149,30 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                     _reporter.Output(string.Empty);
 
-                    if (!_waitOnError)
+                    if (!waitOnError)
                     {
                         return null;
                     }
-                    else
+
+                    _reporter.Warn("Fix the error to continue or press Ctrl+C to exit.");
+
+                    var fileSet = new FileSet(projectInfo: null, new[] { new FileItem { FilePath = _projectFile } });
+
+                    using (var watcher = new FileSetWatcher(fileSet, _reporter))
                     {
-                        _reporter.Warn("Fix the error to continue or press Ctrl+C to exit.");
+                        await watcher.GetChangedFileAsync(cancellationToken);
 
-                        var fileSet = new FileSet(projectInfo: null, new[] { new FileItem { FilePath = _projectFile } });
-
-                        using (var watcher = new FileSetWatcher(fileSet, _reporter))
-                        {
-                            await watcher.GetChangedFileAsync(cancellationToken);
-
-                            _reporter.Output($"File changed: {_projectFile}");
-                        }
+                        _reporter.Output($"File changed: {_projectFile}");
                     }
                 }
             }
             finally
             {
-                if (File.Exists(watchList))
-                {
-                    File.Delete(watchList);
-                }
+                File.Delete(watchList);
             }
         }
 
-        private IReadOnlyList<string> InitializeArgs(string watchTargetsFile, string? targetFramework, IReadOnlyList<(string name, string value)>? buildProperties, bool trace)
+        private static IReadOnlyList<string> InitializeArgs(string watchTargetsFile, string? targetFramework, IReadOnlyList<(string name, string value)>? buildProperties, bool trace)
         {
             var args = new List<string>
             {
@@ -212,7 +204,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             return args;
         }
 
-        private string FindTargetsFile()
+        private static string FindTargetsFile()
         {
             var assemblyDir = Path.GetDirectoryName(typeof(MsBuildFileSetFactory).Assembly.Location);
             Debug.Assert(assemblyDir != null);

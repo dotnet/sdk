@@ -5,6 +5,6 @@ namespace Microsoft.DotNet.Watcher
 {
     internal interface IFileSetFactory
     {
-        Task<FileSet?> CreateAsync(CancellationToken cancellationToken);
+        Task<FileSet?> CreateAsync(bool waitOnError, CancellationToken cancellationToken);
     }
 }

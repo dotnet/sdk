@@ -3,39 +3,34 @@
 
 
 using System.Diagnostics;
+using Microsoft.DotNet.Watcher.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal class MSBuildEvaluationFilter : IWatchFilter
+    internal class MSBuildEvaluationFilter(DotNetWatchContext context, IFileSetFactory factory) : IWatchFilter
     {
         // File types that require an MSBuild re-evaluation
-        private static readonly string[] _msBuildFileExtensions = new[]
+        private static readonly string[] s_msBuildFileExtensions = new[]
         {
             ".csproj", ".props", ".targets", ".fsproj", ".vbproj", ".vcxproj",
         };
-        private static readonly int[] _msBuildFileExtensionHashes = _msBuildFileExtensions
+
+        private static readonly int[] s_msBuildFileExtensionHashes = s_msBuildFileExtensions
             .Select(e => e.GetHashCode(StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
-        private readonly IFileSetFactory _factory;
-
         private List<(string fileName, DateTime lastWriteTimeUtc)>? _msbuildFileTimestamps;
 
-        public MSBuildEvaluationFilter(IFileSetFactory factory)
-        {
-            _factory = factory;
-        }
-
-        public async ValueTask ProcessAsync(DotNetWatchContext context, WatchState state, CancellationToken cancellationToken)
+        public async ValueTask ProcessAsync(WatchState state, CancellationToken cancellationToken)
         {
             if (context.SuppressMSBuildIncrementalism)
             {
                 state.RequiresMSBuildRevaluation = true;
-                state.FileSet = await _factory.CreateAsync(cancellationToken);
+                state.FileSet = await factory.CreateAsync(waitOnError: true, cancellationToken);
                 return;
             }
 
-            if (state.Iteration == 0 || RequiresMSBuildRevaluation(context, state))
+            if (state.Iteration == 0 || RequiresMSBuildRevaluation(state))
             {
                 state.RequiresMSBuildRevaluation = true;
             }
@@ -44,12 +39,12 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 context.Reporter.Verbose("Evaluating dotnet-watch file set.");
 
-                state.FileSet = await _factory.CreateAsync(cancellationToken);
+                state.FileSet = await factory.CreateAsync(waitOnError: true, cancellationToken);
                 _msbuildFileTimestamps = GetMSBuildFileTimeStamps(state);
             }
         }
 
-        private bool RequiresMSBuildRevaluation(DotNetWatchContext context, WatchState state)
+        private bool RequiresMSBuildRevaluation(WatchState state)
         {
             Debug.Assert(state.Iteration > 0);
             Debug.Assert(_msbuildFileTimestamps != null);
@@ -113,9 +108,9 @@ namespace Microsoft.DotNet.Watcher.Tools
 #pragma warning disable RS1024 // Analyzer bug - https://github.com/dotnet/roslyn-analyzers/issues/4956
             var hashCode = string.GetHashCode(extension, StringComparison.OrdinalIgnoreCase);
 #pragma warning restore RS1024
-            for (var i = 0; i < _msBuildFileExtensionHashes.Length; i++)
+            for (var i = 0; i < s_msBuildFileExtensionHashes.Length; i++)
             {
-                if (_msBuildFileExtensionHashes[i] == hashCode && extension.Equals(_msBuildFileExtensions[i], StringComparison.OrdinalIgnoreCase))
+                if (s_msBuildFileExtensionHashes[i] == hashCode && extension.Equals(s_msBuildFileExtensions[i], StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

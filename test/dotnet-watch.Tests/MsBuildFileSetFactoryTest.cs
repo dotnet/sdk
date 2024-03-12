@@ -320,9 +320,9 @@ $@"<ItemGroup>
                 MuxerPath: _muxerPath,
                 WorkingDirectory: testDirectory);
 
-            var filesetFactory = new MsBuildFileSetFactory(options, _reporter, projectA, targetFramework: null, buildProperties: null, output, waitOnError: false, trace: true);
+            var filesetFactory = new MsBuildFileSetFactory(options, _reporter, projectA, targetFramework: null, buildProperties: null, output, trace: true);
 
-            var fileset = await filesetFactory.CreateAsync(CancellationToken.None);
+            var fileset = await filesetFactory.CreateAsync(waitOnError: false, CancellationToken.None);
 
             Assert.NotNull(fileset);
 
@@ -358,7 +358,7 @@ $@"<ItemGroup>
                 MuxerPath: _muxerPath,
                 WorkingDirectory: Path.GetDirectoryName(projectPath));
 
-            return new MsBuildFileSetFactory(options, _reporter, projectPath, targetFramework: null, buildProperties: null, new OutputSink(), waitOnError: false, trace: false).CreateAsync(CancellationToken.None);
+            return new MsBuildFileSetFactory(options, _reporter, projectPath, targetFramework: null, buildProperties: null, new OutputSink(), trace: false).CreateAsync(waitOnError: false, CancellationToken.None);
         }
 
         private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject.Name + ".csproj");
