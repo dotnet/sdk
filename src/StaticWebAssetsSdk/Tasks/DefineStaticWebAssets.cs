@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     {
                         case (null, null):
                             Log.LogMessage(MessageImportance.Low, "Computing fingerprint and integrity for asset '{0}'", candidate.ItemSpec);
-                            (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIdentity(candidate.ItemSpec, originalItemSpec));
+                            (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIntegrity(candidate.ItemSpec, originalItemSpec));
                             break;
                         case (null, not null):
                             Log.LogMessage(MessageImportance.Low, "Computing fingerprint for asset '{0}'", candidate.ItemSpec);

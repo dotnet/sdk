@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 #endif
     {
         public StaticWebAsset()
-        {            
+        {
         }
 
         public StaticWebAsset(StaticWebAsset asset)
@@ -224,11 +224,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         private (string Fingerprint, string Integrity) ComputeFingerprintAndIntegrity() =>
             (Fingerprint, Integrity) switch
             {
+                ("", "") => ComputeFingerprintAndIntegrity(Identity, OriginalItemSpec),
                 (not null, not null) => (Fingerprint, Integrity),
-                _ => ComputeFingerprintAndIdentity(Identity, OriginalItemSpec)
+                _ => ComputeFingerprintAndIntegrity(Identity, OriginalItemSpec)
             };
 
-        internal static (string fingerprint, string integrity) ComputeFingerprintAndIdentity(string identity, string originalItemSpec)
+        internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(string identity, string originalItemSpec)
         {
             var file = File.Exists(identity) ?
                 File.OpenRead(identity) :
@@ -379,12 +380,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 throw new InvalidOperationException($"Alternative asset '{Identity}' does not define an asset trait name or value.");
             }
 
-            if(string.IsNullOrEmpty(Fingerprint))
+            if (string.IsNullOrEmpty(Fingerprint))
             {
                 throw new InvalidOperationException($"Fingerprint for '{Identity}' is not defined.");
             }
 
-            if(string.IsNullOrEmpty(Integrity))
+            if (string.IsNullOrEmpty(Integrity))
             {
                 throw new InvalidOperationException($"Integrity for '{Identity}' is not defined.");
             }
