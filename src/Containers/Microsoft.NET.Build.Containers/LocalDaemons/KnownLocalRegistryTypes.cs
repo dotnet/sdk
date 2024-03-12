@@ -3,6 +3,7 @@
 
 using Microsoft.NET.Build.Containers.Resources;
 using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers.LocalDaemons;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -28,6 +29,16 @@ public static class KnownLocalRegistryTypes
                     nameof(Strings.UnknownLocalRegistryType),
                     type,
                     string.Join(",", KnownLocalRegistryTypes.SupportedLocalRegistryTypes)))
+        };
+    }
+
+    internal static ILocalRegistry CreateLocalRegistry(string archiveOutputPath, ContainerImageArchiveFormat archiveOutputFormat)
+    {
+        return archiveOutputFormat switch
+        {
+            ContainerImageArchiveFormat.Docker => new DockerArchiveFileRegistry(archiveOutputPath),
+            ContainerImageArchiveFormat.OpenContainerInitiative => new OciArchiveFileRegistry(archiveOutputPath),
+            _ => throw new ArgumentOutOfRangeException(nameof(archiveOutputFormat))
         };
     }
 }

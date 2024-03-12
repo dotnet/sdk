@@ -99,6 +99,8 @@
       <!-- Set the WorkingDirectory depending on the RID -->
       <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and !$(_ContainerIsTargetingWindows) ">/app</ContainerWorkingDirectory>
       <ContainerWorkingDirectory Condition="'$(ContainerWorkingDirectory)' == '' and $(_ContainerIsTargetingWindows) ">C:\app</ContainerWorkingDirectory>
+
+      <ContainerArchiveFormat Condition="'$(ContainerArchiveFormat)' == ''">Docker</ContainerArchiveFormat>
     </PropertyGroup>
 
     <ItemGroup Label="AppCommand Assignment" Condition="'$(ContainerAppCommandInstruction)' != 'None'">
