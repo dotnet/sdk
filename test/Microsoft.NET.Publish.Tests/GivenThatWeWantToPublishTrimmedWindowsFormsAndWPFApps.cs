@@ -109,7 +109,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
-        public void It_publishes_windows_Forms_app_with_no_wpf()
+        public void It_publishes_windows_forms_app_with_no_wpf()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
             var projectName = "WinformsNoWpfAssemblies";
@@ -118,9 +118,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.AdditionalProperties["UseWindowsForms"] = "true";
             testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
-            testProject.AdditionalProperties["PublishTrimmed"] = "true";
-            testProject.AdditionalProperties["_SuppressWinFormsTrimError"] = "true";
-            testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
+            testProject.AdditionalProperties["SelfContained"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);
@@ -144,7 +142,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
-        public void It_publishes_Wpf_app_with_no_wpf()
+        public void It_publishes_wpf_app_with_no_winforms()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
             var projectName = "WpfNoWinformsAssemblies";
@@ -153,6 +151,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.AdditionalProperties["UseWPF"] = "true";
             testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["SelfContained"] = "true";
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(testAsset);

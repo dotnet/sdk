@@ -31,11 +31,11 @@ namespace Microsoft.NET.Build.Tasks
 
             // Find any RuntimeFrameworks that matches with FrameworkReferences, so that we can apply that RuntimeFrameworks profile to the corresponding RuntimePack
             // Matches the RuntimeFramework with the FrameworkReference by comparing the FrameworkName metadata
-            List<ITaskItem> matchingRuntimeFrameworks = FrameworkReferences
-                .SelectMany(fxReference => RuntimeFrameworks
-                    .Where(rtFx => fxReference.ItemSpec.Equals(rtFx.GetMetadata(MetadataKeys.FrameworkName), StringComparison.OrdinalIgnoreCase) &&
-                                   !string.IsNullOrEmpty(rtFx.GetMetadata("Profile"))))
-                .ToList();
+            List<ITaskItem> matchingRuntimeFrameworks = RuntimeFrameworks != null ? FrameworkReferences
+                    .SelectMany(fxReference => RuntimeFrameworks.Where(rtFx =>
+                        fxReference.ItemSpec.Equals(rtFx.GetMetadata(MetadataKeys.FrameworkName), StringComparison.OrdinalIgnoreCase) &&
+                        !string.IsNullOrEmpty(rtFx.GetMetadata("Profile"))))
+                        .ToList() : null;
 
             HashSet<string> frameworkReferenceNames = new(FrameworkReferences.Select(item => item.ItemSpec), StringComparer.OrdinalIgnoreCase);
 
@@ -67,9 +67,11 @@ namespace Microsoft.NET.Build.Tasks
 
                 // For any RuntimeFrameworks that matches with FrameworkReferences, we can apply that RuntimeFrameworks profile to the corresponding RuntimePack
                 // Matches the RuntimeFramework with the RuntimePack by comparing the FrameworkName metadata. 'profile' will be an empty string if no matching RuntimeFramework is found
-                string profile = String.Join(";", matchingRuntimeFrameworks
+                string profile = matchingRuntimeFrameworks?
                     .Where(matchingRTReference => runtimePack.GetMetadata("FrameworkName").Equals(matchingRTReference.ItemSpec))
-                    .Select(matchingRTReference => matchingRTReference.GetMetadata("Profile")));
+                    .Select(matchingRTReference => matchingRTReference.GetMetadata("Profile"))
+                    .DefaultIfEmpty("")
+                    .Aggregate((result, next) => result + ";" + next);
 
                 string runtimePackRoot = runtimePack.GetMetadata(MetadataKeys.PackageDirectory);
 
@@ -132,7 +134,7 @@ namespace Microsoft.NET.Build.Tasks
                     var profileAttributeValue = fileElement.Attribute("Profile")?.Value;
 
                     var assemblyProfiles = profileAttributeValue?.Split(';');
-                    if (profileAttributeValue == null || !assemblyProfiles.Contains(profile, StringComparer.OrdinalIgnoreCase))
+                    if (profileAttributeValue == null || !assemblyProfiles.Any(p => profile.Contains(p)))
                     {
                         //  Assembly wasn't in the profile specified, so don't reference it
                         continue;
