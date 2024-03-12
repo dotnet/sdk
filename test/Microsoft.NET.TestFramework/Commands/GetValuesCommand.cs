@@ -83,8 +83,14 @@ namespace Microsoft.NET.TestFramework.Commands
                 }
             }
 
-            var propertyGroup = new XElement(ns + "PropertyGroup");
-            project.Root.Add(propertyGroup);
+            var propertyGroup = project.Root.Elements(ns + "PropertyGroup").FirstOrDefault();
+
+            if (propertyGroup == null)
+            {
+                propertyGroup = new XElement(ns + "PropertyGroup");
+                project.Root.AddAfterSelf(propertyGroup);
+            }
+            
             propertyGroup.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", $"$(CustomAfterDirectoryBuildTargets);{customAfterDirectoryBuildTargetsPath}"));
             propertyGroup.Add(new XElement(ns + "CustomAfterMicrosoftCommonCrossTargetingTargets", $"$(CustomAfterMicrosoftCommonCrossTargetingTargets);{customAfterDirectoryBuildTargetsPath}"));
 
