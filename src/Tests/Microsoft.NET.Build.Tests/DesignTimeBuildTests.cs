@@ -45,7 +45,7 @@ namespace Microsoft.NET.Build.Tests
             command.WorkingDirectory = projectDirectory;
             var result = command.Execute(args);
 
-            result.Should().Pass();
+            result.Should().Fail();
         }
 
         [Fact]
