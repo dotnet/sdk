@@ -205,10 +205,6 @@
           linux-ppc64le;
           "/>
 
-      <Net80AppHostRids Include="
-          @(Net70AppHostRids);
-          " />
-
       <Net70RuntimePackRids Include="
           @(Net60RuntimePackRids);
           linux-bionic-arm;
@@ -218,23 +214,40 @@
           linux-ppc64le;
           " />
 
-      <Net80RuntimePackRids Include="
-          @(Net70RuntimePackRids);
+      <Net80AppHostRids Include="
+          @(Net70AppHostRids);
+          freebsd-x64;
+          freebsd-arm64;
           " />
 
       <Net80AppHostRids Remove="win-arm" />
 
-      <NetCoreAppHostRids Include="
-          @(Net80AppHostRids);
+      <Net80RuntimePackRids Include="
+          @(Net70RuntimePackRids);
+          freebsd-x64;
+          freebsd-arm64;
           " />
 
       <Net80RuntimePackRids Remove="win-arm" />
 
-      <NetCoreRuntimePackRids Include="
-          @(Net80RuntimePackRids);
+      <Net90AppHostRids Include="
+          @(Net80AppHostRids);
+          linux-riscv64;
+          linux-musl-riscv64;
           " />
+
+      <Net90RuntimePackRids Include="
+          @(Net80RuntimePackRids);
+          linux-riscv64;
+          linux-musl-riscv64;
+          " />
+
+      <NetCoreAppHostRids Include="@(Net90AppHostRids)" />
+
+      <NetCoreRuntimePackRids Include="@(Net90RuntimePackRids)" />
+
       <!--
-        In source-build, we build the current RID from source, which may be
+        In source-only builds, we build the current RID from source, which may be
         non-portable and/or not an official RID.
         These packs for the non-portable RID are distributed with the SDK:
         - NETCore.App.Host
@@ -242,7 +255,7 @@
         - AspNetCore.App.Runtime (when BundleRuntimePacks)
       -->
       <NetCoreAppHostRids
-        Condition="'$(DotNetBuildFromSource)' == 'true'"
+        Condition="'$(DotNetBuildSourceOnly)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
       <NetCoreRuntimePackRids
@@ -251,6 +264,10 @@
 
       <AspNetCoreRuntimePackRids
         Condition="'$(BundleRuntimePacks)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
+      <ILCompilerSupportedRids
+        Condition="'$(BundleNativeAotCompiler)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
       <Net60MonoRuntimePackRids Include="
@@ -276,18 +293,24 @@
       <Net60MonoRuntimePackRids Remove="tizen.4.0.0-armel;tizen.5.0.0-armel" />
 
       <Net70MonoRuntimePackRids Include="
-      @(Net60MonoRuntimePackRids);
-      " />
+        @(Net60MonoRuntimePackRids);
+        " />
 
       <Net80MonoRuntimePackRids Include="
-      @(Net70MonoRuntimePackRids);
-      " />
+        @(Net70MonoRuntimePackRids);
+        freebsd-x64;
+        freebsd-arm64;
+        " />
 
-      <MonoRuntimePackRids Include="
-      @(Net80MonoRuntimePackRids);
-      " />
+      <Net80MonoRuntimePackRids Remove="win-arm" />
 
-      <MonoRuntimePackRids Remove="win-arm" />
+      <Net90MonoRuntimePackRids Include="
+        @(Net80MonoRuntimePackRids);
+        linux-riscv64;
+        linux-musl-riscv64;
+        " />
+
+      <MonoRuntimePackRids Include="@(Net90MonoRuntimePackRids)" />
 
       <AspNetCore30RuntimePackRids Include="
         win-x64;
@@ -318,11 +341,21 @@
 
       <Net70Crossgen2SupportedRids Include="@(Net60Crossgen2SupportedRids)" />
 
-      <Net80Crossgen2SupportedRids Include="@(Net70Crossgen2SupportedRids)" />
+      <Net80Crossgen2SupportedRids Include="
+        @(Net70Crossgen2SupportedRids);
+        freebsd-x64;
+        freebsd-arm64;
+        " />
 
-      <Crossgen2SupportedRids Include="@(Net80Crossgen2SupportedRids)" />
+      <Net80Crossgen2SupportedRids Remove="win-arm" />
 
-      <Crossgen2SupportedRids Remove="win-arm" />
+      <Net90Crossgen2SupportedRids Include="
+        @(Net80Crossgen2SupportedRids);
+        linux-riscv64;
+        linux-musl-riscv64
+        " />
+
+      <Crossgen2SupportedRids Include="@(Net90Crossgen2SupportedRids);" />
 
       <Net70ILCompilerSupportedRids Include="
         linux-arm64;
@@ -333,15 +366,23 @@
         win-x64;
         " />
 
-      <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
-           https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
       <Net80ILCompilerSupportedRids Include="
         @(Net70ILCompilerSupportedRids);
         osx-x64;
         osx-arm64;
+        freebsd-x64;
+        freebsd-arm64;
         " />
 
-      <ILCompilerSupportedRids Include="@(Net80ILCompilerSupportedRids)" />
+      <Net90ILCompilerSupportedRids Include="
+        @(Net80ILCompilerSupportedRids);
+        linux-arm;
+        linux-musl-arm;
+        " />
+
+      <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
+           https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
+      <ILCompilerSupportedRids Include="@(Net90ILCompilerSupportedRids)" />
 
       <Net80NativeAOTRuntimePackRids Include="
           ios-arm64;
@@ -356,14 +397,18 @@
           linux-bionic-x64;
           osx-arm64;
           osx-x64;
+          freebsd-arm64;
+          freebsd-x64;
           "
           />
 
-      <NativeAOTRuntimePackRids Include="
+      <Net90NativeAOTRuntimePackRids Include="
           @(Net80NativeAOTRuntimePackRids);
           linux-x64;
+          linux-arm;
           linux-arm64;
           linux-musl-x64;
+          linux-musl-arm;
           linux-musl-arm64;
           win-x64;
           win-arm64;
@@ -372,13 +417,16 @@
           "
           />
 
+      <NativeAOTRuntimePackRids Include="@(Net90NativeAOTRuntimePackRids)" />
+
       <AspNetCore31RuntimePackRids Include="@(AspNetCore30RuntimePackRids)" />
       <AspNetCore50RuntimePackRids Include="@(AspNetCore31RuntimePackRids);linux-musl-arm;win-arm64" />
       <AspNetCore60RuntimePackRids Include="@(AspNetCore50RuntimePackRids);osx-arm64;linux-s390x;linux-loongarch64" />
       <AspNetCore70RuntimePackRids Include="@(AspNetCore60RuntimePackRids);linux-ppc64le" />
-      <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids)" />
+      <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids);freebsd-x64;freebsd-arm64" />
       <AspNetCore80RuntimePackRids Remove="win-arm" />
-      <AspNetCoreRuntimePackRids Include="@(AspNetCore80RuntimePackRids)" />
+      <AspNetCore90RuntimePackRids Include="@(AspNetCore80RuntimePackRids);linux-riscv64;linux-musl-riscv64" />
+      <AspNetCoreRuntimePackRids Include="@(AspNetCore90RuntimePackRids)" />
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
       <WindowsDesktop31RuntimePackRids Include="@(WindowsDesktop30RuntimePackRids)" />
@@ -386,10 +434,10 @@
       <WindowsDesktopRuntimePackRids Include="@(WindowsDesktop50RuntimePackRids)" />
 
       <_KnownRuntimeIdentiferPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6;tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildFromSource)' != 'true'" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6" Condition="'$(DotNetBuildFromSource)' == 'true' and !$(ProductMonikerRid.StartsWith('rhel.6-'))" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildFromSource)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildFromSource)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6;tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="rhel.6" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('rhel.6-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
     </ItemGroup>
 
     <!--
@@ -478,6 +526,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BundledNETCorePlatformsPackageVersion>$(_NETCorePlatformsPackageVersion)</BundledNETCorePlatformsPackageVersion>
     <BundledRuntimeIdentifierGraphFile>%24(MSBuildThisFileDirectory)RuntimeIdentifierGraph.json</BundledRuntimeIdentifierGraphFile>
     <NETCoreSdkVersion>$(Version)</NETCoreSdkVersion>
+    <SdkAnalysisLevel>$(SdkFeatureBand)</SdkAnalysisLevel>
     <NETCoreSdkRuntimeIdentifier>$(ProductMonikerRid)</NETCoreSdkRuntimeIdentifier>
     <NETCoreSdkPortableRuntimeIdentifier>$(PortableProductMonikerRid)</NETCoreSdkPortableRuntimeIdentifier>
     <_NETCoreSdkIsPreview>$(_NETCoreSdkBeingBuiltIsPreview)</_NETCoreSdkIsPreview>

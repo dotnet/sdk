@@ -220,11 +220,17 @@ src/source-build-externals/src/xunit/xunit.sln|json
 # A patch which removes the license usage but contains references to the removed license as part of the patch reference lines
 src/source-build-externals/patches/application-insights/0002-Remove-WebGrease-from-TPN-2816.patch
 
+# Scanner is identifying the https://github.com/SixLabors/ImageSharp/blob/master/LICENSE license as unknown. But this license is not applicable because we're
+# relying on the Spectre.Console distribution.
+# See https://github.com/dotnet/dotnet/blob/c6a7278fbb7d79fa3d1f386ef0dc8474043ed06c/src/source-build-externals/src/spectre-console/README.md?plain=1#L104
+src/source-build-externals/src/spectre-console/README.md|unknown-license-reference
+
 #
 # source-build-reference-packages
 #
 
 # False positive
+src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.aspnetcore.app.ref/8.0.0/THIRD-PARTY-NOTICES.TXT|unknown
 src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.netcore.app.ref/3.*/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/1.6.1/ThirdPartyNotices.txt|unknown
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.0.*/THIRD-PARTY-NOTICES.TXT|unknown

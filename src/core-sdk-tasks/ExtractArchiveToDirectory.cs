@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.Build.Tasks
                             retVal = base.Execute();
 #else
                             // Decompress GZip content
-                            using FileStream compressedFileStream = File.Open(SourceArchive, FileMode.Open);
+                            using FileStream compressedFileStream = File.OpenRead(SourceArchive);
                             using var decompressor = new GZipStream(compressedFileStream, CompressionMode.Decompress);
                             using var decompressedStream = new MemoryStream();
                             decompressor.CopyTo(decompressedStream);

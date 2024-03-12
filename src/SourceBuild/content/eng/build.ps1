@@ -1,28 +1,39 @@
 [CmdletBinding(PositionalBinding=$false)]
 Param(
-  [string][Alias('c')]$configuration = "Release",
-  [switch] $clean,
+  # Common settings
   [switch][Alias('bl')]$binaryLog,
+  [string][Alias('c')]$configuration = "Release",
+  [string][Alias('v')]$verbosity = "minimal",
+
+  # Actions
+  [switch]$clean,
+  [switch][Alias('h')]$help,
+
+  # Advanced settings
+  [switch]$buildTests,
+  [switch]$ci,
+  [switch][Alias('cwb')]$cleanWhileBuilding,
   [switch][Alias('nobl')]$excludeCIBinarylog,
-  [switch] $ci,
   [switch] $prepareMachine,
-  [switch] $help,
   [Parameter(ValueFromRemainingArguments=$true)][String[]]$properties
 )
 
 function Get-Usage() {
   Write-Host "Common settings:"
-  Write-Host "  -configuration <value>  Build configuration: 'Debug' or 'Release' (short: -c). [Default: Release]"
   Write-Host "  -binaryLog              Output binary log (short: -bl)"
-  Write-Host "  -help                   Print help and exit"
+  Write-Host "  -configuration <value>  Build configuration: 'Debug' or 'Release' (short: -c). [Default: Release]"
+  Write-Host "  -verbosity <value>      Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
   Write-Host ""
 
   Write-Host "Actions:"
   Write-Host "  -clean                  Clean the solution"
+  Write-Host "  -help                   Print help and exit (short: -h)"
   Write-Host ""
 
   Write-Host "Advanced settings:"
+  Write-Host "  -build-tests            Build repository tests"
   Write-Host "  -ci                     Set when running on CI server"
+  Write-Host "  -cleanWhileBuilding     Cleans each repo after building (reduces disk space usage, short: -cwb)"
   Write-Host "  -excludeCIBinarylog     Don't output binary log (short: -nobl)"
   Write-Host "  -prepareMachine         Prepare machine for CI run, clean up processes after build"
   Write-Host ""
@@ -32,18 +43,26 @@ function Get-Usage() {
 
 # Set the NUGET_PACKAGES dir so that we don't accidentally pull some packages from the global location,
 # They should be pulled from the local feeds.
-$env:NUGET_PACKAGES="$PSScriptRoot\prereqs\packages\restored\"
+$env:NUGET_PACKAGES="$RepoRoot\.packages\"
+
+if ($help) {
+  Get-Usage
+  exit 0
+}
 
 function Build {
   InitializeToolset
 
   $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
+  $cwb = if ($cleanWhileBuilding) { '/p:CleanWhileBuilding=true' } else { '' }
+  $btst = if ($buildTests) { '/p:DotNetBuildTests=true' } else { '' }
   $buildProj = Join-Path $RepoRoot 'build.proj'
 
   MSBuild $buildProj `
     $bl `
-    --tl:off `
     /p:Configuration=$configuration `
+    $cwb `
+    $btst `
     @properties
 }
 
@@ -56,16 +75,10 @@ try {
     exit 0
   }
 
-  if ($help -or (($null -ne $properties) -and ($properties.Contains('/help') -or $properties.Contains('/?')))) {
-    Print-Usage
-    exit 0
-  }
-
   if ($ci) {
     if (-not $excludeCIBinarylog) {
       $binaryLog = $true
     }
-    $nodeReuse = $false
   }
 
   Build

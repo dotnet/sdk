@@ -15,13 +15,17 @@
       differently from the ArcadeBuildFromSource MSBuild arg. Including both args is fine, but the
       custom sourcebuild arg is the one that's required. This avoids running bootstrapping twice.
     -->
-    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)sourcebuild</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)sourcebuild $(FlagParameterPrefix)tfm $(NetCurrent) /p:SourceBuildBootstrapTfm=$(NetCurrent)</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="msbuild" /> 
-    <RepositoryReference Include="source-build-externals" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
 </Project>

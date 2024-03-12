@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15.5)
+cmake_minimum_required(VERSION 3.20)
 
 # Create project named finalizer, this will
 # will generate Finalizer.vcxproj
@@ -55,6 +55,7 @@ target_link_libraries(Finalizer shell32.lib)
 target_link_libraries(Finalizer advapi32.lib)
 target_link_libraries(Finalizer version.lib)
 target_link_libraries(Finalizer msi.lib)
+target_link_libraries(Finalizer shlwapi.lib)
 
 # Add WiX libraries
 target_link_libraries(Finalizer wcautil.lib)

@@ -492,12 +492,64 @@ LExit:
     return hr;
 }
 
+void RemoveInstallStateFile(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczPlatform)
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczProgramData = NULL;
+    LPWSTR sczInstallStatePath = NULL;
+    LPWSTR sczPath = NULL;
+
+    hr = ShelGetFolder(&sczProgramData, CSIDL_COMMON_APPDATA);
+    ExitOnFailure(hr, "Failed to get shell folder.");
+
+    hr = PathConcat(sczProgramData, L"dotnet", &sczInstallStatePath);
+    ExitOnFailure(hr, "Failed to concat dotnet to install state path.");
+
+    hr = PathConcat(sczInstallStatePath, L"workloads", &sczInstallStatePath);
+    ExitOnFailure(hr, "Failed to concat workloads to install state path.");
+
+    hr = PathConcat(sczInstallStatePath, sczPlatform, &sczInstallStatePath);
+    ExitOnFailure(hr, "Failed to concat platform (%ls) to install state path.", sczPlatform);
+
+    hr = PathConcat(sczInstallStatePath, sczSdkFeatureBandVersion, &sczInstallStatePath);
+    ExitOnFailure(hr, "Failed to concat feature band (%ls) to install state path.", sczSdkFeatureBandVersion);
+
+    hr = PathConcat(sczInstallStatePath, L"installstate", &sczInstallStatePath);
+    ExitOnFailure(hr, "Failed to concat installstate to install state path.");
+
+    hr = PathConcat(sczInstallStatePath, L"default.json", &sczInstallStatePath);
+    ExitOnFailure(hr, "Failed to concat default.json to install state path.");
+
+    if (FileExistsEx(sczInstallStatePath, NULL))
+    {
+        LogStringLine(REPORT_STANDARD, "Deleting install state file: %ls", sczInstallStatePath);
+        hr = FileEnsureDelete(sczInstallStatePath);
+        ExitOnFailure(hr, "Failed to delete install state file: %ls", sczInstallStatePath);
+
+        hr = PathGetParentPath(sczInstallStatePath, &sczPath);
+        ExitOnFailure(hr, "Failed to get parent path of install state file.");
+
+        LogStringLine(REPORT_STANDARD, "Cleaning up empty workload folders.");
+        DirDeleteEmptyDirectoriesToRoot(sczPath, 0);
+    }
+    else
+    {
+        LogStringLine(REPORT_STANDARD, "Install state file does not exist: %ls", sczInstallStatePath);
+    }
+
+LExit:
+    ReleaseStr(sczPath);
+    ReleaseStr(sczInstallStatePath)
+    ReleaseStr(sczProgramData);
+}
+
 int wmain(int argc, wchar_t* argv[])
 {
     HRESULT hr = S_OK;
     DWORD dwExitCode = 0;
     LPWSTR sczDependent = NULL;
     LPWSTR sczFeatureBandVersion = NULL;
+    LPWSTR sczPlatform = NULL;
     BOOL bRestartRequired = FALSE;
     BOOL bSdkFeatureBandInstalled = FALSE;
     int iMajor = 0;
@@ -507,16 +559,19 @@ int wmain(int argc, wchar_t* argv[])
     hr = ::Initialize(argc, argv);
     ExitOnFailure(hr, "Failed to initialize.");
 
+    hr = StrAllocString(&sczPlatform, argv[3], 0);
+    ExitOnFailure(hr, "Failed to copy platform argument.");
+
     // Convert the full SDK version to a feature band version
     hr = ParseSdkVersion(argv[2], &sczFeatureBandVersion);
     ExitOnFailure(hr, "Failed to parse version, %ls.", argv[2]);
 
     // Create the dependent value, e.g., Microsoft.NET.Sdk,6.0.300,arm64
-    hr = StrAllocFormatted(&sczDependent, L"Microsoft.NET.Sdk,%ls,%ls", sczFeatureBandVersion, argv[3]);
+    hr = StrAllocFormatted(&sczDependent, L"Microsoft.NET.Sdk,%ls,%ls", sczFeatureBandVersion, sczPlatform);
     ExitOnFailure(hr, "Failed to create dependent.");
     LogStringLine(REPORT_STANDARD, "Setting target dependent to %ls.", sczDependent);
 
-    hr = ::DetectSdk(sczFeatureBandVersion, argv[3], &bSdkFeatureBandInstalled);
+    hr = ::DetectSdk(sczFeatureBandVersion, sczPlatform, &bSdkFeatureBandInstalled);
     ExitOnFailure(hr, "Failed to detect installed SDKs.");
 
     // If the feature band is still present, do not remove workloads.
@@ -529,7 +584,7 @@ int wmain(int argc, wchar_t* argv[])
     hr = ::RemoveDependent(sczDependent, &bRestartRequired);
     ExitOnFailure(hr, "Failed to remove dependent \"%ls\".", sczDependent);
 
-    hr = ::DeleteWorkloadRecords(sczFeatureBandVersion, argv[3]);
+    hr = ::DeleteWorkloadRecords(sczFeatureBandVersion, sczPlatform);
     ExitOnFailure(hr, "Failed to remove workload records.");
 
     if (bRestartRequired)
@@ -537,9 +592,12 @@ int wmain(int argc, wchar_t* argv[])
         dwExitCode = ERROR_SUCCESS_REBOOT_REQUIRED;
     }
 
+    RemoveInstallStateFile(sczFeatureBandVersion, sczPlatform);
+
 LExit:
     ReleaseStr(sczDependent);
     ReleaseStr(sczFeatureBandVersion);
+    ReleaseStr(sczPlatform);
     LogUninitialize(TRUE);
     RegUninitialize();
     WiuUninitialize();

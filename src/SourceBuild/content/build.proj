@@ -10,6 +10,12 @@
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
   <Target Name="Build">
+    <PropertyGroup>
+      <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' == 'true'">source-build</BuildModeInfoText>
+      <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' != 'true'">non-source-build</BuildModeInfoText>
+    </PropertyGroup>
+
+    <Message Text="Build Mode: $(BuildModeInfoText)" Importance="high" />
     <Message Text="Build Environment: $(TargetArchitecture) $(Configuration) $(TargetOS) $(TargetRid)" Importance="high" />
 
     <MSBuild Projects="$(ToolsDir)init-build.proj;
@@ -19,6 +25,14 @@
              StopOnFirstFailure="true" />
   </Target>
 
-  <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildFromSource)' == 'true'" />
+  <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+  <Import Project="$(RepositoryEngineeringDir)sdkArchiveDiff.targets" Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" />
+
+  <!-- Intentionally below the import to appear at the end. -->
+  <Target Name="LogBuildOutputFolders"
+          AfterTargets="Build">
+   <Message Importance="high" Text="Shipping packages are located in '$(ArtifactsShippingPackagesDir)'." />
+   <Message Importance="high" Text="Shipping assets are located in '$(ArtifactsAssetsDir)'." />
+  </Target>
 
 </Project>

@@ -15,13 +15,14 @@
       UnpackTarballs;
       BuildXPlatTasks;
       BuildMSBuildSdkResolver;
+      BuildSdkArchiveDiff;
       BuildLeakDetection;
       ExtractToolPackage;
       GenerateRootFs;
       PoisonPrebuiltPackages" />
 
   <Target Name="UnpackTarballs"
-          Condition="'$(DotNetBuildFromSource)' == 'true'"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)UnpackTarballs.complete" >
     <PropertyGroup>
@@ -67,13 +68,17 @@
              Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
 
     <MSBuild Projects="tasks\SourceBuild.MSBuildSdkResolver\SourceBuild.MSBuildSdkResolver.csproj"
-             Targets="Build;InstallResolver" />
+             Targets="Build" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)BuildMSBuildSdkResolver.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
   </Target>
+
+  <PropertyGroup>
+    <SourceBuildMSBuildSdkResolverManifestPath>$([MSBuild]::NormalizePath('$(VSMSBuildSdkResolversDir)', 'SourceBuild.MSBuildSdkResolver', 'SourceBuild.MSBuildSdkResolver.xml'))</SourceBuildMSBuildSdkResolverManifestPath>
+  </PropertyGroup>
 
   <!-- Build msbuild tasks. -->
   <Target Name="BuildXPlatTasks"
@@ -112,6 +117,15 @@
     </Touch>
   </Target>
 
+  <Target Name="BuildSdkArchiveDiff"
+          Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" >
+    <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff\Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff.csproj"
+             Targets="Restore"
+             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
+    <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff\Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff.csproj"
+             Targets="Build" />
+  </Target>
+
   <Target Name="GenerateRootFs"
           Condition="'$(BuildOS)' != 'windows' and '$(CrossBuild)' == 'true' and '$(ROOTFS_DIR)' == ''">
     <PropertyGroup>
@@ -119,15 +133,15 @@
       <ArmEnvironmentVariables Condition="'$(Platform)' == 'armel'">ROOTFS_DIR=$(ArtifactsObjDir)crossrootfs/armel</ArmEnvironmentVariables>
     </PropertyGroup>
 
-    <Exec Command="$(ArmEnvironmentVariables) $(RepositoryEngineeringDir)cross/build-rootfs.sh"
-          Condition="$(TargetArchitecture.Contains('arm')) and '$(TargetArchitecture)' != 'armel' and '$(BuildArchitecture)' != 'arm64' and '$(BuildArchitecture)' != 'arm'" />
-    <Exec Command="$(ArmEnvironmentVariables) $(RepositoryEngineeringDir)cross/armel/tizen-build-rootfs.sh"
+    <Exec Command="$(ArmEnvironmentVariables) $(RepositoryEngineeringDir)common/cross/build-rootfs.sh"
+          Condition="'$(TargetArchitecture)' != 'armel' and '$(BuildArchitecture)' != '$(TargetArchitecture)'" />
+    <Exec Command="$(ArmEnvironmentVariables) $(RepositoryEngineeringDir)common/cross/armel/tizen-build-rootfs.sh"
           Condition="'$(TargetArchitecture)' == 'armel'" />
   </Target>
 
   <!-- Extract Arcade prebuilt package into the bootstrap folder and prepare it. -->
   <Target Name="ExtractToolPackage"
-          Condition="'$(DotNetBuildFromSource)' == 'true'"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'"
           DependsOnTargets="UnpackTarballs"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">
