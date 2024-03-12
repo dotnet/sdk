@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" InitialTargets="CheckPackagesPropsDirectory">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackagesPropsDirectory></PackagesPropsDirectory>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <Target Name="CheckPackagesPropsDirectory">
+    <Error Condition="'$(PackagesPropsDirectory)' == ''" Text="PackagesPropsDirectory is not set. Please pass as an MSBuild Property" />
+    <Error Condition="!Exists('$(PackagesPropsDirectory)/PackageVersions.props')" Text="PackageVersions.props does not exist in $(PackagesPropsDirectory)." />
+  </Target>
+
+  <!-- Need to condition this import because msbuild will complain about the project not being valid otherwise. -->
+  <!-- With the condition, the CheckPackagesPropsDirectory will run as expected and show the respective errors. -->
+  <Import Project="$(PackagesPropsDirectory)/PackageVersions.props" Condition="'$(PackagesPropsDirectory)' != ''" />
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="$(MicrosoftExtensionsFileSystemGlobbingVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsoleVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsLoggingVersion)" />
+    <PackageReference Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
+  </ItemGroup>
+
+</Project>
