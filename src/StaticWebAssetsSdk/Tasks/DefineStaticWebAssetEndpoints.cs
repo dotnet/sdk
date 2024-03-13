@@ -11,7 +11,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
     public class DefineStaticWebAssetEndpoints : Task
     {
         [Required]
-        public ITaskItem[] StaticWebAssets { get; set; }
+        public ITaskItem[] CandidateAssets { get; set; }
+
+        [Required]
+        public ITaskItem[] CandidateEndpoints { get; set; }
 
         [Required]
         public ITaskItem[] ContentTypeMappings { get; set; }
@@ -21,49 +24,45 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public override bool Execute()
         {
-            var staticWebAssets = StaticWebAssets.Select(StaticWebAsset.FromTaskItem);
+            var staticWebAssets = CandidateAssets.Select(StaticWebAsset.FromTaskItem);
+            var existingEndpoints = StaticWebAssetEndpoint.FromItemGroup(CandidateEndpoints);
+            var existingEndpointsByAssetFile = existingEndpoints
+                .GroupBy(e => e.AssetFile, OSPath.PathComparer)
+                .ToDictionary(g => g.Key, g => new HashSet<StaticWebAssetEndpoint>(g));
+
             var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
             var endpoints = new List<StaticWebAssetEndpoint>();
 
             foreach (var asset in staticWebAssets)
             {
-                if (asset.IsPublishOnly())
+                StaticWebAssetEndpoint endpoint = null;
+                if (!asset.IsDiscovered() && !asset.IsComputed())
                 {
+                    // If the asset is not for the current project, we skip it.
+                    // Package endpoints are already defined in the package Endpoints.props file.
+                    // Referenced project endpoints are retrieved from the call to GetCurrentProjectBuildStaticWebAssetItems and
+                    // GetCurrentProjectPublishStaticWebAssetItems respectively.
+                    Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because it is not for the current project.");
                     continue;
                 }
 
-                var endpoint = new StaticWebAssetEndpoint
-                {
-                    Route = asset.ComputeTargetPath("", '/'),
-                    AssetFile = asset.Identity,
-                    ResponseHeaders = [
-                        new() {
-                            Name = "Content-Type",
-                            Value = ResolveContentType(asset, contentTypeMappings)
-                        },
-                        new()
-                        {
-                            Name = "Content-Length",
-                            Value = GetFileLength(asset),
-                        },
-                        new()
-                        {
-                            Name = "ETag",
-                            Value = asset.Integrity,
-                        },
-                        new()
-                        {
-                            Name = "Last-Modified",
-                            Value = GetFileLastModified(asset)
-                        },
-                        new()
-                        {
-                            Name = "Accept-Ranges",
-                            Value = "bytes"
-                        }
-                    ]
-                };
+                // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
+                // package or a referenced project and ignored if it comes from the current project.
+                // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
+                // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
+                // adjusted at that time.
+                endpoint = CreateEndpoint(asset, contentTypeMappings);
 
+                // Check if the endpoint we are about to define already exists. This can happen during publish as assets defined
+                // during the build will have already defined endpoints and we only want to add new ones.
+                if (existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set) &&
+                    set.TryGetValue(endpoint, out var existingEndpoint))
+                {
+                    Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {existingEndpoint.Route}.");
+                    continue;
+                }
+
+                Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
                 endpoints.Add(endpoint);
             }
 
@@ -71,6 +70,41 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
             return !Log.HasLoggedErrors;
         }
+
+        private StaticWebAssetEndpoint CreateEndpoint(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings) =>
+            new()
+            {
+                Route = asset.ComputeTargetPath("", '/'),
+                AssetFile = asset.Identity,
+                ResponseHeaders =
+                [
+                    new()
+                    {
+                        Name = "Content-Type",
+                        Value = ResolveContentType(asset, contentTypeMappings)
+                    },
+                    new()
+                    {
+                        Name = "Content-Length",
+                        Value = GetFileLength(asset),
+                    },
+                    new()
+                    {
+                        Name = "ETag",
+                        Value = asset.Integrity,
+                    },
+                    new()
+                    {
+                        Name = "Last-Modified",
+                        Value = GetFileLastModified(asset)
+                    },
+                    new()
+                    {
+                        Name = "Accept-Ranges",
+                        Value = "bytes"
+                    }
+                ]
+            };
 
         // Last-Modified: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
         // Directives

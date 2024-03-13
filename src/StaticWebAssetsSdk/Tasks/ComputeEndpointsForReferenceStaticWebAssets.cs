@@ -6,17 +6,13 @@ using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class ComputeEndpointsForStaticWebAssets : Task
+public class ComputeEndpointsForReferenceStaticWebAssets : Task
 {
     [Required]
     public ITaskItem[] Assets { get; set; }
 
     [Required]
     public ITaskItem[] CandidateEndpoints { get; set; }
-
-    public bool OnlyStandaloneEndpoints { get; set; }
-
-    public bool ApplyBasePath { get; set; }
 
     [Output]
     public ITaskItem[] Endpoints { get; set; }
@@ -32,19 +28,21 @@ public class ComputeEndpointsForStaticWebAssets : Task
         {
             if (assets.TryGetValue(candidateEndpoint.AssetFile, out var asset))
             {
-                if (OnlyStandaloneEndpoints && !string.Equals(asset.ComputeTargetPath("", '/'), candidateEndpoint.Route, StringComparison.OrdinalIgnoreCase))
-                {
-                    Log.LogMessage(MessageImportance.Low, $"Skipping endpoint {candidateEndpoint.Route} does match the asset path {asset.ComputeTargetPath("", '/')}.");
-                }
-                else
-                {
-                    Log.LogMessage(MessageImportance.Low, $"Adding endpoint {candidateEndpoint.Route} for asset {candidateEndpoint.AssetFile}.");
-                    endpoints.Add(candidateEndpoint);
-                }
+                // We need to adjust the path to include the base path for the asset, since this is going to be used
+                // as a reference.
+                // Note that the caller is responsible for ensuring that only assets meant for the current project and
+                // destined to be used as a reference by other project are passed to this task.
+
+                var oldRoute = candidateEndpoint.Route;
+                candidateEndpoint.Route = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, candidateEndpoint.Route, '/');
+
+                Log.LogMessage(MessageImportance.Low, "Adding endpoint {0} for asset {1} with updated route {2}.", candidateEndpoint.Route, candidateEndpoint.AssetFile, candidateEndpoint.Route);
+
+                endpoints.Add(candidateEndpoint);
             }
             else
             {
-                Log.LogMessage(MessageImportance.Low, $"Skipping endpoint {candidateEndpoint.Route} because the asset {candidateEndpoint.AssetFile} was not found.");
+                Log.LogMessage(MessageImportance.Low, "Skipping endpoint {0} because the asset {1} was not found.", candidateEndpoint.Route, candidateEndpoint.AssetFile);
             }
         }
 

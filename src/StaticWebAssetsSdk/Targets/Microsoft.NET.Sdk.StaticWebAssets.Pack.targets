@@ -19,7 +19,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetEndpointsPropsFile"
-    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsPropsFile"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
@@ -145,16 +144,16 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="StaticWebAssets" ItemName="_PackStaticWebAssets" />
     </ComputeReferenceStaticWebAssetItems>
 
-    <!-- This is similar to what we do when providing assets as reference. We use _PackStaticWebAssets as ComputeEndpointsForStaticWebAssets
+    <!-- This is similar to what we do when providing assets as reference. We use _PackStaticWebAssets as ComputeEndpointsForReferenceStaticWebAssets
       discards any endpoint that doesn't have a matching asset, which acts as a filter to ensure we only provide the relevant endpoints.
     -->
-    <ComputeEndpointsForStaticWebAssets
+    <ComputeEndpointsForReferenceStaticWebAssets
       Assets="@(_PackStaticWebAssets)"
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       ApplyBasePath="true"
     >
       <Output TaskParameter="Endpoints" ItemName="_PackStaticWebAssetEndpoints" />
-    </ComputeEndpointsForStaticWebAssets>
+    </ComputeEndpointsForReferenceStaticWebAssets>
 
     <!-- Generates a props file that goes in build\Microsoft.AspNetCore.StaticWebAssets.props
          and that describes the static web assets for the package.

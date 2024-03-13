@@ -32,6 +32,8 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>
         {
             result[i] = FromTaskItem(endpoints[i]);
             Array.Sort(result[i].ResponseHeaders);
+            Array.Sort(result[i].Selectors);
+            Array.Sort(result[i].EndpointProperties);
         }
 
         Array.Sort(result, (a, b) => (a.Route, b.Route) switch

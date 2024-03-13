@@ -28,7 +28,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
  <UsingTask
-   TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeEndpointsForStaticWebAssets"
+   TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeEndpointsForReferenceStaticWebAssets"
    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
@@ -542,6 +542,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ReferencedProjectsConfigurations="@(StaticWebAssetProjectConfiguration)"
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
       ManifestPath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetsManifest>
 
@@ -583,6 +584,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetMergeSource="$(StaticWebAssetMergeTarget)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
     </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(StaticWebAsset)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
 
     <ItemGroup>
 

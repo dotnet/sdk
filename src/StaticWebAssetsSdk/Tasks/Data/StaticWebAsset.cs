@@ -264,15 +264,17 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public string ComputeTargetPath(string pathPrefix, char separator)
         {
-            var prefix = pathPrefix != null ? Normalize(pathPrefix) : "";
-            // These have been normalized already, so only contain forward slashes
-            string computedBasePath = IsDiscovered() || IsComputed() ? "" : BasePath;
-            if (computedBasePath == "/")
-            {
-                // We need to special case the base path "/" to make sure it gets correctly combined with the prefix
-                computedBasePath = "";
-            }
-            return Path.Combine(prefix, computedBasePath, RelativePath)
+            return CombineNormalizedPaths(
+                pathPrefix,
+                IsDiscovered() || IsComputed() ? "" : BasePath,
+                RelativePath, separator);
+        }
+
+        public static string CombineNormalizedPaths(string prefix, string basePath, string route, char separator)
+        {
+            var normalizedPrefix = prefix != null ? Normalize(prefix) : "";
+            var computedBasePath = basePath == null || basePath == "/" ? "" : basePath;
+            return Path.Combine(normalizedPrefix, computedBasePath, route)
                 .Replace('/', separator)
                 .Replace('\\', separator)
                 .TrimStart(separator);
