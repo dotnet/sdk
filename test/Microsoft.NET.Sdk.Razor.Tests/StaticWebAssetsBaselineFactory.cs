@@ -63,6 +63,35 @@ public class StaticWebAssetsBaselineFactory
             }
         }
 
+        foreach (var endpoint in manifest.Endpoints)
+        {
+            foreach (var header in endpoint.ResponseHeaders)
+            {
+                switch (header.Name)
+                {
+                    case "Content-Length":
+                        header.Value = "__content-length__";
+                        break;
+                    case "ETag":
+                        header.Value = "__etag__";
+                        break;
+                    case "Last-Modified":
+                        header.Value = "__last-modified__";
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            endpoint.AssetFile = TemplatizeFilePath(
+                endpoint.AssetFile,
+                restorePath,
+                projectRoot,
+                null,
+                null,
+                runtimeIdentifier);
+        }
+
         foreach (var discovery in manifest.DiscoveryPatterns)
         {
             discovery.ContentRoot = discovery.ContentRoot.Replace(projectRoot, "${ProjectPath}");
