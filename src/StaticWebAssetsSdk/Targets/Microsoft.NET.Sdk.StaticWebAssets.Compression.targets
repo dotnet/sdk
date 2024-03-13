@@ -220,8 +220,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefineStaticWebAssets
       CandidateAssets="@(_CompressedStaticWebAssets)"
     >
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_CompressionBuildStaticWebAsset" />
     </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_CompressionBuildStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_CompressionBuildStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_CompressionBuildStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_CompressionBuildStaticWebAssetEndpoint)" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="GenerateBuildCompressedStaticWebAssets" DependsOnTargets="$(GenerateBuildCompressedStaticWebAssetsDependsOn);$(CompressFilesDependsOn)">
@@ -275,8 +289,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefineStaticWebAssets
       CandidateAssets="@(_CompressedStaticWebAssetsForPublish)"
     >
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_CompressionPublishStaticWebAsset" />
     </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_CompressionPublishStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_CompressionPublishStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_CompressionPublishStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_CompressionPublishStaticWebAssetEndpoint)" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="GeneratePublishCompressedStaticWebAssets" DependsOnTargets="$(CompressFilesForPublishDependsOn);$(GeneratePublishCompressedStaticWebAssetsDependsOn)">
