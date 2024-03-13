@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);assets/**/*</DefaultExcludesInProjectFolder>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+    <PackageReference Include="xunit" Version="2.5.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.1" />
+
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\TestBase.cs" />
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\SdkTests.cs" />
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\SdkContentTests.cs" />
+
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\SkippableFactAttribute.cs" />
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\SkippableTheoryAttribute.cs" />
+
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\DotnetHelper.cs" />
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\DotnetTemplate.cs" />
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\Utilities.cs" />
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\BaselineHelper.cs" />
+    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\ExecuteHelper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="assets\**"
+             CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\..\packages\smoke-test-prereqs\*"
+             CopyToOutputDirectory="Always"
+             Link="assets\smoke-tests\prereq-packages\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

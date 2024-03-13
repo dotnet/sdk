@@ -215,7 +215,7 @@ public static class VersionIdentifier
     /// <returns>Asset name without versions</returns>
     public static string RemoveVersions(string assetName, string replacement = "")
     {
-        string[] pathSegments = assetName.Split('/');
+        string[] pathSegments = assetName.Split('/', '\\');
 
         // Remove the version number from each segment, then join back together and
         // remove any useless character sequences.
@@ -252,6 +252,6 @@ public static class VersionIdentifier
 
     public static bool AreVersionlessEqual(string assetName1, string assetName2)
     {
-        return RemoveVersions(assetName1) == RemoveVersions(assetName2);
+        return RemoveVersions(assetName1, "{VERSION}") == RemoveVersions(assetName2, "{VERSION}");
     }
 }

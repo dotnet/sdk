@@ -1,0 +1,49 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.IO;
+
+namespace Microsoft.DotNet.SourceBuild.SmokeTests;
+
+internal static class Config
+{
+    public const string DotNetDirectoryEnv = "UNIFIED_BUILD_VALIDATION_DOTNET_DIR";
+    public const string IncludeArtifactsSizeEnv = "UNIFIED_BUILD_VALIDATION_INCLUDE_ARTIFACTSSIZE";
+    public const string MsftSdkTarballPathEnv = "UNIFIED_BUILD_VALIDATION_MSFT_SDK_TARBALL_PATH";
+    public const string PoisonReportPathEnv = "UNIFIED_BUILD_VALIDATION_POISON_REPORT_PATH";
+    public const string PortableRidEnv = "UNIFIED_BUILD_VALIDATION_PORTABLE_RID";
+    public const string PrereqsPathEnv = "UNIFIED_BUILD_VALIDATION_PREREQS_PATH";
+    public const string CustomPackagesPathEnv = "UNIFIED_BUILD_VALIDATION_CUSTOM_PACKAGES_PATH";
+    public const string SdkTarballPathEnv = "UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH";
+    public const string SourceBuiltArtifactsPathEnv = "UNIFIED_BUILD_VALIDATION_SOURCEBUILT_ARTIFACTS_PATH";
+    public const string TargetRidEnv = "UNIFIED_BUILD_VALIDATION_TARGET_RID";
+    public const string WarnSdkContentDiffsEnv = "UNIFIED_BUILD_VALIDATION_WARN_SDK_CONTENT_DIFFS";
+    public const string WarnLicenseScanDiffsEnv = "UNIFIED_BUILD_VALIDATION_WARN_LICENSE_SCAN_DIFFS";
+    public const string RunningInCIEnv = "UNIFIED_BUILD_VALIDATION_RUNNING_IN_CI";
+    public const string LicenseScanPathEnv = "UNIFIED_BUILD_VALIDATION_LICENSE_SCAN_PATH";
+
+    public static string DotNetDirectory { get; } =
+        Environment.GetEnvironmentVariable(DotNetDirectoryEnv) ?? Path.Combine(Directory.GetCurrentDirectory(), ".dotnet");
+    public static string? MsftSdkTarballPath { get; } = Environment.GetEnvironmentVariable(MsftSdkTarballPathEnv);
+    public static string PortableRid { get; } = Environment.GetEnvironmentVariable(PortableRidEnv) ??
+        throw new InvalidOperationException($"'{Config.PortableRidEnv}' must be specified");
+    public static string? PrereqsPath { get; } = Environment.GetEnvironmentVariable(PrereqsPathEnv);
+    public static string? CustomPackagesPath { get; } = Environment.GetEnvironmentVariable(CustomPackagesPathEnv);
+    public static string? SdkTarballPath { get; } = Environment.GetEnvironmentVariable(SdkTarballPathEnv);
+    public static string? SourceBuiltArtifactsPath { get; } = Environment.GetEnvironmentVariable(SourceBuiltArtifactsPathEnv);
+    public static string TargetRid { get; } = Environment.GetEnvironmentVariable(TargetRidEnv) ??
+        throw new InvalidOperationException($"'{Config.TargetRidEnv}' must be specified");
+    public static string TargetArchitecture { get; } = TargetRid.Split('-')[1];
+    public static bool WarnOnSdkContentDiffs { get; } =
+        bool.TryParse(Environment.GetEnvironmentVariable(WarnSdkContentDiffsEnv), out bool warnOnSdkContentDiffs) && warnOnSdkContentDiffs;
+    public static bool WarnOnLicenseScanDiffs { get; } =
+        bool.TryParse(Environment.GetEnvironmentVariable(WarnLicenseScanDiffsEnv), out bool warnOnLicenseScanDiffs) && warnOnLicenseScanDiffs;
+
+    // Indicates whether the tests are being run in the context of a CI pipeline
+    public static bool RunningInCI { get; } =
+        bool.TryParse(Environment.GetEnvironmentVariable(RunningInCIEnv), out bool runningInCI) && runningInCI;
+
+    public static string? LicenseScanPath { get; } = Environment.GetEnvironmentVariable(LicenseScanPathEnv);
+}
