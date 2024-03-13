@@ -27,7 +27,7 @@
 /src/src/Assets/TestProjects/Razor*/ @dotnet/razor-compiler
 
 # Area-Wasm
-/src/WasmSdk @lewing @radical @pavelsavara @maraf
+/src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
 /src/Cli/dotnet/commands/dotnet-format @sharwell @arkalyanms
