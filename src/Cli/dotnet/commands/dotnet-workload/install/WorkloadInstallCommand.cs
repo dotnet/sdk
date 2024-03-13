@@ -153,6 +153,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             var useRollback = false;
             string workloadVersion = null;
 
+            WriteSDKInstallRecordsForVSWorkloads();
+
             if (!skipManifestUpdate)
             {
                 var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
@@ -172,7 +174,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         Reporter.WriteLine(LocalizableStrings.CheckForUpdatedWorkloadManifests);
                     }
-                    // Update currently installed workloads
+                    // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
                     var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
                     var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
                     if (previouslyInstalledWorkloads.Any())
@@ -224,6 +226,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 reporter.WriteLine(string.Format(LocalizableStrings.GarbageCollectionFailed,
                     verbosity.IsDetailedOrDiagnostic() ? e.ToString() : e.Message).Yellow());
             }
+        }
+
+        private void WriteSDKInstallRecordsForVSWorkloads()
+        {
+#if !DOT_NET_BUILD_FROM_SOURCE
+            if (OperatingSystem.IsWindows())
+            {
+                // The 'workload restore' command relies on this happening through the existing chain of logic, if this is massively refactored please ensure this is called.
+                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, GetInstalledWorkloads(false), Reporter);
+            }
+#endif
         }
 
         private void InstallWorkloadsWithInstallRecord(
