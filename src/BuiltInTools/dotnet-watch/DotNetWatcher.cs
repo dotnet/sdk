@@ -32,8 +32,7 @@ namespace Microsoft.DotNet.Watcher
 
             var msbuildEvaluation = new MSBuildEvaluationFilter(context, fileSetFactory);
             var noRestore = new NoRestoreFilter(context);
-            await using var browserRefresh = new BrowserRefreshFilter(context);
-            var browserLauncher = new LaunchBrowserFilter(context, browserRefresh);
+            await using var browserConnector = new BrowserConnector(context);
 
             while (true)
             {
@@ -55,19 +54,12 @@ namespace Microsoft.DotNet.Watcher
 
                 noRestore.Process(state);
 
-                if (state.Iteration == 0)
-                {
-                    processSpec.OnOutput += browserLauncher.GetProcessOutputHandler(project, cancellationToken);
-                }
-
-                await browserRefresh.ProcessAsync(state, cancellationToken);
+                await state.UpdateBrowserAsync(browserConnector, project, cancellationToken);
 
                 // Reset for next run
                 state.RequiresMSBuildRevaluation = false;
 
-                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (state.Iteration + 1).ToString(CultureInfo.InvariantCulture);
-                processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = context.LaunchSettingsProfile.LaunchProfileName ?? string.Empty;
-
+                state.UpdateIterationEnvironment(context);
 
                 if (cancellationToken.IsCancellationRequested)
                 {

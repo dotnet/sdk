@@ -33,23 +33,48 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly IReporter _reporter;
         private readonly TaskCompletionSource _terminateWebSocket;
         private readonly TaskCompletionSource _clientConnected;
-        private IHost? _refreshServer;
+        private readonly string? _environmentHostName;
 
-        public BrowserRefreshServer(EnvironmentOptions options, IReporter reporter)
+        // initialized by StartAsync
+        private IHost? _refreshServer;
+        private string? _serverUrls;
+
+        private BrowserRefreshServer(EnvironmentOptions options, IReporter reporter)
         {
             _rsa = RSA.Create(2048);
             _options = options;
             _reporter = reporter;
             _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _clientConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _environmentHostName = EnvironmentVariables.AutoReloadWSHostName;
         }
 
-        public string ServerKey => Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo());
-
-        public async ValueTask<IEnumerable<string>> StartAsync(CancellationToken cancellationToken)
+        public static async ValueTask<BrowserRefreshServer> CreateAsync(EnvironmentOptions options, IReporter reporter, CancellationToken cancellationToken)
         {
-            var envHostName = EnvironmentVariables.AutoReloadWSHostName;
-            var hostName = envHostName ?? "127.0.0.1";
+            var server = new BrowserRefreshServer(options, reporter);
+            await server.StartAsync(cancellationToken);
+            return server;
+        }
+
+        public void SetEnvironmentVariables(EnvironmentVariablesBuilder environmentBuilder)
+        {
+            Debug.Assert(_refreshServer != null);
+            Debug.Assert(_serverUrls != null);
+
+            environmentBuilder["ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT"] = _serverUrls;
+            environmentBuilder["ASPNETCORE_AUTO_RELOAD_WS_KEY"] = GetServerKey();
+
+            var pathToMiddleware = Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll");
+            environmentBuilder.DotNetStartupHooks.Add(pathToMiddleware);
+            environmentBuilder.AspNetCoreHostingStartupAssemblies.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
+        }
+
+        public string GetServerKey()
+            => Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo());
+
+        private async ValueTask StartAsync(CancellationToken cancellationToken)
+        {
+            var hostName = _environmentHostName ?? "127.0.0.1";
 
             var supportsTLS = await SupportsTLS();
 
@@ -76,7 +101,14 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             await _refreshServer.StartAsync(cancellationToken);
 
-            var serverUrls = _refreshServer.Services
+            var serverUrls = string.Join(',', GetServerUrls(_refreshServer));
+            _reporter.Verbose($"Refresh server running at {serverUrls}.");
+            _serverUrls = serverUrls;
+        }
+
+        private IEnumerable<string> GetServerUrls(IHost server)
+        {
+            var serverUrls = server.Services
                 .GetRequiredService<IServer>()
                 .Features
                 .Get<IServerAddressesFeature>()?
@@ -84,20 +116,20 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             Debug.Assert(serverUrls != null);
 
-            if (envHostName is null)
+            if (_environmentHostName is null)
             {
                 return serverUrls.Select(s =>
                     s.Replace("http://127.0.0.1", "ws://localhost", StringComparison.Ordinal)
                     .Replace("https://127.0.0.1", "wss://localhost", StringComparison.Ordinal));
             }
 
-            return new[]
-            {
+            return 
+            [
                 serverUrls
                     .First()
                     .Replace("https://", "wss://", StringComparison.Ordinal)
                     .Replace("http://", "ws://", StringComparison.Ordinal)
-             };
+            ];
         }
 
         private async Task WebSocketRequest(HttpContext context)

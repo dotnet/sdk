@@ -63,8 +63,7 @@ namespace Microsoft.DotNet.Watcher
                 _context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
             }
 
-            await using var browserRefresh = new BrowserRefreshFilter(_context);
-            var browserLauncher = new LaunchBrowserFilter(_context, browserRefresh);
+            await using var browserConnector = new BrowserConnector(_context);
 
             while (true)
             {
@@ -88,24 +87,18 @@ namespace Microsoft.DotNet.Watcher
                     return;
                 }
 
-                if (state.Iteration == 0)
-                {
-                    processSpec.OnOutput += browserLauncher.GetProcessOutputHandler(project, cancellationToken);
-                }
+                await state.UpdateBrowserAsync(browserConnector, project, cancellationToken);
 
-                await browserRefresh.ProcessAsync(state, cancellationToken);
-
-                processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (state.Iteration + 1).ToString(CultureInfo.InvariantCulture);
-                processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = _context.LaunchSettingsProfile.LaunchProfileName ?? string.Empty;
-
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    return;
-                }
+                state.UpdateIterationEnvironment(_context);
 
                 if (state.Iteration == 0)
                 {
                     ConfigureExecutable(processSpec, project, _context.LaunchSettingsProfile);
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
                 }
 
                 using var currentRunCancellationSource = new CancellationTokenSource();
