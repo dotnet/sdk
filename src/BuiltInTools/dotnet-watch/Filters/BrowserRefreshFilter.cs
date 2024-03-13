@@ -6,16 +6,16 @@ using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class BrowserRefreshFilter(DotNetWatchContext context, EnvironmentOptions options) : IWatchFilter, IAsyncDisposable
+    internal sealed class BrowserRefreshFilter(DotNetWatchContext context) : IAsyncDisposable
     {
         // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
         private static readonly Version s_minimumSupportedVersion = new(6, 0);
 
-        private BrowserRefreshServer? _refreshServer;
+        public BrowserRefreshServer? Server { get; private set; }
 
         public async ValueTask ProcessAsync(WatchState state, CancellationToken cancellationToken)
         {
-            if (options.SuppressBrowserRefresh)
+            if (context.EnvironmentOptions.SuppressBrowserRefresh)
             {
                 return;
             }
@@ -44,21 +44,21 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                 context.Reporter.Verbose("Configuring the app to use browser-refresh middleware.");
 
-                _refreshServer = new BrowserRefreshServer(options, context.Reporter);
-                state.BrowserRefreshServer = _refreshServer;
-                var serverUrls = string.Join(',', await _refreshServer.StartAsync(cancellationToken));
+                Server = new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter);
+                state.BrowserRefreshServer = Server;
+                var serverUrls = string.Join(',', await Server.StartAsync(cancellationToken));
                 context.Reporter.Verbose($"Refresh server running at {serverUrls}.");
                 state.ProcessSpec.EnvironmentVariables["ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT"] = serverUrls;
-                state.ProcessSpec.EnvironmentVariables["ASPNETCORE_AUTO_RELOAD_WS_KEY"] = _refreshServer.ServerKey;
+                state.ProcessSpec.EnvironmentVariables["ASPNETCORE_AUTO_RELOAD_WS_KEY"] = Server.ServerKey;
 
                 var pathToMiddleware = Path.Combine(AppContext.BaseDirectory, "middleware", "Microsoft.AspNetCore.Watch.BrowserRefresh.dll");
                 state.ProcessSpec.EnvironmentVariables.DotNetStartupHooks.Add(pathToMiddleware);
                 state.ProcessSpec.EnvironmentVariables.AspNetCoreHostingStartupAssemblies.Add("Microsoft.AspNetCore.Watch.BrowserRefresh");
             }
-            else if (_refreshServer != null)
+            else if (Server != null)
             {
                 // We've detected a change. Notify the browser.
-                await _refreshServer.SendWaitMessageAsync(cancellationToken);
+                await Server.SendWaitMessageAsync(cancellationToken);
             }
         }
 
@@ -89,9 +89,9 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask DisposeAsync()
         {
-            if (_refreshServer != null)
+            if (Server != null)
             {
-                await _refreshServer.DisposeAsync();
+                await Server.DisposeAsync();
             }
         }
     }

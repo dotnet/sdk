@@ -8,13 +8,12 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal sealed class DotNetWatchContext
     {
+        public required CommandLineOptions Options { get; init; }
+        public required EnvironmentOptions EnvironmentOptions { get; init; }
         public required bool HotReloadEnabled { get; init; }
         public required IReporter Reporter { get; init; }
         public required LaunchSettingsProfile LaunchSettingsProfile { get; init; }
-        public bool SuppressMSBuildIncrementalism { get; init; }
         public ProjectGraph? ProjectGraph { get; init; }
-        public string? TargetFramework { get; init; }
-        public IReadOnlyList<(string name, string value)>? BuildProperties { get; init; }
     }
 
     internal sealed class WatchState

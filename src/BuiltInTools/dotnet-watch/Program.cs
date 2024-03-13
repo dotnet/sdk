@@ -179,10 +179,9 @@ namespace Microsoft.DotNet.Watcher
                 HotReloadEnabled = enableHotReload,
                 ProjectGraph = projectGraph,
                 Reporter = reporter,
-                SuppressMSBuildIncrementalism = environmentOptions.SuppressMSBuildIncrementalism,
                 LaunchSettingsProfile = launchProfile,
-                TargetFramework = options.TargetFramework,
-                BuildProperties = options.BuildProperties,
+                Options = options,
+                EnvironmentOptions = environmentOptions,
             };
 
             var state = new WatchState()
@@ -201,12 +200,12 @@ namespace Microsoft.DotNet.Watcher
 
             if (enableHotReload)
             {
-                await using var watcher = new HotReloadDotNetWatcher(context, console, fileSetFactory, environmentOptions, options);
+                var watcher = new HotReloadDotNetWatcher(context, console, fileSetFactory);
                 await watcher.WatchAsync(state, cancellationToken);
             }
             else
             {
-                await using var watcher = new DotNetWatcher(context, fileSetFactory, environmentOptions);
+                var watcher = new DotNetWatcher(context, fileSetFactory);
                 await watcher.WatchAsync(state, cancellationToken);
             }
 

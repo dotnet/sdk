@@ -10,18 +10,10 @@ using Microsoft.DotNet.Watcher.Tools;
 
 namespace Microsoft.DotNet.Watcher
 {
-    internal sealed class DotNetWatcher(DotNetWatchContext context, IFileSetFactory fileSetFactory, EnvironmentOptions environmentOptions) : IAsyncDisposable
+    internal sealed class DotNetWatcher(DotNetWatchContext context, IFileSetFactory fileSetFactory)
     {
         private readonly ProcessRunner _processRunner = new(context.Reporter);
         private readonly StaticFileHandler _staticFileHandler = new(context.Reporter);
-
-        private readonly ImmutableArray<IWatchFilter> _filters =
-        [
-            new MSBuildEvaluationFilter(context, fileSetFactory),
-            new NoRestoreFilter(context),
-            new LaunchBrowserFilter(context, environmentOptions),
-            new BrowserRefreshFilter(context, environmentOptions),
-        ];
 
         public async Task WatchAsync(WatchState state, CancellationToken cancellationToken)
         {
@@ -30,13 +22,18 @@ namespace Microsoft.DotNet.Watcher
                 cancelledTaskSource);
 
             var processSpec = state.ProcessSpec;
-            processSpec.Executable = environmentOptions.MuxerPath;
+            processSpec.Executable = context.EnvironmentOptions.MuxerPath;
             var initialArguments = processSpec.Arguments?.ToArray() ?? [];
 
-            if (context.SuppressMSBuildIncrementalism)
+            if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
                 context.Reporter.Verbose("MSBuild incremental optimizations suppressed.");
             }
+
+            var msbuildEvaluation = new MSBuildEvaluationFilter(context, fileSetFactory);
+            var noRestore = new NoRestoreFilter(context);
+            await using var browserRefresh = new BrowserRefreshFilter(context);
+            var browserLauncher = new LaunchBrowserFilter(context, browserRefresh);
 
             while (true)
             {
@@ -45,10 +42,25 @@ namespace Microsoft.DotNet.Watcher
                 // Reset arguments
                 processSpec.Arguments = initialArguments;
 
-                for (var i = 0; i < _filters.Length; i++)
+                await msbuildEvaluation.ProcessAsync(state, cancellationToken);
+                var fileSet = state.FileSet;
+                if (fileSet == null)
                 {
-                    await _filters[i].ProcessAsync(state, cancellationToken);
+                    context.Reporter.Error("Failed to find a list of files to watch");
+                    return;
                 }
+
+                var project = fileSet.Project;
+                Debug.Assert(project != null);
+
+                noRestore.Process(state);
+
+                if (state.Iteration == 0)
+                {
+                    processSpec.OnOutput += browserLauncher.GetProcessOutputHandler(project, cancellationToken);
+                }
+
+                await browserRefresh.ProcessAsync(state, cancellationToken);
 
                 // Reset for next run
                 state.RequiresMSBuildRevaluation = false;
@@ -56,12 +68,6 @@ namespace Microsoft.DotNet.Watcher
                 processSpec.EnvironmentVariables["DOTNET_WATCH_ITERATION"] = (state.Iteration + 1).ToString(CultureInfo.InvariantCulture);
                 processSpec.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = context.LaunchSettingsProfile.LaunchProfileName ?? string.Empty;
 
-                var fileSet = state.FileSet;
-                if (fileSet == null)
-                {
-                    context.Reporter.Error("Failed to find a list of files to watch");
-                    return;
-                }
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -136,22 +142,6 @@ namespace Microsoft.DotNet.Watcher
                     Debug.Assert(changedFile != null, "ChangedFile should only be null when cancelled");
                     context.Reporter.Output($"File changed: {changedFile.Value.FilePath}");
                 }
-            }
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            foreach (var filter in _filters)
-            {
-                if (filter is IAsyncDisposable asyncDisposable)
-                {
-                    await asyncDisposable.DisposeAsync();
-                }
-                else if (filter is IDisposable diposable)
-                {
-                    diposable.Dispose();
-                }
-
             }
         }
     }

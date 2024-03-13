@@ -7,95 +7,65 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class LaunchBrowserFilter(DotNetWatchContext context, EnvironmentOptions options) : IWatchFilter, IAsyncDisposable
+    internal sealed partial class LaunchBrowserFilter(DotNetWatchContext context, BrowserRefreshFilter browserRefresh)
     {
-        private static readonly Regex s_nowListeningRegex = new(@"Now listening on: (?<url>.*)\s*$", RegexOptions.None | RegexOptions.Compiled, TimeSpan.FromSeconds(10));
+        private static readonly Regex s_nowListeningRegex = s_nowListeningOnRegex();
 
-        private bool _attemptedBrowserLaunch;
-        private Process? _browserProcess;
-        private string? _launchPath;
-        private CancellationToken _cancellationToken;
+        [GeneratedRegex(@"Now listening on: (?<url>.*)\s*$", RegexOptions.Compiled)]
+        private static partial Regex s_nowListeningOnRegex();
 
-        public ValueTask ProcessAsync(WatchState state, CancellationToken cancellationToken)
+        private bool _attemptedBrowserLaunch = false;
+
+        /// <summary>
+        /// Get process output handler that will be subscribed to the process output event every time the process is launched.
+        /// </summary>
+        public DataReceivedEventHandler? GetProcessOutputHandler(ProjectInfo project, CancellationToken cancellationToken)
         {
-            if (options.SuppressLaunchBrowser)
+            if (!CanLaunchBrowser(context, project))
             {
-                return default;
-            }
-
-            if (state.Iteration == 0)
-            {
-                if (CanLaunchBrowser(context, state, out var launchPath))
-                {
-                    context.Reporter.Verbose("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.");
-                    _launchPath = launchPath;
-                    _cancellationToken = cancellationToken;
-
-                    // We've redirected the output, but want to ensure that it continues to appear in the user's console.
-                    state.ProcessSpec.OnOutput += (_, eventArgs) => Console.WriteLine(eventArgs.Data);
-                    state.ProcessSpec.OnOutput += OnOutput;
-                }
-                else if (options.TestFlags.HasFlag(TestFlags.BrowserRequired))
+                if (context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.BrowserRequired))
                 {
                     context.Reporter.Error("Test requires browser to launch");
                 }
+
+                return null;
             }
 
-            return default;
+            return handler;
 
-            void OnOutput(object sender, DataReceivedEventArgs eventArgs)
+            void handler(object sender, DataReceivedEventArgs eventArgs)
             {
-                if (string.IsNullOrEmpty(eventArgs.Data))
+                // We've redirected the output, but want to ensure that it continues to appear in the user's console.
+                Console.WriteLine(eventArgs.Data);
+
+                var match = s_nowListeningRegex.Match(eventArgs.Data ?? "");
+                if (!match.Success)
                 {
                     return;
                 }
 
-                var match = s_nowListeningRegex.Match(eventArgs.Data);
-                if (match.Success)
+                ((Process)sender).OutputDataReceived -= handler;
+
+                if (!_attemptedBrowserLaunch)
                 {
-                    var launchUrl = match.Groups["url"].Value;
-
-                    var process = (Process)sender;
-                    process.OutputDataReceived -= OnOutput;
-
-                    if (!_attemptedBrowserLaunch)
-                    {
-                        _attemptedBrowserLaunch = true;
-
-                        context.Reporter.Verbose("Launching browser.");
-
-                        try
-                        {
-                            LaunchBrowser(context, launchUrl);
-                        }
-                        catch (Exception ex)
-                        {
-                            context.Reporter.Verbose($"An exception occurred when attempting to launch a browser: {ex}");
-                            _browserProcess = null;
-                        }
-
-                        if (_browserProcess is null || _browserProcess.HasExited)
-                        {
-                            // dotnet-watch, by default, relies on URL file association to launch browsers. On Windows and MacOS, this works fairly well
-                            // where URLs are associated with the default browser. On Linux, this is a bit murky.
-                            // From emperical observation, it's noted that failing to launch a browser results in either Process.Start returning a null-value
-                            // or for the process to have immediately exited.
-                            // We can use this to provide a helpful message.
-                            context.Reporter.Output($"Unable to launch the browser. Navigate to {launchUrl}", emoji: "🌐");
-                        }
-                    }
-                    else if (state.BrowserRefreshServer is { } browserRefresh)
-                    {
-                        context.Reporter.Verbose("Reloading browser.");
-                        _ = browserRefresh.ReloadAsync(_cancellationToken);
-                    }
+                    // first iteration:
+                    _attemptedBrowserLaunch = true;
+                    LaunchBrowser(context, match.Groups["url"].Value);
+                }
+                else if (browserRefresh.Server != null)
+                {
+                    // subsequent iterations (project has been rebuilt and relaunched):
+                    context.Reporter.Verbose("Reloading browser.");
+                    _ = browserRefresh.Server.ReloadAsync(cancellationToken);
                 }
             }
         }
 
-        private void LaunchBrowser(DotNetWatchContext context, string launchUrl)
+        private static void LaunchBrowser(DotNetWatchContext context, string launchUrl)
         {
-            var fileName = Uri.TryCreate(_launchPath, UriKind.Absolute, out _) ? _launchPath : launchUrl + "/" + _launchPath;
+            var launchPath = context.LaunchSettingsProfile.LaunchUrl;
+            var fileName = Uri.TryCreate(launchPath, UriKind.Absolute, out _) ? launchPath : launchUrl + "/" + launchPath;
+
             var args = string.Empty;
             if (EnvironmentVariables.BrowserPath is { } browserPath)
             {
@@ -103,42 +73,59 @@ namespace Microsoft.DotNet.Watcher.Tools
                 fileName = browserPath;
             }
 
-            if (options.TestFlags != TestFlags.None)
+            context.Reporter.Verbose($"Launching browser: {fileName} {args}");
+
+            if (context.EnvironmentOptions.TestFlags != TestFlags.None)
             {
-                context.Reporter.Output($"Launching browser: {fileName} {args}");
                 return;
             }
 
-            _browserProcess = Process.Start(new ProcessStartInfo
+            var info = new ProcessStartInfo
             {
                 FileName = fileName,
                 Arguments = args,
                 UseShellExecute = true,
-            });
+            };
+
+            try
+            {
+                using var browserProcess = Process.Start(info);
+                if (browserProcess is null or { HasExited: true })
+                {
+                    // dotnet-watch, by default, relies on URL file association to launch browsers. On Windows and MacOS, this works fairly well
+                    // where URLs are associated with the default browser. On Linux, this is a bit murky.
+                    // From emperical observation, it's noted that failing to launch a browser results in either Process.Start returning a null-value
+                    // or for the process to have immediately exited.
+                    // We can use this to provide a helpful message.
+                    context.Reporter.Output($"Unable to launch the browser. Navigate to {launchUrl}", emoji: "🌐");
+                }
+            }
+            catch (Exception ex)
+            {
+                context.Reporter.Verbose($"An exception occurred when attempting to launch a browser: {ex}");
+            }
         }
 
-        private static bool CanLaunchBrowser(DotNetWatchContext context, WatchState state, out string? launchUrl)
+        private static bool CanLaunchBrowser(DotNetWatchContext context, ProjectInfo project)
         {
-            Debug.Assert(state.FileSet?.Project != null);
-
-            launchUrl = null;
             var reporter = context.Reporter;
 
-            if (!state.FileSet.Project.IsNetCoreApp31OrNewer())
+            if (context.EnvironmentOptions.SuppressLaunchBrowser)
+            {
+                return false;
+            }
+
+            if (!project.IsNetCoreApp31OrNewer())
             {
                 // Browser refresh middleware supports 3.1 or newer
                 reporter.Verbose("Browser refresh is only supported in .NET Core 3.1 or newer projects.");
                 return false;
             }
 
-            if (!context.HotReloadEnabled)
+            if (context.Options.Command != "run")
             {
-                var dotnetCommand = state.ProcessSpec.Arguments?.FirstOrDefault();
-                if (!string.Equals(dotnetCommand, "run", StringComparison.Ordinal))
-                {
-                    reporter.Verbose("Browser refresh is only supported for run commands.");
-                    return false;
-                }
+                reporter.Verbose("Browser refresh is only supported for run commands.");
+                return false;
             }
 
             if (context.LaunchSettingsProfile is not { LaunchBrowser: true })
@@ -147,14 +134,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return false;
             }
 
-            launchUrl = context.LaunchSettingsProfile.LaunchUrl;
+            reporter.Verbose("dotnet-watch is configured to launch a browser on ASP.NET Core application startup.");
             return true;
-        }
-
-        public ValueTask DisposeAsync()
-        {
-            _browserProcess?.Dispose();
-            return default;
         }
     }
 }

@@ -3,11 +3,10 @@
 
 
 using System.Diagnostics;
-using Microsoft.DotNet.Watcher.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal class MSBuildEvaluationFilter(DotNetWatchContext context, IFileSetFactory factory) : IWatchFilter
+    internal class MSBuildEvaluationFilter(DotNetWatchContext context, IFileSetFactory factory)
     {
         // File types that require an MSBuild re-evaluation
         private static readonly string[] s_msBuildFileExtensions = new[]
@@ -23,7 +22,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask ProcessAsync(WatchState state, CancellationToken cancellationToken)
         {
-            if (context.SuppressMSBuildIncrementalism)
+            if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
                 state.RequiresMSBuildRevaluation = true;
                 state.FileSet = await factory.CreateAsync(waitOnError: true, cancellationToken);

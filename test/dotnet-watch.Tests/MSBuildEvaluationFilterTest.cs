@@ -20,7 +20,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental
             };
 
             var filter = new MSBuildEvaluationFilter(context, _fileSetFactory);
@@ -49,7 +51,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental
             };
 
             var filter = new MSBuildEvaluationFilter(context, _fileSetFactory);
@@ -78,9 +82,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
-                SuppressMSBuildIncrementalism = true,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental with { SuppressMSBuildIncrementalism = true }
             };
 
             var filter = new MSBuildEvaluationFilter(context, _fileSetFactory);
@@ -116,7 +121,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental,
             };
 
             var filter = new TestableMSBuildEvaluationFilter(context, fileSetFactory)

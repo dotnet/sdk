@@ -10,13 +10,15 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly string[] _arguments = new[] { "run" };
 
         [Fact]
-        public async Task ProcessAsync_LeavesArgumentsUnchangedOnFirstRun()
+        public void ProcessAsync_LeavesArgumentsUnchangedOnFirstRun()
         {
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental,
             };
 
             var filter = new NoRestoreFilter(context);
@@ -29,19 +31,21 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(state, default);
+            filter.Process(state);
 
             Assert.Same(_arguments, state.ProcessSpec.Arguments);
         }
 
         [Fact]
-        public async Task ProcessAsync_LeavesArgumentsUnchangedIfMsBuildRevaluationIsRequired()
+        public void ProcessAsync_LeavesArgumentsUnchangedIfMsBuildRevaluationIsRequired()
         {
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental,
             };
 
             var filter = new NoRestoreFilter(context);
@@ -55,26 +59,27 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             state.ChangedFile = new FileItem { FilePath = "Test.proj" };
             state.RequiresMSBuildRevaluation = true;
             state.Iteration++;
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             Assert.Same(_arguments, state.ProcessSpec.Arguments);
         }
 
         [Fact]
-        public async Task ProcessAsync_LeavesArgumentsUnchangedIfOptimizationIsSuppressed()
+        public void ProcessAsync_LeavesArgumentsUnchangedIfOptimizationIsSuppressed()
         {
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
-                SuppressMSBuildIncrementalism = true,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental with { SuppressMSBuildIncrementalism = true },
             };
 
             var filter = new NoRestoreFilter(context);
@@ -88,24 +93,26 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             Assert.Same(_arguments, state.ProcessSpec.Arguments);
         }
 
         [Fact]
-        public async Task ProcessAsync_AddsNoRestoreSwitch()
+        public void ProcessAsync_AddsNoRestoreSwitch()
         {
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental,
             };
 
             var state = new WatchState()
@@ -119,24 +126,26 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var filter = new NoRestoreFilter(context);
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             Assert.Equal(new[] { "run", "--no-restore" }, state.ProcessSpec.Arguments);
         }
 
         [Fact]
-        public async Task ProcessAsync_AddsNoRestoreSwitch_WithAdditionalArguments()
+        public void ProcessAsync_AddsNoRestoreSwitch_WithAdditionalArguments()
         {
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental,
             };
 
             var filter = new NoRestoreFilter(context);
@@ -150,24 +159,26 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             Assert.Equal(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework, "--", "foo=bar"], state.ProcessSpec.Arguments);
         }
 
         [Fact]
-        public async Task ProcessAsync_AddsNoRestoreSwitch_ForTestCommand()
+        public void ProcessAsync_AddsNoRestoreSwitch_ForTestCommand()
         {
             var context = new DotNetWatchContext
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental,
             };
 
             var filter = new NoRestoreFilter(context);
@@ -181,18 +192,18 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             Assert.Equal(["test", "--no-restore", "--filter SomeFilter"], state.ProcessSpec.Arguments);
         }
 
         [Fact]
-        public async Task ProcessAsync_DoesNotModifyArgumentsForUnknownCommands()
+        public void ProcessAsync_DoesNotModifyArgumentsForUnknownCommands()
         {
             var arguments = new[] { "ef", "database", "update" };
 
@@ -200,7 +211,9 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
-                LaunchSettingsProfile = new()
+                LaunchSettingsProfile = new(),
+                Options = TestOptions.CommandLine,
+                EnvironmentOptions = TestOptions.Environmental,
             };
 
             var filter = new NoRestoreFilter(context);
@@ -214,12 +227,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            filter.Process(state);
 
             Assert.Same(arguments, state.ProcessSpec.Arguments);
         }

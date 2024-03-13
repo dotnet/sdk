@@ -6,18 +6,18 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class NoRestoreFilter(DotNetWatchContext context) : IWatchFilter
+    internal sealed class NoRestoreFilter(DotNetWatchContext context)
     {
         private bool _canUseNoRestore;
         private string[]? _noRestoreArguments;
 
-        public ValueTask ProcessAsync(WatchState state, CancellationToken cancellationToken)
+        public void Process(WatchState state)
         {
             Debug.Assert(!context.HotReloadEnabled);
 
-            if (context.SuppressMSBuildIncrementalism)
+            if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
-                return default;
+                return;
             }
 
             if (state.Iteration == 0)
@@ -43,8 +43,6 @@ namespace Microsoft.DotNet.Watcher.Tools
                     state.ProcessSpec.Arguments = _noRestoreArguments;
                 }
             }
-
-            return default;
         }
 
         private static bool CanUseNoRestore(IEnumerable<string> arguments, IReporter reporter)
