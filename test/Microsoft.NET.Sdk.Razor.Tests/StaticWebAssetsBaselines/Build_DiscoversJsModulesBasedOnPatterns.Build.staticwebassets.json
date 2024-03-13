@@ -176,5 +176,6 @@
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css"
     }
-  ]
+  ],
+  "Endpoints": []
 }

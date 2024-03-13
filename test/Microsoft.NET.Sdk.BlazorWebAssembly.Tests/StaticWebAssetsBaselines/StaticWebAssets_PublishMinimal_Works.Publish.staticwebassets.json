@@ -5014,5 +5014,91 @@
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\index.html"
     }
+  ],
+  "Endpoints": [
+    {
+      "Route": "appsettings.development.json",
+      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\StaticWebAsse---80EE375B\\wwwroot\\appsettings.development.json",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "2"
+        },
+        {
+          "Name": "ETag",
+          "Value": "RBNvo1WzZ4oRRq0W9\u002BhknpT7T8If536DEMBg9hyq/4o="
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 13 Mar 2024 18:25:29 GMT"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "css/app.css",
+      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\StaticWebAsse---80EE375B\\wwwroot\\css\\app.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "12"
+        },
+        {
+          "Name": "ETag",
+          "Value": "9TimOnvx/g\u002Beby8lWw6RmQILUsAR9bxHPRTj0XBQ000="
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "index.html",
+      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\StaticWebAsse---80EE375B\\wwwroot\\index.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "597"
+        },
+        {
+          "Name": "ETag",
+          "Value": "cG8Lz/kJ7kWyFQngYTGE7sg9GvCAgMIq4H6ygkSEy1s="
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    }
   ]
 }

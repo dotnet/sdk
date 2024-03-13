@@ -58,5 +58,35 @@
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\test.js"
     }
+  ],
+  "Endpoints": [
+    {
+      "Route": "test.js",
+      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Crossta---5885D4BE\\wwwroot\\test.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "20"
+        },
+        {
+          "Name": "ETag",
+          "Value": "RiiZMt4WBEeSYPAXi7o6X3AZ0TOyY\u002B/BOcmhjYVr6/E="
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 13 Mar 2024 16:42:29 GMT"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    }
   ]
 }

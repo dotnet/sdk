@@ -142,5 +142,35 @@
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\index.html"
     }
+  ],
+  "Endpoints": [
+    {
+      "Route": "index.html",
+      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Updates---144B144C\\wwwroot\\index.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "9"
+        },
+        {
+          "Name": "ETag",
+          "Value": "Sa0\u002BaGzwffekcM4L7EM6XLHjgSnimnY5r2NcrCv4aqg="
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 13 Mar 2024 16:45:43 GMT"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    }
   ]
 }

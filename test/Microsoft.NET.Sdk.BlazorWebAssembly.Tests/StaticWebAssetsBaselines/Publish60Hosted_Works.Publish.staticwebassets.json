@@ -2401,5 +2401,63 @@
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\index.html"
     }
+  ],
+  "Endpoints": [
+    {
+      "Route": "css/app.css",
+      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Publish60Host---0200F604\\Client\\wwwroot\\css\\app.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "156"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "4m0Wflc9AqFLmT024OBDGgQ6VG3EE0fUVdMS7lA5\u002B\u002Bo="
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 01 Jun 2022 13:33:52 GMT"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "index.html",
+      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Publish60Host---0200F604\\Client\\wwwroot\\index.html",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "755"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/html"
+        },
+        {
+          "Name": "ETag",
+          "Value": "3oFKIrr9DC7sgwXXnxKy0eWbevcbOmc4PLi0h8eWgw8="
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Wed, 01 Jun 2022 13:33:52 GMT"
+        }
+      ],
+      "EndpointProperties": []
+    }
   ]
 }
