@@ -93,7 +93,11 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>
 
     public override bool Equals(object obj) => Equals(obj as StaticWebAssetEndpoint);
 
-    public bool Equals(StaticWebAssetEndpoint other) => other is not null && Route == other.Route && AssetFile == other.AssetFile && EqualityComparer<StaticWebAssetEndpointSelector[]>.Default.Equals(Selectors, other.Selectors) && EqualityComparer<StaticWebAssetEndpointResponseHeader[]>.Default.Equals(ResponseHeaders, other.ResponseHeaders) && EqualityComparer<StaticWebAssetEndpointProperty[]>.Default.Equals(EndpointProperties, other.EndpointProperties);
+    public bool Equals(StaticWebAssetEndpoint other) => other is not null && Route == other.Route &&
+        AssetFile == other.AssetFile &&
+        Selectors.SequenceEqual(other.Selectors) &&
+        ResponseHeaders.SequenceEqual(other.ResponseHeaders) &&
+        EndpointProperties.SequenceEqual(other.EndpointProperties);
 
     public override int GetHashCode()
     {

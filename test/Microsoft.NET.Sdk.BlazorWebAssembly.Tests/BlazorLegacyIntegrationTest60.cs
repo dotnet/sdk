@@ -20,7 +20,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(testInstance, "Server");
-            build.Execute()
+            build.WithWorkingDirectory(testInstance.TestRoot);
+            build.Execute("/bl")
                 .Should()
                 .Pass();
 

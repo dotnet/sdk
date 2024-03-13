@@ -572,7 +572,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ResolveProjectStaticWebAssets"
     Condition="'$(NoBuild)' != 'true'"
     BeforeTargets="AssignTargetPaths"
-    DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+    DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets">
 
     <DefineStaticWebAssets
       CandidateAssets="@(Content)"

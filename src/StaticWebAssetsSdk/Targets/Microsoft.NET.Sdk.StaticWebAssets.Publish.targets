@@ -30,6 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ReferencedProjectsConfigurations="@(StaticWebAssetProjectConfiguration)"
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(_FinalPublishStaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
       ManifestPath="$(StaticWebAssetPublishManifestPath)">
     </GenerateStaticWebAssetsManifest>
     <ItemGroup>
@@ -60,6 +61,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <StaticWebAsset Remove="@(StaticWebAsset)" />
+      <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)" />
       <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
       <StaticWebAssetProjectConfiguration Remove="@(StaticWebAssetProjectConfiguration)" />
     </ItemGroup>
