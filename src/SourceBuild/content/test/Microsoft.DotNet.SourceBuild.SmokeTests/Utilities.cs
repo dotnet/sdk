@@ -23,7 +23,7 @@ public static class Utilities
     /// Returns whether the given file path is excluded by the given exclusions using glob file matching.
     /// </summary>
     public static bool IsFileExcluded(string filePath, IEnumerable<string> exclusions) =>
-        GetMatchingFileExclusions(filePath, exclusions, exclusion => exclusion).Any();
+        GetMatchingFileExclusions(filePath.Replace('\\', '/'), exclusions, exclusion => exclusion).Any();
 
     public static IEnumerable<T> GetMatchingFileExclusions<T>(string filePath, IEnumerable<T> exclusions, Func<T, string> getExclusionExpression) =>
         exclusions.Where(exclusion => FileSystemName.MatchesSimpleExpression(getExclusionExpression(exclusion), filePath));

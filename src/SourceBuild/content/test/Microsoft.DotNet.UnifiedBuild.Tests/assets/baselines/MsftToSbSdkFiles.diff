@@ -1,0 +1,43 @@
+diff --git a/msftSdkFiles.txt b/sbSdkFiles.txt
+index ------------
+--- a/msftSdkFiles.txt
++++ b/sbSdkFiles.txt
+@@ ------------ @@
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref\netx.y\System.Security.Cryptography.Xml.xml
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref\netx.y\System.Threading.RateLimiting.dll
+ ./packs/Microsoft.AspNetCore.App.Ref/x.y.z/ref\netx.y\System.Threading.RateLimiting.xml
+-./packs/Microsoft.NETCore.App.Host.linux-x64/
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/runtimes/
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/runtimes/linux-x64/
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/runtimes/linux-x64/native/
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/runtimes/linux-x64/native/apphost
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/runtimes/linux-x64/native/coreclr_delegates.h
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/runtimes/linux-x64/native/hostfxr.h
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/runtimes/linux-x64/native/libnethost.a
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/runtimes/linux-x64/native/libnethost.so
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/runtimes/linux-x64/native/nethost.h
+-./packs/Microsoft.NETCore.App.Host.linux-x64/x.y.z/runtimes/linux-x64/native/singlefilehost
++./packs/Microsoft.NETCore.App.Host.banana-rid/
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/apphost
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/coreclr_delegates.h
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/hostfxr.h
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/libnethost.a
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/libnethost.so
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/nethost.h
++./packs/Microsoft.NETCore.App.Host.banana-rid/x.y.z/runtimes/banana-rid/native/singlefilehost
+ ./packs/Microsoft.NETCore.App.Ref/
+ ./packs/Microsoft.NETCore.App.Ref/x.y.z/
+ ./packs/Microsoft.NETCore.App.Ref/x.y.z/analyzers/
+@@ ------------ @@
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools\netx.y\any/runtimes/win/lib/
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools\netx.y\any/runtimes/win/lib\netx.y\
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools\netx.y\any/runtimes/win/lib\netx.y\System.Diagnostics.EventLog.dll
+-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools\netx.y\any/runtimes/win/lib\netx.y\System.Diagnostics.EventLog.Messages.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools\netx.y\any/runtimes/win/lib\netx.y\System.Security.Cryptography.Pkcs.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools\netx.y\any/runtimes/win/lib\netx.y\System.Windows.Extensions.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools\netx.y\any/System.CodeDom.dll

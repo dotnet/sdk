@@ -1,0 +1,16 @@
+# Contains the list of files whose assembly versions are to be excluded from comparison between the MSFT & SB SDK.
+# These exclusions only take effect if the assembly version of the file in the SB SDK is equal to or greater than
+# the version in the MSFT SDK. If the version is less, the file will show up in the results as this is not a scenario
+# that is valid for shipping.
+#
+# This list is processed using FileSystemName.MatchesSimpleExpression
+#
+# Examples
+# 'folder/*' matches 'folder/' and 'folder/abc'
+# 'folder/?*' matches 'folder/abc' but not 'folder/'
+#
+# We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
+
+./sdk/x.y.z/TestHostNetFramework/x64/msdia140.dll
+./sdk/x.y.z/TestHostNetFramework/x86/msdia140.dll
+./sdk/x.y.z/datacollector.dll

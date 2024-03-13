@@ -1,0 +1,31 @@
+<Project>
+
+  <PropertyGroup>
+    <UnifiedBuildValidationTestsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'test', 'Microsoft.DotNet.UnifiedBuild.Tests'))</UnifiedBuildValidationTestsDir>
+  </PropertyGroup>
+
+  <Target Name="RunUnifiedBuildValidation">
+    <ItemGroup>
+      <SdkTarballItem Include="$(ArtifactsAssetsDir)dotnet-sdk*$(ArchiveExtension)" />
+      <SourceBuiltArtifactsItem Include="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <!-- <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath> -->
+      <SdkBaselineValidationVerbosity Condition="'$(SdkBaselineValidationVerbosity)' == ''">normal</SdkBaselineValidationVerbosity>
+    </PropertyGroup>
+
+    <!-- Multiple loggers are specified so that results are captured in trx and pipelines can fail with AzDO pipeline warnings -->
+    <Exec Command="$(DotnetTool) test $(UnifiedBuildValidationTestsDir) --logger:trx -c $(Configuration) -p:VSTestUseMSBuildOutput=false"
+          IgnoreStandardErrorWarningFormat="true"
+          EnvironmentVariables="
+            UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH=$(SdkTarballPath);
+            UNIFIED_BUILD_VALIDATION_SOURCEBUILT_ARTIFACTS_PATH=$(SourceBuiltArtifactsPath);
+            UNIFIED_BUILD_VALIDATION_TARGET_RID=$(TargetRid);
+            UNIFIED_BUILD_VALIDATION_PORTABLE_RID=$(PortableRid);
+            UNIFIED_BUILD_VALIDATION_CUSTOM_PACKAGES_PATH=$(CustomSourceBuiltPackagesPath);
+            UNIFIED_BUILD_VALIDATION_WARN_SDK_CONTENT_DIFFS=true;
+            $(CustomTestEnvVars)" />
+  </Target>
+
+</Project>

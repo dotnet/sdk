@@ -1,0 +1,24 @@
+# This list is processed using FileSystemName.MatchesSimpleExpression
+#
+# Format
+# {msft|sb},<path> [# comment]
+# msft = Microsoft built SDK
+# sb   = source-built SDK
+#
+# Examples
+# 'folder/*' matches 'folder/' and 'folder/abc'
+# 'folder/?*' matches 'folder/abc' but not 'folder/'
+
+msft,./sdk/x.y.z/TestHostNetFramework/x64/msdia140.dll
+msft,./sdk/x.y.z/TestHostNetFramework/x86/msdia140.dll
+msft,./sdk/x.y.z/datacollector.dll
+
+sb,./sdk/x.y.z/TestHostNetFramework/x64/msdia140.dll
+sb,./sdk/x.y.z/TestHostNetFramework/x86/msdia140.dll
+sb,./sdk/x.y.z/datacollector.dll
+
+msft,./sdk/x.y.z/Containers/containerize/*
+sb,./sdk/x.y.z/Containers/containerize/*
+
+msft,./sdk/x.y.z/Containers/tasks/net472/*
+sb,./sdk/x.y.z/Containers/tasks/net472/*

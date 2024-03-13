@@ -43,16 +43,16 @@ internal class DotNetHelper
             }
             IsMonoRuntime = DetermineIsMonoRuntime(Config.DotNetDirectory);
 
-            if (!Directory.Exists(ProjectsDirectory))
-            {
-                Directory.CreateDirectory(ProjectsDirectory);
-                InitNugetConfig();
-            }
+            // if (!Directory.Exists(ProjectsDirectory))
+            // {
+            //     Directory.CreateDirectory(ProjectsDirectory);
+            //     InitNugetConfig();
+            // }
 
-            if (!Directory.Exists(PackagesDirectory))
-            {
-                Directory.CreateDirectory(PackagesDirectory);
-            }
+            // if (!Directory.Exists(PackagesDirectory))
+            // {
+            //     Directory.CreateDirectory(PackagesDirectory);
+            // }
         }
     }
 
@@ -105,7 +105,7 @@ internal class DotNetHelper
             OutputHelper,
             configureCallback: (process) => configureProcess(process, workingDirectory),
             millisecondTimeout: millisecondTimeout);
-        
+
         if (expectedExitCode != null) {
             ExecuteHelper.ValidateExitCode(executeResult, (int) expectedExitCode);
         }
@@ -243,7 +243,7 @@ internal class DotNetHelper
         {
             throw validator.ValidationException;
         }
-    }    
+    }
 
     private static string GetBinLogOption(string projectName, string command, string? differentiator = null)
     {
