@@ -150,7 +150,10 @@ Examples:
         var runCommand = new CliCommand("run") { Hidden = true };
         var testCommand = new CliCommand("test") { Hidden = true };
         var buildCommand = new CliCommand("build") { Hidden = true };
-        var rootCommand = new CliRootCommand(Description);
+        var rootCommand = new CliRootCommand(Description)
+        {
+            Directives = { new EnvironmentVariablesDirective() }
+        };
 
         void AddSymbols(CliCommand command)
         {
@@ -238,7 +241,6 @@ Examples:
         {
             Output = output ?? Console.Out,
             Error = error ?? Console.Error,
-            Directives = { new EnvironmentVariablesDirective() },
 
         }.Invoke(args);
 
