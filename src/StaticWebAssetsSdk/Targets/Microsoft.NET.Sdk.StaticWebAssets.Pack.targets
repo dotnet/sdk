@@ -150,7 +150,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ComputeEndpointsForReferenceStaticWebAssets
       Assets="@(_PackStaticWebAssets)"
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
-      ApplyBasePath="true"
     >
       <Output TaskParameter="Endpoints" ItemName="_PackStaticWebAssetEndpoints" />
     </ComputeEndpointsForReferenceStaticWebAssets>

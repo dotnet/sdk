@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public ITaskItem[] CandidateAssets { get; set; }
 
         [Required]
-        public ITaskItem[] CandidateEndpoints { get; set; }
+        public ITaskItem[] ExistingEndpoints { get; set; }
 
         [Required]
         public ITaskItem[] ContentTypeMappings { get; set; }
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public override bool Execute()
         {
             var staticWebAssets = CandidateAssets.Select(StaticWebAsset.FromTaskItem);
-            var existingEndpoints = StaticWebAssetEndpoint.FromItemGroup(CandidateEndpoints);
+            var existingEndpoints = StaticWebAssetEndpoint.FromItemGroup(ExistingEndpoints);
             var existingEndpointsByAssetFile = existingEndpoints
                 .GroupBy(e => e.AssetFile, OSPath.PathComparer)
                 .ToDictionary(g => g.Key, g => new HashSet<StaticWebAssetEndpoint>(g));

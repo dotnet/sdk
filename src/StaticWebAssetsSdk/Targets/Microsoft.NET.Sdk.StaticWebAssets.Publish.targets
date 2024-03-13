@@ -67,6 +67,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)"
       Condition="'$(_ShouldLoadBuildManifestAndUpdateAssets)' == 'true'">
       <Output TaskParameter="Assets" ItemName="_CachedBuildStaticWebAssets" />
+      <Output TaskParameter="Endpoints" ItemName="_CachedBuildStaticWebAssetEndpoints" />
       <Output TaskParameter="DiscoveryPatterns" ItemName="_CachedBuildStaticWebAssetDiscoveryPatterns" />
       <Output TaskParameter="ReferencedProjectsConfiguration" ItemName="_CachedBuildStaticWebAssetReferencedProjectsConfiguration" />
     </ReadStaticWebAssetsManifestFile>
@@ -80,6 +81,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="$(_ShouldLoadBuildManifestAndUpdateAssets)">
       <StaticWebAsset Include="@(_CachedBuildStaticWebAssets)" />
+      <StaticWebAssetEndpoint Include="@(_CachedBuildStaticWebAssetEndpoints)" />
       <StaticWebAssetDiscoveryPattern Include="@(_CachedBuildStaticWebAssetDiscoveryPatterns)" />
       <StaticWebAssetProjectConfiguration Include="@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration)" />
     </ItemGroup>

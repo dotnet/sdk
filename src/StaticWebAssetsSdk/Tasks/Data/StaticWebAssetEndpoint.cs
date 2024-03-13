@@ -17,13 +17,13 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>
     public string AssetFile { get; set; }
 
     // Request values that must be compatible for the file to be selected.
-    public StaticWebAssetEndpointSelector[] Selectors { get; set; }
+    public StaticWebAssetEndpointSelector[] Selectors { get; set; } = [];
 
     // Response headers that must be added to the response.
-    public StaticWebAssetEndpointResponseHeader[] ResponseHeaders { get; set; }
+    public StaticWebAssetEndpointResponseHeader[] ResponseHeaders { get; set; } = [];
 
     // Properties associated with the endpoint.
-    public StaticWebAssetEndpointProperty[] EndpointProperties { get; set; }
+    public StaticWebAssetEndpointProperty[] EndpointProperties { get; set; } = [];
 
     public static StaticWebAssetEndpoint[] FromItemGroup(ITaskItem[] endpoints)
     {

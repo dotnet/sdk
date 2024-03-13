@@ -587,6 +587,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <DefineStaticWebAssetEndpoints
       CandidateAssets="@(StaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
