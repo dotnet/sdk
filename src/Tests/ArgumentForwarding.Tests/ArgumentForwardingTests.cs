@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             // Escape and Re-Evaluate the rawEvaluatedArgument
             var escapedEvaluatedRawArgument = EscapeAndEvaluateArgumentStringCmd(rawEvaluatedArgument);
 
-            rawEvaluatedArgument.Length.Should().NotBe(escapedEvaluatedRawArgument.Length);
+            rawEvaluatedArgument.Length.Should().Be(escapedEvaluatedRawArgument.Length);
         }
 
         /// <summary>
