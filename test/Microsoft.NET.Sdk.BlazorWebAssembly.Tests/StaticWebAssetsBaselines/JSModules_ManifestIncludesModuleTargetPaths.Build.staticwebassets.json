@@ -9122,7 +9122,7 @@
   "Endpoints": [
     {
       "Route": "_content/RazorClassLibrary/razorclasslibrary.lib.module.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\JSModules_Man---0E797D5D\\razorclasslibrary\\wwwroot\\razorclasslibrary.lib.module.js",
+      "AssetFile": "${ProjectPath}\\razorclasslibrary\\wwwroot\\razorclasslibrary.lib.module.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9131,7 +9131,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "36"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -9139,18 +9139,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "YrQkVAkoYLqZNFGvqsk8Tyjrofe2LHu3fGgdTW/9AfU="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 13 Mar 2024 16:37:14 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "_content/RazorClassLibrary/styles.css",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\JSModules_Man---0E797D5D\\razorclasslibrary\\wwwroot\\styles.css",
+      "AssetFile": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9159,7 +9159,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "3"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -9167,18 +9167,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "8ZRc1sGeVrPBx4lD717BgRaQekyh78QKV9SKsdt638U="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "_content/RazorClassLibrary/wwwroot/exampleJsInterop.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\JSModules_Man---0E797D5D\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
+      "AssetFile": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9187,7 +9187,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "0"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -9195,18 +9195,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "47DEQpj8HBSa\u002B/TImW\u002B5JCeuQeRkm5NMpJWZG3hSuFU="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "blazorwasm.lib.module.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\JSModules_Man---0E797D5D\\blazorwasm\\wwwroot\\blazorwasm.lib.module.js",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\wwwroot\\blazorwasm.lib.module.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9215,7 +9215,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "32"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -9223,18 +9223,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "W5ZSepq1mBUmWnu7MqTAzO3YGJk7\u002BLTHPaTOHFlY9Fw="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 13 Mar 2024 16:37:14 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "css/app.css",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\JSModules_Man---0E797D5D\\blazorwasm\\wwwroot\\css\\app.css",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\wwwroot\\css\\app.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9243,7 +9243,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "12"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -9251,18 +9251,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "9TimOnvx/g\u002Beby8lWw6RmQILUsAR9bxHPRTj0XBQ000="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "Fake-License.txt",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\JSModules_Man---0E797D5D\\blazorwasm\\wwwroot\\Fake-License.txt",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9271,7 +9271,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "3"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -9279,18 +9279,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "8ZRc1sGeVrPBx4lD717BgRaQekyh78QKV9SKsdt638U="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "index.html",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\JSModules_Man---0E797D5D\\blazorwasm\\wwwroot\\index.html",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9299,7 +9299,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "597"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -9307,11 +9307,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "cG8Lz/kJ7kWyFQngYTGE7sg9GvCAgMIq4H6ygkSEy1s="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []

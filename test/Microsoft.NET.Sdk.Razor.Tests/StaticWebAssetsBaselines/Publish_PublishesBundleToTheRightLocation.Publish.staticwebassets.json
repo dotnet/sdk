@@ -272,7 +272,7 @@
   "Endpoints": [
     {
       "Route": "ComponentApp.lib.module.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Publish_Publi---9035E6D1\\wwwroot\\ComponentApp.lib.module.js",
+      "AssetFile": "${ProjectPath}\\wwwroot\\ComponentApp.lib.module.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -281,15 +281,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "28"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "16mjQhLrpIghPFA1bZ/rlbsFUIyqXRKBfHy21b0Fp2w="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 13 Mar 2024 18:31:10 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",

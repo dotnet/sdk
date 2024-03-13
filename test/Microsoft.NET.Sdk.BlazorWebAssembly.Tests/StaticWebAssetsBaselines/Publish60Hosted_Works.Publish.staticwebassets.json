@@ -2405,7 +2405,7 @@
   "Endpoints": [
     {
       "Route": "css/app.css",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Publish60Host---0200F604\\Client\\wwwroot\\css\\app.css",
+      "AssetFile": "${ProjectPath}\\Client\\wwwroot\\css\\app.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2414,7 +2414,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "156"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -2422,18 +2422,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "4m0Wflc9AqFLmT024OBDGgQ6VG3EE0fUVdMS7lA5\u002B\u002Bo="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 01 Jun 2022 13:33:52 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "index.html",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Publish60Host---0200F604\\Client\\wwwroot\\index.html",
+      "AssetFile": "${ProjectPath}\\Client\\wwwroot\\index.html",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2442,7 +2442,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "755"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -2450,11 +2450,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "3oFKIrr9DC7sgwXXnxKy0eWbevcbOmc4PLi0h8eWgw8="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 01 Jun 2022 13:33:52 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []

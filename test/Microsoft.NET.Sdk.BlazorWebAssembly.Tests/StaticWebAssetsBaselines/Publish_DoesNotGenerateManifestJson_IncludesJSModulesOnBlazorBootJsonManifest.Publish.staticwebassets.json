@@ -4892,7 +4892,7 @@
   "Endpoints": [
     {
       "Route": "blazorwasm-minimal.lib.module.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Publish_DoesN---CAE049EC\\wwwroot\\blazorwasm-minimal.lib.module.js",
+      "AssetFile": "${ProjectPath}\\wwwroot\\blazorwasm-minimal.lib.module.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -4901,15 +4901,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "32"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "W5ZSepq1mBUmWnu7MqTAzO3YGJk7\u002BLTHPaTOHFlY9Fw="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 13 Mar 2024 18:24:47 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",
@@ -4920,7 +4920,7 @@
     },
     {
       "Route": "css/app.css",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Publish_DoesN---CAE049EC\\wwwroot\\css\\app.css",
+      "AssetFile": "${ProjectPath}\\wwwroot\\css\\app.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -4929,15 +4929,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "12"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "9TimOnvx/g\u002Beby8lWw6RmQILUsAR9bxHPRTj0XBQ000="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",
@@ -4948,7 +4948,7 @@
     },
     {
       "Route": "index.html",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Publish_DoesN---CAE049EC\\wwwroot\\index.html",
+      "AssetFile": "${ProjectPath}\\wwwroot\\index.html",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -4957,15 +4957,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "597"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "cG8Lz/kJ7kWyFQngYTGE7sg9GvCAgMIq4H6ygkSEy1s="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",

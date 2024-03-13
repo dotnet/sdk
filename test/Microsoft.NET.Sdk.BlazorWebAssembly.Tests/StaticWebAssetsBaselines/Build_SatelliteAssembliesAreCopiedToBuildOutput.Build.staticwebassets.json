@@ -10424,7 +10424,7 @@
   "Endpoints": [
     {
       "Route": "_content/RazorClassLibrary/styles.css",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\razorclasslibrary\\wwwroot\\styles.css",
+      "AssetFile": "${ProjectPath}\\razorclasslibrary\\wwwroot\\styles.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -10433,7 +10433,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "3"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -10441,18 +10441,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "8ZRc1sGeVrPBx4lD717BgRaQekyh78QKV9SKsdt638U="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "_content/RazorClassLibrary/wwwroot/exampleJsInterop.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
+      "AssetFile": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -10461,7 +10461,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "0"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -10469,18 +10469,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "47DEQpj8HBSa\u002B/TImW\u002B5JCeuQeRkm5NMpJWZG3hSuFU="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "css/app.css",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\wwwroot\\css\\app.css",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\wwwroot\\css\\app.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -10489,15 +10489,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "12"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "9TimOnvx/g\u002Beby8lWw6RmQILUsAR9bxHPRTj0XBQ000="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",
@@ -10508,7 +10508,7 @@
     },
     {
       "Route": "css/app.css",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\LinkToWebRoot\\css\\app.css",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -10517,15 +10517,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "14"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "5OOEF70cuXT3dTJC/PKl3QN8wSHisB5yqXgZPmYIRSs="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",
@@ -10536,7 +10536,7 @@
     },
     {
       "Route": "Fake-License.txt",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\wwwroot\\Fake-License.txt",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\wwwroot\\Fake-License.txt",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -10545,15 +10545,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "3"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "8ZRc1sGeVrPBx4lD717BgRaQekyh78QKV9SKsdt638U="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",
@@ -10564,7 +10564,7 @@
     },
     {
       "Route": "index.html",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\blazorwasm\\wwwroot\\index.html",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\wwwroot\\index.html",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -10573,15 +10573,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "597"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "cG8Lz/kJ7kWyFQngYTGE7sg9GvCAgMIq4H6ygkSEy1s="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",
@@ -10592,7 +10592,7 @@
     },
     {
       "Route": "js/LinkedScript.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Satelli---D6A0DEFA\\LinkBaseToWebRoot\\js\\LinkedScript.js",
+      "AssetFile": "${ProjectPath}\\LinkBaseToWebRoot\\js\\LinkedScript.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -10601,15 +10601,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "3"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "8ZRc1sGeVrPBx4lD717BgRaQekyh78QKV9SKsdt638U="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",

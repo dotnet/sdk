@@ -83,7 +83,7 @@
   "Endpoints": [
     {
       "Route": "test.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Publish_Cross---A8380EE6\\wwwroot\\test.js",
+      "AssetFile": "${ProjectPath}\\wwwroot\\test.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -92,15 +92,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "20"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "RiiZMt4WBEeSYPAXi7o6X3AZ0TOyY\u002B/BOcmhjYVr6/E="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 13 Mar 2024 18:23:12 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",

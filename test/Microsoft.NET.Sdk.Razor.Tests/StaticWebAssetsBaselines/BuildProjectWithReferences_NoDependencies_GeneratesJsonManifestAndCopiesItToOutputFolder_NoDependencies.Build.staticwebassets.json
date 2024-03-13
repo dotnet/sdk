@@ -470,7 +470,7 @@
   "Endpoints": [
     {
       "Route": "_content/AnotherClassLib/css/site.css",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\BuildProjectW---8B9BE193\\AnotherClassLib\\wwwroot\\css\\site.css",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\site.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -479,7 +479,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "37"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -487,18 +487,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "8wEk49fj\u002BBGZ/WIJ5ba3l72r5JaR5WN\u002BHXkzCxEjZoc="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "_content/AnotherClassLib/js/project-direct-dep.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\BuildProjectW---8B9BE193\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -507,7 +507,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "103"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -515,18 +515,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "O92BrQTQim9y7kh50x4exAsCPCzWlIpABSnvvKSTEgk="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "_content/ClassLibrary/js/project-transitive-dep.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\BuildProjectW---8B9BE193\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -535,7 +535,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "111"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -543,18 +543,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "G0av3NPyLxQq2kXU9Rwosav2qz6ghu5aTHJ63tsI4I0="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\BuildProjectW---8B9BE193\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -563,7 +563,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "0"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -571,18 +571,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "47DEQpj8HBSa\u002B/TImW\u002B5JCeuQeRkm5NMpJWZG3hSuFU="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "_content/PackageLibraryDirectDependency/css/site.css",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\.nuget\\packages\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\css\\site.css",
+      "AssetFile": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\site.css",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -591,7 +591,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "37"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -599,18 +599,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "8wEk49fj\u002BBGZ/WIJ5ba3l72r5JaR5WN\u002BHXkzCxEjZoc="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "_content/PackageLibraryDirectDependency/js/pkg-direct-dep.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\.nuget\\packages\\packagelibrarydirectdependency\\1.0.0\\staticwebassets\\js\\pkg-direct-dep.js",
+      "AssetFile": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\pkg-direct-dep.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -619,7 +619,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "95"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -627,18 +627,18 @@
         },
         {
           "Name": "ETag",
-          "Value": "s5E/XzjKjuyKQCO7xZ7HS25lSJiEQf608NlJwCUpt\u002Bs="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []
     },
     {
       "Route": "_content/PackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\.nuget\\packages\\packagelibrarytransitivedependency\\1.0.0\\staticwebassets\\js\\pkg-transitive-dep.js",
+      "AssetFile": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\pkg-transitive-dep.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -647,7 +647,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "103"
+          "Value": "__content-length__"
         },
         {
           "Name": "Content-Type",
@@ -655,11 +655,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\u002BHMuPK2gCAlVZ4/Sa4GA\u002B2zpMH8ptnrZ2H6/fwSkbA4="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 17 Feb 2021 20:03:09 GMT"
+          "Value": "__last-modified__"
         }
       ],
       "EndpointProperties": []

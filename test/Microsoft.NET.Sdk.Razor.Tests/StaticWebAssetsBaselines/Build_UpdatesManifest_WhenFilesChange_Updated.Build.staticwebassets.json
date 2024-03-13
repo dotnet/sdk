@@ -146,7 +146,7 @@
   "Endpoints": [
     {
       "Route": "index.html",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Updates---144B144C\\wwwroot\\index.html",
+      "AssetFile": "${ProjectPath}\\wwwroot\\index.html",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -155,15 +155,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "9"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "Sa0\u002BaGzwffekcM4L7EM6XLHjgSnimnY5r2NcrCv4aqg="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 13 Mar 2024 16:45:43 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",

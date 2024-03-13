@@ -62,7 +62,7 @@
   "Endpoints": [
     {
       "Route": "test.js",
-      "AssetFile": "C:\\work\\dotnet-sdk\\artifacts\\tmp\\Debug\\Build_Crossta---5885D4BE\\wwwroot\\test.js",
+      "AssetFile": "${ProjectPath}\\wwwroot\\test.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -71,15 +71,15 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "20"
+          "Value": "__content-length__"
         },
         {
           "Name": "ETag",
-          "Value": "RiiZMt4WBEeSYPAXi7o6X3AZ0TOyY\u002B/BOcmhjYVr6/E="
+          "Value": "__etag__"
         },
         {
           "Name": "Last-Modified",
-          "Value": "Wed, 13 Mar 2024 16:42:29 GMT"
+          "Value": "__last-modified__"
         },
         {
           "Name": "Accept-Ranges",
