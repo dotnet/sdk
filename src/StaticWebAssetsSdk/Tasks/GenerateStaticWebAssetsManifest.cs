@@ -97,15 +97,26 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             // inside the manifest because its cumbersome to do it in MSBuild directly.
             if (StaticWebAssetsManifest.ManifestTypes.IsPublish(ManifestType))
             {
-                var assetsByIdentity = assets.ToDictionary(a => a.Identity, a => a);
-                return Endpoints
-                    .Select(StaticWebAssetEndpoint.FromTaskItem)
-                    .Where(e => assetsByIdentity.ContainsKey(e.AssetFile))
-                    .OrderBy(a => (a.Route, a.AssetFile))
-                    .ToArray();
+                var assetsByIdentity = assets.ToDictionary(a => a.Identity, a => a, OSPath.PathComparer);
+                var filteredEndpoints = new List<StaticWebAssetEndpoint>();
+
+                foreach (var endpoint in Endpoints.Select(e => StaticWebAssetEndpoint.FromTaskItem(e)))
+                {
+                    if (assetsByIdentity.ContainsKey(endpoint.AssetFile))
+                    {
+                        filteredEndpoints.Add(endpoint);
+                        Log.LogMessage(MessageImportance.Low, $"Accepted endpoint: Route='{endpoint.Route}', AssetFile='{endpoint.AssetFile}'");
+                    }
+                    else
+                    {
+                        Log.LogMessage(MessageImportance.Low, $"Filtered out endpoint: Endpoint='{endpoint.Route}' AssetFile='{endpoint.AssetFile}'");
+                    }
+                }
+
+                return [.. filteredEndpoints.OrderBy(a => (a.Route, a.AssetFile))];
             }
 
-            return Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem).OrderBy(a => (a.Route, a.AssetFile)).ToArray();
+            return [.. Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem).OrderBy(a => (a.Route, a.AssetFile))];
         }
 
         private void PersistManifest(StaticWebAssetsManifest manifest)

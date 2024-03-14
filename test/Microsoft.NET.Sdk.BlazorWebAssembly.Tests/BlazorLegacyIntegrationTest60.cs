@@ -49,7 +49,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(ProjectDirectory, "Server");
-            publish.Execute()
+            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
+            publish.Execute("/bl")
                 .Should()
                 .Pass()
                 .And.NotHaveStdOutContaining("warning IL");

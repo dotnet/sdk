@@ -123,6 +123,10 @@ Copyright (c) .NET Foundation. All rights reserved.
         Include="@(_ReferencedProjectPublishStaticWebAssetsItems)"
         Condition="'%(_ReferencedProjectPublishStaticWebAssetsItems.ResultType)' == 'StaticWebAsset'"
         RemoveMetadata="ResultType" />
+      <StaticWebAssetEndpoint
+        Include="@(_ReferencedProjectPublishStaticWebAssetsItems)"
+        Condition="'%(_ReferencedProjectPublishStaticWebAssetsItems.ResultType)' == 'StaticWebAssetEndpoint'"
+        RemoveMetadata="ResultType" />
     </ItemGroup>
 
   </Target>

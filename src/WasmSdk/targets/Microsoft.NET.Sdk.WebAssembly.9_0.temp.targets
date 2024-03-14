@@ -153,4 +153,28 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="_DefinePublishBootJsonEndpoint" AfterTargets="_AddPublishWasmBootJsonToStaticWebAssets">
+    <PropertyGroup>
+      <_PublishWasmBootJsonPath>@(_PublishWasmBootJson->'%(FullPath)')</_PublishWasmBootJsonPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PublishWasmBootJsonAsset
+        Include="@(StaticWebAsset)"
+        Condition="'%(StaticWebAsset.Identity)' == '$(_PublishWasmBootJsonPath)'" />
+    </ItemGroup>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_PublishWasmBootJsonAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_PublishWasmBootJsonAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAssetEndpoint Include="@(_PublishWasmBootJsonAssetEndpoint)" />
+    </ItemGroup>
+
+  </Target>
+
 </Project>

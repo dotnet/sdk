@@ -73,8 +73,9 @@ public class ResolveCompressedAssets : Task
             {
                 Log.LogMessage(
                     MessageImportance.Low,
-                    "Ignoring asset '{0}' for compression because it is already compressed.",
-                    asset.Identity);
+                    "Ignoring asset '{0}' for compression because it is already compressed asset for '{1}'.",
+                    asset.Identity,
+                    asset.RelatedAsset);
                 continue;
             }
 
@@ -137,7 +138,7 @@ public class ResolveCompressedAssets : Task
                     existingFormats.Add(format);
 
                     Log.LogMessage(
-                        "Created compressed asset '{0}' for '{1}'.",
+                        "Accepted compressed asset '{0}' for '{1}'.",
                         compressedAsset.ItemSpec,
                         itemSpec);
                 }
