@@ -15,6 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.BrotliCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GZipCompress" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ResolveCompressedAssets" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ApplyCompressionNegotiation" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 
   <PropertyGroup>
 
@@ -236,6 +237,27 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetEndpoint Include="@(_CompressionBuildStaticWebAssetEndpoint)" />
     </ItemGroup>
 
+    <ComputeStaticWebAssetsForCurrentProject
+      Assets="@(StaticWebAsset)"
+      ProjectMode="$(StaticWebAssetProjectMode)"
+      AssetKind="Build"
+      Source="$(PackageId)"
+    >
+      <Output TaskParameter="StaticWebAssets" ItemName="_CompressionCurrentProjectBuildAssets" />
+    </ComputeStaticWebAssetsForCurrentProject>
+
+    <ApplyCompressionNegotiation
+      CandidateEndpoints="@(StaticWebAssetEndpoint)"
+      CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
+    >
+      <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionBuildEndpoints" />
+    </ApplyCompressionNegotiation>
+
+    <ItemGroup>
+      <StaticWebAssetEndpoint Remove="@(_UpdatedCompressionBuildEndpoints)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedCompressionBuildEndpoints)" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="GenerateBuildCompressedStaticWebAssets" DependsOnTargets="$(GenerateBuildCompressedStaticWebAssetsDependsOn);$(CompressFilesDependsOn)">
@@ -303,6 +325,33 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <StaticWebAsset Include="@(_CompressionPublishStaticWebAsset)" />
       <StaticWebAssetEndpoint Include="@(_CompressionPublishStaticWebAssetEndpoint)" />
+    </ItemGroup>
+
+    <ComputeStaticWebAssetsForCurrentProject
+      Assets="@(StaticWebAsset)"
+      ProjectMode="$(StaticWebAssetProjectMode)"
+      AssetKind="Publish"
+      Source="$(PackageId)"
+    >
+      <Output TaskParameter="StaticWebAssets" ItemName="_CompressionCurrentProjectPublishAssets" />
+    </ComputeStaticWebAssetsForCurrentProject>
+
+    <ItemGroup>
+      <_CompressionCandidatePublishAssets Include="@(_CompressionCurrentProjectPublishAssets)" />
+      <_CompressionCandidatePublishAssets Include="@(StaticWebAsset)"
+        Condition="'%(SourceType)' == 'Project' or '%(SourceType)' == 'Package'" />
+    </ItemGroup>
+
+    <ApplyCompressionNegotiation
+      CandidateEndpoints="@(StaticWebAssetEndpoint)"
+      CandidateAssets="@(_CompressionCandidatePublishAssets)"
+    >
+      <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionPublishEndpoints" />
+    </ApplyCompressionNegotiation>
+
+    <ItemGroup>
+      <StaticWebAssetEndpoint Remove="@(_UpdatedCompressionPublishEndpoints)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedCompressionPublishEndpoints)" />
     </ItemGroup>
 
   </Target>

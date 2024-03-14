@@ -10,6 +10,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 public class StaticWebAssetEndpointResponseHeader : IComparable<StaticWebAssetEndpointResponseHeader>, IEquatable<StaticWebAssetEndpointResponseHeader>
 {
+    public static readonly IEqualityComparer<StaticWebAssetEndpointResponseHeader> NameComparer = new NameStaticWebAssetEndpointResponseHeaderComparer();
+
     public string Name { get; set; }
 
     public string Value { get; set; }
@@ -47,5 +49,18 @@ public class StaticWebAssetEndpointResponseHeader : IComparable<StaticWebAssetEn
 #else
         return HashCode.Combine(Name, Value);
 #endif
+    }
+
+    public class NameStaticWebAssetEndpointResponseHeaderComparer : IEqualityComparer<StaticWebAssetEndpointResponseHeader>
+    {
+        public bool Equals(StaticWebAssetEndpointResponseHeader x, StaticWebAssetEndpointResponseHeader y)
+        {
+            return string.Equals(x?.Name, y?.Name, StringComparison.Ordinal);
+        }
+
+        public int GetHashCode(StaticWebAssetEndpointResponseHeader obj)
+        {
+            return obj?.Name.GetHashCode() ?? 1;
+        }
     }
 }
