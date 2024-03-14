@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal class MSBuildEvaluationFilter(DotNetWatchContext context, FileSetFactory factory)
+    internal class BuildEvaluator(DotNetWatchContext context, FileSetFactory factory)
     {
         // File types that require an MSBuild re-evaluation
         private static readonly string[] s_msBuildFileExtensions = new[]
@@ -23,20 +23,82 @@ namespace Microsoft.DotNet.Watcher.Tools
         // result of the last evaluation:
         private (ProjectInfo project, FileSet fileSet)? _evaluationResult;
 
+        public bool RequiresRevaluation { get; set; }
+
+        private bool _canUseNoRestore;
+        private string[]? _noRestoreArguments;
+
+        public void UpdateProcessArguments(WatchState state)
+        {
+            Debug.Assert(!context.HotReloadEnabled);
+
+            if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
+            {
+                return;
+            }
+
+            if (state.Iteration == 0)
+            {
+                var arguments = state.ProcessSpec.Arguments ?? [];
+                _canUseNoRestore = CanUseNoRestore(arguments);
+                if (_canUseNoRestore)
+                {
+                    // Create run --no-restore <other args>
+                    _noRestoreArguments = arguments.Take(1).Append("--no-restore").Concat(arguments.Skip(1)).ToArray();
+                    context.Reporter.Verbose($"No restore arguments: {string.Join(" ", _noRestoreArguments)}");
+                }
+            }
+            else if (_canUseNoRestore)
+            {
+                if (RequiresRevaluation)
+                {
+                    context.Reporter.Verbose("Cannot use --no-restore since msbuild project files have changed.");
+                }
+                else
+                {
+                    context.Reporter.Verbose("Modifying command to use --no-restore");
+                    state.ProcessSpec.Arguments = _noRestoreArguments;
+                }
+            }
+        }
+
+        private bool CanUseNoRestore(IEnumerable<string> arguments)
+        {
+            // For some well-known dotnet commands, we can pass in the --no-restore switch to avoid unnecessary restores between iterations.
+            // For now we'll support the "run" and "test" commands.
+            if (arguments.Any(a => string.Equals(a, "--no-restore", StringComparison.Ordinal)))
+            {
+                // Did the user already configure a --no-restore?
+                return false;
+            }
+
+            var dotnetCommand = arguments.FirstOrDefault();
+            if (string.Equals(dotnetCommand, "run", StringComparison.Ordinal) || string.Equals(dotnetCommand, "test", StringComparison.Ordinal))
+            {
+                context.Reporter.Verbose("Watch command can be configured to use --no-restore.");
+                return true;
+            }
+            else
+            {
+                context.Reporter.Verbose($"Watch command will not use --no-restore. Unsupport dotnet-command '{dotnetCommand}'.");
+                return false;
+            }
+        }
+
         public async ValueTask<(ProjectInfo, FileSet)?> EvaluateAsync(WatchState state, CancellationToken cancellationToken)
         {
             if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
-                state.RequiresMSBuildRevaluation = true;
+                RequiresRevaluation = true;
                 return _evaluationResult = await factory.CreateAsync(cancellationToken);
             }
 
             if (state.Iteration == 0 || RequiresMSBuildRevaluation(state.ChangedFile))
             {
-                state.RequiresMSBuildRevaluation = true;
+                RequiresRevaluation = true;
             }
 
-            if (state.RequiresMSBuildRevaluation)
+            if (RequiresRevaluation)
             {
                 context.Reporter.Verbose("Evaluating dotnet-watch file set.");
 

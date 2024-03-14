@@ -5,7 +5,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    public class NoRestoreFilterTest
+    public class NoRestoreTests
     {
         private readonly string[] _arguments = new[] { "run" };
 
@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental,
             };
 
-            var filter = new NoRestoreFilter(context);
+            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
             var state = new WatchState()
             {
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
             Assert.Same(_arguments, state.ProcessSpec.Arguments);
         }
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental,
             };
 
-            var filter = new NoRestoreFilter(context);
+            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
             var state = new WatchState()
             {
@@ -59,13 +59,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
             state.ChangedFile = new FileItem { FilePath = "Test.proj" };
-            state.RequiresMSBuildRevaluation = true;
+            evaluator.RequiresRevaluation = true;
             state.Iteration++;
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
             Assert.Same(_arguments, state.ProcessSpec.Arguments);
         }
@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental with { SuppressMSBuildIncrementalism = true },
             };
 
-            var filter = new NoRestoreFilter(context);
+            var filter = new BuildEvaluator(context, new MockFileSetFactory());
 
             var state = new WatchState()
             {
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            var filter = new NoRestoreFilter(context);
+            var filter = new BuildEvaluator(context, new MockFileSetFactory());
 
             filter.UpdateProcessArguments(state);
 
@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental,
             };
 
-            var filter = new NoRestoreFilter(context);
+            var filter = new BuildEvaluator(context, new MockFileSetFactory());
 
             var state = new WatchState()
             {
@@ -181,7 +181,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental,
             };
 
-            var filter = new NoRestoreFilter(context);
+            var filter = new BuildEvaluator(context, new MockFileSetFactory());
 
             var state = new WatchState()
             {
@@ -216,7 +216,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental,
             };
 
-            var filter = new NoRestoreFilter(context);
+            var filter = new BuildEvaluator(context, new MockFileSetFactory());
 
             var state = new WatchState()
             {

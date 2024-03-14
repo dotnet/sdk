@@ -30,8 +30,7 @@ namespace Microsoft.DotNet.Watcher
                 context.Reporter.Verbose("MSBuild incremental optimizations suppressed.");
             }
 
-            var msbuildEvaluation = new MSBuildEvaluationFilter(context, fileSetFactory);
-            var noRestore = new NoRestoreFilter(context);
+            var buildEvaluator = new BuildEvaluator(context, fileSetFactory);
             await using var browserConnector = new BrowserConnector(context);
 
             while (true)
@@ -41,18 +40,18 @@ namespace Microsoft.DotNet.Watcher
                 // Reset arguments
                 processSpec.Arguments = initialArguments;
 
-                if (await msbuildEvaluation.EvaluateAsync(state, cancellationToken) is not (var project, var fileSet))
+                if (await buildEvaluator.EvaluateAsync(state, cancellationToken) is not (var project, var fileSet))
                 {
                     context.Reporter.Error("Failed to find a list of files to watch");
                     return;
                 }
 
-                noRestore.UpdateProcessArguments(state);
+                buildEvaluator.UpdateProcessArguments(state);
 
                 await state.UpdateBrowserAsync(browserConnector, project, cancellationToken);
 
                 // Reset for next run
-                state.RequiresMSBuildRevaluation = false;
+                buildEvaluator.RequiresRevaluation = false;
 
                 state.UpdateIterationEnvironment(context);
 
@@ -115,7 +114,7 @@ namespace Microsoft.DotNet.Watcher
                 if (finishedTask == processTask)
                 {
                     // Process exited. Redo evalulation
-                    state.RequiresMSBuildRevaluation = true;
+                    buildEvaluator.RequiresRevaluation = true;
                     // Now wait for a file to change before restarting process
                     state.ChangedFile = await fileSetWatcher.GetChangedFileAsync(
                         () => context.Reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳"),
