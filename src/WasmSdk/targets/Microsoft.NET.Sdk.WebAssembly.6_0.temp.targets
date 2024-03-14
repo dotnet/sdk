@@ -86,17 +86,21 @@
     >
       <Output TaskParameter="Assets" ItemName="_PatchBuildWasmBootJsonStaticWebAsset" />
     </DefineStaticWebAssets>
-    <DefineStaticWebAssets
+    <DefineStaticWebAssetEndpoints
       CandidateAssets="@(_PatchBuildWasmBootJsonStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
-      <Output TaskParameter="Assets" ItemName="_PatchBuildWasmBootJsonStaticWebAssetEndpoint" />
-    </DefineStaticWebAssets>
+      <Output TaskParameter="Endpoints" ItemName="_PatchBuildWasmBootJsonStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
 
-    <DefineStaticWebAssets
+    <DefineStaticWebAssetEndpoints
       CandidateAssets="@(WasmStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
-      <Output TaskParameter="Assets" ItemName="WasmStaticWebAssetEndpoint" />
-    </DefineStaticWebAssets>
+      <Output TaskParameter="Endpoints" ItemName="WasmStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
 
     <ItemGroup>
       <_BuildWasmBootJsonStaticWebAsset Remove="@(_BuildWasmBootJsonStaticWebAsset)" />

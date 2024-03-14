@@ -16,12 +16,12 @@ public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointS
 
     public static StaticWebAssetEndpointSelector[] FromMetadataValue(string value)
     {
-        return JsonSerializer.Deserialize<StaticWebAssetEndpointSelector[]>(value);
+        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize<StaticWebAssetEndpointSelector[]>(value);
     }
 
     public static string ToMetadataValue(StaticWebAssetEndpointSelector[] selectors)
     {
-        return JsonSerializer.Serialize(selectors);
+        return JsonSerializer.Serialize(selectors ?? []);
     }
 
     public override bool Equals(object obj) => Equals(obj as StaticWebAssetEndpointSelector);

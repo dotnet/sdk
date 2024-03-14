@@ -16,12 +16,12 @@ public class StaticWebAssetEndpointResponseHeader : IComparable<StaticWebAssetEn
 
     internal static StaticWebAssetEndpointResponseHeader[] FromMetadataValue(string value)
     {
-        return JsonSerializer.Deserialize<StaticWebAssetEndpointResponseHeader[]>(value);
+        return string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize<StaticWebAssetEndpointResponseHeader[]>(value);
     }
 
     internal static string ToMetadataValue(StaticWebAssetEndpointResponseHeader[] responseHeaders)
     {
-        return JsonSerializer.Serialize(responseHeaders);
+        return JsonSerializer.Serialize(responseHeaders ?? []);
     }
 
     public int CompareTo(StaticWebAssetEndpointResponseHeader other)
