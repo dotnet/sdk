@@ -135,5 +135,174 @@
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css"
     }
   ],
-  "Endpoints": []
+  "Endpoints": [
+    {
+      "Route": "ComponentApp.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\publish\\uevdfc2zj3.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\uevdfc2zj3.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.styles.css",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\bundle\\ComponentApp.styles.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.styles.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\publish\\jkyas6fthw.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "ComponentApp.styles.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\jkyas6fthw.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    }
+  ]
 }

@@ -86,10 +86,25 @@
     >
       <Output TaskParameter="Assets" ItemName="_PatchBuildWasmBootJsonStaticWebAsset" />
     </DefineStaticWebAssets>
+    <DefineStaticWebAssets
+      CandidateAssets="@(_PatchBuildWasmBootJsonStaticWebAsset)"
+    >
+      <Output TaskParameter="Assets" ItemName="_PatchBuildWasmBootJsonStaticWebAssetEndpoint" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(WasmStaticWebAsset)"
+    >
+      <Output TaskParameter="Assets" ItemName="WasmStaticWebAssetEndpoint" />
+    </DefineStaticWebAssets>
+
     <ItemGroup>
       <_BuildWasmBootJsonStaticWebAsset Remove="@(_BuildWasmBootJsonStaticWebAsset)" />
       <_BuildWasmBootJsonStaticWebAsset Include="@(_PatchBuildWasmBootJsonStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_PatchBuildWasmBootJsonStaticWebAssetEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(WasmStaticWebAssetEndpoint)" />
     </ItemGroup>
+
   </Target>
 
   <Target Name="_UpdateIntermediateOutputPath" BeforeTargets="_GenerateBuildWasmBootJson">
@@ -117,9 +132,18 @@
       <Output TaskParameter="Assets" ItemName="_NewPublishFilesToCorrectIntegrity" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_NewPublishFilesToCorrectIntegrity)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_NewPublishFilesToCorrectIntegrityEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup>
       <StaticWebAsset Remove="@(_NewWebCilPublishStaticWebAssets)" />
       <StaticWebAsset Include="@(_NewPublishFilesToCorrectIntegrity)" />
+      <StaticWebAssetEndpoint Include="_NewPublishFilesToCorrectIntegrityEndpoint" />
     </ItemGroup>
   </Target>
 
