@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Ella Hathaway <ellahath@umich.edu>
+Date: Wed, 13 Mar 2024 22:02:04 +0000
+Subject: [PATCH] Downgrade Microsoft.ApplicationInsights
+
+Backport: https://github.com/dotnet/source-build/issues/4228
+
+---
+ Directory.Packages.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index 7546dc0b..09a3f791 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -76,7 +76,7 @@
+     <PackageVersion Include="JetBrains.Annotations" Version="2018.2.1" />
+     <PackageVersion Include="LZMA-SDK" Version="19.0.0" />
+     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="2.3.0" />
+-    <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.22.0" />
++    <PackageVersion Include="Microsoft.ApplicationInsights" Version="2.21.0" />
+     <PackageVersion Include="Microsoft.Data.OData" Version="5.8.4" />
+     <PackageVersion Include="Microsoft.DataServices.Client" Version="$(MicrosoftDataServicesClientVersion)" />
+     <PackageVersion Include="Microsoft.Diagnostics.Runtime" Version="1.0.5" />
