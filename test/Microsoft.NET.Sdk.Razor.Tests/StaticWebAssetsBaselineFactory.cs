@@ -37,9 +37,15 @@ public class StaticWebAssetsBaselineFactory
     {
         manifest.Hash = "__hash__";
         var assetsByIdentity = manifest.Assets.ToDictionary(a => a.Identity);
+        var endpointsByAssetFile = manifest.Endpoints.GroupBy(e => e.AssetFile).ToDictionary(g => g.Key, g => g.ToArray());
         foreach (var asset in manifest.Assets)
         {
+            var relatedEndpoints = endpointsByAssetFile.GetValueOrDefault(asset.Identity);
             TemplatizeAsset(projectRoot, restorePath, runtimeIdentifier, asset);
+            foreach (var endpoint in relatedEndpoints ?? [])
+            {
+                endpoint.AssetFile = asset.Identity;
+            }
             if (asset.AssetTraitName == "Content-Encoding")
             {
                 var relativePath = asset.RelativePath.Replace('/', Path.DirectorySeparatorChar);
@@ -48,6 +54,10 @@ public class StaticWebAssetsBaselineFactory
 
                 asset.Identity = Path.Combine(Path.GetDirectoryName(identity), relativePath);
                 asset.Identity = asset.Identity.Replace(Path.DirectorySeparatorChar, '\\');
+                foreach (var endpoint in relatedEndpoints ?? [])
+                {
+                    endpoint.AssetFile = asset.Identity;
+                }
                 asset.OriginalItemSpec = Path.Combine(Path.GetDirectoryName(originalItemSpec), relativePath);
                 asset.OriginalItemSpec = asset.OriginalItemSpec.Replace(Path.DirectorySeparatorChar, '\\');
             }

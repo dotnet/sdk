@@ -540,7 +540,7 @@
     },
     {
       "Route": "AppWithPackageAndP2PReference.styles.css.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\xxx4kj1vik.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithPackageAndP2PReference.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {

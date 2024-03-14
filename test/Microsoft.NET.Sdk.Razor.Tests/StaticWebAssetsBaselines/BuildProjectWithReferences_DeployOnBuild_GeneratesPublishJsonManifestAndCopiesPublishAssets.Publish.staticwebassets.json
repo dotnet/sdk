@@ -707,8 +707,92 @@
       "EndpointProperties": []
     },
     {
+      "Route": "_content/AnotherClassLib/css/site.css",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\site.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/css/site.css.br",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\publish\\css\\site.css.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
       "Route": "_content/AnotherClassLib/css/site.css.gz",
-      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\jiydohab4f.gz",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\css\\site.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/css/site.css.gz",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\css\\site.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -763,8 +847,344 @@
       "EndpointProperties": []
     },
     {
+      "Route": "_content/AnotherClassLib/js/project-direct-dep.js",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/js/project-direct-dep.js.br",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\publish\\js\\project-direct-dep.js.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
       "Route": "_content/AnotherClassLib/js/project-direct-dep.js.gz",
-      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\u6wzccyc9d.gz",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\js\\project-direct-dep.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/js/project-direct-dep.js.gz",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\js\\project-direct-dep.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/_content/ClassLibrary/ClassLibrary.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/_content/ClassLibrary/ClassLibrary.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\ClassLibrary.bundle.scp.css.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/_content/ClassLibrary/ClassLibrary.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\ClassLibrary.bundle.scp.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/_content/ClassLibrary/js/project-transitive-dep.js",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/_content/ClassLibrary/js/project-transitive-dep.js.br",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\js\\project-transitive-dep.js.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/_content/ClassLibrary/js/project-transitive-dep.js.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\js\\project-transitive-dep.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/_content/ClassLibrary/js/project-transitive-dep.v4.js",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/_content/ClassLibrary/js/project-transitive-dep.v4.js.br",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\js\\project-transitive-dep.v4.js.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/_content/ClassLibrary/js/project-transitive-dep.v4.js.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\js\\project-transitive-dep.v4.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -819,8 +1239,92 @@
       "EndpointProperties": []
     },
     {
+      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\ClassLibrary.bundle.scp.css.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
       "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.gz",
-      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\dne6neusgw.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\ClassLibrary.bundle.scp.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\ClassLibrary.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -875,8 +1379,92 @@
       "EndpointProperties": []
     },
     {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.js",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.js.br",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\js\\project-transitive-dep.js.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
       "Route": "_content/ClassLibrary/js/project-transitive-dep.js.gz",
-      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\oc6bork7vf.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\js\\project-transitive-dep.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.js.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\js\\project-transitive-dep.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -931,8 +1519,92 @@
       "EndpointProperties": []
     },
     {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js.br",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\publish\\js\\project-transitive-dep.v4.js.br",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
       "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js.gz",
-      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\phi030i03p.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\js\\project-transitive-dep.v4.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\js\\project-transitive-dep.v4.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1072,7 +1744,7 @@
     },
     {
       "Route": "AppWithPackageAndP2PReference.styles.css.br",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\kqpxdgt7cc.br",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\AppWithPackageAndP2PReference.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1100,7 +1772,7 @@
     },
     {
       "Route": "AppWithPackageAndP2PReference.styles.css.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\kqpxdgt7cc.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithPackageAndP2PReference.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {

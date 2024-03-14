@@ -166,7 +166,7 @@
     },
     {
       "Route": "ComponentApp.bundle.scp.css.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\qqniq8vciv.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -194,7 +194,7 @@
     },
     {
       "Route": "ComponentApp.bundle.scp.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\qqniq8vciv.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -250,7 +250,7 @@
     },
     {
       "Route": "ComponentApp.styles.css.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\fbvaj59k8j.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -278,7 +278,7 @@
     },
     {
       "Route": "ComponentApp.styles.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\fbvaj59k8j.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {

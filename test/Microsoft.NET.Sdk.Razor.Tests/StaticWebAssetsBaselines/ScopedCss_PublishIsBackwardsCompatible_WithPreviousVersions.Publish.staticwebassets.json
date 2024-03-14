@@ -792,7 +792,7 @@
     },
     {
       "Route": "AppWithPackageAndP2PReference.styles.css.br",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\xcfosbg7m5.br",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\publish\\AppWithPackageAndP2PReference.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -820,7 +820,7 @@
     },
     {
       "Route": "AppWithPackageAndP2PReference.styles.css.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\xcfosbg7m5.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithPackageAndP2PReference.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {

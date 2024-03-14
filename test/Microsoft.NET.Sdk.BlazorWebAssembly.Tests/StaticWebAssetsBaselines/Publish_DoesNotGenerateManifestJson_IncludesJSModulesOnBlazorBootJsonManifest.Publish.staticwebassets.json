@@ -4891,8 +4891,36 @@
   ],
   "Endpoints": [
     {
+      "Route": "_framework/blazor.boot.json",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\blazor.publish.boot.json",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
       "Route": "_framework/blazor.boot.json.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\gks556vwhs.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -4920,7 +4948,7 @@
     },
     {
       "Route": "_framework/blazor.boot.json.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\gks556vwhs.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.boot.json.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -4976,7 +5004,7 @@
     },
     {
       "Route": "_framework/blazor.webassembly.js.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\hmwbhbuzzh.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.webassembly.js.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5004,7 +5032,7 @@
     },
     {
       "Route": "_framework/blazor.webassembly.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\hmwbhbuzzh.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.webassembly.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5032,7 +5060,7 @@
     },
     {
       "Route": "_framework/blazorwasm-minimal.pdb.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\pnfljoruxh.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazorwasm-minimal.pdb.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5060,7 +5088,7 @@
     },
     {
       "Route": "_framework/blazorwasm-minimal.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\8mhgf2v46y.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazorwasm-minimal.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5088,7 +5116,7 @@
     },
     {
       "Route": "_framework/blazorwasm-minimal.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\8mhgf2v46y.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazorwasm-minimal.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5115,8 +5143,36 @@
       "EndpointProperties": []
     },
     {
+      "Route": "_framework/dotnet.js",
+      "AssetFile": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
       "Route": "_framework/dotnet.js.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\qlqnh9yima.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5144,7 +5200,35 @@
     },
     {
       "Route": "_framework/dotnet.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\i5uaseg3i2.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_framework/dotnet.native.9.0.0-preview.3.24161.4.qv2rhmxqlw.js",
+      "AssetFile": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5172,7 +5256,7 @@
     },
     {
       "Route": "_framework/dotnet.native.9.0.0-preview.3.24161.4.qv2rhmxqlw.js.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\195nki8y6h.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5200,7 +5284,7 @@
     },
     {
       "Route": "_framework/dotnet.native.9.0.0-preview.3.24161.4.qv2rhmxqlw.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\qv2rhmxqlw.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5227,8 +5311,36 @@
       "EndpointProperties": []
     },
     {
+      "Route": "_framework/dotnet.native.wasm",
+      "AssetFile": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.wasm",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "application/wasm"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
       "Route": "_framework/dotnet.native.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ga5wsxl9ar.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5256,7 +5368,7 @@
     },
     {
       "Route": "_framework/dotnet.native.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\7bhw7yqze6.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5283,8 +5395,36 @@
       "EndpointProperties": []
     },
     {
+      "Route": "_framework/dotnet.runtime.9.0.0-preview.3.24161.4.6c4y69tdb9.js",
+      "AssetFile": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
       "Route": "_framework/dotnet.runtime.9.0.0-preview.3.24161.4.6c4y69tdb9.js.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\dlullfuvkk.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5312,7 +5452,7 @@
     },
     {
       "Route": "_framework/dotnet.runtime.9.0.0-preview.3.24161.4.6c4y69tdb9.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\6c4y69tdb9.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5339,8 +5479,36 @@
       "EndpointProperties": []
     },
     {
+      "Route": "_framework/icudt_CJK.dat",
+      "AssetFile": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_CJK.dat",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "application/octect-stream"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
       "Route": "_framework/icudt_CJK.dat.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\i3mqimicu7.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5368,7 +5536,35 @@
     },
     {
       "Route": "_framework/icudt_CJK.dat.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\i3mqimicu7.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_CJK.dat.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "application/octect-stream"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_framework/icudt_EFIGS.dat",
+      "AssetFile": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_EFIGS.dat",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5396,7 +5592,7 @@
     },
     {
       "Route": "_framework/icudt_EFIGS.dat.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\fndz7twieq.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5424,7 +5620,35 @@
     },
     {
       "Route": "_framework/icudt_EFIGS.dat.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\fndz7twieq.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_EFIGS.dat.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Content-Type",
+          "Value": "application/octect-stream"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_framework/icudt_no_CJK.dat",
+      "AssetFile": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\icudt_no_CJK.dat",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5452,7 +5676,7 @@
     },
     {
       "Route": "_framework/icudt_no_CJK.dat.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\v00s6p1xrx.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5480,7 +5704,7 @@
     },
     {
       "Route": "_framework/icudt_no_CJK.dat.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\v00s6p1xrx.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\icudt_no_CJK.dat.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5508,7 +5732,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Authorization.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\u7dnae32md.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5536,7 +5760,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Authorization.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\u7dnae32md.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Authorization.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5564,7 +5788,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Components.Forms.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\qylafjh4g0.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5592,7 +5816,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Components.Forms.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\qylafjh4g0.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5620,7 +5844,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Components.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\vr9jmgxn8y.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5648,7 +5872,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Components.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\vr9jmgxn8y.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5676,7 +5900,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Components.Web.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\l6phsbhxr2.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5704,7 +5928,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Components.Web.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\l6phsbhxr2.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.Web.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5732,7 +5956,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Components.WebAssembly.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\h2tuyjqe7h.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5760,7 +5984,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Components.WebAssembly.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\h2tuyjqe7h.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Components.WebAssembly.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5788,7 +6012,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Metadata.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\hjo1eg8fk7.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5816,7 +6040,7 @@
     },
     {
       "Route": "_framework/Microsoft.AspNetCore.Metadata.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\hjo1eg8fk7.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.AspNetCore.Metadata.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5844,7 +6068,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Configuration.Abstractions.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\b83nis8jl9.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5872,7 +6096,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\b83nis8jl9.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Abstractions.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5900,7 +6124,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Configuration.Binder.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\f9d011h4xk.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5928,7 +6152,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Configuration.Binder.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\f9d011h4xk.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Binder.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5956,7 +6180,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Configuration.FileExtensions.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\qf7k8yw8na.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5984,7 +6208,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Configuration.FileExtensions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\qf7k8yw8na.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.FileExtensions.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6012,7 +6236,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Configuration.Json.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\twed7nnidg.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6040,7 +6264,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Configuration.Json.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\twed7nnidg.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.Json.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6068,7 +6292,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Configuration.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\duf38d40sg.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6096,7 +6320,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Configuration.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\duf38d40sg.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Configuration.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6124,7 +6348,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.DependencyInjection.Abstractions.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\9yaqgpyfkd.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6152,7 +6376,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\9yaqgpyfkd.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.Abstractions.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6180,7 +6404,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.DependencyInjection.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\5vbfgm7a40.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6208,7 +6432,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.DependencyInjection.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\5vbfgm7a40.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.DependencyInjection.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6236,7 +6460,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.FileProviders.Abstractions.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\1orkxj94sl.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6264,7 +6488,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\1orkxj94sl.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Abstractions.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6292,7 +6516,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.FileProviders.Physical.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\fm8m68j9i5.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6320,7 +6544,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.FileProviders.Physical.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\fm8m68j9i5.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileProviders.Physical.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6348,7 +6572,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.FileSystemGlobbing.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\diuthe2jay.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6376,7 +6600,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.FileSystemGlobbing.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\diuthe2jay.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.FileSystemGlobbing.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6404,7 +6628,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Logging.Abstractions.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ptnlar9fhs.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6432,7 +6656,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Logging.Abstractions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ptnlar9fhs.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.Abstractions.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6460,7 +6684,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Logging.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\hl6fok38tn.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6488,7 +6712,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Logging.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\hl6fok38tn.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Logging.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6516,7 +6740,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Options.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\gz6ya40xt8.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6544,7 +6768,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Options.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\gz6ya40xt8.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Options.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6572,7 +6796,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Primitives.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\fi3a2s2yy3.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6600,7 +6824,7 @@
     },
     {
       "Route": "_framework/Microsoft.Extensions.Primitives.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\fi3a2s2yy3.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.Extensions.Primitives.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6628,7 +6852,7 @@
     },
     {
       "Route": "_framework/Microsoft.JSInterop.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\hepe6id3a3.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6656,7 +6880,7 @@
     },
     {
       "Route": "_framework/Microsoft.JSInterop.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\hepe6id3a3.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6684,7 +6908,7 @@
     },
     {
       "Route": "_framework/Microsoft.JSInterop.WebAssembly.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ptka9naq9b.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6712,7 +6936,7 @@
     },
     {
       "Route": "_framework/Microsoft.JSInterop.WebAssembly.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ptka9naq9b.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\Microsoft.JSInterop.WebAssembly.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6740,7 +6964,7 @@
     },
     {
       "Route": "_framework/netstandard.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\57neax3sio.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\netstandard.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6768,7 +6992,7 @@
     },
     {
       "Route": "_framework/netstandard.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\57neax3sio.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\netstandard.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6796,7 +7020,7 @@
     },
     {
       "Route": "_framework/System.Buffers.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\1qrgpoq3ld.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Buffers.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6824,7 +7048,7 @@
     },
     {
       "Route": "_framework/System.Buffers.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\1qrgpoq3ld.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Buffers.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6852,7 +7076,7 @@
     },
     {
       "Route": "_framework/System.Collections.Concurrent.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\q0nu69gbgt.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6880,7 +7104,7 @@
     },
     {
       "Route": "_framework/System.Collections.Concurrent.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\q0nu69gbgt.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Concurrent.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6908,7 +7132,7 @@
     },
     {
       "Route": "_framework/System.Collections.NonGeneric.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\09zpqgia89.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.NonGeneric.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6936,7 +7160,7 @@
     },
     {
       "Route": "_framework/System.Collections.NonGeneric.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\09zpqgia89.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.NonGeneric.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6964,7 +7188,7 @@
     },
     {
       "Route": "_framework/System.Collections.Specialized.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\b68bv42z4a.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Specialized.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -6992,7 +7216,7 @@
     },
     {
       "Route": "_framework/System.Collections.Specialized.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\b68bv42z4a.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.Specialized.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7020,7 +7244,7 @@
     },
     {
       "Route": "_framework/System.Collections.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\glzbdc6a22.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7048,7 +7272,7 @@
     },
     {
       "Route": "_framework/System.Collections.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\glzbdc6a22.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Collections.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7076,7 +7300,7 @@
     },
     {
       "Route": "_framework/System.ComponentModel.Annotations.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\gepsmt3pta.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Annotations.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7104,7 +7328,7 @@
     },
     {
       "Route": "_framework/System.ComponentModel.Annotations.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\gepsmt3pta.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Annotations.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7132,7 +7356,7 @@
     },
     {
       "Route": "_framework/System.ComponentModel.Primitives.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\9tthmvs245.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Primitives.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7160,7 +7384,7 @@
     },
     {
       "Route": "_framework/System.ComponentModel.Primitives.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\9tthmvs245.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.Primitives.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7188,7 +7412,7 @@
     },
     {
       "Route": "_framework/System.ComponentModel.TypeConverter.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ohsaaislsl.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7216,7 +7440,7 @@
     },
     {
       "Route": "_framework/System.ComponentModel.TypeConverter.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ohsaaislsl.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.TypeConverter.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7244,7 +7468,7 @@
     },
     {
       "Route": "_framework/System.ComponentModel.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\4khovo6wyl.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7272,7 +7496,7 @@
     },
     {
       "Route": "_framework/System.ComponentModel.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\4khovo6wyl.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ComponentModel.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7300,7 +7524,7 @@
     },
     {
       "Route": "_framework/System.Console.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\dcmftgo9vv.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Console.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7328,7 +7552,7 @@
     },
     {
       "Route": "_framework/System.Console.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\dcmftgo9vv.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Console.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7356,7 +7580,7 @@
     },
     {
       "Route": "_framework/System.Diagnostics.Debug.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\t5bd7yjfpy.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Debug.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7384,7 +7608,7 @@
     },
     {
       "Route": "_framework/System.Diagnostics.Debug.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\t5bd7yjfpy.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Debug.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7412,7 +7636,7 @@
     },
     {
       "Route": "_framework/System.Diagnostics.DiagnosticSource.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\pdg18j3l7a.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7440,7 +7664,7 @@
     },
     {
       "Route": "_framework/System.Diagnostics.DiagnosticSource.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\pdg18j3l7a.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.DiagnosticSource.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7468,7 +7692,7 @@
     },
     {
       "Route": "_framework/System.Diagnostics.Tracing.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\7pr40yx7ag.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Tracing.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7496,7 +7720,7 @@
     },
     {
       "Route": "_framework/System.Diagnostics.Tracing.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\7pr40yx7ag.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Diagnostics.Tracing.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7524,7 +7748,7 @@
     },
     {
       "Route": "_framework/System.IO.FileSystem.Watcher.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\cb05aqun92.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7552,7 +7776,7 @@
     },
     {
       "Route": "_framework/System.IO.FileSystem.Watcher.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\cb05aqun92.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.FileSystem.Watcher.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7580,7 +7804,7 @@
     },
     {
       "Route": "_framework/System.IO.Pipelines.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\yt4jwp1yz9.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.Pipelines.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7608,7 +7832,7 @@
     },
     {
       "Route": "_framework/System.IO.Pipelines.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\yt4jwp1yz9.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.IO.Pipelines.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7636,7 +7860,7 @@
     },
     {
       "Route": "_framework/System.Linq.Expressions.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\vgv0j313sx.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.Expressions.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7664,7 +7888,7 @@
     },
     {
       "Route": "_framework/System.Linq.Expressions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\vgv0j313sx.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.Expressions.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7692,7 +7916,7 @@
     },
     {
       "Route": "_framework/System.Linq.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\q34zky7t5p.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7720,7 +7944,7 @@
     },
     {
       "Route": "_framework/System.Linq.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\q34zky7t5p.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Linq.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7748,7 +7972,7 @@
     },
     {
       "Route": "_framework/System.Memory.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\rdqh2ea3f9.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7776,7 +8000,7 @@
     },
     {
       "Route": "_framework/System.Memory.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\rdqh2ea3f9.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Memory.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7804,7 +8028,7 @@
     },
     {
       "Route": "_framework/System.Net.Http.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\9av5sbcj6q.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Net.Http.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7832,7 +8056,7 @@
     },
     {
       "Route": "_framework/System.Net.Http.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\9av5sbcj6q.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Net.Http.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7860,7 +8084,7 @@
     },
     {
       "Route": "_framework/System.ObjectModel.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\qiwyy4t8fz.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ObjectModel.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7888,7 +8112,7 @@
     },
     {
       "Route": "_framework/System.ObjectModel.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\qiwyy4t8fz.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.ObjectModel.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7916,7 +8140,7 @@
     },
     {
       "Route": "_framework/System.Private.CoreLib.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\rwtxamup9c.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7944,7 +8168,7 @@
     },
     {
       "Route": "_framework/System.Private.CoreLib.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\rwtxamup9c.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.CoreLib.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7972,7 +8196,7 @@
     },
     {
       "Route": "_framework/System.Private.Uri.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\uf03ayuw7l.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8000,7 +8224,7 @@
     },
     {
       "Route": "_framework/System.Private.Uri.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\uf03ayuw7l.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Private.Uri.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8028,7 +8252,7 @@
     },
     {
       "Route": "_framework/System.Reflection.Emit.ILGeneration.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\qmnps5h0ro.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8056,7 +8280,7 @@
     },
     {
       "Route": "_framework/System.Reflection.Emit.ILGeneration.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\qmnps5h0ro.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.ILGeneration.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8084,7 +8308,7 @@
     },
     {
       "Route": "_framework/System.Reflection.Emit.Lightweight.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\8puc4ylmh6.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8112,7 +8336,7 @@
     },
     {
       "Route": "_framework/System.Reflection.Emit.Lightweight.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\8puc4ylmh6.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Emit.Lightweight.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8140,7 +8364,7 @@
     },
     {
       "Route": "_framework/System.Reflection.Primitives.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\f9gsgjci3b.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Primitives.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8168,7 +8392,7 @@
     },
     {
       "Route": "_framework/System.Reflection.Primitives.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\f9gsgjci3b.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Reflection.Primitives.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8196,7 +8420,7 @@
     },
     {
       "Route": "_framework/System.Resources.ResourceManager.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\x9ggsqi039.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Resources.ResourceManager.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8224,7 +8448,7 @@
     },
     {
       "Route": "_framework/System.Resources.ResourceManager.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\x9ggsqi039.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Resources.ResourceManager.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8252,7 +8476,7 @@
     },
     {
       "Route": "_framework/System.Runtime.CompilerServices.Unsafe.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\dowfhm9e94.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8280,7 +8504,7 @@
     },
     {
       "Route": "_framework/System.Runtime.CompilerServices.Unsafe.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\dowfhm9e94.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.CompilerServices.Unsafe.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8308,7 +8532,7 @@
     },
     {
       "Route": "_framework/System.Runtime.Extensions.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\74yi54gep3.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Extensions.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8336,7 +8560,7 @@
     },
     {
       "Route": "_framework/System.Runtime.Extensions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\74yi54gep3.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Extensions.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8364,7 +8588,7 @@
     },
     {
       "Route": "_framework/System.Runtime.InteropServices.JavaScript.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ec6zuh0yn4.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8392,7 +8616,7 @@
     },
     {
       "Route": "_framework/System.Runtime.InteropServices.JavaScript.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ec6zuh0yn4.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.JavaScript.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8420,7 +8644,7 @@
     },
     {
       "Route": "_framework/System.Runtime.InteropServices.RuntimeInformation.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\8gk3wt3k8t.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8448,7 +8672,7 @@
     },
     {
       "Route": "_framework/System.Runtime.InteropServices.RuntimeInformation.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\8gk3wt3k8t.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.InteropServices.RuntimeInformation.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8476,7 +8700,7 @@
     },
     {
       "Route": "_framework/System.Runtime.Loader.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\iexct9smlt.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Loader.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8504,7 +8728,7 @@
     },
     {
       "Route": "_framework/System.Runtime.Loader.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\iexct9smlt.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.Loader.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8532,7 +8756,7 @@
     },
     {
       "Route": "_framework/System.Runtime.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\2w68v43nlq.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8560,7 +8784,7 @@
     },
     {
       "Route": "_framework/System.Runtime.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\2w68v43nlq.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Runtime.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8588,7 +8812,7 @@
     },
     {
       "Route": "_framework/System.Security.Claims.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\jh32p87hal.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Claims.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8616,7 +8840,7 @@
     },
     {
       "Route": "_framework/System.Security.Claims.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\jh32p87hal.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Claims.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8644,7 +8868,7 @@
     },
     {
       "Route": "_framework/System.Security.Cryptography.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\wp0zvma4je.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Cryptography.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8672,7 +8896,7 @@
     },
     {
       "Route": "_framework/System.Security.Cryptography.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\wp0zvma4je.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Security.Cryptography.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8700,7 +8924,7 @@
     },
     {
       "Route": "_framework/System.Text.Encodings.Web.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\5iluew0i8c.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8728,7 +8952,7 @@
     },
     {
       "Route": "_framework/System.Text.Encodings.Web.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\5iluew0i8c.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Encodings.Web.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8756,7 +8980,7 @@
     },
     {
       "Route": "_framework/System.Text.Json.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\rmaiawd82d.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8784,7 +9008,7 @@
     },
     {
       "Route": "_framework/System.Text.Json.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\rmaiawd82d.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.Json.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8812,7 +9036,7 @@
     },
     {
       "Route": "_framework/System.Text.RegularExpressions.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\fx892qx5d3.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.RegularExpressions.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8840,7 +9064,7 @@
     },
     {
       "Route": "_framework/System.Text.RegularExpressions.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\fx892qx5d3.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Text.RegularExpressions.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8868,7 +9092,7 @@
     },
     {
       "Route": "_framework/System.Threading.Tasks.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\8atsentgdc.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.Tasks.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8896,7 +9120,7 @@
     },
     {
       "Route": "_framework/System.Threading.Tasks.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\8atsentgdc.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.Tasks.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8924,7 +9148,7 @@
     },
     {
       "Route": "_framework/System.Threading.ThreadPool.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\nm14oxftfw.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.ThreadPool.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8952,7 +9176,7 @@
     },
     {
       "Route": "_framework/System.Threading.ThreadPool.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\nm14oxftfw.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.ThreadPool.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8980,7 +9204,7 @@
     },
     {
       "Route": "_framework/System.Threading.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\gavc8cn4aw.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9008,7 +9232,7 @@
     },
     {
       "Route": "_framework/System.Threading.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\gavc8cn4aw.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.Threading.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9036,7 +9260,7 @@
     },
     {
       "Route": "_framework/System.wasm.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\pii3fajwdr.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.wasm.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9064,7 +9288,7 @@
     },
     {
       "Route": "_framework/System.wasm.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\pii3fajwdr.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\System.wasm.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9120,7 +9344,7 @@
     },
     {
       "Route": "blazorwasm-minimal.lib.module.js.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\hu7jdywmgc.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorwasm-minimal.lib.module.js.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9148,7 +9372,7 @@
     },
     {
       "Route": "blazorwasm-minimal.lib.module.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\hu7jdywmgc.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\blazorwasm-minimal.lib.module.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9204,7 +9428,7 @@
     },
     {
       "Route": "css/app.css.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\1319w94tr0.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\css\\app.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9232,7 +9456,7 @@
     },
     {
       "Route": "css/app.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\1319w94tr0.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\css\\app.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9288,7 +9512,7 @@
     },
     {
       "Route": "index.html.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\dicwlzl109.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\index.html.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -9316,7 +9540,7 @@
     },
     {
       "Route": "index.html.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\dicwlzl109.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\index.html.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {

@@ -111,7 +111,7 @@
     },
     {
       "Route": "test.js.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\acpgzbop3p.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\test.js.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -139,7 +139,7 @@
     },
     {
       "Route": "test.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\acpgzbop3p.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\test.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {

@@ -90,7 +90,7 @@
     },
     {
       "Route": "test.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\acpgzbop3p.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\test.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {

@@ -624,7 +624,7 @@
     },
     {
       "Route": "_content/AnotherClassLib/AnotherClassLib.lib.module.js.gz",
-      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\i5q68164zq.gz",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\AnotherClassLib.lib.module.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -680,7 +680,7 @@
     },
     {
       "Route": "_content/AnotherClassLib/css/site.css.gz",
-      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\jiydohab4f.gz",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\css\\site.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -736,7 +736,7 @@
     },
     {
       "Route": "_content/AnotherClassLib/js/project-direct-dep.js.gz",
-      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\u6wzccyc9d.gz",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\js\\project-direct-dep.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -792,7 +792,7 @@
     },
     {
       "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.gz",
-      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\ecwu0uha32.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\ClassLibrary.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -848,7 +848,7 @@
     },
     {
       "Route": "_content/ClassLibrary/ClassLibrary.lib.module.js.gz",
-      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\n303wf4pcg.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\ClassLibrary.lib.module.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -904,7 +904,7 @@
     },
     {
       "Route": "_content/ClassLibrary/js/project-transitive-dep.js.gz",
-      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\oc6bork7vf.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\js\\project-transitive-dep.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -960,7 +960,7 @@
     },
     {
       "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js.gz",
-      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\phi030i03p.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\js\\project-transitive-dep.v4.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1100,7 +1100,7 @@
     },
     {
       "Route": "AppWithPackageAndP2PReference.modules.json.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\8e0syztpfu.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithPackageAndP2PReference.modules.json.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1156,7 +1156,7 @@
     },
     {
       "Route": "AppWithPackageAndP2PReference.styles.css.gz",
-      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\ej07vc7zl7.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithPackageAndP2PReference.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
