@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal class MSBuildEvaluationFilter(DotNetWatchContext context, IFileSetFactory factory)
+    internal class MSBuildEvaluationFilter(DotNetWatchContext context, FileSetFactory factory)
     {
         // File types that require an MSBuild re-evaluation
         private static readonly string[] s_msBuildFileExtensions = new[]
@@ -20,16 +20,18 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private List<(string fileName, DateTime lastWriteTimeUtc)>? _msbuildFileTimestamps;
 
-        public async ValueTask ProcessAsync(WatchState state, CancellationToken cancellationToken)
+        // result of the last evaluation:
+        private (ProjectInfo project, FileSet fileSet)? _evaluationResult;
+
+        public async ValueTask<(ProjectInfo, FileSet)?> EvaluateAsync(WatchState state, CancellationToken cancellationToken)
         {
             if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
                 state.RequiresMSBuildRevaluation = true;
-                state.FileSet = await factory.CreateAsync(waitOnError: true, cancellationToken);
-                return;
+                return _evaluationResult = await factory.CreateAsync(cancellationToken);
             }
 
-            if (state.Iteration == 0 || RequiresMSBuildRevaluation(state))
+            if (state.Iteration == 0 || RequiresMSBuildRevaluation(state.ChangedFile))
             {
                 state.RequiresMSBuildRevaluation = true;
             }
@@ -38,17 +40,19 @@ namespace Microsoft.DotNet.Watcher.Tools
             {
                 context.Reporter.Verbose("Evaluating dotnet-watch file set.");
 
-                state.FileSet = await factory.CreateAsync(waitOnError: true, cancellationToken);
-                _msbuildFileTimestamps = GetMSBuildFileTimeStamps(state);
+                var result = await factory.CreateAsync(cancellationToken);
+                _msbuildFileTimestamps = GetMSBuildFileTimeStamps(result.files);
+                return _evaluationResult = result;
             }
+
+            Debug.Assert(_evaluationResult != null);
+            return _evaluationResult;
         }
 
-        private bool RequiresMSBuildRevaluation(WatchState state)
+        private bool RequiresMSBuildRevaluation(FileItem? changedFile)
         {
-            Debug.Assert(state.Iteration > 0);
             Debug.Assert(_msbuildFileTimestamps != null);
 
-            var changedFile = state.ChangedFile;
             if (changedFile != null && IsMsBuildFileExtension(changedFile.Value.FilePath))
             {
                 return true;
@@ -73,12 +77,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             return false;
         }
 
-        private List<(string fileName, DateTime lastModifiedUtc)> GetMSBuildFileTimeStamps(WatchState state)
+        private List<(string fileName, DateTime lastModifiedUtc)> GetMSBuildFileTimeStamps(FileSet files)
         {
-            Debug.Assert(state.FileSet != null);
-
             var msbuildFiles = new List<(string fileName, DateTime lastModifiedUtc)>();
-            foreach (var file in state.FileSet)
+            foreach (var file in files)
             {
                 if (!string.IsNullOrEmpty(file.FilePath) && IsMsBuildFileExtension(file.FilePath))
                 {
@@ -104,9 +106,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         static bool IsMsBuildFileExtension(string fileName)
         {
             var extension = Path.GetExtension(fileName.AsSpan());
-#pragma warning disable RS1024 // Analyzer bug - https://github.com/dotnet/roslyn-analyzers/issues/4956
             var hashCode = string.GetHashCode(extension, StringComparison.OrdinalIgnoreCase);
-#pragma warning restore RS1024
             for (var i = 0; i < s_msBuildFileExtensionHashes.Length; i++)
             {
                 if (s_msBuildFileExtensionHashes[i] == hashCode && extension.Equals(s_msBuildFileExtensions[i], StringComparison.OrdinalIgnoreCase))

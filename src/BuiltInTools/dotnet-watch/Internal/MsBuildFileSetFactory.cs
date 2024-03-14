@@ -9,7 +9,7 @@ using IReporter = Microsoft.Extensions.Tools.Internal.IReporter;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
-    internal sealed class MsBuildFileSetFactory : IFileSetFactory
+    internal sealed class MsBuildFileSetFactory : FileSetFactory
     {
         private const string TargetName = "GenerateWatchList";
         private const string WatchTargetsFileName = "DotNetWatch.targets";
@@ -38,7 +38,10 @@ namespace Microsoft.DotNet.Watcher.Internal
             _buildFlags = InitializeArgs(FindTargetsFile(), targetFramework, buildProperties, trace);
         }
 
-        public async Task<FileSet?> CreateAsync(bool waitOnError, CancellationToken cancellationToken)
+        /// <summary>
+        /// Returns non-null if <paramref name="waitOnError"/> is true.
+        /// </summary>
+        protected override async ValueTask<(ProjectInfo project, FileSet files)?> CreateAsync(bool waitOnError, CancellationToken cancellationToken)
         {
             var watchList = Path.GetTempFileName();
             try
@@ -134,7 +137,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                             result.RunArguments,
                             result.RunWorkingDirectory);
 
-                        return new FileSet(projectInfo, fileItems);
+                        return (projectInfo, new FileSet(fileItems));
                     }
 
                     _reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(_projectFile)}'");
@@ -156,7 +159,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                     _reporter.Warn("Fix the error to continue or press Ctrl+C to exit.");
 
-                    var fileSet = new FileSet(projectInfo: null, new[] { new FileItem { FilePath = _projectFile } });
+                    var fileSet = new FileSet([new FileItem { FilePath = _projectFile }]);
 
                     using (var watcher = new FileSetWatcher(fileSet, _reporter))
                     {

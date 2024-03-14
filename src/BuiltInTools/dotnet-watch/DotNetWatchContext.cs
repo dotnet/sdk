@@ -20,7 +20,6 @@ namespace Microsoft.DotNet.Watcher.Tools
     internal sealed class WatchState
     {
         public required ProcessSpec ProcessSpec { get; init; }
-        public FileSet? FileSet { get; set; }
         public FileItem? ChangedFile { get; set; }
         public int Iteration { get; set; } = -1;
         public bool RequiresMSBuildRevaluation { get; set; }

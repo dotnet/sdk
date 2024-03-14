@@ -30,10 +30,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             _workspace?.Dispose();
         }
 
-        public async Task InitializeAsync(WatchState state, CancellationToken cancellationToken)
+        public async Task InitializeAsync(WatchState state, ProjectInfo projectInfo, CancellationToken cancellationToken)
         {
-            Debug.Assert(state.FileSet?.Project is not null);
-
             if (_deltaApplier is null)
             {
                 var hotReloadProfile = HotReloadProfileReader.InferHotReloadProfile(projectGraph, reporter);
@@ -45,7 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 };
             }
 
-            _deltaApplier.Initialize(state, cancellationToken);
+            _deltaApplier.Initialize(state, projectInfo, cancellationToken);
 
             if (_workspace is not null)
             {
@@ -60,7 +58,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 reporter.Verbose($"MSBuildWorkspace warning: {diag.Diagnostic}");
             };
 
-            var project = await _workspace.OpenProjectAsync(state.FileSet.Project.ProjectPath, cancellationToken: cancellationToken);
+            var project = await _workspace.OpenProjectAsync(projectInfo.ProjectPath, cancellationToken: cancellationToken);
 
             _currentSolution = project.Solution;
 

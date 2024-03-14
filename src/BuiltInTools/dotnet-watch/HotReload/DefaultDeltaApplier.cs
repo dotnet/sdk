@@ -20,9 +20,9 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         internal bool SuppressNamedPipeForTests { get; set; }
 
-        public override void Initialize(WatchState state, CancellationToken cancellationToken)
+        public override void Initialize(WatchState state, ProjectInfo project, CancellationToken cancellationToken)
         {
-            base.Initialize(state, cancellationToken);
+            base.Initialize(state, project, cancellationToken);
 
             if (!SuppressNamedPipeForTests)
             {

@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal abstract class DeltaApplier : IDisposable
     {
-        public abstract void Initialize(WatchState state, CancellationToken cancellationToken);
+        public abstract void Initialize(WatchState state, ProjectInfo project, CancellationToken cancellationToken);
 
         public abstract Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken);
 

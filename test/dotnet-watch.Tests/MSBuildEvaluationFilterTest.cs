@@ -8,10 +8,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     public class MSBuildEvaluationFilterTest
     {
-        private static readonly FileSet s_emptyFileSet = new(projectInfo: null!, Array.Empty<FileItem>());
-
-        private readonly IFileSetFactory _fileSetFactory = Mock.Of<IFileSetFactory>(
-            f => f.CreateAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()) == Task.FromResult(s_emptyFileSet));
+        private static readonly FileSet s_emptyFileSet = new([]);
 
         [Fact]
         public async Task ProcessAsync_EvaluatesFileSetIfProjFileChanges()
@@ -25,7 +22,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental
             };
 
-            var filter = new MSBuildEvaluationFilter(context, _fileSetFactory);
+            var fileSetFactory = new MockFileSetFactory() { CreateImpl = _ => (null, s_emptyFileSet) };
+            var filter = new MSBuildEvaluationFilter(context, fileSetFactory);
 
             var state = new WatchState()
             {
@@ -33,13 +31,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec()
             };
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            await filter.EvaluateAsync(state, CancellationToken.None);
 
             state.Iteration++;
             state.ChangedFile = new FileItem { FilePath = "Test.csproj" };
             state.RequiresMSBuildRevaluation = false;
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            await filter.EvaluateAsync(state, CancellationToken.None);
 
             Assert.True(state.RequiresMSBuildRevaluation);
         }
@@ -56,7 +54,9 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental
             };
 
-            var filter = new MSBuildEvaluationFilter(context, _fileSetFactory);
+            var counter = 0;
+            var fileSetFactory = new MockFileSetFactory() { CreateImpl = _ => { counter++; return (null, s_emptyFileSet); } };
+            var filter = new MSBuildEvaluationFilter(context, fileSetFactory);
 
             var state = new WatchState()
             {
@@ -64,16 +64,16 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec()
             };
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            await filter.EvaluateAsync(state, CancellationToken.None);
 
             state.Iteration++;
             state.ChangedFile = new FileItem { FilePath = "Controller.cs" };
             state.RequiresMSBuildRevaluation = false;
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            await filter.EvaluateAsync(state, CancellationToken.None);
 
             Assert.False(state.RequiresMSBuildRevaluation);
-            Mock.Get(_fileSetFactory).Verify(v => v.CreateAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Once());
+            Assert.Equal(1, counter);
         }
 
         [Fact]
@@ -88,7 +88,10 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental with { SuppressMSBuildIncrementalism = true }
             };
 
-            var filter = new MSBuildEvaluationFilter(context, _fileSetFactory);
+            var counter = 0;
+            var fileSetFactory = new MockFileSetFactory() { CreateImpl = _ => { counter++; return (null, s_emptyFileSet); } };
+
+            var filter = new MSBuildEvaluationFilter(context, fileSetFactory);
 
             var state = new WatchState()
             {
@@ -96,16 +99,16 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec()
             };
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            await filter.EvaluateAsync(state, CancellationToken.None);
 
             state.Iteration++;
             state.ChangedFile = new FileItem { FilePath = "Controller.cs" };
             state.RequiresMSBuildRevaluation = false;
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            await filter.EvaluateAsync(state, CancellationToken.None);
 
             Assert.True(state.RequiresMSBuildRevaluation);
-            Mock.Get(_fileSetFactory).Verify(v => v.CreateAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Exactly(2));
+            Assert.Equal(2, counter);
         }
 
         [Fact]
@@ -114,8 +117,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             // There's a chance that the watcher does not correctly report edits to msbuild files on
             // concurrent edits. MSBuildEvaluationFilter uses timestamps to additionally track changes to these files.
 
-            var fileSet = new FileSet(null, new[] { new FileItem { FilePath = "Controlller.cs" }, new FileItem { FilePath = "Proj.csproj" } });
-            var fileSetFactory = Mock.Of<IFileSetFactory>(f => f.CreateAsync(It.IsAny<bool>(), It.IsAny<CancellationToken>()) == Task.FromResult(fileSet));
+            var fileSet = new FileSet([new FileItem { FilePath = "Controlller.cs" }, new FileItem { FilePath = "Proj.csproj" }]);
+            var fileSetFactory = new MockFileSetFactory() { CreateImpl = _ => (null, fileSet) };
 
             var context = new DotNetWatchContext
             {
@@ -141,18 +144,18 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec()
             };
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            await filter.EvaluateAsync(state, CancellationToken.None);
             state.RequiresMSBuildRevaluation = false;
             state.ChangedFile = new FileItem { FilePath = "Controller.cs" };
             state.Iteration++;
             filter.Timestamps["Proj.csproj"] = new DateTime(1007);
 
-            await filter.ProcessAsync(state, CancellationToken.None);
+            await filter.EvaluateAsync(state, CancellationToken.None);
 
             Assert.True(state.RequiresMSBuildRevaluation);
         }
 
-        private class TestableMSBuildEvaluationFilter(DotNetWatchContext context, IFileSetFactory factory)
+        private class TestableMSBuildEvaluationFilter(DotNetWatchContext context, FileSetFactory factory)
             : MSBuildEvaluationFilter(context, factory)
         {
             public Dictionary<string, DateTime> Timestamps { get; } = [];

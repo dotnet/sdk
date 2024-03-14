@@ -18,8 +18,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             _compilationHandler.Dispose();
         }
 
-        public Task InitializeAsync(WatchState state, CancellationToken cancellationToken)
-            => _compilationHandler.InitializeAsync(state, cancellationToken);
+        public Task InitializeAsync(WatchState state, ProjectInfo project, CancellationToken cancellationToken)
+            => _compilationHandler.InitializeAsync(state, project, cancellationToken);
 
         public async ValueTask<bool> TryHandleFileChange(DotNetWatchContext context, FileItem[] files, CancellationToken cancellationToken)
         {

@@ -322,9 +322,8 @@ $@"<ItemGroup>
 
             var filesetFactory = new MsBuildFileSetFactory(options, _reporter, projectA, targetFramework: null, buildProperties: null, output, trace: true);
 
-            var fileset = await filesetFactory.CreateAsync(waitOnError: false, CancellationToken.None);
-
-            Assert.NotNull(fileset);
+            var result = await filesetFactory.TryCreateAsync(CancellationToken.None);
+            Assert.NotNull(result);
 
             _reporter.Output(string.Join(
                 Environment.NewLine,
@@ -335,7 +334,7 @@ $@"<ItemGroup>
                 testDirectory,
                 includedProjects
                     .Select(p => $"{p}/{p}.csproj"),
-                fileset
+                result.Value.files
             );
 
             // ensure each project is only visited once for collecting watch items
@@ -352,13 +351,15 @@ $@"<ItemGroup>
             return GetFileSet(projectPath);
         }
 
-        private Task<FileSet> GetFileSet(string projectPath)
+        private async Task<FileSet> GetFileSet(string projectPath)
         {
             var options = new EnvironmentOptions(
                 MuxerPath: _muxerPath,
                 WorkingDirectory: Path.GetDirectoryName(projectPath));
 
-            return new MsBuildFileSetFactory(options, _reporter, projectPath, targetFramework: null, buildProperties: null, new OutputSink(), trace: false).CreateAsync(waitOnError: false, CancellationToken.None);
+            var factory = new MsBuildFileSetFactory(options, _reporter, projectPath, targetFramework: null, buildProperties: null, new OutputSink(), trace: false);
+            var result = await factory.TryCreateAsync(CancellationToken.None);
+            return result.Value.files;
         }
 
         private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject.Name + ".csproj");

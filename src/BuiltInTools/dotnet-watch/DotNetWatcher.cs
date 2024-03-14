@@ -10,7 +10,7 @@ using Microsoft.DotNet.Watcher.Tools;
 
 namespace Microsoft.DotNet.Watcher
 {
-    internal sealed class DotNetWatcher(DotNetWatchContext context, IFileSetFactory fileSetFactory)
+    internal sealed class DotNetWatcher(DotNetWatchContext context, FileSetFactory fileSetFactory)
     {
         private readonly ProcessRunner _processRunner = new(context.Reporter);
         private readonly StaticFileHandler _staticFileHandler = new(context.Reporter);
@@ -41,18 +41,13 @@ namespace Microsoft.DotNet.Watcher
                 // Reset arguments
                 processSpec.Arguments = initialArguments;
 
-                await msbuildEvaluation.ProcessAsync(state, cancellationToken);
-                var fileSet = state.FileSet;
-                if (fileSet == null)
+                if (await msbuildEvaluation.EvaluateAsync(state, cancellationToken) is not (var project, var fileSet))
                 {
                     context.Reporter.Error("Failed to find a list of files to watch");
                     return;
                 }
 
-                var project = fileSet.Project;
-                Debug.Assert(project != null);
-
-                noRestore.Process(state);
+                noRestore.UpdateProcessArguments(state);
 
                 await state.UpdateBrowserAsync(browserConnector, project, cancellationToken);
 

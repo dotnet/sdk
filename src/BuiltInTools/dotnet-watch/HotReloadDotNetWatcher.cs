@@ -19,9 +19,9 @@ namespace Microsoft.DotNet.Watcher
         private readonly IConsole _console;
         private readonly ProcessRunner _processRunner;
         private readonly RudeEditDialog? _rudeEditDialog;
-        private readonly IFileSetFactory _fileSetFactory;
+        private readonly FileSetFactory _fileSetFactory;
 
-        public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IFileSetFactory fileSetFactory)
+        public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, FileSetFactory fileSetFactory)
         {
             _context = context;
             _processRunner = new ProcessRunner(context.Reporter);
@@ -69,17 +69,11 @@ namespace Microsoft.DotNet.Watcher
             {
                 state.Iteration++;
 
-                await BuildAsync(state, cancellationToken);
-
-                var fileSet = state.FileSet;
-                if (fileSet == null)
+                if (await BuildAsync(state, cancellationToken) is not (var project, var files))
                 {
                     _context.Reporter.Error("Failed to find a list of files to watch");
                     return;
                 }
-
-                var project = fileSet.Project;
-                Debug.Assert(project != null);
 
                 if (!project.IsNetCoreApp60OrNewer())
                 {
@@ -106,7 +100,7 @@ namespace Microsoft.DotNet.Watcher
                     cancellationToken,
                     currentRunCancellationSource.Token,
                     forceReload.Token);
-                using var fileSetWatcher = new HotReloadFileSetWatcher(fileSet, _context.Reporter);
+                using var fileSetWatcher = new HotReloadFileSetWatcher(files, _context.Reporter);
 
                 try
                 {
@@ -114,7 +108,7 @@ namespace Microsoft.DotNet.Watcher
 
                     // Solution must be initialized before we start watching for file changes to avoid race condition
                     // when the solution captures state of the file after the changes has already been made.
-                    await hotReload.InitializeAsync(state, cancellationToken);
+                    await hotReload.InitializeAsync(state, project, cancellationToken);
 
                     _context.Reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{processSpec.GetArgumentsDisplay()}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
@@ -281,7 +275,7 @@ namespace Microsoft.DotNet.Watcher
             return default;
         }
 
-        public async ValueTask BuildAsync(WatchState state, CancellationToken cancellationToken)
+        public async ValueTask<(ProjectInfo project, FileSet files)?> BuildAsync(WatchState state, CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -316,20 +310,21 @@ namespace Microsoft.DotNet.Watcher
 
                 _context.Reporter.Output("Building...", emoji: "🔧");
                 var exitCode = await _processRunner.RunAsync(buildProcessSpec, cancellationToken);
-                state.FileSet = await _fileSetFactory.CreateAsync(waitOnError: true, cancellationToken);
+
+                var result = await _fileSetFactory.CreateAsync(cancellationToken);
                 if (exitCode == 0)
                 {
-                    return;
+                    return result;
                 }
 
-                Debug.Assert(state.FileSet != null);
-
                 // If the build fails, we'll retry until we have a successful build.
-                using var fileSetWatcher = new FileSetWatcher(state.FileSet, _context.Reporter);
+                using var fileSetWatcher = new FileSetWatcher(result.files, _context.Reporter);
                 await fileSetWatcher.GetChangedFileAsync(
                     () => _context.Reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳"),
                     cancellationToken);
             }
+
+            return null;
         }
 
         private void ConfigureExecutable(ProcessSpec processSpec, ProjectInfo project, LaunchSettingsProfile launchSettingsProfile)

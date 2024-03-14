@@ -13,10 +13,10 @@ namespace Microsoft.DotNet.Watcher.Tools
         private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer);
         private readonly DefaultDeltaApplier _hostApplier = new(reporter);
 
-        public override void Initialize(WatchState state, CancellationToken cancellationToken)
+        public override void Initialize(WatchState state, ProjectInfo project, CancellationToken cancellationToken)
         {
-            _wasmApplier.Initialize(state, cancellationToken);
-            _hostApplier.Initialize(state, cancellationToken);
+            _wasmApplier.Initialize(state, project, cancellationToken);
+            _hostApplier.Initialize(state, project, cancellationToken);
         }
 
         public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)

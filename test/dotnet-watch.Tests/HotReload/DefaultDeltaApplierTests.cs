@@ -14,19 +14,24 @@ namespace Microsoft.DotNet.Watcher.Tests
         {
             var applier = new DefaultDeltaApplier(Mock.Of<IReporter>()) { SuppressNamedPipeForTests = true };
             var process = new ProcessSpec();
-            var fileSet = new FileSet(projectInfo: null,
-            [
-                new FileItem {  FilePath = "Test.cs" },
-            ]);
 
             var state = new WatchState()
             {
                 Iteration = 0,
                 ProcessSpec = process,
-                FileSet = fileSet,
             };
 
-            applier.Initialize(state, CancellationToken.None);
+            var projectInfo = new ProjectInfo(
+                "myproject.csproj",
+                IsNetCoreApp: true,
+                TargetFrameworkVersion: null,
+                RuntimeIdentifier: "",
+                DefaultAppHostRuntimeIdentifier: "",
+                RunCommand: "",
+                RunArguments: "",
+                RunWorkingDirectory: "");
+
+            applier.Initialize(state, projectInfo, CancellationToken.None);
 
             Assert.Equal("debug", process.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"]);
             Assert.NotEmpty(process.EnvironmentVariables["DOTNET_HOTRELOAD_NAMEDPIPE_NAME"]);

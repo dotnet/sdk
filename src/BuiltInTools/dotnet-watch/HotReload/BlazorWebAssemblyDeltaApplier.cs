@@ -21,14 +21,14 @@ namespace Microsoft.DotNet.Watcher.Tools
         private Version? _targetFrameworkVersion;
         private int _sequenceId;
 
-        public override void Initialize(WatchState state, CancellationToken cancellationToken)
+        public override void Initialize(WatchState state, ProjectInfo project, CancellationToken cancellationToken)
         {
-            base.Initialize(state, cancellationToken);
+            base.Initialize(state, project, cancellationToken);
 
             // Configure the app for EnC
             state.ProcessSpec.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
 
-            _targetFrameworkVersion = state.FileSet?.Project?.TargetFrameworkVersion;
+            _targetFrameworkVersion = project.TargetFrameworkVersion;
         }
 
         public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)

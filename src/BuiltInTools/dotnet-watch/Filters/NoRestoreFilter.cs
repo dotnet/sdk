@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private bool _canUseNoRestore;
         private string[]? _noRestoreArguments;
 
-        public void Process(WatchState state)
+        public void UpdateProcessArguments(WatchState state)
         {
             Debug.Assert(!context.HotReloadEnabled);
 

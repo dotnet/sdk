@@ -283,9 +283,7 @@ namespace Microsoft.DotNet.Watcher
                 outputSink: null,
                 trace: false);
 
-            var files = await fileSetFactory.CreateAsync(waitOnError: false, cancellationToken);
-
-            if (files == null)
+            if (await fileSetFactory.TryCreateAsync(cancellationToken) is not (_, var files))
             {
                 return 1;
             }
