@@ -20,7 +20,6 @@ namespace Microsoft.DotNet.Watcher.Tools
     internal sealed class WatchState
     {
         public required ProcessSpec ProcessSpec { get; init; }
-        public FileItem? ChangedFile { get; set; }
         public int Iteration { get; set; } = -1;
 
         public async ValueTask UpdateBrowserAsync(BrowserConnector browserConnector, ProjectInfo project, CancellationToken cancellationToken)

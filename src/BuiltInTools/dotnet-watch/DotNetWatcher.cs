@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 
@@ -30,6 +27,7 @@ namespace Microsoft.DotNet.Watcher
                 context.Reporter.Verbose("MSBuild incremental optimizations suppressed.");
             }
 
+            FileItem? changedFile = null;
             var buildEvaluator = new BuildEvaluator(context, fileSetFactory);
             await using var browserConnector = new BrowserConnector(context);
 
@@ -40,7 +38,7 @@ namespace Microsoft.DotNet.Watcher
                 // Reset arguments
                 processSpec.Arguments = initialArguments;
 
-                if (await buildEvaluator.EvaluateAsync(state, cancellationToken) is not (var project, var fileSet))
+                if (await buildEvaluator.EvaluateAsync(changedFile, cancellationToken) is not (var project, var fileSet))
                 {
                     context.Reporter.Error("Failed to find a list of files to watch");
                     return;
@@ -116,15 +114,14 @@ namespace Microsoft.DotNet.Watcher
                     // Process exited. Redo evalulation
                     buildEvaluator.RequiresRevaluation = true;
                     // Now wait for a file to change before restarting process
-                    state.ChangedFile = await fileSetWatcher.GetChangedFileAsync(
+                    changedFile = await fileSetWatcher.GetChangedFileAsync(
                         () => context.Reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳"),
                         cancellationToken);
                 }
                 else
                 {
                     Debug.Assert(finishedTask == fileSetTask);
-                    var changedFile = fileSetTask.Result;
-                    state.ChangedFile = changedFile;
+                    changedFile = fileSetTask.Result;
                     Debug.Assert(changedFile != null, "ChangedFile should only be null when cancelled");
                     context.Reporter.Output($"File changed: {changedFile.Value.FilePath}");
                 }

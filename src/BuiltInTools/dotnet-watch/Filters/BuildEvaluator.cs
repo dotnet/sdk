@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         private List<(string fileName, DateTime lastWriteTimeUtc)>? _msbuildFileTimestamps;
 
-        // result of the last evaluation:
+        // result of the last evaluation, or null if no evaluation has been performed yet.
         private (ProjectInfo project, FileSet fileSet)? _evaluationResult;
 
         public bool RequiresRevaluation { get; set; }
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
         }
 
-        public async ValueTask<(ProjectInfo, FileSet)?> EvaluateAsync(WatchState state, CancellationToken cancellationToken)
+        public async ValueTask<(ProjectInfo, FileSet)?> EvaluateAsync(FileItem? changedFile, CancellationToken cancellationToken)
         {
             if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 return _evaluationResult = await factory.CreateAsync(cancellationToken);
             }
 
-            if (state.Iteration == 0 || RequiresMSBuildRevaluation(state.ChangedFile))
+            if (!_evaluationResult.HasValue || RequiresMSBuildRevaluation(changedFile))
             {
                 RequiresRevaluation = true;
             }

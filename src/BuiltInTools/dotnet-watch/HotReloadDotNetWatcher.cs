@@ -120,7 +120,7 @@ namespace Microsoft.DotNet.Watcher
 
                     while (true)
                     {
-                        fileSetTask = fileSetWatcher.GetChangedFileAsync(combinedCancellationSource.Token);
+                        fileSetTask = fileSetWatcher.GetChangedFilesAsync(combinedCancellationSource.Token);
                         finishedTask = await Task.WhenAny(processTask, fileSetTask).WaitAsync(combinedCancellationSource.Token);
 
                         if (finishedTask != fileSetTask || fileSetTask.Result is not FileItem[] fileItems)
@@ -204,7 +204,7 @@ namespace Microsoft.DotNet.Watcher
                     {
                         // Now wait for a file to change before restarting process
                         _context.Reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳");
-                        await fileSetWatcher.GetChangedFileAsync(cancellationToken, forceWaitForNewUpdate: true);
+                        await fileSetWatcher.GetChangedFilesAsync(cancellationToken, forceWaitForNewUpdate: true);
                     }
                     else
                     {
@@ -283,7 +283,8 @@ namespace Microsoft.DotNet.Watcher
                 {
                     "msbuild",
                     "/nologo",
-                    "/t:Build"
+                    "/restore",
+                    "/t:Build",
                 };
 
                 if (_context.Options.TargetFramework != null)
@@ -294,11 +295,6 @@ namespace Microsoft.DotNet.Watcher
                 if (_context.Options.BuildProperties != null)
                 {
                     arguments.AddRange(_context.Options.BuildProperties.Select(p => $"/p:{p.name}={p.value}"));
-                }
-
-                if (state.Iteration == 0 || (state.ChangedFile?.FilePath is string changedFile && changedFile.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)))
-                {
-                    arguments.Add("/restore");
                 }
 
                 var buildProcessSpec = new ProcessSpec
@@ -319,7 +315,7 @@ namespace Microsoft.DotNet.Watcher
 
                 // If the build fails, we'll retry until we have a successful build.
                 using var fileSetWatcher = new FileSetWatcher(result.files, _context.Reporter);
-                await fileSetWatcher.GetChangedFileAsync(
+                _ = await fileSetWatcher.GetChangedFileAsync(
                     () => _context.Reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳"),
                     cancellationToken);
             }

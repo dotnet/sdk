@@ -61,7 +61,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             evaluator.UpdateProcessArguments(state);
 
-            state.ChangedFile = new FileItem { FilePath = "Test.proj" };
             evaluator.RequiresRevaluation = true;
             state.Iteration++;
 
@@ -82,7 +81,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental with { SuppressMSBuildIncrementalism = true },
             };
 
-            var filter = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
             var state = new WatchState()
             {
@@ -93,12 +92,11 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
-            state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
             Assert.Same(_arguments, state.ProcessSpec.Arguments);
         }
@@ -124,14 +122,13 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            var filter = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
-            state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
             Assert.Equal(new[] { "run", "--no-restore" }, state.ProcessSpec.Arguments);
         }
@@ -148,7 +145,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental,
             };
 
-            var filter = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
             var state = new WatchState()
             {
@@ -159,12 +156,11 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
-            state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
             Assert.Equal(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework, "--", "foo=bar"], state.ProcessSpec.Arguments);
         }
@@ -181,7 +177,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental,
             };
 
-            var filter = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
             var state = new WatchState()
             {
@@ -192,12 +188,11 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
-            state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
             Assert.Equal(["test", "--no-restore", "--filter SomeFilter"], state.ProcessSpec.Arguments);
         }
@@ -216,7 +211,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental,
             };
 
-            var filter = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
             var state = new WatchState()
             {
@@ -227,12 +222,11 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
-            state.ChangedFile = new FileItem { FilePath = "Program.cs" };
             state.Iteration++;
 
-            filter.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(state);
 
             Assert.Same(arguments, state.ProcessSpec.Arguments);
         }

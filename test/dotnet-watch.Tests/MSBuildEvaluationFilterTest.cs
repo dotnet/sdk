@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Tools.Internal;
-using Moq;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
@@ -31,13 +30,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec()
             };
 
-            await evaluator.EvaluateAsync(state, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
 
             state.Iteration++;
-            state.ChangedFile = new FileItem { FilePath = "Test.csproj" };
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(state, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Test.csproj" }, CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
         }
@@ -64,13 +62,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec()
             };
 
-            await evaluator.EvaluateAsync(state, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
 
             state.Iteration++;
-            state.ChangedFile = new FileItem { FilePath = "Controller.cs" };
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(state, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Controller.cs" }, CancellationToken.None);
 
             Assert.False(evaluator.RequiresRevaluation);
             Assert.Equal(1, counter);
@@ -99,13 +96,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec()
             };
 
-            await evaluator.EvaluateAsync(state, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
 
             state.Iteration++;
-            state.ChangedFile = new FileItem { FilePath = "Controller.cs" };
             evaluator.RequiresRevaluation = false;
 
-            await evaluator.EvaluateAsync(state, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Controller.cs" }, CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
             Assert.Equal(2, counter);
@@ -144,13 +140,12 @@ namespace Microsoft.DotNet.Watcher.Tools
                 ProcessSpec = new ProcessSpec()
             };
 
-            await evaluator.EvaluateAsync(state, CancellationToken.None);
+            await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
             evaluator.RequiresRevaluation = false;
-            state.ChangedFile = new FileItem { FilePath = "Controller.cs" };
             state.Iteration++;
             evaluator.Timestamps["Proj.csproj"] = new DateTime(1007);
 
-            await evaluator.EvaluateAsync(state, CancellationToken.None);
+            await evaluator.EvaluateAsync(new() { FilePath = "Controller.cs" }, CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
         }
