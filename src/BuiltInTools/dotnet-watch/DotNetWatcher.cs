@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Watcher
 
                     if (finishedTask == fileSetTask &&
                         fileSetTask.Result is FileItem fileItem &&
-                        await _staticFileHandler.TryHandleFileChange(state.BrowserRefreshServer, fileItem, combinedCancellationSource.Token))
+                        await _staticFileHandler.TryHandleFileChange(browserConnector.RefreshServer, fileItem, combinedCancellationSource.Token))
                     {
                         // We're able to handle the file change event without doing a full-rebuild.
                     }

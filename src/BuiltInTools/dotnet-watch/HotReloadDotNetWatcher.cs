@@ -104,7 +104,7 @@ namespace Microsoft.DotNet.Watcher
 
                 try
                 {
-                    using var hotReload = new HotReload(_context.Reporter, _context.ProjectGraph, state.BrowserRefreshServer);
+                    using var hotReload = new HotReload(_context.Reporter, _context.ProjectGraph, browserConnector.RefreshServer);
 
                     // Solution must be initialized before we start watching for file changes to avoid race condition
                     // when the solution captures state of the file after the changes has already been made.

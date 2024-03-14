@@ -23,20 +23,19 @@ namespace Microsoft.DotNet.Watcher.Tools
         public FileItem? ChangedFile { get; set; }
         public int Iteration { get; set; } = -1;
         public bool RequiresMSBuildRevaluation { get; set; }
-        public BrowserRefreshServer? BrowserRefreshServer { get; set; }
 
         public async ValueTask UpdateBrowserAsync(BrowserConnector browserConnector, ProjectInfo project, CancellationToken cancellationToken)
         {
             if (Iteration == 0)
             {
                 ProcessSpec.OnOutput += browserConnector.GetBrowserLaunchTrigger(project, cancellationToken);
-                BrowserRefreshServer = await browserConnector.StartRefreshServerAsync(cancellationToken);
-                BrowserRefreshServer?.SetEnvironmentVariables(ProcessSpec.EnvironmentVariables);
+                var server = await browserConnector.StartRefreshServerAsync(cancellationToken);
+                server?.SetEnvironmentVariables(ProcessSpec.EnvironmentVariables);
             }
-            else if (BrowserRefreshServer != null)
+            else if (browserConnector.RefreshServer != null)
             {
                 // We've detected a change. Notify the browser.
-                await BrowserRefreshServer.SendWaitMessageAsync(cancellationToken);
+                await browserConnector.RefreshServer.SendWaitMessageAsync(cancellationToken);
             }
         }
 

@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         private static partial Regex s_nowListeningOnRegex();
 
         private bool _attemptedBrowserLaunch = false;
-        private BrowserRefreshServer? _server;
+        public BrowserRefreshServer? RefreshServer { get; private set; }
 
         /// <summary>
         /// Get process output handler that will be subscribed to the process output event every time the process is launched.
@@ -56,11 +56,11 @@ namespace Microsoft.DotNet.Watcher.Tools
                     _attemptedBrowserLaunch = true;
                     LaunchBrowser(context, match.Groups["url"].Value);
                 }
-                else if (_server != null)
+                else if (RefreshServer != null)
                 {
                     // subsequent iterations (project has been rebuilt and relaunched):
                     context.Reporter.Verbose("Reloading browser.");
-                    _ = _server.ReloadAsync(cancellationToken);
+                    _ = RefreshServer.ReloadAsync(cancellationToken);
                 }
             }
         }
@@ -171,7 +171,7 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             context.Reporter.Verbose("Configuring the app to use browser-refresh middleware.");
 
-            return _server = await BrowserRefreshServer.CreateAsync(context.EnvironmentOptions, context.Reporter, cancellationToken);
+            return RefreshServer = await BrowserRefreshServer.CreateAsync(context.EnvironmentOptions, context.Reporter, cancellationToken);
         }
 
         private static bool IsBrowserRefreshSupported(ProjectGraph context)
@@ -203,9 +203,9 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public async ValueTask DisposeAsync()
         {
-            if (_server != null)
+            if (RefreshServer != null)
             {
-                await _server.DisposeAsync();
+                await RefreshServer.DisposeAsync();
             }
         }
     }
