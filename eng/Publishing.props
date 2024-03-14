@@ -15,7 +15,7 @@
     <SdkAssetManifestFileName>$(OS)-$(PlatformName)-SdkAssets.xml</SdkAssetManifestFileName>
     <SdkAssetsManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(SdkAssetManifestFileName)</SdkAssetsManifestFilePath>
 
-    <TempWorkingDirectory>$(ArtifactsDir)\..\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
+    <TempWorkingDirectory>$(ArtifactsDir)\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
   </PropertyGroup>
 
   <!-- Pulled from arcade's publish.proj see https://github.com/dotnet/arcade/issues/5790 for
@@ -78,7 +78,7 @@
         <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" />
     </ItemGroup>
   </Target>
- 
+
   <!-- We use a separate target to publish this to blob storage so that we can push this to
        a relative path inside the blob storage. -->
   <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish">
@@ -98,11 +98,15 @@
       <IsStableBuild>false</IsStableBuild>
       <IsStableBuild Condition="'$(DotNetFinalVersionKind)' == 'release'">true</IsStableBuild>
     </PropertyGroup>
-    
 
     <MakeDir Directories="$(TempWorkingDirectory)"/>
 
+    <!--
+      Delete PushToAzureDevOpsArtifacts task and remove condition from PushToBuildStorage task
+      after this repo picks up arcade with the following change: https://github.com/dotnet/arcade/pull/14559
+    -->
     <PushToAzureDevOpsArtifacts
+      Condition="'$(DotNetBuildOrchestrator)' != 'true'"
       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
       AzureDevOpsBuildId="$(BUILD_BUILDID)"
@@ -122,6 +126,33 @@
       AssetsTemporaryDirectory="$(TempWorkingDirectory)" 
       PublishingVersion="3"
       IsStableBuild="$(IsStableBuild)" />
+
+    <PushToBuildStorage
+      Condition="'$(DotNetBuildOrchestrator)' == 'true'"
+      AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
+      AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
+      AzureDevOpsBuildId="$(BUILD_BUILDID)"
+      ItemsToPush="@(ToolsetAssetsToPushToBlobFeed)"
+      ItemsToSign="@(ItemsToSignPostBuild)"
+      CertificatesSignInfo="@(CertificatesSignInfo)"
+      StrongNameSignInfo="@(StrongNameSignInfo)"
+      FileSignInfo="@(FileSignInfo)"
+      FileExtensionSignInfo="@(FileExtensionSignInfo)"
+      ManifestBuildData="@(ManifestBuildData)"
+      ManifestRepoUri="$(BUILD_REPOSITORY_NAME)"
+      ManifestBranch="$(BUILD_SOURCEBRANCH)"
+      ManifestBuildId="$(BUILD_BUILDNUMBER)"
+      ManifestCommit="$(BUILD_SOURCEVERSION)"
+      PublishFlatContainer="true"
+      AssetManifestPath="$(SdkAssetsManifestFilePath)"
+      AssetsTemporaryDirectory="$(TempWorkingDirectory)"
+      PublishingVersion="3"
+      IsStableBuild="$(IsStableBuild)"
+      PushToLocalStorage="$(PushToLocalStorage)"
+      AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
+      ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"
+      NonShippingPackagesLocalStorageDir="$(SourceBuiltNonShippingPackagesDir)"
+      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)" />
 
     <Copy
       SourceFiles="$(SdkAssetsManifestFilePath)"
