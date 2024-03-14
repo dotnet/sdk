@@ -28,6 +28,6 @@ namespace Microsoft.DotNet.Cli.Utils
         public static readonly string AnyRid = "any";
 
         public static readonly string RestoreInteractiveOption = "--interactive";
-        public static readonly string workloadSetVersionFileName = "workloadSetVersion.txt";
+        public static readonly string workloadSetVersionFileName = "workloadVersion.txt";
     }
 }

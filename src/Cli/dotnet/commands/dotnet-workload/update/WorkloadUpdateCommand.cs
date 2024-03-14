@@ -121,8 +121,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         RunInNewTransaction(context =>
                         {
-                            (var workloadVersion, var manifestUpdates) = HandleWorkloadUpdateFromVersion(context, offlineCache);
-                            UpdateWorkloads(false, manifestUpdates, workloadVersion, offlineCache, context);
+                            var manifestUpdates = HandleWorkloadUpdateFromVersion(context, offlineCache);
+                            UpdateWorkloads(false, manifestUpdates, offlineCache, context);
                         });
                     }
                 }
@@ -156,13 +156,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             WriteSDKInstallRecordsForVSWorkloads(workloadIds);
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
 
-            string workloadVersion = null;
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate;
             RunInNewTransaction(context =>
             {
                 if (useWorkloadSets)
                 {
-                    (workloadVersion, manifestsToUpdate) = InstallWorkloadSet(context);
+                    manifestsToUpdate = InstallWorkloadSet(context);
                 }
                 else
                 {
@@ -170,7 +169,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
                 }
 
-                UpdateWorkloads(useRollback, manifestsToUpdate, workloadVersion, offlineCache, context);
+                UpdateWorkloads(useRollback, manifestsToUpdate, offlineCache, context);
                 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
@@ -178,11 +177,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             });
         }
 
-        private void UpdateWorkloads(bool useRollback, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, string workloadVersion, DirectoryPath? offlineCache, ITransactionContext context)
+        private void UpdateWorkloads(bool useRollback, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, ITransactionContext context)
         {
             var workloadIds = GetUpdatableWorkloads();
 
-            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, workloadVersion, useRollback, context, offlineCache);
+            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, context, offlineCache);
 
             WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
@@ -202,7 +201,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private void UpdateWorkloadsWithInstallRecord(
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
-            string workloadSetVersion,
             bool useRollback,
             ITransactionContext context,
             DirectoryPath? offlineCache = null)
@@ -224,7 +222,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         _workloadInstaller.RemoveManifestsFromInstallState(sdkFeatureBand);
                     }
 
-                    _workloadInstaller.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : workloadSetVersion);
+                    _workloadInstaller.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : _workloadSetVersion);
 
                     _workloadResolver.RefreshWorkloadManifests();
 

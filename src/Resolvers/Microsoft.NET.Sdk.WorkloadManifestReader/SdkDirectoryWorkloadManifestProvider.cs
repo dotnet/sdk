@@ -132,11 +132,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     if (File.Exists(installStateFilePath))
                     {
                         var installState = InstallStateContents.FromPath(installStateFilePath);
-                        if (!string.IsNullOrEmpty(installState.WorkloadSetVersion))
+                        if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                         {
-                            if (!availableWorkloadSets.TryGetValue(installState.WorkloadSetVersion!, out _workloadSet))
+                            if (!availableWorkloadSets.TryGetValue(installState.WorkloadVersion!, out _workloadSet))
                             {
-                                throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadSetVersion, installStateFilePath));
+                                throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
                             }
                         }
                         _manifestsFromInstallState = installState.Manifests is null ? new WorkloadSet() : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);

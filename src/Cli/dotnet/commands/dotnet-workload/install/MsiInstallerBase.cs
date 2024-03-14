@@ -226,12 +226,12 @@ namespace Microsoft.DotNet.Installer.Windows
             }
         }
 
-        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadSetVersion)
+        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
             var installStateContents = InstallStateContents.FromPath(path);
-            if ((installStateContents.WorkloadSetVersion == null && workloadSetVersion == null) ||
-                (installStateContents.WorkloadSetVersion != null && installStateContents.WorkloadSetVersion.Equals(workloadSetVersion)))
+            if ((installStateContents.WorkloadVersion == null && workloadVersion == null) ||
+                (installStateContents.WorkloadVersion != null && installStateContents.WorkloadVersion.Equals(workloadVersion)))
             {
                 return;
             }
@@ -241,12 +241,12 @@ namespace Microsoft.DotNet.Installer.Windows
             if (IsElevated)
             {
                 // Create the parent folder for the state file and set up all required ACLs
-                installStateContents.WorkloadSetVersion = workloadSetVersion;
+                installStateContents.WorkloadVersion = workloadVersion;
                 CreateSecureFileInDirectory(path, installStateContents.ToString());
             }
             else if (IsClient)
             {
-                InstallResponseMessage response = Dispatcher.SendUpdateWorkloadSetRequest(sdkFeatureBand, workloadSetVersion);
+                InstallResponseMessage response = Dispatcher.SendUpdateWorkloadSetRequest(sdkFeatureBand, workloadVersion);
                 ExitOnFailure(response, "Failed to update install mode.");
             }
             else

@@ -64,11 +64,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             throw new NotImplementedException();
         }
 
-        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadSetVersion)
+        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion)
         {
             var installStatePath = Path.Combine(Path.GetTempPath(), "dotnetTestPath", "metadata", "workloads", sdkFeatureBand.ToString(), "InstallState", "default.json");
             var contents = InstallStateContents.FromPath(installStatePath);
-            contents.WorkloadSetVersion = workloadSetVersion;
+            contents.WorkloadVersion = workloadVersion;
             if (File.Exists(installStatePath))
             {
                 File.WriteAllText(installStatePath, contents.ToString());

@@ -315,7 +315,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     // If an offline cache is present, use that. Otherwise, try to acquire the package online.
                     packagePath = offlineCache != null ?
                         Directory.GetFiles(offlineCache.Value.Value)
-                            .Where(path => path.EndsWith(".nupkg") && Path.GetFileName(path).StartsWith(manifestPackageId.ToString(), StringComparison.OrdinalIgnoreCase))
+                            .Where(path =>
+                            path.EndsWith(".nupkg") &&
+                            Path.GetFileName(path).StartsWith(manifestPackageId.ToString(), StringComparison.OrdinalIgnoreCase) &&
+                            (packageVersion == null || path.Contains(packageVersion.ToString())))
                             .Max() :
                         await _nugetPackageDownloader.DownloadPackageAsync(manifestPackageId, packageVersion: packageVersion, packageSourceLocation: _packageSourceLocation, includePreview: includePreviews);
                 }
@@ -494,11 +497,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 fullSet.AddRange(rollbacks);
             }
 
-            int size = fullSet.Count;
-            fullSet = fullSet.DistinctBy<(ManifestId, ManifestVersionWithBand), ManifestId>(update => update.Item1).ToList();
-            if (size != fullSet.Count)
+            var reducedFullSet = fullSet.DistinctBy<(ManifestId, ManifestVersionWithBand), ManifestId>(update => update.Item1).ToList();
+            if (fullSet.Count != reducedFullSet.Count)
             {
-                throw new Exception();
+                var duplicates = reducedFullSet.Where(manifest => fullSet.Where(m => m.Item1.Equals(manifest.Item1)).Count() > 1);
+                throw new ArgumentException("There were duplicates of the following manifests between the workload set files: " + string.Join(", ", duplicates));
             }
 
             return CalculateManifestRollbacks(fullSet);

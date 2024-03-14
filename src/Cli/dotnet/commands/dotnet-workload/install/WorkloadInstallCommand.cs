@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 // If the version of the workload set is currently pinned, treat it as if it were freshly pinned.
                 var installStateContents = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json"));
-                _workloadSetVersion = installStateContents.WorkloadSetVersion;
+                _workloadSetVersion = installStateContents.WorkloadVersion;
             }
 
             ValidateWorkloadIdsInput();
@@ -129,8 +129,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         RunInNewTransaction(context =>
                         {
-                            (var workloadVersion, var manifests) = HandleWorkloadUpdateFromVersion(context, offlineCache);
-                            InstallWorkloadsAndGarbageCollect(workloadVersion, context, workloadIds, manifests, offlineCache, false);
+                            var manifests = HandleWorkloadUpdateFromVersion(context, offlineCache);
+                            InstallWorkloadsAndGarbageCollect(context, workloadIds, manifests, offlineCache, false);
                         });
                     }
                 }
@@ -151,7 +151,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             var manifestsToUpdate = Enumerable.Empty<ManifestVersionUpdate>();
             var useRollback = false;
-            string workloadVersion = null;
 
             WriteSDKInstallRecordsForVSWorkloads();
 
@@ -190,7 +189,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (useWorkloadSets)
                     {
-                        (workloadVersion, manifestsToUpdate) = InstallWorkloadSet(context);
+                        manifestsToUpdate = InstallWorkloadSet(context);
                     }
                     else
                     {
@@ -199,13 +198,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
                 }
 
-                InstallWorkloadsAndGarbageCollect(workloadVersion, context, workloadIds, manifestsToUpdate, offlineCache, useRollback);
+                InstallWorkloadsAndGarbageCollect(context, workloadIds, manifestsToUpdate, offlineCache, useRollback);
             });
         }
 
-        private void InstallWorkloadsAndGarbageCollect(string workloadVersion, ITransactionContext context, IEnumerable<WorkloadId> workloadIds, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, bool useRollback)
+        private void InstallWorkloadsAndGarbageCollect(ITransactionContext context, IEnumerable<WorkloadId> workloadIds, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, bool useRollback)
         {
-            InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, workloadVersion, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
+            InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
 
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
@@ -243,7 +242,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             ITransactionContext context,
             IInstaller installer,
             IEnumerable<WorkloadId> workloadIds,
-            string workloadSetVersion,
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
             DirectoryPath? offlineCache,
@@ -267,7 +265,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         installer.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
 
-                    installer.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : workloadSetVersion);
+                    installer.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : _workloadSetVersion);
 
                     _workloadResolver.RefreshWorkloadManifests();
 

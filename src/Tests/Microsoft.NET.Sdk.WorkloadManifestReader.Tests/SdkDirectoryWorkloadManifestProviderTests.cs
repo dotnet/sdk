@@ -605,7 +605,7 @@ namespace ManifestReaderTests
             CreateMockInstallState("8.0.200", 
                 """
                 {
-                    "workloadSetVersion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 }
                 """);
 
@@ -641,7 +641,7 @@ namespace ManifestReaderTests
             var installStatePath = CreateMockInstallState("8.0.200",
                 """
                 {
-                    "workloadSetVersion": "8.0.203"
+                    "workloadVersion": "8.0.203"
                 }
                 """);
 
@@ -673,7 +673,7 @@ namespace ManifestReaderTests
             var installStatePath = CreateMockInstallState("8.0.200",
                 """
                 {
-                    "workloadSetVersion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 }
                 """);
 
@@ -786,7 +786,7 @@ namespace ManifestReaderTests
             CreateMockInstallState("8.0.200",
                 """
                 {
-                    "workloadSetVersion": "8.0.201",
+                    "workloadVersion": "8.0.201",
                     "manifests": {
                         "tizen": "8.0.0/8.0.200",
                     }
@@ -825,7 +825,7 @@ namespace ManifestReaderTests
             CreateMockInstallState("8.0.200",
                 """
                 {
-                    "workloadSetVersion": "8.0.201",
+                    "workloadVersion": "8.0.201",
                     "manifests": {
                         "ios": "11.0.1/8.0.100",
                     }
@@ -896,7 +896,7 @@ namespace ManifestReaderTests
             CreateMockInstallState("8.0.200",
                 """
                 {
-                    "workloadSetVersion": "8.0.202",
+                    "workloadVersion": "8.0.202",
                 }
                 """);
 
@@ -935,7 +935,7 @@ namespace ManifestReaderTests
             CreateMockInstallState("8.0.200",
                 """
                 {
-                    "workloadSetVersion": "8.0.200",
+                    "workloadVersion": "8.0.200",
                 }
                 """);
 

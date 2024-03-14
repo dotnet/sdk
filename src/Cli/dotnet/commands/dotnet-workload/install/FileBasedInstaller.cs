@@ -87,8 +87,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath)
         {
-            var workloadSetVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
-            var workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+            var workloadVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
+            var workloadSetPath = Path.Combine(_dotnetDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadVersion);
             context.Run(
                 action: () =>
                 {
@@ -477,12 +477,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         }
 
-        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadSetVersion)
+        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             var installStateContents = InstallStateContents.FromPath(path);
-            installStateContents.WorkloadSetVersion = workloadSetVersion;
+            installStateContents.WorkloadVersion = workloadVersion;
             File.WriteAllText(path, installStateContents.ToString());
         }
 
