@@ -4,8 +4,6 @@
     <!-- AspNetCore doesn't have a root build script but one under the eng folder. -->
     <BuildScript>$(ProjectDirectory)eng\build$(ShellExtension)</BuildScript>
 
-    <!-- BuildActions includes -publish which is not supported by the aspnetcore build script. -->
-    <BuildActions>$(FlagParameterPrefix)restore $(FlagParameterPrefix)build $(FlagParameterPrefix)pack</BuildActions>
     <!-- On Windows, build all for the VB PoC -->
     <BuildActions Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore $(FlagParameterPrefix)all $(FlagParameterPrefix)pack</BuildActions>
 
