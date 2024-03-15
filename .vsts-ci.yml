@@ -93,17 +93,21 @@ extends:
             helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             helixTargetQueue: Windows.Amd64.VS2022.Pre
-          strategy:
-            matrix:
-              Build_Release:
-                _BuildConfig: Release
-                _PublishArgs: '-publish /p:DotNetPublishUsingPipelines=true'
-                ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-                  _SignType: test
-                  _Test: -test
-                ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-                  _SignType: real
-                  _Test: ''
+          variables:
+          - name: _BuildConfig
+            value: Release
+          - name: _PublishArgs
+            value: '-publish /p:DotNetPublishUsingPipelines=true'
+          - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
+            - name: _SignType
+              value: test
+            - name: _Test
+              value: -test
+          - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+            - name: _SignType
+              value: real
+            - name: _Test
+              value: ''
       - template: /eng/common/templates-official/job/source-build.yml@self
         parameters:
           platform:
@@ -126,13 +130,15 @@ extends:
               helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
               helixTargetQueue: Windows.Amd64.VS2022.Pre
-            strategy:
-              matrix:
-                Build_Debug:
-                  _BuildConfig: Debug
-                  _PublishArgs: ''
-                  _SignType: test
-                  _Test: -test
+            variables:
+            - name: _BuildConfig
+              value: Debug
+            - name: _PublishArgs
+              value: ''
+            - name: _SignType
+              value: test
+            - name: _Test
+              value: -test
 
         - template: /eng/build.yml@self
           parameters:
@@ -146,12 +152,13 @@ extends:
                 name: NetCore1ESPool-Svc-Internal
                 image: 1es-windows-2019
                 os: windows
-            strategy:
-              matrix:
-                Build_Debug:
-                  _BuildConfig: Debug
-                  _PublishArgs: ''
-                  _SignType: test
+            variables:
+            - name: _BuildConfig
+              value: Debug
+            - name: _PublishArgs
+              value: ''
+            - name: _SignType
+              value: test
 
         - template: /eng/build.yml@self
           parameters:
@@ -169,12 +176,12 @@ extends:
               helixTargetQueue: Ubuntu.1804.Amd64.Open
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
               helixTargetQueue: Ubuntu.1804.Amd64
-            strategy:
-              matrix:
-                Build_Release:
-                  _BuildConfig: Release
-                  _PublishArgs: ''
-                  _SignType: test
+            variables:
+            - name: _BuildConfig
+              value: Release
+            - name: _PublishArgs
+              value: ''
+            - name: _SignType
 
         - template: /eng/build.yml@self
           parameters:
@@ -187,12 +194,13 @@ extends:
               helixTargetQueue: OSX.1200.Amd64.Open
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
               helixTargetQueue: OSX.1200.Amd64
-            strategy:
-              matrix:
-                Build_Release:
-                  _BuildConfig: Release
-                  _PublishArgs: ''
-                  _SignType: test
+            variables:
+            - name: _BuildConfig
+              value: Release
+            - name: _PublishArgs
+              value: ''
+            - name: _SignType
+              value: test
 
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
