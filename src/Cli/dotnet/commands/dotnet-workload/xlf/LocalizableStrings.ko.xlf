@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
-        <target state="new">Writing install records for Visual Studio workloads: '{0}'</target>
+        <target state="translated">Visual Studio 워크로드에 대한 설치 레코드를 쓰는 중: '{0}'</target>
         <note />
       </trans-unit>
     </body>
