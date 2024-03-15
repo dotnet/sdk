@@ -1,12 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
 namespace Microsoft.DotNet.MsiInstallerTests
 {
     internal class VMStateTree
@@ -18,18 +12,18 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         public Dictionary<SerializedVMAction, VMActionResult> ReadOnlyActions { get; set; } = new();
 
-        public SerializeableVMStateTree ToSerializeable()
+        public SerializableVMStateTree ToSerializeable()
         {
-            return new SerializeableVMStateTree()
+            return new SerializableVMStateTree()
             {
                 SnapshotId = SnapshotId,
                 SnapshotName = SnapshotName,
-                Actions = Actions.Select(a => new SerializeableVMStateTree.Entry() {
+                Actions = Actions.Select(a => new SerializableVMStateTree.Entry() {
                     Action = a.Key,
                     ActionResult = a.Value.actionResult,
                     ResultingState = a.Value.resultingState.ToSerializeable()
                 }).ToList(),
-                ReadOnlyActions = ReadOnlyActions.Select(a => new SerializeableVMStateTree.ReadOnlyEntry()
+                ReadOnlyActions = ReadOnlyActions.Select(a => new SerializableVMStateTree.ReadOnlyEntry()
                 {
                     Action = a.Key,
                     ActionResult = a.Value
@@ -39,7 +33,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
     }
 
-    internal class  SerializeableVMStateTree
+    internal class SerializableVMStateTree
     {
         public string SnapshotId { get; set; }
         public string SnapshotName { get; set; }
@@ -53,7 +47,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
             public SerializedVMAction Action { get; set; }
             public VMActionResult ActionResult { get; set; }
-            public SerializeableVMStateTree ResultingState { get; set; }
+            public SerializableVMStateTree ResultingState { get; set; }
         }
 
         public class ReadOnlyEntry

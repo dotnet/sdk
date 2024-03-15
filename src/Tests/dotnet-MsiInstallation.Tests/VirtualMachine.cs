@@ -1,16 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Microsoft.Build.Execution;
-using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
@@ -77,7 +69,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             if (File.Exists(_stateFile))
             {
                 string json = File.ReadAllText(_stateFile);
-                _rootState = JsonSerializer.Deserialize<SerializeableVMStateTree>(json, GetSerializerOptions()).ToVMStateTree();
+                _rootState = JsonSerializer.Deserialize<SerializableVMStateTree>(json, GetSerializerOptions()).ToVMStateTree();
             }
             else
             {
@@ -440,7 +432,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             return $@"\\{VMControl.VMMachineName}\{driveLetter}$\{pathUnderDrive}";
         }
 
-        //  Copilot wrote the entire body of this method
         string SharePathToVMPath(string sharePath)
         {
             if (!sharePath.StartsWith($@"\\{VMControl.VMMachineName}\"))

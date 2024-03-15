@@ -1,16 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Installer.Windows;
 using Microsoft.Management.Infrastructure;
 using Microsoft.Management.Infrastructure.Serialization;
-using static Microsoft.ApplicationInsights.MetricDimensionNames.TelemetryContext;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
@@ -101,16 +95,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
         private IEnumerable<CimInstance> GetSnapshotInstances()
         {
             var snapshots = _session.QueryInstances(virtNamespace, "WQL", $"SELECT * FROM Msvm_VirtualSystemSettingData WHERE VirtualSystemIdentifier='{VMInstance.CimInstanceProperties["Name"].Value}' And IsSaved='True'").ToList();
-            //Log.WriteLine("Snapshot count: " + snapshots.Count);
-            //foreach (var snapshot in snapshots)
-            //{
-            //    Log.WriteLine(snapshot.CimInstanceProperties["ElementName"].Value.ToString());
-            //    //Log.WriteLine(snapshot.ToString());
-            //    //foreach (var prop in snapshot.CimInstanceProperties)
-            //    //{
-            //    //    Log.WriteLine($"\t{prop.Name}: {prop.Value}");
-            //    //}
-            //}
 
             return snapshots;
         }
@@ -126,20 +110,12 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var managementService = _session.QueryInstances(@"root\virtualization\v2", "WQL", "SELECT * FROM Msvm_VirtualSystemManagementService").Single();
             var modifyVmMethod = managementService.CimClass.CimClassMethods.Single(m => m.Name == "ModifySystemSettings");
-            //foreach (var param in modifyVmMethod.Parameters)
-            //{
-            //    Log.WriteLine($"{param.Name}: {param.CimType}");
-            //}
 
             var snapshot = snapshots.Single(s => s.CimInstanceProperties["ConfigurationID"].Value.ToString() == snapshotId);
 
             snapshot.CimInstanceProperties["ElementName"].Value = newName;
 
             Log.WriteLine("Renaming snapshot " + snapshotId + " to " + newName);
-            //foreach (var prop in snapshot.CimInstanceProperties)
-            //{
-            //    Log.WriteLine($"\t{prop.Name}: {prop.Value}");
-            //}
 
             CimSerializer serializer = CimSerializer.Create();
             var snapshotString = Encoding.Unicode.GetString(serializer.Serialize(snapshot, InstanceSerializationOptions.None));
@@ -279,10 +255,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 if (jobState != JobState.Completed && jobState != JobState.CompletedWithWarnings)
                 {
                     Log.WriteLine("Job failed: " + jobState);
-                    //foreach (var prop in job.CimInstanceProperties)
-                    //{
-                    //    Log.WriteLine($"\t{prop.Name}: {prop.Value}");
-                    //}
 
                     string exceptionText = "Job failed: " + jobState;
 
