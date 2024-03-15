@@ -63,6 +63,15 @@ namespace Microsoft.DotNet.Watcher
                 _context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
             }
 
+            var namedPipeName = Guid.NewGuid().ToString();
+
+            var deltaApplier = Path.Combine(AppContext.BaseDirectory, "hotreload", "Microsoft.Extensions.DotNetDeltaApplier.dll");
+            processSpec.EnvironmentVariables.DotNetStartupHooks.Add(deltaApplier);
+
+            // Configure the app for EnC
+            processSpec.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
+            processSpec.EnvironmentVariables["DOTNET_HOTRELOAD_NAMEDPIPE_NAME"] = namedPipeName;
+
             await using var browserConnector = new BrowserConnector(_context);
 
             while (true)
@@ -108,7 +117,7 @@ namespace Microsoft.DotNet.Watcher
 
                     // Solution must be initialized before we start watching for file changes to avoid race condition
                     // when the solution captures state of the file after the changes has already been made.
-                    await hotReload.InitializeAsync(state, project, cancellationToken);
+                    await hotReload.InitializeAsync(project, namedPipeName, cancellationToken);
 
                     _context.Reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{processSpec.GetArgumentsDisplay()}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);

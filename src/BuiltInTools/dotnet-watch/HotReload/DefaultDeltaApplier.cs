@@ -14,41 +14,25 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal sealed class DefaultDeltaApplier(IReporter reporter) : SingleProcessDeltaApplier
     {
-        private static readonly string _namedPipeName = Guid.NewGuid().ToString();
         private Task<ImmutableArray<string>>? _capabilitiesTask;
         private NamedPipeServerStream? _pipe;
 
-        internal bool SuppressNamedPipeForTests { get; set; }
-
-        public override void Initialize(WatchState state, ProjectInfo project, CancellationToken cancellationToken)
+        public override void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken)
         {
-            base.Initialize(state, project, cancellationToken);
+            base.Initialize(project, namedPipeName, cancellationToken);
 
-            if (!SuppressNamedPipeForTests)
+            _pipe = new NamedPipeServerStream(namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
+            _capabilitiesTask = Task.Run(async () =>
             {
-                _pipe = new NamedPipeServerStream(_namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-                _capabilitiesTask = Task.Run(async () =>
-                {
-                    reporter.Verbose($"Connecting to the application.");
+                reporter.Verbose($"Connecting to the application.");
 
-                    await _pipe.WaitForConnectionAsync(cancellationToken);
+                await _pipe.WaitForConnectionAsync(cancellationToken);
 
-                    // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
+                // When the client connects, the first payload it sends is the initialization payload which includes the apply capabilities.
 
-                    var capabilities = ClientInitializationPayload.Read(_pipe).Capabilities;
-                    return capabilities.Split(' ').ToImmutableArray();
-                });
-            }
-
-            if (state.Iteration == 0)
-            {
-                var deltaApplier = Path.Combine(AppContext.BaseDirectory, "hotreload", "Microsoft.Extensions.DotNetDeltaApplier.dll");
-                state.ProcessSpec.EnvironmentVariables.DotNetStartupHooks.Add(deltaApplier);
-
-                // Configure the app for EnC
-                state.ProcessSpec.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
-                state.ProcessSpec.EnvironmentVariables["DOTNET_HOTRELOAD_NAMEDPIPE_NAME"] = _namedPipeName;
-            }
+                var capabilities = ClientInitializationPayload.Read(_pipe).Capabilities;
+                return capabilities.Split(' ').ToImmutableArray();
+            });
         }
 
         public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)

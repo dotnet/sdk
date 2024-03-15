@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             _workspace?.Dispose();
         }
 
-        public async Task InitializeAsync(WatchState state, ProjectInfo projectInfo, CancellationToken cancellationToken)
+        public async Task InitializeAsync(ProjectInfo projectInfo, string namedPipeName, CancellationToken cancellationToken)
         {
             if (_deltaApplier is null)
             {
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 };
             }
 
-            _deltaApplier.Initialize(state, projectInfo, cancellationToken);
+            _deltaApplier.Initialize(projectInfo, namedPipeName, cancellationToken);
 
             if (_workspace is not null)
             {

@@ -21,13 +21,9 @@ namespace Microsoft.DotNet.Watcher.Tools
         private Version? _targetFrameworkVersion;
         private int _sequenceId;
 
-        public override void Initialize(WatchState state, ProjectInfo project, CancellationToken cancellationToken)
+        public override void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken)
         {
-            base.Initialize(state, project, cancellationToken);
-
-            // Configure the app for EnC
-            state.ProcessSpec.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
-
+            base.Initialize(project, namedPipeName, cancellationToken);
             _targetFrameworkVersion = project.TargetFrameworkVersion;
         }
 

@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         /// </summary>
         private readonly HashSet<Guid> _frozenModules = new();
 
-        public override void Initialize(WatchState state, ProjectInfo project, CancellationToken cancellationToken)
+        public override void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken)
         {
             _frozenModules.Clear();
         }
