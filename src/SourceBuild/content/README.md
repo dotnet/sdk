@@ -103,7 +103,7 @@ In case you don't want to / cannot prepare your environment per the requirements
         ```bash
         # Prep the source to build on your distro.
         # This downloads a .NET SDK and a number of .NET packages needed to build .NET from source.
-        ./eng/prep-source-build.sh
+        ./prep-source-build.sh
 
         # Build the .NET SDK
         ./build.sh -sb --clean-while-building
@@ -149,7 +149,7 @@ git clone https://github.com/dotnet/dotnet .
 ./build.sh --clean-while-building
 
 # - Building from source
-./eng/prep-source-build.sh && ./build.sh -sb --clean-while-building
+./prep-source-build.sh && ./build.sh -sb --clean-while-building
 
 mkdir -p $HOME/.dotnet
 tar -zxf artifacts/assets/Release/dotnet-sdk-9.0.100-centos.8-x64.tar.gz -C $HOME/.dotnet

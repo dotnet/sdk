@@ -24,7 +24,7 @@ or
 
 ```bash
 # Building from source only
-./eng/prep-source-build.sh && ./build.sh -sb
+./prep-source-build.sh && ./build.sh -sb
 ```
 
 > Please note that, at this time, the build modifies some of the checked-in sources so it might
