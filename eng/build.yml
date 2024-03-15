@@ -40,22 +40,37 @@ jobs:
       workspace:
         clean: all
       variables:
-        - ${{ insert }}: ${{ parameters.variables }}
-        - _AgentOSName: ${{ parameters.agentOs }}
-        - _TeamName: DotNetCore
-        - _OfficialBuildIdArgs: ''
-        - _PublishArgs: ''
-        - _SignArgs: ''
-        - _HelixApiToken: ''
+        - ${{ each variable in parameters.variables }}:
+          - ${{ if ne(variable.name, '') }}:
+            - name: ${{ variable.name }}
+              value: ${{ variable.value }}
+        - name: _AgentOSName
+          value: ${{ parameters.agentOs }}
+        - name: _TeamName
+          value: DotNetCore
+        - name: _OfficialBuildIdArgs
+          value: ''
+        - name: _PublishArgs
+          value: ''
+        - name: _SignArgs
+          value: ''
+        - name: _HelixApiToken
+          value: ''
         # Helix Testing requires a token when internally run
         - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          - group: DotNet-HelixApi-Access
-          - _HelixApiToken: $(HelixApiAccessToken)
+          - name: group
+            value: DotNet-HelixApi-Access
+          - name: _HelixApiToken
+            value: $(HelixApiAccessToken)
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - group: dotnet-benchview
-          - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-          - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-          - _PerfIterations: 25
+          - name: group
+            value: dotnet-benchview
+          - name: _OfficialBuildIdArgs
+            value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+          - name: _SignArgs
+            value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+          - name: _PerfIterations
+            value: 25
   
       steps:
       - ${{ if ne(variables['System.TeamProject'], 'public') }}:
@@ -221,22 +236,37 @@ jobs:
       workspace:
         clean: all
       variables:
-        - ${{ insert }}: ${{ parameters.variables }}
-        - _AgentOSName: ${{ parameters.agentOs }}
-        - _TeamName: DotNetCore
-        - _OfficialBuildIdArgs: ''
-        - _PublishArgs: ''
-        - _SignArgs: ''
-        - _HelixApiToken: ''
+        - ${{ each variable in parameters.variables }}:
+          - ${{ if ne(variable.name, '') }}:
+            - name: ${{ variable.name }}
+              value: ${{ variable.value }}
+        - name: _AgentOSName
+          value: ${{ parameters.agentOs }}
+        - name: _TeamName
+          value: DotNetCore
+        - name: _OfficialBuildIdArgs
+          value: ''
+        - name: _PublishArgs
+          value: ''
+        - name: _SignArgs
+          value: ''
+        - name: _HelixApiToken
+          value: ''
         # Helix Testing requires a token when internally run
         - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          - group: DotNet-HelixApi-Access
-          - _HelixApiToken: $(HelixApiAccessToken)
+          - name: group
+            value: DotNet-HelixApi-Access
+          - name: _HelixApiToken
+            value: $(HelixApiAccessToken)
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - group: dotnet-benchview
-          - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-          - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-          - _PerfIterations: 25
+          - name: group
+            value: dotnet-benchview
+          - name: _OfficialBuildIdArgs
+            value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+          - name: _SignArgs
+            value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+          - name: _PerfIterations
+            value: 25
 
       steps:
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), in(parameters.agentOs, 'Windows_NT', 'Darwin')) }}:
@@ -353,22 +383,37 @@ jobs:
       workspace:
         clean: all
       variables:
-        - ${{ insert }}: ${{ parameters.variables }}
-        - _AgentOSName: ${{ parameters.agentOs }}
-        - _TeamName: DotNetCore
-        - _OfficialBuildIdArgs: ''
-        - _PublishArgs: ''
-        - _SignArgs: ''
-        - _HelixApiToken: ''
+        - ${{ each variable in parameters.variables }}:
+          - ${{ if ne(variable.name, '') }}:
+            - name: ${{ variable.name }}
+              value: ${{ variable.value }}
+        - name: _AgentOSName
+          value: ${{ parameters.agentOs }}
+        - name: _TeamName
+          value: DotNetCore
+        - name: _OfficialBuildIdArgs
+          value: ''
+        - name: _PublishArgs
+          value: ''
+        - name: _SignArgs
+          value: ''
+        - name: _HelixApiToken
+          value: ''
         # Helix Testing requires a token when internally run
         - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          - group: DotNet-HelixApi-Access
-          - _HelixApiToken: $(HelixApiAccessToken)
+          - name: group
+            value: DotNet-HelixApi-Access
+          - name: _HelixApiToken
+            value: $(HelixApiAccessToken)
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - group: dotnet-benchview
-          - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-          - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-          - _PerfIterations: 25
+          - name: group
+            value: dotnet-benchview
+          - name: _OfficialBuildIdArgs
+            value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
+          - name: _SignArgs
+            value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+          - name: _PerfIterations
+            value: 25
 
       steps:
       - ${{ if ne(variables['System.TeamProject'], 'public') }}:
