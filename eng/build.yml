@@ -195,7 +195,7 @@ jobs:
         continueOnError: true	
         condition: always()
   
-      - task: PublishBuildArtifacts@1	
+      - task: 1ES.PublishBuildArtifacts@1	
         displayName: Publish Logs to VSTS	
         inputs:	
           PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
@@ -327,7 +327,7 @@ jobs:
           continueOnError: true	
           condition: always()
 
-        - task: PublishBuildArtifacts@1	
+        - task: 1ES.PublishBuildArtifacts@1	
           displayName: Publish Logs to VSTS	
           inputs:	
             PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
@@ -470,7 +470,7 @@ jobs:
         continueOnError: true	
         condition: always()
   
-      - task: PublishBuildArtifacts@1	
+      - task: 1ES.PublishBuildArtifacts@1	
         displayName: Publish Logs to VSTS	
         inputs:	
           PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
