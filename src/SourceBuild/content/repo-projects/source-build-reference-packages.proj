@@ -31,7 +31,14 @@
       SourcePath="$(LocalNuGetPackageCacheDirectory)" />
   </Target>
 
+  <!--
+    Remove this target after VMR picks up new arcade publishing changes: https://github.com/dotnet/arcade/pull/14559
+    Tracking issue: https://github.com/dotnet/source-build/issues/4210
+
+    We only run this target if we're publishing using repo manifest.
+  -->
   <Target Name="ClearPreviousSBRP"
+          Condition="Exists('$(RepoManifestFile)')"
           BeforeTargets="CopyRepoArtifacts"
           DependsOnTargets="RepoBuild">
     <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,

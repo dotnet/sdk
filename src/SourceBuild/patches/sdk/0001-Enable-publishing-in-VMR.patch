@@ -1,0 +1,83 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Tue, 12 Mar 2024 22:54:09 +0000
+Subject: [PATCH] Enable publishing in VMR
+
+Backport: https://github.com/dotnet/sdk/pull/39311
+---
+ eng/Publishing.props | 37 ++++++++++++++++++++++++++++++++++---
+ 1 file changed, 34 insertions(+), 3 deletions(-)
+
+diff --git a/eng/Publishing.props b/eng/Publishing.props
+index 0e6e2ec2fb..e95cf5b80b 100644
+--- a/eng/Publishing.props
++++ b/eng/Publishing.props
+@@ -15,7 +15,7 @@
+     <SdkAssetManifestFileName>$(OS)-$(PlatformName)-SdkAssets.xml</SdkAssetManifestFileName>
+     <SdkAssetsManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(SdkAssetManifestFileName)</SdkAssetsManifestFilePath>
+ 
+-    <TempWorkingDirectory>$(ArtifactsDir)\..\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
++    <TempWorkingDirectory>$(ArtifactsDir)\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
+   </PropertyGroup>
+ 
+   <!-- Pulled from arcade's publish.proj see https://github.com/dotnet/arcade/issues/5790 for
+@@ -78,7 +78,7 @@
+         <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" />
+     </ItemGroup>
+   </Target>
+- 
++
+   <!-- We use a separate target to publish this to blob storage so that we can push this to
+        a relative path inside the blob storage. -->
+   <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish">
+@@ -98,11 +98,15 @@
+       <IsStableBuild>false</IsStableBuild>
+       <IsStableBuild Condition="'$(DotNetFinalVersionKind)' == 'release'">true</IsStableBuild>
+     </PropertyGroup>
+-    
+ 
+     <MakeDir Directories="$(TempWorkingDirectory)"/>
+ 
++    <!--
++      Delete PushToAzureDevOpsArtifacts task and remove condition from PushToBuildStorage task
++      after this repo picks up arcade with the following change: https://github.com/dotnet/arcade/pull/14559
++    -->
+     <PushToAzureDevOpsArtifacts
++      Condition="'$(DotNetBuildOrchestrator)' != 'true'"
+       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
+       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
+       AzureDevOpsBuildId="$(BUILD_BUILDID)"
+@@ -123,6 +127,33 @@
+       PublishingVersion="3"
+       IsStableBuild="$(IsStableBuild)" />
+ 
++    <PushToBuildStorage
++      Condition="'$(DotNetBuildOrchestrator)' == 'true'"
++      AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
++      AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
++      AzureDevOpsBuildId="$(BUILD_BUILDID)"
++      ItemsToPush="@(ToolsetAssetsToPushToBlobFeed)"
++      ItemsToSign="@(ItemsToSignPostBuild)"
++      CertificatesSignInfo="@(CertificatesSignInfo)"
++      StrongNameSignInfo="@(StrongNameSignInfo)"
++      FileSignInfo="@(FileSignInfo)"
++      FileExtensionSignInfo="@(FileExtensionSignInfo)"
++      ManifestBuildData="@(ManifestBuildData)"
++      ManifestRepoUri="$(BUILD_REPOSITORY_NAME)"
++      ManifestBranch="$(BUILD_SOURCEBRANCH)"
++      ManifestBuildId="$(BUILD_BUILDNUMBER)"
++      ManifestCommit="$(BUILD_SOURCEVERSION)"
++      PublishFlatContainer="true"
++      AssetManifestPath="$(SdkAssetsManifestFilePath)"
++      AssetsTemporaryDirectory="$(TempWorkingDirectory)"
++      PublishingVersion="3"
++      IsStableBuild="$(IsStableBuild)"
++      PushToLocalStorage="$(PushToLocalStorage)"
++      AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
++      ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"
++      NonShippingPackagesLocalStorageDir="$(SourceBuiltNonShippingPackagesDir)"
++      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)" />
++
+     <Copy
+       SourceFiles="$(SdkAssetsManifestFilePath)"
+       DestinationFolder="$(TempWorkingDirectory)\$(SdkAssetManifestFileName)" />

@@ -1,0 +1,1433 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Thu, 14 Mar 2024 00:40:08 +0000
+Subject: [PATCH] Enable publishing to build storage
+
+Backport: https://github.com/dotnet/arcade/pull/14559
+---
+ .../DependencyFlowOnboardingWithoutArcade.md  |   8 +-
+ .../tools/Build.proj                          |  19 ++-
+ .../tools/Publish.proj                        |  40 +++++-
+ .../tools/SourceBuild/AfterSourceBuild.proj   |  27 ++--
+ .../SourceBuild/SourceBuildArcade.targets     |   6 +-
+ .../SourceBuildArcadeBuild.targets            |   3 +
+ .../SourceBuildArcadePublish.targets          |  19 ---
+ .../SourceBuildArcadeTools.targets            |   1 +
+ .../GeneralTests.cs                           |   5 +-
+ .../PublishArtifactsInManifestTests.cs        |   1 +
+ ...ctsTests.cs => PushToBuildStorageTests.cs} |  43 +++---
+ .../Microsoft.DotNet.Build.Tasks.Feed.csproj  |  49 ++++++-
+ .../Microsoft.DotNet.Build.Tasks.Feed.targets |   2 +-
+ .../src/PublishArtifactsInManifestBase.cs     |  19 +--
+ ...vOpsArtifacts.cs => PushToBuildStorage.cs} | 117 ++++++++++++++--
+ .../src/common/AzureStorageUtils.cs           | 132 ++++++++++++++++++
+ .../src/common/GeneralUtils.cs                | 132 +-----------------
+ .../Directory.Build.props                     |  10 --
+ .../lib/src/Automation/NupkgInfo.cs           |  34 ++++-
+ .../lib/src/Automation/NupkgInfoFactory.cs    |  63 ++++++++-
+ ...Microsoft.DotNet.VersionTools.Tasks.csproj |   5 +
+ .../VersionTrimmingOperationTests.cs          |   3 +-
+ .../Microsoft.DotNet.VersionTools.Cli.csproj  |   5 +
+ 23 files changed, 492 insertions(+), 251 deletions(-)
+ rename src/Microsoft.DotNet.Build.Tasks.Feed.Tests/{PushToAzureDevOpsArtifactsTests.cs => PushToBuildStorageTests.cs} (94%)
+ rename src/Microsoft.DotNet.Build.Tasks.Feed/src/{PushToAzureDevOpsArtifacts.cs => PushToBuildStorage.cs} (64%)
+ delete mode 100644 src/Microsoft.DotNet.VersionTools/Directory.Build.props
+
+diff --git a/Documentation/DependencyFlowOnboardingWithoutArcade.md b/Documentation/DependencyFlowOnboardingWithoutArcade.md
+index a45c707e..d5cd5105 100644
+--- a/Documentation/DependencyFlowOnboardingWithoutArcade.md
++++ b/Documentation/DependencyFlowOnboardingWithoutArcade.md
+@@ -4,14 +4,14 @@
+ 
+ Dependency flow is the method by which .NET repos consume other product repo's assets.  In order to participate in dependency flow, a repo must produce a [manifest](#generate-a-manifest) of what assets / packages that repo produces and then publish that manifest to the Build Asset Registry (B.A.R.).  This document is intended to provide guidance for repos which are not using the Arcade Sdk but still need to participate in dependency flow. The end goal is that the repo is able to produce a manifest and publish that to B.A.R.
+ 
+-To do so, a repo follows almost the same process as [normal arcade publishing](DependencyFlowOnboarding.md). The repo directly uses the [`PushToAzureDevOpsArtifacts`](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Build.Tasks.Feed/src/PushToAzureDevOpsArtifacts.cs) task in the [Microsoft.DotNet.Build.Tasks.Feed](https://github.com/dotnet/arcade/tree/master/src/Microsoft.DotNet.Build.Tasks.Feed) package (available from the dotnet-eng feed - `https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json`). This task uploads the artifacts to build storage and generates a manifest describing the build. The manifest is the used to publish the new build to the build asset registry (BAR).
++To do so, a repo follows almost the same process as [normal arcade publishing](DependencyFlowOnboarding.md). The repo directly uses the [`PushToBuildStorage`](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Build.Tasks.Feed/src/PushToBuildStorage.cs) task in the [Microsoft.DotNet.Build.Tasks.Feed](https://github.com/dotnet/arcade/tree/master/src/Microsoft.DotNet.Build.Tasks.Feed) package (available from the dotnet-eng feed - `https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json`). This task uploads the artifacts to build storage and generates a manifest describing the build. The manifest is the used to publish the new build to the build asset registry (BAR).
+ 
+ ## Creating a manifest
+ 
+-To create a manifest, use the PushToAzureDevOpsArtifacts, providing the feed that packages pushed to. The below target performs this task.
++To create a manifest, use the PushToBuildStorage, providing the feed that packages pushed to. The below target performs this task.
+ 
+ ```
+-<UsingTask TaskName="Microsoft.DotNet.Build.Tasks.Feed.PushToAzureDevOpsArtifacts" AssemblyFile="$(MicrosoftDotNetBuildTasksFeedFilePath)" />
++<UsingTask TaskName="Microsoft.DotNet.Build.Tasks.Feed.PushToBuildStorage" AssemblyFile="$(MicrosoftDotNetBuildTasksFeedFilePath)" />
+ 
+ <Target Name="PublishToBuildAssetRegistry">
+   <PropertyGroup>
+@@ -52,7 +52,7 @@ To create a manifest, use the PushToAzureDevOpsArtifacts, providing the feed tha
+     <ManifestBuildData Include="AzureDevOpsBranch=$(BUILD_SOURCEBRANCH)" />
+   </ItemGroup>
+ 
+-  <PushToAzureDevOpsArtifacts
++  <PushToBuildStorage
+     ItemsToPush="@(ItemsToPush)"
+     ManifestBuildData="@(ManifestBuildData)"
+     ManifestRepoUri="$(BUILD_REPOSITORY_NAME)"
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj
+index e90155f7..8314e100 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/Build.proj
+@@ -307,18 +307,27 @@
+     <!--
+       Publish artifacts. This should run in the following situations:
+       - Regular single repo builds
+-      - When running a the outer build phase of a source-only repo build, to properly publish the source-build intermediate nupkg.
++        - When running in the outer build phase of a source-only repo build, to properly publish the source-build intermediate nupkg.
++      - VMR builds
++        - When running in the inner build phase
+ 
+       It shouldn't run:
+-      - In any inner build
++      - In an inner build if running from single repo build.
+       - In an outer build if running from the full product build.
+     -->
++
++    <PropertyGroup>
++      <_VmrBuild Condition="'$(DotNetBuildFromSourceFlavor)' == 'Product' or '$(DotNetBuildOrchestrator)' == 'true'">true</_VmrBuild>
++      <_InnerRepoBuild Condition="'$(ArcadeInnerBuildFromSource)' == 'true' or '$(DotNetBuildPhase)' == 'InnerRepo'">true</_InnerRepoBuild>
++      <_ShouldRunPublish Condition="'$(_InnerRepoBuild)' == 'true' and '$(_VmrBuild)' == 'true'">true</_ShouldRunPublish>
++      <_ShouldRunPublish Condition="'$(_InnerRepoBuild)' != 'true' and '$(_VmrBuild)' != 'true'">true</_ShouldRunPublish>
++    </PropertyGroup>
++
++      <!-- Make sure we always publish in VMR build - working around runtime repo which sets Publish to false. -->
+     <MSBuild Projects="Publish.proj"
+              Properties="@(_PublishProps);_NETCORE_ENGINEERING_TELEMETRY=Publish"
+              Targets="Publish"
+-             Condition="'$(Publish)' == 'true' and
+-                        ('$(ArcadeInnerBuildFromSource)' != 'true' and  '$(DotNetBuildFromSourceFlavor)' != 'Product') and 
+-                        ('$(DotNetBuildPhase)' != 'Inner' and '$(DotNetBuildOrchestrator)' != 'true')"/>
++             Condition="'$(Publish)' == 'true' and '$(_ShouldRunPublish)' == 'true'"/>
+   </Target>
+ 
+ </Project>
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj
+index 9fa35734..dc83aac9 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj
+@@ -21,6 +21,16 @@
+   -->
+ 
+   <Import Project="BuildStep.props" />
++
++  <!--
++    In VMR inner-build copy to local storage, do not push to AzDO.
++    Inner-repo builds outside of VMR do not use arcade publishing.
++    Define this property before importing repo Publishing.props, to have it control any repo-specific publishing.
++  -->
++  <PropertyGroup Condition="'$(DotNetBuildPhase)' == 'InnerRepo' and '$(DotNetBuildOrchestrator)' == 'true'">
++    <PushToLocalStorage>true</PushToLocalStorage>
++  </PropertyGroup>
++
+   <!-- Allow for repo specific Publish properties such as add additional files to be published -->
+   <Import Project="$(RepositoryEngineeringDir)Publishing.props" Condition="Exists('$(RepositoryEngineeringDir)Publishing.props')" />
+ 
+@@ -41,9 +51,10 @@
+     
+     <!-- If `AutoGenerateSymbolPackages` is not set we default it to true. -->
+     <!-- Do not generate symbol packages if in outer source build mode, to avoid creating copies of the intermediates. -->
++    <!-- Also do not generate symbol packages if in inner source build, in product build. -->
+     <AutoGenerateSymbolPackages Condition="'$(AutoGenerateSymbolPackages)' == '' and
+-      (('$(ArcadeBuildFromSource)' != 'true' or '$(ArcadeInnerBuildFromSource)' == 'true') or 
+-       ('$(DotNetBuild)' != 'true' or '$(DotNetBuildPhase)' == 'InnerRepo'))">true</AutoGenerateSymbolPackages>
++       ('$(DotNetBuildSourceOnly)' != 'true' or
++       ('$(ArcadeInnerBuildFromSource)' == 'true' and '$(DotNetBuildFromSourceFlavor)' != 'Product'))">true</AutoGenerateSymbolPackages>
+ 
+     <AssetManifestOS Condition="'$(AssetManifestOS)' == ''">$(OS)</AssetManifestOS>
+ 
+@@ -89,6 +100,15 @@
+       <ItemsToSignPostBuild Include="@(SymbolPackagesToGenerate->'%(Filename)%(Extension)')" Condition="'$(PostBuildSign)' == 'true'" />
+     </ItemGroup>
+ 
++    <!-- Include Symbols.<repo>.tar.gz, if running in inner source-only build -->
++    <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildInnerRepo)' == 'true'">
++      <UnifiedSymbolsPackage Include="$(ArtifactsNonShippingPackagesDir)Symbols.*.tar.gz" IsShipping="false" />
++      <PackagesToPublish Include="@(UnifiedSymbolsPackage)">
++        <PublishFlatContainer>true</PublishFlatContainer>
++        <RelativeBlobPath>Symbols/%(Filename)%(Extension)</RelativeBlobPath>
++      </PackagesToPublish>
++    </ItemGroup>
++
+     <!--
+       If a symbol package doesn't exist yet we assume that the regular package contains Portable PDBs.
+       Such packages can act as symbol packages since they have the same structure.
+@@ -105,8 +125,11 @@
+       -->
+       <SymbolPackagesToGenerate Remove="$(SymbolPackagesDir)**/Microsoft.DotNet.Darc.*" />
+       <SymbolPackagesToGenerate Remove="$(SymbolPackagesDir)**/Microsoft.DotNet.Maestro.Tasks.*" />
+-      
+-      <ItemsToPushToBlobFeed Include="@(PackagesToPublish);@(ExistingSymbolPackages);@(SymbolPackagesToGenerate)">
++
++      <!-- Exclude all existing *.symbols.nupkg in source-only build - we create a unified symbols archive instead. -->
++      <ExistingSymbolPackages Remove="@(ExistingSymbolPackages)" Condition="'$(DotNetBuildSourceOnly)' == 'true'"/>
++
++      <ItemsToPushToBlobFeed Include="@(PackagesToPublish);@(ExistingSymbolPackages);@(SymbolPackagesToGenerate)" Exclude="@(ItemsToPushToBlobFeed)">
+         <ManifestArtifactData Condition="'%(IsShipping)' != 'true'">NonShipping=true</ManifestArtifactData>
+         <ManifestArtifactData Condition="'%(IsShipping)' == 'true' and '$(ProducesDotNetReleaseShippingAssets)' == 'true'">DotNetReleaseShipping=true</ManifestArtifactData>
+       </ItemsToPushToBlobFeed>
+@@ -163,7 +186,7 @@
+     <!--
+       The user can set `PublishingVersion` via eng\Publishing.props
+     -->
+-    <PushToAzureDevOpsArtifacts
++    <PushToBuildStorage
+       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
+       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
+       AzureDevOpsBuildId="$(BUILD_BUILDID)"
+@@ -181,7 +204,12 @@
+       IsStableBuild="$(IsStableBuild)"
+       PublishingVersion="$(PublishingVersion)"
+       AssetManifestPath="$(AssetManifestFilePath)" 
+-      IsReleaseOnlyPackageVersion="$(IsReleaseOnlyPackageVersion)" />
++      IsReleaseOnlyPackageVersion="$(IsReleaseOnlyPackageVersion)"
++      PushToLocalStorage="$(PushToLocalStorage)"
++      AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
++      ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"
++      NonShippingPackagesLocalStorageDir="$(SourceBuiltNonShippingPackagesDir)"
++      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)" />
+ 
+     <!-- 
+         Publish Windows PDBs produced by SymStore.targets (by default, only shipping PDBs are placed there).
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/AfterSourceBuild.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/AfterSourceBuild.proj
+index b6f7e9a8..c2ba0644 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/AfterSourceBuild.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/AfterSourceBuild.proj
+@@ -1,5 +1,5 @@
+ <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+-<Project DefaultTargets="AfterSourceBuild">
++<Project DefaultTargets="AfterSourceBuildInnerBuild;AfterSourceBuild">
+ 
+   <Import Project="..\BuildStep.props" />
+ 
+@@ -11,22 +11,23 @@
+ 
+   <Import Project="$(MicrosoftDotNetSourceBuildTasksBuildDir)Microsoft.DotNet.SourceBuild.Tasks.props" />
+ 
++  <Target Name="AfterSourceBuildInnerBuild"
++          Condition="('$(ArcadeInnerBuildFromSource)' == 'true' or '$(DotNetBuildInnerRepo)' == 'true') and
++                     '$(DotNetBuildOrchestrator)' == 'true'"
++          DependsOnTargets="CreateRepoSymbolsArchive;ClearPreviousSBRP" />
++
++  <Target Name="ClearPreviousSBRP"
++          Condition="'$(GitHubRepositoryName)' == 'source-build-reference-packages'">
++    <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,
++         clear it before publishing current SBRPs.  This ensures n-1 SBRPs aren't required to build the product repos. -->
++    <RemoveDir Directories="$(ReferencePackageNupkgCacheDir)" />
++  </Target>
++
+   <Target Name="AfterSourceBuild"
+           Condition="'$(ArcadeInnerBuildFromSource)' != 'true' and '$(DotNetBuildInnerRepo)' != 'true'"
+           DependsOnTargets="
+             ReportPrebuiltUsage;
+-            PackSourceBuildIntermediateNupkgs;
+-            GetProductSourceBuildManifest" />
+-
+-  <!--
+-    Repo build creates the manifest in SourceBuildIntermediate.proj,
+-    however AfterSourceBuild runs in both repo and product builds.
+-
+-    AfterSourceBuild should only create the manifest in product build.
+-  -->
+-  <Target Name="GetProductSourceBuildManifest"
+-          Condition="'$(DotNetBuildFromSourceFlavor)' == 'Product' or '$(DotNetBuildOrchestrator)' == 'true'"
+-          DependsOnTargets="CreateRepoManifest" />
++            PackSourceBuildIntermediateNupkgs" />
+ 
+   <Target Name="WritePrebuiltUsageData">
+     <ItemGroup>
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcade.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcade.targets
+index 1fcd705b..41817c3a 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcade.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcade.targets
+@@ -46,6 +46,7 @@
+     <CurrentRepoSourceBuildArtifactsDir>$([MSBuild]::NormalizeDirectory('$(CurrentRepoSourceBuildSourceDir)', 'artifacts'))</CurrentRepoSourceBuildArtifactsDir>
+     <CurrentRepoSourceBuildArtifactsLogsDir>$([MSBuild]::NormalizeDirectory('$(CurrentRepoSourceBuildArtifactsDir)', 'log', '$(Configuration)'))</CurrentRepoSourceBuildArtifactsLogsDir>
+     <CurrentRepoSourceBuildArtifactsPackagesDir>$([MSBuild]::NormalizeDirectory('$(CurrentRepoSourceBuildArtifactsDir)', 'packages', '$(Configuration)'))</CurrentRepoSourceBuildArtifactsPackagesDir>
++    <CurrentRepoSourceBuildArtifactsNonShippingPackagesDir>$([MSBuild]::NormalizeDirectory('$(CurrentRepoSourceBuildArtifactsPackagesDir)', 'NonShipping'))</CurrentRepoSourceBuildArtifactsNonShippingPackagesDir>
+ 
+     <CurrentRepoSourceBuildNuGetSourceName>source-build-int-nupkg-cache</CurrentRepoSourceBuildNuGetSourceName>
+     <!-- If this path is updated, also update the component detection task in eng\common\templates\steps\source-build.yml -->
+@@ -69,6 +70,7 @@
+     <_DefaultNetFrameworkFilter>netstandard2.0%3bnetstandard2.1%3bnetcoreapp2.1%3bnetcoreapp3.1%3bnet5.0%3bnet6.0%3bnet7.0%3bnet8.0%3bnet9.0</_DefaultNetFrameworkFilter>
+     <SourceBuildTargetFrameworkFilter Condition="'$(SourceBuildTargetFrameworkFilter)' == ''">$(_DefaultNetFrameworkFilter)</SourceBuildTargetFrameworkFilter>
+     <RepoManifestFile>$(ArtifactsDir)RepoManifest.xml</RepoManifestFile>
++    <CreateRepoSymbolsArchiveDependsOn Condition="'$(CreateIntermediatePackage)' == 'true'">GetCategorizedIntermediateNupkgContents</CreateRepoSymbolsArchiveDependsOn>
+   </PropertyGroup>
+ 
+   <Target Name="GetSourceBuildIntermediateNupkgNameConvention">
+@@ -159,12 +161,12 @@
+   -->
+   <Target Name="CreateRepoSymbolsArchive"
+           Condition="'$(OS)' != 'Windows_NT' and ('$(DotNetBuildFromSourceFlavor)' == 'Product' or '$(DotNetBuildOrchestrator)' == 'true' or '$(SupplementalIntermediateNupkgCategory)' == '$(SymbolsIntermediateNupkgCategory)')"
+-          DependsOnTargets="GetCategorizedIntermediateNupkgContents">
++          DependsOnTargets="$(CreateRepoSymbolsArchiveDependsOn)">
+     <PropertyGroup>
+       <SymbolsRoot>$(CurrentRepoSourceBuildArtifactsDir)</SymbolsRoot>
+       <!-- Fall back to repo root for source-build-externals or repos that don't have the regular SymbolsRoot as defined above -->
+       <SymbolsRoot Condition="!Exists('$(SymbolsRoot)') or '$(GitHubRepositoryName)' == 'source-build-externals'">$(RepoRoot)</SymbolsRoot>
+-      <SymbolsArchiveLocation>$(CurrentRepoSourceBuildArtifactsPackagesDir)</SymbolsArchiveLocation>
++      <SymbolsArchiveLocation>$(CurrentRepoSourceBuildArtifactsNonShippingPackagesDir)</SymbolsArchiveLocation>
+       <SymbolsArchiveLocation Condition="'$(GitHubRepositoryName)' == 'nuget-client' and '$(PackageOutputPath)' != ''">$([MSBuild]::EnsureTrailingSlash('$(PackageOutputPath)'))</SymbolsArchiveLocation>
+       <SymbolsList>$([MSBuild]::NormalizePath('$(SymbolsArchiveLocation)', 'symbols.lst'))</SymbolsList>
+       <SymbolsArchivePrefix>Symbols.</SymbolsArchivePrefix>
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeBuild.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeBuild.targets
+index a4343829..0c38335c 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeBuild.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeBuild.targets
+@@ -80,6 +80,9 @@
+       <InnerBuildArgs Condition="'$(DotNetPackageVersionPropsPath)' != ''">$(InnerBuildArgs) /p:DotNetPackageVersionPropsPath="$(DotNetPackageVersionPropsPath)"</InnerBuildArgs>
+ 
+       <InnerBuildArgs>$(InnerBuildArgs) /p:FullAssemblySigningSupported=$(FullAssemblySigningSupported)</InnerBuildArgs>
++
++      <!-- We need to utilize publishing to copy packages, assets and manifest to shared source-build location. -->
++      <InnerBuildArgs>$(InnerBuildArgs) /p:DotNetPublishUsingPipelines=true</InnerBuildArgs>
+     </PropertyGroup>
+ 
+     <ItemGroup>
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadePublish.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadePublish.targets
+index 2b023696..fa81a575 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadePublish.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadePublish.targets
+@@ -3,23 +3,4 @@
+ 
+   <Import Project="SourceBuildArcade.targets" />
+ 
+-  <!--
+-    If an inner source-build attempts to publish its packages, they could find their way onto a dev
+-    feed and be used unintentionally by downstream repos and devs, or the duplicate packages could
+-    break the build in a confusing way. This target should detect this and break the build in a
+-    clear way, instead.
+-
+-    If this happens, it's likely caused by incompatible build scripts vs. the source-build job
+-    template. Publish may need to be disabled in eng/DotNetBuild.props.
+-  -->
+-  <Target Name="EnsureSourceBuildInnerBuildDoesNotPublish"
+-          Condition="'$(ArcadeInnerBuildFromSource)' == 'true' or '$(DotNetBuildInnerRepo)' == 'true'"
+-          BeforeTargets="
+-            Publish;
+-            PublishSymbols;
+-            PublishToSourceBuildStorage;
+-            PublishToAzureDevOpsArtifacts">
+-    <Error Text="Detected unexpected attempt by inner source-build to publish artifacts." />
+-  </Target>
+-
+ </Project>
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeTools.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeTools.targets
+index ed8e7dfe..180b2ae6 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeTools.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/SourceBuild/SourceBuildArcadeTools.targets
+@@ -9,6 +9,7 @@
+ 
+   <ItemGroup>
+     <PackageReference Include="Microsoft.DotNet.SourceBuild.Tasks" Version="$(MicrosoftDotNetSourceBuildTasksVersion)" IsImplicitlyDefined="true" />
++    <PackageReference Condition="'$(DotNetBuildInnerRepo)' == 'true' and '$(DotNetBuildFromSourceFlavor)' == 'Product' and '$(_ImportOrUseTooling)' != 'true'" Include="Microsoft.DotNet.Build.Tasks.Feed" Version="$(MicrosoftDotNetBuildTasksFeedVersion)" IsImplicitlyDefined="true" />
+   </ItemGroup>
+ 
+   <!-- Because the condition here is rather complex, it should read as the following:
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/GeneralTests.cs b/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/GeneralTests.cs
+index c70bd1bc..35556df9 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/GeneralTests.cs
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/GeneralTests.cs
+@@ -13,6 +13,7 @@
+ using Microsoft.DotNet.Build.Tasks.Feed.Tests.TestDoubles;
+ using Xunit;
+ using static Microsoft.DotNet.Build.Tasks.Feed.GeneralUtils;
++using static Microsoft.DotNet.Build.CloudTestTasks.AzureStorageUtils;
+ 
+ namespace Microsoft.DotNet.Build.Tasks.Feed.Tests
+ {
+@@ -123,7 +124,7 @@ public void IsSymbolPackage(string package, bool isSymbolPackage)
+ 
+             var httpClient = FakeHttpClient.WithResponses(response);
+ 
+-            var result = await GeneralUtils.CompareLocalPackageToFeedPackage(
++            var result = await CompareLocalPackageToFeedPackage(
+                 localPackagePath,
+                 packageContentUrl,
+                 httpClient,
+@@ -164,7 +165,7 @@ public void IsSymbolPackage(string package, bool isSymbolPackage)
+ 
+             var httpClient = FakeHttpClient.WithResponses(responses);
+ 
+-            await GeneralUtils.CompareLocalPackageToFeedPackage(
++            await CompareLocalPackageToFeedPackage(
+                 localPackagePath,
+                 packageContentUrl,
+                 httpClient,
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/PublishArtifactsInManifestTests.cs b/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/PublishArtifactsInManifestTests.cs
+index 4ce693ff..ff65ce03 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/PublishArtifactsInManifestTests.cs
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/PublishArtifactsInManifestTests.cs
+@@ -18,6 +18,7 @@
+ using System.Threading.Tasks;
+ using Xunit;
+ using static Microsoft.DotNet.Build.Tasks.Feed.GeneralUtils;
++using static Microsoft.DotNet.Build.CloudTestTasks.AzureStorageUtils;
+ using MsBuildUtils = Microsoft.Build.Utilities;
+ 
+ namespace Microsoft.DotNet.Build.Tasks.Feed.Tests
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/PushToAzureDevOpsArtifactsTests.cs b/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/PushToBuildStorageTests.cs
+similarity index 94%
+rename from src/Microsoft.DotNet.Build.Tasks.Feed.Tests/PushToAzureDevOpsArtifactsTests.cs
+rename to src/Microsoft.DotNet.Build.Tasks.Feed.Tests/PushToBuildStorageTests.cs
+index 330c46a3..0635a612 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/PushToAzureDevOpsArtifactsTests.cs
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed.Tests/PushToBuildStorageTests.cs
+@@ -12,7 +12,6 @@
+ using Microsoft.Extensions.DependencyInjection;
+ using Microsoft.Extensions.DependencyInjection.Extensions;
+ using Moq;
+-using NuGet.Packaging.Core;
+ using NuGet.Versioning;
+ using System.Collections.Generic;
+ using System.IO;
+@@ -21,7 +20,7 @@
+ 
+ namespace Microsoft.DotNet.Build.Tasks.Feed.Tests
+ {
+-    public class PushToAzureDevOpsArtifactsTests
++    public class PushToBuildStorageTests
+     {
+         private static string TARGET_MANIFEST_PATH = Path.Combine("C:", "manifests", "TestManifest.xml");
+         private static string PACKAGE_A = Path.Combine("C:", "packages", "test-package-a.6.0.492.nupkg");
+@@ -52,9 +51,9 @@ public class PushToAzureDevOpsArtifactsTests
+             }),
+         };
+ 
+-        private PushToAzureDevOpsArtifacts ConstructPushToAzureDevOpsArtifactsTask(bool setAdditionalData = true)
++        private PushToBuildStorage ConstructPushToBuildStorageTask(bool setAdditionalData = true)
+         {
+-            var task = new PushToAzureDevOpsArtifacts
++            var task = new PushToBuildStorage
+             {
+                 BuildEngine = new MockBuildEngine(),
+                 AssetManifestPath = TARGET_MANIFEST_PATH,                
+@@ -200,7 +199,7 @@ private void CreateMockServiceCollection(IServiceCollection collection)
+         public void HasRecordedPublishingVersion()
+         {
+             var expectedManifestContent = BuildExpectedManifestContent();
+-            var task = ConstructPushToAzureDevOpsArtifactsTask(setAdditionalData: false);
++            var task = ConstructPushToBuildStorageTask(setAdditionalData: false);
+             task.ItemsToPush = new TaskItem[0];
+             task.IsStableBuild = false;
+ 
+@@ -230,7 +229,7 @@ public void UsesCustomPublishingVersion()
+             var publishingInfraVersion = "456";
+             var expectedManifestContent = BuildExpectedManifestContent(
+                 publishingInfraVersion: publishingInfraVersion);
+-            var task = ConstructPushToAzureDevOpsArtifactsTask(setAdditionalData: false);
++            var task = ConstructPushToBuildStorageTask(setAdditionalData: false);
+             task.ItemsToPush = new TaskItem[0];
+             task.IsStableBuild = false;
+             task.PublishingVersion = publishingInfraVersion;
+@@ -265,7 +264,7 @@ public void ProducesBasicManifest()
+                 isStable: true,
+                 includePackages: true);
+ 
+-            PushToAzureDevOpsArtifacts task = ConstructPushToAzureDevOpsArtifactsTask();
++            PushToBuildStorage task = ConstructPushToBuildStorageTask();
+ 
+             // Mocks
+             Mock<IFileSystem> fileSystemMock = new Mock<IFileSystem>();
+@@ -279,11 +278,11 @@ public void ProducesBasicManifest()
+             IList<string> actualNupkgInfoPath = new List<string>();
+             nupkgInfoFactoryMock.Setup(m => m.CreateNupkgInfo(PACKAGE_A)).Returns(new NupkgInfo(new PackageIdentity(
+                 id: Path.GetFileNameWithoutExtension(PACKAGE_A),
+-                version: new NuGetVersion(NUPKG_VERSION)
++                version: NUPKG_VERSION
+             )));
+             nupkgInfoFactoryMock.Setup(m => m.CreateNupkgInfo(PACKAGE_B)).Returns(new NupkgInfo(new PackageIdentity(
+                 id: Path.GetFileNameWithoutExtension(PACKAGE_B),
+-                version: new NuGetVersion(NUPKG_VERSION)
++                version: NUPKG_VERSION
+             )));
+ 
+             // Dependency Injection setup
+@@ -306,7 +305,7 @@ public void ProducesBasicManifest()
+         [Fact]
+         public void PublishFlatContainerManifest()
+         {
+-            PushToAzureDevOpsArtifacts task = ConstructPushToAzureDevOpsArtifactsTask();
++            PushToBuildStorage task = ConstructPushToBuildStorageTask();
+             task.PublishFlatContainer = true;
+ 
+             string expectedManifestContent = BuildExpectedManifestContent(
+@@ -328,11 +327,11 @@ public void PublishFlatContainerManifest()
+             IList<string> actualNupkgInfoPath = new List<string>();
+             nupkgInfoFactoryMock.Setup(m => m.CreateNupkgInfo(PACKAGE_A)).Returns(new NupkgInfo(new PackageIdentity(
+                 id: Path.GetFileNameWithoutExtension(PACKAGE_A),
+-                version: new NuGetVersion(NUPKG_VERSION)
++                version: NUPKG_VERSION
+             )));
+             nupkgInfoFactoryMock.Setup(m => m.CreateNupkgInfo(PACKAGE_B)).Returns(new NupkgInfo(new PackageIdentity(
+                 id: Path.GetFileNameWithoutExtension(PACKAGE_B),
+-                version: new NuGetVersion(NUPKG_VERSION)
++                version: NUPKG_VERSION
+             )));
+ 
+             // Dependency Injection setup
+@@ -355,7 +354,7 @@ public void PublishFlatContainerManifest()
+         [Fact]
+         public void IsNotStableBuildPath()
+         {
+-            PushToAzureDevOpsArtifacts task = ConstructPushToAzureDevOpsArtifactsTask();
++            PushToBuildStorage task = ConstructPushToBuildStorageTask();
+             task.IsStableBuild = false;
+ 
+             string expectedManifestContent = BuildExpectedManifestContent(
+@@ -375,11 +374,11 @@ public void IsNotStableBuildPath()
+             Mock<INupkgInfoFactory> nupkgInfoFactoryMock = new Mock<INupkgInfoFactory>();
+             nupkgInfoFactoryMock.Setup(m => m.CreateNupkgInfo(PACKAGE_A)).Returns(new NupkgInfo(new PackageIdentity(
+                 id: Path.GetFileNameWithoutExtension(PACKAGE_A),
+-                version: new NuGetVersion(NUPKG_VERSION)
++                version: NUPKG_VERSION
+             )));
+             nupkgInfoFactoryMock.Setup(m => m.CreateNupkgInfo(PACKAGE_B)).Returns(new NupkgInfo(new PackageIdentity(
+                 id: Path.GetFileNameWithoutExtension(PACKAGE_B),
+-                version: new NuGetVersion(NUPKG_VERSION)
++                version: NUPKG_VERSION
+             )));
+ 
+             // Dependency Injection setup
+@@ -402,7 +401,7 @@ public void IsNotStableBuildPath()
+         [Fact]
+         public void IsReleaseOnlyPackageVersionPath()
+         {
+-            PushToAzureDevOpsArtifacts task = ConstructPushToAzureDevOpsArtifactsTask();
++            PushToBuildStorage task = ConstructPushToBuildStorageTask();
+             task.IsReleaseOnlyPackageVersion = true;
+ 
+             string expectedManifestContent = BuildExpectedManifestContent(
+@@ -425,11 +424,11 @@ public void IsReleaseOnlyPackageVersionPath()
+             IList<string> actualNupkgInfoPath = new List<string>();
+             nupkgInfoFactoryMock.Setup(m => m.CreateNupkgInfo(PACKAGE_A)).Returns(new NupkgInfo(new PackageIdentity(
+                 id: Path.GetFileNameWithoutExtension(PACKAGE_A),
+-                version: new NuGetVersion(NUPKG_VERSION)
++                version: NUPKG_VERSION
+             )));
+             nupkgInfoFactoryMock.Setup(m => m.CreateNupkgInfo(PACKAGE_B)).Returns(new NupkgInfo(new PackageIdentity(
+                 id: Path.GetFileNameWithoutExtension(PACKAGE_B),
+-                version: new NuGetVersion(NUPKG_VERSION)
++                version: NUPKG_VERSION
+             )));
+ 
+             // Dependency Injection setup
+@@ -453,7 +452,7 @@ public void IsReleaseOnlyPackageVersionPath()
+         [Fact]
+         public void SigningInfoInManifest()
+         {
+-            PushToAzureDevOpsArtifacts task = ConstructPushToAzureDevOpsArtifactsTask();
++            PushToBuildStorage task = ConstructPushToBuildStorageTask();
+             task.FileExtensionSignInfo = new ITaskItem[]
+             {
+                 new TaskItem(".dll", new Dictionary<string, string>
+@@ -529,11 +528,11 @@ public void SigningInfoInManifest()
+             IList<string> actualNupkgInfoPath = new List<string>();
+             nupkgInfoFactoryMock.Setup(m => m.CreateNupkgInfo(PACKAGE_A)).Returns(new NupkgInfo(new PackageIdentity(
+                 id: "test-package-a",
+-                version: new NuGetVersion(NUPKG_VERSION)
++                version: NUPKG_VERSION
+             )));
+             nupkgInfoFactoryMock.Setup(m => m.CreateNupkgInfo(PACKAGE_B)).Returns(new NupkgInfo(new PackageIdentity(
+                 id: "test-package-b",
+-                version: new NuGetVersion(NUPKG_VERSION)
++                version: NUPKG_VERSION
+             )));
+ 
+             // Dependency Injection setup
+@@ -557,7 +556,7 @@ public void SigningInfoInManifest()
+         [Fact]
+         public void AreDependenciesRegistered()
+         {
+-            PushToAzureDevOpsArtifacts task = new PushToAzureDevOpsArtifacts();
++            PushToBuildStorage task = new PushToBuildStorage();
+ 
+             var collection = new ServiceCollection();
+             task.ConfigureServices(collection);
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed/Microsoft.DotNet.Build.Tasks.Feed.csproj b/src/Microsoft.DotNet.Build.Tasks.Feed/Microsoft.DotNet.Build.Tasks.Feed.csproj
+index 383e5bbe..a730b287 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed/Microsoft.DotNet.Build.Tasks.Feed.csproj
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed/Microsoft.DotNet.Build.Tasks.Feed.csproj
+@@ -7,16 +7,19 @@
+     <DevelopmentDependency>true</DevelopmentDependency>
+     <IsBuildTaskProject>true</IsBuildTaskProject>
+     <PackageType>MSBuildSdk</PackageType>
+-    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
++  </PropertyGroup>
++
++  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
++    <DefineConstants>$(DefineConstants);DOTNET_BUILD_SOURCE_ONLY</DefineConstants>
+   </PropertyGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="Azure.Core" />
+-    <PackageReference Include="Azure.Storage.Blobs" />
++    <PackageReference Include="Azure.Core" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
++    <PackageReference Include="Azure.Storage.Blobs" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+     <PackageReference Include="Microsoft.Build.Tasks.Core" />
+ 
+     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+-    <PackageReference Include="Microsoft.SymbolUploader" />
++    <PackageReference Include="Microsoft.SymbolUploader" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+   </ItemGroup>
+ 
+   <!-- Upgrade SymbolUploader's transitive NETStandard.Library dependency to avoid .NET Standard 1.x dependencies. -->
+@@ -25,10 +28,11 @@
+                       IsImplicitlyDefined="false"
+                       PrivateAssets="all"
+                       ExcludeAssets="runtime"
+-                      VersionOverride="2.0.3" />
++                      VersionOverride="2.0.3"
++                      Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+   </ItemGroup>
+ 
+-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(DotNetBuildSourceOnly)' != 'true'">
+     <!-- Maestro.Client stopped supporting .NET 4.7.2 long ago.
+          This functionality should eventually be moved into an arcade-services package,
+          but for users consuming other functionality we'll still support 4.7.2 by ifdefing it out. -->
+@@ -41,7 +45,7 @@
+ 
+   <ItemGroup>
+     <ProjectReference Include="..\Common\Microsoft.Arcade.Common\Microsoft.Arcade.Common.csproj" />
+-    <ProjectReference Include="..\Microsoft.DotNet.Deployment.Tasks.Links\Microsoft.DotNet.Deployment.Tasks.Links.csproj" />
++    <ProjectReference Include="..\Microsoft.DotNet.Deployment.Tasks.Links\Microsoft.DotNet.Deployment.Tasks.Links.csproj" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+     <ProjectReference Include="..\Microsoft.DotNet.VersionTools\lib\Microsoft.DotNet.VersionTools.csproj" />
+   </ItemGroup>
+ 
+@@ -49,4 +53,35 @@
+     <Compile Include="..\Common\Internal\EnumExtensions.cs" />
+   </ItemGroup>
+ 
++  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
++    <Compile Remove="src\AssetPublisherFactory.cs" />
++    <Compile Remove="src\AzureDevOpsArtifactFeed.cs" />
++    <Compile Remove="src\AzureDevOpsFeedPermission.cs" />
++    <Compile Remove="src\AzureDevOpsNugetFeedAssetPublisher.cs" />
++    <Compile Remove="src\AzureStorageAssetPublisher.cs" />
++    <Compile Remove="src\AzureStorageContainerAssetPublisher.cs" />
++    <Compile Remove="src\AzureStorageExtensions.cs" />
++    <Compile Remove="src\BlobFeedAction.cs" />
++    <Compile Remove="src\common\AssetComparer.cs" />
++    <Compile Remove="src\common\AzureConnectionStringBuildTask.cs" />
++    <Compile Remove="src\common\AzureStorageUtils.cs" />
++    <Compile Remove="src\common\CreateAzureContainer.cs" />
++    <Compile Remove="src\common\CreateAzureContainerIfNotExists.cs" />
++    <Compile Remove="src\common\CreateNewAzureContainer.cs" />
++    <Compile Remove="src\common\LatestLinksManager.cs" />
++    <Compile Remove="src\common\UploadToAzure.cs" />
++    <Compile Remove="src\model\PublishingConstants.cs" />
++    <Compile Remove="src\model\SetupTargetFeedConfigBase.cs" />
++    <Compile Remove="src\model\SetupTargetFeedConfigV3.cs" />
++    <Compile Remove="src\model\TargetChannelConfig.cs" />
++    <Compile Remove="src\model\TargetFeedConfig.cs" />
++    <Compile Remove="src\PublishArtifactsInManifest.cs" />
++    <Compile Remove="src\PublishArtifactsInManifestBase.cs" />
++    <Compile Remove="src\PublishArtifactsInManifestV3.cs" />
++    <Compile Remove="src\PublishSignedAssets.cs" />
++    <Compile Remove="src\PublishSymbolsHelper.cs" />
++    <Compile Remove="src\IAssetPublisher.cs" />
++    <Compile Remove="src\CreateAzureDevOpsFeed.cs" />
++  </ItemGroup>
++
+ </Project>
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed/build/Microsoft.DotNet.Build.Tasks.Feed.targets b/src/Microsoft.DotNet.Build.Tasks.Feed/build/Microsoft.DotNet.Build.Tasks.Feed.targets
+index 7110f878..c58f5a4d 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed/build/Microsoft.DotNet.Build.Tasks.Feed.targets
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed/build/Microsoft.DotNet.Build.Tasks.Feed.targets
+@@ -47,7 +47,7 @@
+     <_MicrosoftDotNetBuildTasksFeedTaskDir Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)../tools/net9.0/</_MicrosoftDotNetBuildTasksFeedTaskDir>
+   </PropertyGroup>
+ 
+-  <UsingTask TaskName="PushToAzureDevOpsArtifacts" AssemblyFile="$(_MicrosoftDotNetBuildTasksFeedTaskDir)Microsoft.DotNet.Build.Tasks.Feed.dll"/>
++  <UsingTask TaskName="PushToBuildStorage" AssemblyFile="$(_MicrosoftDotNetBuildTasksFeedTaskDir)Microsoft.DotNet.Build.Tasks.Feed.dll"/>
+   <UsingTask TaskName="PublishArtifactsInManifest" AssemblyFile="$(_MicrosoftDotNetBuildTasksFeedTaskDir)Microsoft.DotNet.Build.Tasks.Feed.dll"/>
+   <UsingTask TaskName="CreateAzureDevOpsFeed" AssemblyFile="$(_MicrosoftDotNetBuildTasksFeedTaskDir)Microsoft.DotNet.Build.Tasks.Feed.dll" />
+   <UsingTask TaskName="PublishSignedAssets" AssemblyFile="$(_MicrosoftDotNetBuildTasksFeedTaskDir)Microsoft.DotNet.Build.Tasks.Feed.dll" />
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed/src/PublishArtifactsInManifestBase.cs b/src/Microsoft.DotNet.Build.Tasks.Feed/src/PublishArtifactsInManifestBase.cs
+index ccd417c0..1de07e42 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed/src/PublishArtifactsInManifestBase.cs
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed/src/PublishArtifactsInManifestBase.cs
+@@ -29,6 +29,7 @@
+ using Newtonsoft.Json;
+ using NuGet.Versioning;
+ using static Microsoft.DotNet.Build.Tasks.Feed.GeneralUtils;
++using static Microsoft.DotNet.Build.CloudTestTasks.AzureStorageUtils;
+ using MsBuildUtils = Microsoft.Build.Utilities;
+ 
+ namespace Microsoft.DotNet.Build.Tasks.Feed
+@@ -1376,10 +1377,10 @@ public void SplitArtifactsInCategories(BuildModel buildModel)
+             )
+         {
+             // Using these callbacks we can mock up functionality when testing.
+-            CompareLocalPackageToFeedPackageCallBack ??= GeneralUtils.CompareLocalPackageToFeedPackage;
++            CompareLocalPackageToFeedPackageCallBack ??= CompareLocalPackageToFeedPackage;
+             RunProcessAndGetOutputsCallBack ??= GeneralUtils.RunProcessAndGetOutputsAsync;
+             ProcessExecutionResult nugetResult = null;
+-            var packageStatus = GeneralUtils.PackageFeedStatus.Unknown;
++            var packageStatus = PackageFeedStatus.Unknown;
+ 
+             try
+             {
+@@ -1395,7 +1396,7 @@ public void SplitArtifactsInCategories(BuildModel buildModel)
+                     if (nugetResult.ExitCode == 0)
+                     {
+                         // We have just pushed this package so we know it exists and is identical to our local copy
+-                        packageStatus = GeneralUtils.PackageFeedStatus.ExistsAndIdenticalToLocal;
++                        packageStatus = PackageFeedStatus.ExistsAndIdenticalToLocal;
+                         break;
+                     }
+ 
+@@ -1406,12 +1407,12 @@ public void SplitArtifactsInCategories(BuildModel buildModel)
+ 
+                     switch (packageStatus)
+                     {
+-                        case GeneralUtils.PackageFeedStatus.ExistsAndIdenticalToLocal:
++                        case PackageFeedStatus.ExistsAndIdenticalToLocal:
+                             {
+                                 Log.LogMessage(MessageImportance.Normal, $"Package '{localPackageLocation}' already exists on '{feedConfig.TargetURL}' but has the same content; skipping push");
+                                 break;
+                             }
+-                        case GeneralUtils.PackageFeedStatus.ExistsAndDifferent:
++                        case PackageFeedStatus.ExistsAndDifferent:
+                             {
+                                 Log.LogError($"Package '{localPackageLocation}' already exists on '{feedConfig.TargetURL}' with different content.");
+                                 break;
+@@ -1425,11 +1426,11 @@ public void SplitArtifactsInCategories(BuildModel buildModel)
+                             }
+                     }
+                 }
+-                while (packageStatus != GeneralUtils.PackageFeedStatus.ExistsAndIdenticalToLocal && // Success
+-                       packageStatus != GeneralUtils.PackageFeedStatus.ExistsAndDifferent &&        // Give up: Non-retriable error
++                while (packageStatus != PackageFeedStatus.ExistsAndIdenticalToLocal && // Success
++                       packageStatus != PackageFeedStatus.ExistsAndDifferent &&        // Give up: Non-retriable error
+                        attemptIndex <= MaxRetryCount);                                              // Give up: Too many retries
+ 
+-                if (packageStatus != GeneralUtils.PackageFeedStatus.ExistsAndIdenticalToLocal)
++                if (packageStatus != PackageFeedStatus.ExistsAndIdenticalToLocal)
+                 {
+                     Log.LogError($"Failed to publish package '{id}@{version}' to '{feedConfig.TargetURL}' after {MaxRetryCount} attempts. (Final status: {packageStatus})");
+                 }
+@@ -1443,7 +1444,7 @@ public void SplitArtifactsInCategories(BuildModel buildModel)
+                 Log.LogError($"Unexpected exception pushing package '{id}@{version}': {e.Message}");
+             }
+ 
+-            if (packageStatus != GeneralUtils.PackageFeedStatus.ExistsAndIdenticalToLocal && nugetResult?.ExitCode != 0)
++            if (packageStatus != PackageFeedStatus.ExistsAndIdenticalToLocal && nugetResult?.ExitCode != 0)
+             {
+                 Log.LogError($"Output from nuget.exe: {Environment.NewLine}StdOut:{Environment.NewLine}{nugetResult.StandardOut}{Environment.NewLine}StdErr:{Environment.NewLine}{nugetResult.StandardError}");
+             }
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed/src/PushToAzureDevOpsArtifacts.cs b/src/Microsoft.DotNet.Build.Tasks.Feed/src/PushToBuildStorage.cs
+similarity index 64%
+rename from src/Microsoft.DotNet.Build.Tasks.Feed/src/PushToAzureDevOpsArtifacts.cs
+rename to src/Microsoft.DotNet.Build.Tasks.Feed/src/PushToBuildStorage.cs
+index 2c1825c2..05c853c7 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed/src/PushToAzureDevOpsArtifacts.cs
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed/src/PushToBuildStorage.cs
+@@ -3,6 +3,7 @@
+ 
+ using Microsoft.Arcade.Common;
+ using Microsoft.Build.Framework;
++using Microsoft.Build.Utilities;
+ using Microsoft.DotNet.VersionTools.Automation;
+ using Microsoft.DotNet.VersionTools.BuildManifest.Model;
+ using Microsoft.Extensions.DependencyInjection;
+@@ -14,7 +15,7 @@
+ 
+ namespace Microsoft.DotNet.Build.Tasks.Feed
+ {
+-    public class PushToAzureDevOpsArtifacts : MSBuildTaskBase
++    public class PushToBuildStorage : MSBuildTaskBase
+     {
+         [Required]
+         public ITaskItem[] ItemsToPush { get; set; }
+@@ -57,12 +58,29 @@ public class PushToAzureDevOpsArtifacts : MSBuildTaskBase
+ 
+         public bool IsReleaseOnlyPackageVersion { get; set; }
+ 
++        public string AssetsLocalStorageDir { get; set; }
++
++        public string ShippingPackagesLocalStorageDir { get; set; }
++
++        public string NonShippingPackagesLocalStorageDir { get; set; }
++
++        public string AssetManifestsLocalStorageDir { get; set; }
++
++        public bool PushToLocalStorage { get; set; }
++
+         /// <summary>
+         /// Which version should the build manifest be tagged with.
+         /// By default he latest version is used.
+         /// </summary>
+         public string PublishingVersion { get; set; }
+ 
++        public enum ItemType
++        {
++            AssetManifest = 0,
++            PackageArtifact,
++            BlobArtifact
++        }
++
+         public override void ConfigureServices(IServiceCollection collection)
+         {
+             collection.TryAddSingleton<ISigningInformationModelFactory, SigningInformationModelFactory>();
+@@ -83,7 +101,22 @@ public override void ConfigureServices(IServiceCollection collection)
+         {
+             try
+             {
+-                Log.LogMessage(MessageImportance.High, "Performing push to Azure DevOps artifacts storage.");
++                if (PushToLocalStorage)
++                {
++                    if (string.IsNullOrEmpty(AssetsLocalStorageDir) ||
++                        string.IsNullOrEmpty(ShippingPackagesLocalStorageDir) ||
++                        string.IsNullOrEmpty(NonShippingPackagesLocalStorageDir) ||
++                        string.IsNullOrEmpty(AssetManifestsLocalStorageDir))
++                    {
++                        throw new Exception($"AssetsLocalStorageDir, ShippingPackagesLocalStorageDir, NonShippingPackagesLocalStorageDir and AssetManifestsLocalStorageDir need to be specified if PublishToLocalStorage is set to true");
++                    }
++
++                    Log.LogMessage(MessageImportance.High, "Performing push to local artifacts storage.");
++                }
++                else
++                {
++                    Log.LogMessage(MessageImportance.High, "Performing push to Azure DevOps artifacts storage.");
++                }
+ 
+                 if (!string.IsNullOrWhiteSpace(AssetsTemporaryDirectory))
+                 {
+@@ -116,8 +149,7 @@ public override void ConfigureServices(IServiceCollection collection)
+                                 continue;
+                             }
+ 
+-                            Log.LogMessage(MessageImportance.High,
+-                                $"##vso[artifact.upload containerfolder=BlobArtifacts;artifactname=BlobArtifacts]{blobItem.ItemSpec}");
++                            PushToLocalStorageOrAzDO(ItemType.BlobArtifact, blobItem);
+                         }
+                     }
+                     else
+@@ -159,8 +191,7 @@ public override void ConfigureServices(IServiceCollection collection)
+                                 continue;
+                             }
+ 
+-                            Log.LogMessage(MessageImportance.High,
+-                                $"##vso[artifact.upload containerfolder=PackageArtifacts;artifactname=PackageArtifacts]{packagePath.ItemSpec}");
++                            PushToLocalStorageOrAzDO(ItemType.PackageArtifact, packagePath);
+                         }
+ 
+                         foreach (var blobItem in blobItems)
+@@ -171,8 +202,7 @@ public override void ConfigureServices(IServiceCollection collection)
+                                 continue;
+                             }
+ 
+-                            Log.LogMessage(MessageImportance.High,
+-                                $"##vso[artifact.upload containerfolder=BlobArtifacts;artifactname=BlobArtifacts]{blobItem.ItemSpec}");
++                            PushToLocalStorageOrAzDO(ItemType.BlobArtifact, blobItem);
+                         }
+ 
+                         packageArtifacts = packageItems.Select(packageArtifactModelFactory.CreatePackageArtifactModel);
+@@ -206,8 +236,7 @@ public override void ConfigureServices(IServiceCollection collection)
+                         IsReleaseOnlyPackageVersion,
+                         signingInformationModel: signingInformationModel);
+ 
+-                    Log.LogMessage(MessageImportance.High,
+-                        $"##vso[artifact.upload containerfolder=AssetManifests;artifactname=AssetManifests]{AssetManifestPath}");
++                    PushToLocalStorageOrAzDO(ItemType.AssetManifest, new TaskItem(AssetManifestPath));
+                 }
+             }
+             catch (Exception e)
+@@ -217,5 +246,73 @@ public override void ConfigureServices(IServiceCollection collection)
+ 
+             return !Log.HasLoggedErrors;
+         }
++
++        private void PushToLocalStorageOrAzDO(ItemType itemType, ITaskItem item)
++        {
++            string path = item.ItemSpec;
++
++            if (PushToLocalStorage)
++            {
++                string filename = Path.GetFileName(path);
++                switch (itemType)
++                {
++                    case ItemType.AssetManifest:
++                        Directory.CreateDirectory(AssetManifestsLocalStorageDir);
++                        File.Copy(path, Path.Combine(AssetManifestsLocalStorageDir, filename), true);
++                        break;
++
++                    case ItemType.PackageArtifact:
++                        if (string.Equals(item.GetMetadata("IsShipping"), "true", StringComparison.OrdinalIgnoreCase))
++                        {
++                            Directory.CreateDirectory(ShippingPackagesLocalStorageDir);
++                            File.Copy(path, Path.Combine(ShippingPackagesLocalStorageDir, filename), true);
++                        }
++                        else
++                        {
++                            Directory.CreateDirectory(NonShippingPackagesLocalStorageDir);
++                            File.Copy(path, Path.Combine(NonShippingPackagesLocalStorageDir, filename), true);
++                        }
++                        break;
++
++                    case ItemType.BlobArtifact:
++                        string relativeBlobPath = item.GetMetadata("RelativeBlobPath");
++                        string destinationPath = Path.Combine(
++                                                    AssetsLocalStorageDir,
++                                                    string.IsNullOrEmpty(relativeBlobPath) ? filename : relativeBlobPath);
++
++                        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath));
++                        File.Copy(path, destinationPath, true);
++                        break;
++
++                    default:
++                        throw new ArgumentOutOfRangeException(nameof(itemType));
++                }
++            }
++            else
++            {
++                // Push to AzDO artifacts storage
++
++                switch (itemType)
++                {
++                    case ItemType.AssetManifest:
++                        Log.LogMessage(MessageImportance.High,
++                            $"##vso[artifact.upload containerfolder=AssetManifests;artifactname=AssetManifests]{path}");
++                        break;
++
++                    case ItemType.PackageArtifact:
++                        Log.LogMessage(MessageImportance.High,
++                            $"##vso[artifact.upload containerfolder=PackageArtifacts;artifactname=PackageArtifacts]{path}");
++                        break;
++
++                    case ItemType.BlobArtifact:
++                        Log.LogMessage(MessageImportance.High,
++                            $"##vso[artifact.upload containerfolder=BlobArtifacts;artifactname=BlobArtifacts]{path}");
++                        break;
++
++                    default:
++                        throw new ArgumentOutOfRangeException(nameof(itemType));
++                }
++            }
++        }
+     }
+ }
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/AzureStorageUtils.cs b/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/AzureStorageUtils.cs
+index b126fa4c..c805c6b4 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/AzureStorageUtils.cs
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/AzureStorageUtils.cs
+@@ -8,6 +8,8 @@
+ using Azure.Storage.Blobs.Specialized;
+ using Azure.Storage.Sas;
+ using Microsoft.Arcade.Common;
++using Microsoft.Build.Framework;
++using MsBuildUtils = Microsoft.Build.Utilities;
+ using System;
+ using System.Collections.Generic;
+ using System.IO;
+@@ -33,6 +35,17 @@ public class AzureStorageUtils
+             {".svg", "no-cache"}
+         };
+ 
++        /// <summary>
++        ///  Enum describing the states of a given package on a feed
++        /// </summary>
++        public enum PackageFeedStatus
++        {
++            DoesNotExist,
++            ExistsAndIdenticalToLocal,
++            ExistsAndDifferent,
++            Unknown
++        }
++
+         // Save the credential so we can sign SAS tokens
+         private readonly StorageSharedKeyCredential _credential;
+ 
+@@ -168,5 +181,124 @@ public static BlobHttpHeaders GetBlobHeadersByExtension(string filePath)
+ 
+             return headers;
+         }
++
++        /// <summary>
++        ///     Determine whether a local package is the same as a package on an AzDO feed.
++        /// </summary>
++        /// <param name="localPackageFullPath"></param>
++        /// <param name="packageContentUrl"></param>
++        /// <param name="client"></param>
++        /// <param name="log"></param>
++        /// <returns></returns>
++        /// <remarks>
++        ///     Open a stream to the local file and an http request to the package. There are a couple possibilities:
++        ///     - The returned headers include a content MD5 header, in which case we can
++        ///       hash the local file and just compare those.
++        ///     - No content MD5 hash, and the streams must be compared in blocks. This is a bit trickier to do efficiently,
++        ///       since we do not necessarily want to read all bytes if we can help it. Thus, we should compare in blocks.  However,
++        ///       the streams make no guarantee that they will return a full block each time when read operations are performed, so we
++        ///       must be sure to only compare the minimum number of bytes returned.
++        /// </remarks>
++        public static async Task<PackageFeedStatus> CompareLocalPackageToFeedPackage(
++            string localPackageFullPath,
++            string packageContentUrl,
++            HttpClient client,
++            MsBuildUtils.TaskLoggingHelper log)
++        {
++            return await CompareLocalPackageToFeedPackage(
++                localPackageFullPath,
++                packageContentUrl,
++                client,
++                log,
++                GeneralUtils.CreateDefaultRetryHandler());
++        }
++
++        /// <summary>
++        ///     Determine whether a local package is the same as a package on an AzDO feed.
++        /// </summary>
++        /// <param name="localPackageFullPath"></param>
++        /// <param name="packageContentUrl"></param>
++        /// <param name="client"></param>
++        /// <param name="log"></param>
++        /// <param name="retryHandler"></param>
++        /// <returns></returns>
++        /// <remarks>
++        ///     Open a stream to the local file and an http request to the package. There are a couple possibilities:
++        ///     - The returned headers include a content MD5 header, in which case we can
++        ///       hash the local file and just compare those.
++        ///     - No content MD5 hash, and the streams must be compared in blocks. This is a bit trickier to do efficiently,
++        ///       since we do not necessarily want to read all bytes if we can help it. Thus, we should compare in blocks.  However,
++        ///       the streams make no guarantee that they will return a full block each time when read operations are performed, so we
++        ///       must be sure to only compare the minimum number of bytes returned.
++        /// </remarks>
++        public static async Task<PackageFeedStatus> CompareLocalPackageToFeedPackage(
++            string localPackageFullPath,
++            string packageContentUrl,
++            HttpClient client,
++            MsBuildUtils.TaskLoggingHelper log,
++            IRetryHandler retryHandler)
++        {
++            log.LogMessage($"Getting package content from {packageContentUrl} and comparing to {localPackageFullPath}");
++
++            PackageFeedStatus result = PackageFeedStatus.Unknown;
++
++            bool success = await retryHandler.RunAsync(async attempt =>
++            {
++                try
++                {
++                    using (Stream localFileStream = File.OpenRead(localPackageFullPath))
++                    using (HttpResponseMessage response = await client.GetAsync(packageContentUrl))
++                    {
++                        response.EnsureSuccessStatusCode();
++
++                        // Check the headers for content length and md5 
++                        bool md5HeaderAvailable = response.Headers.TryGetValues("Content-MD5", out var md5);
++                        bool lengthHeaderAvailable = response.Headers.TryGetValues("Content-Length", out var contentLength);
++
++                        if (lengthHeaderAvailable && long.Parse(contentLength.Single()) != localFileStream.Length)
++                        {
++                            log.LogMessage(MessageImportance.Low, $"Package '{localPackageFullPath}' has different length than remote package '{packageContentUrl}'.");
++                            result = PackageFeedStatus.ExistsAndDifferent;
++                            return true;
++                        }
++
++                        if (md5HeaderAvailable)
++                        {
++                            var localMD5 = AzureStorageUtils.CalculateMD5(localPackageFullPath);
++                            if (!localMD5.Equals(md5.Single(), StringComparison.OrdinalIgnoreCase))
++                            {
++                                log.LogMessage(MessageImportance.Low, $"Package '{localPackageFullPath}' has different MD5 hash than remote package '{packageContentUrl}'.");
++                            }
++
++                            result = PackageFeedStatus.ExistsAndDifferent;
++                            return true;
++                        }
++
++                        const int BufferSize = 64 * 1024;
++
++                        // Otherwise, compare the streams
++                        var remoteStream = await response.Content.ReadAsStreamAsync();
++                        var streamsMatch = await GeneralUtils.CompareStreamsAsync(localFileStream, remoteStream, BufferSize);
++                        result = streamsMatch ? PackageFeedStatus.ExistsAndIdenticalToLocal : PackageFeedStatus.ExistsAndDifferent;
++                        return true;
++                    }
++                }
++                // String based comparison because the status code isn't exposed in HttpRequestException
++                // see here: https://github.com/dotnet/runtime/issues/23648
++                catch (Exception e) when (e is HttpRequestException || e is TaskCanceledException)
++                {
++                    if (e.Message.Contains("404 (Not Found)"))
++                    {
++                        result = PackageFeedStatus.DoesNotExist;
++                        return true;
++                    }
++
++                    // Retry this. Could be an http client timeout, 500, etc.
++                    return false;
++                }
++            });
++
++            return result;
++        }
+     }
+ }
+diff --git a/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/GeneralUtils.cs b/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/GeneralUtils.cs
+index ab8b35f7..a361aa45 100644
+--- a/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/GeneralUtils.cs
++++ b/src/Microsoft.DotNet.Build.Tasks.Feed/src/common/GeneralUtils.cs
+@@ -4,7 +4,9 @@
+ using Microsoft.Arcade.Common;
+ using Microsoft.Build.Framework;
+ using Microsoft.Build.Utilities;
++#if !DOTNET_BUILD_SOURCE_ONLY
+ using Microsoft.DotNet.Build.CloudTestTasks;
++#endif
+ using System;
+ using System.Collections.Generic;
+ using System.Diagnostics;
+@@ -31,17 +33,6 @@ public static ExponentialRetry CreateDefaultRetryHandler()
+                 MaxAttempts = 5
+             };
+ 
+-        /// <summary>
+-        ///  Enum describing the states of a given package on a feed
+-        /// </summary>
+-        public enum PackageFeedStatus
+-        {
+-            DoesNotExist,
+-            ExistsAndIdenticalToLocal,
+-            ExistsAndDifferent,
+-            Unknown
+-        }
+-
+         /// <summary>
+         ///     Compare a local stream and a remote stream for quality
+         /// </summary>
+@@ -119,125 +110,6 @@ public static async Task<bool> CompareStreamsAsync(Stream localFileStream, Strea
+             while (true);
+         }
+ 
+-        /// <summary>
+-        ///     Determine whether a local package is the same as a package on an AzDO feed.
+-        /// </summary>
+-        /// <param name="localPackageFullPath"></param>
+-        /// <param name="packageContentUrl"></param>
+-        /// <param name="client"></param>
+-        /// <param name="log"></param>
+-        /// <returns></returns>
+-        /// <remarks>
+-        ///     Open a stream to the local file and an http request to the package. There are a couple possibilities:
+-        ///     - The returned headers include a content MD5 header, in which case we can
+-        ///       hash the local file and just compare those.
+-        ///     - No content MD5 hash, and the streams must be compared in blocks. This is a bit trickier to do efficiently,
+-        ///       since we do not necessarily want to read all bytes if we can help it. Thus, we should compare in blocks.  However,
+-        ///       the streams make no guarantee that they will return a full block each time when read operations are performed, so we
+-        ///       must be sure to only compare the minimum number of bytes returned.
+-        /// </remarks>
+-        public static async Task<PackageFeedStatus> CompareLocalPackageToFeedPackage(
+-            string localPackageFullPath,
+-            string packageContentUrl,
+-            HttpClient client,
+-            TaskLoggingHelper log)
+-        {
+-            return await CompareLocalPackageToFeedPackage(
+-                localPackageFullPath,
+-                packageContentUrl,
+-                client,
+-                log,
+-                CreateDefaultRetryHandler());
+-        }
+-
+-        /// <summary>
+-        ///     Determine whether a local package is the same as a package on an AzDO feed.
+-        /// </summary>
+-        /// <param name="localPackageFullPath"></param>
+-        /// <param name="packageContentUrl"></param>
+-        /// <param name="client"></param>
+-        /// <param name="log"></param>
+-        /// <param name="retryHandler"></param>
+-        /// <returns></returns>
+-        /// <remarks>
+-        ///     Open a stream to the local file and an http request to the package. There are a couple possibilities:
+-        ///     - The returned headers include a content MD5 header, in which case we can
+-        ///       hash the local file and just compare those.
+-        ///     - No content MD5 hash, and the streams must be compared in blocks. This is a bit trickier to do efficiently,
+-        ///       since we do not necessarily want to read all bytes if we can help it. Thus, we should compare in blocks.  However,
+-        ///       the streams make no guarantee that they will return a full block each time when read operations are performed, so we
+-        ///       must be sure to only compare the minimum number of bytes returned.
+-        /// </remarks>
+-        public static async Task<PackageFeedStatus> CompareLocalPackageToFeedPackage(
+-            string localPackageFullPath,
+-            string packageContentUrl,
+-            HttpClient client,
+-            TaskLoggingHelper log,
+-            IRetryHandler retryHandler)
+-        {
+-            log.LogMessage($"Getting package content from {packageContentUrl} and comparing to {localPackageFullPath}");
+-
+-            PackageFeedStatus result = PackageFeedStatus.Unknown;
+-
+-            bool success = await retryHandler.RunAsync(async attempt =>
+-            {
+-                try
+-                {
+-                    using (Stream localFileStream = File.OpenRead(localPackageFullPath))
+-                    using (HttpResponseMessage response = await client.GetAsync(packageContentUrl))
+-                    {
+-                        response.EnsureSuccessStatusCode();
+-
+-                        // Check the headers for content length and md5 
+-                        bool md5HeaderAvailable = response.Headers.TryGetValues("Content-MD5", out var md5);
+-                        bool lengthHeaderAvailable = response.Headers.TryGetValues("Content-Length", out var contentLength);
+-
+-                        if (lengthHeaderAvailable && long.Parse(contentLength.Single()) != localFileStream.Length)
+-                        {
+-                            log.LogMessage(MessageImportance.Low, $"Package '{localPackageFullPath}' has different length than remote package '{packageContentUrl}'.");
+-                            result = PackageFeedStatus.ExistsAndDifferent;
+-                            return true;
+-                        }
+-
+-                        if (md5HeaderAvailable)
+-                        {
+-                            var localMD5 = AzureStorageUtils.CalculateMD5(localPackageFullPath);
+-                            if (!localMD5.Equals(md5.Single(), StringComparison.OrdinalIgnoreCase))
+-                            {
+-                                log.LogMessage(MessageImportance.Low, $"Package '{localPackageFullPath}' has different MD5 hash than remote package '{packageContentUrl}'.");
+-                            }
+-
+-                            result = PackageFeedStatus.ExistsAndDifferent;
+-                            return true;
+-                        }
+-
+-                        const int BufferSize = 64 * 1024;
+-
+-                        // Otherwise, compare the streams
+-                        var remoteStream = await response.Content.ReadAsStreamAsync();
+-                        var streamsMatch = await GeneralUtils.CompareStreamsAsync(localFileStream, remoteStream, BufferSize);
+-                        result = streamsMatch ? PackageFeedStatus.ExistsAndIdenticalToLocal : PackageFeedStatus.ExistsAndDifferent;
+-                        return true;
+-                    }
+-                }
+-                // String based comparison because the status code isn't exposed in HttpRequestException
+-                // see here: https://github.com/dotnet/runtime/issues/23648
+-                catch (Exception e) when (e is HttpRequestException || e is TaskCanceledException)
+-                {
+-                    if (e.Message.Contains("404 (Not Found)"))
+-                    {
+-                        result = PackageFeedStatus.DoesNotExist;
+-                        return true;
+-                    }
+-
+-                    // Retry this. Could be an http client timeout, 500, etc.
+-                    return false;
+-                }
+-            });
+-
+-            return result;
+-        }
+-
+         /// <summary>
+         ///     Determine whether the feed is public or private.
+         /// </summary>
+diff --git a/src/Microsoft.DotNet.VersionTools/Directory.Build.props b/src/Microsoft.DotNet.VersionTools/Directory.Build.props
+deleted file mode 100644
+index 2dc829c3..00000000
+--- a/src/Microsoft.DotNet.VersionTools/Directory.Build.props
++++ /dev/null
+@@ -1,10 +0,0 @@
+-<Project>
+-
+-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)\.., Directory.Build.props))\Directory.Build.props" />
+-
+-  <!-- Don't include VersionTools in source-build until we find a reason to use it. -->
+-  <PropertyGroup>
+-    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
+-  </PropertyGroup>
+-
+-</Project>
+diff --git a/src/Microsoft.DotNet.VersionTools/lib/src/Automation/NupkgInfo.cs b/src/Microsoft.DotNet.VersionTools/lib/src/Automation/NupkgInfo.cs
+index c3646c58..4e4aed0a 100644
+--- a/src/Microsoft.DotNet.VersionTools/lib/src/Automation/NupkgInfo.cs
++++ b/src/Microsoft.DotNet.VersionTools/lib/src/Automation/NupkgInfo.cs
+@@ -1,7 +1,7 @@
+ // Licensed to the .NET Foundation under one or more agreements.
+ // The .NET Foundation licenses this file to you under the MIT license.
+ 
+-using NuGet.Packaging.Core;
++using System;
+ 
+ namespace Microsoft.DotNet.VersionTools.Automation
+ {
+@@ -10,14 +10,40 @@ public class NupkgInfo
+         public NupkgInfo(PackageIdentity identity)
+         {
+             Id = identity.Id;
+-            Version = identity.Version.ToString();
+-            Prerelease = identity.Version.Release;
++            Version = identity.Version;
+         }
+ 
+         public string Id { get; }
+         public string Version { get; }
+-        public string Prerelease { get; }
++        public string Prerelease { get { throw new NotImplementedException();} }
+ 
+         public static bool IsSymbolPackagePath(string path) => path.EndsWith(".symbols.nupkg");
+     }
++
++    public class PackageIdentity
++    {
++        private readonly string _id;
++        private readonly string _version;
++
++        public PackageIdentity(string id, string version)
++        {
++            if (id == null)
++            {
++                throw new ArgumentNullException(nameof(id));
++            }
++
++            _id = id;
++            _version = version;
++        }
++
++        public string Id
++        {
++            get { return _id; }
++        }
++
++        public string Version
++        {
++            get { return _version; }
++        }
++    }
+ }
+diff --git a/src/Microsoft.DotNet.VersionTools/lib/src/Automation/NupkgInfoFactory.cs b/src/Microsoft.DotNet.VersionTools/lib/src/Automation/NupkgInfoFactory.cs
+index ddf8dd99..eab28d72 100644
+--- a/src/Microsoft.DotNet.VersionTools/lib/src/Automation/NupkgInfoFactory.cs
++++ b/src/Microsoft.DotNet.VersionTools/lib/src/Automation/NupkgInfoFactory.cs
+@@ -1,8 +1,12 @@
+ // Licensed to the .NET Foundation under one or more agreements.
+ // The .NET Foundation licenses this file to you under the MIT license.
+ 
+-using NuGet.Packaging;
+-using NuGet.Packaging.Core;
++using System;
++using System.Globalization;
++using System.IO;
++using System.IO.Compression;
++using System.Linq;
++using System.Xml.Linq;
+ 
+ namespace Microsoft.DotNet.VersionTools.Automation
+ {
+@@ -22,10 +26,59 @@ public NupkgInfoFactory(IPackageArchiveReaderFactory packageArchiveReaderFactory
+ 
+         public NupkgInfo CreateNupkgInfo(string path)
+         {
+-            using PackageArchiveReader archiveReader = _packageArchiveReaderFactory.CreatePackageArchiveReader(path);
+-            PackageIdentity identity = archiveReader.GetIdentity();
++            if (path == null)
++            {
++                throw new ArgumentNullException(nameof(path));
++            }
+ 
+-            return new NupkgInfo(identity);
++            Stream stream = null;
++            Stream ZipReadStream = null;
++            ZipArchive _zipArchive;
++            try
++            {
++                stream = File.OpenRead(path);
++                ZipReadStream = stream;
++                _zipArchive = new ZipArchive(stream, ZipArchiveMode.Read);
++                string nuspecFile = Path.GetTempFileName();
++                foreach (ZipArchiveEntry entry in _zipArchive.Entries)
++                {
++                    if (entry.Name.EndsWith(".nuspec"))
++                    {
++                        Directory.CreateDirectory(Path.GetDirectoryName(nuspecFile));
++                        entry.ExtractToFile(nuspecFile, true);
++                    }
++                }
++
++                if (!File.Exists(nuspecFile))
++                {
++                    throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, "Did not extract nuspec file from package: {0}", path));
++                }
++
++                PackageIdentity identity = GetIdentity(nuspecFile);
++                return new NupkgInfo(identity);
++            }
++            catch (Exception ex)
++            {
++                stream?.Dispose();
++                throw new InvalidDataException(string.Format(CultureInfo.CurrentCulture, "Invalid package", path), ex);
++            }
++        }
++
++        private static PackageIdentity GetIdentity(string nuspecFile)
++        {
++            if (nuspecFile == null)
++            {
++                throw new ArgumentNullException(nameof(nuspecFile));
++            }
++
++            XDocument doc = XDocument.Load(nuspecFile, LoadOptions.PreserveWhitespace);
++            XElement metadataElement = GetSingleElement(doc.Root, "metadata");
++            return new PackageIdentity(GetSingleElement(metadataElement, "id").Value, GetSingleElement(metadataElement, "version").Value);
++        }   
++
++        private static XElement GetSingleElement(XElement el, string name)
++        {
++            return el.Descendants().First(c => c.Name.LocalName.ToString() == name);
+         }
+     }
+ }
+diff --git a/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj b/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj
+index 2013e9da..72277ea5 100644
+--- a/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj
++++ b/src/Microsoft.DotNet.VersionTools/tasks/Microsoft.DotNet.VersionTools.Tasks.csproj
+@@ -7,6 +7,11 @@
+     <PackageType>MSBuildSdk</PackageType>
+   </PropertyGroup>
+ 
++  <!-- Don't include VersionTools.Tasks in source-build until we find a reason to use it. -->
++  <PropertyGroup>
++    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
++  </PropertyGroup>
++
+   <ItemGroup>
+     <PackageReference Include="Microsoft.Build.Tasks.Core" />
+   </ItemGroup>
+diff --git a/src/Microsoft.DotNet.VersionTools/tools/Microsoft.DotNet.VersionTools.Cli.Tests/VersionTrimmingOperationTests.cs b/src/Microsoft.DotNet.VersionTools/tools/Microsoft.DotNet.VersionTools.Cli.Tests/VersionTrimmingOperationTests.cs
+index 7a1b83c1..fb1be051 100644
+--- a/src/Microsoft.DotNet.VersionTools/tools/Microsoft.DotNet.VersionTools.Cli.Tests/VersionTrimmingOperationTests.cs
++++ b/src/Microsoft.DotNet.VersionTools/tools/Microsoft.DotNet.VersionTools.Cli.Tests/VersionTrimmingOperationTests.cs
+@@ -4,7 +4,6 @@
+ using FluentAssertions;
+ using Microsoft.DotNet.VersionTools.Automation;
+ using Moq;
+-using NuGet.Packaging.Core;
+ using NuGet.Versioning;
+ using System.IO;
+ using System;
+@@ -22,7 +21,7 @@ public void TestRemoveVersionFromFileNames()
+     {
+         var nupkgInfoFactory = new Mock<INupkgInfoFactory>();
+         nupkgInfoFactory.Setup(m => m.CreateNupkgInfo(It.IsAny<string>()))
+-            .Returns(new NupkgInfo(new PackageIdentity("id", new NuGetVersion("8.0.0-dev"))));
++            .Returns(new NupkgInfo(new PackageIdentity("id", "8.0.0-dev")));
+ 
+         var fileProxy = new Mock<IFileProxy>();
+         fileProxy.Setup(m => m.Move(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
+diff --git a/src/Microsoft.DotNet.VersionTools/tools/Microsoft.DotNet.VersionTools.Cli/Microsoft.DotNet.VersionTools.Cli.csproj b/src/Microsoft.DotNet.VersionTools/tools/Microsoft.DotNet.VersionTools.Cli/Microsoft.DotNet.VersionTools.Cli.csproj
+index 3f28b805..a2f9360e 100644
+--- a/src/Microsoft.DotNet.VersionTools/tools/Microsoft.DotNet.VersionTools.Cli/Microsoft.DotNet.VersionTools.Cli.csproj
++++ b/src/Microsoft.DotNet.VersionTools/tools/Microsoft.DotNet.VersionTools.Cli/Microsoft.DotNet.VersionTools.Cli.csproj
+@@ -9,6 +9,11 @@
+     <Description>This package provides a CLI interface to the Microsoft.DotNet.VersionTools library.</Description>
+   </PropertyGroup>
+ 
++  <!-- Don't include VersionTools.Cli in source-build until we find a reason to use it. -->
++  <PropertyGroup>
++    <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
++  </PropertyGroup>
++
+   <ItemGroup>
+     <ProjectReference Include="..\..\lib\Microsoft.DotNet.VersionTools.csproj" />
+   </ItemGroup>

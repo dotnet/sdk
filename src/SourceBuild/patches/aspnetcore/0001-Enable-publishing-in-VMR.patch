@@ -1,0 +1,87 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Thu, 7 Mar 2024 21:11:28 +0000
+Subject: [PATCH] Enable publishing in VMR
+
+Backport: https://github.com/dotnet/aspnetcore/pull/54422
+---
+ eng/Publishing.props | 10 +++++++++-
+ eng/build.sh         |  9 +++++++++
+ 2 files changed, 18 insertions(+), 1 deletion(-)
+
+diff --git a/eng/Publishing.props b/eng/Publishing.props
+index 7edbb21d21..d00d8d91d2 100644
+--- a/eng/Publishing.props
++++ b/eng/Publishing.props
+@@ -38,6 +38,8 @@
+     <!-- Remove wixpacks if not doing post-build signing, since they are not needed -->
+     <_InstallersToPublish Remove="@(WixPacksToPublish)" Condition="'$(PostBuildSign)' != 'true'" />
+     <_ChecksumsToPublish Include="$(ArtifactsDir)installers\**\*.sha512" />
++    <!-- Version file, for VMR build -->
++    <_VersionFileToPublish Include="$(ArtifactsDir)installers\**\aspnetcore_base_runtime.version" UploadPathSegment="Runtime" Condition="'$(DotNetBuildRepo)' == 'true'" />
+   </ItemGroup>
+ 
+   <Target
+@@ -64,7 +66,7 @@
+            the nupkgs pushed. Do not do this if building from source, since we want the source build intermediate package
+            to be published. Use ArcadeBuildFromSource as DotNetBuildFromSource is only set in the internal source build,
+            and Build.proj is invoked from the wrapper build. -->
+-      <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true' and '$(ArcadeBuildFromSource)' != 'true'" />
++      <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true' and '$(DotNetBuildRepo)' != 'true'" />
+ 
+       <ItemsToPushToBlobFeed Include="@(_ChecksumsToPublish)">
+         <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
+@@ -72,6 +74,12 @@
+         <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
+       </ItemsToPushToBlobFeed>
+ 
++      <ItemsToPushToBlobFeed Include="@(_VersionFileToPublish)">
++        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
++        <PublishFlatContainer>true</PublishFlatContainer>
++        <RelativeBlobPath>$(_UploadPathRoot)/Runtime/$(_PackageVersion)/%(Filename)%(Extension)</RelativeBlobPath>
++      </ItemsToPushToBlobFeed>
++
+       <ItemsToPushToBlobFeed Include="@(_InstallersToPublish)" Condition="! $([System.String]::Copy('%(Filename)').ToLower().Contains('internal'))">
+         <ManifestArtifactData>NonShipping=false</ManifestArtifactData>
+         <PublishFlatContainer>true</PublishFlatContainer>
+diff --git a/eng/build.sh b/eng/build.sh
+index 51a2cd6ecd..cfc42f1ceb 100755
+--- a/eng/build.sh
++++ b/eng/build.sh
+@@ -18,6 +18,7 @@ verbosity='minimal'
+ run_restore=''
+ run_build=true
+ run_pack=false
++run_publish=false
+ run_tests=false
+ build_all=false
+ build_deps=true
+@@ -62,6 +63,7 @@ Options:
+     --[no-]build                      Compile projects. (Implies --no-restore)
+     --[no-]pack                       Produce packages.
+     --[no-]test                       Run tests.
++    --[no-]publish                    Run publish.
+ 
+     --projects                        A list of projects to build. (Must be an absolute path.)
+                                       Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
+@@ -152,6 +154,12 @@ while [[ $# -gt 0 ]]; do
+         -no-pack|-nopack)
+             run_pack=false
+             ;;
++        -publish)
++            run_publish=true
++            ;;
++        -no-publish|-nopublish)
++            run_publish=false
++            ;;
+         -test|-t)
+             run_tests=true
+             ;;
+@@ -286,6 +294,7 @@ if [ "$run_build" = false ]; then
+     msbuild_args[${#msbuild_args[*]}]="-p:NoBuild=true"
+ fi
+ msbuild_args[${#msbuild_args[*]}]="-p:Pack=$run_pack"
++msbuild_args[${#msbuild_args[*]}]="-p:Publish=$run_publish"
+ msbuild_args[${#msbuild_args[*]}]="-p:Test=$run_tests"
+ 
+ msbuild_args[${#msbuild_args[*]}]="-p:TargetArchitecture=$target_arch"
