@@ -14,7 +14,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var context = new DotNetWatchContext
             {
-                HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new(),
                 Options = TestOptions.CommandLine,
@@ -41,7 +40,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var context = new DotNetWatchContext
             {
-                HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new(),
                 Options = TestOptions.CommandLine,
@@ -74,7 +72,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var context = new DotNetWatchContext
             {
-                HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new(),
                 Options = TestOptions.CommandLine,
@@ -106,7 +103,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var context = new DotNetWatchContext
             {
-                HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new(),
                 Options = TestOptions.CommandLine,
@@ -138,7 +134,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var context = new DotNetWatchContext
             {
-                HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new(),
                 Options = TestOptions.CommandLine,
@@ -170,7 +165,6 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             var context = new DotNetWatchContext
             {
-                HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new(),
                 Options = TestOptions.CommandLine,
@@ -204,7 +198,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var context = new DotNetWatchContext
             {
-                HotReloadEnabled = false,
                 Reporter = NullReporter.Singleton,
                 LaunchSettingsProfile = new(),
                 Options = TestOptions.CommandLine,

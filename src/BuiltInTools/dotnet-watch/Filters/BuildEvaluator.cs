@@ -30,8 +30,6 @@ namespace Microsoft.DotNet.Watcher.Tools
 
         public void UpdateProcessArguments(WatchState state)
         {
-            Debug.Assert(!context.HotReloadEnabled);
-
             if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
                 return;

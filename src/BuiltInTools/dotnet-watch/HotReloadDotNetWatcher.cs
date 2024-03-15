@@ -363,6 +363,8 @@ namespace Microsoft.DotNet.Watcher
                 processSpec.WorkingDirectory = project.RunWorkingDirectory;
             }
 
+            // ASPNETCORE_URLS is set by dotnet run
+            // (https://github.com/dotnet/sdk/blob/61d0eb932e5f34e1cd985e383dca5c1a34b28df7/src/Cli/dotnet/commands/dotnet-run/RunCommand.cs#L64):
             if (!string.IsNullOrEmpty(launchSettingsProfile.ApplicationUrl))
             {
                 processSpec.EnvironmentVariables["ASPNETCORE_URLS"] = launchSettingsProfile.ApplicationUrl;

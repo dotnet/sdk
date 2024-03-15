@@ -176,7 +176,6 @@ namespace Microsoft.DotNet.Watcher
 
             var context = new DotNetWatchContext
             {
-                HotReloadEnabled = enableHotReload,
                 ProjectGraph = projectGraph,
                 Reporter = reporter,
                 LaunchSettingsProfile = launchProfile,
