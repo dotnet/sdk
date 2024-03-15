@@ -519,8 +519,11 @@
       These source generators are written incorrectly (a source generator should never do IO itself),
       but the required features to read in binary files as input to a source generator don't exist.
       To work around these source generators, shut down the compiler server so we can delete the obj directories.
+      Don't fail the build when shutdown returns a failure.
     -->
-    <Exec Command="$(DotnetTool) build-server shutdown --vbcscompiler" />
+    <Exec Command="$(DotnetTool) build-server shutdown --vbcscompiler"
+          IgnoreStandardErrorWarningFormat="true"
+          IgnoreExitCode="true" />
 
     <PropertyGroup>
       <BuildLogsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildLogs'))</BuildLogsDir>
