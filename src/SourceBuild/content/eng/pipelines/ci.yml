@@ -2,25 +2,30 @@
 # NOTE: the triggers are defined in the Azure DevOps UI as they are too complex
 #
 # - dotnet-source-build (public)
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=240
 #   - PR: ultralite build
 #   - CI: release/* only, every batched commit, full build
 #   - Schedule: main only, full build
 #
 # - dotnet-unified-build (public)
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=278
 #   - PR: lite build
 #   - CI: release/* only, every batched commit, full build
 #   - Schedule: main only, full build
 #
 # - dotnet-source-build (internal)
+#   https://dev.azure.com/dnceng/internal/_build?definitionId=1219
 #   - PR: ultralite build
 #   - CI: release/* and internal/release/* only, every batched commit, full build
 #   - Schedule: main only, full build
 #
 # - dotnet-source-build-lite (internal)
+#   https://dev.azure.com/dnceng/internal/_build?definitionId=1299
 #   - PR: release/* and main, lite build, on-demand trigger
 #   - CI: main only, every batched commit, lite build
 #
 # - dotnet-unified-build (internal)
+#   https://dev.azure.com/dnceng/internal/_build?definitionId=1330
 #   - PR: lite build
 #   - CI: release/*, internal/release/* and main, every batched commit, full build
 
