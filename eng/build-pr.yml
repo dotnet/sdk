@@ -16,14 +16,14 @@ parameters:
 
 jobs:
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/main')) }}:
-  - template: /eng/common/templates-official/job/onelocbuild.yml@self
+  - template: /eng/common/templates/job/onelocbuild.yml
     parameters:
       CreatePr: true
       LclSource: lclFilesfromPackage
       LclPackageId: 'LCL-JUNO-PROD-DOTNETSDK'
       MirrorBranch: release/6.0.4xx
       MirrorRepo: sdk
-- template: /eng/common/templates-official/job/job.yml@self
+- template: /eng/common/templates/job/job.yml
   parameters:
     name: ${{ parameters.agentOs }}
     enableMicrobuild: true
@@ -175,7 +175,7 @@ jobs:
       continueOnError: true	
       condition: always()
 
-    - task: 1ES.PublishBuildArtifacts@1	
+    - task: PublishBuildArtifacts@1	
       displayName: Publish Logs to VSTS	
       inputs:	
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
