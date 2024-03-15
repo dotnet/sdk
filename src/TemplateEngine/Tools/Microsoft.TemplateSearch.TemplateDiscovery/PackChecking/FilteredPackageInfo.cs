@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
 {
+    [System.Diagnostics.DebuggerDisplay("{Name}@{Version} - {Reason}")]
     internal class FilteredPackageInfo : ITemplatePackageInfo
     {
         internal FilteredPackageInfo(ITemplatePackageInfo info, string reason)

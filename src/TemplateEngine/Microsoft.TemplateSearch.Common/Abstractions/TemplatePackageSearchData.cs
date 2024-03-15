@@ -11,6 +11,7 @@ namespace Microsoft.TemplateSearch.Common
     /// <summary>
     /// Template package searchable data.
     /// </summary>
+    [System.Diagnostics.DebuggerDisplay("{Name}@{Version}")]
     public partial class TemplatePackageSearchData : ITemplatePackageInfo
     {
         public TemplatePackageSearchData(ITemplatePackageInfo packInfo, IEnumerable<TemplateSearchData> templates, IDictionary<string, object>? data = null)
