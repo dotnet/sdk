@@ -16,7 +16,7 @@ parameters:
 
 jobs:
 - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/7.0.2xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
-  - template: /eng/common/templates-official/job/onelocbuild.yml@self
+  - template: /eng/common/templates/job/onelocbuild.yml
     parameters:
       CreatePr: true
       LclSource: lclFilesfromPackage
@@ -25,7 +25,7 @@ jobs:
       MirrorRepo: sdk
 
 - ${{ if not(contains(parameters.agentOs, 'TemplateEngine')) }}:
-  - template: /eng/common/templates-official/job/job.yml@self
+  - template: /eng/common/templates/job/job.yml
     parameters:
       name: ${{ parameters.agentOs }}
       enableMicrobuild: true
@@ -202,7 +202,7 @@ jobs:
 
 # AoT Jobs
 - ${{ if and(in(parameters.agentOs, 'Windows_NT', 'Darwin'), or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest'))) }}:
-  - template: /eng/common/templates-official/job/job.yml@self
+  - template: /eng/common/templates/job/job.yml
     parameters:
       name: ${{ parameters.agentOs }}_AoT_Tests
       enableMicrobuild: true
@@ -332,7 +332,7 @@ jobs:
 
 # TemplateEngine Jobs
 - ${{ if contains(parameters.agentOs, 'TemplateEngine') }}:
-  - template: /eng/common/templates-official/job/job.yml@self
+  - template: /eng/common/templates/job/job.yml
     parameters:
       name: ${{ parameters.agentOs }}
       enableMicrobuild: true
