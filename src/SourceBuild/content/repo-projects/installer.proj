@@ -148,4 +148,6 @@
           UseHardlinksIfPossible="true" />
   </Target>
 
+  <Import Project="$(RepositoryEngineeringDir)sdkArchiveDiff.targets" Condition="'$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'" />
+
 </Project>
