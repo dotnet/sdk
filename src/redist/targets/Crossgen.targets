@@ -8,7 +8,7 @@
     <PropertyGroup>
       <RuntimeNETCoreAppPackageName>microsoft.netcore.app.runtime.$(SharedFrameworkRid)</RuntimeNETCoreAppPackageName>
       <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
-      <CrossgenPath>$(NuGetPackageRoot)/$(RuntimeNETCrossgenPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools/crossgen2$(ExeExtension)</CrossgenPath>
+      <CrossgenPath>$(NuGetPackageRoot)$(RuntimeNETCrossgenPackageName)/$(MicrosoftNETCoreAppRuntimePackageVersion)/tools/crossgen2$(ExeExtension)</CrossgenPath>
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
       <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' != 'true' ">$(RedistLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
