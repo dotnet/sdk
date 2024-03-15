@@ -156,10 +156,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.PackChecking
                 var packageInfo = await provider.GetPackageInfoAsync(package.Name, cancellationToken).ConfigureAwait(false);
                 if (packageInfo == default)
                 {
-                    Console.WriteLine($"Package {package.Name} cannot be verified.");
-                    throw new Exception($"Package {package.Name} is missing and cannot be verified.");
+                    Console.WriteLine($"Package {package.Name} no longer exists in the provider.");
+                    scanningStats.RemovedTemplatePacks.Add(package);
                 }
-                if (packageInfo.Removed)
+                else if (packageInfo.Removed)
                 {
                     Console.WriteLine($"Package {package.Name} was unlisted.");
                     scanningStats.RemovedTemplatePacks.Add(package);
