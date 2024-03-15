@@ -183,29 +183,27 @@ namespace Microsoft.DotNet.Watcher
                 EnvironmentOptions = environmentOptions,
             };
 
-            var state = new WatchState()
+            var processSpec = new ProcessSpec
             {
-                ProcessSpec = new ProcessSpec
+                WorkingDirectory = projectDirectory,
+                Arguments = args,
+                EscapedArguments = escapedArgs,
+                EnvironmentVariables =
                 {
-                    WorkingDirectory = projectDirectory,
-                    Arguments = args,
-                    EscapedArguments = escapedArgs,
-                    EnvironmentVariables =
-                    {
-                        ["DOTNET_WATCH"] = "1"
-                    },
+                    [EnvironmentVariables.Names.DotnetWatch] = "1",
+                    [EnvironmentVariables.Names.DotnetLaunchProfile] = launchProfile.LaunchProfileName ?? string.Empty
                 }
             };
 
             if (enableHotReload)
             {
                 var watcher = new HotReloadDotNetWatcher(context, console, fileSetFactory);
-                await watcher.WatchAsync(state, cancellationToken);
+                await watcher.WatchAsync(processSpec, cancellationToken);
             }
             else
             {
                 var watcher = new DotNetWatcher(context, fileSetFactory);
-                await watcher.WatchAsync(state, cancellationToken);
+                await watcher.WatchAsync(processSpec, cancellationToken);
             }
 
             return 0;

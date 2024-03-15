@@ -23,15 +23,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             var fileSetFactory = new MockFileSetFactory() { CreateImpl = _ => (null, s_emptyFileSet) };
             var evaluator = new BuildEvaluator(context, fileSetFactory);
 
-            var state = new WatchState()
-            {
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec()
-            };
-
             await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
 
-            state.Iteration++;
             evaluator.RequiresRevaluation = false;
 
             await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Test.csproj" }, CancellationToken.None);
@@ -54,15 +47,8 @@ namespace Microsoft.DotNet.Watcher.Tools
             var fileSetFactory = new MockFileSetFactory() { CreateImpl = _ => { counter++; return (null, s_emptyFileSet); } };
             var evaluator = new BuildEvaluator(context, fileSetFactory);
 
-            var state = new WatchState()
-            {
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec()
-            };
-
             await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
 
-            state.Iteration++;
             evaluator.RequiresRevaluation = false;
 
             await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Controller.cs" }, CancellationToken.None);
@@ -87,15 +73,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var evaluator = new BuildEvaluator(context, fileSetFactory);
 
-            var state = new WatchState()
-            {
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec()
-            };
-
             await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
 
-            state.Iteration++;
             evaluator.RequiresRevaluation = false;
 
             await evaluator.EvaluateAsync(changedFile: new() { FilePath = "Controller.cs" }, CancellationToken.None);
@@ -130,15 +109,8 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
             };
 
-            var state = new WatchState()
-            {
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec()
-            };
-
             await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
             evaluator.RequiresRevaluation = false;
-            state.Iteration++;
             evaluator.Timestamps["Proj.csproj"] = new DateTime(1007);
 
             await evaluator.EvaluateAsync(new() { FilePath = "Controller.cs" }, CancellationToken.None);

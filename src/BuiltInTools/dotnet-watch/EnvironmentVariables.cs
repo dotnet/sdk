@@ -5,6 +5,21 @@ namespace Microsoft.DotNet.Watcher;
 
 internal static class EnvironmentVariables
 {
+    public static class Names
+    {
+        public const string DotnetWatch = "DOTNET_WATCH";
+        public const string DotnetWatchIteration = "DOTNET_WATCH_ITERATION";
+        public const string DotnetLaunchProfile = "DOTNET_LAUNCH_PROFILE";
+        public const string DotnetStartupHooks = "DOTNET_STARTUP_HOOKS";
+        public const string DotnetModifiableAssemblies = "DOTNET_MODIFIABLE_ASSEMBLIES";
+        public const string DotnetHotReloadNamedPipeName = "DOTNET_HOTRELOAD_NAMEDPIPE_NAME";
+
+        public const string AspNetCoreUrls = "ASPNETCORE_URLS";
+        public const string AspNetCoreHostingStartupAssemblies = "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES";
+        public const string AspNetCoreAutoReloadWSEndPoint = "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT";
+        public const string AspNetCoreAutoReloadWSKey = "ASPNETCORE_AUTO_RELOAD_WS_KEY";
+    }
+
     public static bool VerboseCliOutput => ReadBool("DOTNET_CLI_CONTEXT_VERBOSE");
     public static bool IsPollingEnabled => ReadBool("DOTNET_USE_POLLING_FILE_WATCHER");
     public static bool SuppressEmojis => ReadBool("DOTNET_WATCH_SUPPRESS_EMOJIS");

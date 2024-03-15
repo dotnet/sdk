@@ -8,17 +8,11 @@ using Microsoft.DotNet.Watcher.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
-    internal sealed class EnvironmentVariablesBuilder : Dictionary<string, string>
-    {
-        public List<string> DotNetStartupHooks { get; } = new();
-        public List<string> AspNetCoreHostingStartupAssemblies { get; } = new();
-    }
-
     internal sealed class ProcessSpec
     {
         public string? Executable { get; set; }
         public string? WorkingDirectory { get; set; }
-        public EnvironmentVariablesBuilder EnvironmentVariables { get; } = new();
+        public Dictionary<string, string> EnvironmentVariables { get; } = new();
         public IReadOnlyList<string>? Arguments { get; set; }
         public string? EscapedArguments { get; set; }
         public OutputCapture? OutputCapture { get; set; }

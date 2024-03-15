@@ -13,7 +13,7 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher
 {
-    internal sealed class HotReloadDotNetWatcher
+    internal sealed class HotReloadDotNetWatcher : Watcher
     {
         private readonly DotNetWatchContext _context;
         private readonly IConsole _console;
@@ -35,11 +35,9 @@ namespace Microsoft.DotNet.Watcher
             }
         }
 
-        public async Task WatchAsync(WatchState state, CancellationToken cancellationToken)
+        public async Task WatchAsync(ProcessSpec processSpec, CancellationToken cancellationToken)
         {
             Debug.Assert(_context.ProjectGraph != null);
-
-            var processSpec = state.ProcessSpec;
 
             var forceReload = new CancellationTokenSource();
             var hotReloadEnabledMessage = "Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.";
@@ -63,22 +61,19 @@ namespace Microsoft.DotNet.Watcher
                 _context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
             }
 
+            var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
             var namedPipeName = Guid.NewGuid().ToString();
 
-            var deltaApplier = Path.Combine(AppContext.BaseDirectory, "hotreload", "Microsoft.Extensions.DotNetDeltaApplier.dll");
-            processSpec.EnvironmentVariables.DotNetStartupHooks.Add(deltaApplier);
-
-            // Configure the app for EnC
-            processSpec.EnvironmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
-            processSpec.EnvironmentVariables["DOTNET_HOTRELOAD_NAMEDPIPE_NAME"] = namedPipeName;
+            // Configure the app for Hot Reload:
+            environmentBuilder.DotNetStartupHooks.Add(Path.Combine(AppContext.BaseDirectory, "hotreload", "Microsoft.Extensions.DotNetDeltaApplier.dll"));
+            environmentBuilder.Add(EnvironmentVariables.Names.DotnetModifiableAssemblies, "debug");
+            environmentBuilder.Add(EnvironmentVariables.Names.DotnetHotReloadNamedPipeName, namedPipeName);
 
             await using var browserConnector = new BrowserConnector(_context);
 
-            while (true)
+            for (var iteration = 0;;iteration++)
             {
-                state.Iteration++;
-
-                if (await BuildAsync(state, cancellationToken) is not (var project, var files))
+                if (await BuildAsync(processSpec.WorkingDirectory, cancellationToken) is not (var project, var files))
                 {
                     _context.Reporter.Error("Failed to find a list of files to watch");
                     return;
@@ -90,14 +85,15 @@ namespace Microsoft.DotNet.Watcher
                     return;
                 }
 
-                await state.UpdateBrowserAsync(browserConnector, project, cancellationToken);
+                await UpdateBrowserAsync(iteration, processSpec, environmentBuilder, browserConnector, project, cancellationToken);
 
-                state.UpdateIterationEnvironment(_context);
-
-                if (state.Iteration == 0)
+                if (iteration == 0)
                 {
                     ConfigureExecutable(processSpec, project, _context.LaunchSettingsProfile);
+                    environmentBuilder.AddToEnvironment(processSpec.EnvironmentVariables);
                 }
+
+                processSpec.EnvironmentVariables[EnvironmentVariables.Names.DotnetWatchIteration] = (iteration + 1).ToString(CultureInfo.InvariantCulture);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -284,7 +280,7 @@ namespace Microsoft.DotNet.Watcher
             return default;
         }
 
-        public async ValueTask<(ProjectInfo project, FileSet files)?> BuildAsync(WatchState state, CancellationToken cancellationToken)
+        public async ValueTask<(ProjectInfo project, FileSet files)?> BuildAsync(string? workingDirectory, CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -310,7 +306,7 @@ namespace Microsoft.DotNet.Watcher
                 {
                     Executable = _context.EnvironmentOptions.MuxerPath,
                     Arguments = arguments,
-                    WorkingDirectory = state.ProcessSpec.WorkingDirectory,
+                    WorkingDirectory = workingDirectory,
                 };
 
                 _context.Reporter.Output("Building...", emoji: "🔧");
@@ -367,7 +363,7 @@ namespace Microsoft.DotNet.Watcher
             // (https://github.com/dotnet/sdk/blob/61d0eb932e5f34e1cd985e383dca5c1a34b28df7/src/Cli/dotnet/commands/dotnet-run/RunCommand.cs#L64):
             if (!string.IsNullOrEmpty(launchSettingsProfile.ApplicationUrl))
             {
-                processSpec.EnvironmentVariables["ASPNETCORE_URLS"] = launchSettingsProfile.ApplicationUrl;
+                processSpec.EnvironmentVariables[EnvironmentVariables.Names.AspNetCoreUrls] = launchSettingsProfile.ApplicationUrl;
             }
 
             var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(

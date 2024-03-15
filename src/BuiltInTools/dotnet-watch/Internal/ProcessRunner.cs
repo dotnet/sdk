@@ -10,8 +10,6 @@ namespace Microsoft.DotNet.Watcher.Internal
 {
     internal sealed class ProcessRunner
     {
-        private static readonly Func<string, string?> _getEnvironmentVariable = static key => Environment.GetEnvironmentVariable(key);
-
         private readonly IReporter _reporter;
 
         public ProcessRunner(IReporter reporter)
@@ -118,46 +116,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                 process.StartInfo.Environment.Add(env.Key, env.Value);
             }
 
-            SetEnvironmentVariable(process.StartInfo, "DOTNET_STARTUP_HOOKS", processSpec.EnvironmentVariables.DotNetStartupHooks, Path.PathSeparator, _getEnvironmentVariable);
-            SetEnvironmentVariable(process.StartInfo, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", processSpec.EnvironmentVariables.AspNetCoreHostingStartupAssemblies, ';', _getEnvironmentVariable);
-
             return process;
-        }
-
-        internal static void SetEnvironmentVariable(ProcessStartInfo processStartInfo, string envVarName, List<string> envVarValues, char separator, Func<string, string?> getEnvironmentVariable)
-        {
-            if (envVarValues is { Count: 0 })
-            {
-                return;
-            }
-
-            var existing = getEnvironmentVariable(envVarName);
-            if (processStartInfo.Environment.TryGetValue(envVarName, out var value))
-            {
-                existing = CombineEnvironmentVariable(existing, value, separator);
-            }
-
-            string result;
-            if (!string.IsNullOrEmpty(existing))
-            {
-                result = existing + separator + string.Join(separator, envVarValues);
-            }
-            else
-            {
-                result = string.Join(separator, envVarValues);
-            }
-
-            processStartInfo.EnvironmentVariables[envVarName] = result;
-
-            static string? CombineEnvironmentVariable(string? a, string? b, char separator)
-            {
-                if (!string.IsNullOrEmpty(a))
-                {
-                    return !string.IsNullOrEmpty(b) ? (a + separator + b) : a;
-                }
-
-                return b;
-            }
         }
 
         private class ProcessState : IDisposable

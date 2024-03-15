@@ -22,17 +22,14 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var state = new WatchState()
+            var processSpec = new ProcessSpec
             {
-                ProcessSpec = new ProcessSpec
-                {
-                    Arguments = _arguments,
-                }
+                Arguments = _arguments,
             };
 
-            evaluator.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
 
-            Assert.Same(_arguments, state.ProcessSpec.Arguments);
+            Assert.Same(_arguments, processSpec.Arguments);
         }
 
         [Fact]
@@ -48,23 +45,18 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var state = new WatchState()
+            var processSpec = new ProcessSpec
             {
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec
-                {
-                    Arguments = _arguments,
-                }
+                Arguments = _arguments,
             };
 
-            evaluator.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
 
             evaluator.RequiresRevaluation = true;
-            state.Iteration++;
 
-            evaluator.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
 
-            Assert.Same(_arguments, state.ProcessSpec.Arguments);
+            Assert.Same(_arguments, processSpec.Arguments);
         }
 
         [Fact]
@@ -80,22 +72,14 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var state = new WatchState()
+            var processSpec = new ProcessSpec
             {
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec
-                {
-                    Arguments = _arguments,
-                }
+                Arguments = _arguments,
             };
 
-            evaluator.UpdateProcessArguments(state);
-
-            state.Iteration++;
-
-            evaluator.UpdateProcessArguments(state);
-
-            Assert.Same(_arguments, state.ProcessSpec.Arguments);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
+            Assert.Same(_arguments, processSpec.Arguments);
         }
 
         [Fact]
@@ -109,24 +93,17 @@ namespace Microsoft.DotNet.Watcher.Tools
                 EnvironmentOptions = TestOptions.Environmental,
             };
 
-            var state = new WatchState()
+            var processSpec = new ProcessSpec
             {
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec
-                {
-                    Arguments = _arguments,
-                }
+                Arguments = _arguments,
             };
 
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            evaluator.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
 
-            state.Iteration++;
-
-            evaluator.UpdateProcessArguments(state);
-
-            Assert.Equal(new[] { "run", "--no-restore" }, state.ProcessSpec.Arguments);
+            Assert.Equal(new[] { "run", "--no-restore" }, processSpec.Arguments);
         }
 
         [Fact]
@@ -142,22 +119,15 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var state = new WatchState()
+            var processSpec = new ProcessSpec
             {
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec
-                {
-                    Arguments = ["run", "-f", ToolsetInfo.CurrentTargetFramework, "--", "foo=bar"],
-                }
+                Arguments = ["run", "-f", ToolsetInfo.CurrentTargetFramework, "--", "foo=bar"],
             };
 
-            evaluator.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
 
-            state.Iteration++;
-
-            evaluator.UpdateProcessArguments(state);
-
-            Assert.Equal(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework, "--", "foo=bar"], state.ProcessSpec.Arguments);
+            Assert.Equal(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework, "--", "foo=bar"], processSpec.Arguments);
         }
 
         [Fact]
@@ -173,22 +143,15 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var state = new WatchState()
+            var processSpec = new ProcessSpec
             {
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec
-                {
-                    Arguments = ["test", "--filter SomeFilter"],
-                }
+                Arguments = ["test", "--filter SomeFilter"],
             };
 
-            evaluator.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
 
-            state.Iteration++;
-
-            evaluator.UpdateProcessArguments(state);
-
-            Assert.Equal(["test", "--no-restore", "--filter SomeFilter"], state.ProcessSpec.Arguments);
+            Assert.Equal(["test", "--no-restore", "--filter SomeFilter"], processSpec.Arguments);
         }
 
         [Fact]
@@ -206,22 +169,15 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
 
-            var state = new WatchState()
+            var processSpec = new ProcessSpec
             {
-                Iteration = 0,
-                ProcessSpec = new ProcessSpec
-                {
-                    Arguments = arguments,
-                }
+                Arguments = arguments,
             };
 
-            evaluator.UpdateProcessArguments(state);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 0);
+            evaluator.UpdateProcessArguments(processSpec, iteration: 1);
 
-            state.Iteration++;
-
-            evaluator.UpdateProcessArguments(state);
-
-            Assert.Same(arguments, state.ProcessSpec.Arguments);
+            Assert.Same(arguments, processSpec.Arguments);
         }
     }
 }

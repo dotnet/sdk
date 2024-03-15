@@ -28,16 +28,16 @@ namespace Microsoft.DotNet.Watcher.Tools
         private bool _canUseNoRestore;
         private string[]? _noRestoreArguments;
 
-        public void UpdateProcessArguments(WatchState state)
+        public void UpdateProcessArguments(ProcessSpec processSpec, int iteration)
         {
             if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
                 return;
             }
 
-            if (state.Iteration == 0)
+            if (iteration == 0)
             {
-                var arguments = state.ProcessSpec.Arguments ?? [];
+                var arguments = processSpec.Arguments ?? [];
                 _canUseNoRestore = CanUseNoRestore(arguments);
                 if (_canUseNoRestore)
                 {
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 else
                 {
                     context.Reporter.Verbose("Modifying command to use --no-restore");
-                    state.ProcessSpec.Arguments = _noRestoreArguments;
+                    processSpec.Arguments = _noRestoreArguments;
                 }
             }
         }

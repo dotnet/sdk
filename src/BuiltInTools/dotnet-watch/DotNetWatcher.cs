@@ -2,23 +2,41 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.DotNet.Watcher.Internal;
 using Microsoft.DotNet.Watcher.Tools;
 
 namespace Microsoft.DotNet.Watcher
 {
-    internal sealed class DotNetWatcher(DotNetWatchContext context, FileSetFactory fileSetFactory)
+    internal abstract class Watcher
+    {
+        public static async ValueTask UpdateBrowserAsync(int iteration, ProcessSpec processSpec, EnvironmentVariablesBuilder environmentBuilder, BrowserConnector browserConnector, ProjectInfo project, CancellationToken cancellationToken)
+        {
+            if (iteration == 0)
+            {
+                processSpec.OnOutput += browserConnector.GetBrowserLaunchTrigger(project, cancellationToken);
+                var server = await browserConnector.StartRefreshServerAsync(cancellationToken);
+                server?.SetEnvironmentVariables(environmentBuilder);
+            }
+            else if (browserConnector.RefreshServer != null)
+            {
+                // We've detected a change. Notify the browser.
+                await browserConnector.RefreshServer.SendWaitMessageAsync(cancellationToken);
+            }
+        }
+    }
+
+    internal sealed class DotNetWatcher(DotNetWatchContext context, FileSetFactory fileSetFactory) : Watcher
     {
         private readonly ProcessRunner _processRunner = new(context.Reporter);
         private readonly StaticFileHandler _staticFileHandler = new(context.Reporter);
 
-        public async Task WatchAsync(WatchState state, CancellationToken cancellationToken)
+        public async Task WatchAsync(ProcessSpec processSpec, CancellationToken cancellationToken)
         {
             var cancelledTaskSource = new TaskCompletionSource();
             cancellationToken.Register(state => ((TaskCompletionSource)state!).TrySetResult(),
                 cancelledTaskSource);
 
-            var processSpec = state.ProcessSpec;
             processSpec.Executable = context.EnvironmentOptions.MuxerPath;
             var initialArguments = processSpec.Arguments?.ToArray() ?? [];
 
@@ -27,14 +45,14 @@ namespace Microsoft.DotNet.Watcher
                 context.Reporter.Verbose("MSBuild incremental optimizations suppressed.");
             }
 
+            var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
+
             FileItem? changedFile = null;
             var buildEvaluator = new BuildEvaluator(context, fileSetFactory);
             await using var browserConnector = new BrowserConnector(context);
 
-            while (true)
+            for (var iteration = 0;;iteration++)
             {
-                state.Iteration++;
-
                 // Reset arguments
                 processSpec.Arguments = initialArguments;
 
@@ -44,14 +62,19 @@ namespace Microsoft.DotNet.Watcher
                     return;
                 }
 
-                buildEvaluator.UpdateProcessArguments(state);
+                buildEvaluator.UpdateProcessArguments(processSpec, iteration);
 
-                await state.UpdateBrowserAsync(browserConnector, project, cancellationToken);
+                await UpdateBrowserAsync(iteration, processSpec, environmentBuilder, browserConnector, project, cancellationToken);
 
                 // Reset for next run
                 buildEvaluator.RequiresRevaluation = false;
 
-                state.UpdateIterationEnvironment(context);
+                if (iteration == 0)
+                {
+                    environmentBuilder.AddToEnvironment(processSpec.EnvironmentVariables);
+                }
+
+                processSpec.EnvironmentVariables[EnvironmentVariables.Names.DotnetWatchIteration] = (iteration + 1).ToString(CultureInfo.InvariantCulture);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
