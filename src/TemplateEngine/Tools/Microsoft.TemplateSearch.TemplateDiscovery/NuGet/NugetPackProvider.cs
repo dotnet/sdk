@@ -141,7 +141,6 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             {
                 if (File.Exists(outputPackageFileNameFullPath))
                 {
-                    using Stream existingPackageStream = File.OpenRead(outputPackageFileNameFullPath);
                     return new DownloadedPackInfo(packinfo, outputPackageFileNameFullPath);
                 }
                 else
