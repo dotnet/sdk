@@ -625,27 +625,27 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToDefaultMessage">
         <source>Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</source>
-        <target state="new">Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</target>
+        <target state="translated">スパンを 'default' と比較すると、意図したとおりに動作しない可能性があります。'IsEmpty' をチェックして、コードをより明示的にしてください</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullIsEmptyCodeFixTitle">
         <source>Use 'IsEmpty'</source>
-        <target state="new">Use 'IsEmpty'</target>
+        <target state="translated">'IsEmpty' の使用</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullMessage">
         <source>Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</source>
-        <target state="new">Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</target>
+        <target state="translated">スパンを 'null' と比較すると冗長である可能性があります。'null' リテラルは暗黙的に 'Span&lt;T&gt;.Empty' に変換されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullOrDefaultDescription">
         <source>Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</source>
-        <target state="new">Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</target>
+        <target state="translated">スパンを 'null' または 'default' と比較しても、意図したとおりにならない場合があります。'default' と 'null' リテラルは暗黙的に 'Span&lt;T&gt;.Empty' に変換されます。冗長な比較を削除するか、'IsEmpty' を使用してコードをより明示的にします。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullOrDefaultTitle">
         <source>Do not compare Span&lt;T&gt; to 'null' or 'default'</source>
-        <target state="new">Do not compare Span&lt;T&gt; to 'null' or 'default'</target>
+        <target state="translated">Span&lt;T&gt; を 'null' または 'default' と比較しない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -885,42 +885,42 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullCodeFixTitle">
         <source>Remove superfluous 'ArgumentNullException.ThrowIfNull' call</source>
-        <target state="new">Remove superfluous 'ArgumentNullException.ThrowIfNull' call</target>
+        <target state="translated">余分な 'ArgumentNullException.ThrowIfNull' 呼び出しを削除する</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullDescription">
         <source>'ArgumentNullException.ThrowIfNull' throws when the passed argument is 'null'. Certain constructs like non-nullable structs, 'nameof()' and 'new' expressions are known to never be null, so 'ArgumentNullException.ThrowIfNull' will never throw.</source>
-        <target state="new">'ArgumentNullException.ThrowIfNull' throws when the passed argument is 'null'. Certain constructs like non-nullable structs, 'nameof()' and 'new' expressions are known to never be null, so 'ArgumentNullException.ThrowIfNull' will never throw.</target>
+        <target state="translated">渡された引数が 'null' の場合、'ArgumentNullException.ThrowIfNull' がスローされます。null 非許容構造体、'nameof()'、'new' 式などの特定のコンストラクトは null になることはないため、'ArgumentNullException.ThrowIfNull' はスローされません。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullMessage">
         <source>Calling 'ArgumentNullException.ThrowIfNull' and passing a non-nullable value is a no-op</source>
-        <target state="new">Calling 'ArgumentNullException.ThrowIfNull' and passing a non-nullable value is a no-op</target>
+        <target state="translated">'ArgumentNullException.ThrowIfNull' を呼び出し、NULL 非許容の値を渡すことは no-op です</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullTitle">
         <source>Do not pass a non-nullable value to 'ArgumentNullException.ThrowIfNull'</source>
-        <target state="new">Do not pass a non-nullable value to 'ArgumentNullException.ThrowIfNull'</target>
+        <target state="translated">NULL 非許容値を 'ArgumentNullException.ThrowIfNull' に渡さない</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullCodeFixTitle">
         <source>Replace the 'ArgumentNullException.ThrowIfNull' call with a conditional</source>
-        <target state="new">Replace the 'ArgumentNullException.ThrowIfNull' call with a conditional</target>
+        <target state="translated">'ArgumentNullException.ThrowIfNull' 呼び出しを条件に置き換る</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullDescription">
         <source>'ArgumentNullException.ThrowIfNull' accepts an 'object', so passing a nullable struct may cause the value to be boxed.</source>
-        <target state="new">'ArgumentNullException.ThrowIfNull' accepts an 'object', so passing a nullable struct may cause the value to be boxed.</target>
+        <target state="translated">'ArgumentNullException.ThrowIfNull' は 'object' を受け入れるので、null 許容の構造体を渡すと値がボックス化される可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullMessage">
         <source>Passing a nullable struct to 'ArgumentNullException.ThrowIfNull' may cause boxing</source>
-        <target state="new">Passing a nullable struct to 'ArgumentNullException.ThrowIfNull' may cause boxing</target>
+        <target state="translated">NULL 許容構造体を 'ArgumentNullException.ThrowIfNull' に渡すと、ボックス化が発生する可能性があります</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullTitle">
         <source>Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull'</source>
-        <target state="new">Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull'</target>
+        <target state="translated">Null 許容構造体を 'ArgumentNullException.ThrowIfNull' に渡さないでください</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesDescription">
@@ -1165,7 +1165,7 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="DoNotUseThreadVolatileReadWriteCodeFixTitle">
         <source>Replace obsolete call</source>
-        <target state="new">Replace obsolete call</target>
+        <target state="translated">古い呼び出しを置き換える</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -2105,22 +2105,22 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsCodeFixTitle">
         <source>Use generic overload</source>
-        <target state="new">Use generic overload</target>
+        <target state="translated">ジェネリック オーバーロードの使用</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsDescription">
         <source>Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.</source>
-        <target state="new">Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.</target>
+        <target state="translated">ジェネリック オーバーロードの使用は、型が既知の場合に 'System.Type' オーバーロードに適しており、改善されたコンパイル時チェックで、よりクリーンでよりタイプ セーフなコードを促進します。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsMessage">
         <source>Prefer the generic overload '{0}' instead of '{1}'</source>
-        <target state="new">Prefer the generic overload '{0}' instead of '{1}'</target>
+        <target state="translated">'{1}' ではなく、ジェネリック オーバーロード '{0}' を優先する</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsTitle">
         <source>Prefer generic overload when type is known</source>
-        <target state="new">Prefer generic overload when type is known</target>
+        <target state="translated">型が既知の場合はジェネリック オーバーロードを優先する</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferHashDataCodefixTitle">
@@ -2305,12 +2305,12 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
         <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</source>
-        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</target>
+        <target state="translated">プロパティ 'MaxResponseHeadersLength' がバイト単位ではなくキロバイト単位で測定されています。指定された値に 1024 を乗算します。これは、意図した最大長を超える可能性があります。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
         <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
-        <target state="new">Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</target>
+        <target state="translated">値 '{0}' が正しいことを確認します。この値はバイト単位ではなくキロバイト単位で測定されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">

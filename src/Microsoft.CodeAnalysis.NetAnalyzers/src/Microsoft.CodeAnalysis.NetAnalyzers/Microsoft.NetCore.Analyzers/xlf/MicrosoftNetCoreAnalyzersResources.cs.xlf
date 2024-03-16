@@ -625,27 +625,27 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToDefaultMessage">
         <source>Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</source>
-        <target state="new">Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</target>
+        <target state="translated">Porovnání rozsahu s hodnotou default nemusí udělat to, co jste zamýšleli. Udělejte kód explicitnějším zaškrtnutím hodnoty IsEmpty.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullIsEmptyCodeFixTitle">
         <source>Use 'IsEmpty'</source>
-        <target state="new">Use 'IsEmpty'</target>
+        <target state="translated">Použijte IsEmpty</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullMessage">
         <source>Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</source>
-        <target state="new">Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</target>
+        <target state="translated">Porovnávání rozsahu s hodnotou null může být redundantní. Literál null se implicitně převede na Span&lt;T&gt;.Empty.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullOrDefaultDescription">
         <source>Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</source>
-        <target state="new">Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</target>
+        <target state="translated">Porovnávání rozsahu s hodnotou null nebo default nemusí udělat to, co jste zamýšleli. Literál default a null se implicitně převedou na Span&lt;T&gt;.Empty. Odeberte redundantní porovnání nebo nastavte kód explicitněji pomocí IsEmpty.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullOrDefaultTitle">
         <source>Do not compare Span&lt;T&gt; to 'null' or 'default'</source>
-        <target state="new">Do not compare Span&lt;T&gt; to 'null' or 'default'</target>
+        <target state="translated">Neporovnávejte rozsah Span&lt;T&gt; s hodnotami null nebo default</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -885,42 +885,42 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullCodeFixTitle">
         <source>Remove superfluous 'ArgumentNullException.ThrowIfNull' call</source>
-        <target state="new">Remove superfluous 'ArgumentNullException.ThrowIfNull' call</target>
+        <target state="translated">Odeberte nadbytečné volání ArgumentNullException.ThrowIfNull</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullDescription">
         <source>'ArgumentNullException.ThrowIfNull' throws when the passed argument is 'null'. Certain constructs like non-nullable structs, 'nameof()' and 'new' expressions are known to never be null, so 'ArgumentNullException.ThrowIfNull' will never throw.</source>
-        <target state="new">'ArgumentNullException.ThrowIfNull' throws when the passed argument is 'null'. Certain constructs like non-nullable structs, 'nameof()' and 'new' expressions are known to never be null, so 'ArgumentNullException.ThrowIfNull' will never throw.</target>
+        <target state="translated">ArgumentNullException.ThrowIfNull použije příkaz throw, pokud je předaný argument null. O některých konstruktorech, jako jsou struktury, které nemohou mít hodnotu null, výrazy nameof() a new, se ví, že nikdy nemají hodnotu null, takže argument ArgumentNullException.ThrowIfNull nikdy nepoužije příkaz throw.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullMessage">
         <source>Calling 'ArgumentNullException.ThrowIfNull' and passing a non-nullable value is a no-op</source>
-        <target state="new">Calling 'ArgumentNullException.ThrowIfNull' and passing a non-nullable value is a no-op</target>
+        <target state="translated">Volání argumentu ArgumentNullException.ThrowIfNull a předání hodnoty, která nemůže mít hodnotu null, není možné.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullTitle">
         <source>Do not pass a non-nullable value to 'ArgumentNullException.ThrowIfNull'</source>
-        <target state="new">Do not pass a non-nullable value to 'ArgumentNullException.ThrowIfNull'</target>
+        <target state="translated">Nepředávejte hodnotu, která nemůže mít hodnotu null, argumentu ArgumentNullException.ThrowIfNull</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullCodeFixTitle">
         <source>Replace the 'ArgumentNullException.ThrowIfNull' call with a conditional</source>
-        <target state="new">Replace the 'ArgumentNullException.ThrowIfNull' call with a conditional</target>
+        <target state="translated">Nahraďte volání ArgumentNullException.ThrowIfNull podmíněným výrazem</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullDescription">
         <source>'ArgumentNullException.ThrowIfNull' accepts an 'object', so passing a nullable struct may cause the value to be boxed.</source>
-        <target state="new">'ArgumentNullException.ThrowIfNull' accepts an 'object', so passing a nullable struct may cause the value to be boxed.</target>
+        <target state="translated">ArgumentNullException.ThrowIfNull přijímá hodnotu object, takže předání struktury s možnou hodnotou null může způsobit zabalení hodnoty.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullMessage">
         <source>Passing a nullable struct to 'ArgumentNullException.ThrowIfNull' may cause boxing</source>
-        <target state="new">Passing a nullable struct to 'ArgumentNullException.ThrowIfNull' may cause boxing</target>
+        <target state="translated">Předání struktury s možnou hodnotou null argumentu ArgumentNullException.ThrowIfNull může způsobit zabalení.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullTitle">
         <source>Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull'</source>
-        <target state="new">Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull'</target>
+        <target state="translated">Nepředávejte strukturu s možnou hodnotou null argumentu ArgumentNullException.ThrowIfNull.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesDescription">
@@ -1165,7 +1165,7 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="DoNotUseThreadVolatileReadWriteCodeFixTitle">
         <source>Replace obsolete call</source>
-        <target state="new">Replace obsolete call</target>
+        <target state="translated">Nahradit zastaralé volání</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -2105,22 +2105,22 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsCodeFixTitle">
         <source>Use generic overload</source>
-        <target state="new">Use generic overload</target>
+        <target state="translated">Použijte obecné přetížení</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsDescription">
         <source>Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.</source>
-        <target state="new">Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.</target>
+        <target state="translated">Použití obecného přetížení je vhodnější než přetížení System.Type, pokud je typ známý, což zvyšuje přehlednější kód zajišťující bezpečnost typů díky vylepšeným kontrolám za kompilace.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsMessage">
         <source>Prefer the generic overload '{0}' instead of '{1}'</source>
-        <target state="new">Prefer the generic overload '{0}' instead of '{1}'</target>
+        <target state="translated">Preferovat obecné přetížení {0} místo {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsTitle">
         <source>Prefer generic overload when type is known</source>
-        <target state="new">Prefer generic overload when type is known</target>
+        <target state="translated">Preferujte obecné přetížení, pokud je známý typ</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferHashDataCodefixTitle">
@@ -2305,12 +2305,12 @@ Obecné přetypování (IL unbox.any) používané sekvencí vrácenou metodou E
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
         <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</source>
-        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</target>
+        <target state="translated">Vlastnost MaxResponseHeadersLength se měří v kilobajtech, nikoli v bajtech. Zadaná hodnota se vynásobí hodnotou 1024, která může být větší než zamýšlená maximální délka.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
         <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
-        <target state="new">Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</target>
+        <target state="translated">Ujistěte se, že hodnota {0} je správná. Tato hodnota se měří v kilobajtech, nikoli v bajtech.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">

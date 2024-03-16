@@ -625,27 +625,27 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToDefaultMessage">
         <source>Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</source>
-        <target state="new">Comparing a span to 'default' might not do what you intended, make the code more explicit by checking 'IsEmpty'</target>
+        <target state="translated">La comparaison d’une étendue à « default » peut ne pas faire ce que vous avez prévu, rendre le code plus explicite en vérifiant « IsEmpty »</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullIsEmptyCodeFixTitle">
         <source>Use 'IsEmpty'</source>
-        <target state="new">Use 'IsEmpty'</target>
+        <target state="translated">Utiliser 'IsEmpty'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullMessage">
         <source>Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</source>
-        <target state="new">Comparing a span to 'null' might be redundant, the 'null' literal will be implicitly converted to a 'Span&lt;T&gt;.Empty'</target>
+        <target state="translated">La comparaison d’une étendue à 'null' peut être redondante. Le littéral 'null' est implicitement converti en 'Span&lt;T&gt;.Vide'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullOrDefaultDescription">
         <source>Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</source>
-        <target state="new">Comparing a span to 'null' or 'default' might not do what you intended. 'default' and the 'null' literal are implicitly converted to 'Span&lt;T&gt;.Empty'. Remove the redundant comparison or make the code more explicit by using 'IsEmpty'.</target>
+        <target state="translated">La comparaison d’une étendue à « null » ou « default » peut ne pas faire ce que vous avez prévu. 'default' et le littéral 'null' sont implicitement convertis en 'Span&lt;T&gt;. Vide'. Supprimez la comparaison redondante ou rendez le code plus explicite à l’aide de 'IsEmpty'.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCompareSpanToNullOrDefaultTitle">
         <source>Do not compare Span&lt;T&gt; to 'null' or 'default'</source>
-        <target state="new">Do not compare Span&lt;T&gt; to 'null' or 'default'</target>
+        <target state="translated">Ne pas comparer Span&lt;T&gt; à 'null' ou 'default'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotCreateTaskCompletionSourceWithWrongArgumentsDescription">
@@ -885,42 +885,42 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullCodeFixTitle">
         <source>Remove superfluous 'ArgumentNullException.ThrowIfNull' call</source>
-        <target state="new">Remove superfluous 'ArgumentNullException.ThrowIfNull' call</target>
+        <target state="translated">Supprimer l’appel superflu 'ArgumentNullException.ThrowIfNull'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullDescription">
         <source>'ArgumentNullException.ThrowIfNull' throws when the passed argument is 'null'. Certain constructs like non-nullable structs, 'nameof()' and 'new' expressions are known to never be null, so 'ArgumentNullException.ThrowIfNull' will never throw.</source>
-        <target state="new">'ArgumentNullException.ThrowIfNull' throws when the passed argument is 'null'. Certain constructs like non-nullable structs, 'nameof()' and 'new' expressions are known to never be null, so 'ArgumentNullException.ThrowIfNull' will never throw.</target>
+        <target state="translated">'ArgumentNullException.ThrowIfNull' lève lorsque l’argument passé est 'null'. Certaines constructions telles que les structs non nullables, les expressions 'nameof()' et 'new' sont connues pour ne jamais avoir la valeur null, donc 'ArgumentNullException.ThrowIfNull' ne lève jamais.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullMessage">
         <source>Calling 'ArgumentNullException.ThrowIfNull' and passing a non-nullable value is a no-op</source>
-        <target state="new">Calling 'ArgumentNullException.ThrowIfNull' and passing a non-nullable value is a no-op</target>
+        <target state="translated">L’appel de 'ArgumentNullException.ThrowIfNull' et le passage d’une valeur non nullable est une opération sans opération</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNullTitle">
         <source>Do not pass a non-nullable value to 'ArgumentNullException.ThrowIfNull'</source>
-        <target state="new">Do not pass a non-nullable value to 'ArgumentNullException.ThrowIfNull'</target>
+        <target state="translated">Ne passez pas de valeur non nullable à 'ArgumentNullException.ThrowIfNull'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullCodeFixTitle">
         <source>Replace the 'ArgumentNullException.ThrowIfNull' call with a conditional</source>
-        <target state="new">Replace the 'ArgumentNullException.ThrowIfNull' call with a conditional</target>
+        <target state="translated">Remplacez l’appel 'ArgumentNullException.ThrowIfNull' par une condition</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullDescription">
         <source>'ArgumentNullException.ThrowIfNull' accepts an 'object', so passing a nullable struct may cause the value to be boxed.</source>
-        <target state="new">'ArgumentNullException.ThrowIfNull' accepts an 'object', so passing a nullable struct may cause the value to be boxed.</target>
+        <target state="translated">'ArgumentNullException.ThrowIfNull' accepte un 'object', donc le passage d’un struct nullable peut entraîner la mise en boîte de la valeur.</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullMessage">
         <source>Passing a nullable struct to 'ArgumentNullException.ThrowIfNull' may cause boxing</source>
-        <target state="new">Passing a nullable struct to 'ArgumentNullException.ThrowIfNull' may cause boxing</target>
+        <target state="translated">Le passage d’un struct nullable à 'ArgumentNullException.ThrowIfNull' peut provoquer un boxing</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotPassNullableStructToArgumentNullExceptionThrowIfNullTitle">
         <source>Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull'</source>
-        <target state="new">Do not pass a nullable struct to 'ArgumentNullException.ThrowIfNull'</target>
+        <target state="translated">Ne pas passer un struct nullable à 'ArgumentNullException.ThrowIfNull'</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotRaiseReservedExceptionTypesDescription">
@@ -1165,7 +1165,7 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="DoNotUseThreadVolatileReadWriteCodeFixTitle">
         <source>Replace obsolete call</source>
-        <target state="new">Replace obsolete call</target>
+        <target state="translated">Remplacer un appel obsolète</target>
         <note />
       </trans-unit>
       <trans-unit id="DoNotUseTimersThatPreventPowerStateChangesDescription">
@@ -2105,22 +2105,22 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsCodeFixTitle">
         <source>Use generic overload</source>
-        <target state="new">Use generic overload</target>
+        <target state="translated">Utiliser une surcharge générique</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsDescription">
         <source>Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.</source>
-        <target state="new">Using a generic overload is preferable to the 'System.Type' overload when the type is known, promoting cleaner and more type-safe code with improved compile-time checks.</target>
+        <target state="translated">L’utilisation d’une surcharge générique est préférable à la surcharge « System.Type » lorsque le type est connu, ce qui favorise un code plus propre et plus sécurisé avec des vérifications améliorées au moment de la compilation.</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsMessage">
         <source>Prefer the generic overload '{0}' instead of '{1}'</source>
-        <target state="new">Prefer the generic overload '{0}' instead of '{1}'</target>
+        <target state="translated">Préférer la surcharge générique '{0}' au lieu de '{1}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferGenericOverloadsTitle">
         <source>Prefer generic overload when type is known</source>
-        <target state="new">Prefer generic overload when type is known</target>
+        <target state="translated">Préférer la surcharge générique lorsque le type est connu</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferHashDataCodefixTitle">
@@ -2305,12 +2305,12 @@ Les conversions étendues et définies par l’utilisateur ne sont pas prises en
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyDescription">
         <source>The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</source>
-        <target state="new">The property 'MaxResponseHeadersLength' is measured in kilobytes, not in bytes. The provided value is multiplied by 1024, which might be greater than your intended maximum length.</target>
+        <target state="translated">La propriété « MaxResponseHeadersLength » est mesurée en kilo-octets, et non en octets. La valeur fournie est multipliée par 1024, ce qui peut être supérieur à la longueur maximale prévue.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyMessage">
         <source>Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</source>
-        <target state="new">Make sure the value '{0}' is correct. This value is measured in kilobytes, not bytes.</target>
+        <target state="translated">Vérifiez que la valeur «{0}» est correcte. Cette valeur est mesurée en kilo-octets, et non en octets.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTitle">
