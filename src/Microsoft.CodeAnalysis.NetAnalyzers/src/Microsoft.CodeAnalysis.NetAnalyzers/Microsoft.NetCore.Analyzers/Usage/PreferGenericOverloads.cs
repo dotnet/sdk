@@ -68,9 +68,11 @@ namespace Microsoft.NetCore.Analyzers.Usage
             //   3. It is not the same as the containing symbol containing the original invocation
             //      This is to prevent cases where the generic method forwards to a non generic one, e.g. Foo<T>() calls Foo(typeof(T)).
             //      Without this condition we would create an infinite loop as we would replace Foo(typeof(T)) with Foo<T>().
-            //   4. The return type is assignable to the original return type. We do not check the return type for expression statements.
-            //   5. All other arguments of the original invocation are assignable to the parameters of the method.
-            //   6. Speculative binding of the new invocation succeeds; this is to check if any type parameter constraints are violated.
+            //   4. No nullability generic constraint is violated.
+            //      We must explicitly check for this, and not rely on the speculative binding later, since it will still succeed even if a notnull constraint is violated.
+            //   5. The return type is assignable to the original return type. We do not check the return type for expression statements.
+            //   6. All other arguments of the original invocation are assignable to the parameters of the method.
+            //   7. Speculative binding of the new invocation succeeds; this is to check if any type parameter constraints are violated.
             bool IsApplicableGenericOverload(IMethodSymbol method)
             {
                 // Reduce method if original method was reduced.
@@ -88,7 +90,8 @@ namespace Microsoft.NetCore.Analyzers.Usage
 
                 var genericMethod = method.Construct(invocationContext.TypeArguments.ToArray());
 
-                if (!invocationContext.IsReturnTypeCompatible(genericMethod, context.Compilation) ||
+                if (AreNullabilityConstraintsViolated(method) ||
+                    !invocationContext.IsReturnTypeCompatible(genericMethod, context.Compilation) ||
                     !invocationContext.AreOtherArgumentsCompatible(genericMethod, context.Compilation) ||
                     !TryGetModifiedInvocationSyntax(invocationContext, out var modifiedInvocationSyntax))
                 {
@@ -116,6 +119,20 @@ namespace Microsoft.NetCore.Analyzers.Usage
                 // This prevents cases where we bind to a overload that was ruled out before (e.g. it is the same as the containing symbol).
                 return SymbolEqualityComparer.Default.Equals(boundMethod, genericMethod)
                     && SymbolEqualityComparer.Default.Equals(boundMethod.ReturnType, genericMethod.ReturnType);
+
+                static bool AreNullabilityConstraintsViolated(IMethodSymbol method)
+                {
+                    for (int i = 0; i < method.TypeParameters.Length; i++)
+                    {
+                        if (method.TypeParameters[i].HasNotNullConstraint &&
+                            method.TypeArguments[i].CanHoldNullValue())
+                        {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
             }
         }
 
@@ -152,6 +169,13 @@ namespace Microsoft.NetCore.Analyzers.Usage
                     .Select(t => t.TypeOperand)
                     .Where(t => t is not INamedTypeSymbol { IsUnboundGenericType: true })
                     .ToImmutableArray();
+
+                // Bail out if there are no type arguments left after filtering out unbound generic types.
+                if (typeArguments.Length == 0)
+                {
+                    return false;
+                }
+
                 var otherArguments = argumentsInParameterOrder.RemoveRange(typeOfArguments);
 
                 invocationContext = new RuntimeTypeInvocationContext(invocation, typeArguments, otherArguments);
