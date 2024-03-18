@@ -179,11 +179,11 @@ extends:
             pool:
               ${{ if eq(variables['System.TeamProject'], 'public') }}:
                 name: $(DncEngPublicBuildPool)
-                image: 1es-ubunto-2204-open
+                image: 1es-ubuntu-2204-open
                 os: linux
               ${{ if ne(variables['System.TeamProject'], 'public') }}:
                 name: $(DncEngInternalBuildPool)
-                image: 1es-ubunto-2204
+                image: 1es-ubuntu-2204
                 os: windows
             ${{ if eq(variables['System.TeamProject'], 'public') }}:
               helixTargetQueue: ubuntu.2204.amd64.open
