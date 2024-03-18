@@ -27,8 +27,8 @@ extends:
   parameters:
     pool:
       name: NetCore1ESPool-Internal
-      image: 1es-windows-2022
-      os: windows
+      image: 1es-ubuntu-2204
+      os: linux
     customBuildTags:
     - ES365AIMigrationTooling
     stages:
