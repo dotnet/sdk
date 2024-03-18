@@ -7,9 +7,12 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
@@ -37,6 +40,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                   tempDirPath: tempDirPath)
 
         {
+            _workloadSetVersion = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
             _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);
             _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
             _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);
@@ -120,11 +124,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 else if (_printDownloadLinkOnly)
                 {
                     var packageUrls = GetUpdatablePackageUrlsAsync(_includePreviews).GetAwaiter().GetResult();
-                    PrintDownloadLink(packageUrls);
+                    Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
                 }
                 else if (_adManifestOnlyOption)
                 {
-                    _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption)).Wait();
+                     _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
+                        _includePreviews,
+                        ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath),
+                        string.IsNullOrWhiteSpace(_fromCacheOption) ?
+                            null :
+                            new DirectoryPath(_fromCacheOption))
+                        .Wait();
                     Reporter.WriteLine();
                     Reporter.WriteLine(LocalizableStrings.WorkloadUpdateAdManifestsSucceeded);
                 }
@@ -155,7 +165,19 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         try
                         {
-                            UpdateWorkloads(recorder, _includePreviews, string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
+                            DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
+                            if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+                            {
+                                CalculateManifestUpdatesAndUpdateWorkloads(recorder, _includePreviews, offlineCache);
+                            }
+                            else
+                            {
+                                RunInNewTransaction(context =>
+                                {
+                                    var manifestUpdates = HandleWorkloadUpdateFromVersion(context, offlineCache);
+                                    UpdateWorkloads(false, manifestUpdates, offlineCache, context, recorder);
+                                });
+                            }
                         }
                         catch (Exception e)
                         {
@@ -173,31 +195,73 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             return _workloadInstaller.ExitCode;
         }
 
-        public void UpdateWorkloads(WorkloadHistoryRecorder recorder = null, bool includePreviews = false, DirectoryPath? offlineCache = null)
+        public void CalculateManifestUpdatesAndUpdateWorkloads(WorkloadHistoryRecorder recorder = null, bool includePreviews = false, DirectoryPath? offlineCache = null)
         {
             Reporter.WriteLine();
+
+            var useRollbackOrHistory = !string.IsNullOrWhiteSpace(_fromRollbackDefinition) || !string.IsNullOrWhiteSpace(_fromHistorySpecified);
+            var useWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
+
+            if (useRollbackOrHistory && useWorkloadSets)
+            {
+                // Rollback files are only for loose manifests. Update the mode to be loose manifests.
+                Reporter.WriteLine(LocalizableStrings.UpdateFromRollbackSwitchesModeToLooseManifests);
+                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
+                useWorkloadSets = false;
+            }
 
             var workloadIds = GetUpdatableWorkloads();
             if (recorder is not null)
             {
                 recorder.HistoryRecord.WorkloadArguments = workloadIds.Select(id => id.ToString()).ToList();
             }
+            WriteSDKInstallRecordsForVSWorkloads(workloadIds);
+            _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
 
-            _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
+            IEnumerable<ManifestVersionUpdate> manifestsToUpdate;
+            RunInNewTransaction(context =>
+            {
+                if (useWorkloadSets)
+                {
+                    manifestsToUpdate = InstallWorkloadSet(context);
+                }
+                else
+                {
+                    manifestsToUpdate = useRollbackOrHistory ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+                }
 
-            var useRollbackOrHistory = !string.IsNullOrWhiteSpace(_fromRollbackDefinition) || !string.IsNullOrWhiteSpace(_fromHistorySpecified);
+                UpdateWorkloads(useRollbackOrHistory, manifestsToUpdate, offlineCache, context, recorder);
+                
+                Reporter.WriteLine();
+                Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
+                Reporter.WriteLine();
+            });
+        }
 
-            var manifestsToUpdate = CalculateManifestUpdates(recorder);
+        private void UpdateWorkloads(bool useRollback, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, ITransactionContext context, WorkloadHistoryRecorder recorder = null)
+        {
+            var workloadIds = GetUpdatableWorkloads();
+            if (recorder is not null)
+            {
+                recorder.HistoryRecord.WorkloadArguments = workloadIds.Select(id => id.ToString()).ToList();
+            }
 
-            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, shouldUpdateInstallState: useRollbackOrHistory, offlineCache);
+            UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, context, offlineCache);
 
             WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
             _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
+        }
 
-            Reporter.WriteLine();
-            Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
-            Reporter.WriteLine();
+        private void WriteSDKInstallRecordsForVSWorkloads(IEnumerable<WorkloadId> updateableWorkloads)
+        {
+#if !DOT_NET_BUILD_FROM_SOURCE
+            if (OperatingSystem.IsWindows())
+            {
+                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, updateableWorkloads, Reporter);
+            }
+#endif
         }
 
         private IEnumerable<ManifestVersionUpdate> CalculateManifestUpdates(WorkloadHistoryRecorder recorder)
@@ -220,23 +284,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             SdkFeatureBand sdkFeatureBand,
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate,
             bool shouldUpdateInstallState,
+            ITransactionContext context,
             DirectoryPath? offlineCache = null)
         {
-
-            var transaction = new CliTransaction();
-
-            transaction.RollbackStarted = () =>
-            {
-                Reporter.WriteLine(LocalizableStrings.RollingBackInstall);
-            };
-            // Don't hide the original error if roll back fails, but do log the rollback failure
-            transaction.RollbackFailed = ex =>
-            {
-                Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message));
-            };
-
-            transaction.Run(
-                action: context =>
+            context.Run(
+                action: () =>
                 {
                     foreach (var manifestUpdate in manifestsToUpdate)
                     {
@@ -262,6 +314,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                     {
                         _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion, useInstallStateOnly: true), offlineCache);
                     }
+
+                    _workloadInstaller.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : _workloadSetVersion);
 
                     _workloadResolver.RefreshWorkloadManifests();
 
@@ -350,6 +404,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                        .DeleteWorkloadInstallationRecord(id, sdkFeatureBand);
                 }
             }
+        }
+        
+        private void RunInNewTransaction(Action<ITransactionContext> a)
+        {
+            var transaction = new CliTransaction();
+            transaction.RollbackStarted = () =>
+            {
+                Reporter.WriteLine(LocalizableStrings.RollingBackInstall);
+            };
+            // Don't hide the original error if roll back fails, but do log the rollback failure
+            transaction.RollbackFailed = ex =>
+            {
+                Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message));
+            };
+
+            transaction.Run(context => a(context));
         }
     }
 }

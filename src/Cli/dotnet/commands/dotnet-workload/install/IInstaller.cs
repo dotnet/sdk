@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         int ExitCode { get; }
 
         SdkFeatureBand SdkFeatureBand { get; }
+        string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath);
 
         void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
 
@@ -34,6 +35,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         // This is for testing
         string GetFailingWorkloadFromTest();
+        void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion);
 
         /// <summary>
         /// Replace the workload resolver used by this installer. Typically used to call <see cref="GetDownloads(IEnumerable{WorkloadId}, SdkFeatureBand, bool)"/>

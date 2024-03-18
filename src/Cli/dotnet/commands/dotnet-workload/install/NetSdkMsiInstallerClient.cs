@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
@@ -262,6 +263,60 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public string GetFailingWorkloadFromTest() => null;
 
+        // advertisingPackagePath is the path to the workload set MSI nupkg in the advertising package.
+        public string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath)
+        {
+            var pathToReturn = string.Empty;
+            context.Run(
+                action: () =>
+                {
+                    pathToReturn = ModifyWorkloadSet(advertisingPackagePath, InstallAction.Install);
+                },
+                rollback: () =>
+                {
+                    ModifyWorkloadSet(advertisingPackagePath, InstallAction.Uninstall);
+                });
+
+            return pathToReturn;
+        }
+
+        private string ModifyWorkloadSet(string advertisingPackagePath, InstallAction requestedAction)
+        {
+            ReportPendingReboot();
+
+            // Resolve the package ID for the manifest payload package
+            var featureBand = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath));
+            var workloadSetVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
+            string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), new SdkFeatureBand(featureBand)).ToString();
+            string msiPackageVersion = WorkloadManifestUpdater.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion);
+
+            Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({workloadSetVersion}) to {msiPackageId} ({msiPackageVersion}).");
+
+            // Retrieve the payload from the MSI package cache.
+            MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, null);
+            VerifyPackage(msi);
+            DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
+
+            InstallAction plannedAction = PlanPackage(msi, state, requestedAction, installedVersion);
+
+            if (plannedAction != InstallAction.None)
+            {
+                Elevate();
+
+                ExecutePackage(msi, plannedAction, msiPackageId);
+
+                // Update the reference count against the MSI.
+                UpdateDependent(
+                    plannedAction == InstallAction.Uninstall ?
+                        InstallRequestType.RemoveDependent :
+                        InstallRequestType.AddDependent,
+                    msi.Manifest.ProviderKeyName,
+                    _dependent);
+            }
+
+            return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+        }
+
         /// <summary>
         /// Find all the dependents that look like they belong to SDKs. We only care
         /// about dependents that match the SDK host we're running under. For example, an x86 SDK should not be
@@ -519,6 +574,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
+        public void WriteWorkloadInstallRecords(IEnumerable<WorkloadId> workloadsToWriteRecordsFor)
+        {
+            foreach (var workload in workloadsToWriteRecordsFor)
+            {
+                Log?.LogMessage($"The workload with id: {workload} was detected as being from VS only and having no SDK records. Creating one now under feature band {_sdkFeatureBand}.");
+                RecordRepository.WriteWorkloadInstallationRecord(workload, _sdkFeatureBand);
+            }
+        }
+
         void RollBackMsiInstall(WorkloadDownload msiToRollback, DirectoryPath? offlineCache = null)
         {
             try
@@ -610,7 +674,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
         {
-            return new PackageId($"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
+            if (manifestId.ToString().Equals("Microsoft.NET.Workloads", StringComparison.OrdinalIgnoreCase))
+            {
+                return new PackageId($"{manifestId}.{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
+            }
+            else
+            {
+                return new PackageId($"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
+            }
         }
 
         private static object _msiAdminInstallLock = new();

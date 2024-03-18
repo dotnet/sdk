@@ -165,4 +165,7 @@
   <data name="HistoryManifestOnlyOptionDescription" xml:space="preserve">
     <value>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</value>
   </data>
+  <data name="UpdateFromRollbackSwitchesModeToLooseManifests" xml:space="preserve">
+    <value>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</value>
+  </data>
 </root>

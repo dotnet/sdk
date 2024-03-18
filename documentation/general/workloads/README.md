@@ -21,3 +21,4 @@ Other documentation for workloads is in this repo:
 - [Handling workload assets across major .NET versions](cross-version-workloads.md)
 - [Workload Clean Command](workload-clean.md)
 - [Workload History](workload-history.md)
+- [Workload MSI Installation Tests](/src/Tests/dotnet-MsiInstallation.Tests/README.md)

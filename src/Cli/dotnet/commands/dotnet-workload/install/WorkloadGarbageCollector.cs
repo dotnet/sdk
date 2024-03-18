@@ -78,11 +78,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             if (File.Exists(installStateFilePath))
             {
                 //  If there is a rollback state file (default.json) in the workload install state folder, don't garbage collect the workload set it specifies.
-                var installState = SdkDirectoryWorkloadManifestProvider.InstallStateReader.ReadInstallState(installStateFilePath);
-                if (!string.IsNullOrEmpty(installState.WorkloadSetVersion))
+                var installState = InstallStateContents.FromPath(installStateFilePath);
+                if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                 {
-                    WorkloadSetsToKeep.Add(installState.WorkloadSetVersion);
-                    _verboseReporter.WriteLine($"GC: Keeping workload set version {installState.WorkloadSetVersion} because it is specified in the install state file {installStateFilePath}");
+                    WorkloadSetsToKeep.Add(installState.WorkloadVersion);
+                    _verboseReporter.WriteLine($"GC: Keeping workload set version {installState.WorkloadVersion} because it is specified in the install state file {installStateFilePath}");
                 }
             }
             else

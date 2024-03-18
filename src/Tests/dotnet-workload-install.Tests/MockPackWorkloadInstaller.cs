@@ -27,6 +27,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public bool FailingGarbageCollection;
         private readonly string FailingPack;
         List<WorkloadHistoryRecord> HistoryRecords = new();
+        private string workloadSetContents;
         private string _dotnetDir;
 
         public IWorkloadResolver WorkloadResolver { get; set; }
@@ -34,8 +35,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public int ExitCode => 0;
         public SdkFeatureBand SdkFeatureBand => new("8.0.200");
 
-        public MockPackWorkloadInstaller(string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
-            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, List<WorkloadHistoryRecord> records = null, string dotnetDir = null)
+        public MockPackWorkloadInstaller(string dotnetDir, string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
+            IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, List<WorkloadHistoryRecord> records = null, string workloadSetContents = "")
         {
             InstallationRecordRepository = new MockInstallationRecordRepository(failingWorkload, installedWorkloads);
             FailingRollback = failingRollback;
@@ -44,6 +45,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             FailingGarbageCollection = failingGarbageCollection;
             HistoryRecords = records ?? HistoryRecords;
             _dotnetDir = dotnetDir ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            this.workloadSetContents = workloadSetContents;
         }
 
         IEnumerable<PackInfo> GetPacksForWorkloads(IEnumerable<WorkloadId> workloadIds)
@@ -65,6 +67,17 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
         {
             throw new NotImplementedException();
+        }
+
+        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion)
+        {
+            var installStatePath = Path.Combine(Path.GetTempPath(), "dotnetTestPath", "metadata", "workloads", sdkFeatureBand.ToString(), "InstallState", "default.json");
+            var contents = InstallStateContents.FromPath(installStatePath);
+            contents.WorkloadVersion = workloadVersion;
+            if (File.Exists(installStatePath))
+            {
+                File.WriteAllText(installStatePath, contents.ToString());
+            }
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
@@ -102,6 +115,14 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
                 RolledBackPacks.AddRange(packs);
             });
+        }
+
+        public string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath)
+        {
+            var version = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath ?? string.Empty));
+            Directory.CreateDirectory(advertisingPackagePath);
+            File.WriteAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName), version);
+            return Path.GetDirectoryName(advertisingPackagePath ?? string.Empty);
         }
 
         public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null) => throw new NotImplementedException();
