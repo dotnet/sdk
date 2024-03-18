@@ -1,0 +1,54 @@
+# This yml is used by these PR pipelines and triggers:
+# NOTE: the triggers are defined in the Azure DevOps UI as they are too complex
+#
+# - dotnet-source-build (public)
+#   - PR: ultralite build
+#   - CI: release/* only, every batched commit, full build
+#   - Schedule: main only, full build
+#
+# - dotnet-unified-build (public)
+#   - PR: lite build
+#   - CI: release/* only, every batched commit, full build
+#   - Schedule: main only, full build
+#
+# - dotnet-source-build (internal)
+#   - PR: ultralite build
+#
+# - dotnet-source-build-lite (internal)
+#   - PR: release/* and main, lite build, on-demand trigger
+#
+# - dotnet-unified-build (internal)
+#   - PR: lite build
+
+variables:
+# enable source-only build for pipelines that contain the -source-build string
+- name: isSourceOnlyBuild
+  value: ${{ contains(variables['Build.DefinitionName'], '-source-build') }}
+
+- name: isSourceOnlyBuildLite
+  value: ${{ contains(variables['Build.DefinitionName'], '-source-build-lite') }}
+
+- name: isScheduleTrigger
+  value: ${{ eq(variables['Build.Reason'], 'Schedule') }}
+
+- name: isPRTrigger
+  value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
+
+stages:
+- ${{ if and(ne(variables.isPRTrigger, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
+  - template: templates/stages/vmr-scan.yml
+
+- template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
+  parameters:
+    isBuiltFromVmr: true
+    isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+    ${{ if eq(variables.isScheduleTrigger, 'true') }}:
+      scope: full
+    ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:
+      scope: lite
+    ${{ elseif and(eq(variables.isPRTrigger, 'true'), eq(variables.isSourceOnlyBuild, 'true')) }}:
+      scope: ultralite
+    ${{ elseif and(eq(variables.isPRTrigger, 'true'), ne(variables.isSourceOnlyBuild, 'true')) }}:
+      scope: lite
+    ${{ else }}:
+      scope: full

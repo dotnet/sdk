@@ -7,7 +7,7 @@
       <SdkFilenamePrefix>dotnet-sdk-</SdkFilenamePrefix>
     </PropertyGroup>
     <ItemGroup>
-      <SdkTarballItem Include="$(ArtifactsAssetsDir)$(SdkFilenamePrefix)*$(ArchiveExtension)" />
+      <SdkTarballItem Include="$(ArtifactsAssetsDir)Sdk/**/$(SdkFilenamePrefix)*$(ArchiveExtension)" />
     </ItemGroup>
 
     <!--

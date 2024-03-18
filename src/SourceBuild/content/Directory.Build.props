@@ -173,7 +173,9 @@
 
     <VSMSBuildSdkResolversDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'toolset', 'VSSdkResolvers'))</VSMSBuildSdkResolversDir>
     <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>
+    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'AssetManifests'))</AssetManifestsIntermediateDir>
     <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
+    <ArtifactsAssetsSymbolsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsAssetsDir)', 'Symbols'))</ArtifactsAssetsSymbolsDir>
 
     <PrebuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'prebuilt'))</PrebuiltPackagesPath>
     <PreviouslyRestoredPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'previouslyRestored'))</PreviouslyRestoredPackagesPath>

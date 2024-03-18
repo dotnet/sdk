@@ -15,6 +15,7 @@
   <ItemGroup>
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="aspnetcore" />
+    <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
     <RepositoryReference Include="command-line-api" />
     <RepositoryReference Include="deployment-tools" />
     <RepositoryReference Include="emsdk" />
