@@ -4,7 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.DotNet.MsiInstallerTests
+namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
     class VirtualMachine : IDisposable
     {
@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     Log.WriteLine($"Removing missing snapshot from tree: {nodeToRemove.Value.resultingState.SnapshotName}");
                     node.Actions.Remove(nodeToRemove.Key);
                 }
-                
+
                 foreach (var result in node.Actions.Select(a => a.Value.resultingState))
                 {
                     Recurse(result);
@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             }
             else if (action.Type == VMActionType.ActionGroup && result.GroupedResults != null)
             {
-                for (int i=0; i<result.GroupedResults.Count; i++)
+                for (int i = 0; i < result.GroupedResults.Count; i++)
                 {
                     LogActionResult(action.Actions[i], result.GroupedResults[i]);
                 }

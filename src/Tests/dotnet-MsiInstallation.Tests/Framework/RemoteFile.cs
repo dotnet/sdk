@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions.Execution;
 
-namespace Microsoft.DotNet.MsiInstallerTests
+namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
     abstract class RemoteFile
     {
