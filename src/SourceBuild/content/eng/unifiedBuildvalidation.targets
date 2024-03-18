@@ -4,28 +4,50 @@
     <UnifiedBuildValidationTestsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'test', 'Microsoft.DotNet.UnifiedBuild.Tests'))</UnifiedBuildValidationTestsDir>
   </PropertyGroup>
 
-  <Target Name="RunUnifiedBuildValidation">
+  <Target Name="RunUnifiedBuildValidation"
+          AfterTargets="Build">
     <ItemGroup>
       <SdkTarballItem Include="$(ArtifactsAssetsDir)dotnet-sdk*$(ArchiveExtension)" />
       <SourceBuiltArtifactsItem Include="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)" />
     </ItemGroup>
 
     <PropertyGroup>
-      <!-- <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath> -->
+      <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
       <SdkBaselineValidationVerbosity Condition="'$(SdkBaselineValidationVerbosity)' == ''">normal</SdkBaselineValidationVerbosity>
     </PropertyGroup>
+
+      <GetValidArchiveItems ArchiveItems="@(SdkTarballItem)"
+                            ArchiveName="dotnet-sdk">
+        <Output TaskParameter="ValidArchiveItems"
+                ItemName="_BuiltSdkArchivePath"/>
+      </GetValidArchiveItems>
+
+      <!-- There should only be 1 SDK archive -->
+      <Error Text="Multiple valid dotnet-sdk archives found."
+             Condition="'@(_BuiltSdkArchivePath->Count())' != '1'" />
+
+      <GetClosestOfficialSdk BuiltArchivePath="@(_BuiltSdkArchivePath)" Condition="'$(BaselineMsftArchivePath)' == ''">
+        <Output TaskParameter="ClosestOfficialArchivePath"
+                PropertyName="BaselineMsftArchivePath" />
+      </GetClosestOfficialSdk>
+
+      <PropertyGroup>
+        <_BuiltSdkArchivePath>@(_BuiltSdkArchivePath)</_BuiltSdkArchivePath>
+      </PropertyGroup>
 
     <!-- Multiple loggers are specified so that results are captured in trx and pipelines can fail with AzDO pipeline warnings -->
     <Exec Command="$(DotnetTool) test $(UnifiedBuildValidationTestsDir) --logger:trx -c $(Configuration) -p:VSTestUseMSBuildOutput=false"
           IgnoreStandardErrorWarningFormat="true"
           EnvironmentVariables="
-            UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH=$(SdkTarballPath);
+            UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH=$(_BuiltSdkArchivePath);
+            UNIFIED_BUILD_VALIDATION_MSFT_SDK_TARBALL_PATH=$(BaselineMsftArchivePath);
             UNIFIED_BUILD_VALIDATION_SOURCEBUILT_ARTIFACTS_PATH=$(SourceBuiltArtifactsPath);
             UNIFIED_BUILD_VALIDATION_TARGET_RID=$(TargetRid);
             UNIFIED_BUILD_VALIDATION_PORTABLE_RID=$(PortableRid);
             UNIFIED_BUILD_VALIDATION_CUSTOM_PACKAGES_PATH=$(CustomSourceBuiltPackagesPath);
             UNIFIED_BUILD_VALIDATION_WARN_SDK_CONTENT_DIFFS=true;
             $(CustomTestEnvVars)" />
+
   </Target>
 
 </Project>

@@ -16,21 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\TestBase.cs" />
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\SdkTests.cs" />
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\SdkContentTests.cs" />
-
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\SkippableFactAttribute.cs" />
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\SkippableTheoryAttribute.cs" />
-
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\DotnetHelper.cs" />
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\DotnetTemplate.cs" />
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\Utilities.cs" />
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\BaselineHelper.cs" />
-    <Compile Include="..\Microsoft.DotNet.SourceBuild.SmokeTests\ExecuteHelper.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="assets\**"
              CopyToOutputDirectory="Always" />
   </ItemGroup>

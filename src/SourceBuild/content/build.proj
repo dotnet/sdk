@@ -27,6 +27,7 @@
 
   <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
   <Import Project="$(RepositoryEngineeringDir)sdkArchiveDiff.targets" Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" />
+  <Import Project="$(RepositoryEngineeringDir)unifiedBuildValidation.targets" Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" />
 
   <!-- Intentionally below the import to appear at the end. -->
   <Target Name="LogBuildOutputFolders"
