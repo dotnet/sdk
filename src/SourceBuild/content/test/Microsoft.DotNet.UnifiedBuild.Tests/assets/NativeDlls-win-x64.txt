@@ -11,3 +11,4 @@
 #
 # We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
 
+./shared/Microsoft.NETCore.App/x.y.z/mscordaccore_amd64_amd64_x.y.z.dll
