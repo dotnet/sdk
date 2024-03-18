@@ -123,15 +123,15 @@
     </Dependency>
     <Dependency Name="NuGet.Build.Tasks" Version="6.3.4-rc.2">
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
-      <Sha>5e444458a8c4a2dac9806fc1d387b7f157669540</Sha>
+      <Sha>5ec7c4dd0086f968a8bc5a20d5cc77b1454469f3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.3.4-rc.2">
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
-      <Sha>5e444458a8c4a2dac9806fc1d387b7f157669540</Sha>
+      <Sha>5ec7c4dd0086f968a8bc5a20d5cc77b1454469f3</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Localization" Version="6.0.6-rc.4">
+    <Dependency Name="NuGet.Localization" Version="6.3.4-rc.2">
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
-      <Sha>451e9bc27184dc49d04e975122c9e7189d525872</Sha>
+      <Sha>5ec7c4dd0086f968a8bc5a20d5cc77b1454469f3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.3.3-release-20230405-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
