@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public int ExitCode => 0;
         public SdkFeatureBand SdkFeatureBand => new("8.0.200");
 
-        public MockPackWorkloadInstaller(string dotnetDir, string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
+        public MockPackWorkloadInstaller(string dotnetDir = null, string failingWorkload = null, string failingPack = null, bool failingRollback = false, IList<WorkloadId> installedWorkloads = null,
             IList<PackInfo> installedPacks = null, bool failingGarbageCollection = false, List<WorkloadHistoryRecord> records = null, string workloadSetContents = "")
         {
             InstallationRecordRepository = new MockInstallationRecordRepository(failingWorkload, installedWorkloads);

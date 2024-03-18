@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         private IWorkloadResolver _resolver;
         private bool _fromWorkloadSet;
 
-        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null, IWorkloadResolver resolver = null)
+        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null, IWorkloadResolver resolver = null, bool fromWorkloadSet = false)
         {
             _manifestUpdates = manifestUpdates ?? new List<ManifestUpdateWithWorkloads>();
             _fromWorkloadSet = fromWorkloadSet;
@@ -105,6 +105,6 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public void DeleteUpdatableWorkloadsFile() { }
 
         public void DownloadWorkloadSet(string version, DirectoryPath? offlineCache) => throw new NotImplementedException();
-        public IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files) => _manifestUpdates.Select(t => t.ManifestUpdate);
+        public IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files, WorkloadHistoryRecorder recorder = null) => _manifestUpdates.Select(t => t.ManifestUpdate);
     }
 }

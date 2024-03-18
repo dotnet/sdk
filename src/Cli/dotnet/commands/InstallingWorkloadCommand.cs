@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             return installStateContents.UseWorkloadSets ?? false;
         }
 
-        protected IEnumerable<ManifestVersionUpdate> HandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache)
+        protected IEnumerable<ManifestVersionUpdate> HandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache, WorkloadHistoryRecorder recorder = null)
         {
             // Ensure workload set mode is set to 'workloadset'
             // Do not skip checking the mode first, as setting it triggers
@@ -119,10 +119,10 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
 
             _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
-            return InstallWorkloadSet(context);
+            return InstallWorkloadSet(context, recorder);
         }
 
-        public IEnumerable<ManifestVersionUpdate> InstallWorkloadSet(ITransactionContext context)
+        public IEnumerable<ManifestVersionUpdate> InstallWorkloadSet(ITransactionContext context, WorkloadHistoryRecorder recorder = null)
         {
             var advertisingPackagePath = Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads");
             if (File.Exists(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)))
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
             var workloadSetPath = _workloadInstaller.InstallWorkloadSet(context, advertisingPackagePath);
             var files = Directory.EnumerateFiles(workloadSetPath, "*.workloadset.json");
-            return _workloadManifestUpdater.ParseRollbackDefinitionFiles(files);
+            return _workloadManifestUpdater.ParseRollbackDefinitionFiles(files, recorder);
         }
 
         private void PrintWorkloadSetTransition(string newVersion)

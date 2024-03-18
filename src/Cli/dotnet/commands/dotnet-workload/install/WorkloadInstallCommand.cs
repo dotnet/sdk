@@ -138,8 +138,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             {
                                 RunInNewTransaction(context =>
                                 {
-                                    var manifests = HandleWorkloadUpdateFromVersion(context, offlineCache);
-                                    InstallWorkloadsAndGarbageCollect(context, workloadIds, manifests, offlineCache, false, recorder);
+                                    var manifests = HandleWorkloadUpdateFromVersion(context, offlineCache, recorder);
+                                    InstallWorkloadsAndGarbageCollect(context, workloadIds, manifests, offlineCache, false);
                                 });
                             }
                         }

@@ -83,9 +83,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                     "userProfileDir");
 
             MockPackWorkloadInstaller mockInstaller = new MockPackWorkloadInstaller(
-                    installedWorkloads: new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios"), },
-                    installedPacks: new List<PackInfo>() { mauiAndroidPack, mauiIosPack },
-                    records: new List<WorkloadHistoryRecord>() { JsonSerializer.Deserialize<WorkloadHistoryRecord>(workloadHistoryRecord) })
+                installedWorkloads: new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios"), },
+                installedPacks: new List<PackInfo>() { mauiAndroidPack, mauiIosPack },
+                records: new List<WorkloadHistoryRecord>() { JsonSerializer.Deserialize<WorkloadHistoryRecord>(workloadHistoryRecord) })
             {
                 WorkloadResolver = workloadResolver
             };
@@ -560,8 +560,8 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 CreatePackInfo("Xamarin.Android.Framework", "8.2.0", WorkloadPackKind.Framework, Path.Combine(dotnetRoot, "packs", "Xamarin.Android.Framework", "8.2.0"), "Xamarin.Android.Framework")
             };
             var installer = includeInstalledPacks ?
-                new MockPackWorkloadInstaller(failingWorkload, failingPack, installedWorkloads: installedWorkloads, installedPacks: installedPacks, dotnetDir: dotnetRoot) :
-                new MockPackWorkloadInstaller(failingWorkload, failingPack, installedWorkloads: installedWorkloads, dotnetDir: dotnetRoot);
+                new MockPackWorkloadInstaller(dotnetDir: dotnetRoot, failingWorkload, failingPack, installedWorkloads: installedWorkloads, installedPacks: installedPacks) :
+                new MockPackWorkloadInstaller(dotnetDir: dotnetRoot, failingWorkload, failingPack, installedWorkloads: installedWorkloads);
 
             var copiedManifestFolder = Path.Combine(dotnetRoot, "sdk-manifests", new SdkFeatureBand(sdkVersion).ToString(), "SampleManifest");
             Directory.CreateDirectory(copiedManifestFolder);

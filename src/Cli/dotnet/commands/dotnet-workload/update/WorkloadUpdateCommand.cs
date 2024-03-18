@@ -227,7 +227,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 }
                 else
                 {
-                    manifestsToUpdate = useRollbackOrHistory ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                    manifestsToUpdate = useRollbackOrHistory ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, recorder) :
                     _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
                 }
 
