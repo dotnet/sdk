@@ -1,0 +1,109 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Nikola Milosavljevic <nikolam@microsoft.com>
+Date: Thu, 7 Mar 2024 21:20:16 +0000
+Subject: [PATCH] Enable publishing in VMR
+
+Backport: https://github.com/NuGet/NuGet.Client/pull/5673
+---
+ Directory.Packages.props           |  1 +
+ eng/Publishing.props               | 31 ++++++++++++++++++++++++++
+ eng/source-build/source-build.proj | 35 ++++++++++++++++++++++++++++++
+ 3 files changed, 67 insertions(+)
+ create mode 100644 eng/Publishing.props
+
+diff --git a/Directory.Packages.props b/Directory.Packages.props
+index 5de784200..789f9493f 100644
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -179,6 +179,7 @@
+       <_allowBuildFromSourcePackage Include="Microsoft.Build.Utilities.Core" />
+       <_allowBuildFromSourcePackage Include="Microsoft.Build" />
+       <_allowBuildFromSourcePackage Include="Microsoft.CSharp" />
++      <_allowBuildFromSourcePackage Include="Microsoft.DotNet.Build.Tasks.Feed" />
+       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.FileProviders.Abstractions" />
+       <_allowBuildFromSourcePackage Include="Microsoft.Extensions.FileSystemGlobbing" />
+diff --git a/eng/Publishing.props b/eng/Publishing.props
+new file mode 100644
+index 000000000..81f0204a7
+--- /dev/null
++++ b/eng/Publishing.props
+@@ -0,0 +1,31 @@
++<?xml version="1.0" encoding="utf-8"?>
++<Project>
++  <PropertyGroup>
++    <PublishingVersion>3</PublishingVersion>
++    <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
++    <PublishDependsOnTargets>$(PublishDependsOnTargets);_PublishPackages</PublishDependsOnTargets>
++  </PropertyGroup>
++
++  <ItemGroup>
++    <_PackagesToPublish Remove="@(_PackagesToPublish)" />
++    <_PackagesToPublish Include="$(ArtifactsDir)nupkgs/*.nupkg" UploadPathSegment="nuget-client" Condition="'$(DotNetBuildFromSource)' == 'true'" />
++    <_SymbolsPackages Include="$(ArtifactsDir)nupkgs/*.symbols.nupkg" />
++    <_PackagesToPublish Remove="@(_SymbolsPackages)" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
++  </ItemGroup>
++
++  <Target Name="_PublishPackages">
++    <ItemGroup>
++      <!-- Do not push .nupkg files from Linux and macOS builds. They'll be packed up separately and signed on Windows.
++           Do not remove if post build sign is true, as we avoid the xplat codesign jobs, and need to have
++           the nupkgs pushed. Do not do this if building from source, since we want the source build intermediate package
++           to be published. Use DotNetBuildRepo as DotNetBuildFromSource is only set in the internal source build,
++           and Build.proj is invoked from the wrapper build. -->
++      <ItemsToPushToBlobFeed Remove="@(ItemsToPushToBlobFeed)" Condition="'$(OS)' != 'Windows_NT' and '$(PostBuildSign)' != 'true' and '$(DotNetBuildRepo)' != 'true'" />
++
++      <ItemsToPushToBlobFeed Include="@(_PackagesToPublish)">
++        <IsShipping>true</IsShipping>
++      </ItemsToPushToBlobFeed>
++    </ItemGroup>
++  </Target>
++
++</Project>
+\ No newline at end of file
+diff --git a/eng/source-build/source-build.proj b/eng/source-build/source-build.proj
+index 612811d81..3485a4212 100644
+--- a/eng/source-build/source-build.proj
++++ b/eng/source-build/source-build.proj
+@@ -62,6 +62,41 @@
+              Properties="Configuration=$(BuildConfiguration);DotNetBuildFromSource=true"
+              Targets="PackXPlat" />
+ 
++    <ItemGroup>
++      <_AfterSourceBuildProperties Include="_NETCORE_ENGINEERING_TELEMETRY=AfterSourceBuild" />
++      <_AfterSourceBuildProperties Include="ArcadeBuildFromSource=true"/>
++      <_AfterSourceBuildProperties Include="ArcadeInnerBuildFromSource=true"/>
++    </ItemGroup>
++
++    <MSbuild Projects="$(ArcadeDir)/SourceBuild/AfterSourceBuild.proj"
++             Properties="@(_AfterSourceBuildProperties)"
++            />
++
++    <ItemGroup>
++      <_PublishProperties Include="_NETCORE_ENGINEERING_TELEMETRY=Publish" />
++      <_PublishProperties Include="Configuration=$(Configuration)" />
++      <_PublishProperties Include="ArcadeBuildFromSource=$(ArcadeBuildFromSource)" />
++      <_PublishProperties Include="ArcadeInnerBuildFromSource=true" />
++      <_PublishProperties Include="DotNetBuildFromSource=$(DotNetBuildFromSource)" />
++      <_PublishProperties Include="DotNetBuildFromSourceFlavor=$(DotNetBuildFromSourceFlavor)" />
++      <_PublishProperties Include="DotNetBuildInnerRepo=true" />
++      <_PublishProperties Include="DotNetBuildOrchestrator=$(DotNetBuildOrchestrator)" />
++      <_PublishProperties Include="DotNetBuildPhase=InnerRepo" />
++      <_PublishProperties Include="DotNetBuildRepo=$(DotNetBuildRepo)" />
++      <_PublishProperties Include="DotNetBuildSourceOnly=$(DotNetBuildSourceOnly)" />
++      <_PublishProperties Include="DotNetPublishUsingPipelines=true" />
++      <_PublishProperties Include="PublishToSymbolServer=false" />
++      <_PublishProperties Include="AssetsLocalStorageDir=$(SourceBuiltAssetsDir)" />
++      <_PublishProperties Include="ShippingPackagesLocalStorageDir=$(SourceBuiltShippingPackagesDir)" />
++      <_PublishProperties Include="NonShippingPackagesLocalStorageDir=$(SourceBuiltNonShippingPackagesDir)" />
++      <_PublishProperties Include="AssetManifestsLocalStorageDir=$(SourceBuiltAssetManifestsDir)" />
++    </ItemGroup>
++
++    <MSBuild Projects="$(ArcadeDir)Publish.proj"
++             Properties="@(_PublishProperties)"
++             Targets="Publish"
++             Condition="'$(DotNetBuildOrchestrator)' == 'true'" />
++
+   </Target>
+ 
+   <Target Name="ApplySourceBuildPatchFiles">

@@ -407,6 +407,7 @@
           linux-x64;
           linux-arm;
           linux-arm64;
+          linux-bionic-arm;
           linux-musl-x64;
           linux-musl-arm;
           linux-musl-arm64;

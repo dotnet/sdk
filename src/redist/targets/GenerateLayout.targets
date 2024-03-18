@@ -102,23 +102,18 @@
     </PropertyGroup>
 
     <!-- Generate the version specific URLs to the targeting packs, runtime packs, etc. -->
-    <!-- VMR builds currently use a flat layout under the provided PublicBaseURL -->
     <PropertyGroup>
       <NetRuntimeRootUrl>$(PublicBaseURL)Runtime/$(NetRuntimeBlobVersion)</NetRuntimeRootUrl>
-      <NetRuntimeRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(PublicBaseURL)</NetRuntimeRootUrl>
 
       <NetStandardTargetingPackRootUrl>$(OfficialBaseURL)Runtime/$(NETStandardTargetingPackBlobVersion)</NetStandardTargetingPackRootUrl>
 
       <AspNetCoreSharedFxRootUrl>$(PublicBaseURL)aspnetcore/Runtime/$(AspNetCoreBlobVersion)</AspNetCoreSharedFxRootUrl>
-      <AspNetCoreSharedFxRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' and '$(DotNetBuildSourceOnly)' == 'true'">$(PublicBaseURL)</AspNetCoreSharedFxRootUrl>
       <!-- Aspnet is not currently built in the VMR. Remove this line when https://github.com/dotnet/source-build/issues/4022 is complete. -->
       <AspNetCoreSharedFxRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' and '$(DotNetBuildSourceOnly)' != 'true'">$(FallbackPublicBaseURL)aspnetcore/Runtime/$(AspNetCoreBlobVersion)</AspNetCoreSharedFxRootUrl>
 
       <WinFormsAndWpfSharedFxRootUrl>$(PublicBaseURL)WindowsDesktop/$(WindowsDesktopBlobVersion)</WinFormsAndWpfSharedFxRootUrl>
-      <WinFormsAndWpfSharedFxRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(PublicBaseURL)</WinFormsAndWpfSharedFxRootUrl>
 
       <ToolsetArchiveRootUrl>$(PublicBaseURL)Sdk/$(MicrosoftDotnetToolsetInternalPackageVersion)</ToolsetArchiveRootUrl>
-      <ToolsetArchiveRootUrl Condition=" '$(DotNetBuildOrchestrator)' == 'true' ">$(PublicBaseURL)</ToolsetArchiveRootUrl>
 
       <NetRuntimeDownloadDirectory>$(IntermediateDirectory)/coreSetupDownload/$(MicrosoftNETCoreAppRuntimePackageVersion)</NetRuntimeDownloadDirectory>
       <CombinedSharedHostAndFrameworkArchive>$(NetRuntimeDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>

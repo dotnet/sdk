@@ -16,14 +16,16 @@
   <PropertyGroup>
     <BuildCommand Condition="'$(BuildCommand)' == '' and '$(IsUtilityProject)' != 'true'">$(BuildScript) $(BuildActions) $(BuildArgs)</BuildCommand>
 
-    <!-- MinimalConsoleLogOutput determines if the repository build should be logged to a separate file or directly to the console. -->
+    <!-- MinimalConsoleLogOutput determines if the repository build should be logged to a separate file or directly to the console.
+         Enable it by default as with prallel repository builds the log becomes non-readable. -->
     <RepoConsoleLogFile>$(ArtifactsLogDir)$(RepositoryName).log</RepoConsoleLogFile>
-    <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == '' and '$(ContinuousIntegrationBuild)' == 'true'">true</MinimalConsoleLogOutput>
+    <MinimalConsoleLogOutput Condition="'$(MinimalConsoleLogOutput)' == ''">$(BuildInParallel)</MinimalConsoleLogOutput>
 
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
     <ProjectAssetsJsonArchiveFile>$(PackageReportDir)all-project-assets-json-files.zip</ProjectAssetsJsonArchiveFile>
     <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
     <RepoManifestFile>$([MSBuild]::NormalizePath('$(ProjectDirectory)', 'artifacts', 'RepoManifest.xml'))</RepoManifestFile>
+    <RepoAssetsSymbolsArchive>$(ArtifactsAssetsSymbolsDir)Symbols.$(RepositoryName)$(ArchiveExtension)</RepoAssetsSymbolsArchive>
 
     <IntermediateSymbolsRepoDir>$(IntermediateSymbolsRootDir)$(RepositoryName)</IntermediateSymbolsRepoDir>
   </PropertyGroup>
@@ -36,7 +38,39 @@
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageVersionsProps" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WritePackageUsageData" />
   <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageReports" />
-  
+
+  <!-- Returns the repository references of this project and all the projects this project references, recursively -->
+  <Target Name="GetTransitiveRepositoryReferences" Outputs="@(TransitiveRepositoryReference)">
+    <ItemGroup>
+      <_TransitiveRepositoryReference Include="@(RepositoryReference)" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(RepositoryReference->'%(Identity).proj')"
+             Targets="GetTransitiveRepositoryReferences"
+             BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_DependencyTransitiveRepositoryReference" />
+    </MSBuild>
+
+    <!-- When items are transferred between projects, they get metadata indicating their source (e.g. MSBuildSourceProjectFile).
+         This is problematic because it causes introduces distinctness on the items. For example, an arcade RepositoryReference
+         that comes from both msbuild and source-build-externals will be treated as two separate items. But we only want one arcade
+         reference. To prevent this from happening, we need to remove the extra metadata so the two references can be seen as duplicates. -->
+    <ItemGroup>
+      <_TransitiveRepositoryReference Include="@(_DependencyTransitiveRepositoryReference)"
+                                      RemoveMetadata="MSBuildSourceProjectFile;MSBuildSourceTargetName;OriginalItemSpec" />
+      <TransitiveRepositoryReference Include="@(_TransitiveRepositoryReference)" KeepDuplicates="false" />
+    </ItemGroup>
+
+    <!-- Exclude repositories that currently don't build when not building source-only. -->
+    <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+      <TransitiveRepositoryReference Remove="roslyn" />
+      <TransitiveRepositoryReference Remove="aspnetcore" />
+      <TransitiveRepositoryReference Remove="nuget-client" />
+      <TransitiveRepositoryReference Remove="fsharp" />
+      <TransitiveRepositoryReference Remove="vstest" />
+    </ItemGroup>
+  </Target>
+
   <!-- Wraps the transitive repo references with additional metadata -->
   <Target Name="GetRepositoryReferenceInfo"
           DependsOnTargets="GetTransitiveRepositoryReferences">
@@ -376,9 +410,13 @@
     <Message Importance="High" Text="See '$(RepoConsoleLogFile)' for more information." Condition="Exists('$(RepoConsoleLogFile)') and '$(MinimalConsoleLogOutput)' == 'true'" />
   </Target>
 
+  <!--
+    Remove this target after arcade changes for publishing have flown to installer repo.
+    https://github.com/dotnet/source-build/issues/4207
+  -->
   <Target Name="CopyRepoArtifacts"
           DependsOnTargets="RepoBuild"
-          Condition="'$(IsUtilityProject)' != 'true'"
+          Condition="'$(IsUtilityProject)' != 'true' and Exists('$(RepoManifestFile)')"
           Inputs="$(RepoManifestFile)"
           Outputs="$(BaseIntermediateOutputPath)CopyRepoArtifacts.complete">
     <Error Text="Repo manifest file doesn't exist." Condition="!Exists('$(RepoManifestFile)')" />
@@ -458,7 +496,7 @@
   <!-- Copy restored packages from inner build to ensure they're included in the
        main build prebuilt check -->
   <Target Name="CopyInnerBuildRestoredPackages"
-          Condition="'$(IsUtilityProject)' != 'true'">
+          Condition="'$(IsUtilityProject)' != 'true' and '$(DotNetBuildSourceOnly)' == 'true'">
     <ItemGroup>
       <_InnerPackageCacheFiles Include="$(ProjectDirectory)artifacts/sb/package-cache/**/*" />
     </ItemGroup>
@@ -482,8 +520,11 @@
       These source generators are written incorrectly (a source generator should never do IO itself),
       but the required features to read in binary files as input to a source generator don't exist.
       To work around these source generators, shut down the compiler server so we can delete the obj directories.
+      Don't fail the build when shutdown returns a failure.
     -->
-    <Exec Command="$(DotnetTool) build-server shutdown --vbcscompiler" />
+    <Exec Command="$(DotnetTool) build-server shutdown --vbcscompiler"
+          IgnoreStandardErrorWarningFormat="true"
+          IgnoreExitCode="true" />
 
     <PropertyGroup>
       <BuildLogsDir>$([MSBuild]::NormalizeDirectory('$(ProjectDirectory)', 'artifacts', 'buildLogs'))</BuildLogsDir>
@@ -569,8 +610,18 @@
     </Touch>
   </Target>
 
+  <Target Name="DiscoverSymbolsArchiveFile"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true' and
+                     '$(IsUtilityProject)' != 'true' and
+                     Exists('$(RepoAssetsSymbolsArchive)')">
+
+    <ItemGroup>
+      <RepoSymbolsArchive Include="$(RepoAssetsSymbolsArchive)" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="ExtractSymbolsArchiveFile"
-          DependsOnTargets="CopyRepoArtifacts"
+          DependsOnTargets="CopyRepoArtifacts;DiscoverSymbolsArchiveFile"
           Condition="'$(DotNetBuildSourceOnly)' == 'true' and
                      '$(IsUtilityProject)' != 'true' and
                      '@(RepoSymbolsArchive)' != ''"
@@ -592,11 +643,11 @@
     CopyRepoArtifacts;
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
+    DiscoverSymbolsArchiveFile;
     ExtractSymbolsArchiveFile;
     CleanupRepo" />
 
   <Target Name="WritePrebuiltUsageData"
-          DependsOnTargets="GetAllProjectDirectories"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)WritePrebuiltUsageData.complete">
     <!-- Save the PVP snapshot of each build step to be evaluated while building the report. -->
@@ -606,77 +657,68 @@
     <Copy SourceFiles="@(PackageVersionPropsSnapshotFiles)" DestinationFolder="$(PackageReportDir)snapshots/" />
 
     <ItemGroup>
-      <AllRestoredPackageFiles Include="$(NuGetPackageRoot)**/*.nupkg" />
+      <RestoredPackageFile Include="$(NuGetPackageRoot)**/*.nupkg" />
 
       <!-- Only contains packages when building. -->
-      <TarballPrebuiltPackageFiles Include="$(PrebuiltPackagesPath)*.nupkg" />
+      <TarballPrebuiltPackageFile Include="$(PrebuiltPackagesPath)*.nupkg" />
 
-      <SourceBuiltPackageFiles Include="$(ArtifactsPackagesDir)**/*.nupkg" />
-      <SourceBuiltPackageFiles Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
-      <ReferencePackageFiles Include="$(ReferencePackagesDir)**/*.nupkg" />
+      <SourceBuiltPackageFile Include="$(ArtifactsPackagesDir)**/*.nupkg" />
+      <SourceBuiltPackageFile Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
+      <ReferencePackageFile Include="$(ReferencePackagesDir)**/*.nupkg" />
 
       <!-- Check all RIDs from all restored Microsoft.NETCore.Platforms packages. -->
-      <PlatformsRuntimeJsonFiles Include="$(NuGetPackageRoot)microsoft.netcore.platforms/*/PortableRuntimeIdentifierGraph.json" />
+      <PlatformsRuntimeJsonFile Include="$(NuGetPackageRoot)microsoft.netcore.platforms/*/PortableRuntimeIdentifierGraph.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <RepoProject Include="$(RepoProjectsDir)*.proj" />
+      <RepoProjectDirectory Include="@(RepoProject->'$(SrcDir)%(Filename)')" />
 
       <!-- Add some other potential top-level project directories for a more specific report. -->
-      <ProjectDirectories Include="$(SourceBuiltSdksDir);$(TasksDir);$(ArtifactsObjDir)" />
+      <RepoProjectDirectory Include="$(SourceBuiltSdksDir);$(TasksDir);$(ArtifactsObjDir)" />
       <!-- Finally, scan entire source-build, in case project.assets.json ends up in an unexpected place. -->
-      <ProjectDirectories Include="$(RepoRoot)" />
+      <RepoProjectDirectory Include="$(RepoRoot)" />
     </ItemGroup>
 
     <ItemGroup>
       <!-- This file is a resource tracked by Git, not generated by restore. Ignore false positive. -->
-      <IgnoredProjectAssetsJsonFiles Include="$(SrcDir)*nuget-client*/**/test/NuGet.Core.Tests/NuGet.Build.Tasks.Pack.Test/compiler/resources/project.assets.json"/>
+      <IgnoredProjectAssetsJsonFile Include="$(SrcDir)*nuget-client*/**/test/NuGet.Core.Tests/NuGet.Build.Tasks.Pack.Test/compiler/resources/project.assets.json"/>
     </ItemGroup>
 
     <WritePackageUsageData
-      RestoredPackageFiles="@(AllRestoredPackageFiles)"
-      TarballPrebuiltPackageFiles="@(TarballPrebuiltPackageFiles)"
-      SourceBuiltPackageFiles="@(SourceBuiltPackageFiles)"
-      ReferencePackageFiles="@(ReferencePackageFiles)"
-      PlatformsRuntimeJsonFiles="@(PlatformsRuntimeJsonFiles)"
+      RestoredPackageFiles="@(RestoredPackageFile)"
+      TarballPrebuiltPackageFiles="@(TarballPrebuiltPackageFile)"
+      SourceBuiltPackageFiles="@(SourceBuiltPackageFile)"
+      ReferencePackageFiles="@(ReferencePackageFile)"
+      PlatformsRuntimeJsonFiles="@(PlatformsRuntimeJsonFile)"
       TargetRid="$(TargetRid)"
-      ProjectDirectories="@(ProjectDirectories)"
+      ProjectDirectories="@(RepoProjectDirectory)"
       RootDir="$(RepoRoot)"
-      IgnoredProjectAssetsJsonFiles="@(IgnoredProjectAssetsJsonFiles)"
+      IgnoredProjectAssetsJsonFiles="@(IgnoredProjectAssetsJsonFile)"
       DataFile="$(PackageReportDataFile)"
       ProjectAssetsJsonArchiveFile="$(ProjectAssetsJsonArchiveFile)" />
 
     <!-- Copy packages detected as prebuilts to the artifacts prebuilt folder -->
     <ItemGroup>
-      <AllowedPackageFiles Include="@(TarballPrebuiltPackageFile)" />
-      <AllowedPackageFiles Include="@(SourceBuiltPackageFiles)" />
-      <AllowedPackageFiles Include="@(ReferencePackageFiles)" />
-      <AllowedPackageFiles>
+      <AllowedPackageFile Include="@(TarballPrebuiltPackageFile)" />
+      <AllowedPackageFile Include="@(SourceBuiltPackageFile)" />
+      <AllowedPackageFile Include="@(ReferencePackageFile)" />
+      <AllowedPackageFile>
         <LCFilename>$([System.String]::Copy(%(Filename)).ToLowerInvariant())</LCFilename>
-      </AllowedPackageFiles>
+      </AllowedPackageFile>
 
-      <PrebuiltPackageFiles Include="@(AllRestoredPackageFiles)" >
+      <PrebuiltPackageFile Include="@(RestoredPackageFile)" >
         <LCFilename>$([System.String]::Copy(%(Filename)).ToLowerInvariant())</LCFilename>
-      </PrebuiltPackageFiles>
-      <PrebuiltPackageFiles Remove="@(AllowedPackageFiles)" MatchOnMetadata="LCFilename" />
+      </PrebuiltPackageFile>
+      <PrebuiltPackageFile Remove="@(AllowedPackageFile)" MatchOnMetadata="LCFilename" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(PrebuiltPackageFiles)"
-      DestinationFolder="$(ResultingPrebuiltPackagesDir)" />
+
+    <Copy SourceFiles="@(PrebuiltPackageFile)" DestinationFolder="$(ResultingPrebuiltPackagesDir)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)WritePrebuiltUsageData.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
-  </Target>
-
-  <Target Name="GetAllProjectDirectories">
-    <ItemGroup>
-      <AllRepoProjects Include="$(RepoProjectsDir)*.proj" />
-    </ItemGroup>
-
-    <Message Importance="High" Text="Finding project directories..." />
-
-    <MSBuild Projects="@(AllRepoProjects)"
-             Targets="GetProjectDirectory">
-      <Output TaskParameter="TargetOutputs" ItemName="ProjectDirectories" />
-    </MSBuild>
   </Target>
 
   <Target Name="ReportPrebuiltUsage"
@@ -687,11 +729,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageVersionPropsSavedSnapshotFiles Include="$(PackageReportDir)snapshots/PackageVersions.*.Snapshot.props" />
+      <PackageVersionPropsSavedSnapshotFile Include="$(PackageReportDir)snapshots/PackageVersions.*.Snapshot.props" />
     </ItemGroup>
 
     <WriteUsageReports DataFile="$(PackageReportDataFile)"
-                       PackageVersionPropsSnapshots="@(PackageVersionPropsSavedSnapshotFiles)"
+                       PackageVersionPropsSnapshots="@(PackageVersionPropsSavedSnapshotFile)"
                        ProdConBuildManifestFile="$(ProdConManifestFile)"
                        PoisonedReportFile="$(PoisonedReportFile)"
                        OutputDirectory="$(PackageReportDir)" />
@@ -715,41 +757,6 @@
     </Touch>
   </Target>
 
-  <Target Name="GetProjectDirectory" Outputs="$(ProjectDirectory)" />
-  <Target Name="GetRepositoryReferences" Outputs="@(RepositoryReference)" />
-
-  <!-- Returns the repository references of this project and all the projects this project references, recursively -->
-  <Target Name="GetTransitiveRepositoryReferences" Outputs="@(TransitiveRepositoryReference)">
-    <ItemGroup>
-      <_TransitiveRepositoryReference Include="@(RepositoryReference)" />
-    </ItemGroup>
-
-    <MSBuild Projects="@(RepositoryReference->'%(Identity).proj')"
-             Targets="GetTransitiveRepositoryReferences"
-             BuildInParallel="true">
-      <Output TaskParameter="TargetOutputs" ItemName="_DependencyTransitiveRepositoryReference" />
-    </MSBuild>
-
-    <!-- When items are transferred between projects, they get metadata indicating their source (e.g. MSBuildSourceProjectFile).
-         This is problematic because it causes introduces distinctness on the items. For example, an arcade RepositoryReference
-         that comes from both msbuild and source-build-externals will be treated as two separate items. But we only want one arcade
-         reference. To prevent this from happening, we need to remove the extra metadata so the two references can be seen as duplicates. -->
-    <ItemGroup>
-      <_TransitiveRepositoryReference Include="@(_DependencyTransitiveRepositoryReference)"
-                                      RemoveMetadata="MSBuildSourceProjectFile;MSBuildSourceTargetName;OriginalItemSpec" />
-      <TransitiveRepositoryReference Include="@(_TransitiveRepositoryReference)" KeepDuplicates="false" />
-    </ItemGroup>
-
-    <!-- Exclude repositories that currently don't build when not building source-only. -->
-    <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-      <TransitiveRepositoryReference Remove="roslyn" />
-      <TransitiveRepositoryReference Remove="aspnetcore" />
-      <TransitiveRepositoryReference Remove="nuget-client" />
-      <TransitiveRepositoryReference Remove="fsharp" />
-      <TransitiveRepositoryReference Remove="vstest" />
-    </ItemGroup>
-  </Target>
-
   <!-- Outputs a dependency graph of the repos, in YAML form, to the console. -->
   <Target Name="ShowDependencyGraph">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
@@ -771,7 +778,7 @@
            Use '_' as a placeholder for the space ' ' character since trailing spaces aren't handled well as property values. -->
       <_NextIndent>$(DependencyGraphIndent)__</_NextIndent>
     </PropertyGroup>
-    
+
     <!-- For each of the current project's direct repo dependencies, recursively call the target to get each of there dependency graphs -->
     <MSBuild Projects="@(RepositoryReference->'%(Identity).proj')"
              Targets="GetDependencyGraphString"
