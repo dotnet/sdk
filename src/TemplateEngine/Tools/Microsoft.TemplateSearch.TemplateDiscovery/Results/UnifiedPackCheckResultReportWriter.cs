@@ -48,7 +48,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Results
 
         private static void WriteNonTemplatePackList(string reportPath, IReadOnlyList<FilteredPackageInfo> packCheckResults)
         {
-            string serializedContent = JsonConvert.SerializeObject(packCheckResults, Formatting.None);
+            var orderedFilters = packCheckResults.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ToArray();
+            string serializedContent = JsonConvert.SerializeObject(orderedFilters, Formatting.None);
             string outputFileName = Path.Combine(reportPath, NonTemplatePacksFileName);
             File.WriteAllText(outputFileName, serializedContent);
             Console.WriteLine($"Non template pack list was created: {outputFileName}");
