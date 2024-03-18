@@ -58,13 +58,11 @@ jobs:
           value: ''
         # Helix Testing requires a token when internally run
         - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          - name: group
-            value: DotNet-HelixApi-Access
+          - group: DotNet-HelixApi-Access
           - name: _HelixApiToken
             value: $(HelixApiAccessToken)
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - name: group
-            value: dotnet-benchview
+          - group: dotnet-benchview
           - name: _OfficialBuildIdArgs
             value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
           - name: _SignArgs
@@ -253,13 +251,11 @@ jobs:
           value: ''
         # Helix Testing requires a token when internally run
         - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          - name: group
-            value: DotNet-HelixApi-Access
+          - group: DotNet-HelixApi-Access
           - name: _HelixApiToken
             value: $(HelixApiAccessToken)
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - name: group
-            value: dotnet-benchview
+          - group: dotnet-benchview
           - name: _OfficialBuildIdArgs
             value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
           - name: _SignArgs
@@ -399,13 +395,11 @@ jobs:
           value: ''
         # Helix Testing requires a token when internally run
         - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          - name: group
-            value: DotNet-HelixApi-Access
+          - group: DotNet-HelixApi-Access
           - name: _HelixApiToken
             value: $(HelixApiAccessToken)
         - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-          - name: group
-            value: dotnet-benchview
+          - group: dotnet-benchview
           - name: _OfficialBuildIdArgs
             value: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
           - name: _SignArgs
