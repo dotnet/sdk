@@ -178,6 +178,10 @@
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
       <Sha>623fde83a3cd73cb479ec7fa03866c6116894dbf</Sha>
     </Dependency>
+    <Dependency Name="NuGet.Localization" Version="6.9.1-rc.3">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>623fde83a3cd73cb479ec7fa03866c6116894dbf</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.9.0-release-24072-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>a77b8d5b4aa89504bbff10e2880c27fd55adc55b</Sha>
