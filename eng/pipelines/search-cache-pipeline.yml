@@ -25,6 +25,11 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    sdl:
+      sourceAnalysisPool:
+        name: NetCore1ESPool-Internal
+        image: 1es-windows-2022
+        os: windows
     pool:
       name: NetCore1ESPool-Internal
       image: 1es-ubuntu-2204
@@ -34,7 +39,7 @@ extends:
     stages:
     - stage: stage
       jobs:
-      - job: job
+      - job: jobs
         templateContext:
           outputs:
           - output: pipelineArtifact
