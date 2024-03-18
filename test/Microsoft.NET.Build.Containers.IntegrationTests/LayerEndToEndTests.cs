@@ -29,7 +29,7 @@ public sealed class LayerEndToEndTests : IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false);
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2);
 
         Console.WriteLine(l.Descriptor);
 
@@ -54,7 +54,7 @@ public sealed class LayerEndToEndTests : IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "C:\\app", true);
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "C:\\app", true, SchemaTypes.DockerManifestV2);
 
         var allEntries = LoadAllTarEntries(l.BackingFile);
         Assert.True(allEntries.TryGetValue("Files", out var filesEntry) && filesEntry.EntryType == TarEntryType.Directory, "Missing Files directory entry");
@@ -91,8 +91,8 @@ public sealed class LayerEndToEndTests : IDisposable
             }
         }
 
-        Assert.Equal(Convert.ToHexString(hashBytes), l.Descriptor.Digest.Substring("sha256:".Length), ignoreCase: true);
-        Assert.Equal(Convert.ToHexString(uncompressedHashBytes), l.Descriptor.UncompressedDigest?.Substring("sha256:".Length), ignoreCase: true);
+        Assert.Equal(Convert.ToHexStringLower(hashBytes), l.Descriptor.Digest.Substring("sha256:".Length));
+        Assert.Equal(Convert.ToHexStringLower(uncompressedHashBytes), l.Descriptor.UncompressedDigest?.Substring("sha256:".Length));
     }
 
     TransientTestFolder? testSpecificArtifactRoot;

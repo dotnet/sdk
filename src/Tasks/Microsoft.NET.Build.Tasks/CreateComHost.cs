@@ -6,7 +6,7 @@ using Microsoft.NET.HostModel.ComHost;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class CreateComHost : TaskWithAssemblyResolveHooks
+    public class CreateComHost : TaskBase
     {
         [Required]
         public string ComHostSourcePath { get; set; }

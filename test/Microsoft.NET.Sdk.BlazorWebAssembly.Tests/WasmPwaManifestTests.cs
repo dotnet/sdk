@@ -18,11 +18,21 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Arrange
             var expectedExtensions = new[] { ".pdb", ".js", ".wasm" };
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
+                        itemGroup.Add(serviceWorkerAssetsManifest);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             var buildCommand = new BuildCommand(testInstance, "blazorwasm");
             buildCommand.WithWorkingDirectory(testInstance.TestRoot);
-            buildCommand.Execute("/p:ServiceWorkerAssetsManifest=service-worker-assets.js")
+            buildCommand.Execute()
                 .Should().Pass();
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
@@ -136,10 +146,20 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
+                        itemGroup.Add(serviceWorkerAssetsManifest);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute("/p:ServiceWorkerAssetsManifest=service-worker-assets.js").Should().Pass();
+            publishCommand.Execute().Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -158,7 +178,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             // Assert
             publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute("/p:ServiceWorkerAssetsManifest=service-worker-assets.js").Should().Pass();
+            publishCommand.Execute().Should().Pass();
 
             var updatedVersion = File.ReadAllLines(serviceWorkerFile).Last();
             var updatedMatch = Regex.Match(updatedVersion, "\\/\\* Manifest version: (.{8}) \\*\\/");
@@ -176,10 +196,20 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
             // Arrange
             var testAppName = "BlazorWasmWithLibrary";
-            var testInstance = CreateAspNetSdkTestAsset(testAppName);
+            var testInstance = CreateAspNetSdkTestAsset(testAppName)
+                .WithProjectChanges((p, doc) =>
+                {
+                    if (Path.GetFileName(p) == "blazorwasm.csproj")
+                    {
+                        var itemGroup = new XElement("PropertyGroup");
+                        var serviceWorkerAssetsManifest = new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js");
+                        itemGroup.Add(serviceWorkerAssetsManifest);
+                        doc.Root.Add(itemGroup);
+                    }
+                });
 
             var publishCommand = new PublishCommand(testInstance, "blazorwasm");
-            publishCommand.Execute("/p:ServiceWorkerAssetsManifest=service-worker-assets.js").Should().Pass();
+            publishCommand.Execute().Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
@@ -194,7 +224,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             // Act && Assert
             publishCommand = new PublishCommand(Log, Path.Combine(testInstance.TestRoot, "blazorwasm"));
-            publishCommand.Execute("/p:ServiceWorkerAssetsManifest=service-worker-assets.js").Should().Pass();
+            publishCommand.Execute().Should().Pass();
 
             var updatedVersion = File.ReadAllLines(serviceWorkerFile).Last();
             var updatedMatch = Regex.Match(updatedVersion, "\\/\\* Manifest version: (.{8}) \\*\\/");

@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var testRoot = testAsset.Path;
 
-            CommandResult result = new DotnetTestCommand(Log, EnvironmentVariables)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true, EnvironmentVariables)
                                         .WithWorkingDirectory(testRoot)
                                         .Execute(ConsoleLoggerOutputDetailed);
 
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var outputDll = Path.Combine(buildCommand.GetOutputDirectory(configuration: configuration).FullName, $"{TestAppName}.dll");
 
-            var result = new DotnetTestCommand(Log, EnvironmentVariables)
+            var result = new DotnetTestCommand(Log, disableNewOutput: false, EnvironmentVariables)
                 .Execute(outputDll, $"{ConsoleLoggerOutputDetailed[0]}:{ConsoleLoggerOutputDetailed[1]}");
 
             result.StartInfo.Arguments

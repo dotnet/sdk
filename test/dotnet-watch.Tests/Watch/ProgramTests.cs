@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("XunitCore")
                 .WithSource();
 
-            App.Start(testAsset, ["--verbose", "test", "--list-tests"]);
+            App.Start(testAsset, ["--verbose", "test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
             await App.AssertOutputLineEquals("The following Tests are available:");
             await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest");
@@ -207,7 +207,7 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset("XunitMulti")
                 .WithSource();
 
-            App.Start(testAsset, ["--verbose", "--framework", ToolsetInfo.CurrentTargetFramework, "test", "--list-tests"]);
+            App.Start(testAsset, ["--verbose", "--framework", ToolsetInfo.CurrentTargetFramework, "test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
             await App.AssertOutputLineEquals("The following Tests are available:");
             await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitFailTestNetCoreApp");

@@ -31,7 +31,7 @@ public class DockerRegistryTests
             DockerRegistryManager.RuntimeBaseImage,
             DockerRegistryManager.Net6ImageTag,
             "linux-x64",
-            ridgraphfile,
+            ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
 
         Assert.NotNull(downloadedImage);
@@ -84,7 +84,7 @@ public class DockerRegistryTests
                 DockerRegistryManager.RuntimeBaseImage,
                 DockerRegistryManager.Net6ImageTag,
                 "linux-x64",
-                ridgraphfile,
+                ToolsetUtils.RidGraphManifestPicker,
                 cancellationToken: default).ConfigureAwait(false);
             var image = downloadedImage.Build();
             await localAuthed.PushAsync(image, sourceImage, destinationImage, CancellationToken.None);

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -42,10 +40,10 @@ namespace Microsoft.DotNet.Watcher.Internal
             _pollingThread.Start();
         }
 
-        public event EventHandler<(string, bool)> OnFileChange;
+        public event EventHandler<(string, bool)>? OnFileChange;
 
 #pragma warning disable CS0067 // not used
-        public event EventHandler<Exception> OnError;
+        public event EventHandler<Exception>? OnError;
 #pragma warning restore
 
         public string BasePath { get; }
@@ -153,7 +151,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             _tempDictionary.Clear();
         }
 
-        private void RecordChange(FileSystemInfo fileInfo)
+        private void RecordChange(FileSystemInfo? fileInfo)
         {
             if (fileInfo == null ||
                 _changes.Contains(fileInfo.FullName) ||

@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("3");
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(ConsoleLoggerOutputNormal);
 
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var testProjectDirectory = testInstance.Path;
 
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(ConsoleLoggerOutputNormal);
 
@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var testProjectDirectory = testInstance.Path;
 
-            new DotnetTestCommand(Log)
+            new DotnetTestCommand(Log, disableNewOutput: true)
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute(ConsoleLoggerOutputNormal.Concat(new[] { "--no-restore", "/p:IsTestProject=true" }))
                 .Should().Fail()
@@ -93,7 +93,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var testProjectDirectory = testInstance.Path;
 
-            new DotnetTestCommand(Log, ConsoleLoggerOutputNormal)
+            new DotnetTestCommand(Log, disableNewOutput: true, ConsoleLoggerOutputNormal)
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--no-restore", "/p:IsTestProject=''")
                 .Should().Pass();
@@ -117,7 +117,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Pass();
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(ConsoleLoggerOutputNormal);
 
@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithSource()
                 .WithVersionVariables();
 
-            var result = new DotnetTestCommand(Log)
+            var result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute();
 
@@ -171,7 +171,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Call test with logger enable
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                        .WithWorkingDirectory(testProjectDirectory)
                                        .Execute("--logger", "trx;logfilename=custom.trx", "--logger",
                                             "console;verbosity=normal", "--", "RunConfiguration.ResultsDirectory=" + trxLoggerDirectory);
@@ -204,7 +204,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             expectedError = "The test source file " + "\"" + expectedError + "\"" + " provided was not found.";
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                        .WithWorkingDirectory(testProjectDirectory)
                                        .Execute("--no-build", "-v:m");
 
@@ -236,7 +236,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Call test with trx logger enabled and results directory explicitly specified.
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                        .WithWorkingDirectory(testProjectDirectory)
                                        .Execute("--logger", "trx", "--results-directory", trxLoggerDirectory);
 
@@ -267,7 +267,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Call test with logger enable
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                        .WithWorkingDirectory(testProjectDirectory)
                                        .Execute("--logger", "trx;logfilename=custom.trx", "--",
                                                 "RunConfiguration.ResultsDirectory=" + trxLoggerDirectory);
@@ -317,7 +317,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Pass()
                 .And.NotHaveStdErr();
 
-            CommandResult result = new DotnetTestCommand(Log, ConsoleLoggerOutputNormal)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true, ConsoleLoggerOutputNormal)
                                         .WithWorkingDirectory(rootPath)
                                         .Execute("--no-restore");
 
@@ -345,7 +345,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp($"9_{verbosity}");
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute("-v", verbosity);
 
@@ -390,7 +390,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Pass()
                 .And.NotHaveStdErr();
 
-            var result = new DotnetTestCommand(Log, ConsoleLoggerOutputNormal)
+            var result = new DotnetTestCommand(Log, disableNewOutput: true, ConsoleLoggerOutputNormal)
                 .WithWorkingDirectory(rootPath)
                 .Execute("--no-build", "--runtime", rid);
 
@@ -417,7 +417,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("14");
 
             // Call test with logger enable
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                        .WithWorkingDirectory(testProjectDirectory)
                                        .Execute("--nologo");
 
@@ -447,7 +447,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var settingsPath = Path.Combine(AppContext.BaseDirectory, "CollectCodeCoverage.runsettings");
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(
                                             "--settings", settingsPath,
@@ -486,7 +486,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(
                                             "--collect", "Code Coverage",
@@ -522,7 +522,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(
                                             "--collect", "Code Coverage;Format=Cobertura",
@@ -558,7 +558,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(
                                             "--collect", "XPlat Code Coverage;arg1=val1",
@@ -591,7 +591,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("13");
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(
                                             "--collect", "Code Coverage",
@@ -615,7 +615,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("13");
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(
                                             "--collect", "Code Coverage",
@@ -645,7 +645,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testProjectDirectory = testInstance.Path;
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute();
 
@@ -668,7 +668,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var testProjectDirectory = testInstance.Path;
 
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
                                         .Execute(ConsoleLoggerOutputNormal);
 
@@ -692,7 +692,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testProjectDirectory = testInstance.Path;
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--arch", "wrongArchitecture");
 
@@ -720,7 +720,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testProjectDirectory = testInstance.Path;
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--filter", filter);
 
@@ -743,7 +743,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var pathWithComma = Path.Combine(AppContext.BaseDirectory, "a,b");
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute(flag, pathWithComma);
 
@@ -791,7 +791,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string flagDirectory = Path.Combine(testProjectDirectory, "flag-dir");
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute(flag, flagDirectory + slashesOrBackslashes);
 
@@ -815,7 +815,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp();
 
             // Call test
-            CommandResult result = new DotnetTestCommand(Log)
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                 .Execute(testProjectDirectory, arg);
 
             // Verify

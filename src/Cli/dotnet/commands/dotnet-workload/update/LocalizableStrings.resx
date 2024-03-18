@@ -138,6 +138,9 @@
   <data name="WorkloadUpdateFailed" xml:space="preserve">
     <value>Workload update failed: {0}</value>
   </data>
+  <data name="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto" xml:space="preserve">
+    <value>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</value>
+  </data>
   <data name="FromPreviousSdkOptionDescription" xml:space="preserve">
     <value>Include workloads installed with earlier SDK versions in update.</value>
   </data>

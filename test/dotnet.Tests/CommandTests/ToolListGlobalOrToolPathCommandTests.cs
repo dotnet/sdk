@@ -161,6 +161,51 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(EnumerateExpectedTableLines(store.Object));
         }
 
+        
+        [Fact]
+        public void GivenMultipleInstalledPackagesItPrintsThePackagesForJsonFormat()
+        {
+            var store = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
+            store
+                .Setup(s => s.EnumeratePackages())
+                .Returns(new[] {
+                    CreateMockToolPackage(
+                        "test.tool",
+                        "1.3.5-preview",
+                        new[] {
+                            new RestoredCommand(new ToolCommandName("foo"), "dotnet", new FilePath("tool"))
+                        }
+                    ),
+                    CreateMockToolPackage(
+                        "another.tool",
+                        "2.7.3",
+                        new[] {
+                            new RestoredCommand(new ToolCommandName("bar"), "dotnet", new FilePath("tool"))
+                        }
+                    )
+                });
+
+            var command = CreateCommand(store.Object, "-g --format json");
+
+            command.Execute().Should().Be(0);
+
+            _reporter.Lines.Count.Should().Be(1);
+            
+            var versionedData = System.Text.Json.JsonSerializer.Deserialize<VersionedDataContract<ToolListJsonContract[]>>(_reporter.Lines[0]);
+            versionedData.Should().NotBeNull();
+            versionedData.Version.Should().Be(1);
+            versionedData.Data.Length.Should().Be(2);
+            
+            // another tool should be the first one, since there's OrderBy by PackageId
+            versionedData.Data[0].PackageId.Should().Be("another.tool");
+            versionedData.Data[0].Version.Should().Be("2.7.3");
+            versionedData.Data[0].Commands[0].Should().Be("bar");
+
+            versionedData.Data[1].PackageId.Should().Be("test.tool");
+            versionedData.Data[1].Version.Should().Be("1.3.5-preview");
+            versionedData.Data[1].Commands[0].Should().Be("foo");
+        }
+
         [Fact]
         public void GivenAPackageWithMultipleCommandsItListsThem()
         {

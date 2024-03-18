@@ -5,6 +5,7 @@
     <PublishingVersion>3</PublishingVersion>
     <!-- This repo does its own symbol package generation to avoid generating symbols for a bunch of unrelated test packages. -->
     <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages>
+    <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,7 +15,7 @@
     <SdkAssetManifestFileName>$(OS)-$(PlatformName)-SdkAssets.xml</SdkAssetManifestFileName>
     <SdkAssetsManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(SdkAssetManifestFileName)</SdkAssetsManifestFilePath>
 
-    <TempWorkingDirectory>$(ArtifactsDir)\..\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
+    <TempWorkingDirectory>$(ArtifactsDir)\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
   </PropertyGroup>
 
   <!-- Pulled from arcade's publish.proj see https://github.com/dotnet/arcade/issues/5790 for
@@ -77,7 +78,7 @@
         <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" />
     </ItemGroup>
   </Target>
- 
+
   <!-- We use a separate target to publish this to blob storage so that we can push this to
        a relative path inside the blob storage. -->
   <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish">
@@ -97,11 +98,10 @@
       <IsStableBuild>false</IsStableBuild>
       <IsStableBuild Condition="'$(DotNetFinalVersionKind)' == 'release'">true</IsStableBuild>
     </PropertyGroup>
-    
 
     <MakeDir Directories="$(TempWorkingDirectory)"/>
 
-    <PushToAzureDevOpsArtifacts
+    <PushToBuildStorage
       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
       AzureDevOpsBuildId="$(BUILD_BUILDID)"
@@ -118,9 +118,14 @@
       ManifestCommit="$(BUILD_SOURCEVERSION)"
       PublishFlatContainer="true"
       AssetManifestPath="$(SdkAssetsManifestFilePath)"
-      AssetsTemporaryDirectory="$(TempWorkingDirectory)" 
+      AssetsTemporaryDirectory="$(TempWorkingDirectory)"
       PublishingVersion="3"
-      IsStableBuild="$(IsStableBuild)" />
+      IsStableBuild="$(IsStableBuild)"
+      PushToLocalStorage="$(PushToLocalStorage)"
+      AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
+      ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"
+      NonShippingPackagesLocalStorageDir="$(SourceBuiltNonShippingPackagesDir)"
+      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)" />
 
     <Copy
       SourceFiles="$(SdkAssetsManifestFilePath)"

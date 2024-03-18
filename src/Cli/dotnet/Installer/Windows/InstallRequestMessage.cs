@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// The contents of the install state file. Each element corresponds to a single line of
         /// the JSON file to be written.
         /// </summary>
-        public string[] InstallStateContents
+        public Dictionary<string, string> InstallStateManifestVersions
         {
             get;
             set;
@@ -118,6 +118,14 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             get;
             set;
+        }
+
+        /// <summary>
+        /// The new mode to use: workloadset or loosemanifests
+        /// </summary>
+        public bool UseWorkloadSets
+        {
+            get; set;
         }
 
         /// <summary>
