@@ -26,6 +26,7 @@ try {
     $repoName = $repo.Substring(19)
     $folderName = $repoName.Split("/")[1]
     $repoPath = Join-Path $testPath $folderName
+    $dllPath = Get-ChildItem -Path "$currentLocation/artifacts/bin/dotnet-format/Release/" -Include dotnet-format.dll -Recurse
 
     if (!(Test-Path $repoPath)) {
         New-Item -ItemType Directory -Force -Path $repoPath | Out-Null
@@ -79,7 +80,7 @@ try {
 
             if ($stage -eq "format-workspace") {
                 Write-Output "$(Get-Date) - $solutionFile - Formatting Workspace"
-                $output = & $parentDotNetPath "$currentLocation/artifacts/bin/dotnet-format/Release/net9.0/dotnet-format.dll" $solution --no-restore -v diag --verify-no-changes | Out-String
+                $output = & $parentDotNetPath "$dllPath" $solution --no-restore -v diag --verify-no-changes | Out-String
                 Write-Output $output.TrimEnd()
 
                 # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
@@ -101,7 +102,7 @@ try {
 
     if ($stage -eq "format-folder") {
         Write-Output "$(Get-Date) - $folderName - Formatting Folder"
-        $output = & $parentDotNetPath "$currentLocation/artifacts/bin/dotnet-format/Release/net9.0/dotnet-format.dll" whitespace $repoPath --folder -v diag --verify-no-changes | Out-String
+        $output = & $parentDotNetPath "$dllPath" whitespace $repoPath --folder -v diag --verify-no-changes | Out-String
         Write-Output $output.TrimEnd()
 
         # Ignore CheckFailedExitCode since we don't expect these repos to be properly formatted.
