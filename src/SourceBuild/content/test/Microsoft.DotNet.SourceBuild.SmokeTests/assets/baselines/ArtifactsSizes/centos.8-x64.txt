@@ -14,6 +14,7 @@ host/fxr/x.y.z/libhostfxr.so: 4681016
 Humanizer.Core.x.y.z.nupkg: 945071
 LICENSE.txt: 1116
 metadata/workloads/x.y.z/userlocal: 0
+Microsoft.ApplicationInsights.x.y.z-1.nupkg: 148627
 Microsoft.ApplicationInsights.x.y.z.nupkg: 148568
 Microsoft.Arcade.Common.x.y.z.nupkg: 57342
 Microsoft.AspNetCore.Analyzers.x.y.z.nupkg: 17835
@@ -37,7 +38,7 @@ Microsoft.AspNetCore.Http.Connections.Common.x.y.z.nupkg: 21665
 Microsoft.AspNetCore.Metadata.x.y.z.nupkg: 19582
 Microsoft.AspNetCore.Mvc.Analyzers.x.y.z.nupkg: 20157
 Microsoft.AspNetCore.Mvc.Api.Analyzers.x.y.z.nupkg: 28710
-Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.x.y.z.nupkg: 94089
+Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal.x.y.z.nupkg: 446006
 Microsoft.AspNetCore.SignalR.Common.x.y.z.nupkg: 31619
 Microsoft.AspNetCore.SignalR.Protocols.Json.x.y.z.nupkg: 25486
 Microsoft.AspNetCore.WebUtilities.x.y.z.nupkg: 60948
@@ -89,7 +90,7 @@ Microsoft.DiaSymReader.x.y.z-1.nupkg: 57796
 Microsoft.DiaSymReader.x.y.z-2.nupkg: 57817
 Microsoft.DiaSymReader.x.y.z.nupkg: 57811
 Microsoft.DotNet.ApiCompat.Task.x.y.z.nupkg: 1280207
-Microsoft.DotNet.Arcade.Sdk.x.y.z.nupkg: 605055
+Microsoft.DotNet.Arcade.Sdk.x.y.z.nupkg: 876107
 Microsoft.DotNet.Build.Tasks.Archives.x.y.z.nupkg: 11400
 Microsoft.DotNet.Build.Tasks.Installers.x.y.z.nupkg: 104948
 Microsoft.DotNet.Build.Tasks.Packaging.x.y.z.nupkg: 162274
@@ -111,6 +112,7 @@ Microsoft.DotNet.InternalAbstractions.x.y.z.nupkg: 10642
 Microsoft.DotNet.MSBuildSdkResolver.x.y.z.nupkg: 114783
 Microsoft.DotNet.NuGetRepack.Tasks.x.y.z.nupkg: 85406
 Microsoft.DotNet.PackageTesting.x.y.z.nupkg: 37598
+Microsoft.DotNet.ScenarioTests.SdkTemplateTests.x.y.z.nupkg: 721284
 Microsoft.DotNet.SharedFramework.Sdk.x.y.z.nupkg: 89834
 Microsoft.DotNet.SignTool.x.y.z.nupkg: 212432
 Microsoft.DotNet.SourceBuild.Tasks.x.y.z.nupkg: 46762
@@ -206,6 +208,7 @@ Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.x.y.z.nupkg: 14414
 Microsoft.NET.Sdk.x.y.z.nupkg: 994666
 Microsoft.NET.StringTools.x.y.z.nupkg: 74038
 Microsoft.NET.WebAssembly.Threading.x.y.z.nupkg: 44064
+Microsoft.NET.WebAssembly.Webcil.x.y.z.nupkg: 31426
 Microsoft.NET.Workload.Emscripten.Current.Manifest-x.y.z-1.nupkg: 6044
 Microsoft.NET.Workload.Emscripten.Current.Manifest-x.y.z.nupkg: 6036
 Microsoft.NET.Workload.Emscripten.net6.Manifest-x.y.z.nupkg: 5613
@@ -1509,8 +1512,6 @@ sdk/x.y.z/Containers/tasks/netx.y/ja/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/Containers/tasks/netx.y/ko/Microsoft.DotNet.Cli.Utils.resources.dll: 7680
 sdk/x.y.z/Containers/tasks/netx.y/ko/Microsoft.NET.Build.Containers.resources.dll: 17408
 sdk/x.y.z/Containers/tasks/netx.y/ko/System.CommandLine.resources.dll: 8704
-sdk/x.y.z/Containers/tasks/netx.y/Microsoft.Build.dll: 5072384
-sdk/x.y.z/Containers/tasks/netx.y/Microsoft.Build.Framework.dll: 731648
 sdk/x.y.z/Containers/tasks/netx.y/Microsoft.DotNet.Cli.Utils.dll: 244224
 sdk/x.y.z/Containers/tasks/netx.y/Microsoft.Extensions.DependencyInjection.Abstractions.dll: 120320
 sdk/x.y.z/Containers/tasks/netx.y/Microsoft.Extensions.DependencyInjection.dll: 196608
@@ -1521,7 +1522,6 @@ sdk/x.y.z/Containers/tasks/netx.y/Microsoft.Extensions.Options.dll: 117760
 sdk/x.y.z/Containers/tasks/netx.y/Microsoft.Extensions.Primitives.dll: 64000
 sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.deps.json: 37253
 sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.Build.Containers.dll: 535040
-sdk/x.y.z/Containers/tasks/netx.y/Microsoft.NET.StringTools.dll: 41984
 sdk/x.y.z/Containers/tasks/netx.y/MSBuild.dll: 800768
 sdk/x.y.z/Containers/tasks/netx.y/Newtonsoft.Json.dll: 1843200
 sdk/x.y.z/Containers/tasks/netx.y/NuGet.Common.dll: 365568
@@ -1543,13 +1543,8 @@ sdk/x.y.z/Containers/tasks/netx.y/pt-BR/System.CommandLine.resources.dll: 8704
 sdk/x.y.z/Containers/tasks/netx.y/ru/Microsoft.DotNet.Cli.Utils.resources.dll: 8704
 sdk/x.y.z/Containers/tasks/netx.y/ru/Microsoft.NET.Build.Containers.resources.dll: 20480
 sdk/x.y.z/Containers/tasks/netx.y/ru/System.CommandLine.resources.dll: 9216
-sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll: 367104
-sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll: 791552
 sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll: 741376
 sdk/x.y.z/Containers/tasks/netx.y/System.CommandLine.dll: 337408
-sdk/x.y.z/Containers/tasks/netx.y/System.Configuration.ConfigurationManager.dll: 1060352
-sdk/x.y.z/Containers/tasks/netx.y/System.Diagnostics.EventLog.dll: 44032
-sdk/x.y.z/Containers/tasks/netx.y/System.Reflection.MetadataLoadContext.dll: 567296
 sdk/x.y.z/Containers/tasks/netx.y/System.Security.Cryptography.Pkcs.dll: 621056
 sdk/x.y.z/Containers/tasks/netx.y/System.Security.Cryptography.ProtectedData.dll: 34304
 sdk/x.y.z/Containers/tasks/netx.y/tr/Microsoft.DotNet.Cli.Utils.resources.dll: 7680
@@ -2923,8 +2918,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/targets/Microsoft.NET.Sdk.Bla
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/targets/Microsoft.NET.Sdk.BlazorWebAssembly.Current.props: 2308
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/targets/Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets: 3411
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/targets/Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.5_0.targets: 9260
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/targets/Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets: 12247
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/netx.y/Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll: 56320
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/netx.y/Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll: 97792
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/netx.y/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.deps.json: 3595
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/netx.y/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll: 14336
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.BlazorWebAssembly/tools/netx.y/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.runtimeconfig.json: 384
@@ -2972,11 +2966,8 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/Sdk/Sdk.props: 1572
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/Sdk/Sdk.targets: 1113
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.AspNetCore.Razor.Utilities.Shared.dll: 72192
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.AspNetCore.Razor.Utilities.Shared.xml: 45965
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.CSharp.dll: 90112
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.Language.dll: 1089536
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.Mvc.dll: 76288
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators.deps.json: 17055
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.SourceGenerators.dll: 57856
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.deps.json: 14858
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.Razor.Compiler.dll: 1335296
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.Extensions.ObjectPool.dll: 14848
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/RazorSourceGenerator.razorencconfig: 70
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/System.Collections.Immutable.dll: 242688
@@ -3000,11 +2991,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/targets/Sdk.Razor.CurrentVersion.targets:
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/Microsoft.Extensions.FileSystemGlobbing.dll: 80896
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tasks/netx.y/Microsoft.NET.Sdk.Razor.Tasks.dll: 124928
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.AspNetCore.Razor.Utilities.Shared.dll: 150016
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.CodeAnalysis.Razor.Compiler.CSharp.dll: 209920
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.CodeAnalysis.Razor.Compiler.Language.dll: 2974208
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.CodeAnalysis.Razor.Compiler.Mvc.dll: 171520
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.CodeAnalysis.Razor.Compiler.Mvc.Version1_X.dll: 151040
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.CodeAnalysis.Razor.Compiler.Mvc.Version2_X.dll: 180736
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.CodeAnalysis.Razor.Compiler.dll: 3578368
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.Css.Parser.dll: 329728
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Microsoft.Extensions.ObjectPool.dll: 25600
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/tools/Newtonsoft.Json.dll: 1843200
@@ -3015,7 +3002,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/Sdk/Sdk.props: 1346
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/Sdk/Sdk.StaticWebAssets.StaticAssets.ProjectSystem.props: 4890
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/Sdk/Sdk.targets: 1024
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.5_0.targets: 33577
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.Compression.targets: 7466
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.Compression.targets: 10368
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.CrossTargeting.targets: 4439
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.EmbeddedAssets.targets: 18113
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.JSModules.targets: 11399
@@ -3026,6 +3013,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.Stati
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.References.targets: 10427
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.5_0.targets: 25080
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.ScopedCss.targets: 21337
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.ServiceWorkerAssetsManifest.targets: 12518
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.SingleTargeting.targets: 822
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Microsoft.NET.Sdk.StaticWebAssets.targets: 34808
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.StaticWebAssets/targets/Sdk.StaticWebAssets.CurrentVersion.props: 1582
@@ -3576,7 +3564,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_5_rec
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_6_all_warnaserror.globalconfig: 4916
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_6_all.globalconfig: 4031
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_6_default_warnaserror.globalconfig: 1860
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_6_default.globalconfig: 809
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_6_default.globalconfig: 1031
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_6_minimum_warnaserror.globalconfig: 3521
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_6_minimum.globalconfig: 2606
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_6_none_warnaserror.globalconfig: 3852
@@ -3586,7 +3574,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_6_rec
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_7_all_warnaserror.globalconfig: 4918
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_7_all.globalconfig: 3858
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_7_default_warnaserror.globalconfig: 1862
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_7_default.globalconfig: 636
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_7_default.globalconfig: 858
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_7_minimum_warnaserror.globalconfig: 3523
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_7_minimum.globalconfig: 2433
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_7_none_warnaserror.globalconfig: 3852
@@ -3596,7 +3584,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_7_rec
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_8_all_warnaserror.globalconfig: 4919
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_8_all.globalconfig: 3737
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_8_default_warnaserror.globalconfig: 1863
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_8_default.globalconfig: 515
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_8_default.globalconfig: 737
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_8_minimum_warnaserror.globalconfig: 3524
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_8_minimum.globalconfig: 2312
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelusage_8_none_warnaserror.globalconfig: 3852

@@ -89,3 +89,7 @@ sb,./sdk/x.y.z/*/Microsoft.TestPlatform.TestHostRuntimeProvider.resources.dll
 sb,./sdk/x.y.z/*/Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.resources.dll
 sb,./sdk/x.y.z/*/Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.resources.dll
 msft,./sdk/x.y.z/Extensions/*/*
+
+# https://github.com/dotnet/source-build/issues/3510
+msft,./sdk/x.y.z/Containers/containerize/**
+msft,./sdk/x.y.z/Containers/tasks/net472/**
