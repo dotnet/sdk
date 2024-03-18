@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
         <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
-        <target state="new">Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</target>
+        <target state="translated">ロールバック ファイルへの更新は、ワークロード セットと互換性がありません。インストールと更新にルーズ マニフェストが使用されるようになりました。特定のワークロードのバージョンに更新するには、--version を使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
