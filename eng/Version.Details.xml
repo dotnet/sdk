@@ -117,7 +117,7 @@
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
       <Sha>1653cf17925473602f5460c5e4682a0dab4c4d22</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.0.3-release-20230412-05">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.4.1-release-20230405-06">
       <Uri>https://github.com/microsoft/vstest</Uri>
       <Sha>79d56b02b69a582cd90428878a5e9411ab7538f5</Sha>
     </Dependency>
