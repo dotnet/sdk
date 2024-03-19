@@ -84,7 +84,7 @@
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
     <NuGetBuildTasksPackageVersion>6.10.0-preview.2.81</NuGetBuildTasksPackageVersion>
     <NuGetBuildTasksConsolePackageVersion>6.10.0-preview.2.81</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.0.0-rc.278</NuGetLocalizationPackageVersion>
+    <NuGetLocalizationPackageVersion>6.10.0-preview.2.81</NuGetLocalizationPackageVersion>
     <NuGetBuildTasksPackPackageVersion>6.10.0-preview.2.81</NuGetBuildTasksPackPackageVersion>
     <NuGetCommandLineXPlatPackageVersion>6.10.0-preview.2.81</NuGetCommandLineXPlatPackageVersion>
     <NuGetProjectModelPackageVersion>6.10.0-preview.2.81</NuGetProjectModelPackageVersion>
