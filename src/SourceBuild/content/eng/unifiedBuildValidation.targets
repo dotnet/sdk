@@ -1,5 +1,8 @@
 <Project>
 
+  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetValidArchiveItems" />
+  <UsingTask AssemblyFile="$(SdkArchiveDiffTasksAssembly)" TaskName="GetClosestOfficialSdk" />
+
   <PropertyGroup>
     <UnifiedBuildValidationTestsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'test', 'Microsoft.DotNet.UnifiedBuild.Tests'))</UnifiedBuildValidationTestsDir>
     <UnifiedBuildValidationTestsProject>$([MSBuild]::NormalizeDirectory('$(UnifiedBuildValidationTestsDir)', 'Microsoft.DotNet.UnifiedBuild.Tests'))</UnifiedBuildValidationTestsProject>
