@@ -49,6 +49,7 @@
       FrameworkReferences="@(FrameworkReference)"
       IsSelfContained="$(_ContainerIsSelfContained)"
       IsAotPublished="$(PublishAot)"
+      IsTrimmed="$(PublishTrimmed)"
       UsesInvariantGlobalization="$(InvariantGlobalization)"
       TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
       ContainerFamily="$(ContainerFamily)">

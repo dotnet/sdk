@@ -41,6 +41,7 @@ public sealed class ProjectInitializer
         props["TargetFileName"] = "foo.dll";
         props["AssemblyName"] = "foo";
         props["TargetFrameworkVersion"] = "v7.0";
+
         props["TargetFrameworkIdentifier"] = ".NETCoreApp";
         props["TargetFramework"] = "net7.0";
         props["_NativeExecutableExtension"] = ".exe"; //TODO: windows/unix split here
