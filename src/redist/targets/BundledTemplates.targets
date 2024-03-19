@@ -94,14 +94,6 @@
     <Bundled30Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.3.0" PackageVersion="$(AspNetCorePackageVersionFor30Templates)" />
     <Bundled30Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates30PackageVersion)" />
   </ItemGroup>
-  <ItemGroup Condition="!$(Architecture.StartsWith('arm'))">
-    <Bundled21Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates21PackageVersion)" />
-    <Bundled21Templates Include="Microsoft.DotNet.Common.ProjectTemplates.2.1" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates21PackageVersion)" />
-    <Bundled21Templates Include="Microsoft.DotNet.Test.ProjectTemplates.2.1" PackageVersion="$(MicrosoftDotNetTestProjectTemplates21PackageVersion)" />
-    <Bundled21Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
-    <Bundled21Templates Include="Microsoft.DotNet.Web.ProjectTemplates.2.1" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" UseVersionForTemplateInstallPath="true" />
-    <Bundled21Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.2.1" PackageVersion="$(AspNetCorePackageVersionFor21Templates)" />
-    <Bundled21Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates21PackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -114,7 +106,6 @@
     <PreviousVersionBundledTemplates Include="@(Bundled50Templates)" TemplateFrameworkVersion="5.0"/>
     <PreviousVersionBundledTemplates Include="@(Bundled31Templates)" TemplateFrameworkVersion="3.1"/>
     <PreviousVersionBundledTemplates Include="@(Bundled30Templates)" TemplateFrameworkVersion="3.0"/>
-    <PreviousVersionBundledTemplates Include="@(Bundled21Templates)" TemplateFrameworkVersion="2.1"/>
   </ItemGroup>
 
   <ItemGroup>
