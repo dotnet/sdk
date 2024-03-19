@@ -595,7 +595,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK", "true")
                 .WithWorkingDirectory(testDir);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Fail();
+            toolInstallGlobalOrToolPathCommand.Execute().Should().Fail()
+                .And.HaveStdErrContaining(string.Format(
+                    CommonLocalizableStrings.ToolPackageRuntimeConfigIncompatible,
+                    UnlistedPackageId, "2.1", " -g").Black());
         }
 
         [Fact]
