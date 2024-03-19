@@ -188,7 +188,7 @@
   "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Xml.wasm",
   "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.wasm",
   "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\WindowsBase.wasm",
-  "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.boot.json",
+  "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.boot.json.patch",
   "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
   "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazorwasm-minimal.pdb",
   "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazorwasm-minimal.wasm",
