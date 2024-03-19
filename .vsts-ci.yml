@@ -220,7 +220,80 @@ extends:
             - name: _Test
               value: -test
 
-      - template: /eng/template-engine.yml@self
+          # template-engine builds
+        - template: /eng/build.yml@self
+          parameters:
+            agentOs: Windows_NT_TemplateEngine
+            pool:
+              ${{ if eq(variables['System.TeamProject'], 'public') }}:
+                name: $(DncEngPublicBuildPool)
+                image: 1es-windows-2022-open
+                os: windows
+              ${{ if ne(variables['System.TeamProject'], 'public') }}:
+                name: $(DncEngInternalBuildPool)
+                image: 1es-windows-2022
+                os: windows
+            ${{ if eq(variables['System.TeamProject'], 'public') }}:
+              helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
+            ${{ if ne(variables['System.TeamProject'], 'public') }}:
+              helixTargetQueue: Windows.Amd64.VS2022.Pre
+            variables:
+              - name: _BuildConfig
+                value: Release
+              - name: PublishArgs
+                value: '-publish /p:DotNetPublishUsingPipelines=true'
+              - name: _SignType
+                value: test
+              - name: _Test
+                value: -test
+
+        - template: /eng/build.yml@self
+          parameters:
+            agentOs: Ubuntu_22_04_TemplateEngine
+            pool:
+              ${{ if eq(variables['System.TeamProject'], 'public') }}:
+                name: $(DncEngPublicBuildPool)
+                image: 1es-ubuntu-2204-open
+                os: linux
+              ${{ if ne(variables['System.TeamProject'], 'public') }}:
+                name: $(DncEngInternalBuildPool)
+                image: 1es-ubuntu-2204
+                os: linux
+            ${{ if eq(variables['System.TeamProject'], 'public') }}:
+              helixTargetQueue: 'ubuntu.2204.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-helix-amd64'
+            ${{ if ne(variables['System.TeamProject'], 'public') }}:
+              helixTargetQueue: Ubuntu.2204.Amd64
+            variables:
+              - name: _BuildConfig
+                value: Release
+              - name: _PublishArgs
+                value: ''
+              - name: _SignType
+                value: test
+              - name: _Test
+                value: -test
+
+        - template: /eng/build.yml@self
+          parameters:
+            agentOs: Darwin_TemplateEngine
+            pool:
+              name: Azure Pipelines
+              image: macOS-latest
+              os: macOS
+            ${{ if eq(variables['System.TeamProject'], 'public') }}:
+              helixTargetQueue: OSX.1100.Amd64.Open
+            ${{ if ne(variables['System.TeamProject'], 'public') }}:
+              helixTargetQueue: OSX.1100.Amd64
+            variables:
+            - name: _BuildConfig
+              value: Release
+            - name: _PublishArgs
+              value: ''
+            - name: _SignType
+              value: test
+            - name: _Test
+              value: -test
+
       - template: /eng/dotnet-format/dotnet-format-integration.yml@self
 
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
