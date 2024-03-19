@@ -59,25 +59,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Bundled50Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates50PackageVersion)" />
-    <Bundled50Templates Include="Microsoft.DotNet.Common.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetCommonProjectTemplates50PackageVersion)" />
-    <Bundled50Templates Include="Microsoft.DotNet.Test.ProjectTemplates.5.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates50PackageVersion)" />
-    <Bundled50Templates Include="Microsoft.DotNet.Web.ItemTemplates" PackageVersion="$(AspNetCorePackageVersionFor50Templates)" />
-    <Bundled50Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates50PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
-    <Bundled50Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates50PackageVersion)" Condition="'$(DotNetBuildFromSource)' != 'true'" />
-    <Bundled50Templates Include="Microsoft.DotNet.Web.ProjectTemplates.5.0" PackageVersion="$(AspNetCorePackageVersionFor50Templates)" UseVersionForTemplateInstallPath="true" />
-    <Bundled50Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.5.0" PackageVersion="$(AspNetCorePackageVersionFor50Templates)" />
-    <Bundled50Templates Include="NUnit3.DotNetNew.Template" PackageVersion="$(NUnit3Templates50PackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <CurrentVersionBundledTemplates Include="@(Bundled80Templates)" TemplateFrameworkVersion="8.0"/>
   </ItemGroup>
 
   <ItemGroup>
     <PreviousVersionBundledTemplates Include="@(Bundled70Templates)" TemplateFrameworkVersion="7.0"/>
     <PreviousVersionBundledTemplates Include="@(Bundled60Templates)" TemplateFrameworkVersion="6.0"/>
-    <PreviousVersionBundledTemplates Include="@(Bundled50Templates)" TemplateFrameworkVersion="5.0"/>
   </ItemGroup>
 
   <ItemGroup>
