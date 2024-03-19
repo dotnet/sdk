@@ -2018,6 +2018,26 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <target state="translated">Puede usar "StringBuilder.Append(char)" cuando sea aplicable</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferConvertToHexStringOverBitConverterCodeFixTitle">
+        <source>Replace with 'Convert.{0}'</source>
+        <target state="new">Replace with 'Convert.{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConvertToHexStringOverBitConverterDescription">
+        <source>Use 'Convert.ToHexString' or 'Convert.ToHexStringLower' when encoding bytes to a hexadecimal string representation. These methods are more efficient and allocation-friendly than using 'BitConverter.ToString' in combination with 'String.Replace' to replace dashes and 'String.ToLower'.</source>
+        <target state="new">Use 'Convert.ToHexString' or 'Convert.ToHexStringLower' when encoding bytes to a hexadecimal string representation. These methods are more efficient and allocation-friendly than using 'BitConverter.ToString' in combination with 'String.Replace' to replace dashes and 'String.ToLower'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConvertToHexStringOverBitConverterMessage">
+        <source>Prefer '{0}' over call chains based on '{1}'</source>
+        <target state="new">Prefer '{0}' over call chains based on '{1}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferConvertToHexStringOverBitConverterTitle">
+        <source>Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString'</source>
+        <target state="new">Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferCountOverAnyCodeFixTitle">
         <source>Use 'Count' check instead of 'Any()'</source>
         <target state="translated">Usar la comprobación "Count" en lugar de "Any()"</target>
