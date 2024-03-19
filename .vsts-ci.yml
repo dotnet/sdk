@@ -184,7 +184,7 @@ extends:
               ${{ if ne(variables['System.TeamProject'], 'public') }}:
                 name: $(DncEngInternalBuildPool)
                 image: 1es-ubuntu-2204
-                os: windows
+                os: linux
             ${{ if eq(variables['System.TeamProject'], 'public') }}:
               helixTargetQueue: ubuntu.2204.amd64.open
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
