@@ -20,6 +20,10 @@
     <UsagePattern IdentityGlob="Microsoft.Build.Utilities.Core/*16.11.0*" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.FileProviders.Abstractions/*6.0.0*" />
     <UsagePattern IdentityGlob="Microsoft.Extensions.FileSystemGlobbing/*6.0.0*" />
+    <UsagePattern IdentityGlob="Microsoft.NET.StringTools/17.7.2" />
+    <UsagePattern IdentityGlob="Microsoft.VisualStudio.Setup.Configuration.Interop/3.2.2146" />
+    <UsagePattern IdentityGlob="System.Collections.Immutable/8.0.0" />
+    <UsagePattern IdentityGlob="System.CommandLine.Rendering/0.4.0-alpha.24112.1" />
     <UsagePattern IdentityGlob="System.Composition/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Composition.AttributedModel/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Configuration.ConfigurationManager/*7.0.0*" />
@@ -29,6 +33,7 @@
     <UsagePattern IdentityGlob="System.Composition.TypedParts/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Diagnostics.EventLog/*7.0.0*" />
     <UsagePattern IdentityGlob="System.Reflection.MetadataLoadContext/*7.0.0*" />
+    <UsagePattern IdentityGlob="System.Reflection.Metadata/8.0.0" />
     <UsagePattern IdentityGlob="System.Security.Cryptography.ProtectedData/*7.0.0*" />
 
     <!-- Transitive dependencies from roslyn -->

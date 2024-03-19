@@ -107,7 +107,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             var wwwRootFolder = Path.Combine(outputFolder, "wwwroot");
             var wwwRootFiles = Directory.Exists(wwwRootFolder) ?
                 Directory.GetFiles(wwwRootFolder, "*", fileEnumerationOptions) :
-                Array.Empty<string>();
+                [];
 
             var computedFiles = manifest.Assets
                 .Where(a => a.SourceType is StaticWebAsset.SourceTypes.Computed &&
@@ -118,11 +118,17 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // from their content root folder when the content root does not match the output folder.
             // We do this to allow copying things like Publish assets to temporary locations during the
             // build process if they are later on going to be transformed.
-            var copyToOutputDirectoryFiles = manifest.Assets
-                .Where(a => a.ShouldCopyToOutputDirectory())
+            var copyToOutputDirectoryAssets = manifest.Assets.Where(a => a.ShouldCopyToOutputDirectory()).ToArray();
+            var temporaryAsssets = manifest.Assets
+                .Where(a =>
+                    !a.HasContentRoot(Path.Combine(outputFolder, "wwwroot")) &&
+                    File.Exists(a.Identity) &&
+                    !File.Exists(Path.Combine(a.ContentRoot, a.RelativePath)) &&
+                    a.AssetTraitName != "Content-Encoding").ToArray();
+
+            var copyToOutputDirectoryFiles = copyToOutputDirectoryAssets
                 .Select(a => Path.GetFullPath(Path.Combine(outputFolder, "wwwroot", a.RelativePath)))
-                .Concat(manifest.Assets
-                    .Where(a => !a.HasContentRoot(Path.Combine(outputFolder, "wwwroot")) && File.Exists(a.Identity) && !File.Exists(Path.Combine(a.ContentRoot, a.RelativePath)))
+                .Concat(temporaryAsssets
                     .Select(a => Path.GetFullPath(Path.Combine(a.ContentRoot, a.RelativePath))))
                 .ToArray();
 
@@ -136,7 +142,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 TestContext.Current.NuGetCachePath,
                 ProjectDirectory.TestRoot,
                 intermediateOutputPath,
-                outputFolder);
+                outputFolder).ToArray();
 
 
             if (!_generateBaselines)
@@ -224,12 +230,11 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .Select(a => Path.Combine(wwwRootFolder, a.ComputeTargetPath("", Path.DirectorySeparatorChar)));
 
             var existingFiles = _baselineFactory.TemplatizeExpectedFiles(
-                wwwRootFiles
+                [.. wwwRootFiles
                     .Concat(computedFiles.Select(a => a.Identity))
                     .Concat(copyToPublishDirectoryFiles)
                     .Distinct()
-                    .OrderBy(f => f, StringComparer.Ordinal)
-                    .ToArray(),
+                    .OrderBy(f => f, StringComparer.Ordinal)],
                 TestContext.Current.NuGetCachePath,
                 ProjectDirectory.TestRoot,
                 intermediateOutputPath,
@@ -260,7 +265,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
             else
             {
-                return Array.Empty<string>();
+                return [];
             }
         }
 

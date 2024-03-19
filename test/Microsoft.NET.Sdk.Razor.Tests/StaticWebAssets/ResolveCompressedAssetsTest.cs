@@ -43,7 +43,9 @@ public class ResolveCompressedAssetsTest
             SourceId = "App",
             AssetKind = StaticWebAsset.AssetKinds.All,
             AssetMode = StaticWebAsset.AssetModes.All,
-            AssetRole = StaticWebAsset.AssetRoles.Primary
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            Fingerprint = "v1",
+            Integrity = "abc"
         }.ToTaskItem();
 
         var gzipExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
@@ -87,7 +89,9 @@ public class ResolveCompressedAssetsTest
             SourceId = "App",
             AssetKind = StaticWebAsset.AssetKinds.All,
             AssetMode = StaticWebAsset.AssetModes.All,
-            AssetRole = StaticWebAsset.AssetRoles.Primary
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            Fingerprint = "v1",
+            Integrity = "abc"
         }.ToTaskItem();
 
         var task = new ResolveCompressedAssets()
@@ -129,6 +133,8 @@ public class ResolveCompressedAssetsTest
             AssetKind = StaticWebAsset.AssetKinds.All,
             AssetMode = StaticWebAsset.AssetModes.All,
             AssetRole = StaticWebAsset.AssetRoles.Primary,
+            Fingerprint = "v1",
+            Integrity = "abc"
         }.ToTaskItem();
 
         var task = new ResolveCompressedAssets()
@@ -169,6 +175,8 @@ public class ResolveCompressedAssetsTest
             AssetKind = StaticWebAsset.AssetKinds.All,
             AssetMode = StaticWebAsset.AssetModes.All,
             AssetRole = StaticWebAsset.AssetRoles.Primary,
+            Fingerprint = "v1",
+            Integrity = "abc"
         }.ToTaskItem();
 
         var gzipExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
@@ -213,7 +221,9 @@ public class ResolveCompressedAssetsTest
             SourceId = "App",
             AssetKind = StaticWebAsset.AssetKinds.All,
             AssetMode = StaticWebAsset.AssetModes.All,
-            AssetRole = StaticWebAsset.AssetRoles.Primary
+            AssetRole = StaticWebAsset.AssetRoles.Primary,
+            Fingerprint = "v1",
+            Integrity = "abc"
         }.ToTaskItem();
 
         // Act/Assert
@@ -231,8 +241,12 @@ public class ResolveCompressedAssetsTest
         result1.Should().BeTrue();
         task1.AssetsToCompress.Should().HaveCount(1);
         task1.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
+        task1.AssetsToCompress[0].SetMetadata("Fingerprint", "v1gz");
+        task1.AssetsToCompress[0].SetMetadata("Integrity", "abcgz");
 
         var brotliExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
+        brotliExplicitAsset.SetMetadata("Fingerprint", "v2");
+        brotliExplicitAsset.SetMetadata("Integrity", "def");
 
         var task2 = new ResolveCompressedAssets()
         {
@@ -271,6 +285,8 @@ public class ResolveCompressedAssetsTest
             AssetKind = StaticWebAsset.AssetKinds.All,
             AssetMode = StaticWebAsset.AssetModes.All,
             AssetRole = StaticWebAsset.AssetRoles.Primary,
+            Fingerprint = "v1",
+            Integrity = "abc"
         }.ToTaskItem();
 
         // Act/Assert
@@ -288,8 +304,12 @@ public class ResolveCompressedAssetsTest
         result1.Should().BeTrue();
         task1.AssetsToCompress.Should().HaveCount(1);
         task1.AssetsToCompress[0].ItemSpec.Should().EndWith(".br");
+        task1.AssetsToCompress[0].SetMetadata("Fingerprint", "v1br");
+        task1.AssetsToCompress[0].SetMetadata("Integrity", "abcbr");
 
         var gzipExplicitAsset = new TaskItem(asset.ItemSpec, asset.CloneCustomMetadata());
+        gzipExplicitAsset.SetMetadata("Fingerprint", "v2");
+        gzipExplicitAsset.SetMetadata("Integrity", "def");
 
         var task2 = new ResolveCompressedAssets()
         {

@@ -1,0 +1,126 @@
+<Project>
+
+  <Target Name="ForceBootConfigGeneration" BeforeTargets="_AddPublishWasmBootJsonToStaticWebAssets" DependsOnTargets="GeneratePublishWasmBootJson" />
+
+  <!-- Make a dummy file so that _ResolveWasmOutputs doesn't fail on DefineStaticWebAssets -->
+  <Target Name="_PatchWasmOutputs" BeforeTargets="_ResolveWasmOutputs">
+
+    <PropertyGroup>
+      <_TempWasmBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json</_TempWasmBuildBootJsonPath>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(_TempWasmBuildBootJsonPath)" Lines="temp" Overwrite="true" Condition="!Exists('$(_PatchWasmBuildBootJsonPath)')" />
+
+  </Target>
+
+  <!-- Generate blazor.boot.json with the correct assets and update fingerprint and integrity -->
+  <Target Name="_FixBuildBootJson" AfterTargets="_ResolveWasmOutputs" DependsOnTargets="ResolveCoreStaticWebAssets">
+
+    <PropertyGroup>
+      <_PatchWasmBuildBootJsonPath>$(IntermediateOutputPath)blazor.boot.json.patch</_PatchWasmBuildBootJsonPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_PatchWasmJsModuleCandidatesForBuild
+        Include="@(StaticWebAsset)"
+        Condition="'%(StaticWebAsset.AssetTraitName)' == 'JSModule' and '%(StaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(AssetKind)' != 'Publish'" />
+    </ItemGroup>
+
+    <GetFileHash Files="@(WasmStaticWebAsset->'%(OriginalItemSpec)')" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_PatchWasmOutputWithHash" />
+    </GetFileHash>
+
+    <ComputeStaticWebAssetsTargetPaths
+      Assets="@(_PatchWasmJsModuleCandidatesForBuild)"
+      PathPrefix=""
+      UseAlternatePathDirectorySeparator="true"
+    >
+      <Output TaskParameter="AssetsWithTargetPath" ItemName="_PatchWasmJsModuleCandidatesForBuildWithTargetPath" />
+    </ComputeStaticWebAssetsTargetPaths>
+
+    <GetFileHash Files="@(_PatchWasmJsModuleCandidatesForBuildWithTargetPath)" Algorithm="SHA256" HashEncoding="base64">
+      <Output TaskParameter="Items" ItemName="_PatchWasmOutputWithHash" />
+    </GetFileHash>
+
+    <GenerateWasmBootJson
+      AssemblyPath="@(IntermediateAssembly)"
+      Resources="@(_PatchWasmOutputWithHash)"
+      DebugBuild="true"
+      DebugLevel="$(WasmDebugLevel)"
+      LinkerEnabled="false"
+      CacheBootResources="$(BlazorCacheBootResources)"
+      OutputPath="$(_PatchWasmBuildBootJsonPath)"
+      ConfigurationFiles="@(_WasmJsConfigStaticWebAsset)"
+      LazyLoadedAssemblies="@(BlazorWebAssemblyLazyLoad)"
+      InvariantGlobalization="$(InvariantGlobalization)"
+      LoadCustomIcuData="$(_LoadCustomIcuData)"
+      IsHybridGlobalization="$(_IsHybridGlobalization)"
+      LoadFullICUData="$(_BlazorWebAssemblyLoadAllGlobalizationData)"
+      StartupMemoryCache="$(_BlazorWebAssemblyStartupMemoryCache)"
+      Jiterpreter="$(_BlazorWebAssemblyJiterpreter)"
+      RuntimeOptions="$(_BlazorWebAssemblyRuntimeOptions)"
+      Extensions="@(WasmBootConfigExtension)"
+      TargetFrameworkVersion="$(TargetFrameworkVersion)"
+      ModuleAfterConfigLoaded="@(WasmModuleAfterConfigLoaded)"
+      ModuleAfterRuntimeReady="@(WasmModuleAfterRuntimeReady)" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_PatchWasmBuildBootJsonPath)" />
+      <_PatchBuildWasmBootJson
+        Include="$(_PatchWasmBuildBootJsonPath)"
+        RelativePath="_framework/blazor.boot.json" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_PatchBuildWasmBootJson)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      AssetKind="Build"
+      AssetRole="Primary"
+      AssetTraitName="WasmResource"
+      AssetTraitValue="manifest"
+      CopyToOutputDirectory="PreserveNewest"
+      CopyToPublishDirectory="Never"
+      ContentRoot="$(OutDir)wwwroot"
+      BasePath="$(StaticWebAssetBasePath)"
+    >
+      <Output TaskParameter="Assets" ItemName="_PatchBuildWasmBootJsonStaticWebAsset" />
+    </DefineStaticWebAssets>
+    <ItemGroup>
+      <_BuildWasmBootJsonStaticWebAsset Remove="@(_BuildWasmBootJsonStaticWebAsset)" />
+      <_BuildWasmBootJsonStaticWebAsset Include="@(_PatchBuildWasmBootJsonStaticWebAsset)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_UpdateIntermediateOutputPath" BeforeTargets="_GenerateBuildWasmBootJson">
+    <PropertyGroup>
+      <_OriginalIntermediateOutputPath>$(IntermediateOutputPath)</_OriginalIntermediateOutputPath>
+      <IntermediateOutputPath>$(IntermediateOutputPath)$(MSBuildProjectName)\</IntermediateOutputPath>
+    </PropertyGroup>
+    <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
+  </Target>
+
+  <Target Name="_RestoreIntermediateOutputPath" AfterTargets="_GenerateBuildWasmBootJson">
+    <PropertyGroup>
+      <IntermediateOutputPath>$(_OriginalIntermediateOutputPath)</IntermediateOutputPath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_CorrectPublishFilesIntegrity" AfterTargets="ProcessPublishFilesForWasm">
+    <ItemGroup>
+      <_PublishFilesToCorrectIntegrity Include="@(_NewWebCilPublishStaticWebAssets)" RemoveMetadata="Integrity;Fingerprint" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_PublishFilesToCorrectIntegrity)"
+    >
+      <Output TaskParameter="Assets" ItemName="_NewPublishFilesToCorrectIntegrity" />
+    </DefineStaticWebAssets>
+
+    <ItemGroup>
+      <StaticWebAsset Remove="@(_NewWebCilPublishStaticWebAssets)" />
+      <StaticWebAsset Include="@(_NewPublishFilesToCorrectIntegrity)" />
+    </ItemGroup>
+  </Target>
+
+</Project>
