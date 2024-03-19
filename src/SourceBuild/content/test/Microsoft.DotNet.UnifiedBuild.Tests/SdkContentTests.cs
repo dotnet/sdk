@@ -89,19 +89,32 @@ public class SdkContentTests : SdkTests
     {
         IEnumerable<string> assemblyVersionDiffFilters = GetSdkAssemblyVersionDiffExclusionFilters()
             .Select(filter => filter.TrimStart("./".ToCharArray()));
+        // Remove entries that are not in both. If they should be in both, the mismatch will be caught in another test
+        foreach(var kvp in sbSdkAssemblyVersions)
+        {
+            if (msftSdkAssemblyVersions.ContainsKey(kvp.Key))
+            {
+                sbSdkAssemblyVersions.Remove(kvp.Key);
+            }
+        }
 
-        // Remove any excluded files as long as SB SDK's file has the same or greater assembly version compared to the corresponding
+        foreach(var kvp in msftSdkAssemblyVersions)
+        {
+            if (sbSdkAssemblyVersions.ContainsKey(kvp.Key))
+            {
+                msftSdkAssemblyVersions.Remove(kvp.Key);
+            }
+        }
+
+        // Remove any excluded files as long as UB SDK's file has the same or greater assembly version compared to the corresponding
         // file in the MSFT SDK. If the version is less, the file will show up in the results as this is not a scenario
         // that is valid for shipping.
         string[] sbSdkFileArray = sbSdkAssemblyVersions.Keys.ToArray();
         for (int i = sbSdkFileArray.Length - 1; i >= 0; i--)
         {
             string assemblyPath = sbSdkFileArray[i];
-            Version? sbVersion = sbSdkAssemblyVersions[assemblyPath];
-            Version? msftVersion = msftSdkAssemblyVersions[assemblyPath];
-
-            if (sbVersion is not null &&
-                msftVersion is not null &&
+            if (sbSdkAssemblyVersions.TryGetValue(assemblyPath, out Version? sbVersion) &&
+                msftSdkAssemblyVersions.TryGetValue(assemblyPath, out Version? msftVersion) &&
                 sbVersion >= msftVersion &&
                 Utilities.IsFileExcluded(assemblyPath, assemblyVersionDiffFilters))
             {
