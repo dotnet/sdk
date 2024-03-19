@@ -236,7 +236,9 @@
                     ContainerEnvironmentVariables="@(ContainerEnvironmentVariables)"
                     ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
                     ContainerUser="$(ContainerUser)"
-                    RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"> <!-- The RID graph path is provided as a property by the SDK. -->
+                    RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+                    GenerateLabels="$(ContainerGenerateLabels)"
+                    GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />

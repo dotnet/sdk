@@ -175,6 +175,34 @@ public class TargetsTests
             .And.ContainSingle(label => LabelMatch("org.opencontainers.image.source", expectedLabel, label), String.Join(",", logger.AllMessages));
     }
 
+    [InlineData(true)]
+    [InlineData(false)]
+    [Theory]
+    public void ShouldIncludeBaseImageLabelsUnlessUserOptsOut(bool includeBaseImageLabels)
+    {
+        var expectedBaseImage = "mcr.microsoft.com/dotnet/runtime:7.0";
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["ContainerGenerateLabelsImageBaseName"] = includeBaseImageLabels.ToString(),
+            ["ContainerBaseImage"] = expectedBaseImage,
+            ["ContainerGenerateLabels"] = true.ToString()
+        }, projectName: $"{nameof(ShouldIncludeBaseImageLabelsUnlessUserOptsOut)}_{includeBaseImageLabels}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerConfig }, new[] { logger }, null, out var outputs).Should().BeTrue("Build should have succeeded but failed due to {0}", String.Join("\n", logger.AllMessages));
+        var labels = instance.GetItems(ContainerLabel);
+        if (includeBaseImageLabels)
+        {
+            labels.Should().NotBeEmpty("Should have evaluated some labels by default")
+                .And.ContainSingle(label => LabelMatch("org.opencontainers.image.base.name", expectedBaseImage, label));
+        }
+        else
+        {
+            labels.Should().NotBeEmpty("Should have evaluated some labels by default")
+                .And.NotContain(label => LabelMatch("org.opencontainers.image.base.name", expectedBaseImage, label));
+        };
+    }
+
     [InlineData("7.0.100", "v7.0", "7.0")]
     [InlineData("7.0.100-preview.7", "v7.0", "7.0")]
     [InlineData("7.0.100-rc.1", "v7.0", "7.0")]
