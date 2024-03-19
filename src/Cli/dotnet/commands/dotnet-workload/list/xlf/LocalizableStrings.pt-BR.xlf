@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">
         <source>Workload version: {0}</source>
-        <target state="new">Workload version: {0}</target>
+        <target state="translated">Versão da carga de trabalho: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

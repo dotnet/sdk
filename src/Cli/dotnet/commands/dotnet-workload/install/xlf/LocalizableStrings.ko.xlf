@@ -184,7 +184,7 @@
       </trans-unit>
       <trans-unit id="NewWorkloadSet">
         <source>Installing workload version {0}.</source>
-        <target state="new">Installing workload version {0}.</target>
+        <target state="translated">작업 버전 {0}을(를) 설치하는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
@@ -374,12 +374,12 @@
       </trans-unit>
       <trans-unit id="WorkloadSetUpgrade">
         <source>Updating workload version from {0} to {1}.</source>
-        <target state="new">Updating workload version from {0} to {1}.</target>
+        <target state="translated">워크로드 버전을 {0}에서 {1}(으)로 업데이트하는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>Update to the specified workload version.</source>
-        <target state="new">Update to the specified workload version.</target>
+        <target state="translated">지정된 워크로드 버전으로 업데이트합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
