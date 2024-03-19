@@ -15,7 +15,7 @@
       UnpackTarballs;
       BuildXPlatTasks;
       BuildMSBuildSdkResolver;
-      BuildSdkArchiveDiff;
+      BuildUnifiedBuildValidationTests;
       BuildLeakDetection;
       ExtractToolPackage;
       GenerateRootFs;
@@ -117,12 +117,12 @@
     </Touch>
   </Target>
 
-  <Target Name="BuildSdkArchiveDiff"
+  <Target Name="BuildUnifiedBuildValidationTests"
           Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" >
-    <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff\Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff.csproj"
+    <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
              Targets="Restore"
              Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
-    <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff\Microsoft.DotNet.SourceBuild.Tasks.SdkArchiveDiff.csproj"
+    <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
              Targets="Build" />
   </Target>
 
