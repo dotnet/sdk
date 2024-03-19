@@ -87,16 +87,7 @@
       <Sha>e18404fcaf90b0ee9bbf588ec32d07f466f16fe7</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="dotnet-format" Version="9.0.515801">
-      <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>91f60316ebd9c75d6be8b7f9b7c201bab17240c9</Sha>
-    </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.format" Version="9.0.515801">
-      <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>91f60316ebd9c75d6be8b7f9b7c201bab17240c9</Sha>
-      <SourceBuild RepoName="format" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.10.0-3.24168.1">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>2348a50bb566b39305c474793b43edb5635db6f4</Sha>
@@ -377,6 +368,56 @@
     <Dependency Name="System.CommandLine" Version="2.0.0-beta4.24126.1">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
       <Sha>5ea97af07263ea3ef68a18557c8aa3f7e3200bda</Sha>
+    </Dependency>
+    <Dependency Name="System.CommandLine.Rendering" Version="0.4.0-alpha.24112.1">
+      <Uri>https://github.com/dotnet/command-line-api</Uri>
+      <Sha>e9ac4ff4293cf853f3d07eb9e747aef27f5be965</Sha>
+    </Dependency>
+    <!-- Microsoft.CodeAnalysis.Workspaces.MSBuild transitively references M.Bcl.AsyncInterfaces.
+         Adding an explicit dependency to make sure the latest version is used instead of the SBRP
+         one under source build. -->
+    <!-- Necessary for source-build. This allows the live version of the package to be used by source-build. -->
+    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.7.2">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
+    </Dependency>
+    <!-- Necessary for source-build. This allows the live version of the package to be used by source-build. -->
+    <Dependency Name="Microsoft.Build" Version="17.7.2">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Build.Framework" Version="17.7.2">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.7.2">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.7.2">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.NET.StringTools" Version="17.7.2">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d6990bcfaf520c0d215a194fad0617f7efad68b4</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis" Version="4.10.0-2.24114.1">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>744a0ae8691c5c463f63e9936b7d56592c0ed57c</Sha>
+    </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.DiaSymReader" Version="2.0.0">
+      <Uri>https://github.com/dotnet/symreader</Uri>
+      <Sha>27e584661980ee6d82c419a2a471ae505b7d122e</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Logging" Version="9.0.0-preview.2.24111.9">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>9699f39112b2aea89a05a74199baf9049db85537</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="9.0.0-preview.2.24111.9">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>9699f39112b2aea89a05a74199baf9049db85537</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.512601">

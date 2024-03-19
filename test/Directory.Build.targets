@@ -14,6 +14,11 @@
     <!-- Put packages for tests in subfolder so we don't try to sign them -->
     <PackageOutputPath>$(PackageOutputPath)tests\</PackageOutputPath>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <!-- Set this to true for test project only because test assets contains .editorconfig file -->
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+  </PropertyGroup>
   
   <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(OutputType)' == 'Exe' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <Compile Include="$(MSBuildThisFileDirectory)Common\Program.cs" />
@@ -24,7 +29,6 @@
     <!-- Note: These items are showing up in solution explorer even though Visible is set to false -->
     <None Include="$(MSBuildThisFileDirectory)..\src\Assets\**\*.*" Exclude="$(MSBuildThisFileDirectory)..\src\Assets\TestPackages\dotnet-new\**\*" CopyToPublishDirectory="PreserveNewest" 
           LinkBase="Assets" Visible="false" />
-
   </ItemGroup>
 
   <Target Name="TestAsTool" DependsOnTargets="Pack;_InnerGetTestsToRun">
