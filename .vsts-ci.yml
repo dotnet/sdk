@@ -179,7 +179,7 @@ extends:
               ${{ if ne(variables['System.TeamProject'], 'public') }}:
                 name: NetCore1ESPool-Svc-Internal
                 image: 1es-ubuntu-2004
-                os: windows
+                os: linux
             ${{ if eq(variables['System.TeamProject'], 'public') }}:
               helixTargetQueue: 'ubuntu.2004.amd64.open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-20.04-helix-amd64-20220502145738-4b2e4c2'
             ${{ if ne(variables['System.TeamProject'], 'public') }}:
