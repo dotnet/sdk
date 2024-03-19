@@ -12,7 +12,7 @@ public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointS
 
     public string Value { get; set; }
 
-    public double Quality { get; set; }
+    public string Quality { get; set; }
 
     public static StaticWebAssetEndpointSelector[] FromMetadataValue(string value)
     {

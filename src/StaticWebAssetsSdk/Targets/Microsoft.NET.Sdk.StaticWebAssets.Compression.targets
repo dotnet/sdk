@@ -336,15 +336,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="StaticWebAssets" ItemName="_CompressionCurrentProjectPublishAssets" />
     </ComputeStaticWebAssetsForCurrentProject>
 
-    <ItemGroup>
-      <_CompressionCandidatePublishAssets Include="@(_CompressionCurrentProjectPublishAssets)" />
-      <_CompressionCandidatePublishAssets Include="@(StaticWebAsset)"
-        Condition="'%(SourceType)' == 'Project' or '%(SourceType)' == 'Package'" />
-    </ItemGroup>
-
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
-      CandidateAssets="@(_CompressionCandidatePublishAssets)"
+      CandidateAssets="@(_CompressionCurrentProjectPublishAssets)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedCompressionPublishEndpoints" />
     </ApplyCompressionNegotiation>

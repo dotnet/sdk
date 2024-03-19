@@ -24,17 +24,29 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public override bool Execute()
         {
-            var staticWebAssets = CandidateAssets.Select(StaticWebAsset.FromTaskItem);
+            var staticWebAssets = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
             var existingEndpoints = StaticWebAssetEndpoint.FromItemGroup(ExistingEndpoints);
             var existingEndpointsByAssetFile = existingEndpoints
                 .GroupBy(e => e.AssetFile, OSPath.PathComparer)
                 .ToDictionary(g => g.Key, g => new HashSet<StaticWebAssetEndpoint>(g));
 
+            foreach (var kvp in existingEndpointsByAssetFile)
+            {
+                var asset = kvp.Key;
+                var set = kvp.Value;
+                if (!staticWebAssets.ContainsKey(asset))
+                {
+                    Log.LogMessage(MessageImportance.Low, $"Removing endpoints for asset '{asset}' because it no longer exists.");
+                    existingEndpointsByAssetFile.Remove(asset);
+                }
+            }
+
             var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
             var endpoints = new List<StaticWebAssetEndpoint>();
 
-            foreach (var asset in staticWebAssets)
+            foreach (var kvp in staticWebAssets)
             {
+                var asset = kvp.Value;
                 StaticWebAssetEndpoint endpoint = null;
                 if (!asset.IsDiscovered() && !asset.IsComputed())
                 {

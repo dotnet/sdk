@@ -151,7 +151,12 @@ public class ResolveCompressedAssets : Task
             }
         }
 
-        AssetsToCompress = [.. assetsToCompress];
+        Log.LogMessage(
+            "Resolved {0} compressed assets for {1} candidate assets.",
+            assetsToCompress.Count,
+            matchingCandidateAssets.Count);
+
+        AssetsToCompress = assetsToCompress.ToArray();
 
         return !Log.HasLoggedErrors;
     }

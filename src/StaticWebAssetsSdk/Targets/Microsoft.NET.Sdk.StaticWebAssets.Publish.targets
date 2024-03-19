@@ -56,7 +56,8 @@ Copyright (c) .NET Foundation. All rights reserved.
          into account when we built the build manifest that we are about to load for resuming the publish process. -->
     <PropertyGroup>
         <_ShouldLoadBuildManifestAndUpdateAssets>false</_ShouldLoadBuildManifestAndUpdateAssets>
-        <_ShouldLoadBuildManifestAndUpdateAssets Condition="@(_CachedBuildStaticWebAssets) == '' and @(_CachedBuildStaticWebAssetDiscoveryPatterns) == ''">true</_ShouldLoadBuildManifestAndUpdateAssets>
+        <_ShouldLoadBuildManifestAndUpdateAssets
+          Condition="@(_CachedBuildStaticWebAssets) == '' or @(_CachedBuildStaticWebAssetDiscoveryPatterns) == '' or @(_CachedBuildStaticWebAssetReferencedProjectsConfiguration) == ''">true</_ShouldLoadBuildManifestAndUpdateAssets>
     </PropertyGroup>
 
     <ItemGroup>
@@ -64,6 +65,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)" />
       <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
       <StaticWebAssetProjectConfiguration Remove="@(StaticWebAssetProjectConfiguration)" />
+      <_CachedBuildStaticWebAssets Condition="'$(_ShouldLoadBuildManifestAndUpdateAssets)' == 'true'" Remove="@(_CachedBuildStaticWebAssets)" />
+      <_CachedBuildStaticWebAssetEndpoints Condition="'$(_ShouldLoadBuildManifestAndUpdateAssets)' == 'true'" Remove="@(_CachedBuildStaticWebAssetEndpoints)" />
+      <_CachedBuildStaticWebAssetDiscoveryPatterns Condition="'$(_ShouldLoadBuildManifestAndUpdateAssets)' == 'true'" Remove="@(_CachedBuildStaticWebAssetDiscoveryPatterns)" />
+      <_CachedBuildStaticWebAssetReferencedProjectsConfiguration Condition="'$(_ShouldLoadBuildManifestAndUpdateAssets)' == 'true'" Remove="@(_CachedBuildStaticWebAssetReferencedProjectsConfiguration)" />
     </ItemGroup>
 
     <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)"
@@ -81,7 +86,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ResolvedFileToPublish Remove="@(_CachedBuildStaticWebAssets)" />
     </ItemGroup>
 
-    <ItemGroup Condition="$(_ShouldLoadBuildManifestAndUpdateAssets)">
+    <ItemGroup>
       <StaticWebAsset Include="@(_CachedBuildStaticWebAssets)" />
       <StaticWebAssetEndpoint Include="@(_CachedBuildStaticWebAssetEndpoints)" />
       <StaticWebAssetDiscoveryPattern Include="@(_CachedBuildStaticWebAssetDiscoveryPatterns)" />
@@ -199,17 +204,19 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="LoadStaticWebAssetsPublishManifest">
     <PropertyGroup>
       <_ShouldLoadPublishManifestAndUpdateAssets>false</_ShouldLoadPublishManifestAndUpdateAssets>
-      <_ShouldLoadPublishManifestAndUpdateAssets Condition="@(_CachedPublishStaticWebAssets) == '' and @(_CachedPublishStaticWebAssetDiscoveryPatterns) == ''">true</_ShouldLoadPublishManifestAndUpdateAssets>
+      <_ShouldLoadPublishManifestAndUpdateAssets Condition="@(_CachedPublishStaticWebAssets) == '' and @(_CachedPublishStaticWebAssetEndpoints) == '' and @(_CachedPublishStaticWebAssetDiscoveryPatterns) == ''">true</_ShouldLoadPublishManifestAndUpdateAssets>
     </PropertyGroup>
 
     <ItemGroup>
       <StaticWebAsset Remove="@(StaticWebAsset)" />
+      <StaticWebAssetEndpoint Remove="@(StaticWebAssetEndpoint)" />
       <StaticWebAssetDiscoveryPattern Remove="@(StaticWebAssetDiscoveryPattern)" />
     </ItemGroup>
 
     <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetPublishManifestPath)"
       Condition="'$(_ShouldLoadPublishManifestAndUpdateAssets)' == 'true'">
       <Output TaskParameter="Assets" ItemName="_CachedPublishStaticWebAssets" />
+      <Output TaskParameter="Endpoints" ItemName="_CachedPublishStaticWebAssetEndpoints" />
       <Output TaskParameter="DiscoveryPatterns" ItemName="_CachedPublishStaticWebAssetDiscoveryPatterns" />
     </ReadStaticWebAssetsManifestFile>
 
@@ -222,6 +229,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup>
       <StaticWebAsset Include="@(_CachedPublishStaticWebAssets)" />
+      <StaticWebAssetEndpoint Include="@(_CachedPublishStaticWebAssetEndpoints)" />
       <StaticWebAssetDiscoveryPattern Remove="@(_CachedPublishStaticWebAssetDiscoveryPatterns)" />
     </ItemGroup>
   </Target>
