@@ -12,8 +12,8 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
         internal static void RunTests(string metadataPath, string legacyMetadataPath)
         {
             //6.0.100
-            sdkVersion = "6.0.100";
-            workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
+            string sdkVersion = "6.0.100";
+            string workingDirectory = TestUtils.CreateTemporaryFolder(sdkVersion);
             UseSdkVersion(workingDirectory, requestedSdkVersion: sdkVersion, resolvedVersionPattern: "6.0.1", rollForward: "latestPatch");
             Console.WriteLine($"Running tests on .NET {sdkVersion} for: {legacyMetadataPath}.");
             CanSearch(workingDirectory, legacyMetadataPath);
