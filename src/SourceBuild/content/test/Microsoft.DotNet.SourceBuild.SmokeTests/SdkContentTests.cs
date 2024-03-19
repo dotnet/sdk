@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.IO;
@@ -11,7 +10,6 @@ using System.IO.Enumeration;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.Extensions.FileSystemGlobbing;
 using Xunit;
 using Xunit.Abstractions;
@@ -120,33 +118,27 @@ public class SdkContentTests : SdkTests
     private Dictionary<string, Version?> GetMsftSdkAssemblyVersions(
         string msftSdkPath, Dictionary<string, Version?> sbSdkAssemblyVersions)
     {
-        ConcurrentDictionary<string, Version?> msftSdkAssemblyVersions = new();
-        var tasks = new List<Task>();
+        Dictionary<string, Version?> msftSdkAssemblyVersions = new();
         foreach ((string relativePath, _) in sbSdkAssemblyVersions)
         {
-            var t = Task.Run(() =>
+            // Now we want to find the corresponding file that exists in the MSFT SDK.
+            // We've already replaced version numbers with placeholders in the path.
+            // So we can't directly use the relative path to find the corresponding file. Instead,
+            // we need to replace the version placeholders with wildcards and find the path through path matching.
+            string file = Path.Combine(msftSdkPath, relativePath);
+            Matcher matcher = BaselineHelper.GetFileMatcherFromPath(relativePath);
+
+            file = FindMatchingFilePath(msftSdkPath, matcher, relativePath);
+
+            if (!File.Exists(file))
             {
-                // Now we want to find the corresponding file that exists in the MSFT SDK.
-                // We've already replaced version numbers with placeholders in the path.
-                // So we can't directly use the relative path to find the corresponding file. Instead,
-                // we need to replace the version placeholders with wildcards and find the path through path matching.
-                string file = Path.Combine(msftSdkPath, relativePath);
-                Matcher matcher = BaselineHelper.GetFileMatcherFromPath(relativePath);
+                continue;
+            }
 
-                file = FindMatchingFilePath(msftSdkPath, matcher, relativePath);
-
-                if (!File.Exists(file))
-                {
-                    return;
-                }
-
-                AssemblyName assemblyName = AssemblyName.GetAssemblyName(file);
-                Assert.True(msftSdkAssemblyVersions.TryAdd(BaselineHelper.RemoveVersions(relativePath), GetVersion(assemblyName)));
-            });
-            tasks.Add(t);
+            AssemblyName assemblyName = AssemblyName.GetAssemblyName(file);
+            msftSdkAssemblyVersions.Add(BaselineHelper.RemoveVersions(relativePath), GetVersion(assemblyName));
         }
-        Task.WaitAll(tasks.ToArray());
-        return msftSdkAssemblyVersions.ToDictionary();
+        return msftSdkAssemblyVersions;
     }
 
     // It's known that assembly versions can be different between builds in their revision field. Disregard that difference
@@ -179,65 +171,24 @@ public class SdkContentTests : SdkTests
     {
         IEnumerable<string> exclusionFilters = GetSdkDiffExclusionFilters(SourceBuildSdkType)
             .Select(filter => filter.TrimStart("./".ToCharArray()));
-        ConcurrentDictionary<string, Version?> sbSdkAssemblyVersions = new();
-        List<Task> tasks = new List<Task>();
-        foreach (string dir in Directory.EnumerateDirectories(sbSdkPath, "*", SearchOption.AllDirectories).Append(sbSdkPath))
+        Dictionary<string, Version?> sbSdkAssemblyVersions = new();
+        foreach (string file in Directory.EnumerateFiles(sbSdkPath, "*", SearchOption.AllDirectories))
         {
-            var t = Task.Run(() =>
+            string fileExt = Path.GetExtension(file);
+            if (fileExt.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
+                fileExt.Equals(".exe", StringComparison.OrdinalIgnoreCase))
             {
-                foreach (string file in Directory.EnumerateFiles(dir, "*", SearchOption.TopDirectoryOnly))
+                AssemblyName assemblyName = AssemblyName.GetAssemblyName(file);
+                string relativePath = Path.GetRelativePath(sbSdkPath, file);
+                string normalizedPath = BaselineHelper.RemoveVersions(relativePath);
+
+                if (!Utilities.IsFileExcluded(normalizedPath, exclusionFilters))
                 {
-                    string fileExt = Path.GetExtension(file);
-                    if (fileExt.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
-                        fileExt.Equals(".exe", StringComparison.OrdinalIgnoreCase))
-                    {
-                        string relativePath = Path.GetRelativePath(sbSdkPath, file);
-                        string normalizedPath = BaselineHelper.RemoveVersions(relativePath);
-                        if (!Utilities.IsFileExcluded(normalizedPath, exclusionFilters))
-                        {
-                            try
-                            {
-                                AssemblyName assemblyName = AssemblyName.GetAssemblyName(file);
-                                Assert.True(sbSdkAssemblyVersions.TryAdd(normalizedPath, GetVersion(assemblyName)));
-                            }
-                            catch (BadImageFormatException)
-                            {
-                                Console.WriteLine($"BadImageFormatException: {file}");
-                            }
-                        }
-                    }
+                    sbSdkAssemblyVersions.Add(normalizedPath, GetVersion(assemblyName));
                 }
-            });
-            tasks.Add(t);
+            }
         }
-        //foreach (string file in Directory.EnumerateFiles(sbSdkPath, "*", SearchOption.AllDirectories))
-        //{
-        //    string fileExt = Path.GetExtension(file);
-        //    if (fileExt.Equals(".dll", StringComparison.OrdinalIgnoreCase) ||
-        //        fileExt.Equals(".exe", StringComparison.OrdinalIgnoreCase))
-        //    {
-        //        string relativePath = Path.GetRelativePath(sbSdkPath, file);
-        //        string normalizedPath = BaselineHelper.RemoveVersions(relativePath);
-        //        if (!Utilities.IsFileExcluded(normalizedPath, exclusionFilters))
-        //        {
-        //            var t = Task.Run(() =>
-        //            {
-        //                try
-        //                {
-        //                    AssemblyName assemblyName = AssemblyName.GetAssemblyName(file);
-        //                    sbSdkAssemblyVersions.Add(normalizedPath, GetVersion(assemblyName));
-        //                }
-        //                catch (BadImageFormatException)
-        //                {
-        //                    Console.WriteLine($"BadImageFormatException: {file}");
-        //                }
-        //            });
-        //            tasks.Add(t);
-        //        }
-        //    }
-        //}
-        Task.WaitAll(tasks.ToArray());
-        return sbSdkAssemblyVersions.ToDictionary();
+        return sbSdkAssemblyVersions;
     }
 
     private void WriteTarballFileList(string? tarballPath, string outputFileName, bool isPortable, string sdkType)

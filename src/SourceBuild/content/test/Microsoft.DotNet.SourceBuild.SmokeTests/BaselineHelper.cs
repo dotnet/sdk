@@ -96,7 +96,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
         public static string RemoveVersions(string source)
         {
             // Remove version numbers for examples like "roslyn4.1", "net8.0", and "netstandard2.1".
-            string pathSeparator = $"[{Regex.Escape(@"\")}|{Regex.Escape(@"/")}]";
+            string pathSeparator = Regex.Escape(Path.DirectorySeparatorChar.ToString());
             string result = Regex.Replace(source, $@"{pathSeparator}(net|roslyn)[1-9]+\.[0-9]+{pathSeparator}", match =>
             {
                 string wordPart = match.Groups[1].Value;
@@ -111,10 +111,10 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
                 // - The version may have one or more release identifiers that begin with '.' or '-'
                 // - The version should end before a path separator, '.', '-', or '/'
             Regex semanticVersionRegex = new(
-                @"(?<=[./\\-])(0|[1-9]\d*)\.(0|[1-9]\d*)(\.(0|[1-9]\d*))+"
+                @"(?<=[./-])(0|[1-9]\d*)\.(0|[1-9]\d*)(\.(0|[1-9]\d*))+"
                 + @"(((?:[-.]((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)))+"
                 + @"(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?"
-                + @"(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?(?=[/\\.-])");
+                + @"(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?(?=[/.-])");
             return semanticVersionRegex.Replace(result, SemanticVersionPlaceholder);
         }
 
