@@ -2,14 +2,12 @@
 
   <PropertyGroup>
     <UnifiedBuildValidationTestsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'test', 'Microsoft.DotNet.UnifiedBuild.Tests'))</UnifiedBuildValidationTestsDir>
+    <UnifiedBuildValidationTestsProject>$([MSBuild]::NormalizeDirectory('$(UnifiedBuildValidationTestsDir)', 'Microsoft.DotNet.UnifiedBuild.Tests'))</UnifiedBuildValidationTestsProject>
   </PropertyGroup>
 
   <Target Name="RunUnifiedBuildValidation"
-          AfterTargets="Build">
-    <ItemGroup>
-      <SdkTarballItem Include="$(ArtifactsAssetsDir)dotnet-sdk*$(ArchiveExtension)" />
-      <SourceBuiltArtifactsItem Include="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)" />
-    </ItemGroup>
+          AfterTargets="Build"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion">
 
     <PropertyGroup>
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
