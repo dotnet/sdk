@@ -57,7 +57,14 @@ parameters:
 jobs:
 - job: Formatting_Check
   pool:
-    vmImage: 'windows-latest'
+    ${{ if eq(variables['System.TeamProject'], 'public') }}:
+      name: $(DncEngPublicBuildPool)
+      image: 1es-windows-2022-open
+      os: windows
+    ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+      name: $(DncEngInternalBuildPool)
+      image: 1es-windows-2022
+      os: windows
   timeoutInMinutes: 60
   steps:
     - script: .\restore.cmd
@@ -77,7 +84,14 @@ jobs:
 - ${{ each testArgs in parameters.TestArguments }}:
   - job: dotnet_format_integration_tests_${{ testArgs.Name }}
     pool:
-      vmImage: 'windows-latest'
+      ${{ if eq(variables['System.TeamProject'], 'public') }}:
+        name: $(DncEngPublicBuildPool)
+        image: 1es-windows-2022-open
+        os: windows
+      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        name: $(DncEngInternalBuildPool)
+        image: 1es-windows-2022
+        os: windows
     timeoutInMinutes: 60
     steps:
       - script: eng\dotnet-format\integration-test.cmd -repo '${{ testArgs._repo }}' -branchName '${{ testArgs._branchName }}' -sha '${{ testArgs._sha }}' -targetSolution '${{ testArgs._targetSolution }}' -useParentSdk ${{ testArgs._useParentSdk }} -testPath '$(Agent.TempDirectory)\temp' -stage 'prepare'
