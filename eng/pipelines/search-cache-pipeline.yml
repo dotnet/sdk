@@ -1,3 +1,6 @@
+# templating-search-cache-updater
+# https://dev.azure.com/dnceng/internal/_build?definitionId=1025
+
 # Don't trigger for CI events: push, PR created etc.
 trigger: none
 # Trigger periodically instead.
@@ -68,27 +71,6 @@ extends:
           condition: always()
 
         - task: UseDotNet@2
-          displayName: 'Use .NET 3.1'
-          inputs:
-            packageType: sdk
-            version: 3.1.x
-            installationPath: $(Build.SourcesDirectory)/.dotnet
-
-        - task: UseDotNet@2
-          displayName: 'Use .NET 5.0.100'
-          inputs:
-            packageType: sdk
-            version: 5.0.100
-            installationPath: $(Build.SourcesDirectory)/.dotnet
-
-        - task: UseDotNet@2
-          displayName: 'Use .NET 5.0.400'
-          inputs:
-            packageType: sdk
-            version: 5.0.400
-            installationPath: $(Build.SourcesDirectory)/.dotnet
-
-        - task: UseDotNet@2
           displayName: 'Use .NET 6.0.100'
           inputs:
             packageType: sdk
@@ -121,6 +103,13 @@ extends:
           inputs:
             packageType: sdk
             version: 7.0.200
+            installationPath: $(Build.SourcesDirectory)/.dotnet
+
+        - task: UseDotNet@2
+          displayName: 'Use .NET 8.0.200'
+          inputs:
+            packageType: sdk
+            version: 8.0.200
             installationPath: $(Build.SourcesDirectory)/.dotnet
 
         - bash: >
