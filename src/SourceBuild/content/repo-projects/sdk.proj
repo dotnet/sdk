@@ -19,7 +19,6 @@
     <RepositoryReference Include="command-line-api" />
     <RepositoryReference Include="deployment-tools" />
     <RepositoryReference Include="emsdk" />
-    <RepositoryReference Include="format" />
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="nuget-client" />

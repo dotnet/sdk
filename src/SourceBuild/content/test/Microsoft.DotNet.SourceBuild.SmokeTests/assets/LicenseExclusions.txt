@@ -64,13 +64,6 @@ src/deployment-tools/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 src/diagnostics/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 
 #
-# format
-#
-
-# False positive
-src/format/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
-
-#
 # fsharp
 #
 
@@ -197,6 +190,13 @@ src/runtime/src/libraries/System.Text.Json/roadmap/images/higher-level-component
 
 # Sample data
 src/runtime/src/mono/sample/wasm/browser-webpack/package-lock.json
+
+#
+# sdk
+#
+
+# False positive
+src/sdk/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 
 #
 # source-build-externals
