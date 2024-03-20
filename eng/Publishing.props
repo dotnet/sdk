@@ -118,7 +118,6 @@
       PublishFlatContainer="true"
       AssetManifestPath="$(SdkAssetsManifestFilePath)"
       AssetsTemporaryDirectory="$(TempWorkingDirectory)"
-      PublishingVersion="3"
       IsStableBuild="$(IsStableBuild)"
       PushToLocalStorage="$(PushToLocalStorage)"
       AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
