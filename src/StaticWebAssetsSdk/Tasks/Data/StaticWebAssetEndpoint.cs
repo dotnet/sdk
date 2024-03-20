@@ -105,12 +105,36 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>
             var hashCode = -604019124;
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Route);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetFile);
-            hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetEndpointSelector[]>.Default.GetHashCode(Selectors);
-            hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetEndpointResponseHeader[]>.Default.GetHashCode(ResponseHeaders);
-            hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetEndpointProperty[]>.Default.GetHashCode(EndpointProperties);
+            for(var i = 0; i < Selectors.Length; i++)
+            {
+                hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetEndpointSelector>.Default.GetHashCode(Selectors[i]);
+            }
+            for(var i = 0; i < ResponseHeaders.Length; i++)
+            {
+                hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetEndpointResponseHeader>.Default.GetHashCode(ResponseHeaders[i]);
+            }
+            for(var i = 0; i < EndpointProperties.Length; i++)
+            {
+                hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetEndpointProperty>.Default.GetHashCode(EndpointProperties[i]);
+            }
             return hashCode;
 #else
-        return HashCode.Combine(Route, AssetFile, Selectors, ResponseHeaders, EndpointProperties);
+        var hashCode = new HashCode();
+        hashCode.Add(Route);
+        hashCode.Add(AssetFile);
+        for(var i = 0; i < Selectors.Length; i++)
+        {
+            hashCode.Add(Selectors[i]);
+        }
+        for(var i = 0; i < ResponseHeaders.Length; i++)
+        {
+            hashCode.Add(ResponseHeaders[i]);
+        }
+        for(var i = 0; i < EndpointProperties.Length; i++)
+        {
+            hashCode.Add(EndpointProperties[i]);
+        }
+        return hashCode.ToHashCode();
 #endif
     }
 

@@ -22,6 +22,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Output]
         public ITaskItem[] Endpoints { get; set; }
 
+        public Func<string, int> TestLengthResolver;
+        public Func<string, DateTime> TestLastWriteResolver;
+
         public override bool Execute()
         {
             var staticWebAssets = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
@@ -92,13 +95,18 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 [
                     new()
                     {
-                        Name = "Content-Type",
-                        Value = ResolveContentType(asset, contentTypeMappings)
+                        Name = "Accept-Ranges",
+                        Value = "bytes"
                     },
                     new()
                     {
                         Name = "Content-Length",
                         Value = GetFileLength(asset),
+                    },
+                    new()
+                    {
+                        Name = "Content-Type",
+                        Value = ResolveContentType(asset, contentTypeMappings)
                     },
                     new()
                     {
@@ -110,11 +118,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         Name = "Last-Modified",
                         Value = GetFileLastModified(asset)
                     },
-                    new()
-                    {
-                        Name = "Accept-Ranges",
-                        Value = "bytes"
-                    }
                 ]
             };
 
@@ -143,15 +146,26 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         //
         // GMT
         // Greenwich Mean Time.HTTP dates are always expressed in GMT, never in local time.
-        private static string GetFileLastModified(StaticWebAsset asset)
+        private  string GetFileLastModified(StaticWebAsset asset)
         {
-            var path = File.Exists(asset.OriginalItemSpec) ? asset.OriginalItemSpec : asset.Identity;
-            var lastWrite = new FileInfo(path).LastWriteTimeUtc;
+            var lastWrite = TestLastWriteResolver != null ? TestLastWriteResolver(asset.Identity) : GetFileLastModifiedCore(asset);
             return lastWrite.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
         }
 
-        private static string GetFileLength(StaticWebAsset asset)
+        private static DateTime GetFileLastModifiedCore(StaticWebAsset asset)
         {
+            var path = File.Exists(asset.OriginalItemSpec) ? asset.OriginalItemSpec : asset.Identity;
+            var lastWrite = new FileInfo(path).LastWriteTimeUtc;
+            return lastWrite;
+        }
+
+        private string GetFileLength(StaticWebAsset asset)
+        {
+            if (TestLengthResolver != null)
+            {
+                return TestLengthResolver(asset.Identity).ToString(CultureInfo.InvariantCulture);
+            }
+
             var path = File.Exists(asset.OriginalItemSpec) ? asset.OriginalItemSpec : asset.Identity;
             return new FileInfo(path).Length.ToString(CultureInfo.InvariantCulture);
         }

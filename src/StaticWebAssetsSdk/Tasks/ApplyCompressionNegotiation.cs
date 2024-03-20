@@ -18,6 +18,8 @@ public class ApplyCompressionNegotiation : Task
     [Output]
     public ITaskItem[] UpdatedEndpoints { get; set; }
 
+    public Func<string, long> TestResolveFileLength;
+
     public override bool Execute()
     {
         var assetsById = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
@@ -52,7 +54,9 @@ public class ApplyCompressionNegotiation : Task
 
             Log.LogMessage("Processing compressed asset: {0}", compressedAsset.Identity);
 
-            var length = new FileInfo(compressedAsset.Identity).Length;
+            var length = TestResolveFileLength != null
+                ? TestResolveFileLength(compressedAsset.Identity)
+                : new FileInfo(compressedAsset.Identity).Length;
             StaticWebAssetEndpointResponseHeader[] compressionHeaders = [
                 new()
                 {
@@ -62,26 +66,26 @@ public class ApplyCompressionNegotiation : Task
                 new()
                 {
                     Name = "Vary",
-                    Value = "Accept-Encoding"
+                    Value = "Content-Encoding"
                 }
             ];
 
-            foreach (var endpoint in compressedEndpoints)
+            foreach (var compressedEndpoint in compressedEndpoints)
             {
-                if (endpoint.Selectors.Any(s => s.Name == "Content-Encoding"))
+                if (compressedEndpoint.Selectors.Any(s => s.Name == "Content-Encoding"))
                 {
-                    Log.LogMessage(MessageImportance.Low, $"  Skipping endpoint '{endpoint.Route}' since it already has a Content-Encoding selector");
+                    Log.LogMessage(MessageImportance.Low, $"  Skipping endpoint '{compressedEndpoint.Route}' since it already has a Content-Encoding selector");
                     continue;
                 }
 
                 // Add the Content-Encoding and Vary headers
-                endpoint.ResponseHeaders = [
-                    ..endpoint.ResponseHeaders,
+                compressedEndpoint.ResponseHeaders = [
+                    ..compressedEndpoint.ResponseHeaders,
                         ..compressionHeaders
                 ];
 
-                Log.LogMessage(MessageImportance.Low, "  Updated endpoint '{0}' with Content-Encoding and Vary headers", endpoint.Route);
-                updatedEndpoints.Add(endpoint);
+                Log.LogMessage(MessageImportance.Low, "  Updated endpoint '{0}' with Content-Encoding and Vary headers", compressedEndpoint.Route);
+                updatedEndpoints.Add(compressedEndpoint);
 
                 foreach (var relatedEndpointCandidate in relatedAssetEndpoints)
                 {
@@ -106,61 +110,14 @@ public class ApplyCompressionNegotiation : Task
 
                     var headers = new List<StaticWebAssetEndpointResponseHeader>();
                     var compressedHeaders = new HashSet<string>(compressionHeaders.Select(h => h.Name));
-                    foreach (var header in relatedEndpointCandidate.ResponseHeaders)
-                    {
-                        // We need to keep the headers that are specific to the compressed asset like Content-Length,
-                        // Last-Modified and ETag. Any other header we should add it.
-                        if (!compressedHeaders.Contains(header.Name))
-                        {
-                            Log.LogMessage(MessageImportance.Low, "  Adding header '{0}' to related endpoint '{1}'", header.Name, relatedEndpointCandidate.Route);
-                            headers.Add(header);
-                        }
-                        else if (header.Name == "ETag")
-                        {
-                            // A resource can have multiple ETags. Since the uncompressed resource has an ETag,
-                            // and we are serving the compressed resource from the same URL, we need to update
-                            // the ETag on the compressed resource to indicate that is dependent on the representation
-                            // For example, a compressed resource has two ETags: W/"original-resource-etag" and
-                            // "compressed-resource-etag".
-                            // The browser will send both ETags in the If-None-Match header, and having the strong ETag
-                            // allows the server to support conditional range requests.
-                            Log.LogMessage(MessageImportance.Low, "  Updating ETag header for related endpoint '{0}'", relatedEndpointCandidate.Route);
-                            headers.Add(new StaticWebAssetEndpointResponseHeader
-                            {
-                                Name = "ETag",
-                                Value = $"W/\"{header.Value}\""
-                            });
-                        }
-                        else if (header.Name == "Content-Type")
-                        {
-                            Log.LogMessage(MessageImportance.Low, "Adding Content-Type '{1}' header to related endpoint '{0}'", relatedEndpointCandidate.Route, header.Value);
-                            // Add the Content-Type to make sure it matches the original asset.
-                            headers.Add(header);
-                        }
-                        else
-                        {
-                            Log.LogMessage(MessageImportance.Low, "  Skipping header '{0}' for related endpoint '{1}'", header.Name, relatedEndpointCandidate.Route);
-                        }
-                    }
-
-                    foreach (var header in endpoint.ResponseHeaders)
-                    {
-                        if (header.Name == "Content-Type")
-                        {
-                            Log.LogMessage(MessageImportance.Low, "  Skipping Content-Type header for related endpoint '{0}'", relatedEndpointCandidate.Route);
-                            // Skip the content-type header since we are adding it from the original asset.
-                            continue;
-                        }
-                        else
-                        {
-                            Log.LogMessage(MessageImportance.Low, "  Adding header '{0}' to related endpoint '{1}'", header.Name, relatedEndpointCandidate.Route);
-                            headers.Add(header);
-                        }
-                    }
+                    ApplyRelatedEndpointCandidateHeaders(headers, relatedEndpointCandidate, compressedHeaders);
+                    ApplyCompressedEndpointHeaders(headers, compressedEndpoint, relatedEndpointCandidate.Route);
+                    endpointCopy.ResponseHeaders = [..headers];
 
                     // Update the endpoint
                     Log.LogMessage(MessageImportance.Low, "  Updated related endpoint '{0}' with Content-Encoding selector '{1}={2}'", relatedEndpointCandidate.Route, encodingSelector.Value, encodingSelector.Quality);
                     updatedEndpoints.Add(endpointCopy);
+
                     // Since we are going to remove the endpoints from the associated item group and the route is
                     // the ItemSpec, we want to add the original as well so that it gets re-added.
                     // The endpoint pointing to the uncompressed asset doesn't have a Content-Encoding selector and
@@ -217,5 +174,63 @@ public class ApplyCompressionNegotiation : Task
         UpdatedEndpoints = updatedEndpoints.Select(e => e.ToTaskItem()).ToArray();
 
         return true;
+    }
+
+    private void ApplyCompressedEndpointHeaders(List<StaticWebAssetEndpointResponseHeader> headers, StaticWebAssetEndpoint compressedEndpoint, string relatedEndpointCandidateRoute)
+    {
+        foreach (var header in compressedEndpoint.ResponseHeaders)
+        {
+            if (header.Name == "Content-Type")
+            {
+                Log.LogMessage(MessageImportance.Low, "  Skipping Content-Type header for related endpoint '{0}'", relatedEndpointCandidateRoute);
+                // Skip the content-type header since we are adding it from the original asset.
+                continue;
+            }
+            else
+            {
+                Log.LogMessage(MessageImportance.Low, "  Adding header '{0}' to related endpoint '{1}'", header.Name, relatedEndpointCandidateRoute);
+                headers.Add(header);
+            }
+        }
+    }
+
+    private void ApplyRelatedEndpointCandidateHeaders(List<StaticWebAssetEndpointResponseHeader> headers, StaticWebAssetEndpoint relatedEndpointCandidate, HashSet<string> compressedHeaders)
+    {
+        foreach (var header in relatedEndpointCandidate.ResponseHeaders)
+        {
+            // We need to keep the headers that are specific to the compressed asset like Content-Length,
+            // Last-Modified and ETag. Any other header we should add it.
+            if (!compressedHeaders.Contains(header.Name))
+            {
+                Log.LogMessage(MessageImportance.Low, "  Adding header '{0}' to related endpoint '{1}'", header.Name, relatedEndpointCandidate.Route);
+                headers.Add(header);
+            }
+            else if (header.Name == "ETag")
+            {
+                // A resource can have multiple ETags. Since the uncompressed resource has an ETag,
+                // and we are serving the compressed resource from the same URL, we need to update
+                // the ETag on the compressed resource to indicate that is dependent on the representation
+                // For example, a compressed resource has two ETags: W/"original-resource-etag" and
+                // "compressed-resource-etag".
+                // The browser will send both ETags in the If-None-Match header, and having the strong ETag
+                // allows the server to support conditional range requests.
+                Log.LogMessage(MessageImportance.Low, "  Updating ETag header for related endpoint '{0}'", relatedEndpointCandidate.Route);
+                headers.Add(new StaticWebAssetEndpointResponseHeader
+                {
+                    Name = "ETag",
+                    Value = $"W/\"{header.Value}\""
+                });
+            }
+            else if (header.Name == "Content-Type")
+            {
+                Log.LogMessage(MessageImportance.Low, "Adding Content-Type '{1}' header to related endpoint '{0}'", relatedEndpointCandidate.Route, header.Value);
+                // Add the Content-Type to make sure it matches the original asset.
+                headers.Add(header);
+            }
+            else
+            {
+                Log.LogMessage(MessageImportance.Low, "  Skipping header '{0}' for related endpoint '{1}'", header.Name, relatedEndpointCandidate.Route);
+            }
+        }
     }
 }

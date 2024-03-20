@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 
+using System.Diagnostics;
 using System.Text.Json;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public class StaticWebAssetEndpointResponseHeader : IComparable<StaticWebAssetEndpointResponseHeader>, IEquatable<StaticWebAssetEndpointResponseHeader>
 {
     public static readonly IEqualityComparer<StaticWebAssetEndpointResponseHeader> NameComparer = new NameStaticWebAssetEndpointResponseHeaderComparer();
@@ -25,6 +25,8 @@ public class StaticWebAssetEndpointResponseHeader : IComparable<StaticWebAssetEn
     {
         return JsonSerializer.Serialize(responseHeaders ?? []);
     }
+
+    private string GetDebuggerDisplay() => $"{Name}: {Value}";
 
     public int CompareTo(StaticWebAssetEndpointResponseHeader other)
     {
