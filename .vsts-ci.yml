@@ -291,7 +291,10 @@ extends:
             - name: _Test
               value: -test
 
+      # dotnet-format builds
       - template: /eng/dotnet-format/dotnet-format-integration.yml@self
+        parameters:
+          PublishTaskName: 1ES.PublishBuildArtifacts@1
 
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
