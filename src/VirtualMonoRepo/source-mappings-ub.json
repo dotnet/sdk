@@ -78,10 +78,6 @@
             "defaultRemote": "https://github.com/dotnet/emsdk"
         },
         {
-            "name": "format",
-            "defaultRemote": "https://github.com/dotnet/format"
-        },
-        {
             "name": "fsharp",
             "defaultRemote": "https://github.com/dotnet/fsharp"
         },

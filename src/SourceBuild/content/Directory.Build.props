@@ -50,7 +50,8 @@
   <PropertyGroup Label="CalculateRID">
     <!-- Use current machine distro RID if set. Otherwise, fall back to RuntimeInformation.RuntimeIdentifier -->
     <BuildRid>$(__DistroRid)</BuildRid>
-    <BuildRid Condition="'$(BuildRid)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</BuildRid>
+    <BuildRid Condition="'$(BuildRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</BuildRid>
+    <BuildRid Condition="'$(BuildRid)' == '' and '$(MSBuildRuntimeType)' != 'core'">win-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</BuildRid>
 
     <TargetRid Condition="'$(TargetRid)' == ''">$(BuildRid.Substring(0, $(BuildRid.LastIndexOf('-'))))-$(TargetArchitecture)</TargetRid>
     <HostRid Condition="'$(HostRid)' == ''">$(TargetRid)</HostRid>

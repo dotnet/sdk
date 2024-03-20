@@ -5,11 +5,10 @@ namespace BinaryToolKit;
 
 public class BinaryTool
 {
-    public async Task ExecuteAsync(
+    public async Task<int> ExecuteAsync(
         string targetDirectory,
         string outputReportDirectory,
         string? allowedBinariesFile,
-        string? disallowedSbBinariesFile,
         Modes mode)
     {
         DateTime startTime = DateTime.Now;
@@ -35,31 +34,23 @@ public class BinaryTool
             isDirectory: false,
             createIfNotExist: false,
             isRequired: false);
-        disallowedSbBinariesFile = GetAndValidateFullPath(
-            "DisallowedSbBinariesFile",
-            disallowedSbBinariesFile,
-            isDirectory: false,
-            createIfNotExist: false,
-            isRequired: false);
 
         // Run the tooling
-        var detectedBinaries = await DetectBinaries.ExecuteAsync(targetDirectory);
+        var detectedBinaries = await DetectBinaries.ExecuteAsync(targetDirectory, outputReportDirectory, allowedBinariesFile);
 
-        var comparedBinaries = CompareBinariesAgainstBaselines
-            .Execute(
-                detectedBinaries,
-                allowedBinariesFile,
-                disallowedSbBinariesFile,
-                outputReportDirectory,
-                targetDirectory,
-                mode);
-
-        if (mode.HasFlag(Modes.Clean))
+        if (mode == Modes.Validate)
         {
-            RemoveBinaries.Execute(comparedBinaries, targetDirectory);
+            ValidateBinaries(detectedBinaries, outputReportDirectory);
+        }
+
+        else if (mode == Modes.Clean)
+        {
+            RemoveBinaries(detectedBinaries, targetDirectory);
         }
 
         Log.LogInformation("Finished all binary tasks. Took " + (DateTime.Now - startTime).TotalSeconds + " seconds.");
+
+        return Log.GetExitCode();
     }
 
     private string? GetAndValidateFullPath(
@@ -96,5 +87,37 @@ public class BinaryTool
             }
         }
         return fullPath;
+    }
+
+    private static void ValidateBinaries(IEnumerable<string> newBinaries, string outputReportDirectory)
+    {
+        if (newBinaries.Any())
+        {
+            string newBinariesFile = Path.Combine(outputReportDirectory, "NewBinaries.txt");
+
+            Log.LogDebug("New binaries:");
+
+            File.WriteAllLines(newBinariesFile, newBinaries);
+
+            foreach (var binary in newBinaries)
+            {
+                Log.LogDebug($"    {binary}");
+            }
+
+            Log.LogError($"ERROR: {newBinaries.Count()} new binaries. Check '{newBinariesFile}' for details.");
+        }
+    }
+
+    private static void RemoveBinaries(IEnumerable<string> binariesToRemove, string targetDirectory)
+    {
+        Log.LogInformation($"Removing binaries from '{targetDirectory}'...");
+        
+        foreach (var binary in binariesToRemove)
+        {
+            File.Delete(Path.Combine(targetDirectory, binary));
+            Log.LogDebug($"    {binary}");
+        }
+
+        Log.LogInformation($"Finished binary removal. Removed {binariesToRemove.Count()} binaries.");
     }
 }
