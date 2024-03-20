@@ -32,14 +32,10 @@ stages:
       displayName: Tag the build
       workingDirectory: $(Build.SourcesDirectory)/src/installer
 
-    - script: >
-        ./.dotnet/dotnet darc vmr scan-binary-files
-        --vmr "$(Build.SourcesDirectory)"
-        --tmp "$(Agent.TempDirectory)"
-        --baseline-file "src/VirtualMonoRepo/allowed-binaries.txt"
-        || (echo '##[error]Found binaries in the VMR' && exit 1)
+    - script: |
+        ./eng/detect-binaries.sh
       displayName: Scan for binaries
-      workingDirectory: $(Build.SourcesDirectory)/src/installer
+      workingDirectory: $(Build.SourcesDirectory)
       continueOnError: true
 
     - script: >

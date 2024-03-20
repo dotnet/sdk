@@ -26,5 +26,11 @@
     <PrivateSourceBuiltArtifactsVersion>9.0.100-preview.2.24104.1</PrivateSourceBuiltArtifactsVersion>
     <!-- msbuild -->
     <MicrosoftBuildVersion>15.7.179</MicrosoftBuildVersion>
+    <!-- runtime -->
+    <MicrosoftExtensionsFileSystemGlobbingVersion>9.0.0-preview.2.24128.5</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-preview.2.24128.5</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingVersion>9.0.0-preview.2.24128.5</MicrosoftExtensionsLoggingVersion>
+    <!-- command-line-api -->
+    <SystemCommandLineVersion>2.0.0-beta4.24126.1</SystemCommandLineVersion>
   </PropertyGroup>
 </Project>
