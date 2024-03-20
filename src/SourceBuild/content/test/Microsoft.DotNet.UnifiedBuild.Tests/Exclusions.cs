@@ -12,7 +12,15 @@ using Microsoft.DotNet.SourceBuild.SmokeTests;
 
 public class Exclusions
 {
-    string _rid = Config.TargetRid;
+    public const string UbPrefix = "ub";
+    public const string MsftPrefix = "msft";
+
+    public Exclusions(string rid)
+    {
+        _rid = rid;
+    }
+
+    string _rid;
 
     string[] GetRidSpecificExclusionFileNames(string path)
     {
@@ -30,17 +38,42 @@ public class Exclusions
         return fileNames;
     }
 
+    public IEnumerable<string> RemoveContentDiffFileExclusions(IEnumerable<string> files, string? prefix = null)
+    {
+        var exclusions = GetFileExclusions(prefix);
+        Func<string, bool> condition = f => !IsFileExcluded(f, exclusions, prefix);
+        return files.Where(condition);
+    }
+
+    public IEnumerable<string> RemoveAssemblyVersionFileExclusions(IEnumerable<string> files, string? prefix = null)
+    {
+        var exclusions = GetFileExclusions(prefix).Concat(GetNativeDllExclusions(prefix)).Concat(GetAssemblyVersionExclusions(prefix));
+        Func<string, bool> condition = f => !IsFileExcluded(f, exclusions, prefix);
+        return files.Where(condition);
+    }
+
+    //public List<string> UbFileExclusions => _ubFileExclusions ??= GetFileExclusions(UbPrefix);
+    //List<string>? _ubFileExclusions = null;
+
+    //public List<string> UbAssemblyVersionExclusions => _ubAssemblyVersionExclusions ??= UbFileExclusions.Concat(GetAssemblyVersionExclusions(UbPrefix)).Concat(GetNativeDllExclusions(UbPrefix)).ToList();
+    //List<string>? _ubAssemblyVersionExclusions = null;
+
+    //public List<string> MsftFileExclusions => _msftFileExclusions ??= GetFileExclusions(MsftPrefix);
+    //List<string>? _msftFileExclusions = null;
+
+    //public List<string> MsftAssemblyVersionExclusions => _msftAssemblyVersionExclusions ??= MsftFileExclusions.Concat(GetAssemblyVersionExclusions(MsftPrefix)).Concat(GetNativeDllExclusions(MsftPrefix)).ToList();
+    //List<string>? _msftAssemblyVersionExclusions = null;
+
     public List<string> GetFileExclusions(string? prefix = null) => GetRidSpecificExclusionFileNames("SdkFileDiffExclusions.txt").SelectMany(f => Utilities.TryParseExclusionsFile(f, prefix)).ToList();
     public List<string> GetAssemblyVersionExclusions(string? prefix = null) => GetRidSpecificExclusionFileNames("SdkAssemblyVersionDiffExclusions.txt").SelectMany(f => Utilities.TryParseExclusionsFile(f, prefix)).ToList();
     public List<string> GetNativeDllExclusions(string? prefix = null) => GetRidSpecificExclusionFileNames("NativeDlls.txt").SelectMany(f => Utilities.TryParseExclusionsFile(f, prefix)).ToList();
     public string GetBaselineFileDiffFileName() => GetRidSpecificExclusionFileNames("MsftToSbSdkFiles.diff").Last();
 
-
-    string NormalizePath(string path)
+    static string NormalizePath(string path)
     {
         return path.Replace('\\', '/');
     }
 
-    bool IsFileExcluded(string file, string? prefix = null)
-        => GetFileExclusions(prefix).Any(exclusion => FileSystemName.MatchesSimpleExpression(exclusion, NormalizePath(file)));
+    public bool IsFileExcluded(string file, IEnumerable<string> exclusions, string? prefix = null)
+        => exclusions.Any(exclusion => FileSystemName.MatchesSimpleExpression(exclusion, NormalizePath(file)));
 }

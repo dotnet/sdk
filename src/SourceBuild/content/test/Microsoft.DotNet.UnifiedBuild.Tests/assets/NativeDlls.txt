@@ -1,7 +1,4 @@
-# Contains the list of files whose assembly versions are to be excluded from comparison between the MSFT & SB SDK.
-# These exclusions only take effect if the assembly version of the file in the SB SDK is equal to or greater than
-# the version in the MSFT SDK. If the version is less, the file will show up in the results as this is not a scenario
-# that is valid for shipping.
+# Contains the list of native .dll and .exe files that shouldn't have their assembly version checked.
 #
 # This list is processed using FileSystemName.MatchesSimpleExpression
 #
