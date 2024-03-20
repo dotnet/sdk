@@ -4,46 +4,78 @@
 
 using System;
 using System.IO;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
-internal static class Config
+public class Config : IDisposable
 {
-    public const string DotNetDirectoryEnv = "UNIFIED_BUILD_VALIDATION_DOTNET_DIR";
-    public const string IncludeArtifactsSizeEnv = "UNIFIED_BUILD_VALIDATION_INCLUDE_ARTIFACTSSIZE";
+    public Config()
+    {
+        BuildVersion = Environment.GetEnvironmentVariable(BuildVersionEnv) ?? throw new InvalidOperationException($"'{BuildVersionEnv}' must be specified");
+        PortableRid = Environment.GetEnvironmentVariable(PortableRidEnv) ?? throw new InvalidOperationException($"'{PortableRidEnv}' must be specified");
+        UbSdkArchivePath = Environment.GetEnvironmentVariable(UbSdkTarballPathEnv) ?? throw new InvalidOperationException($"'{UbSdkTarballPathEnv}' must be specified");
+        TargetRid = Environment.GetEnvironmentVariable(TargetRidEnv) ?? throw new InvalidOperationException($"'{TargetRidEnv}' must be specified");
+        TargetArchitecture = TargetRid.Split('-')[1];
+        WarnOnSdkContentDiffs = bool.TryParse(Environment.GetEnvironmentVariable(WarnSdkContentDiffsEnv), out bool warnOnSdkContentDiffs) && warnOnSdkContentDiffs;
+        MsftSdkArchivePath = Environment.GetEnvironmentVariable(MsftSdkTarballPathEnv) ?? DownloadMsftSdkArchive().Result;
+    }
+
+    public const string BuildVersionEnv = "UNIFIED_BUILD_VALIDATION_BUILD_VERSION";
     public const string MsftSdkTarballPathEnv = "UNIFIED_BUILD_VALIDATION_MSFT_SDK_TARBALL_PATH";
-    public const string PoisonReportPathEnv = "UNIFIED_BUILD_VALIDATION_POISON_REPORT_PATH";
     public const string PortableRidEnv = "UNIFIED_BUILD_VALIDATION_PORTABLE_RID";
     public const string PrereqsPathEnv = "UNIFIED_BUILD_VALIDATION_PREREQS_PATH";
-    public const string CustomPackagesPathEnv = "UNIFIED_BUILD_VALIDATION_CUSTOM_PACKAGES_PATH";
-    public const string SdkTarballPathEnv = "UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH";
+    public const string UbSdkTarballPathEnv = "UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH";
     public const string SourceBuiltArtifactsPathEnv = "UNIFIED_BUILD_VALIDATION_SOURCEBUILT_ARTIFACTS_PATH";
     public const string TargetRidEnv = "UNIFIED_BUILD_VALIDATION_TARGET_RID";
     public const string WarnSdkContentDiffsEnv = "UNIFIED_BUILD_VALIDATION_WARN_SDK_CONTENT_DIFFS";
-    public const string WarnLicenseScanDiffsEnv = "UNIFIED_BUILD_VALIDATION_WARN_LICENSE_SCAN_DIFFS";
-    public const string RunningInCIEnv = "UNIFIED_BUILD_VALIDATION_RUNNING_IN_CI";
-    public const string LicenseScanPathEnv = "UNIFIED_BUILD_VALIDATION_LICENSE_SCAN_PATH";
 
-    public static string DotNetDirectory { get; } =
-        Environment.GetEnvironmentVariable(DotNetDirectoryEnv) ?? Path.Combine(Directory.GetCurrentDirectory(), ".dotnet");
-    public static string? MsftSdkTarballPath { get; } = Environment.GetEnvironmentVariable(MsftSdkTarballPathEnv);
-    public static string PortableRid { get; } = Environment.GetEnvironmentVariable(PortableRidEnv) ??
-        throw new InvalidOperationException($"'{Config.PortableRidEnv}' must be specified");
-    public static string? PrereqsPath { get; } = Environment.GetEnvironmentVariable(PrereqsPathEnv);
-    public static string? CustomPackagesPath { get; } = Environment.GetEnvironmentVariable(CustomPackagesPathEnv);
-    public static string? SdkTarballPath { get; } = Environment.GetEnvironmentVariable(SdkTarballPathEnv);
-    public static string? SourceBuiltArtifactsPath { get; } = Environment.GetEnvironmentVariable(SourceBuiltArtifactsPathEnv);
-    public static string TargetRid { get; } = Environment.GetEnvironmentVariable(TargetRidEnv) ??
-        throw new InvalidOperationException($"'{Config.TargetRidEnv}' must be specified");
-    public static string TargetArchitecture { get; } = TargetRid.Split('-')[1];
-    public static bool WarnOnSdkContentDiffs { get; } =
-        bool.TryParse(Environment.GetEnvironmentVariable(WarnSdkContentDiffsEnv), out bool warnOnSdkContentDiffs) && warnOnSdkContentDiffs;
-    public static bool WarnOnLicenseScanDiffs { get; } =
-        bool.TryParse(Environment.GetEnvironmentVariable(WarnLicenseScanDiffsEnv), out bool warnOnLicenseScanDiffs) && warnOnLicenseScanDiffs;
+    public string? MsftSdkArchivePath { get; }
+    public string BuildVersion { get; }
+    public string PortableRid { get; }
+    public string UbSdkArchivePath { get; }
+    public string TargetRid { get; }
+    public string TargetArchitecture { get; }
+    public bool WarnOnSdkContentDiffs { get; }
+    string? _downloadedMsftSdkPath = null;
 
-    // Indicates whether the tests are being run in the context of a CI pipeline
-    public static bool RunningInCI { get; } =
-        bool.TryParse(Environment.GetEnvironmentVariable(RunningInCIEnv), out bool runningInCI) && runningInCI;
+    static string GetArchiveExtension(string path)
+    {
+        if (path.EndsWith(".zip", StringComparison.InvariantCultureIgnoreCase))
+            return ".zip";
+        if (path.EndsWith(".tar.gz", StringComparison.InvariantCultureIgnoreCase))
+            return ".tar.gz";
+        throw new InvalidOperationException($"Path does not have a valid archive extenions: '{path}'");
+    }
 
-    public static string? LicenseScanPath { get; } = Environment.GetEnvironmentVariable(LicenseScanPathEnv);
+    public async Task<string> DownloadMsftSdkArchive()
+    {
+        var client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
+        var channel = BuildVersion[..5] + "xx";
+        var akaMsUrl = $"https://aka.ms/dotnet/{channel}/daily/dotnet-sdk-{TargetRid}{GetArchiveExtension(UbSdkArchivePath)}";
+        var redirectResponse = await client.GetAsync(akaMsUrl);
+        // aka.ms returns a 301 for valid redirects and a 302 to Bing for invalid URLs
+        if (redirectResponse.StatusCode != HttpStatusCode.Moved)
+        {
+            throw new InvalidOperationException($"Could not find download link for Microsoft built sdk at '{akaMsUrl}'");
+        }
+        var closestUrl = redirectResponse.Headers.Location!.ToString();
+        HttpResponseMessage packageResponse = await client.GetAsync(closestUrl);
+        var packageUriPath = packageResponse.RequestMessage!.RequestUri!.LocalPath;
+        _downloadedMsftSdkPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + "." + Path.GetFileName(packageUriPath));
+        using (var file = File.Create(_downloadedMsftSdkPath))
+        {
+            await packageResponse.Content.CopyToAsync(file);
+        }
+        return _downloadedMsftSdkPath;
+    }
+    public void Dispose()
+    {
+        if (_downloadedMsftSdkPath != null)
+        {
+            File.Delete(_downloadedMsftSdkPath);
+        }
+    }
 }

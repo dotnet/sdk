@@ -1,4 +1,4 @@
-# Contains the list of files which are .dll's or .exe's but are not managed assemblies and should not have their assembly version checked
+# Contains the list of native .dll and .exe files that shouldn't have their assembly version checked.
 #
 # This list is processed using FileSystemName.MatchesSimpleExpression
 #

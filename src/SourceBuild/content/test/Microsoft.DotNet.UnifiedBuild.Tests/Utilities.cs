@@ -75,7 +75,7 @@ public static class Utilities
     {
         // TarFile doesn't properly handle hard links (https://github.com/dotnet/runtime/pull/85378#discussion_r1221817490),
         // use 'tar' instead.
-        if (tarballPath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) || tarballPath.EndsWith(".tgz", StringComparison.OrdinalIgnoreCase))
+        if (tarballPath.EndsWith(".tar.gz", StringComparison.InvariantCultureIgnoreCase) || tarballPath.EndsWith(".tgz", StringComparison.InvariantCultureIgnoreCase))
         {
             ExecuteHelper.ExecuteProcessValidateExitCode("tar", $"xzf {tarballPath} -C {outputDir}", outputHelper);
         }
@@ -85,7 +85,7 @@ public static class Utilities
         }
         else
         {
-            throw new InvalidOperationException($"Unsupported tarball format: {tarballPath}");
+            throw new InvalidOperationException($"Unsupported archive format: {tarballPath}");
         }
     }
 
@@ -98,16 +98,16 @@ public static class Utilities
         using GZipStream decompressorStream = new(fileStream, CompressionMode.Decompress);
         using TarReader reader = new(decompressorStream);
 
-        TarEntry entry;
+        TarEntry? entry;
         while ((entry = reader.GetNextEntry()) is not null)
         {
             if (matcher.Match(entry.Name).HasMatches)
             {
                 string outputPath = Path.Join(outputDir, entry.Name);
-                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
                 using FileStream outputFileStream = File.Create(outputPath);
-                entry.DataStream.CopyTo(outputFileStream);
+                entry.DataStream!.CopyTo(outputFileStream);
                 break;
             }
         }
@@ -130,11 +130,15 @@ public static class Utilities
             using GZipStream decompressorStream = new(fileStream, CompressionMode.Decompress);
             using TarReader reader = new(decompressorStream);
 
-            TarEntry entry;
+            TarEntry? entry;
             while ((entry = reader.GetNextEntry()) is not null)
             {
                 yield return entry.Name;
             }
+        }
+        else
+        {
+            throw new InvalidOperationException($"Unsupported archive format: {tarballPath}");
         }
     }
 
@@ -146,7 +150,7 @@ public static class Utilities
         foreach (ZipArchiveEntry entry in zip.Entries)
         {
             string outputPath = Path.Combine(outputDir, entry.FullName);
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
             entry.ExtractToFile(outputPath);
         }
     }
