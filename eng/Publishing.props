@@ -75,7 +75,7 @@
     <ItemGroup>
         <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg"/>
         <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg" />
-        <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" />
+        <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" IsShipping="true" />
     </ItemGroup>
   </Target>
 
@@ -83,10 +83,9 @@
        a relative path inside the blob storage. -->
   <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish">
     <ItemGroup>
-      <ToolsetAssetsToPushToBlobFeed Include="@(ToolsetAssetsToPublish)">
-        <RelativeBlobPath>$(BlobStoragePartialRelativePath)/$(ToolsetVersionValue)/$([System.String]::Copy('%(Filename)%(Extension)').Replace('\' ,'/'))</RelativeBlobPath>
-        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
-      </ToolsetAssetsToPushToBlobFeed>
+      <ToolsetAssetsToPushToBlobFeed Include="@(ToolsetAssetsToPublish)"
+        RelativeBlobPath="$(BlobStoragePartialRelativePath)/$(ToolsetVersionValue)/$([System.String]::Copy('%(Filename)%(Extension)').Replace('\' ,'/'))"
+        IsShipping="false" />
     </ItemGroup>
     
     <ItemGroup Condition="'$(PostBuildSign)' == 'true'">
