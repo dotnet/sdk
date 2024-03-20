@@ -10112,27 +10112,6 @@
       "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\",
       "BasePath": "/",
       "RelativePath": "css/app.css.gz",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\css\\app.css.gz"
-    },
-    {
-      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\css\\app.css.gz",
-      "SourceId": "blazorwasm",
-      "SourceType": "Discovered",
-      "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
-      "RelativePath": "css/app.css.gz",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Alternative",
@@ -10146,6 +10125,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\wwwroot\\css\\css\\app.css.gz"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\css\\app.css.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Discovered",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\",
+      "BasePath": "/",
+      "RelativePath": "css/app.css.gz",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\app.css",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\LinkToWebRoot\\css\\css\\app.css.gz"
     },
     {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\custom-service-worker-assets.js.gz",
@@ -10858,7 +10858,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000335"
+          "Quality": "0.000336"
         }
       ],
       "ResponseHeaders": [],
@@ -11012,7 +11012,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000585"
+          "Quality": "0.000587"
         }
       ],
       "ResponseHeaders": [],
@@ -11517,7 +11517,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_framework/dotnet.native.9.0.0-preview.3.24161.4.qv2rhmxqlw.js",
+      "Route": "_framework/dotnet.native.9.0.0-preview.3.24162.31.6g5cenk8ds.js",
       "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
       "Selectors": [],
       "ResponseHeaders": [
@@ -11545,7 +11545,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_framework/dotnet.native.9.0.0-preview.3.24161.4.qv2rhmxqlw.js",
+      "Route": "_framework/dotnet.native.9.0.0-preview.3.24162.31.6g5cenk8ds.js",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
       "Selectors": [
         {
@@ -11558,7 +11558,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_framework/dotnet.native.9.0.0-preview.3.24161.4.qv2rhmxqlw.js.gz",
+      "Route": "_framework/dotnet.native.9.0.0-preview.3.24162.31.6g5cenk8ds.js.gz",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -11671,7 +11671,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_framework/dotnet.runtime.9.0.0-preview.3.24161.4.6c4y69tdb9.js",
+      "Route": "_framework/dotnet.runtime.9.0.0-preview.3.24162.31.hx826k5qi7.js",
       "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
       "Selectors": [],
       "ResponseHeaders": [
@@ -11699,7 +11699,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_framework/dotnet.runtime.9.0.0-preview.3.24161.4.6c4y69tdb9.js",
+      "Route": "_framework/dotnet.runtime.9.0.0-preview.3.24162.31.hx826k5qi7.js",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
       "Selectors": [
         {
@@ -11712,7 +11712,7 @@
       "EndpointProperties": []
     },
     {
-      "Route": "_framework/dotnet.runtime.9.0.0-preview.3.24161.4.6c4y69tdb9.js.gz",
+      "Route": "_framework/dotnet.runtime.9.0.0-preview.3.24162.31.hx826k5qi7.js.gz",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -11859,7 +11859,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000702"
+          "Quality": "0.000704"
         }
       ],
       "ResponseHeaders": [],
@@ -12629,7 +12629,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000722"
+          "Quality": "0.000723"
         }
       ],
       "ResponseHeaders": [],
@@ -15016,7 +15016,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000362"
+          "Quality": "0.000363"
         }
       ],
       "ResponseHeaders": [],
@@ -15786,7 +15786,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000645"
+          "Quality": "0.000648"
         }
       ],
       "ResponseHeaders": [],
@@ -16094,7 +16094,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000468"
+          "Quality": "0.000467"
         }
       ],
       "ResponseHeaders": [],
@@ -17326,7 +17326,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000514"
+          "Quality": "0.000515"
         }
       ],
       "ResponseHeaders": [],
@@ -17557,7 +17557,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000464"
+          "Quality": "0.000465"
         }
       ],
       "ResponseHeaders": [],
@@ -18173,7 +18173,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000419"
+          "Quality": "0.000420"
         }
       ],
       "ResponseHeaders": [],
@@ -18943,7 +18943,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000536"
+          "Quality": "0.000535"
         }
       ],
       "ResponseHeaders": [],
@@ -19405,7 +19405,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000459"
+          "Quality": "0.000458"
         }
       ],
       "ResponseHeaders": [],
@@ -19790,7 +19790,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000192"
+          "Quality": "0.000191"
         }
       ],
       "ResponseHeaders": [],
@@ -21330,7 +21330,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000453"
+          "Quality": "0.000454"
         }
       ],
       "ResponseHeaders": [],
@@ -21946,7 +21946,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000466"
+          "Quality": "0.000467"
         }
       ],
       "ResponseHeaders": [],
@@ -22023,7 +22023,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000526"
+          "Quality": "0.000527"
         }
       ],
       "ResponseHeaders": [],
@@ -22716,7 +22716,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000471"
+          "Quality": "0.000473"
         }
       ],
       "ResponseHeaders": [],
@@ -23255,7 +23255,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000500"
+          "Quality": "0.000501"
         }
       ],
       "ResponseHeaders": [],
@@ -24025,7 +24025,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000393"
+          "Quality": "0.000391"
         }
       ],
       "ResponseHeaders": [],
@@ -24102,7 +24102,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000454"
+          "Quality": "0.000455"
         }
       ],
       "ResponseHeaders": [],
@@ -24333,7 +24333,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000466"
+          "Quality": "0.000468"
         }
       ],
       "ResponseHeaders": [],
@@ -24487,7 +24487,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000419"
+          "Quality": "0.000420"
         }
       ],
       "ResponseHeaders": [],
@@ -24564,7 +24564,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000408"
+          "Quality": "0.000409"
         }
       ],
       "ResponseHeaders": [],
@@ -24872,7 +24872,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000386"
+          "Quality": "0.000387"
         }
       ],
       "ResponseHeaders": [],
@@ -25026,7 +25026,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000453"
+          "Quality": "0.000454"
         }
       ],
       "ResponseHeaders": [],
@@ -25103,7 +25103,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000464"
+          "Quality": "0.000463"
         }
       ],
       "ResponseHeaders": [],
@@ -25180,7 +25180,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000479"
+          "Quality": "0.000478"
         }
       ],
       "ResponseHeaders": [],
@@ -25257,7 +25257,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000451"
+          "Quality": "0.000452"
         }
       ],
       "ResponseHeaders": [],
@@ -25642,7 +25642,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000481"
+          "Quality": "0.000482"
         }
       ],
       "ResponseHeaders": [],
@@ -25796,7 +25796,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000412"
+          "Quality": "0.000413"
         }
       ],
       "ResponseHeaders": [],
@@ -25873,7 +25873,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000457"
+          "Quality": "0.000459"
         }
       ],
       "ResponseHeaders": [],
@@ -26027,7 +26027,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000467"
+          "Quality": "0.000468"
         }
       ],
       "ResponseHeaders": [],
@@ -26643,7 +26643,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000430"
+          "Quality": "0.000429"
         }
       ],
       "ResponseHeaders": [],
@@ -26874,7 +26874,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000450"
+          "Quality": "0.000451"
         }
       ],
       "ResponseHeaders": [],
@@ -26951,7 +26951,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000468"
+          "Quality": "0.000469"
         }
       ],
       "ResponseHeaders": [],
@@ -27028,7 +27028,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000496"
+          "Quality": "0.000497"
         }
       ],
       "ResponseHeaders": [],
@@ -27336,7 +27336,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000451"
+          "Quality": "0.000452"
         }
       ],
       "ResponseHeaders": [],
@@ -28029,7 +28029,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000439"
+          "Quality": "0.000440"
         }
       ],
       "ResponseHeaders": [],
@@ -28260,7 +28260,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000453"
+          "Quality": "0.000454"
         }
       ],
       "ResponseHeaders": [],
@@ -28568,7 +28568,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000416"
+          "Quality": "0.000417"
         }
       ],
       "ResponseHeaders": [],
@@ -29086,7 +29086,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000094"
+          "Quality": "0.000095"
         }
       ],
       "ResponseHeaders": [],

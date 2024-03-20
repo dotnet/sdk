@@ -2424,7 +2424,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "br",
-          "Quality": "0.000588"
+          "Quality": "0.000587"
         }
       ],
       "ResponseHeaders": [],
@@ -2932,7 +2932,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "br",
-          "Quality": "0.000244"
+          "Quality": "0.000245"
         }
       ],
       "ResponseHeaders": [],
@@ -3102,7 +3102,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "br",
-          "Quality": "0.000516"
+          "Quality": "0.000517"
         }
       ],
       "ResponseHeaders": [],
@@ -3115,7 +3115,7 @@
         {
           "Name": "Content-Encoding",
           "Value": "gzip",
-          "Quality": "0.000454"
+          "Quality": "0.000455"
         }
       ],
       "ResponseHeaders": [],
