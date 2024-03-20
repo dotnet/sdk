@@ -1,8 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
+
   <PropertyGroup>
-    <PublishingVersion>3</PublishingVersion>
     <!-- This repo does its own symbol package generation to avoid generating symbols for a bunch of unrelated test packages. -->
     <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages>
     <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
@@ -75,7 +73,7 @@
     <ItemGroup>
         <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg"/>
         <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg" />
-        <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" />
+        <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" IsShipping="true" />
     </ItemGroup>
   </Target>
 
@@ -83,10 +81,9 @@
        a relative path inside the blob storage. -->
   <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish">
     <ItemGroup>
-      <ToolsetAssetsToPushToBlobFeed Include="@(ToolsetAssetsToPublish)">
-        <RelativeBlobPath>$(BlobStoragePartialRelativePath)/$(ToolsetVersionValue)/$([System.String]::Copy('%(Filename)%(Extension)').Replace('\' ,'/'))</RelativeBlobPath>
-        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
-      </ToolsetAssetsToPushToBlobFeed>
+      <ToolsetAssetsToPushToBlobFeed Include="@(ToolsetAssetsToPublish)"
+        RelativeBlobPath="$(BlobStoragePartialRelativePath)/$(ToolsetVersionValue)/$([System.String]::Copy('%(Filename)%(Extension)').Replace('\' ,'/'))"
+        IsShipping="false" />
     </ItemGroup>
     
     <ItemGroup Condition="'$(PostBuildSign)' == 'true'">
@@ -119,7 +116,6 @@
       PublishFlatContainer="true"
       AssetManifestPath="$(SdkAssetsManifestFilePath)"
       AssetsTemporaryDirectory="$(TempWorkingDirectory)"
-      PublishingVersion="3"
       IsStableBuild="$(IsStableBuild)"
       PushToLocalStorage="$(PushToLocalStorage)"
       AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
