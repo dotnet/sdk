@@ -22,6 +22,11 @@
         <target state="translated">Não é possível usar as opções {0} e {1} juntas. Se estiver instalando a partir de um arquivo de reversão, remova {0}. Caso contrário, remova {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in the global.json file.</source>
+        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in the global.json file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload manifests.</source>
         <target state="translated">Verificando manifestos de carga de trabalho atualizados.</target>

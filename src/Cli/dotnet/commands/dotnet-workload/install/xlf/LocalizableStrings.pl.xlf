@@ -22,6 +22,11 @@
         <target state="translated">Nie można jednocześnie używać poleceń {0} i {1}. W przypadku instalowania z pliku wycofywania usuń polecenie {0}. W przeciwnym razie usuń polecenie {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in the global.json file.</source>
+        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in the global.json file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload manifests.</source>
         <target state="translated">Sprawdzanie zaktualizowanych manifestów obciążenia.</target>
