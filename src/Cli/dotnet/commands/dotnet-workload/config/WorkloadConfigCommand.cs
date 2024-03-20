@@ -80,13 +80,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Config
                 }
                 else
                 {
-                    Reporter.WriteLine($"Invalid update mode: {_updateMode}");
-                    return 1;
+                    //  This should not be hit, as parser sets the accepted values and should error before getting here if the value is not valid
+                    throw new InvalidOperationException($"Invalid update mode: {_updateMode}");
                 }
             }
             else
             {
-                Reporter.WriteLine("No update mode specified");
+                _parseResult.ShowHelp();
             }
 
             return 0;

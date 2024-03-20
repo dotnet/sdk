@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<string> UpdateMode = new("--update-mode")
         {
-            Description = "Set the update mode for the workload manifest",
+            Description = LocalizableStrings.UpdateModeDescription,
             //Hidden = true,
             Arity = ArgumentArity.ZeroOrOne
         };
