@@ -93,6 +93,13 @@ public class StaticWebAssetsBaselineFactory
                 }
             }
 
+            foreach (var selector in endpoint.Selectors)
+            {
+                selector.Quality = "__quality__";
+            }
+
+            endpoint.Route = TemplatizeFilePath(endpoint.Route, null, null, null, null, null);
+
             endpoint.AssetFile = TemplatizeFilePath(
                 endpoint.AssetFile,
                 restorePath,
