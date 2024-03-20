@@ -1,8 +1,11 @@
 <Project>
   <Import Project="$(RepositoryEngineeringDir)\dependabot\Packages.props" Condition="'$(RepositoryEngineeringDir)' != ''"/>
+  <PropertyGroup>
+    <!-- Using multiple feeds isn't supported by Maestro: https://github.com/dotnet/arcade/issues/14155. -->
+    <NoWarn>$(NoWarn);NU1507</NoWarn>
+  </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="dotnet-format" Version="$(DotnetFormatVersion)" />
     <PackageVersion Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
     <PackageVersion Include="FluentAssertions.Json" Version="$(FluentAssertionsJsonVersion)" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
@@ -10,18 +13,24 @@
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostPackageVersion)" />
     <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="$(MicrosoftNETCoreAppRefPackageVersion)"/>
-    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.NuGetSdkResolver" Version="$(MicrosoftBuildNuGetSdkResolverPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzer.Testing" Version="$(MicrosoftCodeAnalysisAnalyzerTestingVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftCodeAnalysisCSharpFeaturesPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Features" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="$(MicrosoftCodeAnalysisNetAnalyzersVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="$(MicrosoftCodeAnalysisPublicApiAnalyzersVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="$(MicrosoftCodeAnalysisRazorToolingInternalVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="$(MicrosoftNetCompilersToolsetPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Features" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="$(MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.Css.Parser" Version="$(MicrosoftCssParserVersion)" />
+    <PackageVersion Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
     <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Installer.Windows.Security.TestData" Version="$(MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion)" />
     <PackageVersion Include="Microsoft.DotNet.XUnitExtensions" Version="$(MicrosoftDotNetXUnitExtensionsVersion)" />
@@ -45,6 +54,8 @@
     <PackageVersion Include="Microsoft.TemplateSearch.Common" Version="$(MicrosoftTemplateSearchCommonPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.Build" Version="$(MicrosoftTestPlatformBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
+    <PackageVersion Include="Microsoft.VisualBasic" Version="$(MicrosoftVisualBasicVersion)" />
+    <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="17.4.16" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="$(MicrosoftVisualStudioSetupConfigurationInteropVersion)" />
     <PackageVersion Include="Microsoft.Web.Deployment" Version="$(WebDeploymentPackageVersion)" />
     <PackageVersion Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
@@ -74,6 +85,7 @@
     <PackageVersion Include="System.CodeDom" Version="$(SystemCodeDomPackageVersion)" />
     <PackageVersion Include="System.Collections.Specialized" Version="$(SystemCollectionsSpecializedPackageVersion)" />
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
+    <PackageVersion Include="System.CommandLine.Rendering" Version="$(SystemCommandLineRenderingVersion)" />
     <PackageVersion Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
     <PackageVersion Include="System.Composition.AttributedModel" Version="$(MicrosoftNETCoreAppRefPackageVersion)"/>
     <PackageVersion Include="System.Composition.Convention" Version="$(MicrosoftNETCoreAppRefPackageVersion)"/>
@@ -111,6 +123,7 @@
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
     <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
     <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationVersion)" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
@@ -121,6 +134,7 @@
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildMinimumVersion)" />
     <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
     <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationVersion)" />
+    <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildMinimumVersion)" />

@@ -6,9 +6,9 @@ using System.Security.Cryptography;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public static class FileHasher
+internal static class FileHasher
 {
-    public static string GetFileHash(string filePath)
+    internal static string GetFileHash(string filePath)
     {
         using var hash = SHA256.Create();
         var bytes = Encoding.UTF8.GetBytes(filePath);
@@ -16,7 +16,7 @@ public static class FileHasher
         return ToBase36(hashBytes);
     }
 
-    private static string ToBase36(byte[] hash)
+    internal static string ToBase36(byte[] hash)
     {
         const string chars = "0123456789abcdefghijklmnopqrstuvwxyz";
 

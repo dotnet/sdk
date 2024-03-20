@@ -76,7 +76,7 @@
 
       <LockFiles Include="..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\LockFiles\**\*.*" />
 
-      <AssetFiles Include="..\src\Assets\**\*.*" />
+      <AssetFiles Include="..\src\Assets\**\**\**\*.*" />
 
       <!-- Files in testExecutionDirectory to prevent environment interference -->
       <TestExecutionDirectoryFiles Include="$(ArtifactsTmpDir)NuGet.config" />

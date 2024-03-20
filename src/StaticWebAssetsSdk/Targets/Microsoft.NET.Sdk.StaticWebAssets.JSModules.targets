@@ -33,47 +33,61 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <GenerateJSModuleManifest Condition="$(GenerateJSModuleManifest) == ''">true</GenerateJSModuleManifest>
-    <ResolveNonComputedAssetsDependsOn>
-      $(ResolveNonComputedAssetsDependsOn);
-      _AddJsModulesToStaticWebAssets;
-    </ResolveNonComputedAssetsDependsOn>
+
+    <ResolveCoreStaticWebAssetsDependsOn>
+      $(ResolveCoreStaticWebAssetsDependsOn);
+      ResolveJSModuleStaticWebAssets;
+      ResolveJsInitializerModuleStaticWebAssets;
+    </ResolveCoreStaticWebAssetsDependsOn>
 
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(GenerateJSModuleManifest)' == 'true'">
-    <CompressFilesDependsOn>
-      $(CompressFilesDependsOn);
-      _GenerateBuildJsModuleManifest;
-    </CompressFilesDependsOn>
+  <PropertyGroup>
 
-    <CompressFilesForPublishDependsOn>
-      $(CompressFilesForPublishDependsOn);
-      _GeneratePublishJsModuleManifest;
-    </CompressFilesForPublishDependsOn>
+    <!--
+        ResolveStaticWebAssetsInputs
+          ResolveJSModuleManifestBuildStaticWebAssets
+            GenerateJSModuleManifestBuildStaticWebAssets
+              ResolveJSModuleManifestBuildConfiguration
+     -->
+    <ResolveStaticWebAssetsInputsDependsOn>
+      ResolveJSModuleManifestBuildStaticWebAssets;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
+    <ResolveJSModuleManifestBuildStaticWebAssetsDependsOn>
+      GenerateJSModuleManifestBuildStaticWebAssets;
+      $(ResolveJSModuleManifestBuildStaticWebAssetsDependsOn)
+    </ResolveJSModuleManifestBuildStaticWebAssetsDependsOn>
+    <GenerateJSModuleManifestBuildStaticWebAssetsDependsOn>
+      ResolveJSModuleManifestBuildConfiguration;
+      $(GenerateJSModuleManifestBuildStaticWebAssetsDependsOn)
+    </GenerateJSModuleManifestBuildStaticWebAssetsDependsOn>
 
-    <ResolveNonComputedAssetsDependsOn>
-      $(ResolveNonComputedAssetsDependsOn);
-      _AddBuildJsModuleManifest;
-    </ResolveNonComputedAssetsDependsOn>
-
-    <ResolvePublishStaticWebAssetsDependsOn>
-      $(ResolvePublishStaticWebAssetsDependsOn);
-      _AddPublishJsModuleManifest
+    <!--
+        ResolvePublishStaticWebAssets
+          ResolveJSModuleManifestPublishStaticWebAssets
+            GenerateJSModuleManifestPublishStaticWebAssets
+              ResolveJSModuleManifestPublishConfiguration
+     -->
+    <ResolvePublishStaticWebAssetsDependsOn Condition="'$(GenerateJSModuleManifest)' == 'true'">
+      ResolveJSModuleManifestPublishStaticWebAssets;
+      $(ResolvePublishStaticWebAssetsDependsOn)
     </ResolvePublishStaticWebAssetsDependsOn>
+    <ResolveJSModuleManifestPublishStaticWebAssetsDependsOn>
+      GenerateJSModuleManifestPublishStaticWebAssets;
+      $(ResolveJSModuleManifestPublishStaticWebAssetsDependsOn)
+    </ResolveJSModuleManifestPublishStaticWebAssetsDependsOn>
+    <GenerateJSModuleManifestPublishStaticWebAssetsDependsOn>
+      ResolveJSModuleManifestPublishConfiguration;
+      $(GenerateJSModuleManifestPublishStaticWebAssetsDependsOn)
+    </GenerateJSModuleManifestPublishStaticWebAssetsDependsOn>
 
   </PropertyGroup>
 
-  <Target Name="_ResolveJsModuleInputs" DependsOnTargets="ResolveProjectStaticWebAssets">
+  <Target Name="ResolveJsInitializerModuleStaticWebAssets">
 
     <ItemGroup>
       <_JSModuleCandidates Include="@(StaticWebAsset)" Condition="'%(SourceType)' == 'Discovered'" />
-
-      <!-- To avoid situations where the content is defined twice, if the user defines the JS module explicitly as
-           a content item, we'll prefer that over the potential item in the None item group
-      -->
-      <_JSFileModuleCandidates Include="@(Content)" />
-      <_JSFileModuleNoneCandidates Include="@(None)" Exclude="@(Content)" />
-      <_JSFileModuleCandidates Include="@(_JSFileModuleNoneCandidates)" />
     </ItemGroup>
 
     <!-- This runs after we've discovered the original set of files, we already found the assets in the wwwroot, and here we just need
@@ -91,72 +105,51 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Assets" ItemName="_JSModuleStaticWebAsset" />
     </DefineStaticWebAssets>
 
-    <!-- Find JS module files -->
-    <!-- **/*.razor.js -->
-    <DiscoverStaticWebAssets Candidates="@(_JSFileModuleCandidates)"
-      SourceId="$(PackageId)"
-      Pattern="**/*.razor.js"
-      ContentRoot="$(MSBuildProjectDirectory)"
-      BasePath="$(StaticWebAssetBasePath)"
-      AssetMergeSource="$(StaticWebAssetMergeTarget)"
-    >
-      <Output TaskParameter="DiscoveredStaticWebAssets" ItemName="_ComponentJSModule" />
-    </DiscoverStaticWebAssets>
-
-    <!-- **/*.cshtml.js -->
-    <DiscoverStaticWebAssets Candidates="@(_JSFileModuleCandidates)"
-      SourceId="$(PackageId)"
-      Pattern="**/*.cshtml.js"
-      ContentRoot="$(MSBuildProjectDirectory)"
-      BasePath="$(StaticWebAssetBasePath)"
-      AssetMergeSource="$(StaticWebAssetMergeTarget)"
-    >
-      <Output TaskParameter="DiscoveredStaticWebAssets" ItemName="_MvcJSModule" />
-    </DiscoverStaticWebAssets>
-
-    <ApplyJsModules RazorComponents="@(RazorComponent)" RazorGenerate="@(RazorGenerate)" JSFileModuleCandidates="@(_ComponentJSModule);@(_MvcJSModule)">
-      <Output TaskParameter="JsFileModules" ItemName="_JsFileModuleStaticWebAsset" />
-    </ApplyJsModules>
-
     <ItemGroup>
-      <!-- Remove the items from their original groups since they've now become a StaticWebAsset -->
-      <Content Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />
-      <None Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />
-    </ItemGroup>
-
-  </Target>
-
-  <Target Name="_AddJsModulesToStaticWebAssets" DependsOnTargets="_ResolveJsModuleInputs">
-    <ItemGroup>
-      <StaticWebAsset Include="@(_ComponentJSModule)" />
-      <StaticWebAsset Include="@(_MvcJSModule)" />
-
-      <!-- Update the discovered initializers -->
       <StaticWebAsset Remove="@(_JSModuleStaticWebAsset)" />
       <StaticWebAsset Include="@(_JSModuleStaticWebAsset)" />
     </ItemGroup>
+
   </Target>
 
-  <!-- BuildManifest manifest -->
+  <!-- Build -->
 
-  <Target Name="_ResolveBuildJsModuleManifest" DependsOnTargets="_ResolveJsModuleInputs;ResolveReferencedProjectsStaticWebAssets">
-    <ItemGroup>
-      <_ExistingBuildJSModules
-        Include="@(StaticWebAsset)"
-        Condition="'%(StaticWebAsset.AssetTraitName)' == 'JSModule' and '%(StaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(AssetKind)' != 'Publish'" />
-    </ItemGroup>
+  <Target Name="ResolveJSModuleManifestBuildConfiguration" DependsOnTargets="ResolveCoreStaticWebAssets;ResolveJsInitializerModuleStaticWebAssets">
 
     <PropertyGroup>
-      <_JSModuleManifestPath>$(IntermediateOutputPath)jsmodules\jsmodules.build.manifest.json</_JSModuleManifestPath>
+      <_JSModuleBuildManifestPath>$(IntermediateOutputPath)jsmodules\jsmodules.build.manifest.json</_JSModuleBuildManifestPath>
       <JSModuleManifestRelativePath Condition="'$(JSModuleManifestRelativePath)' == ''">$(PackageId).modules.json</JSModuleManifestRelativePath>
     </PropertyGroup>
 
     <ItemGroup>
-      <_JsModuleBuildManifestCandidate Include="$(IntermediateOutputPath)jsmodules\jsmodules.build.manifest.json">
+      <_ExistingBuildJSModules
+        Include="@(StaticWebAsset)"
+        Condition="'%(StaticWebAsset.AssetTraitName)' == 'JSModule' and '%(StaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(StaticWebAsset.AssetKind)' != 'Publish'" />
+
+      <_ExistingBuildJSModules
+        Include="@(_JSModuleStaticWebAsset)"
+        Condition="'%(_JSModuleStaticWebAsset.AssetTraitName)' == 'JSModule' and '%(_JSModuleStaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(AssetKind)' != 'Publish'" />
+
+      <_JsModuleBuildManifestCandidate Include="$(_JSModuleBuildManifestPath)">
         <RelativePath>$(JSModuleManifestRelativePath)</RelativePath>
       </_JsModuleBuildManifestCandidate>
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="GenerateJSModuleManifestBuildStaticWebAssets" DependsOnTargets="$(GenerateJSModuleManifestBuildStaticWebAssetsDependsOn)">
+
+    <GenerateJsModuleManifest Condition="'@(_ExistingBuildJSModules)' != ''" OutputFile="@(_JsModuleBuildManifestCandidate)" JsModules="@(_ExistingBuildJSModules)" />
+
+    <ItemGroup>
+      <FileWrites Condition="'@(_ExistingBuildJSModules)' != ''" Include="@(_JsModuleBuildManifestCandidate)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="ResolveJSModuleManifestBuildStaticWebAssets" DependsOnTargets="$(ResolveJSModuleManifestBuildStaticWebAssetsDependsOn)"
+    Condition="'$(GenerateJSModuleManifest)' == 'true'"
+  >
     <DefineStaticWebAssets Condition="@(_ExistingBuildJSModules) != ''"
       CandidateAssets="@(_JsModuleBuildManifestCandidate)"
       SourceId="$(PackageId)"
@@ -173,42 +166,47 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Assets" ItemName="_BuildJsModuleManifestStaticWebAsset" />
     </DefineStaticWebAssets>
 
-  </Target>
-
-  <Target Name="_AddBuildJsModuleManifest" DependsOnTargets="_ResolveBuildJsModuleManifest">
-    <ItemGroup Condition="'$(GenerateJSModuleManifest)' == 'true'">
+    <ItemGroup>
       <StaticWebAsset Include="@(_BuildJsModuleManifestStaticWebAsset)" />
     </ItemGroup>
-  </Target>
-
-  <Target Name="_GenerateBuildJsModuleManifest" Condition="@(_ExistingBuildJSModules) != ''">
-    <GenerateJsModuleManifest Condition="'$(GenerateJSModuleManifest)' == 'true'" OutputFile="@(_JsModuleBuildManifestCandidate)" JsModules="@(_ExistingBuildJSModules)" />
-
-    <ItemGroup>
-      <FileWrites Include="@(_JsModuleBuildManifestCandidate)" />
-    </ItemGroup>
 
   </Target>
 
-  <!-- Publish manifest -->
+  <!-- Publish -->
 
-  <Target Name="_ResolvePublishJsModuleManifest" DependsOnTargets="ComputeReferencedProjectsPublishAssets">
-    <ItemGroup>
-      <_ExistingPublishJSModules
-        Include="@(StaticWebAsset)"
-        Condition="'%(StaticWebAsset.AssetTraitName)' == 'JSModule' and '%(StaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(AssetKind)' != 'Build'" />
-    </ItemGroup>
+  <Target Name="ResolveJSModuleManifestPublishConfiguration" DependsOnTargets="ResolveCorePublishStaticWebAssets">
 
     <PropertyGroup>
-      <_JSModuleManifestPath>$(IntermediateOutputPath)jsmodules\jsmodules.publish.manifest.json</_JSModuleManifestPath>
-      <JSModuleManifestRelativePath Condition="'$(JSModuleManifestRelativePath)' == ''">$(PackageId).modules.json</JSModuleManifestRelativePath>
+      <_JSModulePubishManifestPath>$(IntermediateOutputPath)jsmodules\jsmodules.publish.manifest.json</_JSModulePubishManifestPath>
     </PropertyGroup>
 
     <ItemGroup>
-      <_JsModulePublishManifestCandidate Include="$(IntermediateOutputPath)jsmodules\jsmodules.publish.manifest.json">
+      <_ExistingPublishJSModules
+        Include="@(StaticWebAsset)"
+        Condition="'%(StaticWebAsset.AssetTraitName)' == 'JSModule' and '%(StaticWebAsset.AssetTraitValue)' == 'JSLibraryModule' and '%(StaticWebAsset.AssetKind)' != 'Build'" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_JsModulePublishManifestCandidate Include="$(_JSModulePubishManifestPath)">
         <RelativePath>$(JSModuleManifestRelativePath)</RelativePath>
       </_JsModulePublishManifestCandidate>
     </ItemGroup>
+
+  </Target>
+
+  <Target Name="GenerateJSModuleManifestPublishStaticWebAssets" DependsOnTargets="$(GenerateJSModuleManifestPublishStaticWebAssetsDependsOn)">
+
+    <GenerateJsModuleManifest Condition="@(_ExistingPublishJSModules) != ''" OutputFile="@(_JsModulePublishManifestCandidate)" JsModules="@(_ExistingPublishJSModules)" />
+
+    <ItemGroup>
+      <FileWrites Condition="@(_ExistingPublishJSModules) != ''" Include="@(_JsModulePublishManifestCandidate)" />
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="ResolveJSModuleManifestPublishStaticWebAssets" DependsOnTargets="$(ResolveJSModuleManifestPublishStaticWebAssetsDependsOn)"
+    Condition="'$(GenerateJSModuleManifest)' == 'true'"
+  >
 
     <DefineStaticWebAssets Condition="@(_ExistingPublishJSModules) != ''"
       CandidateAssets="@(_JsModulePublishManifestCandidate)"
@@ -226,19 +224,59 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Assets" ItemName="_PublishJsModuleManifestStaticWebAsset" />
     </DefineStaticWebAssets>
 
-  </Target>
-
-  <Target Name="_AddPublishJsModuleManifest" DependsOnTargets="_ResolvePublishJsModuleManifest">
     <ItemGroup>
-      <StaticWebAsset Condition="'$(GenerateJSModuleManifest)' == 'true'" Include="@(_PublishJsModuleManifestStaticWebAsset)" />
+      <StaticWebAsset Include="@(_PublishJsModuleManifestStaticWebAsset)" />
     </ItemGroup>
+
   </Target>
 
-  <Target Name="_GeneratePublishJsModuleManifest" Condition="@(_ExistingPublishJSModules) != ''">
-    <GenerateJsModuleManifest Condition="'$(GenerateJSModuleManifest)' == 'true'" OutputFile="@(_JsModulePublishManifestCandidate)" JsModules="@(_ExistingPublishJSModules)" />
+  <!-- JS file modules -->
+  <Target Name="ResolveJSModuleStaticWebAssets" DependsOnTargets="ResolveProjectStaticWebAssets">
 
     <ItemGroup>
-      <FileWrites Include="@(_JsModulePublishManifestCandidate)" />
+      <!-- To avoid situations where the content is defined twice, if the user defines the JS module explicitly as
+           a content item, we'll prefer that over the potential item in the None item group
+      -->
+      <_JSFileModuleCandidates Include="@(Content)" />
+      <_JSFileModuleNoneCandidates Include="@(None)" Exclude="@(Content)" />
+      <_JSFileModuleCandidates Include="@(_JSFileModuleNoneCandidates)" />
+    </ItemGroup>
+
+    <!-- Find JS module files -->
+    <!-- **/*.razor.js -->
+    <DefineStaticWebAssets
+      CandidateAssets="@(_JSFileModuleCandidates)"
+      SourceId="$(PackageId)"
+      RelativePathPattern="**/*.razor.js"
+      ContentRoot="$(MSBuildProjectDirectory)"
+      SourceType="Discovered"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+        <Output TaskParameter="Assets" ItemName="_ComponentJSModule" />
+    </DefineStaticWebAssets>
+
+    <!-- **/*.cshtml.js -->
+    <DefineStaticWebAssets
+      CandidateAssets="@(_JSFileModuleCandidates)"
+      SourceId="$(PackageId)"
+      RelativePathPattern="**/*.cshtml.js"
+      ContentRoot="$(MSBuildProjectDirectory)"
+      SourceType="Discovered"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+        <Output TaskParameter="Assets" ItemName="_MvcJSModule" />
+    </DefineStaticWebAssets>
+
+    <ApplyJsModules RazorComponents="@(RazorComponent)" RazorGenerate="@(RazorGenerate)" JSFileModuleCandidates="@(_ComponentJSModule);@(_MvcJSModule)">
+      <Output TaskParameter="JsFileModules" ItemName="_JsFileModuleStaticWebAsset" />
+    </ApplyJsModules>
+
+    <ItemGroup>
+      <StaticWebAsset Remove="@(_JsFileModuleStaticWebAsset)" />
+      <StaticWebAsset Include="@(_JsFileModuleStaticWebAsset)" />
+      <!-- Remove the items from their original groups since they've now become a StaticWebAsset -->
+      <Content Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />
+      <None Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />
     </ItemGroup>
 
   </Target>
