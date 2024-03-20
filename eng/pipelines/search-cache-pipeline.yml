@@ -153,7 +153,7 @@ extends:
               -s '$(System.DefaultWorkingDirectory)/ArtifactsToPublish/NuGetTemplateSearchInfoVer2.json'
               --sas-token "$(CacheFileStorageSasToken)"
               -d NuGetTemplateSearchInfoVer2.json
-              --verbose
+              --debug
               | tee upload.log
               && grep ".*Number of Transfers Completed: 1" upload.log || (echo ; echo "Cache file upload failed"; false)
             displayName: Upload to blob storage
@@ -165,7 +165,7 @@ extends:
               -s '$(System.DefaultWorkingDirectory)/ArtifactsToPublish/NuGetTemplateSearchInfo.json'
               --sas-token "$(LegacyCacheFileStorageSasToken)"
               -d NuGetTemplateSearchInfo.json
-              --verbose
+              --debug
               | tee upload-legacy.log
               && grep ".*Number of Transfers Completed: 1" upload-legacy.log || (echo ; echo "Legacy cache file upload failed"; false)
             displayName: Upload legacy file to blob storage
@@ -177,7 +177,7 @@ extends:
               -s '$(System.DefaultWorkingDirectory)/ArtifactsToPublish/nonTemplatePacks.json'
               --sas-token "$(NonTemplatePacksFileStorageSasToken)"
               -d nonTemplatePacks.json
-              --verbose
+              --debug
               | tee upload-non-template-packs.log
               && grep ".*Number of Transfers Completed: 1" upload-non-template-packs.log || (echo ; echo "Legacy cache file upload failed"; false)
             displayName: Upload non template packages file to blob storage
