@@ -173,6 +173,7 @@ stages:
               _Test: -test
 
   - template: /eng/template-engine.yml
+  - template: /eng/dotnet-format/dotnet-format-integration.yml
 
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/common/templates/job/publish-build-assets.yml

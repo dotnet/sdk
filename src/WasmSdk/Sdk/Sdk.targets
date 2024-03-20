@@ -13,4 +13,18 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
   <Import Project="$(_WebAssemblyTargetsFile)" Condition="'$(_WebAssemblyTargetsFile)' != ''" />
+
+  <PropertyGroup>
+    <_WasmTargetingNET90OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '9.0'))</_WasmTargetingNET90OrLater>
+  </PropertyGroup>
+
+  <!-- Temporary, we need to generate blazor.boot.json before we define it,
+      so we hook a target that does the same thing as _ResolveWasmOutputs but
+      in addition generates blazor.boot.json so that the build passes.
+
+      This will go away once the wasm build is updated to do this directly.
+  -->
+
+  <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.WebAssembly.9_0.temp.targets" Condition="'$(_WasmTargetingNET90OrLater)' == 'true'" />
+  <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.WebAssembly.6_0.temp.targets" Condition="'$(_WasmTargetingNET90OrLater)' != 'true'" />
 </Project>
