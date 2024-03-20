@@ -9,68 +9,78 @@ namespace BinaryToolKit;
 
 public class Program
 {
+    public static readonly CliArgument<string> TargetDirectory = new("target-directory")
+    {
+        Description = "The directory to run the binary tooling on.",
+        Arity = ArgumentArity.ExactlyOne
+    };
+
+    public static readonly CliOption<string> OutputReportDirectory = new("--output-directory", "-o")
+    {
+        Description = "The directory to output the report to.",
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = _ => Path.Combine(Directory.GetCurrentDirectory(), "binary-report")
+    };
+
+    public static readonly CliOption<LogLevel> Level = new("--log-level", "-l")
+    {
+        Description = "The log level to run the tool in.",
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = _ => LogLevel.Information,
+        Recursive = true
+    };
+
+    public static readonly CliOption<string> AllowedBinariesFile = new("--allowed-binaries-file", "-ab")
+    {
+        Description = "The file containing the list of allowed binaries that are ignored for cleaning or validating.\n",
+        Arity = ArgumentArity.ZeroOrOne
+    };
+
+    public static int ExitCode = 0;
+
     public static async Task<int> Main(string[] args)
     {
-        CliArgument<string> TargetDirectory = new("target-directory")
-        {
-            Description = "The directory to run the binary tooling on."
-        };
-
-        CliArgument<string> OutputReportDirectory = new("output-report-directory")
-        {
-            Description = "The directory to output the report to."
-        };
-
-        CliOption<string> AllowedBinariesFile = new("--allowed-binaries", "-ab")
-        {
-            Description = "The file containing the list of known binaries " +
-                    "that are allowed in the VMR and can be kept for source-building."
-        };
-
-        CliOption<string> DisallowedSbBinariesFile = new("--disallowed-sb-binaries", "-db")
-        {
-            Description = "The file containing the list of known binaries " +
-                        "that are allowed in the VMR but cannot be kept for source-building."
-        };
-
-        CliOption<Modes> Mode = new("--mode", "-m")
-        {
-            Description = "The mode to run the tool in.",
-            Arity = ArgumentArity.ZeroOrOne,
-            DefaultValueFactory = _ => Modes.All
-        };
-
-        CliOption<LogLevel> Level = new("--log-level", "-l")
-        {
-            Description = "The log level to run the tool in.",
-            Arity = ArgumentArity.ZeroOrOne,
-            DefaultValueFactory = _ => LogLevel.Information
-        };
+        var cleanCommand = CreateCommand("clean", "Clean the binaries in the target directory.");
+        var validateCommand = CreateCommand("validate", "Detect new binaries in the target directory.");
 
         var rootCommand = new CliRootCommand("Tool for detecting, validating, and cleaning binaries in the target directory.")
         {
-            TargetDirectory,
-            OutputReportDirectory,
-            AllowedBinariesFile,
-            DisallowedSbBinariesFile,
-            Mode,
-            Level
+            Level,
+            cleanCommand,
+            validateCommand
         };
 
-        rootCommand.SetAction(async (result, CancellationToken) =>
+        SetCommandAction(cleanCommand, Modes.Clean);
+        SetCommandAction(validateCommand, Modes.Validate);
+
+        await rootCommand.Parse(args).InvokeAsync();
+
+        return ExitCode;
+    }
+
+    private static CliCommand CreateCommand(string name, string description)
+    {
+        return new CliCommand(name, description)
+        {
+            TargetDirectory,
+            OutputReportDirectory,
+            AllowedBinariesFile
+        };
+    }
+
+    private static void SetCommandAction(CliCommand command, Modes mode)
+    {
+        command.SetAction(async (result, CancellationToken) =>
         {
             Log.Level = result.GetValue(Level);
-            
+
             var binaryTool = new BinaryTool();
 
-            await binaryTool.ExecuteAsync(
+            ExitCode = await binaryTool.ExecuteAsync(
                 result.GetValue(TargetDirectory)!,
                 result.GetValue(OutputReportDirectory)!,
                 result.GetValue(AllowedBinariesFile),
-                result.GetValue(DisallowedSbBinariesFile),
-                result.GetValue(Mode));
+                mode);
         });
-
-        return await rootCommand.Parse(args).InvokeAsync();
     }
 }

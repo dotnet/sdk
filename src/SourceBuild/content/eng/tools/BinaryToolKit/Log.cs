@@ -9,6 +9,10 @@ public static class Log
 {
     public static LogLevel Level = LogLevel.Information;
 
+    private static bool WarningLogged = false;
+
+    private static bool ErrorLogged = false;
+
     private static readonly Lazy<ILogger> _logger = new Lazy<ILogger>(ConfigureLogger);
 
     public static void LogDebug(string message)
@@ -24,11 +28,13 @@ public static class Log
     public static void LogWarning(string message)
     {
         _logger.Value.LogWarning(message);
+        WarningLogged = true;
     }
 
     public static void LogError(string message)
     {
         _logger.Value.LogError(message);
+        ErrorLogged = true;
     }
 
     private static ILogger ConfigureLogger()
@@ -43,5 +49,20 @@ public static class Log
                 })
                 .SetMinimumLevel(Level));
         return loggerFactory.CreateLogger("BinaryTool");
+    }
+
+    public static int GetExitCode()
+    {
+        if (ErrorLogged)
+        {
+            return 1;
+        }
+
+        if (WarningLogged)
+        {
+            return 2;
+        }
+
+        return 0;
     }
 }
