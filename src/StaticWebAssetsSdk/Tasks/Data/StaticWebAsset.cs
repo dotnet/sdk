@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Security.Cryptography;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 #endif
     {
         public StaticWebAsset()
-        {            
+        {
         }
 
         public StaticWebAsset(StaticWebAsset asset)
@@ -66,6 +67,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public string AssetTraitName { get; set; }
 
         public string AssetTraitValue { get; set; }
+
+        public string Fingerprint { get; set; }
+
+        public string Integrity { get; set; }
 
         public string CopyToOutputDirectory { get; set; }
 
@@ -199,6 +204,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 RelatedAsset = item.GetMetadata(nameof(RelatedAsset)),
                 AssetTraitName = item.GetMetadata(nameof(AssetTraitName)),
                 AssetTraitValue = item.GetMetadata(nameof(AssetTraitValue)),
+                Fingerprint = item.GetMetadata(nameof(Fingerprint)),
+                Integrity = item.GetMetadata(nameof(Integrity)),
                 CopyToOutputDirectory = item.GetMetadata(nameof(CopyToOutputDirectory)),
                 CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
                 OriginalItemSpec = item.GetMetadata(nameof(OriginalItemSpec)),
@@ -208,9 +215,51 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         {
             CopyToOutputDirectory = string.IsNullOrEmpty(CopyToOutputDirectory) ? AssetCopyOptions.Never : CopyToOutputDirectory;
             CopyToPublishDirectory = string.IsNullOrEmpty(CopyToPublishDirectory) ? AssetCopyOptions.PreserveNewest : CopyToPublishDirectory;
+            (Fingerprint, Integrity) = ComputeFingerprintAndIntegrity();
             AssetKind = !string.IsNullOrEmpty(AssetKind) ? AssetKind : !ShouldCopyToPublishDirectory() ? AssetKinds.Build : AssetKinds.All;
             AssetMode = string.IsNullOrEmpty(AssetMode) ? AssetModes.All : AssetMode;
             AssetRole = string.IsNullOrEmpty(AssetRole) ? AssetRoles.Primary : AssetRole;
+        }
+
+        private (string Fingerprint, string Integrity) ComputeFingerprintAndIntegrity() =>
+            (Fingerprint, Integrity) switch
+            {
+                ("", "") => ComputeFingerprintAndIntegrity(Identity, OriginalItemSpec),
+                (not null, not null) => (Fingerprint, Integrity),
+                _ => ComputeFingerprintAndIntegrity(Identity, OriginalItemSpec)
+            };
+
+        internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(string identity, string originalItemSpec)
+        {
+            var file = File.Exists(identity) ?
+                File.OpenRead(identity) :
+                (File.Exists(originalItemSpec) ?
+                    File.OpenRead(originalItemSpec) :
+                    throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'."));
+
+#if NET6_0_OR_GREATER
+            var hash = SHA256.HashData(file);
+#else
+            using var sha = SHA256.Create();
+            var hash = sha.ComputeHash(file);
+#endif
+            return (FileHasher.ToBase36(hash), Convert.ToBase64String(hash));
+        }
+
+        internal static string ComputeIntegrity(string identity, string originalItemSpec)
+        {
+            var file = File.Exists(identity) ?
+    File.OpenRead(identity) :
+    (File.Exists(originalItemSpec) ?
+        File.OpenRead(originalItemSpec) :
+        throw new InvalidOperationException($"No file exists for the asset at either location '{identity}' or '{originalItemSpec}'."));
+#if NET6_0_OR_GREATER
+            var hash = SHA256.HashData(file);
+#else
+            using var sha = SHA256.Create();
+            var hash = sha.ComputeHash(file);
+#endif
+            return Convert.ToBase64String(hash);
         }
 
         public string ComputeTargetPath(string pathPrefix, char separator)
@@ -245,6 +294,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             result.SetMetadata(nameof(RelatedAsset), RelatedAsset);
             result.SetMetadata(nameof(AssetTraitName), AssetTraitName);
             result.SetMetadata(nameof(AssetTraitValue), AssetTraitValue);
+            result.SetMetadata(nameof(Fingerprint), Fingerprint);
+            result.SetMetadata(nameof(Integrity), Integrity);
             result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
             result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
             result.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
@@ -328,6 +379,16 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             {
                 throw new InvalidOperationException($"Alternative asset '{Identity}' does not define an asset trait name or value.");
             }
+
+            if (string.IsNullOrEmpty(Fingerprint))
+            {
+                throw new InvalidOperationException($"Fingerprint for '{Identity}' is not defined.");
+            }
+
+            if (string.IsNullOrEmpty(Integrity))
+            {
+                throw new InvalidOperationException($"Integrity for '{Identity}' is not defined.");
+            }
         }
 
         internal static StaticWebAsset FromProperties(
@@ -344,6 +405,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             string relatedAsset,
             string assetTraitName,
             string assetTraitValue,
+            string fingerprint,
+            string integrity,
             string copyToOutputDirectory,
             string copyToPublishDirectory,
             string originalItemSpec)
@@ -363,6 +426,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 RelatedAsset = relatedAsset,
                 AssetTraitName = assetTraitName,
                 AssetTraitValue = assetTraitValue,
+                Fingerprint = fingerprint,
+                Integrity = integrity,
                 CopyToOutputDirectory = copyToOutputDirectory,
                 CopyToPublishDirectory = copyToPublishDirectory,
                 OriginalItemSpec = originalItemSpec
@@ -499,6 +564,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                    RelatedAsset == asset.RelatedAsset &&
                    AssetTraitName == asset.AssetTraitName &&
                    AssetTraitValue == asset.AssetTraitValue &&
+                   Fingerprint == asset.Fingerprint &&
+                   Integrity == asset.Integrity &&
                    CopyToOutputDirectory == asset.CopyToOutputDirectory &&
                    CopyToPublishDirectory == asset.CopyToPublishDirectory &&
                    OriginalItemSpec == asset.OriginalItemSpec;
@@ -584,6 +651,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             $"RelatedAsset: {RelatedAsset}, " +
             $"AssetTraitName: {AssetTraitName}, " +
             $"AssetTraitValue: {AssetTraitValue}, " +
+            $"Fingerprint: {Fingerprint}, " +
+            $"Integrity: {Integrity}, " +
             $"CopyToOutputDirectory: {CopyToOutputDirectory}, " +
             $"CopyToPublishDirectory: {CopyToPublishDirectory}, " +
             $"OriginalItemSpec: {OriginalItemSpec}";
@@ -606,6 +675,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             hash.Add(RelatedAsset);
             hash.Add(AssetTraitName);
             hash.Add(AssetTraitValue);
+            hash.Add(Fingerprint);
+            hash.Add(Integrity);
             hash.Add(CopyToOutputDirectory);
             hash.Add(CopyToPublishDirectory);
             hash.Add(OriginalItemSpec);
@@ -626,6 +697,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(RelatedAsset);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetTraitName);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(AssetTraitValue);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Fingerprint);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Integrity);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToOutputDirectory);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(CopyToPublishDirectory);
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(OriginalItemSpec);

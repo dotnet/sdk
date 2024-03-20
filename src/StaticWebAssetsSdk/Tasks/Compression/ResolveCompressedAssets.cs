@@ -110,6 +110,7 @@ public class ResolveCompressedAssets : Task
         // generating new a static web asset definition for each compressed item.
         var formats = SplitPattern(Formats);
         var assetsToCompress = new List<ITaskItem>();
+        var outputPath = Path.GetFullPath(OutputPath);
         foreach (var format in formats)
         {
             foreach (var asset in matchingCandidateAssets)
@@ -130,7 +131,7 @@ public class ResolveCompressedAssets : Task
                     continue;
                 }
 
-                if (TryCreateCompressedAsset(asset, format, out var compressedAsset))
+                if (TryCreateCompressedAsset(asset, outputPath, format, out var compressedAsset))
                 {
                     assetsToCompress.Add(compressedAsset);
                     existingFormats.Add(format);
@@ -224,7 +225,7 @@ public class ResolveCompressedAssets : Task
             .Select(s => s.Trim())
             .ToArray();
 
-    private bool TryCreateCompressedAsset(StaticWebAsset asset, string format, out ITaskItem result)
+    private bool TryCreateCompressedAsset(StaticWebAsset asset, string outputPath, string format, out ITaskItem result)
     {
         result = null;
 
@@ -263,8 +264,12 @@ public class ResolveCompressedAssets : Task
             OriginalItemSpec = asset.Identity,
             RelatedAsset = asset.Identity,
             AssetRole = "Alternative",
-            AssetTraitName = "Content-Encoding",
-            AssetTraitValue = assetTraitValue
+            AssetTraitName = "Content-Encoding",            
+            AssetTraitValue = assetTraitValue,
+            ContentRoot = outputPath,
+            // Set integrity and fingerprint to null so that they get recalculated for the compressed asset.
+            Fingerprint = null,
+            Integrity = null,
         };
 
         result = res.ToTaskItem();

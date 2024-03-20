@@ -68,10 +68,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Wire-up static web assets -->
   <PropertyGroup>
-    <ResolveStaticWebAssetsInputsDependsOn>
-      $(ResolveStaticWebAssetsInputsDependsOn);
+    <ResolveBuildRelatedStaticWebAssetsDependsOn>
+      $(ResolveBuildRelatedStaticWebAssetsDependsOn);
       _ResolveBlazorWasmOutputs;
-    </ResolveStaticWebAssetsInputsDependsOn>
+    </ResolveBuildRelatedStaticWebAssetsDependsOn>
 
     <GenerateBuildWasmBootJsonDependsOn>
       $(GenerateBuildWasmBootJsonDependsOn);
