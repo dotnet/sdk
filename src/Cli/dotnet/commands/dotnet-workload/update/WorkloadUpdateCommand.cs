@@ -166,13 +166,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         try
                         {
                             DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
+                            if (_WorkloadHistoryRecord?.StateAfterCommand?.WorkloadSetVersion != null)
+                            {
+                                _workloadSetVersion = _WorkloadHistoryRecord.StateAfterCommand.WorkloadSetVersion;
+                            }
                             if (string.IsNullOrWhiteSpace(_workloadSetVersion))
                             {
                                 CalculateManifestUpdatesAndUpdateWorkloads(recorder, _includePreviews, offlineCache);
                             }
                             else
                             {
-                                RunInNewTransaction(context =>
+                                RunInNewTransaction(recorder, context =>
                                 {
                                     var manifestUpdates = HandleWorkloadUpdateFromVersion(context, offlineCache);
                                     UpdateWorkloads(false, manifestUpdates, offlineCache, context, recorder);
@@ -219,7 +223,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
 
             IEnumerable<ManifestVersionUpdate> manifestsToUpdate;
-            RunInNewTransaction(context =>
+            RunInNewTransaction(recorder, context =>
             {
                 if (useWorkloadSets)
                 {
@@ -406,12 +410,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
         }
         
-        private void RunInNewTransaction(Action<ITransactionContext> a)
+        private void RunInNewTransaction(WorkloadHistoryRecorder recorder, Action<ITransactionContext> a)
         {
             var transaction = new CliTransaction();
             transaction.RollbackStarted = () =>
             {
                 Reporter.WriteLine(LocalizableStrings.RollingBackInstall);
+                if (recorder != null)
+                {
+                    recorder.HistoryRecord.StateAfterCommand = recorder.HistoryRecord.StateBeforeCommand;
+                }
             };
             // Don't hide the original error if roll back fails, but do log the rollback failure
             transaction.RollbackFailed = ex =>

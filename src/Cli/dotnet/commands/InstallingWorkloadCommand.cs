@@ -110,32 +110,27 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         protected IEnumerable<ManifestVersionUpdate> HandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache, WorkloadHistoryRecorder recorder = null)
         {
-            // Ensure workload set mode is set to 'workloadset'
-            // Do not skip checking the mode first, as setting it triggers
-            // an admin authorization popup for MSI-based installs.
-            if (!ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
-            {
-                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
-            }
-
             _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
             return InstallWorkloadSet(context, recorder);
         }
 
         public IEnumerable<ManifestVersionUpdate> InstallWorkloadSet(ITransactionContext context, WorkloadHistoryRecorder recorder = null)
         {
+            // Ensure workload set mode is set to 'workloadset
+            _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+
             var advertisingPackagePath = Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads");
             if (File.Exists(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)))
             {
                 // This file isn't created in tests.
-                PrintWorkloadSetTransition(File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)));
+                PrintWorkloadSetTransition(File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)), recorder);
             }
             var workloadSetPath = _workloadInstaller.InstallWorkloadSet(context, advertisingPackagePath);
             var files = Directory.EnumerateFiles(workloadSetPath, "*.workloadset.json");
             return _workloadManifestUpdater.ParseRollbackDefinitionFiles(files, recorder);
         }
 
-        private void PrintWorkloadSetTransition(string newVersion)
+        private void PrintWorkloadSetTransition(string newVersion, WorkloadHistoryRecorder recorder = null)
         {
             var currentVersion = _workloadResolver.GetWorkloadVersion();
             if (currentVersion == null)
@@ -145,6 +140,15 @@ namespace Microsoft.DotNet.Workloads.Workload
             else
             {
                 Reporter.WriteLine(string.Format(Strings.WorkloadSetUpgrade, currentVersion, newVersion));
+                if (recorder != null)
+                {
+                    recorder.HistoryRecord.StateBeforeCommand.WorkloadSetVersion = currentVersion;
+                }
+            }
+
+            if (recorder != null)
+            {
+                recorder.HistoryRecord.StateAfterCommand.WorkloadSetVersion = newVersion;
             }
         }
 

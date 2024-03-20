@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             }
                             else
                             {
-                                RunInNewTransaction(context =>
+                                RunInNewTransaction(recorder, context =>
                                 {
                                     var manifests = HandleWorkloadUpdateFromVersion(context, offlineCache, recorder);
                                     InstallWorkloadsAndGarbageCollect(context, workloadIds, manifests, offlineCache, false);
@@ -184,7 +184,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
 
-            RunInNewTransaction(context =>
+            RunInNewTransaction(recorder, context =>
             {
                 if (!skipManifestUpdate)
                 {
@@ -331,11 +331,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return GetDownloads(workloadIds, skipManifestUpdate, includePreviews, offlineCache.Value);
         }
 
-        private void RunInNewTransaction(Action<ITransactionContext> a)
+        private void RunInNewTransaction(WorkloadHistoryRecorder recorder, Action<ITransactionContext> a)
         {
             var transaction = new CliTransaction()
             {
-                RollbackStarted = () => Reporter.WriteLine(LocalizableStrings.RollingBackInstall),
+                RollbackStarted = () =>
+                {
+                    Reporter.WriteLine(LocalizableStrings.RollingBackInstall);
+                    if (recorder != null)
+                    {
+                        recorder.HistoryRecord.StateAfterCommand = recorder.HistoryRecord.StateBeforeCommand;
+                    }
+                },
                 // Don't hide the original error if roll back fails, but do log the rollback failure
                 RollbackFailed = ex => Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message))
             };
