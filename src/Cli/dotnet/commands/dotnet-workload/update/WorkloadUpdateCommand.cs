@@ -110,6 +110,20 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
             else
             {
+                var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(_userProfileDir);
+                var workloadVersion = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
+                if (workloadVersion is not null)
+                {
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+                    {
+                        _workloadSetVersion = workloadVersion;
+                    }
+                    else if (!workloadVersion.Equals(_workloadSetVersion))
+                    {
+                        // Consider setting this in the global.json? Or logging a warning?
+                    }
+                }
+
                 try
                 {
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);

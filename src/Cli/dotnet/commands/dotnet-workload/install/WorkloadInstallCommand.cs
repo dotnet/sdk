@@ -11,6 +11,7 @@ using NuGet.Versioning;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
+using System.Text;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -27,7 +28,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             INuGetPackageDownloader nugetPackageDownloader = null,
             IWorkloadManifestUpdater workloadManifestUpdater = null,
             string tempDirPath = null,
-            IReadOnlyCollection<string> workloadIds = null)
+            IReadOnlyCollection<string> workloadIds = null,
+            string workloadSetVersion = null)
             : base(parseResult, reporter: reporter, workloadResolverFactory: workloadResolverFactory, workloadInstaller: workloadInstaller,
                   nugetPackageDownloader: nugetPackageDownloader, workloadManifestUpdater: workloadManifestUpdater,
                   tempDirPath: tempDirPath)
@@ -43,7 +45,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(Reporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
 
-            _workloadSetVersion = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
+            _workloadSetVersion = workloadSetVersion ?? parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
             if (string.IsNullOrWhiteSpace(_workloadSetVersion))
             {
                 // If the version of the workload set is currently pinned, treat it as if it were freshly pinned.
@@ -113,6 +115,20 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             else
             {
+                var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(_userProfileDir);
+                var workloadVersion = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
+                if (workloadVersion is not null)
+                {
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+                    {
+                        _workloadSetVersion = workloadVersion;
+                    }
+                    else if (!workloadVersion.Equals(_workloadSetVersion))
+                    {
+                        throw new Exception(string.Format(LocalizableStrings.CannotSpecifyVersionOnCommandLineAndInGlobalJson));
+                    }
+                }
+
                 try
                 {
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
