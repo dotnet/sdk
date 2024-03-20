@@ -33,7 +33,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());
 
-            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath, "blazor.boot.json"));
+            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath, "blazor.boot.json.patch"));
             blazorBootJson.Should().Exist();
             var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
@@ -65,7 +65,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadBuildManifest());
 
-            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath.Replace("blazorhosted", "blazorwasm"), "blazor.boot.json"));
+            var blazorBootJson = new FileInfo(Path.Combine(intermediateOutputPath.Replace("blazorhosted", "blazorwasm"), "blazor.boot.json.patch"));
             blazorBootJson.Should().Exist();
             var contents = JsonSerializer.Deserialize<JsonDocument>(blazorBootJson.OpenRead());
             contents.RootElement.TryGetProperty("resources", out var resources).Should().BeTrue();
@@ -152,7 +152,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
             AssertManifest(manifest, LoadPublishManifest());
 
-            var buildLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, "blazor.boot.json"));
+            var buildLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, "blazor.boot.json.patch"));
             var publishLibrary = GetLibraryInitializer(Path.Combine(intermediateOutputPath, "blazor.publish.boot.json"));
 
             publishLibrary.GetString().Should().NotBe(buildLibrary.GetString());

@@ -12,7 +12,7 @@
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\ComponentApp.bundle.scp.css.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\projectbundle\\",
+      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\",
       "BasePath": "_content/ComponentApp",
       "RelativePath": "ComponentApp.bundle.scp.css.gz",
       "AssetKind": "All",
@@ -23,6 +23,8 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css.gz"
@@ -31,7 +33,7 @@
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\ComponentApp.styles.css.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\bundle\\",
+      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\",
       "BasePath": "_content/ComponentApp",
       "RelativePath": "ComponentApp.styles.css.gz",
       "AssetKind": "All",
@@ -42,6 +44,8 @@
       "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\bundle\\ComponentApp.styles.css",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\bundle\\ComponentApp.styles.css.gz"
@@ -61,6 +65,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "ScopedCss",
       "AssetTraitValue": "ApplicationBundle",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\bundle\\ComponentApp.styles.css"
@@ -80,6 +86,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "ScopedCss",
       "AssetTraitValue": "ProjectBundle",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css"

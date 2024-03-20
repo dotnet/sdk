@@ -4,6 +4,7 @@
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.FileSystemGlobbing;
+using Microsoft.Extensions.FileSystemGlobbing.Internal;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -73,37 +74,61 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
                 var matcher = !string.IsNullOrEmpty(RelativePathPattern) ? new Matcher().AddInclude(RelativePathPattern) : null;
                 var filter = !string.IsNullOrEmpty(RelativePathFilter) ? new Matcher().AddInclude(RelativePathFilter) : null;
+                var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
+
                 for (var i = 0; i < CandidateAssets.Length; i++)
                 {
                     var candidate = CandidateAssets[i];
-                    var relativePathCandidate = GetCandidateMatchPath(candidate);
-                    if (matcher != null)
+                    var relativePathCandidate = string.Empty;
+                    if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                     {
-                        var match = matcher.Match(relativePathCandidate);
-                        if (match.HasMatches)
+                        var candidateMatchPath = GetDiscoveryCandidateMatchPath(candidate);
+                        relativePathCandidate = candidateMatchPath;
+                        if (string.IsNullOrEmpty(candidate.GetMetadata("RelativePath")))
                         {
-                            var newRelativePathCandidate = match.Files.Single().Stem;
-                            Log.LogMessage(
-                                MessageImportance.Low,
-                                "The relative path '{0}' matched the pattern '{1}'. Replacing relative path with '{2}'.",
-                                relativePathCandidate,
-                                RelativePathPattern,
-                                newRelativePathCandidate);
+                            var match = matcher.Match(candidateMatchPath);
+                            if (!match.HasMatches)
+                            {
+                                Log.LogMessage(MessageImportance.Low, "Rejected asset '{0}' for pattern '{1}'", candidateMatchPath, RelativePathPattern);
+                                continue;
+                            }
 
-                            relativePathCandidate = newRelativePathCandidate;
+                            Log.LogMessage(MessageImportance.Low, "Accepted asset '{0}' for pattern '{1}' with relative path '{2}'", candidateMatchPath, RelativePathPattern, match.Files.Single().Stem);
+
+                            relativePathCandidate = StaticWebAsset.Normalize(match.Files.Single().Stem);
                         }
                     }
-
-                    if (filter != null && !filter.Match(relativePathCandidate).HasMatches)
+                    else
                     {
-                        Log.LogMessage(
-                            MessageImportance.Low,
-                            "Skipping '{0}' because the relative path '{1}' did not match the filter '{2}'.",
-                            candidate.ItemSpec,
-                            relativePathCandidate,
-                            RelativePathFilter);
+                        relativePathCandidate = GetCandidateMatchPath(candidate);
+                        if (matcher != null)
+                        {
+                            var match = matcher.Match(relativePathCandidate);
+                            if (match.HasMatches)
+                            {
+                                var newRelativePathCandidate = match.Files.Single().Stem;
+                                Log.LogMessage(
+                                    MessageImportance.Low,
+                                    "The relative path '{0}' matched the pattern '{1}'. Replacing relative path with '{2}'.",
+                                    relativePathCandidate,
+                                    RelativePathPattern,
+                                    newRelativePathCandidate);
 
-                        continue;
+                                relativePathCandidate = newRelativePathCandidate;
+                            }
+                        }
+
+                        if (filter != null && !filter.Match(relativePathCandidate).HasMatches)
+                        {
+                            Log.LogMessage(
+                                MessageImportance.Low,
+                                "Skipping '{0}' because the relative path '{1}' did not match the filter '{2}'.",
+                                candidate.ItemSpec,
+                                relativePathCandidate,
+                                RelativePathFilter);
+
+                            continue;
+                        }
                     }
 
                     var sourceId = ComputePropertyValue(candidate, nameof(StaticWebAsset.SourceId), SourceId);
@@ -117,6 +142,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     var relatedAsset = ComputePropertyValue(candidate, nameof(StaticWebAsset.RelatedAsset), RelatedAsset, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
                     var assetTraitName = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitName), AssetTraitName, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
                     var assetTraitValue = ComputePropertyValue(candidate, nameof(StaticWebAsset.AssetTraitValue), AssetTraitValue, !StaticWebAsset.AssetRoles.IsPrimary(assetRole));
+
                     var copyToOutputDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToOutputDirectory), CopyToOutputDirectory);
                     var copyToPublishDirectory = ComputePropertyValue(candidate, nameof(StaticWebAsset.CopyToPublishDirectory), CopyToPublishDirectory);
                     var originalItemSpec = ComputePropertyValue(
@@ -124,22 +150,51 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         nameof(StaticWebAsset.OriginalItemSpec),
                         PropertyOverrides == null || PropertyOverrides.Length == 0 ? candidate.ItemSpec : candidate.GetMetadata("OriginalItemSpec"));
 
+                    // Compute the fingerprint and integrity for the asset. The integrity is the Base64(SHA256) of the asset content
+                    // and the fingerprint is the first 9 chars of the Base36(SHA256) of the asset.
+                    // The hash can always be re-computed using the integrity value (just undo the Base64 encoding) if its needed in any
+                    // other format.
+                    // We differentiate between Integrity and Fingerprint because they are useful in different contexts. The integrity
+                    // is useful when we want to verify the content of the asset and the fingerprint is useful when we want to cache-bust
+                    // the asset.
+                    var fingerprint = ComputePropertyValue(candidate, nameof(StaticWebAsset.Fingerprint), null, false);
+                    var integrity = ComputePropertyValue(candidate, nameof(StaticWebAsset.Integrity), null, false);
+                    switch ((fingerprint, integrity))
+                    {
+                        case (null, null):
+                            Log.LogMessage(MessageImportance.Low, "Computing fingerprint and integrity for asset '{0}'", candidate.ItemSpec);
+                            (fingerprint, integrity) = (StaticWebAsset.ComputeFingerprintAndIntegrity(candidate.ItemSpec, originalItemSpec));
+                            break;
+                        case (null, not null):
+                            Log.LogMessage(MessageImportance.Low, "Computing fingerprint for asset '{0}'", candidate.ItemSpec);
+                            fingerprint = FileHasher.ToBase36(Convert.FromBase64String(integrity));
+                            break;
+                        case (not null, null):
+                            Log.LogMessage(MessageImportance.Low, "Computing integrity for asset '{0}'", candidate.ItemSpec);
+                            integrity = StaticWebAsset.ComputeIntegrity(candidate.ItemSpec, originalItemSpec);
+                            break;
+                    }
+
                     // If we are not able to compute the value based on an existing value or a default, we produce an error and stop.
                     if (Log.HasLoggedErrors)
                     {
                         break;
                     }
 
-                    // We ignore the content root for publish only assets since it doesn't matter.
-                    var contentRootPrefix = StaticWebAsset.AssetKinds.IsPublish(assetKind) ? null : contentRoot;
-                    var (identity, computed) = ComputeCandidateIdentity(candidate, contentRootPrefix, relativePathCandidate, matcher);
-
-                    if (computed)
+                    var identity = Path.GetFullPath(candidate.GetMetadata("FullPath"));
+                    if (!string.Equals(SourceType, StaticWebAsset.SourceTypes.Discovered, StringComparison.OrdinalIgnoreCase))
                     {
-                        copyCandidates.Add(new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
+                        // We ignore the content root for publish only assets since it doesn't matter.
+                        var contentRootPrefix = StaticWebAsset.AssetKinds.IsPublish(assetKind) ? null : contentRoot;
+                        (identity, var computed) = ComputeCandidateIdentity(candidate, contentRootPrefix, relativePathCandidate, matcher);
+
+                        if (computed)
                         {
-                            ["TargetPath"] = identity
-                        }));
+                            copyCandidates.Add(new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
+                            {
+                                ["TargetPath"] = identity
+                            }));
+                        }
                     }
 
                     var asset = StaticWebAsset.FromProperties(
@@ -156,17 +211,25 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         relatedAsset,
                         assetTraitName,
                         assetTraitValue,
+                        fingerprint,
+                        integrity,
                         copyToOutputDirectory,
                         copyToPublishDirectory,
                         originalItemSpec);
 
+                    asset.Normalize();
                     var item = asset.ToTaskItem();
+                    if (SourceType == StaticWebAsset.SourceTypes.Discovered)
+                    {
+                        item.SetMetadata(nameof(StaticWebAsset.AssetKind), !asset.ShouldCopyToPublishDirectory() ? StaticWebAsset.AssetKinds.Build : StaticWebAsset.AssetKinds.All);
+                        UpdateAssetKindIfNecessary(assetsByRelativePath, asset.RelativePath, item);
+                    }
 
                     results.Add(item);
                 }
 
-                Assets = results.ToArray();
-                CopyCandidates = copyCandidates.ToArray();
+                Assets = [.. results];
+                CopyCandidates = [.. copyCandidates];
             }
             catch (Exception ex)
             {
@@ -288,12 +351,131 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             var normalizedAssetPath = Path.GetFullPath(candidate.GetMetadata("FullPath"));
             if (normalizedAssetPath.StartsWith(normalizedContentRoot))
             {
-                return normalizedAssetPath.Substring(normalizedContentRoot.Length);
+                var result = normalizedAssetPath.Substring(normalizedContentRoot.Length);
+                Log.LogMessage(MessageImportance.Low, "FullPath '{0}' starts with content root '{1}' for candidate '{2}'. Using '{3}' as relative path.", normalizedAssetPath, normalizedContentRoot, candidate.ItemSpec, result);
+                return result;
             }
             else
             {
+                Log.LogMessage("No relative path, target path or link was found for candidate '{0}'. FullPath '{0}' does not start with content root '{1}' for candidate '{2}'. Using item spec '{2}' as relative path.", normalizedAssetPath, normalizedContentRoot, candidate.ItemSpec);
                 return candidate.ItemSpec;
             }
         }
+
+        private void UpdateAssetKindIfNecessary(Dictionary<string, List<ITaskItem>> assetsByRelativePath, string candidateRelativePath, ITaskItem asset)
+        {
+            // We want to support content items in the form of
+            // <Content Include="service-worker.development.js CopyToPublishDirectory="Never" TargetPath="wwwroot\service-worker.js" />
+            // <Content Include="service-worker.js />
+            // where the first item is used during development and the second item is used when the app is published.
+            // To that matter, we keep track of the assets relative paths and make sure that when two assets target the same relative paths, at least one
+            // of them is marked with CopyToPublishDirectory="Never" to identify it as a "development/build" time asset as opposed to the other asset.
+            // As a result, assets by default have an asset kind 'All' when there is only one asset for the target path and 'Build' or 'Publish' when there are two of them.
+            if (!assetsByRelativePath.TryGetValue(candidateRelativePath, out var existing))
+            {
+                assetsByRelativePath.Add(candidateRelativePath, [asset]);
+            }
+            else
+            {
+                if (existing.Count == 2)
+                {
+                    var first = existing[0];
+                    var second = existing[1];
+                    var errorMessage = "More than two assets are targeting the same path: " + Environment.NewLine +
+                        "'{0}' with kind '{1}'" + Environment.NewLine +
+                        "'{2}' with kind '{3}'" + Environment.NewLine +
+                        "for path '{4}'";
+
+                    Log.LogError(
+                        errorMessage,
+                        first.GetMetadata("FullPath"),
+                        first.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                        second.GetMetadata("FullPath"),
+                        second.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                        candidateRelativePath);
+
+                    return;
+                }
+                else if (existing.Count == 1)
+                {
+                    var existingAsset = existing[0];
+                    switch ((asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)), existingAsset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory))))
+                    {
+                        case (StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
+                        case (not StaticWebAsset.AssetCopyOptions.Never, not StaticWebAsset.AssetCopyOptions.Never):
+                            var errorMessage = "Two assets found targeting the same path with incompatible asset kinds: " + Environment.NewLine +
+                                "'{0}' with kind '{1}'" + Environment.NewLine +
+                                "'{2}' with kind '{3}'" + Environment.NewLine +
+                                "for path '{4}'";
+                            Log.LogError(
+                                errorMessage,
+                                existingAsset.GetMetadata("FullPath"),
+                                existingAsset.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                                asset.GetMetadata("FullPath"),
+                                asset.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                                candidateRelativePath);
+
+                            break;
+
+                        case (StaticWebAsset.AssetCopyOptions.Never, not StaticWebAsset.AssetCopyOptions.Never):
+                            existing.Add(asset);
+                            asset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Build);
+                            existingAsset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Publish);
+                            Log.LogMessage(MessageImportance.Low,
+                                "Asset '{0}' with kind '{1}' and CopyToPublishDirectory='{2}' was found for path '{3}'. Setting asset kind to '{4}'.",
+                                asset.GetMetadata("FullPath"),
+                                asset.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                                asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)),
+                                candidateRelativePath,
+                                StaticWebAsset.AssetKinds.Build);
+                            Log.LogMessage(MessageImportance.Low,
+                                "Asset '{0}' with kind '{1}' and CopyToPublishDirectory='{2}' was found for path '{3}'. Setting asset kind to '{4}'.",
+                                existingAsset.GetMetadata("FullPath"),
+                                existingAsset.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                                existingAsset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)),
+                                candidateRelativePath,
+                                StaticWebAsset.AssetKinds.Publish);
+                            break;
+
+                        case (not StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
+                            existing.Add(asset);
+                            asset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Publish);
+                            existingAsset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Build);
+                            Log.LogMessage(MessageImportance.Low,
+                                "Asset '{0}' with kind '{1}' and CopyToPublishDirectory='{2}' was found for path '{3}'. Setting asset kind to '{4}'.",
+                                asset.GetMetadata("FullPath"),
+                                asset.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                                asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)),
+                                candidateRelativePath,
+                                StaticWebAsset.AssetKinds.Publish);
+                            Log.LogMessage(MessageImportance.Low,
+                                "Asset '{0}' with kind '{1}' and CopyToPublishDirectory='{2}' was found for path '{3}'. Setting asset kind to '{4}'.",
+                                existingAsset.GetMetadata("FullPath"),
+                                existingAsset.GetMetadata(nameof(StaticWebAsset.AssetKind)),
+                                existingAsset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)),
+                                candidateRelativePath,
+                                StaticWebAsset.AssetKinds.Build);
+                            break;
+                    }
+                }
+            }
+        }
+
+        private string GetDiscoveryCandidateMatchPath(ITaskItem candidate)
+        {
+            var computedPath = StaticWebAsset.ComputeAssetRelativePath(candidate, out var property);
+            if (property != null)
+            {
+                Log.LogMessage(
+                    MessageImportance.Low,
+                    "{0} '{1}' found for candidate '{2}' and will be used for matching.",
+                    property,
+                    computedPath,
+                    candidate.ItemSpec);
+            }
+
+            return computedPath;
+        }
+
     }
 }

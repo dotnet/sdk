@@ -365,6 +365,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 CopyToOutputDirectory = copyToOutputDirectory,
                 CopyToPublishDirectory = copytToPublishDirectory,
                 OriginalItemSpec = itemSpec,
+                // Add these to avoid accessing the disk to compute them
+                Integrity = "integrity",
+                Fingerprint = "fingerprint",
             };
 
             result.ApplyDefaults();
