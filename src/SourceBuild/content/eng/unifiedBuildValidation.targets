@@ -9,18 +9,22 @@
           AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion">
 
+    <ItemGroup>
+      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH" Value="$(SdkTarballPath)" />
+      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_TARGET_RID" Value="$(TargetRid)" />
+      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_PORTABLE_RID" Value="$(PortableRid)" />
+      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_BUILD_VERSION" Value="$(SourceBuiltSdkVersion)" />
+    </ItemGroup>
+
     <PropertyGroup>
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
+      <_EnvVarRunSettingsPrefix>RunConfiguration.EnvironmentVariables</_EnvVarRunSettingsPrefix>
+      <EnvironmentVariableRunSettings>@(_UnifiedBuildValidationEnvVar->'$(RunConfiguration.EnvironmentVariables).%(Identity)=%(Value)')</EnvironmentVariableRunSettings>
     </PropertyGroup>
 
-    <Exec Command="$(DotnetTool) test $(UnifiedBuildValidationTestsDir) --logger:trx -c $(Configuration) -p:VSTestUseMSBuildOutput=false"
-          IgnoreStandardErrorWarningFormat="true"
-          EnvironmentVariables="
-            UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH=$(SdkTarballPath);
-            UNIFIED_BUILD_VALIDATION_TARGET_RID=$(TargetRid);
-            UNIFIED_BUILD_VALIDATION_PORTABLE_RID=$(PortableRid);
-            UNIFIED_BUILD_VALIDATION_BUILD_VERSION=$(SourceBuiltSdkVersion);
-            $(CustomTestEnvVars)" />
+    <MSBuild Projects="$(UnifiedBuildValidationTestsDir)"
+             Targets="Test"
+             Properties="Configuration=$(Configuration);VSTestUseMSBuildOutput=false;VSTestLogger=trx;VSTestCLIRunSettings=$(EnvironmentVariableRunSettings)" />
 
   </Target>
 
