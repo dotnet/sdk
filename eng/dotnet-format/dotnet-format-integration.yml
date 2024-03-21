@@ -59,8 +59,7 @@ jobs:
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       name: $(DncEngPublicBuildPool)
-      image: 1es-windows-2022-open
-      os: windows
+      demands: ImageOverride -equals 1es-windows-2022-open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
       name: $(DncEngInternalBuildPool)
       image: 1es-windows-2022
@@ -86,8 +85,7 @@ jobs:
     pool:
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
         name: $(DncEngPublicBuildPool)
-        image: 1es-windows-2022-open
-        os: windows
+        demands: ImageOverride -equals 1es-windows-2022-open
       ${{ if eq(variables['System.TeamProject'], 'internal') }}:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
