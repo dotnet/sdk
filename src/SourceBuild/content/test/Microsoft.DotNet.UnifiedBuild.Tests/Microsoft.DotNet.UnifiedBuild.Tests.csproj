@@ -18,12 +18,7 @@
   <ItemGroup>
     <Content Include="assets\**"
              CopyToOutputDirectory="Always" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="..\..\packages\smoke-test-prereqs\*"
-             CopyToOutputDirectory="Always"
-             Link="assets\smoke-tests\prereq-packages\%(Filename)%(Extension)" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

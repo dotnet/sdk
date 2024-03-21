@@ -9,6 +9,6 @@
 # 'folder/*' matches 'folder/' and 'folder/abc'
 # 'folder/?*' matches 'folder/abc' but not 'folder/'
 
-# These files are Windows specific and should never have been in the Microsoft build
+# These files are Windows specific and should not be in the Microsoft build
 msft,./sdk/x.y.z/Containers/containerize/*
 msft,./sdk/x.y.z/Containers/tasks/net472/*

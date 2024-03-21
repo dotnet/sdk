@@ -7,13 +7,17 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Xunit.Abstractions;
+using Xunit.Sdk;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 public class Config : IDisposable
 {
-    public Config()
+    IMessageSink _sink;
+    public Config(IMessageSink sink)
     {
+        _sink = sink;
         BuildVersion = Environment.GetEnvironmentVariable(BuildVersionEnv) ?? throw new InvalidOperationException($"'{BuildVersionEnv}' must be specified");
         PortableRid = Environment.GetEnvironmentVariable(PortableRidEnv) ?? throw new InvalidOperationException($"'{PortableRidEnv}' must be specified");
         UbSdkArchivePath = Environment.GetEnvironmentVariable(UbSdkTarballPathEnv) ?? throw new InvalidOperationException($"'{UbSdkTarballPathEnv}' must be specified");
@@ -55,6 +59,7 @@ public class Config : IDisposable
         var client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
         var channel = BuildVersion[..5] + "xx";
         var akaMsUrl = $"https://aka.ms/dotnet/{channel}/daily/dotnet-sdk-{TargetRid}{GetArchiveExtension(UbSdkArchivePath)}";
+        _sink.OnMessage(new DiagnosticMessage($"Downloading latest sdk from '{akaMsUrl}'"));
         var redirectResponse = await client.GetAsync(akaMsUrl);
         // aka.ms returns a 301 for valid redirects and a 302 to Bing for invalid URLs
         if (redirectResponse.StatusCode != HttpStatusCode.Moved)
@@ -62,9 +67,11 @@ public class Config : IDisposable
             throw new InvalidOperationException($"Could not find download link for Microsoft built sdk at '{akaMsUrl}'");
         }
         var closestUrl = redirectResponse.Headers.Location!.ToString();
+        _sink.OnMessage(new DiagnosticMessage($"Redirected to '{closestUrl}'"));
         HttpResponseMessage packageResponse = await client.GetAsync(closestUrl);
         var packageUriPath = packageResponse.RequestMessage!.RequestUri!.LocalPath;
         _downloadedMsftSdkPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + "." + Path.GetFileName(packageUriPath));
+        _sink.OnMessage(new DiagnosticMessage($"Downloading to '{_downloadedMsftSdkPath}'"));
         using (var file = File.Create(_downloadedMsftSdkPath))
         {
             await packageResponse.Content.CopyToAsync(file);
