@@ -16,10 +16,10 @@
     <Exec Command="$(DotnetTool) test $(UnifiedBuildValidationTestsDir) --logger:trx -c $(Configuration) -p:VSTestUseMSBuildOutput=false"
           IgnoreStandardErrorWarningFormat="true"
           EnvironmentVariables="
-            UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH=$(SdkTarballItem);
+            UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH=$(SdkTarballPath);
             UNIFIED_BUILD_VALIDATION_TARGET_RID=$(TargetRid);
             UNIFIED_BUILD_VALIDATION_PORTABLE_RID=$(PortableRid);
-            UNIFIED_BUILD_VALIDATION_BUILD_VERSION=$(SdkTarballPath);
+            UNIFIED_BUILD_VALIDATION_BUILD_VERSION=$(SourceBuiltSdkVersion);
             $(CustomTestEnvVars)" />
 
   </Target>
