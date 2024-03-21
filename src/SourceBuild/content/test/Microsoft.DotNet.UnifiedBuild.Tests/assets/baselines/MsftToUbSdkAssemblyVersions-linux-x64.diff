@@ -1,0 +1,738 @@
+diff --git a/msft_assemblyversions.txt b/ub_assemblyversions.txt
+index ------------
+--- a/msft_assemblyversions.txt
++++ b/ub_assemblyversions.txt
+@@ ------------ @@ sdk\x.y.z\cs\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.0
+ sdk\x.y.z\cs\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\cs\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\cs\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\cs\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\cs\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\cs\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\cs\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\cs\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\cs\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\cs\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\cs\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\de\dotnet.resources.dll - 9.0.100
+ sdk\x.y.z\de\Microsoft.Build.resources.dll - 15.1.0
+@@ ------------ @@ sdk\x.y.z\de\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.0
+ sdk\x.y.z\de\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\de\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\de\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\de\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\de\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\de\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\de\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\de\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\de\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\de\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\de\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\dotnet.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-dev-certs\x.y.z\tools/netx.y/any\dotnet-dev-certs.dll - 9.0.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\BuildHost-netcore\zh-Hans\System.CommandLine
+ sdk\x.y.z\DotnetTools\dotnet-format\BuildHost-netcore\zh-Hant\Microsoft.CodeAnalysis.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\BuildHost-netcore\zh-Hant\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\BuildHost-netcore\zh-Hant\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\cs\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\cs\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\cs\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\cs\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\cs\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\cs\Microsoft.CodeAnalysis.VisualBasic.Worksp
+ sdk\x.y.z\DotnetTools\dotnet-format\cs\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\cs\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\cs\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\de\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\de\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\de\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\de\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\de\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\de\Microsoft.CodeAnalysis.VisualBasic.Worksp
+ sdk\x.y.z\DotnetTools\dotnet-format\de\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\de\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\de\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\dotnet-format.dll - 9.0.10
+-sdk\x.y.z\DotnetTools\dotnet-format\es\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\dotnet-format.dll - 9.0.100
++sdk\x.y.z\DotnetTools\dotnet-format\es\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\es\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\es\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\es\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\es\Microsoft.CodeAnalysis.VisualBasic.Worksp
+ sdk\x.y.z\DotnetTools\dotnet-format\es\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\es\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\es\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\fr\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\fr\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\fr\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\fr\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\fr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\fr\Microsoft.CodeAnalysis.Workspaces.MSBuild
+ sdk\x.y.z\DotnetTools\dotnet-format\fr\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\fr\System.CommandLine.resources.dll - 2.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Humanizer.dll - 2.14.0
+-sdk\x.y.z\DotnetTools\dotnet-format\it\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\it\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\it\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\it\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\it\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\it\Microsoft.CodeAnalysis.VisualBasic.Worksp
+ sdk\x.y.z\DotnetTools\dotnet-format\it\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\it\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\it\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\ja\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\ja\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\ja\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ja\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ja\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\ja\Microsoft.CodeAnalysis.VisualBasic.Worksp
+ sdk\x.y.z\DotnetTools\dotnet-format\ja\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ja\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ja\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\ko\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\ko\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\ko\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ko\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ko\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\ko\Microsoft.CodeAnalysis.VisualBasic.Worksp
+ sdk\x.y.z\DotnetTools\dotnet-format\ko\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ko\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ko\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.Bcl.AsyncInterfaces.dll - 8.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.Bcl.AsyncInterfaces.dll - 9.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.Build.Locator.dll - 1.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.Build.Tasks.Core.dll - 15.1.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.Build.Utilities.Core.dll - 15.1.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.CodeAnalysis.VisualBasic.Workspace
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.CodeAnalysis.Workspaces.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.CodeAnalysis.Workspaces.MSBuild.dll - 4.10.0
+-sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.DiaSymReader.dll - 2.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.DiaSymReader.dll - 2.1.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.Extensions.DependencyInjection.Abstractions.dll - 9.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.Extensions.DependencyInjection.dll - 9.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.Extensions.FileSystemGlobbing.dll - 9.0.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.Extensions.Primitives.dll - 9.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.NET.StringTools.dll - 1.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Microsoft.VisualStudio.Setup.Configuration.Interop.dll - 1.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\Newtonsoft.Json.dll - 13.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\pl\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\pl\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\pl\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\pl\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\pl\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\pl\Microsoft.CodeAnalysis.VisualBasic.Worksp
+ sdk\x.y.z\DotnetTools\dotnet-format\pl\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\pl\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\pl\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\pt-BR\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\pt-BR\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\pt-BR\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\pt-BR\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\pt-BR\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\pt-BR\Microsoft.CodeAnalysis.VisualBasic.Wor
+ sdk\x.y.z\DotnetTools\dotnet-format\pt-BR\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\pt-BR\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\pt-BR\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\ru\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\ru\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\ru\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ru\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ru\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\ru\Microsoft.CodeAnalysis.VisualBasic.Worksp
+ sdk\x.y.z\DotnetTools\dotnet-format\ru\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ru\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\ru\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\runtimes\win\lib/netx.y/System.Diagnostics.EventLog.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\runtimes\win\lib/netx.y/System.Diagnostics.EventLog.Messages.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\runtimes\win\lib/netx.y/System.Security.Cryptography.Pkcs.dll - 7.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\runtimes\win\lib/netx.y/System.Windows.Extensions.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.CodeDom.dll - 7.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\runtimes\win\lib/netx.y/System.Diagnostics.EventLog.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\runtimes\win\lib/netx.y/System.Diagnostics.EventLog.Messages.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\runtimes\win\lib/netx.y/System.Security.Cryptography.Pkcs.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\runtimes\win\lib/netx.y/System.Windows.Extensions.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.CodeDom.dll - 9.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\System.CommandLine.dll - 2.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\System.CommandLine.Rendering.dll - 0.4.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Composition.AttributedModel.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Composition.Convention.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Composition.Hosting.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Composition.Runtime.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Composition.TypedParts.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Configuration.ConfigurationManager.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Diagnostics.EventLog.dll - 8.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Composition.AttributedModel.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Composition.Convention.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Composition.Hosting.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Composition.Runtime.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Composition.TypedParts.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Configuration.ConfigurationManager.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Diagnostics.EventLog.dll - 9.0.0
+ sdk\x.y.z\DotnetTools\dotnet-format\System.IO.Pipelines.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Reflection.MetadataLoadContext.dll - 7.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Resources.Extensions.dll - 7.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Security.Cryptography.Pkcs.dll - 7.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Security.Cryptography.ProtectedData.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Security.Cryptography.Xml.dll - 7.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Security.Permissions.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\System.Windows.Extensions.dll - 8.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\tr\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\System.Reflection.MetadataLoadContext.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Resources.Extensions.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Security.Cryptography.Pkcs.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Security.Cryptography.ProtectedData.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Security.Cryptography.Xml.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Security.Permissions.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\System.Windows.Extensions.dll - 9.0.0
++sdk\x.y.z\DotnetTools\dotnet-format\tr\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\tr\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\tr\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\tr\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\tr\Microsoft.CodeAnalysis.VisualBasic.Worksp
+ sdk\x.y.z\DotnetTools\dotnet-format\tr\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\tr\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\tr\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\zh-Hans\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\zh-Hans\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\zh-Hans\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\zh-Hans\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\zh-Hans\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-format\zh-Hans\Microsoft.CodeAnalysis.VisualBasic.W
+ sdk\x.y.z\DotnetTools\dotnet-format\zh-Hans\Microsoft.CodeAnalysis.Workspaces.MSBuild.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\zh-Hans\Microsoft.CodeAnalysis.Workspaces.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\zh-Hans\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\DotnetTools\dotnet-format\zh-Hant\dotnet-format.resources.dll - 9.0.10
++sdk\x.y.z\DotnetTools\dotnet-format\zh-Hant\dotnet-format.resources.dll - 9.0.100
+ sdk\x.y.z\DotnetTools\dotnet-format\zh-Hant\Microsoft.CodeAnalysis.CSharp.Features.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\zh-Hant\Microsoft.CodeAnalysis.CSharp.resources.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-format\zh-Hant\Microsoft.CodeAnalysis.CSharp.Workspaces.resources.dll - 4.10.0
+@@ ------------ @@ sdk\x.y.z\DotnetTools\dotnet-watch\x.y.z\tools/netx.y/any\Microsoft.CodeAnalysis
+ sdk\x.y.z\DotnetTools\dotnet-watch\x.y.z\tools/netx.y/any\Microsoft.CodeAnalysis.Workspaces.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-watch\x.y.z\tools/netx.y/any\Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.dll - 4.10.0
+ sdk\x.y.z\DotnetTools\dotnet-watch\x.y.z\tools/netx.y/any\Microsoft.CodeAnalysis.Workspaces.MSBuild.dll - 4.10.0
+-sdk\x.y.z\DotnetTools\dotnet-watch\x.y.z\tools/netx.y/any\Microsoft.DiaSymReader.dll - 2.0.0
++sdk\x.y.z\DotnetTools\dotnet-watch\x.y.z\tools/netx.y/any\Microsoft.DiaSymReader.dll - 2.1.0
+ sdk\x.y.z\DotnetTools\dotnet-watch\x.y.z\tools/netx.y/any\Microsoft.Extensions.DependencyInjection.Abstractions.dll - 9.0.0
+ sdk\x.y.z\DotnetTools\dotnet-watch\x.y.z\tools/netx.y/any\Microsoft.Extensions.Logging.Abstractions.dll - 9.0.0
+ sdk\x.y.z\DotnetTools\dotnet-watch\x.y.z\tools/netx.y/any\Microsoft.VisualStudio.Setup.Configuration.Interop.dll - 1.0.0
+@@ ------------ @@ sdk\x.y.z\es\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.0
+ sdk\x.y.z\es\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\es\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\es\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\es\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\es\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\es\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\es\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\es\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\es\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\es\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\es\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\Extensions\cs\Microsoft.TestPlatform.Extensions.BlameDataCollector.resources.dll - 15.0.0
+ sdk\x.y.z\Extensions\cs\Microsoft.TestPlatform.Extensions.EventLogCollector.resources.dll - 15.0.0
+@@ ------------ @@ sdk\x.y.z\fr\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.0
+ sdk\x.y.z\fr\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\fr\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\fr\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\fr\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\fr\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\fr\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\fr\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\fr\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\fr\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\fr\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\fr\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\FSharp\cs\FSharp.Build.resources.dll - 12.8.300
+ sdk\x.y.z\FSharp\cs\FSharp.Compiler.Interactive.Settings.resources.dll - 12.8.300
+@@ ------------ @@ sdk\x.y.z\it\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.0
+ sdk\x.y.z\it\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\it\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\it\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\it\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\it\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\it\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\it\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\it\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\it\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\it\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\it\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\ja\dotnet.resources.dll - 9.0.100
+ sdk\x.y.z\ja\Microsoft.Build.resources.dll - 15.1.0
+@@ ------------ @@ sdk\x.y.z\ja\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.0
+ sdk\x.y.z\ja\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\ja\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\ja\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\ja\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\ja\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\ja\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\ja\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\ja\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\ja\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\ja\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\ja\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\ko\dotnet.resources.dll - 9.0.100
+ sdk\x.y.z\ko\Microsoft.Build.resources.dll - 15.1.0
+@@ ------------ @@ sdk\x.y.z\ko\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.0
+ sdk\x.y.z\ko\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\ko\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\ko\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\ko\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\ko\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\ko\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\ko\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\ko\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\ko\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\ko\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\ko\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\Microsoft.ApplicationInsights.dll - 2.22.0
+ sdk\x.y.z\Microsoft.AspNetCore.DeveloperCertificates.XPlat.dll - 9.0.0
+@@ ------------ @@ sdk\x.y.z\pl\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.0
+ sdk\x.y.z\pl\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\pl\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\pl\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\pl\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\pl\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\pl\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\pl\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\pl\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\pl\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\pl\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\pl\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\pt-BR\dotnet.resources.dll - 9.0.100
+ sdk\x.y.z\pt-BR\Microsoft.Build.resources.dll - 15.1.0
+@@ ------------ @@ sdk\x.y.z\pt-BR\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.
+ sdk\x.y.z\pt-BR\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\pt-BR\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\pt-BR\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\pt-BR\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\pt-BR\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\pt-BR\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\pt-BR\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\pt-BR\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\pt-BR\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\pt-BR\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\pt-BR\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\ref\Microsoft.Build.Framework.dll - 15.1.0
+ sdk\x.y.z\ref\Microsoft.Build.Utilities.Core.dll - 15.1.0
+@@ ------------ @@ sdk\x.y.z\ru\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.0
+ sdk\x.y.z\ru\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\ru\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\ru\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\ru\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\ru\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\ru\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\ru\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\ru\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\ru\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\ru\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\ru\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\runtimes\win\lib/netx.y/System.Diagnostics.EventLog.dll - 9.0.0
+ sdk\x.y.z\runtimes\win\lib/netx.y/System.Diagnostics.EventLog.Messages.dll - 9.0.0
+@@ ------------ @@ sdk\x.y.z\tr\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.0.0
+ sdk\x.y.z\tr\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\tr\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\tr\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\tr\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\tr\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\tr\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\tr\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\tr\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\tr\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\tr\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\tr\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\vstest.console.dll - 15.0.0
+ sdk\x.y.z\zh-Hans\dotnet.resources.dll - 9.0.100
+@@ ------------ @@ sdk\x.y.z\zh-Hans\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.
+ sdk\x.y.z\zh-Hans\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\zh-Hans\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\zh-Hans\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\zh-Hans\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hans\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\zh-Hans\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hans\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\zh-Hans\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\zh-Hans\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\zh-Hans\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\zh-Hans\vstest.console.resources.dll - 15.0.0
+ sdk\x.y.z\zh-Hant\dotnet.resources.dll - 9.0.100
+ sdk\x.y.z\zh-Hant\Microsoft.Build.resources.dll - 15.1.0
+@@ ------------ @@ sdk\x.y.z\zh-Hant\Microsoft.VisualStudio.TestPlatform.Client.resources.dll - 15.
+ sdk\x.y.z\zh-Hant\Microsoft.VisualStudio.TestPlatform.Common.resources.dll - 15.0.0
+ sdk\x.y.z\zh-Hant\Microsoft.VisualStudio.TestPlatform.ObjectModel.resources.dll - 15.0.0
+ sdk\x.y.z\zh-Hant\MSBuild.resources.dll - 15.1.0
+-sdk\x.y.z\zh-Hant\NuGet.Commands.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.Common.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.Configuration.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.Credentials.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.DependencyResolver.Core.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.Frameworks.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.LibraryModel.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.Localization.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.PackageManagement.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.Packaging.Core.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.Packaging.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.ProjectModel.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.Protocol.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.Resolver.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.Versioning.resources.dll - 6.0.0
+-sdk\x.y.z\zh-Hant\NuGet.VisualStudio.Contracts.resources.dll - 6.0.0
++sdk\x.y.z\zh-Hant\NuGet.Commands.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.Common.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.Configuration.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.Credentials.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.DependencyResolver.Core.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.Frameworks.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.LibraryModel.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.Localization.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.PackageManagement.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.Packaging.Core.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.Packaging.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.ProjectModel.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.Protocol.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.Resolver.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.Versioning.resources.dll - 6.10.0
++sdk\x.y.z\zh-Hant\NuGet.VisualStudio.Contracts.resources.dll - 17.10.0
+ sdk\x.y.z\zh-Hant\System.CommandLine.resources.dll - 2.0.0
+-sdk\x.y.z\zh-Hant\Test.Utility.resources.dll - 6.0.0
++sdk\x.y.z\zh-Hant\Test.Utility.resources.dll - 6.10.0
+ sdk\x.y.z\zh-Hant\vstest.console.resources.dll - 15.0.0
+ shared\Microsoft.AspNetCore.App\x.y.z\Microsoft.AspNetCore.Antiforgery.dll - 9.0.0
+ shared\Microsoft.AspNetCore.App\x.y.z\Microsoft.AspNetCore.Authentication.Abstractions.dll - 9.0.0
+
