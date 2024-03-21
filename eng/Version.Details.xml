@@ -87,12 +87,6 @@
       <Sha>e18404fcaf90b0ee9bbf588ec32d07f466f16fe7</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.format" Version="9.0.515801">
-      <Uri>https://github.com/dotnet/format</Uri>
-      <Sha>91f60316ebd9c75d6be8b7f9b7c201bab17240c9</Sha>
-      <SourceBuild RepoName="format" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.10.0-3.24169.3">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>b2a0a985202805db6160e6c070ac828e9e3a8094</Sha>
