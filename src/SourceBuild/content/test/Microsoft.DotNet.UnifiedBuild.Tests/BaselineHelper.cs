@@ -75,7 +75,10 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
 
             if (!warnOnDiffs)
             {
-                Assert.Null(message);
+                if (message is not null)
+                {
+                    Assert.Fail(message);
+                }
             }
         }
 
@@ -104,14 +107,14 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
                 string wordPart = match.Groups[1].Value;
                 return $"{'/'}{wordPart}{NonSemanticVersionPlaceholder}{'/'}";
             });
-        
+
             // Remove semantic versions
             // Regex source: https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
             // The regex from https://semver.org has been modified to account for the following:
-                // - The version should be preceded by a path separator, '.', '-', or '/'
-                // - The version should match a release identifier that begins with '.' or '-'
-                // - The version may have one or more release identifiers that begin with '.' or '-'
-                // - The version should end before a path separator, '.', '-', or '/'
+            // - The version should be preceded by a path separator, '.', '-', or '/'
+            // - The version should match a release identifier that begins with '.' or '-'
+            // - The version may have one or more release identifiers that begin with '.' or '-'
+            // - The version should end before a path separator, '.', '-', or '/'
             Regex semanticVersionRegex = new(
                 @"(?<=[./\\-_])(0|[1-9]\d*)\.(0|[1-9]\d*)(\.(0|[1-9]\d*))+"
                 + @"(((?:[-.]((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)))+"

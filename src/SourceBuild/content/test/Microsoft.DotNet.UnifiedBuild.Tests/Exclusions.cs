@@ -67,7 +67,7 @@ public class Exclusions
     public List<string> GetFileExclusions(string? prefix = null) => GetRidSpecificExclusionFileNames("SdkFileDiffExclusions.txt").SelectMany(f => Utilities.TryParseExclusionsFile(f, prefix)).ToList();
     public List<string> GetAssemblyVersionExclusions(string? prefix = null) => GetRidSpecificExclusionFileNames("SdkAssemblyVersionDiffExclusions.txt").SelectMany(f => Utilities.TryParseExclusionsFile(f, prefix)).ToList();
     public List<string> GetNativeDllExclusions(string? prefix = null) => GetRidSpecificExclusionFileNames("NativeDlls.txt").SelectMany(f => Utilities.TryParseExclusionsFile(f, prefix)).ToList();
-    public string GetBaselineFileDiffFileName() => GetRidSpecificExclusionFileNames("MsftToSbSdkFiles.diff").Last();
+    public string GetBaselineFileDiffFileName() => GetRidSpecificExclusionFileNames("MsftToUbSdkFiles.diff").Last();
 
     static string NormalizePath(string path)
     {
