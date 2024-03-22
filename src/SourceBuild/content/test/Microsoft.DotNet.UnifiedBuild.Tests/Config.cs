@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -11,20 +12,22 @@ using Xunit.Abstractions;
 using Xunit.Sdk;
 
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
-
 public class Config : IDisposable
 {
     IMessageSink _sink;
     public Config(IMessageSink sink)
     {
         _sink = sink;
-        BuildVersion = Environment.GetEnvironmentVariable(BuildVersionEnv) ?? throw new InvalidOperationException($"'{BuildVersionEnv}' must be specified");
-        PortableRid = Environment.GetEnvironmentVariable(PortableRidEnv) ?? throw new InvalidOperationException($"'{PortableRidEnv}' must be specified");
-        UbSdkArchivePath = Environment.GetEnvironmentVariable(UbSdkTarballPathEnv) ?? throw new InvalidOperationException($"'{UbSdkTarballPathEnv}' must be specified");
-        TargetRid = Environment.GetEnvironmentVariable(TargetRidEnv) ?? throw new InvalidOperationException($"'{TargetRidEnv}' must be specified");
+        sink.OnMessage(new DiagnosticMessage($"Environment: '{Environment.GetEnvironmentVariable("UNIFIED_BUILD_VALIDATION_ARGS")}'"));
+        var env = Environment.GetEnvironmentVariable("UNIFIED_BUILD_VALIDATION_ARGS") ?? throw new InvalidOperationException("UNIFIED_BUILD_VALIDATION_ARGS must be specified");
+        var envDict = env.Split(';').Select(s => s.Split('=')).ToDictionary(s => s[0], s => s[1]);
+
+        BuildVersion = envDict[BuildVersionEnv];
+        PortableRid = envDict[PortableRidEnv];
+        UbSdkArchivePath = envDict[UbSdkTarballPathEnv];
+        TargetRid = envDict[TargetRidEnv];
         TargetArchitecture = TargetRid.Split('-')[1];
-        WarnOnSdkContentDiffs = bool.TryParse(Environment.GetEnvironmentVariable(WarnSdkContentDiffsEnv), out bool warnOnSdkContentDiffs) && warnOnSdkContentDiffs;
-        MsftSdkArchivePath = Environment.GetEnvironmentVariable(MsftSdkTarballPathEnv) ?? DownloadMsftSdkArchive().Result;
+        MsftSdkArchivePath = envDict.TryGetValue(MsftSdkTarballPathEnv, out var msftSdkPath) ? msftSdkPath : DownloadMsftSdkArchive().Result;
     }
 
     public const string BuildVersionEnv = "UNIFIED_BUILD_VALIDATION_BUILD_VERSION";
