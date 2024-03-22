@@ -246,7 +246,7 @@ namespace Microsoft.NET.Build.Tasks
                                 .Concat(ResolvedRuntimeTargetsFiles.Select(f => new ResolvedFile(f, true)));
             builder = builder.WithResolvedNuGetFiles(resolvedNuGetFiles);
 
-            DependencyContext dependencyContext = builder.Build();
+            DependencyContext dependencyContext = builder.Build(UserRuntimeAssemblies);
 
             var writer = new DependencyContextWriter();
             using (var fileStream = File.Create(depsFilePath))
