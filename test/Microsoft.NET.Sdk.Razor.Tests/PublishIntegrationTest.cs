@@ -180,7 +180,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             // dotnet msbuild /t:Publish /p:BuildProjectReferences=false
             var publish = new PublishCommand(projectDirectory, "AppWithP2PReference");
-            publish.Execute("/p:BuildProjectReferences=false", "/p:ErrorOnDuplicatePublishOutputFiles=false").Should().Pass();
+            publish.WithWorkingDirectory(projectDirectory.TestRoot);
+            publish.Execute("/p:BuildProjectReferences=false", "/p:ErrorOnDuplicatePublishOutputFiles=false", "/bl").Should().Pass();
 
             var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 

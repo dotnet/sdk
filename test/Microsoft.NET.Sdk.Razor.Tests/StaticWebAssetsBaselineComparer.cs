@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
 
@@ -44,24 +45,40 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
             .OrderBy(a => a.BasePath)
             .ThenBy(a => a.RelativePath)
             .ThenBy(a => a.AssetKind)
-            .GroupBy(a => GetGroup(a))
+            .GroupBy(a => GetAssetGroup(a))
             .ToDictionary(a => a.Key, a => a.ToArray());
 
         var expectedAssets = expected.Assets
             .OrderBy(a => a.BasePath)
             .ThenBy(a => a.RelativePath)
             .ThenBy(a => a.AssetKind)
-            .GroupBy(a => GetGroup(a))
+            .GroupBy(a => GetAssetGroup(a))
             .ToDictionary(a => a.Key, a => a.ToArray());
 
         foreach (var (group, manifestAssetsGroup) in manifestAssets)
         {
             var expectedAssetsGroup = expectedAssets[group];
-            CompareGroup(group, manifestAssetsGroup, expectedAssetsGroup);
+            CompareAssetGroup(group, manifestAssetsGroup, expectedAssetsGroup);
+        }
+
+        var manifestEndpoints = manifest.Endpoints
+            .OrderBy(a => a.AssetFile)
+            .GroupBy(a => GetEndpointGroup(a))
+            .ToDictionary(a => a.Key, a => a.ToArray());
+
+        var expectedEndpoints = expected.Endpoints
+            .OrderBy(a => a.AssetFile)
+            .GroupBy(a => GetEndpointGroup(a))
+            .ToDictionary(a => a.Key, a => a.ToArray());
+
+        foreach (var (group, manifestEndpointsGroup) in manifestEndpoints)
+        {
+            var expectedEndpointsGroup = expectedEndpoints[group];
+            CompareEndpointGroup(group, manifestEndpointsGroup, expectedEndpointsGroup);
         }
     }
 
-    protected virtual void CompareGroup(string group, StaticWebAsset[] manifestAssets, StaticWebAsset[] expectedAssets)
+    protected virtual void CompareAssetGroup(string group, StaticWebAsset[] manifestAssets, StaticWebAsset[] expectedAssets)
     {
         var comparisonMode = CompareAssetCounts(group, manifestAssets, expectedAssets);
 
@@ -228,9 +245,188 @@ For {expectedAsset.Identity}:
         }
     }
 
-    protected virtual string GetGroup(StaticWebAsset asset)
+    protected virtual string GetAssetGroup(StaticWebAsset asset)
     {
         return Path.GetExtension(asset.Identity.TrimEnd(']'));
+    }
+
+    protected virtual void CompareEndpointGroup(string group, StaticWebAssetEndpoint[] manifestAssets, StaticWebAssetEndpoint[] expectedAssets)
+    {
+        var comparisonMode = CompareEndpointCounts(group, manifestAssets, expectedAssets);
+
+        // Otherwise, do a property level comparison of all assets
+        switch (comparisonMode)
+        {
+            case GroupComparisonMode.Exact:
+                break;
+            case GroupComparisonMode.AllowAdditionalAssets:
+                break;
+            default:
+                break;
+        }
+
+        var differences = new List<string>();
+        var assetDifferences = new List<string>();
+        var groupLength = Math.Min(manifestAssets.Length, expectedAssets.Length);
+        for (var i = 0; i < groupLength; i++)
+        {
+            var manifestAsset = manifestAssets[i];
+            var expectedAsset = expectedAssets[i];
+
+            ComputeEndpointDifferences(assetDifferences, manifestAsset, expectedAsset);
+
+            if (assetDifferences.Any())
+            {
+                differences.Add(@$"
+==================================================
+
+For {expectedAsset.AssetFile}:
+
+{string.Join(Environment.NewLine, assetDifferences)}
+
+==================================================");
+            }
+
+            assetDifferences.Clear();
+        }
+
+        differences.Should().BeEmpty(
+            @$" the generated manifest should match the expected baseline.
+
+{BaselineGenerationInstructions}
+
+");
+    }
+
+    private GroupComparisonMode CompareEndpointCounts(string group, StaticWebAssetEndpoint[] manifestAssets, StaticWebAssetEndpoint[] expectedAssets)
+    {
+        var comparisonMode = GetGroupComparisonMode(group);
+
+        // If there's a mismatch in the number of assets, just print the strict difference in the asset `Identity`
+        switch (comparisonMode)
+        {
+            case GroupComparisonMode.Exact:
+                if (manifestAssets.Length != expectedAssets.Length)
+                {
+                    ThrowAssetCountMismatchError(manifestAssets, expectedAssets);
+                }
+                break;
+            case GroupComparisonMode.AllowAdditionalAssets:
+                if (expectedAssets.Except(manifestAssets).Any())
+                {
+                    ThrowAssetCountMismatchError(manifestAssets, expectedAssets);
+                }
+                break;
+            default:
+                break;
+        }
+
+        return comparisonMode;
+
+        static void ThrowAssetCountMismatchError(StaticWebAssetEndpoint[] manifestAssets, StaticWebAssetEndpoint[] expectedAssets)
+        {
+            var missingAssets = expectedAssets.Except(manifestAssets);
+            var unexpectedAssets = manifestAssets.Except(expectedAssets);
+
+            var differences = new List<string>();
+
+            if (missingAssets.Any())
+            {
+                differences.Add($@"The following expected assets weren't found in the manifest:
+    {string.Join($"{Environment.NewLine}\t", missingAssets.Select(a => a.AssetFile))}");
+            }
+
+            if (unexpectedAssets.Any())
+            {
+                differences.Add($@"The following additional unexpected assets were found in the manifest:
+    {string.Join($"{Environment.NewLine}\t", unexpectedAssets.Select(a => a.AssetFile))}");
+            }
+
+            throw new Exception($@"{string.Join(Environment.NewLine, differences)}
+
+{BaselineGenerationInstructions}");
+        }
+    }
+
+    protected virtual GroupComparisonMode GetAssetGroupComparisonMode(string group)
+    {
+        return GroupComparisonMode.Exact;
+    }
+
+    private static void ComputeEndpointDifferences(List<string> assetDifferences, StaticWebAssetEndpoint manifestAsset, StaticWebAssetEndpoint expectedAsset)
+    {
+        if (manifestAsset.Route != expectedAsset.Route)
+        {
+            assetDifferences.Add($"Expected manifest Identity of {expectedAsset.Route} but found {manifestAsset.Route}.");
+        }
+        if (manifestAsset.AssetFile != expectedAsset.AssetFile)
+        {
+            assetDifferences.Add($"Expected manifest SourceType of {expectedAsset.AssetFile} but found {manifestAsset.AssetFile}.");
+        }
+
+        ComputeSelectorDifferences(assetDifferences, manifestAsset.Selectors, expectedAsset.Selectors);
+        ComputeResponseHeaderDifferences(assetDifferences, manifestAsset.ResponseHeaders, expectedAsset.ResponseHeaders);
+    }
+
+    private static void ComputeResponseHeaderDifferences(
+        List<string> assetDifferences,
+        StaticWebAssetEndpointResponseHeader[] manifestResponseHeaders,
+        StaticWebAssetEndpointResponseHeader[] expectedResponseHeaders)
+    {
+        if (manifestResponseHeaders.Length != expectedResponseHeaders.Length)
+        {
+            assetDifferences.Add($"Expected manifest to have {expectedResponseHeaders.Length} response headers but found {manifestResponseHeaders.Length}.");
+        }
+
+        var manifest = new HashSet<StaticWebAssetEndpointResponseHeader>(manifestResponseHeaders);
+        var differences = new HashSet<StaticWebAssetEndpointResponseHeader>(manifestResponseHeaders);
+        var expected = new HashSet<StaticWebAssetEndpointResponseHeader>(expectedResponseHeaders);
+        differences.SymmetricExceptWith(expected);
+
+        foreach (var difference in differences)
+        {
+            if (!manifest.Contains(difference))
+            {
+                assetDifferences.Add($"Expected manifest to have response header '{difference.Name}={difference.Value}' but it was not found.");
+            }
+            else
+            {
+                assetDifferences.Add($"Found unexpected response header '{difference.Name}={difference.Value}'.");
+            }
+        }
+    }
+
+    private static void ComputeSelectorDifferences(
+        List<string> assetDifferences,
+        StaticWebAssetEndpointSelector[] manifestSelectors,
+        StaticWebAssetEndpointSelector[] expectedSelectors)
+    {
+        if (manifestSelectors.Length != expectedSelectors.Length)
+        {
+            assetDifferences.Add($"Expected manifest to have {expectedSelectors.Length} selectors but found {manifestSelectors.Length}.");
+        }
+
+        var manifest = new HashSet<StaticWebAssetEndpointSelector>(manifestSelectors);
+        var differences = new HashSet<StaticWebAssetEndpointSelector>(manifestSelectors);
+        var expected = new HashSet<StaticWebAssetEndpointSelector>(expectedSelectors);
+        differences.SymmetricExceptWith(expected);
+
+        foreach (var difference in differences)
+        {
+            if (!manifest.Contains(difference))
+            {
+                assetDifferences.Add($"Expected manifest to have selector '{difference.Name}={difference.Value};q={difference.Quality}' with a quality of but it was not found.");
+            }
+            else
+            {
+                assetDifferences.Add($"Found unexpected selector '{difference.Name}={difference.Value};q={difference.Quality}'.");
+            }
+        }
+    }
+
+    protected virtual string GetEndpointGroup(StaticWebAssetEndpoint asset)
+    {
+        return Path.GetExtension(asset.AssetFile.TrimEnd(']'));
     }
 }
 

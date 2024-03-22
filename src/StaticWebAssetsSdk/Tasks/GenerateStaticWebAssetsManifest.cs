@@ -4,6 +4,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using Microsoft.Build.Framework;
+using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -40,6 +41,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public ITaskItem[] Assets { get; set; }
 
         [Required]
+        public ITaskItem[] Endpoints { get; set; }
+
+        [Required]
         public string ManifestPath { get; set; }
 
         public override bool Execute()
@@ -47,6 +51,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             try
             {
                 var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem);
+
+                var endpoints = FilterPublishEndpointsIfNeeded(assets);
 
                 var assetsByTargetPath = assets.GroupBy(a => a.ComputeTargetPath("", '/'), StringComparer.OrdinalIgnoreCase);
                 foreach (var group in assetsByTargetPath)
@@ -75,13 +81,42 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         ManifestType,
                         referencedProjectsConfiguration,
                         discoveryPatterns,
-                        assets.ToArray()));
+                        assets.ToArray(),
+                        endpoints));
             }
             catch (Exception ex)
             {
                 Log.LogErrorFromException(ex, showStackTrace: true, showDetail: true, file: null);
             }
             return !Log.HasLoggedErrors;
+        }
+
+        private StaticWebAssetEndpoint[] FilterPublishEndpointsIfNeeded(IEnumerable<StaticWebAsset> assets)
+        {
+            // Only include endpoints for assets that are going to be available in production. We do the filtering
+            // inside the manifest because its cumbersome to do it in MSBuild directly.
+            if (StaticWebAssetsManifest.ManifestTypes.IsPublish(ManifestType))
+            {
+                var assetsByIdentity = assets.ToDictionary(a => a.Identity, a => a, OSPath.PathComparer);
+                var filteredEndpoints = new List<StaticWebAssetEndpoint>();
+
+                foreach (var endpoint in Endpoints.Select(e => StaticWebAssetEndpoint.FromTaskItem(e)))
+                {
+                    if (assetsByIdentity.ContainsKey(endpoint.AssetFile))
+                    {
+                        filteredEndpoints.Add(endpoint);
+                        Log.LogMessage(MessageImportance.Low, $"Accepted endpoint: Route='{endpoint.Route}', AssetFile='{endpoint.AssetFile}'");
+                    }
+                    else
+                    {
+                        Log.LogMessage(MessageImportance.Low, $"Filtered out endpoint: Endpoint='{endpoint.Route}' AssetFile='{endpoint.AssetFile}'");
+                    }
+                }
+
+                return [.. filteredEndpoints.OrderBy(a => (a.Route, a.AssetFile))];
+            }
+
+            return [.. Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem).OrderBy(a => (a.Route, a.AssetFile))];
         }
 
         private void PersistManifest(StaticWebAssetsManifest manifest)

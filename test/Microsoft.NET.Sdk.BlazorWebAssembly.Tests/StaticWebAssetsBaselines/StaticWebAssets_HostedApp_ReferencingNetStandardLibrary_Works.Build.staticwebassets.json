@@ -8782,5 +8782,6 @@
       "CopyToPublishDirectory": "Never",
       "OriginalItemSpec": "${RestorePath}\\system.io.pipelines\\${PackageVersion}\\lib\\${PackageTfm}\\System.IO.Pipelines.dll"
     }
-  ]
+  ],
+  "Endpoints": []
 }

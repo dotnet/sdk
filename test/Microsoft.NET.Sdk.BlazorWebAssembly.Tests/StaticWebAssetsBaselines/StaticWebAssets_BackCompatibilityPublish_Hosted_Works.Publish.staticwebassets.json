@@ -361,5 +361,6 @@
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\razorclasslibrary\\wwwroot\\wwwroot\\exampleJsInterop.js"
     }
-  ]
+  ],
+  "Endpoints": []
 }
