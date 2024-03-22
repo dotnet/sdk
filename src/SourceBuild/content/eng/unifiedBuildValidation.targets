@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <UnifiedBuildValidationTestsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'test', 'Microsoft.DotNet.UnifiedBuild.Tests'))</UnifiedBuildValidationTestsDir>
-    <UnifiedBuildValidationTestsProject>$([MSBuild]::NormalizeDirectory('$(UnifiedBuildValidationTestsDir)', 'Microsoft.DotNet.UnifiedBuild.Tests'))</UnifiedBuildValidationTestsProject>
+    <UnifiedBuildValidationTestsProject>$([MSBuild]::NormalizePath('$(UnifiedBuildValidationTestsDir)', 'Microsoft.DotNet.UnifiedBuild.Tests.csproj'))</UnifiedBuildValidationTestsProject>
   </PropertyGroup>
 
   <Target Name="RunUnifiedBuildValidation"
@@ -18,13 +18,17 @@
 
     <PropertyGroup>
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
-      <_EnvVarRunSettingsPrefix>RunConfiguration.EnvironmentVariables</_EnvVarRunSettingsPrefix>
-      <EnvironmentVariableRunSettings>@(_UnifiedBuildValidationEnvVar->'$(RunConfiguration.EnvironmentVariables).%(Identity)=%(Value)')</EnvironmentVariableRunSettings>
+      <EnvironmentVariableRunSettings>@(_UnifiedBuildValidationEnvVar->'%(Identity)=%(Value)')</EnvironmentVariableRunSettings>
+      <runSettings>RunConfiguration.EnvironmentVariables.UNIFIED_BUILD_VALIDATION_ARGS=$([MSBuild]::Escape($(EnvironmentVariableRunSettings)))</runSettings>
     </PropertyGroup>
 
-    <MSBuild Projects="$(UnifiedBuildValidationTestsDir)"
-             Targets="Test"
-             Properties="Configuration=$(Configuration);VSTestUseMSBuildOutput=false;VSTestLogger=trx;VSTestCLIRunSettings=$(EnvironmentVariableRunSettings)" />
+    <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
+             Targets="VSTest"
+             Properties="VsTestUseMSBuildOutput=true;
+                         IsTestProject=true;
+                         Configuration=$(Configuration);
+                         VSTestLogger=trx;
+                         VSTestCLIRunSettings=$(runSettings)" />
 
   </Target>
 
