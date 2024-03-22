@@ -115,6 +115,7 @@
     <PropertyGroup>
       <!-- Dev innerloop opt-in feed: /p:ExtraRestoreSourcePath=... -->
       <ExtraSourcesNuGetSourceName>ExtraSources</ExtraSourcesNuGetSourceName>
+      <SbrpRepoSrcPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'src', 'source-build-reference-packages', 'src'))</SbrpRepoSrcPath>
     </PropertyGroup>
   
     <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -197,7 +198,8 @@
     <UpdateNuGetConfigPackageSourcesMappings
       NuGetConfigFile="$(NuGetConfigFile)"
       BuildWithOnlineFeeds="$(DotNetBuildWithOnlineFeeds)"
-      SourceBuildSources="@(_BuildSources)" />
+      SourceBuildSources="@(_BuildSources)"
+      SbrpRepoSrcPath="$(SbrpRepoSrcPath)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)UpdateNuGetConfig.complete" AlwaysCreate="true">
