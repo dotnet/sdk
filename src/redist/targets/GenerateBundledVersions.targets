@@ -1207,11 +1207,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="GenerateBundledMSBuildProps" DependsOnTargets="SetupBundledComponents">
     <PropertyGroup>
+      <MinimumMSBuildVersionFile>$(RedistLayoutPath)sdk/$(Version)/minimumMSBuildVersion</MinimumMSBuildVersionFile>
       <BundledMSBuildPropsFileName>Microsoft.NETCoreSdk.BundledMSBuildInformation.props</BundledMSBuildPropsFileName>
-      <MinimumMSBuildVersionFile Condition="$([System.Text.RegularExpressions.Regex]::Match(%(SDKInternalFiles.Identity),'.*minimumMSBuildVersion').Success) ">%(SDKInternalFiles.Identity)</MinimumMSBuildVersionFile>
       <BundledMSBuildVersion>$(MSBuildVersion)</BundledMSBuildVersion>
     </PropertyGroup>
 
+    <Error Text="No MSBuild version file found under '$(RedistLayoutPath)sdk/$(Version)'" Condition="!Exists('$(MinimumMSBuildVersionFile)')" />
+    
     <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
       <Output TaskParameter="Lines" PropertyName="MinimumMSBuildVersion"/>
     </ReadLinesFromFile>
