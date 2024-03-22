@@ -25,9 +25,20 @@ src/aspnetcore/src/Shared/TestCertificates/*.crt
 # cecil
 src/cecil/Test/Resources/assemblies/*.netmodule
 src/cecil/Test/Resources/assemblies/*.winmd
+src/cecil/Test/Resources/assemblies/*.exe
+src/cecil/Test/Resources/assemblies/*.dll
+src/cecil/Test/Resources/assemblies/*.pdb
+src/cecil/Test/Resources/assemblies/*.mdb
+src/cecil/rocks/Test/Resources/assemblies/*.dll
+src/cecil/symbols/**/Test/Resources/assemblies/*.exe
+src/cecil/symbols/**/Test/Resources/assemblies/*.pdb
+src/cecil/symbols/**/Test/Resources/assemblies/*.dll
+src/cecil/symbols/**/Test/Resources/assemblies/*.mdb
 
 # fsharp
 src/fsharp/tests/**/*.resources
+src/fsharp/tests/**/*.dll
+src/fsharp/tests/**/*.exe
 src/fsharp/tests/fsharp/core/resources/chimes.wav
 
 # msbuild
@@ -35,21 +46,34 @@ src/msbuild/src/Tasks.UnitTests/TestResources/*.pfx
 src/msbuild/src/Tasks.UnitTests/AssemblyDependency/CacheFileSamples/Microsoft.VisualStudio.LanguageServices.Implementation.csprojAssemblyReference.cache
 
 # nuget-client
+src/nuget-client/test/EndToEnd/Packages/**/*.nupkg
+src/nuget-client/test/EndToEnd/Packages/**/*.zip
+src/nuget-client/test/EndToEnd/Packages/**/*.dll
+src/nuget-client/test/NuGet.Clients.Tests/NuGet.CommandLine.Test/compiler/resources/*.nupkg
 src/nuget-client/test/NuGet.Clients.Tests/NuGet.PackageManagement.UI.Test/Resources/customMetadata.jpeg
+src/nuget-client/test/NuGet.Core.Tests/NuGet.Commands.Test/compiler/resources/EmptyCertificateStore.p7b
+src/nuget-client/test/NuGet.Core.Tests/NuGet.Protocol.Tests/compiler/resources/*.dll
+src/nuget-client/test/NuGet.Core.FuncTests/NuGet.Packaging.FuncTest/compiler/resources/*.nupkg
+src/nuget-client/test/NuGet.Core.FuncTests/NuGet.Packaging.FuncTest/compiler/resources/*.zip
+src/nuget-client/test/NuGet.Core.FuncTests/Dotnet.Integration.Test/compiler/resources/*.nupkg
 src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/*.crt
 src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/.signature.p7s
-src/nuget-client/test/NuGet.Core.Tests/NuGet.Commands.Test/compiler/resources/EmptyCertificateStore.p7b
+src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/*.nupkg
+src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/*.zip
 
 # razor
 src/razor/src/Razor/test/Microsoft.VisualStudio.Razor.IntegrationTests/TestFiles/BlazorProject.zip
 
 # roslyn
-src/roslyn/src/Workspaces/MSBuildTest/Resources/Dlls/*
 src/roslyn/src/Compilers/Test/Resources/Core/**/*.metadata
 src/roslyn/src/Compilers/Test/Resources/Core/**/*.winmd
 src/roslyn/src/Compilers/Test/Resources/Core/**/*.mod
 src/roslyn/src/Compilers/Test/Resources/Core/**/*.netmodule
 src/roslyn/src/Compilers/Test/Resources/Core/**/*.obj
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.dll
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.exe
+src/roslyn/src/Compilers/Test/Resources/Core/**/*.Dll
+src/roslyn/src/Workspaces/MSBuildTest/Resources/Dlls/*.dll
 src/roslyn/**/CodeAnalysisTest/**/*.res
 src/roslyn/**/CodeAnalysisTest/**/*.blah
 src/roslyn/**/CodeAnalysisTest/**/*.RES
@@ -70,12 +94,17 @@ src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/s/screen-
 src/runtime/src/libraries/System.Console/tests/TestData/ncursesFormats/x/xterm
 src/runtime/src/mono/wasm/testassets/**/*.dat
 src/runtime/src/mono/wasm/testassets/**/*.o
+src/runtime/src/libraries/**/tests/**/*.dll
+src/runtime/src/libraries/**/tests/**/*.exe
+src/runtime/src/libraries/**/tests/**/*.pdb
 
 # sdk
 src/sdk/src/Assets/TestProjects/**/*.dat
 src/sdk/src/Assets/TestProjects/**/*.cache
 src/sdk/src/Assets/TestProjects/**/*.tlb
 src/sdk/src/Assets/TestPackages/dotnet-new/nupkg_templates/*
+src/sdk/test/Microsoft.DotNet.ShellShim.Tests/WpfBinaryTestAsssets/*.dll
+src/sdk/test/Microsoft.NET.Sdk.Publish.Tasks.Tests/Resources/*.zip
 
 # source-build-externals
 src/source-build-externals/src/application-insights*/WEB/Src/WindowsServer/WindowsServer.Tests/**/*.dll
