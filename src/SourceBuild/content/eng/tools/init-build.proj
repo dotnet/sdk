@@ -50,7 +50,7 @@
       <UnpackedSourceBuildReferencePackages Include="$(PrebuiltSourceBuiltPackagesPath)SourceBuildReferencePackages/*"/>
     </ItemGroup>
 
-    <Copy SourceFiles="@(UnpackedSourceBuildReferencePackages)" DestinationFiles="$(ReferencePackagesDir)%(Filename)%(Extension)" />
+    <Move SourceFiles="@(UnpackedSourceBuildReferencePackages)" DestinationFiles="$(ReferencePackagesDir)%(Filename)%(Extension)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)UnpackTarballs.complete" AlwaysCreate="true">
