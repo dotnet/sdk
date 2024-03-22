@@ -133,3 +133,9 @@ src/winforms/src/System.Windows.Forms/tests/UnitTests/bitmaps/milkmateya01.emf
 src/winforms/src/System.Windows.Forms/tests/UnitTests/TestResources/VB6/SimpleControl.vb6
 src/winforms/src/System.Windows.Forms*/**/*.wmf
 src/winforms/src/System.Windows.Forms.Design/src/Resources/colordlg.data
+
+# wpf
+src/wpf/src/Microsoft.DotNet.Wpf/src/ReachFramework/Resources/generated/*.resources
+src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationFramework/Resources/Hyphenation/Hyphen_en.lex
+src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationFramework/Resources/Hyphenation/Hyphen_en.hdict
+src/wpf/src/Microsoft.DotNet.Wpf/src/Shared/Tracing/resources/*.BIN
