@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="6.0.129-servicing.24169.8">
+    <Dependency Name="Microsoft.TemplateEngine.Cli" Version="6.0.129-servicing.24171.8">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-templating</Uri>
-      <Sha>eeb3cfb682dcc33df2c90a25677ce26d4a7d57c7</Sha>
+      <Sha>f68b1f215211a807960d4d4094e3380307fbfc0f</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="6.0.129">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-templating</Uri>
-      <Sha>eeb3cfb682dcc33df2c90a25677ce26d4a7d57c7</Sha>
+      <Sha>f68b1f215211a807960d4d4094e3380307fbfc0f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="6.0.129">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-templating</Uri>
-      <Sha>eeb3cfb682dcc33df2c90a25677ce26d4a7d57c7</Sha>
+      <Sha>f68b1f215211a807960d4d4094e3380307fbfc0f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateEngine.Utils" Version="6.0.129">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-templating</Uri>
-      <Sha>eeb3cfb682dcc33df2c90a25677ce26d4a7d57c7</Sha>
+      <Sha>f68b1f215211a807960d4d4094e3380307fbfc0f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.TemplateSearch.Common" Version="6.0.129">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-templating</Uri>
-      <Sha>eeb3cfb682dcc33df2c90a25677ce26d4a7d57c7</Sha>
+      <Sha>f68b1f215211a807960d4d4094e3380307fbfc0f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Common.ItemTemplates" Version="6.0.129">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-templating</Uri>
-      <Sha>eeb3cfb682dcc33df2c90a25677ce26d4a7d57c7</Sha>
+      <Sha>f68b1f215211a807960d4d4094e3380307fbfc0f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Common.ProjectTemplates.6.0" Version="6.0.129">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-templating</Uri>
-      <Sha>eeb3cfb682dcc33df2c90a25677ce26d4a7d57c7</Sha>
+      <Sha>f68b1f215211a807960d4d4094e3380307fbfc0f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="6.0.29">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
