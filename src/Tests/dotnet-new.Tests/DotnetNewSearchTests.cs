@@ -958,6 +958,7 @@ For more information, run:
                 bool rightIsShrunk = right.EndsWith("...");
                 if (!(leftIsShrunk ^ rightIsShrunk))
                 {
+                    // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                     return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                 }
 
@@ -967,8 +968,9 @@ For more information, run:
                 }
                 if (leftIsShrunk && right.StartsWith(left.Substring(0, left.Length - 3), StringComparison.CurrentCultureIgnoreCase))
                 {
-                    return 1;
+                    return -1;
                 }
+                // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                 return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
             }
         }
