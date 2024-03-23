@@ -227,27 +227,6 @@
       "OriginalItemSpec": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\blazor.webassembly.js.gz"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazorwasm-minimal.pdb.gz",
-      "SourceId": "blazorwasm-minimal",
-      "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/blazorwasm-minimal.pdb.gz",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazorwasm-minimal.pdb",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazorwasm-minimal.pdb.gz"
-    },
-    {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
       "SourceId": "blazorwasm-minimal",
       "SourceType": "Computed",
