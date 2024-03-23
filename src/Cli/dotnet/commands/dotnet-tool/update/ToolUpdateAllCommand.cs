@@ -19,11 +19,13 @@ namespace Microsoft.DotNet.Tools.Tool.Update
     internal class ToolUpdateAllCommand : CommandBase
     {
         private readonly bool _global;
+        private readonly IReporter _reporter;
 
-        public ToolUpdateAllCommand(ParseResult parseResult)
+        public ToolUpdateAllCommand(ParseResult parseResult, IReporter reporter = null)
             : base(parseResult)
         {
             _global = parseResult.GetValue(ToolUpdateAllCommandParser.GlobalOption);
+            _reporter = reporter;
         }
 
         public override int Execute()
@@ -77,7 +79,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 );
 
                 var toolParseResult = Parser.Instance.Parse(args);
-                var toolUpdateCommand = new ToolUpdateCommand(toolParseResult);
+                var toolUpdateCommand = new ToolUpdateCommand(toolParseResult, reporter: _reporter);
                 toolUpdateCommand.Execute();
             }
         }

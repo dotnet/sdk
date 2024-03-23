@@ -24,11 +24,11 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         {
             _toolUpdateLocalCommand
                 = toolUpdateLocalCommand ??
-                  new ToolUpdateLocalCommand(result);
+                  new ToolUpdateLocalCommand(result, reporter: reporter);
 
             _toolUpdateGlobalOrToolPathCommand =
                 toolUpdateGlobalOrToolPathCommand
-                ?? new ToolUpdateGlobalOrToolPathCommand(result);
+                ?? new ToolUpdateGlobalOrToolPathCommand(result, reporter: reporter);
 
             _global = result.GetValue(ToolUpdateCommandParser.GlobalOption);
             _toolPath = result.GetValue(ToolUpdateCommandParser.ToolPathOption);
