@@ -13,6 +13,8 @@ using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.List;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
+using CreateShellShimRepository = Microsoft.DotNet.Tools.Tool.Install.CreateShellShimRepository;
 
 namespace Microsoft.DotNet.Tools.Tool.Update
 {
@@ -20,12 +22,23 @@ namespace Microsoft.DotNet.Tools.Tool.Update
     {
         private readonly bool _global;
         private readonly IReporter _reporter;
+        private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _uninstaller;
+        private readonly CreateShellShimRepository _createShell;
+        private readonly CreateToolPackageStore _createToolPackageStore;
 
-        public ToolUpdateAllCommand(ParseResult parseResult, IReporter reporter = null)
+        public ToolUpdateAllCommand(
+            ParseResult parseResult,
+            CreateToolPackageStoresAndDownloaderAndUninstaller createToolPackageStoreDownloaderUninstaller = null,
+            CreateShellShimRepository createShellShimRepository = null,
+            IReporter reporter = null,
+            CreateToolPackageStore createToolPackageStore = null)
             : base(parseResult)
         {
             _global = parseResult.GetValue(ToolUpdateAllCommandParser.GlobalOption);
             _reporter = reporter;
+            _uninstaller = createToolPackageStoreDownloaderUninstaller;
+            _createShell = createShellShimRepository;
+            _createToolPackageStore = createToolPackageStore;
         }
 
         public override int Execute()
@@ -47,7 +60,10 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
         private void UpdateAllGlobalTools()
         {
-            var toolListCommand = new ToolListGlobalOrToolPathCommand(_parseResult);
+            var toolListCommand = new ToolListGlobalOrToolPathCommand(
+                _parseResult,
+                _createToolPackageStore
+                );
             var toolList = toolListCommand.GetPackages(null, null);
             UpdateTools(toolList.Select(tool => tool.Id.ToString()), true, null);
         }
@@ -79,7 +95,11 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 );
 
                 var toolParseResult = Parser.Instance.Parse(args);
-                var toolUpdateCommand = new ToolUpdateCommand(toolParseResult, reporter: _reporter);
+                var toolUpdateCommand = new ToolUpdateCommand(
+                    toolParseResult,
+                    reporter: _reporter,
+                    createToolPackageStoreDownloaderUninstaller: _uninstaller,
+                    createShellShimRepository: _createShell);
                 toolUpdateCommand.Execute();
             }
         }
