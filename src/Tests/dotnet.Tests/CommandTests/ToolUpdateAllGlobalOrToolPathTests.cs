@@ -190,19 +190,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 toolPath => { return _store; });
         }
 
-        private void AssertExpectedToolPath(DirectoryPath? toolPath, string expectedToolPath)
-        {
-            if (expectedToolPath != null)
-            {
-                toolPath.Should().NotBeNull();
-                toolPath.Value.Value.Should().Be(expectedToolPath);
-            }
-            else
-            {
-                toolPath.Should().BeNull();
-            }
-        }
-
         private ShellShimRepository GetMockedShellShimRepository()
         {
             return new ShellShimRepository(

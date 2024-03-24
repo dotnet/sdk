@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _environmentPathInstructionMock = new EnvironmentPathInstructionMock(_reporter, _shimsDirectory);
         }
 
-            [Fact]
+        [Fact]
         public void UpdatePackagesSuccessfully()
         {
             CreateInstallCommand($"-g {PackageId} --verbosity minimal --version {PackageVersion}")
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
 
-            [Fact]
+        [Fact]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
             var result = Parser.Instance.Parse($"dotnet tool update --all -g --tool-path /tmp/folder");
