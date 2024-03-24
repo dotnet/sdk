@@ -67,7 +67,6 @@
       <TransitiveRepositoryReference Remove="aspnetcore" />
       <TransitiveRepositoryReference Remove="nuget-client" />
       <TransitiveRepositoryReference Remove="fsharp" />
-      <TransitiveRepositoryReference Remove="vstest" />
     </ItemGroup>
   </Target>
 
