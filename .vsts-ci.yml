@@ -64,8 +64,6 @@ extends:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
-    customBuildTags:
-    - ES365AIMigrationTooling
     stages:
     - stage: build
       displayName: Build
@@ -133,7 +131,6 @@ extends:
                 os: windows
               ${{ if ne(variables['System.TeamProject'], 'public') }}:
                 name: $(DncEngInternalBuildPool)
-                # Should this be windows.vs2022preview.amd64?
                 image: 1es-windows-2022
                 os: windows
             ${{ if eq(variables['System.TeamProject'], 'public') }}:
