@@ -216,7 +216,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </RebuildDependsOn>
   </PropertyGroup>
 
-  <Target Name="_AddMicrosoftNetCompilerToolsetFrameworkPackage" BeforeTargets="CollectPackageReferences">
+  <Target Name="_AddMicrosoftNetCompilerToolsetFrameworkPackage" Condition="'$(MSBuildRuntimeType)' == 'Full'" BeforeTargets="CollectPackageReferences">
 
     <!-- Users should not be setting Microsoft.Net.Compilers.Toolset.Framework directly.
          If they do, and they also set BuildWithNetFrameworkHostedCompiler, we will have
