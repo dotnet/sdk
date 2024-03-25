@@ -43,21 +43,39 @@ variables:
 - name: isPRTrigger
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
 
-stages:
-- ${{ if and(ne(variables.isPRTrigger, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
-  - template: templates/stages/vmr-scan.yml
+- template: /eng/common/templates-official/variables/pool-providers.yml@self
 
-- template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    isBuiltFromVmr: true
-    isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
-    ${{ if eq(variables.isScheduleTrigger, 'true') }}:
-      scope: full
-    ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:
-      scope: lite
-    ${{ elseif and(eq(variables.isPRTrigger, 'true'), eq(variables.isSourceOnlyBuild, 'true')) }}:
-      scope: ultralite
-    ${{ elseif and(eq(variables.isPRTrigger, 'true'), ne(variables.isSourceOnlyBuild, 'true')) }}:
-      scope: lite
-    ${{ else }}:
-      scope: full
+    sdl:
+      sourceAnalysisPool:
+        name: $(DncEngInternalBuildPool)
+        image: 1es-windows-2022
+        os: windows
+
+    stages:
+    - ${{ if and(ne(variables.isPRTrigger, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
+      - template: /eng/pipelines/templates/stages/vmr-scan.yml@self
+
+    - template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml@self
+      parameters:
+        isBuiltFromVmr: true
+        isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
+        ${{ if eq(variables.isScheduleTrigger, 'true') }}:
+          scope: full
+        ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:
+          scope: lite
+        ${{ elseif and(eq(variables.isPRTrigger, 'true'), eq(variables.isSourceOnlyBuild, 'true')) }}:
+          scope: ultralite
+        ${{ elseif and(eq(variables.isPRTrigger, 'true'), ne(variables.isSourceOnlyBuild, 'true')) }}:
+          scope: lite
+        ${{ else }}:
+          scope: full
