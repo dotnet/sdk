@@ -18,29 +18,24 @@ public class Config : IDisposable
     public Config(IMessageSink sink)
     {
         _sink = sink;
-        sink.OnMessage(new DiagnosticMessage($"Environment: '{Environment.GetEnvironmentVariable("UNIFIED_BUILD_VALIDATION_ARGS")}'"));
-        var env = Environment.GetEnvironmentVariable("UNIFIED_BUILD_VALIDATION_ARGS") ?? throw new InvalidOperationException("UNIFIED_BUILD_VALIDATION_ARGS must be specified");
-        var envDict = env.Split(';').Select(s => s.Split('=')).ToDictionary(s => s[0], s => s[1]);
-
-        BuildVersion = envDict[BuildVersionEnv];
-        PortableRid = envDict[PortableRidEnv];
-        UbSdkArchivePath = envDict[UbSdkTarballPathEnv];
-        TargetRid = envDict[TargetRidEnv];
+        UbBuildVersion = AppContext.GetSwitch(BuildVersionSwitch);
+        ConfigPrefix = AppContext.GetSwitch(ConfigPrefixSwitch);
+        TargetRid = AppContext.GetSwitch(TargetRidSwitch);
+        PortableRid = AppContext.GetSwitch(PortableRidSwitch);
+        UbSdkArchivePath = AppContext.GetSwitch(UbSdkArchivePathSwitch);
         TargetArchitecture = TargetRid.Split('-')[1];
-        MsftSdkArchivePath = envDict.TryGetValue(MsftSdkTarballPathEnv, out var msftSdkPath) ? msftSdkPath : DownloadMsftSdkArchive().Result;
+        MsftSdkArchivePath = AppContext.GetSwitch(MsftSdkArchivePathSwitch) ?? DownloadMsftSdkArchive().Result;
     }
 
-    public const string BuildVersionEnv = "UNIFIED_BUILD_VALIDATION_BUILD_VERSION";
-    public const string MsftSdkTarballPathEnv = "UNIFIED_BUILD_VALIDATION_MSFT_SDK_TARBALL_PATH";
-    public const string PortableRidEnv = "UNIFIED_BUILD_VALIDATION_PORTABLE_RID";
-    public const string PrereqsPathEnv = "UNIFIED_BUILD_VALIDATION_PREREQS_PATH";
-    public const string UbSdkTarballPathEnv = "UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH";
-    public const string SourceBuiltArtifactsPathEnv = "UNIFIED_BUILD_VALIDATION_SOURCEBUILT_ARTIFACTS_PATH";
-    public const string TargetRidEnv = "UNIFIED_BUILD_VALIDATION_TARGET_RID";
-    public const string WarnSdkContentDiffsEnv = "UNIFIED_BUILD_VALIDATION_WARN_SDK_CONTENT_DIFFS";
+    public const string ConfigSwitchPrefix = "Microsoft.DotNet.UnifiedBuild.Tests.";
+    public const string BuildVersionSwitch = ConfigSwitchPrefix + nameof(UbBuildVersion);
+    public const string TargetRidSwitch = ConfigSwitchPrefix + nameof(TargetRid);
+    public const string PortableRidSwitch = ConfigSwitchPrefix + nameof(PortableRid);
+    public const string UbSdkArchivePathSwitch = ConfigSwitchPrefix + nameof(UbSdkArchivePath);
+    public const string MsftSdkArchivePathSwitch = ConfigSwitchPrefix + nameof(MsftSdkArchivePath);
 
     public string? MsftSdkArchivePath { get; }
-    public string BuildVersion { get; }
+    public string UbBuildVersion { get; }
     public string PortableRid { get; }
     public string UbSdkArchivePath { get; }
     public string TargetRid { get; }
@@ -60,7 +55,7 @@ public class Config : IDisposable
     public async Task<string> DownloadMsftSdkArchive()
     {
         var client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
-        var channel = BuildVersion[..5] + "xx";
+        var channel = UbBuildVersion[..5] + "xx";
         var akaMsUrl = $"https://aka.ms/dotnet/{channel}/daily/dotnet-sdk-{TargetRid}{GetArchiveExtension(UbSdkArchivePath)}";
         _sink.OnMessage(new DiagnosticMessage($"Downloading latest sdk from '{akaMsUrl}'"));
         var redirectResponse = await client.GetAsync(akaMsUrl);
