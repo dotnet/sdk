@@ -38,6 +38,9 @@
 
     <!-- Transitive dependencies from roslyn -->
     <UsagePattern IdentityGlob="System.Diagnostics.EventLog/8.0.0" />
+
+    <!-- Used only for publishing -->
+    <UsagePattern IdentityGlob="Microsoft.Net.Compilers.Toolset.Framework/*" />
   </IgnorePatterns>
 
 </UsageData>
