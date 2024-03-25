@@ -37,8 +37,6 @@ extends:
       name: NetCore1ESPool-Internal
       image: 1es-ubuntu-2204
       os: linux
-    customBuildTags:
-    - ES365AIMigrationTooling
     stages:
     - stage: stage
       jobs:
