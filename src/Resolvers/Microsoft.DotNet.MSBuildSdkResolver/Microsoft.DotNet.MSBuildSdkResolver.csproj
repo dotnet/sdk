@@ -13,8 +13,11 @@
 
     <Nullable>Enable</Nullable>
 
-    <UseSystemTextJson Condition="'$(TargetFramework)'!='netstandard2.0' And '$(TargetFramework)'!='net472'">True</UseSystemTextJson>
+    <UseSystemTextJson Condition="'$(TargetFramework)'!='netstandard2.0'">True</UseSystemTextJson>
     <DefineConstants Condition="'$(UseSystemTextJson)'=='True'">$(DefineConstants);USE_SYSTEM_TEXT_JSON</DefineConstants>
+
+    <!-- Netfx version of the resolver builds against the lowest version of System.Text.Json that's guaranteed to be shipped with MSBuild in VS -->
+    <SystemTextJsonVersionOverride>8.0.0</SystemTextJsonVersionOverride>
 
     <!-- Create FileDefinitions items for ResolveHostfxrCopyLocalContent target -->
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
@@ -100,7 +103,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- No PackageReference to System.Text.Json necessary, because it's included in .NET 5.0 and higher -->
+    <!-- No PackageReference to System.Text.Json necessary when targeting .NET, because it's included in .NET 5.0 and higher -->
+    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonVersionOverride)" Condition="'$(UseSystemTextJson)'=='True' and '$(TargetFramework)'=='net472'"/>
     <PackageReference Include="Newtonsoft.Json" Condition="'$(UseSystemTextJson)'!='True'"/>
 
     <!-- Reference this package to avoid package downgrade errors.  See https://github.com/dotnet/sdk/issues/3044 for details -->
@@ -139,13 +143,16 @@
 
     <ItemGroup>
       <ExpectedDependencies Include="Microsoft.Deployment.DotNet.Releases, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
-      <ExpectedDependencies Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed" />
+      <ExpectedDependencies Include="System.Text.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Text.Encodings.Web, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
       <ExpectedDependencies Include="Microsoft.Build.Framework, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
       <ExpectedDependencies Include="System.Collections.Immutable, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
       <ExpectedDependencies Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
       <ExpectedDependencies Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
       <ExpectedDependencies Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
       <ExpectedDependencies Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
     </ItemGroup>
 
     <!-- Check that the dependencies of the output assembly match our expectations -->
