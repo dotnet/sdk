@@ -14,6 +14,7 @@
 
 # False positive
 src/arcade/Documentation/UnifiedBuild/Foundational-Concepts.md
+src/arcade/Documentation/UnifiedBuild/VMR-Permissible-Sources.md|free-unknown
 src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/src/BuildFPMToolPreReqs.cs|json
 src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/rpm_templates/copyright|cecill-c
 src/arcade/src/Microsoft.DotNet.XUnitAssert/src/README.md|free-unknown
@@ -156,6 +157,7 @@ src/runtime/docs/project/copyright.md
 src/runtime/docs/project/glossary.md
 
 # Doc that references a license, not applicable to source
+src/runtime/docs/design/mono/web/llvm-backend.md|llvm-exception
 src/runtime/src/coreclr/nativeaot/docs/compiling.md|openssl-ssleay
 
 # Installer asset, not applicable to source
