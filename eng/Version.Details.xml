@@ -398,9 +398,9 @@
       <Sha>c0b5d69a1a1513528c77fffff708c7502d57c35c</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.24168.2">
+    <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.24172.2">
       <Uri>https://github.com/dotnet/deployment-tools</Uri>
-      <Sha>2a7741c5a7cb49fbad797c4b2f7812d5620430ac</Sha>
+      <Sha>596a11e185d2274531fe57a2c9e03bbe4f23064d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.Tasks.Git" Version="9.0.0-beta.24173.1">
       <Uri>https://github.com/dotnet/sourcelink</Uri>
@@ -433,9 +433,9 @@
       <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.deployment-tools" Version="9.0.0-preview.1.24168.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.deployment-tools" Version="9.0.0-preview.1.24172.2">
       <Uri>https://github.com/dotnet/deployment-tools</Uri>
-      <Sha>2a7741c5a7cb49fbad797c4b2f7812d5620430ac</Sha>
+      <Sha>596a11e185d2274531fe57a2c9e03bbe4f23064d</Sha>
       <SourceBuild RepoName="deployment-tools" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
