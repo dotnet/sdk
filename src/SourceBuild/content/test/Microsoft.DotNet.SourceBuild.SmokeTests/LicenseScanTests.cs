@@ -59,6 +59,7 @@ public class LicenseScanTests : TestBase
         "bzip2-libbzip-2010", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/bzip2-libbzip-2010.LICENSE
         "cc0-1.0", // https://creativecommons.org/publicdomain/zero/1.0/legalcode
         "cc-by-3.0", // https://creativecommons.org/licenses/by/3.0/legalcode
+        "cc-by-3.0-us", // https://creativecommons.org/licenses/by/3.0/us/legalcode
         "cc-by-4.0", // https://creativecommons.org/licenses/by/4.0/legalcode
         "cc-by-sa-3.0", // https://creativecommons.org/licenses/by-sa/3.0/legalcode
         "cc-by-sa-4.0", // https://creativecommons.org/licenses/by-sa/4.0/legalcode
