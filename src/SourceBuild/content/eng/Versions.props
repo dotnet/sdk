@@ -32,5 +32,6 @@
     <MicrosoftExtensionsLoggingVersion>9.0.0-preview.2.24128.5</MicrosoftExtensionsLoggingVersion>
     <!-- command-line-api -->
     <SystemCommandLineVersion>2.0.0-beta4.24126.1</SystemCommandLineVersion>
+    <Microsoft_Extensions_FileSystemGlobbingVersion>7.0.0</Microsoft_Extensions_FileSystemGlobbingVersion>
   </PropertyGroup>
 </Project>

@@ -9,24 +9,33 @@
           AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion">
 
-    <ItemGroup>
-      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_SDK_TARBALL_PATH" Value="$(SdkTarballPath)" />
-      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_TARGET_RID" Value="$(TargetRid)" />
-      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_PORTABLE_RID" Value="$(PortableRid)" />
-      <_UnifiedBuildValidationEnvVar Include="UNIFIED_BUILD_VALIDATION_BUILD_VERSION" Value="$(SourceBuiltSdkVersion)" />
-    </ItemGroup>
-
     <PropertyGroup>
       <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
-      <EnvironmentVariableRunSettings>@(_UnifiedBuildValidationEnvVar->'%(Identity)=%(Value)')</EnvironmentVariableRunSettings>
-      <runSettings>RunConfiguration.EnvironmentVariables.UNIFIED_BUILD_VALIDATION_ARGS=$([MSBuild]::Escape($(EnvironmentVariableRunSettings)))</runSettings>
     </PropertyGroup>
+
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.UbSdkArchivePath">
+        <Value>$(SdkTarballPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.TargetRid">
+        <Value>$(TargetRid)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.PortableRid">
+        <Value>$(PortableRid)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.UbBuildVersion">
+        <Value>$(SourceBuiltSdkVersion)</Value>
+      </RuntimeHostConfigurationOption>
+    </ItemGroup>
 
     <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
              Targets="VSTest"
              Properties="VsTestUseMSBuildOutput=true;
                          VSTestLogger=trx;
-                         VSTestCLIRunSettings=$(runSettings)" />
+                         Microsoft_DotNet_UnifiedBuild_Tests_UbSdkArchivePath=$(SdkTarballPath);
+                         Microsoft_DotNet_UnifiedBuild_Tests_TargetRid=$(TargetRid);
+                         Microsoft_DotNet_UnifiedBuild_Tests_PortableRid=$(PortableRid);
+                         Microsoft_DotNet_UnifiedBuild_Tests_SourceBuiltSdkVersion=$(SourceBuiltSdkVersion);" />
 
   </Target>
 
