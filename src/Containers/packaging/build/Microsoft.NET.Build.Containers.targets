@@ -168,8 +168,8 @@
       <!-- Need to compute digests, not just names, before we can light this up. This suggests we need a task where all of the 'read' steps are done. -->
       <!-- <ContainerLabel Condition="'$(ContainerGenerateLabelsImageBaseDigest)' == 'true' and '$(ContainerBaseImageDigest)' != ''" Include="org.opencontainers.image.base.digest" Value="$(ContainerBaseImageDigest)" /> -->
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageBaseName)' == 'true' and '$(ContainerBaseImage)' != ''" Include="org.opencontainers.image.base.name" Value="$(ContainerBaseImage)" />
-      <ContainerLabel Condition="'$(ContainerGenerateLabelsDotnetToolset)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" Include="net.dot.runtime.majorminor" Value="$(_TargetFrameworkVersionWithoutV)"/>
-      <ContainerLabel Condition="'$(ContainerGenerateLabelsDotnetToolset)' == 'true'" Include="net.dot.sdk.version" Value="$(NETCoreSdkVersion)"/>
+      <ContainerLabel Condition="'$(ContainerGenerateLabelsDotnetToolset)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" Include="net.dot.runtime.majorminor" Value="$(_TargetFrameworkVersionWithoutV)" />
+      <ContainerLabel Condition="'$(ContainerGenerateLabelsDotnetToolset)' == 'true'" Include="net.dot.sdk.version" Value="$(NETCoreSdkVersion)" />
     </ItemGroup>
 
     <!-- These sourcelink-derived properties are only allowed to flow to generated artifacts if `PublishRepositoryUrl` is set as a user signal for opt-in.
@@ -198,7 +198,7 @@
       <ContainersPackageIdentity>Microsoft.NET.Build.Containers</ContainersPackageIdentity>
     </PropertyGroup>
     <ItemGroup>
-      <ContainersPackage Include="@(PackageReference)" Condition="'%(Identity)' == '$(ContainersPackageIdentity)'"/>
+      <ContainersPackage Include="@(PackageReference)" Condition="'%(Identity)' == '$(ContainersPackageIdentity)'" />
     </ItemGroup>
     <Warning Text="Microsoft.NET.Build.Containers NuGet package is explicitly referenced. Consider removing the package reference to Microsoft.NET.Build.Containers as it is now part of .NET SDK." Condition="'@(ContainersPackage)' != ''" />
     <PropertyGroup>
