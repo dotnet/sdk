@@ -204,7 +204,7 @@ src/sdk/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 
 # False positive
 src/source-build-externals/src/abstractions-xunit/README.md|free-unknown
-src/source-build-externals/src/application-insights/NETCORE/ThirdPartyNotices.txt|unknown
+src/source-build-externals/src/application-insights-2.22.0/NETCORE/ThirdPartyNotices.txt|unknown
 src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/benchmark/Microsoft.IdentityModel.Benchmarks/CreateTokenTests.cs|proprietary-license
 src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/src/Microsoft.IdentityModel.JsonWebTokens/JsonClaimValueTypes.cs|proprietary-license
 src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/src/Microsoft.IdentityModel.Tokens.Saml/Saml/ClaimProperties.cs|proprietary-license
@@ -218,7 +218,7 @@ src/source-build-externals/src/xunit/src/xunit.assert/Asserts/README.md|free-unk
 src/source-build-externals/src/xunit/xunit.sln|json
 
 # A patch which removes the license usage but contains references to the removed license as part of the patch reference lines
-src/source-build-externals/patches/application-insights/0002-Remove-WebGrease-from-TPN-2816.patch
+src/source-build-externals/patches/application-insights-2.22.0/0002-Remove-WebGrease-from-TPN-2816.patch
 
 # Scanner is identifying the https://github.com/SixLabors/ImageSharp/blob/master/LICENSE license as unknown. But this license is not applicable because we're
 # relying on the Spectre.Console distribution.
