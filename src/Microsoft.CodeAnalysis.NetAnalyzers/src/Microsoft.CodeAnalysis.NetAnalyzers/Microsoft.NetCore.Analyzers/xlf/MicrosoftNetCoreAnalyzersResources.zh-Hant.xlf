@@ -2020,22 +2020,22 @@ Enumerable.OfType&lt;T&gt; 使用的一般型別檢查 (C# 'is' operator/IL 'isi
       </trans-unit>
       <trans-unit id="PreferConvertToHexStringOverBitConverterCodeFixTitle">
         <source>Replace with 'Convert.{0}'</source>
-        <target state="new">Replace with 'Convert.{0}'</target>
+        <target state="translated">以 'Convert.{0}' 取代</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConvertToHexStringOverBitConverterDescription">
         <source>Use 'Convert.ToHexString' or 'Convert.ToHexStringLower' when encoding bytes to a hexadecimal string representation. These methods are more efficient and allocation-friendly than using 'BitConverter.ToString' in combination with 'String.Replace' to replace dashes and 'String.ToLower'.</source>
-        <target state="new">Use 'Convert.ToHexString' or 'Convert.ToHexStringLower' when encoding bytes to a hexadecimal string representation. These methods are more efficient and allocation-friendly than using 'BitConverter.ToString' in combination with 'String.Replace' to replace dashes and 'String.ToLower'.</target>
+        <target state="translated">將位元組編碼為十六進位字串表示法時，請使用 'Convert.ToHexString' 或 'Convert.ToHexStringLower'。這些方法比使用 'BitConverter.ToString' 與 'String.Replace' 一起取代虛線和 'String.ToLower' 更有效率且更易配置。</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConvertToHexStringOverBitConverterMessage">
         <source>Prefer '{0}' over call chains based on '{1}'</source>
-        <target state="new">Prefer '{0}' over call chains based on '{1}'</target>
+        <target state="translated">比起以 '{1}' 為基礎的呼叫鏈，更偏好 '{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferConvertToHexStringOverBitConverterTitle">
         <source>Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString'</source>
-        <target state="new">Prefer 'Convert.ToHexString' and 'Convert.ToHexStringLower' over call chains based on 'BitConverter.ToString'</target>
+        <target state="translated">比起以 'BitConverter.ToString' 為基礎的呼叫鏈結，更偏好 'Convert.ToHexString' 和 'Convert.ToHexStringLower'</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferCountOverAnyCodeFixTitle">
