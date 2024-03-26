@@ -12,6 +12,8 @@
     <!-- Disable the fast up-to-date check as it relies on the redist.dll, which we delete as part of the build process in GereateLayout.targets. -->
     <!-- Property info: https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md#disabling-the-up-to-date-check -->
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <!-- NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1205</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
   <Import Project="targets\BuildToolsetTasks.targets" />
@@ -40,6 +42,7 @@
     <PackageReference Include="Microsoft.FSharp.Compiler" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" GeneratePathProperty="true" />
     <PackageDownload Include="Microsoft.Net.Compilers.Toolset" Version="[$(MicrosoftNetCompilersToolsetPackageVersion)]" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" ExcludeAssets="All" GeneratePathProperty="true" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
 
     <!-- Lift up dependencies of dependencies to prevent build tasks from getting pinned to older versions -->
     <PackageReference Include="System.CodeDom" />
@@ -115,5 +118,11 @@
         <ItemsToPushToBlobFeed Include="$(PkgMicrosoft_FSharp_Compiler)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg"/>
         <ItemsToPushToBlobFeed Include="$(PkgMicrosoft_FSharp_Compiler)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg" />
     </ItemGroup>
- </Target>
+  </Target>
+ 
+  <Target Name="_ResolvePublishRoslynNuGetPackages" AfterTargets="CoreCompile" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <ItemGroup>
+      <ItemsToPushToBlobFeed Include="$(PkgMicrosoft_Net_Compilers_Toolset_Framework)\*.nupkg" />
+    </ItemGroup>
+  </Target>
 </Project>
