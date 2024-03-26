@@ -15,14 +15,8 @@ pr:
     - internal/release/*
 
 variables:
-  - name: teamName
-    value: Roslyn-Project-System
   - name: _CIBuild
     value: -restore -build -sign -pack -ci
-  - name: _DotNetArtifactsCategory
-    value: .NETCore
-  - name: _DotNetValidationArtifactsCategory
-    value: .NETCore
   - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
     - name: PostBuildSign
       value: false
@@ -291,10 +285,10 @@ extends:
             - name: _Test
               value: -test
 
-      # dotnet-format builds
-      - template: /eng/dotnet-format/dotnet-format-integration.yml@self
-        parameters:
-          PublishTaskName: 1ES.PublishBuildArtifacts@1
+        # dotnet-format builds
+        - template: /eng/dotnet-format/dotnet-format-integration.yml@self
+          parameters:
+            PublishTaskName: 1ES.PublishBuildArtifacts@1
 
       - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
