@@ -15,16 +15,8 @@ pr:
 
 
 variables:
-  - name: teamName
-    value: Roslyn-Project-System
-  - name: _DotNetPublishToBlobFeed
-    value: false
   - name: _CIBuild
     value: -restore -build -sign -pack -ci
-  - name: _DotNetArtifactsCategory
-    value: .NETCore
-  - name: _DotNetValidationArtifactsCategory
-    value: .NETCore
   - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
     - name: PostBuildSign
       value: false
