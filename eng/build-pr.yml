@@ -15,13 +15,13 @@ parameters:
   timeoutInMinutes: 180
 
 jobs:
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0.3xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
+- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0.2xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
   - template: /eng/common/templates/job/onelocbuild.yml
     parameters:
       CreatePr: true
       LclSource: lclFilesfromPackage
       LclPackageId: 'LCL-JUNO-PROD-DOTNETSDK'
-      MirrorBranch: release/8.0.3xx
+      MirrorBranch: release/8.0.2xx
       MirrorRepo: sdk
 
 - ${{ if not(contains(parameters.agentOs, 'TemplateEngine')) }}:
@@ -88,7 +88,7 @@ jobs:
                 -ci
                 -restore
                 $(_Test)
-                -projects $(Build.SourcesDirectory)\test\UnitTests.proj
+                -projects $(Build.SourcesDirectory)\src\Tests\UnitTests.proj
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
@@ -120,7 +120,7 @@ jobs:
                 -ci
                 -restore
                 -test
-                -projects $(Build.SourcesDirectory)\test\UnitTests.proj
+                -projects $(Build.SourcesDirectory)\src\Tests\UnitTests.proj
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
@@ -161,7 +161,7 @@ jobs:
                 -ci
                 -restore
                 -test
-                -projects $(Build.SourcesDirectory)/test/UnitTests.proj
+                -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
@@ -190,7 +190,6 @@ jobs:
            log/$(_BuildConfig)/**/*	
            TestResults/$(_BuildConfig)/**/*	
            SymStore/$(_BuildConfig)/**/*
-           tmp/$(_BuildConfig)/**/*.binlog
           TargetFolder: '$(Build.ArtifactStagingDirectory)'	
         continueOnError: true	
         condition: always()
@@ -269,7 +268,7 @@ jobs:
                 -restore
                 -test
                 -prepareMachine
-                -projects $(Build.SourcesDirectory)/test/UnitTests.proj
+                -projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
                 -configuration $(_BuildConfig)
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
@@ -303,7 +302,7 @@ jobs:
                 --ci
                 --restore
                 --test
-                --projects $(Build.SourcesDirectory)/test/UnitTests.proj
+                --projects $(Build.SourcesDirectory)/src/Tests/UnitTests.proj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
@@ -322,7 +321,6 @@ jobs:
               log/$(_BuildConfig)/**/*	
               TestResults/$(_BuildConfig)/**/*	
               SymStore/$(_BuildConfig)/**/*
-              tmp/$(_BuildConfig)/**/*.binlog
             TargetFolder: '$(Build.ArtifactStagingDirectory)'	
           continueOnError: true	
           condition: always()
@@ -398,7 +396,7 @@ jobs:
                 -ci
                 -restore
                 $(_Test)
-                -projects $(Build.SourcesDirectory)\test\Microsoft.TemplateEngine.Cli.UnitTests\Microsoft.TemplateEngine.Cli.UnitTests.csproj
+                -projects $(Build.SourcesDirectory)\src\Tests\Microsoft.TemplateEngine.Cli.UnitTests\Microsoft.TemplateEngine.Cli.UnitTests.csproj
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TemplateEngine.Cli.UnitTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run TemplateEngine Cli Unit Tests
@@ -408,7 +406,7 @@ jobs:
                 -ci
                 -restore
                 $(_Test)
-                -projects $(Build.SourcesDirectory)\test\dotnet-new.Tests\dotnet-new.IntegrationTests.csproj
+                -projects $(Build.SourcesDirectory)\src\Tests\dotnet-new.Tests\dotnet-new.IntegrationTests.csproj
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\dotnet-new.IntegrationTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run dotnet new Integration Tests
@@ -432,7 +430,7 @@ jobs:
                 -ci
                 -restore
                 -test
-                -projects $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj
+                -projects $(Build.SourcesDirectory)/src/Tests/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TemplateEngine.Cli.UnitTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run TemplateEngine Cli Unit Tests
@@ -442,7 +440,7 @@ jobs:
                 -ci
                 -restore
                 -test
-                -projects $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+                -projects $(Build.SourcesDirectory)/src/Tests/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/dotnet-new.IntegrationTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run dotnet new Integration Tests
@@ -465,7 +463,6 @@ jobs:
            log/$(_BuildConfig)/**/*	
            TestResults/$(_BuildConfig)/**/*	
            SymStore/$(_BuildConfig)/**/*
-           tmp/$(_BuildConfig)/**/*.binlog
           TargetFolder: '$(Build.ArtifactStagingDirectory)'	
         continueOnError: true	
         condition: always()
