@@ -194,7 +194,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                 class C
                 {
-                    async void M(MemoryStream s, byte[] buffer)
+                    async void M(BufferedStream s, byte[] buffer)
                     {
                         [|s.Read(buffer, 0, buffer.Length)|];
                         await [|s.ReadAsync(buffer, 0, buffer.Length)|];
@@ -207,7 +207,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                 class C
                 {
-                    async void M(MemoryStream s, byte[] buffer)
+                    async void M(BufferedStream s, byte[] buffer)
                     {
                         s.ReadExactly(buffer);
                         await s.ReadExactlyAsync(buffer);
@@ -423,7 +423,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCSharpCodeFixAsync(source, source);
         }
 
-        //
+        [Fact, WorkItem(7268, "https://github.com/dotnet/roslyn-analyzers/issues/7268")]
+        public async Task StreamTypeIsKnownReliable_NoDiagnostic_CS()
+        {
+            string source = """
+                using System.IO;
+
+                class C
+                {
+                    async void M(byte[] buffer, MemoryStream memoryStream, UnmanagedMemoryStream unmanagedMemoryStream)
+                    {
+                        memoryStream.Read(buffer);
+                        unmanagedMemoryStream.Read(buffer);
+
+                        await memoryStream.ReadAsync(buffer);
+                        await unmanagedMemoryStream.ReadAsync(buffer);
+                    }
+                }
+                """;
+
+            await VerifyCSharpCodeFixAsync(source, source);
+        }
 
         [Fact]
         public async Task EntireBuffer_OffersFixer_VB()
@@ -586,7 +606,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 Imports System.IO
 
                 Class C
-                    Async Sub M(s As MemoryStream, buffer As Byte())
+                    Async Sub M(s As BufferedStream, buffer As Byte())
                         [|s.Read(buffer, 0, buffer.Length)|]
                         Await [|s.ReadAsync(buffer, 0, buffer.Length)|]
                     End Sub
@@ -597,7 +617,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 Imports System.IO
 
                 Class C
-                    Async Sub M(s As MemoryStream, buffer As Byte())
+                    Async Sub M(s As BufferedStream, buffer As Byte())
                         s.ReadExactly(buffer)
                         Await s.ReadExactlyAsync(buffer)
                     End Sub
@@ -789,6 +809,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                         s.ReadByte()
                         s.ReadAtLeast(buffer, count)
                         Await s.ReadAtLeastAsync(buffer, count)
+                    End Sub
+                End Class
+                """;
+
+            await VerifyBasicCodeFixAsync(source, source);
+        }
+
+        [Fact, WorkItem(7268, "https://github.com/dotnet/roslyn-analyzers/issues/7268")]
+        public async Task StreamTypeIsKnownReliable_NoDiagnostic_VB()
+        {
+            string source = """
+                Imports System.IO
+
+                Class C
+                    Async Sub M(buffer As Byte(), memoryStream As MemoryStream, unmanagedMemoryStream As UnmanagedMemoryStream)
+                        memoryStream.Read(buffer)
+                        unmanagedMemoryStream.Read(buffer)
+
+                        await memoryStream.ReadAsync(buffer)
+                        await unmanagedMemoryStream.ReadAsync(buffer)
                     End Sub
                 End Class
                 """;

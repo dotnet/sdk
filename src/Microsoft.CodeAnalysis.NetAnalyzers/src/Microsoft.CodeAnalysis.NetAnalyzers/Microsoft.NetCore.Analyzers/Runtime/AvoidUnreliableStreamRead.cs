@@ -56,6 +56,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 var invocation = (IInvocationOperation)context.Operation;
 
+                if (symbols.IsKnownReliableStreamType(invocation.GetInstanceType()))
+                {
+                    return;
+                }
+
                 if (symbols.IsAnyStreamReadMethod(invocation.TargetMethod))
                 {
                     if (invocation.Parent is not IExpressionStatementOperation)
@@ -84,10 +89,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             private RequiredSymbols(
                 ImmutableArray<IMethodSymbol> streamReadMethods,
-                ImmutableArray<IMethodSymbol> streamReadAsyncMethods)
+                ImmutableArray<IMethodSymbol> streamReadAsyncMethods,
+                ImmutableHashSet<ITypeSymbol> knownReliableStreamTypes)
             {
                 _streamReadMethods = streamReadMethods;
                 _streamReadAsyncMethods = streamReadAsyncMethods;
+                _knownReliableStreamTypes = knownReliableStreamTypes;
             }
 
             public static bool TryGetSymbols(Compilation compilation, [NotNullWhen(true)] out RequiredSymbols? symbols)
@@ -113,7 +120,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return false;
                 }
 
-                symbols = new RequiredSymbols(streamReadMethods, streamReadAsyncMethods);
+                var knownReliableStreamTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
+                knownReliableStreamTypesBuilder.AddIfNotNull(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOMemoryStream));
+                knownReliableStreamTypesBuilder.AddIfNotNull(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOUnmanagedMemoryStream));
+
+                symbols = new RequiredSymbols(streamReadMethods, streamReadAsyncMethods, knownReliableStreamTypesBuilder.ToImmutable());
 
                 return true;
             }
@@ -128,6 +139,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 return _streamReadAsyncMethods.Any(m =>
                     SymbolEqualityComparer.Default.Equals(method, m) || IsOverrideOf(method, m));
+            }
+
+            public bool IsKnownReliableStreamType(ITypeSymbol? type)
+            {
+                return _knownReliableStreamTypes.Any(t => SymbolEqualityComparer.Default.Equals(type, t));
             }
 
             private static bool IsOverrideOf(IMethodSymbol method, IMethodSymbol baseMethod)
@@ -148,6 +164,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             private readonly ImmutableArray<IMethodSymbol> _streamReadMethods;
             private readonly ImmutableArray<IMethodSymbol> _streamReadAsyncMethods;
+            private readonly ImmutableHashSet<ITypeSymbol> _knownReliableStreamTypes;
         }
     }
 }
