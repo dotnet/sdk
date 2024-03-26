@@ -97,6 +97,26 @@
         <target state="translated">不要对 P/Invoke 使用 "StringBuilder" 参数</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadCodeFixTitle">
+        <source>Use 'Stream.ReadExactly'</source>
+        <target state="new">Use 'Stream.ReadExactly'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadDescription">
+        <source>A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</source>
+        <target state="new">A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadMessage">
+        <source>Avoid inexact read with '{0}'</source>
+        <target state="new">Avoid inexact read with '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadTitle">
+        <source>Avoid inexact read with 'Stream.Read'</source>
+        <target state="new">Avoid inexact read with 'Stream.Read'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
         <source>The .NET Framework class library provides methods for retrieving custom attributes. By default, these methods search the attribute inheritance hierarchy. Sealing the attribute eliminates the search through the inheritance hierarchy and can improve performance.</source>
         <target state="translated">.NET Framework 类库提供用于检索自定义特性的方法。默认情况下，这些方法搜索特性继承层次结构。通过密封特性，将无需搜索继承层次结构并可提高性能。</target>

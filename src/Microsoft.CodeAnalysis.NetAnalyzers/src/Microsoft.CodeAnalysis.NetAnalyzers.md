@@ -2058,6 +2058,18 @@ Widening and user defined conversions are not supported with generic types.
 |CodeFix|False|
 ---
 
+## [CA2022](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2022): Avoid inexact read with 'Stream.Read'
+
+A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.

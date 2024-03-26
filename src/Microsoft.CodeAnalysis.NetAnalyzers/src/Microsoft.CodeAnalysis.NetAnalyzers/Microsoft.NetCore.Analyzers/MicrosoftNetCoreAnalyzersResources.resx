@@ -239,6 +239,18 @@
     <value>Prefer 'static readonly' fields over constant array arguments if the called method is called repeatedly and is not mutating the passed array</value>
     <comment>{Locked="static readonly"}</comment>
   </data>
+  <data name="AvoidUnreliableStreamReadTitle" xml:space="preserve">
+    <value>Avoid inexact read with 'Stream.Read'</value>
+  </data>
+  <data name="AvoidUnreliableStreamReadCodeFixTitle" xml:space="preserve">
+    <value>Use 'Stream.ReadExactly'</value>
+  </data>
+  <data name="AvoidUnreliableStreamReadDescription" xml:space="preserve">
+    <value>A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</value>
+  </data>
+  <data name="AvoidUnreliableStreamReadMessage" xml:space="preserve">
+    <value>Avoid inexact read with '{0}'</value>
+  </data>
   <data name="TestForEmptyStringsUsingStringLengthTitle" xml:space="preserve">
     <value>Test for empty strings using string length</value>
   </data>

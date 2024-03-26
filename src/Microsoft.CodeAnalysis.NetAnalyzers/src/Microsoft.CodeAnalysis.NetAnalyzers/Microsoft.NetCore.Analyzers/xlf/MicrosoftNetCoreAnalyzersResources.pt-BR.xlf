@@ -97,6 +97,26 @@
         <target state="translated">Evite os parâmetros 'StringBuilder' para P/Invokes</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadCodeFixTitle">
+        <source>Use 'Stream.ReadExactly'</source>
+        <target state="new">Use 'Stream.ReadExactly'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadDescription">
+        <source>A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</source>
+        <target state="new">A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadMessage">
+        <source>Avoid inexact read with '{0}'</source>
+        <target state="new">Avoid inexact read with '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadTitle">
+        <source>Avoid inexact read with 'Stream.Read'</source>
+        <target state="new">Avoid inexact read with 'Stream.Read'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
         <source>The .NET Framework class library provides methods for retrieving custom attributes. By default, these methods search the attribute inheritance hierarchy. Sealing the attribute eliminates the search through the inheritance hierarchy and can improve performance.</source>
         <target state="translated">A biblioteca de classes .NET Framework oferece métodos para recuperar atributos personalizados. Por padrão, esses métodos pesquisam a hierarquia de herança de atributos. Selar o atributo elimina a pesquisa por meio da hierarquia de herança e pode melhorar o desempenho.</target>

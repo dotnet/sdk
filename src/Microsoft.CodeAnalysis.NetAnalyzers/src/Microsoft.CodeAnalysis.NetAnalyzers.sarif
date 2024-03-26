@@ -3691,6 +3691,26 @@
             ]
           }
         },
+        "CA2022": {
+          "id": "CA2022",
+          "shortDescription": "Avoid inexact read with 'Stream.Read'",
+          "fullDescription": "A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.",
+          "defaultLevel": "warning",
+          "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2022",
+          "properties": {
+            "category": "Reliability",
+            "isEnabledByDefault": true,
+            "typeName": "AvoidUnreliableStreamReadAnalyzer",
+            "languages": [
+              "C#",
+              "Visual Basic"
+            ],
+            "tags": [
+              "Telemetry",
+              "EnabledRuleInAggressiveMode"
+            ]
+          }
+        },
         "CA2100": {
           "id": "CA2100",
           "shortDescription": "Review SQL queries for security vulnerabilities",

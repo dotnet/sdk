@@ -97,6 +97,26 @@
         <target state="translated">P/Invokes에는 'StringBuilder' 매개 변수를 사용하지 마세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadCodeFixTitle">
+        <source>Use 'Stream.ReadExactly'</source>
+        <target state="new">Use 'Stream.ReadExactly'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadDescription">
+        <source>A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</source>
+        <target state="new">A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadMessage">
+        <source>Avoid inexact read with '{0}'</source>
+        <target state="new">Avoid inexact read with '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AvoidUnreliableStreamReadTitle">
+        <source>Avoid inexact read with 'Stream.Read'</source>
+        <target state="new">Avoid inexact read with 'Stream.Read'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
         <source>The .NET Framework class library provides methods for retrieving custom attributes. By default, these methods search the attribute inheritance hierarchy. Sealing the attribute eliminates the search through the inheritance hierarchy and can improve performance.</source>
         <target state="translated">.NET Framework 클래스 라이브러리에서 사용자 지정 특성을 검색하기 위한 메서드를 제공합니다. 기본적으로 이 메서드는 특성 상속 계층 구조를 검색합니다. 특성을 봉인하면 상속 계층 구조를 통한 검색을 중단하여 성능을 향상시킬 수 있습니다.</target>
