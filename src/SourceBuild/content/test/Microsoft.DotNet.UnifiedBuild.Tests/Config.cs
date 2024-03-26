@@ -18,10 +18,10 @@ public class Config : IDisposable
     public Config(IMessageSink sink)
     {
         _sink = sink;
-        UbBuildVersion = (string)AppContext.GetData(BuildVersionSwitch);
-        TargetRid = (string)AppContext.GetData(TargetRidSwitch);
-        PortableRid = (string)AppContext.GetData(PortableRidSwitch);
-        UbSdkArchivePath = (string)AppContext.GetData(UbSdkArchivePathSwitch);
+        UbBuildVersion = (string)(AppContext.GetData(BuildVersionSwitch) ?? throw new InvalidOperationException("Unified Build version must be specified"));
+        TargetRid = (string)(AppContext.GetData(TargetRidSwitch) ?? throw new InvalidOperationException("Target RID must be specified"));
+        PortableRid = (string)(AppContext.GetData(PortableRidSwitch) ?? throw new InvalidOperationException("Portable RID must be specified"));
+        UbSdkArchivePath = (string)(AppContext.GetData(UbSdkArchivePathSwitch) ?? throw new InvalidOperationException("Unified Build SDK archive path must be specified"));
         TargetArchitecture = TargetRid.Split('-')[1];
         MsftSdkArchivePath = AppContext.GetData(MsftSdkArchivePathSwitch) as string ?? DownloadMsftSdkArchive().Result;
     }
