@@ -49,6 +49,9 @@ variables:
         /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64) 
   - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: DotNet-CLI-SDLValidation-Params
+  # Set the MicroBuild plugin installation directory to the agent temp directory to avoid SDL tool scanning.
+  - name: MicroBuildOutputFolderOverride
+    value: $(Agent.TempDirectory)
 
 resources:
   repositories:
