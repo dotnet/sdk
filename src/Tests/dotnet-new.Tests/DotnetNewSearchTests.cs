@@ -436,7 +436,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+#pragma warning disable xUnit1004
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/39772")]
+#pragma warning restore xUnit1004
         [InlineData("console --search")]
         [InlineData("--search console")]
         [InlineData("search console")]
