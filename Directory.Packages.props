@@ -71,11 +71,11 @@
     <PackageVersion Include="NuGet.Common" Version="$(NuGetCommonPackageVersion)" />
     <PackageVersion Include="NuGet.Configuration" Version="$(NuGetConfigurationPackageVersion)" />
     <PackageVersion Include="NuGet.Frameworks" Version="$(NuGetBuildTasksPackageVersion)" />
-    <PackageVersion Include="NuGet.LibraryModel" Version="$(NuGetProjectModelVersion)" />
+    <PackageVersion Include="NuGet.LibraryModel" Version="$(NuGetProjectModelPackageVersion)" />
     <PackageVersion Include="NuGet.Localization" Version="$(NuGetLocalizationPackageVersion)" />
     <PackageVersion Include="NuGet.Packaging" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageVersion Include="NuGet.Packaging.Core" Version="$(NuGetPackagingPackageVersion)" />
-    <PackageVersion Include="NuGet.ProjectModel" Version="$(NuGetProjectModelVersion)" />
+    <PackageVersion Include="NuGet.ProjectModel" Version="$(NuGetProjectModelPackageVersion)" />
     <PackageVersion Include="NuGet.Protocol" Version="$(NuGetBuildTasksPackageVersion)" />
     <PackageVersion Include="NuGet.Versioning" Version="$(NuGetVersioningPackageVersion)" />
     <PackageVersion Include="runtime.linux-musl-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(MicrosoftNETCoreDotNetHostResolverPackageVersion)" />
