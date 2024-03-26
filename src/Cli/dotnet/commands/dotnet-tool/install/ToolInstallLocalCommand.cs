@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly IReporter _reporter;
         private readonly PackageId _packageId;
         private readonly bool _allowPackageDowngrade;
+        private readonly bool _forceInstall;
 
         private readonly string _explicitManifestFile;
         private readonly bool _createManifestIfNeeded;
@@ -51,7 +52,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             _packageId = new PackageId(parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument));
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
-
+            _forceInstall = parseResult.GetValue(ToolInstallCommandParser.ForceInstallOption);
         }
         
 
@@ -72,11 +73,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             if (!existingPackageWithPackageId.Any())
             {
-                return InstallNewTool(manifestFile);
+                return InstallNewTool(manifestFile, _forceInstall);
             }
 
             var existingPackage = existingPackageWithPackageId.Single();
-            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
+            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile, _forceInstall);
 
             InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile);
 
@@ -132,10 +133,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             return 0;
         }
-        public int InstallNewTool(FilePath manifestFile)
+        public int InstallNewTool(FilePath manifestFile, bool forceInstall)
         {
             IToolPackage toolDownloadedPackage =
-                _toolLocalPackageInstaller.Install(manifestFile);
+                _toolLocalPackageInstaller.Install(manifestFile, forceInstall);
 
             _toolManifestEditor.Add(
                 manifestFile,

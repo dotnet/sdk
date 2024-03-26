@@ -15,6 +15,7 @@ using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 {
@@ -145,7 +146,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             if (!_verifySignatures && !_validationMessagesDisplayed)
             {
-                if (verbosityGreaterThanMinimal())
+                if (!(_verbosityOptions.IsQuiet() || _verbosityOptions.IsMinimal()))
+
                 {
                     _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
                 }
