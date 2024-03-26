@@ -19,7 +19,7 @@
   </PropertyGroup>
   <!-- Production Dependencies -->
   <PropertyGroup>
-    <MicrosoftWebXdtPackageVersion>9.0.0-preview.24168.2</MicrosoftWebXdtPackageVersion>
+    <MicrosoftWebXdtPackageVersion>9.0.0-preview.24175.1</MicrosoftWebXdtPackageVersion>
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
     <MicrosoftApplicationInsightsPackageVersion>2.22.0</MicrosoftApplicationInsightsPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</NETStandardLibraryNETFrameworkVersion>
@@ -38,7 +38,7 @@
     <SystemManagementPackageVersion>4.6.0</SystemManagementPackageVersion>
     <SystemCommandLineVersion>2.0.0-beta4.24126.1</SystemCommandLineVersion>
     <SystemCommandLineRenderingVersion>0.4.0-alpha.24112.1</SystemCommandLineRenderingVersion>
-    <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-preview.1.24168.2</MicrosoftDeploymentDotNetReleasesVersion>
+    <MicrosoftDeploymentDotNetReleasesVersion>2.0.0-preview.1.24172.2</MicrosoftDeploymentDotNetReleasesVersion>
     <MicrosoftDiaSymReaderVersion>2.0.0</MicrosoftDiaSymReaderVersion>
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2-beta1.22216.1</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
@@ -89,8 +89,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
-    <MicrosoftCodeAnalysisNetAnalyzersVersion>9.0.0-preview.24170.2</MicrosoftCodeAnalysisNetAnalyzersVersion>
-    <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.11.0-beta1.24170.2</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
+    <MicrosoftCodeAnalysisNetAnalyzersVersion>9.0.0-preview.24175.2</MicrosoftCodeAnalysisNetAnalyzersVersion>
+    <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.11.0-beta1.24175.2</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/msbuild -->
@@ -126,18 +126,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/visualfsharp -->
-    <MicrosoftFSharpCompilerPackageVersion>12.8.300-beta.24172.5</MicrosoftFSharpCompilerPackageVersion>
+    <MicrosoftFSharpCompilerPackageVersion>12.8.300-beta.24175.1</MicrosoftFSharpCompilerPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>4.10.0-3.24169.3</MicrosoftNetCompilersToolsetPackageVersion>
-    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>4.10.0-3.24169.3</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
-    <MicrosoftCodeAnalysisPackageVersion>4.10.0-3.24169.3</MicrosoftCodeAnalysisPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>4.10.0-3.24169.3</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.10.0-3.24169.3</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
-    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.10.0-3.24169.3</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.10.0-3.24169.3</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.10.0-3.24169.3</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>4.10.0-3.24175.2</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>4.10.0-3.24175.2</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>4.10.0-3.24175.2</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>4.10.0-3.24175.2</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.10.0-3.24175.2</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>4.10.0-3.24175.2</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>4.10.0-3.24175.2</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>4.10.0-3.24175.2</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
@@ -151,9 +151,9 @@
   </PropertyGroup>
   <!-- Dependencies from https://github.com/dotnet/razor -->
   <PropertyGroup>
-    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>7.0.0-preview.24173.2</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisRazorToolingInternalVersion>7.0.0-preview.24173.2</MicrosoftCodeAnalysisRazorToolingInternalVersion>
-    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>7.0.0-preview.24173.2</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>7.0.0-preview.24175.1</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalVersion>7.0.0-preview.24175.1</MicrosoftCodeAnalysisRazorToolingInternalVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>7.0.0-preview.24175.1</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
