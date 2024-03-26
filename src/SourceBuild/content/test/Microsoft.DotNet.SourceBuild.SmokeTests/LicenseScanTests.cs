@@ -64,6 +64,7 @@ public class LicenseScanTests : TestBase
         "cc-by-sa-3.0", // https://creativecommons.org/licenses/by-sa/3.0/legalcode
         "cc-by-sa-4.0", // https://creativecommons.org/licenses/by-sa/4.0/legalcode
         "cc-pd", // https://creativecommons.org/publicdomain/mark/1.0/
+        "cc-sa-1.0", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/cc-sa-1.0.LICENSE
         "epl-1.0", // https://opensource.org/license/epl-1-0/
         "generic-cla", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/generic-cla.LICENSE
         "gpl-1.0-plus", // https://opensource.org/license/gpl-1-0/
@@ -79,6 +80,7 @@ public class LicenseScanTests : TestBase
         "lzma-sdk-9.22", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/lzma-sdk-9.22.LICENSE
         "mit", // https://opensource.org/license/mit/
         "mit-addition", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/mit-addition.LICENSE
+        "mit-testregex", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/mit-testregex.LICENSE
         "ms-patent-promise", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/ms-patent-promise.LICENSE
         "ms-lpl", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/ms-lpl.LICENSE
         "ms-pl", // https://opensource.org/license/ms-pl-html/
