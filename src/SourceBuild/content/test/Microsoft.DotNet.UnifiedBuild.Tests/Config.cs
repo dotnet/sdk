@@ -18,13 +18,12 @@ public class Config : IDisposable
     public Config(IMessageSink sink)
     {
         _sink = sink;
-        UbBuildVersion = AppContext.GetSwitch(BuildVersionSwitch);
-        ConfigPrefix = AppContext.GetSwitch(ConfigPrefixSwitch);
-        TargetRid = AppContext.GetSwitch(TargetRidSwitch);
-        PortableRid = AppContext.GetSwitch(PortableRidSwitch);
-        UbSdkArchivePath = AppContext.GetSwitch(UbSdkArchivePathSwitch);
+        UbBuildVersion = (string)AppContext.GetData(BuildVersionSwitch);
+        TargetRid = (string)AppContext.GetData(TargetRidSwitch);
+        PortableRid = (string)AppContext.GetData(PortableRidSwitch);
+        UbSdkArchivePath = (string)AppContext.GetData(UbSdkArchivePathSwitch);
         TargetArchitecture = TargetRid.Split('-')[1];
-        MsftSdkArchivePath = AppContext.GetSwitch(MsftSdkArchivePathSwitch) ?? DownloadMsftSdkArchive().Result;
+        MsftSdkArchivePath = AppContext.GetData(MsftSdkArchivePathSwitch) as string ?? DownloadMsftSdkArchive().Result;
     }
 
     public const string ConfigSwitchPrefix = "Microsoft.DotNet.UnifiedBuild.Tests.";

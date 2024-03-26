@@ -23,7 +23,7 @@ public class SdkContentTests : TestBase
 {
     Exclusions Exclusions;
     public SdkContentTests(ITestOutputHelper outputHelper, Config config) : base(outputHelper, config)
-    { 
+    {
         Exclusions = new(Config.TargetRid);
     }
 
@@ -196,7 +196,7 @@ public class SdkContentTests : TestBase
         }
 
         string fileListing = Utilities.GetTarballContentNames(tarballPath).Aggregate((a, b) => $"{a}{Environment.NewLine}{b}");
-        fileListing = BaselineHelper.RemoveRids(fileListing, Config.PortableRidEnv, Config.TargetRid, isPortable);
+        fileListing = BaselineHelper.RemoveRids(fileListing, Config.PortableRid, Config.TargetRid, isPortable);
         fileListing = BaselineHelper.RemoveVersions(fileListing);
         IEnumerable<string> files = fileListing.Split(Environment.NewLine).OrderBy(path => path);
         files = Exclusions.RemoveContentDiffFileExclusions(files, sdkType);
