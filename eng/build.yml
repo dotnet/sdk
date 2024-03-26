@@ -38,13 +38,20 @@ jobs:
     workspace:
       clean: all
     variables:
-      - ${{ insert }}: ${{ parameters.variables }}
-      - _AgentOSName: ${{ parameters.agentOs }}
-      - _TeamName: DotNetCore
-      - _OfficialBuildIdArgs: ''
-      - _PublishArgs: ''
-      - _SignArgs: ''
-      - _HelixApiToken: ''
+      - ${{ each variable in parameters.variables }}:
+        - ${{ if ne(variable.name, '') }}:
+          - name: ${{ variable.name }}
+            value: ${{ variable.value }}
+      - name: _AgentOSName
+        value: ${{ parameters.agentOs }}
+      - name: _TeamName
+        value: DotNetCore
+      - name: _OfficialBuildIdArgs
+        value: ''
+      - name: _SignArgs
+        value: ''
+      - name: _HelixApiToken
+        value: ''
       # Helix Testing requires a token when internally run
       - ${{ if ne(variables['System.TeamProject'], 'public') }}:
         - group: DotNet-HelixApi-Access
