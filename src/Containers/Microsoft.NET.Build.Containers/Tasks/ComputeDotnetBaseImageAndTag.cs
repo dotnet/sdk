@@ -40,7 +40,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     public ITaskItem[] FrameworkReferences { get; set; }
 
     /// <summary>
-    /// If this is set to linux-ARCH then we use jammy-chiseled for the AOT/Extra/etc decisions.
+    /// If this is set to linux-ARCH then we use noble-chiseled for the AOT/Extra/etc decisions.
     /// If this is set to linux-musl-ARCH then we need to use `alpine` for all containers, and tag on `aot` or `extra` as necessary.
     /// </summary>
     [Required]
@@ -65,7 +65,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
 
     /// <summary>
     /// If set, this expresses a preference for a variant of the container image that we infer for a project.
-    /// e.g. 'alpine', or 'jammy-chiseled'
+    /// e.g. 'alpine', or 'noble-chiseled'
     /// </summary>
     public string ContainerFamily { get; set; }
 
@@ -105,10 +105,23 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         return !Log.HasLoggedErrors;
     }
 
+    private string UbuntuCodenameForSDKVersion(SemanticVersion version)
+    {
+        if (version >= SemanticVersion.Parse("8.0.300"))
+        {
+            return "noble";
+        }
+        else
+        {
+            return "jammy";
+        }
+    }
+
     private bool ComputeRepositoryAndTag([NotNullWhen(true)] out string? repository, [NotNullWhen(true)] out string? tag)
     {
         if (ComputeVersionPart() is (string baseVersionPart, SemanticVersion parsedVersion, bool versionAllowsUsingAOTAndExtrasImages))
         {
+            var defaultUbuntuVersion = UbuntuCodenameForSDKVersion(parsedVersion);
             Log.LogMessage("Computed base version tag of {0} from TFM {1} and SDK {2}", baseVersionPart, TargetFrameworkVersion, SdkVersion);
             if (baseVersionPart is null)
             {
@@ -139,7 +152,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                 // in question, and the app is globalized, we can help and add -extra so the app will actually run
 
                 if (
-                    (!IsMuslRid && ContainerFamily == "jammy-chiseled") // default for linux RID
+                    (!IsMuslRid && ContainerFamily.EndsWith("-chiseled")) // default for linux RID
                     && !UsesInvariantGlobalization
                     && versionAllowsUsingAOTAndExtrasImages
                     // the extras only became available on the stable tags of the FirstVersionWithNewTaggingScheme
@@ -170,8 +183,8 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                     {
                         true => "-alpine",
                         // default to chiseled for AOT, non-musl Apps
-                        false when IsAotPublished || IsTrimmed => "-jammy-chiseled", // TODO: should we default here to jammy-chiseled for non-musl RIDs?
-                        // default to jammy for non-AOT, non-musl Apps
+                        false when IsAotPublished || IsTrimmed => $"-{defaultUbuntuVersion}-chiseled", // TODO: should we default here to noble-chiseled for non-musl RIDs?
+                        // default to noble for non-AOT, non-musl Apps
                         false => ""
                     };
 
