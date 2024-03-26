@@ -61,6 +61,9 @@ extends:
         image: 1es-windows-2022
         os: windows
 
+      baseline:
+        baselineFile: $(Build.SourcesDirectory)\.config\guardian\.gdnbaselines
+
     stages:
     - ${{ if and(ne(variables.isPRTrigger, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
       - template: /eng/pipelines/templates/stages/vmr-scan.yml@self
