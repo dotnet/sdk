@@ -50,8 +50,6 @@ jobs:
           value: DotNetCore
         - name: _OfficialBuildIdArgs
           value: ''
-        - name: _PublishArgs
-          value: ''
         - name: _SignArgs
           value: ''
         - name: _HelixApiToken
