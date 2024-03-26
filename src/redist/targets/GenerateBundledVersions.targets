@@ -2,7 +2,7 @@
 
   <Target Name="GenerateBundledVersions"
           Condition="'$(PgoInstrument)' != 'true'"
-          DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps" >
+          DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps;GenerateBundledMSBuildProps" >
 
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productVersion.txt"
@@ -1244,6 +1244,54 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledBundledCliToolsPropsFileName)"
                       Lines="$(BundledBundledCliToolsPropsContent)"
                       Overwrite="true" />
+  </Target>
+
+  <Target Name="GenerateBundledMSBuildProps" DependsOnTargets="SetupBundledComponents">
+    <PropertyGroup>
+      <MinimumMSBuildVersionFile>$(RedistLayoutPath)sdk/$(Version)/minimumMSBuildVersion</MinimumMSBuildVersionFile>
+      <BundledMSBuildPropsFileName>Microsoft.NETCoreSdk.BundledMSBuildInformation.props</BundledMSBuildPropsFileName>
+      <BundledMSBuildVersion>$(MSBuildVersion)</BundledMSBuildVersion>
+    </PropertyGroup>
+
+    <Error Text="No MSBuild version file found under '$(RedistLayoutPath)sdk/$(Version)'" Condition="!Exists('$(MinimumMSBuildVersionFile)')" />
+    
+    <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
+      <Output TaskParameter="Lines" PropertyName="MinimumMSBuildVersion"/>
+    </ReadLinesFromFile>
+
+    <PropertyGroup>
+      <_BundledMSBuildVersionMajorMinor>$([System.Version]::Parse('$(BundledMSBuildVersion)').ToString(2))</_BundledMSBuildVersionMajorMinor>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <BundledMSBuildPropsFileContent>
+<![CDATA[
+<!--
+***********************************************************************************************
+$(BundledMSBuildPropsFileName)
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project>
+  <PropertyGroup>
+    <MinimumMSBuildVersion>$(MinimumMSBuildVersion)</MinimumMSBuildVersion>
+    <BundledMSBuildVersion>$(BundledMSBuildVersion)</BundledMSBuildVersion>
+    <_MSBuildVersionMajorMinor>%24([System.Version]::Parse('%24(MSBuildVersion)').ToString(2))</_MSBuildVersionMajorMinor>
+    <_IsDisjointMSBuildVersion>%24([MSBuild]::VersionGreaterThan('%24(_MSBuildVersionMajorMinor)', '$(_BundledMSBuildVersionMajorMinor)'))</_IsDisjointMSBuildVersion>
+  </PropertyGroup>
+</Project>
+]]>
+      </BundledMSBuildPropsFileContent>
+    </PropertyGroup>
+
+  <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledMSBuildPropsFileName)"
+    Lines="$(BundledMSBuildPropsFileContent)"
+    Overwrite="true" />
   </Target>
 
   <ItemGroup>

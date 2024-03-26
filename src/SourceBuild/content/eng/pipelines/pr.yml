@@ -34,10 +34,9 @@ variables:
 - name: isPRTrigger
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
 
-stages:
-- ${{ if and(ne(variables.isPRTrigger, 'true'), eq(variables['System.TeamProject'], 'internal')) }}:
-  - template: templates/stages/vmr-scan.yml
+- template: /eng/common/templates/variables/pool-providers.yml@self
 
+stages:
 - template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
   parameters:
     isBuiltFromVmr: true
