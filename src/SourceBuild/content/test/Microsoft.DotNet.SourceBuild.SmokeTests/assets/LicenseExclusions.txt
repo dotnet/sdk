@@ -177,7 +177,11 @@ src/runtime/src/libraries/System.ServiceModel.Syndication/tests/BasicScenarioTes
 src/runtime/src/mono/mono/mini/mini-posix.c|unknown-license-reference
 src/runtime/src/mono/mono/mini/mini-windows.c|unknown-license-reference
 src/runtime/src/native/external/libunwind/doc/libunwind-ia64.*|generic-exception
+src/runtime/src/tests/GC/Scenarios/GCBench/THIRD-PARTY-NOTICES|unknown-license-reference
+src/runtime/src/tests/JIT/Performance/CodeQuality/Benchstones/BenchF/LLoops/THIRD-PARTY-NOTICES|unknown-license-reference
+src/runtime/src/tests/JIT/Performance/CodeQuality/Benchstones/MDBenchF/MDLLoops/THIRD-PARTY-NOTICES|unknown-license-reference
 src/runtime/src/tests/JIT/Performance/CodeQuality/V8/Crypto/Crypto.cs|unknown-license-reference
+src/runtime/src/tests/JIT/Performance/CodeQuality/V8/Richards/THIRD-PARTY-NOTICES|unknown-license-reference
 
 # Test data
 src/runtime/src/libraries/System.Private.Xml.Linq/tests/XDocument.Common/InputSpace.cs|other-permissive
@@ -234,11 +238,11 @@ src/source-build-externals/src/spectre-console/README.md|unknown-license-referen
 # False positive
 src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.aspnetcore.app.ref/8.0.0/THIRD-PARTY-NOTICES.TXT|unknown
 src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.netcore.app.ref/3.*/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
-src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/1.6.1/ThirdPartyNotices.txt|unknown
-src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.0.*/THIRD-PARTY-NOTICES.TXT|unknown
+src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/1.6.1/ThirdPartyNotices.txt|unknown-license-reference
+src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.0.*/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library.ref/2.1.0/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.codeanalysis.collections/4.2.0-1.22102.8/ThirdPartyNotices.rtf|json
-src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.netcore.*/1.*/ThirdPartyNotices.txt|unknown
+src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.netcore.*/1.*/ThirdPartyNotices.txt|unknown-license-reference
 src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/8.0.*/IntellisenseFiles/*/1033/System.Security.Permissions.xml|unknown-license-reference
 
 # Contains references to licenses which are not applicable to the source
