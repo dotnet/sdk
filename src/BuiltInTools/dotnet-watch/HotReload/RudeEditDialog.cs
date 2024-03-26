@@ -9,21 +9,17 @@ namespace Microsoft.DotNet.Watcher.Tools
     internal sealed class RudeEditDialog
     {
         private readonly IReporter _reporter;
-        private readonly IRequester _requester;
-        private readonly IConsole _console;
+        private readonly ConsoleInputReader _requester;
         private bool? _restartImmediatelySessionPreference; // Session preference
 
-        public RudeEditDialog(IReporter reporter, IRequester requester, IConsole console)
+        public RudeEditDialog(IReporter reporter, ConsoleInputReader requester, IConsole console)
         {
             _reporter = reporter;
             _requester = requester;
-            _console = console;
 
-            var alwaysRestart = Environment.GetEnvironmentVariable("DOTNET_WATCH_RESTART_ON_RUDE_EDIT");
-
-            if (alwaysRestart == "1" || string.Equals(alwaysRestart, "true", StringComparison.OrdinalIgnoreCase))
+            if (EnvironmentVariables.RestartOnRudeEdit)
             {
-                _reporter.Verbose($"DOTNET_WATCH_RESTART_ON_RUDE_EDIT = '{alwaysRestart}'. Restarting without prompt.");
+                _reporter.Verbose($"DOTNET_WATCH_RESTART_ON_RUDE_EDIT = 'true'. Restarting without prompt.");
                 _restartImmediatelySessionPreference = true;
             }
         }

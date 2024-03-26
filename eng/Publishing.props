@@ -60,7 +60,7 @@
   <!-- FSharp needs to push different packages to nuget.org depending on whether the SDK is preview or not,
        To achieve this, we find the FSharp compiler package, then the stable or non-stable FSharp.Core and Compiler service
        package contained within, depending on the stability switch of the SDK. The SDK then treats these packages as its own outputs,
-       whch means they get automatically pushed on release day. -->
+       which means they get automatically pushed on release day. -->
   <PropertyGroup>
     <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishFSharpNuGetPackages</PublishDependsOnTargets>
   </PropertyGroup>
@@ -74,6 +74,19 @@
         <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg"/>
         <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg" />
         <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" IsShipping="true" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Similarly to FSharp above, Roslyn needs to publish its Framework.Toolset package alongside SDK
+       so it can be picked up in BuildWithNetFrameworkHostedCompiler scenarios. -->
+  <PropertyGroup>
+    <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishRoslynNuGetPackages</PublishDependsOnTargets>
+  </PropertyGroup>
+    
+  <Target Name="_ResolvePublishRoslynNuGetPackages">
+    <ItemGroup>
+      <RoslynPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.Net.Compilers.Toolset.Framework\$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)\*.nupkg" />
+      <ItemsToPushToBlobFeed Include="@(RoslynPackagesToPush)" IsShipping="true" />
     </ItemGroup>
   </Target>
 

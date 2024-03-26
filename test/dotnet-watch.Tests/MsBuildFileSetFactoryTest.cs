@@ -316,12 +316,14 @@ $@"<ItemGroup>
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
             var output = new OutputSink();
-            var options = GetWatchOptions();
-            var filesetFactory = new MsBuildFileSetFactory(options, _reporter, _muxerPath, projectA, targetFramework: null, buildProperties: null, output, waitOnError: false, trace: true);
+            var options = new EnvironmentOptions(
+                MuxerPath: _muxerPath,
+                WorkingDirectory: testDirectory);
 
-            var fileset = await filesetFactory.CreateAsync(CancellationToken.None);
+            var filesetFactory = new MsBuildFileSetFactory(options, _reporter, projectA, targetFramework: null, buildProperties: null, output, trace: true);
 
-            Assert.NotNull(fileset);
+            var result = await filesetFactory.TryCreateAsync(CancellationToken.None);
+            Assert.NotNull(result);
 
             _reporter.Output(string.Join(
                 Environment.NewLine,
@@ -332,7 +334,7 @@ $@"<ItemGroup>
                 testDirectory,
                 includedProjects
                     .Select(p => $"{p}/{p}.csproj"),
-                fileset
+                result.Value.files
             );
 
             // ensure each project is only visited once for collecting watch items
@@ -349,14 +351,16 @@ $@"<ItemGroup>
             return GetFileSet(projectPath);
         }
 
-        private Task<FileSet> GetFileSet(string projectPath)
+        private async Task<FileSet> GetFileSet(string projectPath)
         {
-            DotNetWatchOptions options = GetWatchOptions();
-            return new MsBuildFileSetFactory(options, _reporter, _muxerPath, projectPath, targetFramework: null, buildProperties: null, new OutputSink(), waitOnError: false, trace: false).CreateAsync(CancellationToken.None);
-        }
+            var options = new EnvironmentOptions(
+                MuxerPath: _muxerPath,
+                WorkingDirectory: Path.GetDirectoryName(projectPath));
 
-        private static DotNetWatchOptions GetWatchOptions() =>
-            new(false, false, false, false, false, TestFlags.None);
+            var factory = new MsBuildFileSetFactory(options, _reporter, projectPath, targetFramework: null, buildProperties: null, new OutputSink(), trace: false);
+            var result = await factory.TryCreateAsync(CancellationToken.None);
+            return result.Value.files;
+        }
 
         private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject.Name + ".csproj");
 
