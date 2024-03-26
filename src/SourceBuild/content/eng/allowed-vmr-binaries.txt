@@ -139,3 +139,4 @@ src/wpf/src/Microsoft.DotNet.Wpf/src/ReachFramework/Resources/generated/*.resour
 src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationFramework/Resources/Hyphenation/Hyphen_en.lex
 src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationFramework/Resources/Hyphenation/Hyphen_en.hdict
 src/wpf/src/Microsoft.DotNet.Wpf/src/Shared/Tracing/resources/*.BIN
+src/wpf/src/Microsoft.DotNet.Wpf/src/Shared/Tracing/resources/*.bin

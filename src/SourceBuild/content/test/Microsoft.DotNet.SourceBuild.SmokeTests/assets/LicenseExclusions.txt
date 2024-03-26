@@ -14,6 +14,7 @@
 
 # False positive
 src/arcade/Documentation/UnifiedBuild/Foundational-Concepts.md
+src/arcade/Documentation/UnifiedBuild/VMR-Permissible-Sources.md|free-unknown
 src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/src/BuildFPMToolPreReqs.cs|json
 src/arcade/src/Microsoft.DotNet.Build.Tasks.Installers/build/rpm_templates/copyright|cecill-c
 src/arcade/src/Microsoft.DotNet.XUnitAssert/src/README.md|free-unknown
@@ -156,6 +157,7 @@ src/runtime/docs/project/copyright.md
 src/runtime/docs/project/glossary.md
 
 # Doc that references a license, not applicable to source
+src/runtime/docs/design/mono/web/llvm-backend.md|llvm-exception
 src/runtime/src/coreclr/nativeaot/docs/compiling.md|openssl-ssleay
 
 # Installer asset, not applicable to source
@@ -175,7 +177,11 @@ src/runtime/src/libraries/System.ServiceModel.Syndication/tests/BasicScenarioTes
 src/runtime/src/mono/mono/mini/mini-posix.c|unknown-license-reference
 src/runtime/src/mono/mono/mini/mini-windows.c|unknown-license-reference
 src/runtime/src/native/external/libunwind/doc/libunwind-ia64.*|generic-exception
+src/runtime/src/tests/GC/Scenarios/GCBench/THIRD-PARTY-NOTICES|unknown-license-reference
+src/runtime/src/tests/JIT/Performance/CodeQuality/Benchstones/BenchF/LLoops/THIRD-PARTY-NOTICES|unknown-license-reference
+src/runtime/src/tests/JIT/Performance/CodeQuality/Benchstones/MDBenchF/MDLLoops/THIRD-PARTY-NOTICES|unknown-license-reference
 src/runtime/src/tests/JIT/Performance/CodeQuality/V8/Crypto/Crypto.cs|unknown-license-reference
+src/runtime/src/tests/JIT/Performance/CodeQuality/V8/Richards/THIRD-PARTY-NOTICES|unknown-license-reference
 
 # Test data
 src/runtime/src/libraries/System.Private.Xml.Linq/tests/XDocument.Common/InputSpace.cs|other-permissive
@@ -204,7 +210,7 @@ src/sdk/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 
 # False positive
 src/source-build-externals/src/abstractions-xunit/README.md|free-unknown
-src/source-build-externals/src/application-insights/NETCORE/ThirdPartyNotices.txt|unknown
+src/source-build-externals/src/application-insights-2.22.0/NETCORE/ThirdPartyNotices.txt|unknown
 src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/benchmark/Microsoft.IdentityModel.Benchmarks/CreateTokenTests.cs|proprietary-license
 src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/src/Microsoft.IdentityModel.JsonWebTokens/JsonClaimValueTypes.cs|proprietary-license
 src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/src/Microsoft.IdentityModel.Tokens.Saml/Saml/ClaimProperties.cs|proprietary-license
@@ -218,7 +224,7 @@ src/source-build-externals/src/xunit/src/xunit.assert/Asserts/README.md|free-unk
 src/source-build-externals/src/xunit/xunit.sln|json
 
 # A patch which removes the license usage but contains references to the removed license as part of the patch reference lines
-src/source-build-externals/patches/application-insights/0002-Remove-WebGrease-from-TPN-2816.patch
+src/source-build-externals/patches/application-insights-2.22.0/0002-Remove-WebGrease-from-TPN-2816.patch
 
 # Scanner is identifying the https://github.com/SixLabors/ImageSharp/blob/master/LICENSE license as unknown. But this license is not applicable because we're
 # relying on the Spectre.Console distribution.
@@ -232,11 +238,11 @@ src/source-build-externals/src/spectre-console/README.md|unknown-license-referen
 # False positive
 src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.aspnetcore.app.ref/8.0.0/THIRD-PARTY-NOTICES.TXT|unknown
 src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.netcore.app.ref/3.*/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
-src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/1.6.1/ThirdPartyNotices.txt|unknown
-src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.0.*/THIRD-PARTY-NOTICES.TXT|unknown
+src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/1.6.1/ThirdPartyNotices.txt|unknown-license-reference
+src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.0.*/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library.ref/2.1.0/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.codeanalysis.collections/4.2.0-1.22102.8/ThirdPartyNotices.rtf|json
-src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.netcore.*/1.*/ThirdPartyNotices.txt|unknown
+src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.netcore.*/1.*/ThirdPartyNotices.txt|unknown-license-reference
 src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/8.0.*/IntellisenseFiles/*/1033/System.Security.Permissions.xml|unknown-license-reference
 
 # Contains references to licenses which are not applicable to the source

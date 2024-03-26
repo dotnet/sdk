@@ -2,18 +2,13 @@ stages:
 - stage: Tag_n_Scan
   displayName: Tag & Scan
   dependsOn: []
-  variables:
-  - template: /eng/common/templates/variables/pool-providers.yml
   jobs:
   - job: Tag_n_Scan
     displayName: Tag & Scan
     pool:
-      ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals Build.Ubuntu.2004.Amd64.Open
-      ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        name: $(DncEngInternalBuildPool)
-        demands: ImageOverride -equals Build.Ubuntu.2004.Amd64
+      name: $(DncEngInternalBuildPool)
+      image: 1es-ubuntu-2004
+      os: linux
 
     steps:
     - checkout: self

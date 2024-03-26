@@ -205,12 +205,19 @@
   <PropertyGroup>
     <XPlatSourceBuildTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.XPlat', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.XPlat.dll'))</XPlatSourceBuildTasksAssembly>
     <LeakDetectionTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.LeakDetection', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.dll'))</LeakDetectionTasksAssembly>
+    <MergeAssetManifestsAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests.dll'))</MergeAssetManifestsAssembly>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(EnablePoison)' == 'true'">
     <PoisonMarkerFile>.prebuilt.xml</PoisonMarkerFile>
     <PoisonReportDataFile>$(PackageReportDir)poison-catalog.xml</PoisonReportDataFile>
     <PoisonedReportFile>$(PackageReportDir)poisoned.txt</PoisonedReportFile>
+  </PropertyGroup>
+
+  <!-- The predefined environmental variable `BUILD_BUILDNUMBER` is getting overwritten in repo-projects,
+    so save it in a different varialbe-->
+  <PropertyGroup>
+    <VmrBuildNumber>$(BUILD_BUILDNUMBER)"</VmrBuildNumber>
   </PropertyGroup>
 
   <Import Project="$(GitInfoAllRepoPropsFile)" />
