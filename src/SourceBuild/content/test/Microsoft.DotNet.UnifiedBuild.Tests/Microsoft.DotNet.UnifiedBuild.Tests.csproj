@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
-  <Import Project="../../Directory.Build.props" />
-  <Import Project="../../Directory.Build.targets" />
+
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <Nullable>enable</Nullable>
@@ -36,5 +36,4 @@
     </ItemGroup>
   </Target>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 </Project>
