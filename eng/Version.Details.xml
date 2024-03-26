@@ -235,22 +235,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d8c3db7d096da710a3f667d70c36e34c1bf63921</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.4.24173.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.4.24176.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>6153872f19b1cd05b26c92d8080e56c1892ba55c</Sha>
+      <Sha>c805f1d0fd42909046af661edb02bcf1428ff304</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.4.24173.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.4.24176.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>6153872f19b1cd05b26c92d8080e56c1892ba55c</Sha>
+      <Sha>c805f1d0fd42909046af661edb02bcf1428ff304</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.4.24173.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.4.24176.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>6153872f19b1cd05b26c92d8080e56c1892ba55c</Sha>
+      <Sha>c805f1d0fd42909046af661edb02bcf1428ff304</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.4.24173.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.4.24176.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>6153872f19b1cd05b26c92d8080e56c1892ba55c</Sha>
+      <Sha>c805f1d0fd42909046af661edb02bcf1428ff304</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.3.24168.12" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
