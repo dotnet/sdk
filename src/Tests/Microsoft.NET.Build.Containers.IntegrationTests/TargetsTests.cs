@@ -203,6 +203,39 @@ public class TargetsTests
         };
     }
 
+    [InlineData(true)]
+    [InlineData(false)]
+    [Theory]
+    public void ShouldIncludeSDKAndRuntimeVersionLabelsUnlessUserOptsOut(bool includeToolsetVersionLabels)
+    {
+        var runtimeMajorMinor = "7.0";
+        var randomSdkVersion = "8.0.100";
+        var expectedBaseImage = $"mcr.microsoft.com/dotnet/runtime:{runtimeMajorMinor}";
+        var (project, logger, d) = ProjectInitializer.InitProject(new()
+        {
+            ["ContainerGenerateLabelsDotnetToolset"] = includeToolsetVersionLabels.ToString(),
+            ["ContainerBaseImage"] = expectedBaseImage,
+            ["ContainerGenerateLabels"] = true.ToString(), // always include other labels, but not necessarily the toolset labels
+            ["NETCoreSdkVersion"] = randomSdkVersion // not functionally relevant for the test, just need a known version
+        }, projectName: $"{nameof(ShouldIncludeSDKAndRuntimeVersionLabelsUnlessUserOptsOut)}_{includeToolsetVersionLabels}");
+        using var _ = d;
+        var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
+        instance.Build(new[] { ComputeContainerConfig }, new[] { logger }, null, out var outputs).Should().BeTrue("Build should have succeeded but failed due to {0}", String.Join("\n", logger.AllMessages));
+        var labels = instance.GetItems(ContainerLabel);
+        if (includeToolsetVersionLabels)
+        {
+            labels.Should().NotBeEmpty("Should have evaluated some labels by default")
+                .And.ContainSingle(label => LabelMatch("net.dot.runtime.majorminor", runtimeMajorMinor, label))
+                .And.ContainSingle(label => LabelMatch("net.dot.sdk.version", randomSdkVersion, label));
+        }
+        else
+        {
+            labels.Should().NotBeEmpty("Should have evaluated some labels by default")
+                .And.NotContain(label => LabelMatch("net.dot.runtime.majorminor", runtimeMajorMinor, label))
+                .And.NotContain(label => LabelMatch("net.dot.sdk.version", randomSdkVersion, label));
+        };
+    }
+
     [InlineData("7.0.100", "v7.0", "7.0")]
     [InlineData("7.0.100-preview.7", "v7.0", "7.0")]
     [InlineData("7.0.100-rc.1", "v7.0", "7.0")]
