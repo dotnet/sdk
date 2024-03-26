@@ -147,7 +147,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         [InlineData("P and Q and \"R\"", "argPQR")]
         public async Task ArgumentsFromLaunchSettings_Watch(string profileName, string expectedArgs)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings", identifier: profileName)
                 .WithSource();
 
             App.Start(testAsset, arguments: new[]
@@ -169,7 +169,7 @@ namespace Microsoft.DotNet.Watcher.Tests
         [InlineData("P and Q and \"R\"", "argPQR")]
         public async Task ArgumentsFromLaunchSettings_HotReload(string profileName, string expectedArgs)
         {
-            var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
+            var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings", identifier: profileName)
                 .WithSource();
 
             App.Start(testAsset, arguments: new[]
