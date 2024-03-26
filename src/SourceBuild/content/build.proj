@@ -9,6 +9,8 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
+  <UsingTask AssemblyFile="$(MergeAssetManifestsAssembly)" TaskName="Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests" />
+
   <Target Name="Build">
     <PropertyGroup>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' == 'true'">source-build</BuildModeInfoText>
@@ -23,6 +25,21 @@
              Targets="Build"
              BuildInParallel="false"
              StopOnFirstFailure="true" />
+  </Target>
+
+  <Target Name="MergeAssetManifests" AfterTargets="Build">
+    <PropertyGroup>      
+      <MergedAssetManifestOutputPath>$(ArtifactsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RepoAssetManifest Include="$(AssetManifestsIntermediateDir)\**\*.xml" />
+    </ItemGroup>
+
+    <Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests 
+      AssetManifest="@(RepoAssetManifest)" 
+      MergedAssetManifestOutputPath="$(MergedAssetManifestOutputPath)"
+      VmrBuildNumber="$(VmrBuildNumber)" />
   </Target>
 
   <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
