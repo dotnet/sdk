@@ -1,5 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="../../Directory.Build.props" />
+  <Import Project="../../Directory.Build.targets" />
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <Nullable>enable</Nullable>
@@ -15,21 +17,24 @@
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup>
+  <Target Name="SetRuntimeConfigOptions"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache;Build;">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.UbSdkArchivePath">
+        <Value>$(SdkTarballPath)</Value>
+      </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.TargetRid">
-        <Value>$(Microsoft_DotNet_UnifiedBuild_Tests_TargetRid)</Value>
+        <Value>$(TargetRid)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.PortableRid">
-        <Value>$(Microsoft_DotNet_UnifiedBuild_Tests_PortableRid)</Value>
+        <Value>$(PortableRid)</Value>
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.UbBuildVersion">
-        <Value>$(Microsoft_DotNet_UnifiedBuild_Tests_UbBuildVersion)</Value>
+        <Value>$(SourceBuiltSdkVersion)</Value>
       </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.UbSdkArchivePath">
-        <Value>$(Microsoft_DotNet_UnifiedBuild_Tests_UbSdkArchivePath)</Value>
-      </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.MsftSdkArchivePath">
-        <Value>$(Microsoft_DotNet_UnifiedBuild_Tests_MsftSdkArchivePath)</Value>
-      </RuntimeHostConfigurationOption>
-  </ItemGroup>
+    </ItemGroup>
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
 </Project>

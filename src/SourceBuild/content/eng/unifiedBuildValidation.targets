@@ -9,33 +9,10 @@
           AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion">
 
-    <PropertyGroup>
-      <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.UbSdkArchivePath">
-        <Value>$(SdkTarballPath)</Value>
-      </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.TargetRid">
-        <Value>$(TargetRid)</Value>
-      </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.PortableRid">
-        <Value>$(PortableRid)</Value>
-      </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.UbBuildVersion">
-        <Value>$(SourceBuiltSdkVersion)</Value>
-      </RuntimeHostConfigurationOption>
-    </ItemGroup>
-
     <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
              Targets="VSTest"
              Properties="VsTestUseMSBuildOutput=true;
-                         VSTestLogger=trx;
-                         Microsoft_DotNet_UnifiedBuild_Tests_UbSdkArchivePath=$(SdkTarballPath);
-                         Microsoft_DotNet_UnifiedBuild_Tests_TargetRid=$(TargetRid);
-                         Microsoft_DotNet_UnifiedBuild_Tests_PortableRid=$(PortableRid);
-                         Microsoft_DotNet_UnifiedBuild_Tests_SourceBuiltSdkVersion=$(SourceBuiltSdkVersion);" />
+                         VSTestLogger=trx;" />
 
   </Target>
 

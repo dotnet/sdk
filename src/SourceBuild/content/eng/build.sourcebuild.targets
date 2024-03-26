@@ -40,11 +40,10 @@
 
       <IntermediateSdkSymbolsLayout>$(BaseIntermediateOutputPath)SdkSymbols</IntermediateSdkSymbolsLayout>
       <IntermediateSdkLayout>$(BaseIntermediateOutputPath)Sdk</IntermediateSdkLayout>
-      <SdkTarball>%(SdkTarballItem.Identity)</SdkTarball>
     </PropertyGroup>
 
     <MakeDir Directories="$(IntermediateSdkLayout)" />
-    <Exec Command="tar -xzf $(SdkTarball) -C $(IntermediateSdkLayout)" />
+    <Exec Command="tar -xzf $(SdkTarballPath) -C $(IntermediateSdkLayout)" />
 
     <CreateSdkSymbolsLayout SdkLayoutPath="$(IntermediateSdkLayout)"
                             AllSymbolsPath="$(IntermediateSymbolsRootDir)"
