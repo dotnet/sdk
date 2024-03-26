@@ -1097,10 +1097,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       <UseSharedCompilation>true</UseSharedCompilation>
     </PropertyGroup>
 
+    <ItemGroup>
+      <SatelliteAssemblyReferences Include="@(ReferencePath)" Condition="'%(Filename)' == 'mscorlib' or '%(Filename)' == 'netstandard' or '%(Filename)' == 'System.Runtime' " />
+    </ItemGroup>
+
     <Csc Resources="@(_SatelliteAssemblyResourceInputs)"
          Sources="$(_AssemblyInfoFile)"
          OutputAssembly="$(_OutputAssembly)"
-         References="@(ReferencePath)"
+         References="@(SatelliteAssemblyReferences)"
          KeyContainer="$(KeyContainerName)"
          KeyFile="$(KeyOriginatorFile)"
          NoConfig="true"
