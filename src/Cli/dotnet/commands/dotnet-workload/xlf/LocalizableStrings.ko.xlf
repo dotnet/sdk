@@ -77,6 +77,11 @@
         <target state="translated">현재 설치된 워크로드 버전을 표시합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
+        <source>Writing install records for Visual Studio workloads: '{0}'</source>
+        <target state="new">Writing install records for Visual Studio workloads: '{0}'</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
