@@ -55,8 +55,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             void AnalyzeInvocation(OperationAnalysisContext context)
             {
                 var invocation = (IInvocationOperation)context.Operation;
+                var instanceType = invocation.GetInstanceType();
 
-                if (symbols.IsKnownReliableStreamType(invocation.GetInstanceType()))
+                if (instanceType is null || symbols.IsKnownReliableStreamType(instanceType))
                 {
                     return;
                 }
@@ -120,7 +121,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return false;
                 }
 
-                var knownReliableStreamTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>();
+                var knownReliableStreamTypesBuilder = ImmutableHashSet.CreateBuilder<ITypeSymbol>(SymbolEqualityComparer.Default);
                 knownReliableStreamTypesBuilder.AddIfNotNull(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOMemoryStream));
                 knownReliableStreamTypesBuilder.AddIfNotNull(compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOUnmanagedMemoryStream));
 
@@ -141,9 +142,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     SymbolEqualityComparer.Default.Equals(method, m) || IsOverrideOf(method, m));
             }
 
-            public bool IsKnownReliableStreamType(ITypeSymbol? type)
+            public bool IsKnownReliableStreamType(ITypeSymbol type)
             {
-                return _knownReliableStreamTypes.Any(t => SymbolEqualityComparer.Default.Equals(type, t));
+                return _knownReliableStreamTypes.Contains(type);
             }
 
             private static bool IsOverrideOf(IMethodSymbol method, IMethodSymbol baseMethod)
