@@ -56,22 +56,19 @@ namespace Microsoft.DotNet.Tools.Sln.List
             {
                 Array.Sort(paths);
 
-                if (_outputFormat == SlnListReportOutputFormat.console_with_header)
-                {
-                    string header = _displaySolutionFolders ? LocalizableStrings.SolutionFolderHeader : LocalizableStrings.ProjectsHeader;
-                    Reporter.Output.WriteLine($"{header}");
-                    Reporter.Output.WriteLine(new string('-', header.Length));
-                }
-
                 switch (_outputFormat)
                 {
-                    case SlnListReportOutputFormat.console:
-                    case SlnListReportOutputFormat.console_with_header:
+                    case SlnListReportOutputFormat.text:
+                        string header = _displaySolutionFolders ? LocalizableStrings.SolutionFolderHeader : LocalizableStrings.ProjectsHeader;
+                        Reporter.Output.WriteLine($"{header}");
+                        Reporter.Output.WriteLine(new string('-', header.Length));
+
                         foreach (string slnProject in paths)
                         {
                             Reporter.Output.WriteLine(slnProject);
                         }
                         break;
+
                     case SlnListReportOutputFormat.json:
                         var jsonArray = JsonSerializer.Serialize(paths, s_noEscapeJsonSerializerOptions);
                         Reporter.Output.WriteLine(jsonArray);
