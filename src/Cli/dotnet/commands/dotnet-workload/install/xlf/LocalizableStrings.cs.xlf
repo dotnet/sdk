@@ -367,11 +367,6 @@
         <target state="translated">CESTA</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetMode">
-        <source>Control whether future workload operations should use workload sets or loose manifests.</source>
-        <target state="translated">Určete, jestli by budoucí operace úloh měly používat sady úloh nebo volné manifesty.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetUpgrade">
         <source>Updating workload version from {0} to {1}.</source>
         <target state="new">Updating workload version from {0} to {1}.</target>

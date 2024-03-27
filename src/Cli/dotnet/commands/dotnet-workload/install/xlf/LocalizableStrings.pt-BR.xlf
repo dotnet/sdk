@@ -367,11 +367,6 @@
         <target state="translated">CAMINHO</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetMode">
-        <source>Control whether future workload operations should use workload sets or loose manifests.</source>
-        <target state="translated">Controle se as operações de carga de trabalho futuras devem usar conjuntos de carga de trabalho ou manifestos flexíveis.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetUpgrade">
         <source>Updating workload version from {0} to {1}.</source>
         <target state="new">Updating workload version from {0} to {1}.</target>
