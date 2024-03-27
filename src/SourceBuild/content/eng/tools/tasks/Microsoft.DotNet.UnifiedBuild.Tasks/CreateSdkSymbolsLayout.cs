@@ -12,7 +12,7 @@ using System.Reflection.PortableExecutable;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.DotNet.Build.Tasks
+namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     // Creates a symbols layout that matches the SDK layout
     public class CreateSdkSymbolsLayout : Task

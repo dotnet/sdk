@@ -11,7 +11,7 @@ using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.DotNet.Build.Tasks
+namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     /*
      * This task removes internet sources from a given NuGet.config.  In the offline build mode, it removes all

@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Task = Microsoft.Build.Utilities.Task;
 
-namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
+namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
 {
     public class WriteUsageBurndownData : Task
     {

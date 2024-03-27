@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.DotNet.SourceBuild.Tasks
+namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     internal static class EnumerableExtensions
     {

@@ -6,7 +6,7 @@ using NuGet.Packaging.Core;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
+namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
 {
     public class UsageData
     {
