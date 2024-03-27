@@ -31,8 +31,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         /// <summary>
         /// Azure DevOps build number
         /// </summary>
-        [Required]
-        public required string VmrBuildNumber { get; init; }
+        public string VmrBuildNumber { get; set; } = string.Empty;
 
         private static readonly string _buildIdAttribute = "BuildId";
         private static readonly string _azureDevOpsBuildNumberAttribute = "AzureDevOpsBuildNumber";
