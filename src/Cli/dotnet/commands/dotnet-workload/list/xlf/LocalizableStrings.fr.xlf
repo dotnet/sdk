@@ -12,6 +12,11 @@
         <target state="translated">Utilisez `dotnet workload search` pour rechercher d’autres charges de travail à installer.</target>
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetVersion">
+        <source>Workload version: {0}</source>
+        <target state="translated">Version de la charge de travail : {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
         <source>Updates are available for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</source>
         <target state="translated">Des mises à jour sont disponibles pour les charges de travail suivantes : {0}. Exécutez `dotnet workload update` pour obtenir la dernière version.</target>

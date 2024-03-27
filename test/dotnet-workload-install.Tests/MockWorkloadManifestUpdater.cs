@@ -13,13 +13,15 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         public int CalculateManifestUpdatesCallCount = 0;
         public int GetManifestPackageDownloadsCallCount = 0;
         private readonly IEnumerable<ManifestUpdateWithWorkloads> _manifestUpdates;
+        private bool _fromWorkloadSet;
 
-        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null)
+        public MockWorkloadManifestUpdater(IEnumerable<ManifestUpdateWithWorkloads> manifestUpdates = null, bool fromWorkloadSet = false)
         {
             _manifestUpdates = manifestUpdates ?? new List<ManifestUpdateWithWorkloads>();
+            _fromWorkloadSet = fromWorkloadSet;
         }
 
-        public Task UpdateAdvertisingManifestsAsync(bool includePreview, DirectoryPath? cachePath = null)
+        public Task UpdateAdvertisingManifestsAsync(bool includePreview, bool useWorkloadSets = false, DirectoryPath? cachePath = null)
         {
             UpdateAdvertisingManifestsCallCount++;
             return Task.CompletedTask;
@@ -42,11 +44,19 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         public IEnumerable<ManifestVersionUpdate> CalculateManifestRollbacks(string rollbackDefinitionFilePath)
         {
+            if (_fromWorkloadSet && !rollbackDefinitionFilePath.EndsWith("installed.workloadset.json"))
+            {
+                throw new Exception("Should be updating or installing via workload set.");
+            }
+
             return _manifestUpdates.Select(t => t.ManifestUpdate);
         }
 
         public Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync() => throw new NotImplementedException();
         public IEnumerable<WorkloadId> GetUpdatableWorkloadsToAdvertise(IEnumerable<WorkloadId> installedWorkloads) => throw new NotImplementedException();
         public void DeleteUpdatableWorkloadsFile() { }
+
+        public void DownloadWorkloadSet(string version, DirectoryPath? offlineCache) => throw new NotImplementedException();
+        public IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> files) => _manifestUpdates.Select(t => t.ManifestUpdate);
     }
 }

@@ -17,6 +17,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
     {
         public readonly SdkFeatureBand _currentSdkFeatureBand;
         private readonly string _targetSdkVersion;
+        public string DotnetPath { get; }
 
         public WorkloadInfoHelper(
             bool isInteractive,
@@ -30,20 +31,20 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             string userProfileDir = null,
             IWorkloadResolver workloadResolver = null)
         {
-            string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
+            DotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
             ReleaseVersion currentSdkReleaseVersion = new(currentSdkVersion ?? Product.Version);
             _currentSdkFeatureBand = new SdkFeatureBand(currentSdkReleaseVersion);
 
             _targetSdkVersion = targetSdkVersion;
             userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;
             ManifestProvider =
-                new SdkDirectoryWorkloadManifestProvider(dotnetPath,
+                new SdkDirectoryWorkloadManifestProvider(DotnetPath,
                     string.IsNullOrWhiteSpace(_targetSdkVersion)
                         ? currentSdkReleaseVersion.ToString()
                         : _targetSdkVersion,
                     userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
             WorkloadResolver = workloadResolver ?? NET.Sdk.WorkloadManifestReader.WorkloadResolver.Create(
-                ManifestProvider, dotnetPath,
+                ManifestProvider, DotnetPath,
                 currentSdkReleaseVersion.ToString(), userProfileDir);
 
             var restoreConfig = new RestoreActionConfig(Interactive: isInteractive);

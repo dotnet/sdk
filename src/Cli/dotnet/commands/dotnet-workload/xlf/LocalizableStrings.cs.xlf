@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
-        <target state="new">Writing install records for Visual Studio workloads: '{0}'</target>
+        <target state="translated">Probíhá zápis záznamů o instalaci pro úlohy sady Visual Studio: {0}</target>
         <note />
       </trans-unit>
     </body>
