@@ -275,13 +275,6 @@ src/vstest/src/package/Microsoft.CodeCoverage/ThirdPartyNoticesCodeCoverage.txt
 src/vstest/src/package/Microsoft.VisualStudio.TestTools.TestPlatform.V2.CLI/License.rtf
 
 #
-# winforms
-#
-
-# ISSUE: Winforms repo bringing in a non-open source license (https://github.com/dotnet/source-build/issues/3772)
-src/winforms/src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/LICENSE.txt
-
-#
 # wpf
 #
 
