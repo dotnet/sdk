@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.MsiInstallerTests.Framework;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
@@ -65,11 +66,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         }
 
-        [Fact]
-        public void UpdateWithWorkloadSets()
+        void UpdateAndSwitchToWorkloadSetMode(out string updatedWorkloadVersion, out WorkloadSet rollbackAfterUpdate)
         {
-            InstallSdk();
-
             var originalWorkloadVersion = GetWorkloadVersion();
             originalWorkloadVersion.Should().StartWith("8.0.200-manifests.");
 
@@ -78,16 +76,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .Should()
                 .Pass();
 
-            var originalRollback = GetRollback();
-            var updatedWorkloadVersion = GetWorkloadVersion();
+            rollbackAfterUpdate = GetRollback();
+            updatedWorkloadVersion = GetWorkloadVersion();
             updatedWorkloadVersion.Should().StartWith("8.0.200-manifests.");
             updatedWorkloadVersion.Should().NotBe(originalWorkloadVersion);
-
-            VM.CreateRunCommand("dotnet", "nuget", "add", "source", @"c:\SdkTesting\WorkloadSets")
-                .WithDescription("Add WorkloadSets to NuGet.config")
-                .Execute()
-                .Should()
-                .Pass();
 
             GetUpdateMode().Should().Be("manifests");
 
@@ -100,6 +92,39 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(updatedWorkloadVersion);
 
             GetUpdateMode().Should().Be("workload-set");
+        }
+
+        [Fact]
+        public void UpdateWithWorkloadSets()
+        {
+            InstallSdk();
+
+            UpdateAndSwitchToWorkloadSetMode(out string _, out WorkloadSet rollbackAfterUpdate);
+
+            VM.CreateRunCommand("dotnet", "nuget", "add", "source", @"c:\SdkTesting\WorkloadSets")
+                .WithDescription("Add WorkloadSets to NuGet.config")
+                .Execute()
+                .Should()
+                .Pass();
+
+            VM.CreateRunCommand("dotnet", "workload", "update")
+                .Execute()
+                .Should()
+                .Pass();
+            
+            var newRollback = GetRollback();
+
+            newRollback.ManifestVersions.Should().NotBeEquivalentTo(rollbackAfterUpdate.ManifestVersions);
+
+            GetWorkloadVersion().Should().Be("8.0.201");
+        }
+
+        [Fact]
+        public void UpdateInWorkloadSetModeWithNoAvailableWorkloadSet()
+        {
+            InstallSdk();
+
+            UpdateAndSwitchToWorkloadSetMode(out string updatedWorkloadVersion, out WorkloadSet rollbackAfterUpdate);
 
             VM.CreateRunCommand("dotnet", "workload", "update")
                 .Execute()
@@ -108,10 +133,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var newRollback = GetRollback();
 
-            newRollback.ManifestVersions.Should().NotBeEquivalentTo(originalRollback.ManifestVersions);
+            newRollback.ManifestVersions.Should().BeEquivalentTo(rollbackAfterUpdate.ManifestVersions);
 
-            GetWorkloadVersion().Should().Be("8.0.201");
-
+            GetWorkloadVersion().Should().Be(updatedWorkloadVersion);
         }
 
         string GetWorkloadVersion()
