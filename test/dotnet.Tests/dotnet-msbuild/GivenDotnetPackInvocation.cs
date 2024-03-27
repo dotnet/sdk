@@ -25,6 +25,12 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--include-source" }, "-property:IncludeSource=true")]
         [InlineData(new string[] { "-c", "<config>" }, "-property:Configuration=<config> -property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true")]
         [InlineData(new string[] { "--configuration", "<config>" }, "-property:Configuration=<config> -property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true")]
+        [InlineData(new string[] { "--runtime", "<rid>" }, "-property:RuntimeIdentifiers=<rid>")]
+        [InlineData(new string[] { "--runtime", "linux-amd64" }, "-property:RuntimeIdentifiers=linux-x64")]
+        [InlineData(new string[] { "--runtime", "linux-arm64" }, "-property:RuntimeIdentifiers=linux-arm64")]
+        [InlineData(new string[] { "--os", "linux" }, "-property:RuntimeIdentifier=linux-x64")]
+        [InlineData(new string[] { "--os", "linux", "--arch", "amd64" }, "-property:RuntimeIdentifier=linux-x64")]
+        [InlineData(new string[] { "--os", "linux", "--arch", "arm64" }, "-property:RuntimeIdentifier=linux-arm64")]
         [InlineData(new string[] { "--version-suffix", "<versionsuffix>" }, "-property:VersionSuffix=<versionsuffix>")]
         [InlineData(new string[] { "-s" }, "-property:Serviceable=true")]
         [InlineData(new string[] { "--serviceable" }, "-property:Serviceable=true")]
@@ -32,7 +38,6 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--verbosity", "diag" }, "-verbosity:diag")]
         [InlineData(new string[] { "<project>" }, "<project>")]
         [InlineData(new string[] { "--disable-build-servers" }, "-p:UseRazorBuildServer=false -p:UseSharedCompilation=false /nodeReuse:false")]
-
         public void MsbuildInvocationIsCorrect(string[] args, string expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
