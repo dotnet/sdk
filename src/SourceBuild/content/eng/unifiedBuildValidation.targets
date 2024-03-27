@@ -11,8 +11,7 @@
 
     <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
              Targets="VSTest"
-             Properties="VsTestUseMSBuildOutput=true;
-                         VSTestLogger=trx;" />
+             Properties="ExcludeFromDotNetBuild=false;VsTestUseMSBuildOutput=true" />
 
   </Target>
 
