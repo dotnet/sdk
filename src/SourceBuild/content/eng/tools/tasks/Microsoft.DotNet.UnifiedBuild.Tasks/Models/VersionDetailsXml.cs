@@ -4,7 +4,7 @@
 
 using System.Xml.Serialization;
 
-namespace Microsoft.DotNet.SourceBuild.Tasks.Models
+namespace Microsoft.DotNet.UnifiedBuild.Tasks.Models
 {
     [XmlRoot("Dependencies")]
     public class VersionDetails

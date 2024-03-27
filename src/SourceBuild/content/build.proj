@@ -9,8 +9,6 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-  <UsingTask AssemblyFile="$(MergeAssetManifestsAssembly)" TaskName="Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests" />
-
   <Target Name="Build">
     <PropertyGroup>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' == 'true'">source-build</BuildModeInfoText>
@@ -27,6 +25,8 @@
              StopOnFirstFailure="true" />
   </Target>
 
+  <!-- Create a merge manifest from the individual repository manifest files. -->
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
   <Target Name="MergeAssetManifests" AfterTargets="Build">
     <PropertyGroup>      
       <MergedAssetManifestOutputPath>$(ArtifactsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
@@ -36,10 +36,11 @@
       <RepoAssetManifest Include="$(AssetManifestsIntermediateDir)\**\*.xml" />
     </ItemGroup>
 
-    <Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests 
+    <!-- It's OK for the VmrBuildNumber to be empty -->
+    <Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests 
       AssetManifest="@(RepoAssetManifest)" 
       MergedAssetManifestOutputPath="$(MergedAssetManifestOutputPath)"
-      VmrBuildNumber="$(VmrBuildNumber)" />
+      VmrBuildNumber="$(BUILD_BUILDNUMBER)" />
   </Target>
 
   <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />

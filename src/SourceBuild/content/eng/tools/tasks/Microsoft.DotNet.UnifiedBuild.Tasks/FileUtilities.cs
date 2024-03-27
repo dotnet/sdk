@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Microsoft.DotNet.Build.Tasks
+namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     public static class FileUtilities
     {

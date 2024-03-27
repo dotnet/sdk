@@ -31,7 +31,7 @@
   </Target>
 
   <!-- After building, create the sdk symbols tarball. -->
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="CreateSdkSymbolsLayout" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.CreateSdkSymbolsLayout" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
   <Target Name="CreateSdkSymbolsTarball"
           AfterTargets="Build"
           DependsOnTargets="RepackageSymbols">
@@ -71,7 +71,7 @@
              Targets="ReportPrebuiltUsage" />
   </Target>
 
-  <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="CheckForPoison" Condition="'$(EnablePoison)' == 'true'" />
+  <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.CheckForPoison" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" Condition="'$(EnablePoison)' == 'true'" />
   <Target Name="ReportPoisonUsage"
           AfterTargets="Build"
           Condition="'$(EnablePoison)' == 'true'"
@@ -103,7 +103,7 @@
     </Touch>
   </Target>
 
-  <UsingTask AssemblyFile="$(XPlatSourceBuildTasksAssembly)" TaskName="WriteUsageBurndownData" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WriteUsageBurndownData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
   <Target Name="GeneratePrebuiltBurndownData"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)GeneratePrebuiltBurndownData.complete" >
