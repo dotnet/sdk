@@ -157,16 +157,46 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 return;
             }
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (!_isNuGetTool)
             {
-                if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath),
-                    out string commandOutput))
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    throw new NuGetPackageInstallerException(LocalizableStrings.FailedToValidatePackageSigning +
-                                                             Environment.NewLine +
-                                                             commandOutput);
+                    if (!_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath),
+                        out string commandOutput))
+                    {
+                        throw new NuGetPackageInstallerException(LocalizableStrings.FailedToValidatePackageSigning +
+                                                                 Environment.NewLine +
+                                                                 commandOutput);
+                    }
                 }
             }
+            else
+            {
+                if(RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    if (!NuGetVerify(new FilePath(nupkgPath), out string commandOutput))
+                    {
+                        throw new NuGetPackageInstallerException(LocalizableStrings.FailedToValidatePackageSigning +
+                                                                 Environment.NewLine +
+                                                                 commandOutput);
+                    }
+                }
+                else
+                {
+                    _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                }   
+            }
+        }
+
+        private static bool NuGetVerify(FilePath nupkgToVerify, out string commandOutput)
+        {
+            var args = new[] { "verify", "--all", nupkgToVerify.Value };
+            var command = new DotNetCommandFactory(alwaysRunOutOfProc: true)
+                .Create("nuget", args);
+
+            var commandResult = command.CaptureStdOut().Execute();
+            commandOutput = commandResult.StdOut + Environment.NewLine + commandResult.StdErr;
+            return commandResult.ExitCode == 0;
         }
 
         public async Task<string> GetPackageUrl(PackageId packageId,
