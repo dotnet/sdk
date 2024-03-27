@@ -16,6 +16,8 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             ProjectInstance? aspnetCoreProject = null;
 
+            var visited = new HashSet<ProjectGraphNode>();
+
             while (queue.Count > 0)
             {
                 var currentNode = queue.Dequeue();
@@ -44,7 +46,10 @@ namespace Microsoft.DotNet.Watcher.Tools
 
                 foreach (var project in currentNode.ProjectReferences)
                 {
-                    queue.Enqueue(project);
+                    if (visited.Add(project))
+                    {
+                        queue.Enqueue(project);
+                    }
                 }
             }
 
