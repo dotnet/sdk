@@ -22,6 +22,11 @@
         <target state="translated">不能同时使用 {0} 和 {1} 选项。如果从回滚文件安装，请删除 {0}。否则，请删除 {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in the global.json file.</source>
+        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in the global.json file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload manifests.</source>
         <target state="translated">正在检查更新的工作负载清单。</target>
