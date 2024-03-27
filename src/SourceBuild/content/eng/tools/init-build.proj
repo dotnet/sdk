@@ -13,11 +13,10 @@
   <Target Name="Build"
           DependsOnTargets="
       UnpackTarballs;
-      BuildXPlatTasks;
+      BuildUnifiedBuildTasks;
       BuildMSBuildSdkResolver;
       BuildUnifiedBuildValidationTests;
       BuildLeakDetection;
-      BuildMergeAssetManifests;
       ExtractToolPackage;
       GenerateRootFs;
       PoisonPrebuiltPackages" />
@@ -64,11 +63,11 @@
           DependsOnTargets="UnpackTarballs"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)BuildMSBuildSdkResolver.complete">
-    <MSBuild Projects="tasks\SourceBuild.MSBuildSdkResolver\SourceBuild.MSBuildSdkResolver.csproj"
+    <MSBuild Projects="tasks\Microsoft.DotNet.UnifiedBuild.MSBuildSdkResolver\Microsoft.DotNet.UnifiedBuild.MSBuildSdkResolver.csproj"
              Targets="Restore"
              Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
 
-    <MSBuild Projects="tasks\SourceBuild.MSBuildSdkResolver\SourceBuild.MSBuildSdkResolver.csproj"
+    <MSBuild Projects="tasks\Microsoft.DotNet.UnifiedBuild.MSBuildSdkResolver\Microsoft.DotNet.UnifiedBuild.MSBuildSdkResolver.csproj"
              Targets="Build" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
@@ -77,24 +76,20 @@
     </Touch>
   </Target>
 
-  <PropertyGroup>
-    <SourceBuildMSBuildSdkResolverManifestPath>$([MSBuild]::NormalizePath('$(VSMSBuildSdkResolversDir)', 'SourceBuild.MSBuildSdkResolver', 'SourceBuild.MSBuildSdkResolver.xml'))</SourceBuildMSBuildSdkResolverManifestPath>
-  </PropertyGroup>
-
   <!-- Build msbuild tasks. -->
-  <Target Name="BuildXPlatTasks"
+  <Target Name="BuildUnifiedBuildTasks"
           DependsOnTargets="UnpackTarballs;BuildMSBuildSdkResolver"
           Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)BuildXPlatTasks.complete">
-    <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.XPlat\Microsoft.DotNet.SourceBuild.Tasks.XPlat.csproj"
+          Outputs="$(BaseIntermediateOutputPath)BuildUnifiedBuildTasks.complete">
+    <MSBuild Projects="tasks\Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj"
              Targets="Restore"
              Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
 
-    <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.XPlat\Microsoft.DotNet.SourceBuild.Tasks.XPlat.csproj"
+    <MSBuild Projects="tasks\Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj"
              Targets="Build" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)BuildXPlatTasks.complete" AlwaysCreate="true">
+    <Touch Files="$(BaseIntermediateOutputPath)BuildUnifiedBuildTasks.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
   </Target>
@@ -128,24 +123,6 @@
              Properties="ExcludeFromDotNetBuild=false" />
   </Target>
 
-  <Target Name="BuildMergeAssetManifests"
-          DependsOnTargets="ExtractToolPackage;BuildMSBuildSdkResolver"
-          Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)MergeAssetManifests.complete">
-
-    <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests\Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests.csproj"
-             Targets="Restore"
-             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
-
-    <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests\Microsoft.DotNet.SourceBuild.Tasks.MergeAssetManifests.csproj"
-             Targets="Build" />
-
-    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)MergeAssetManifests.complete" AlwaysCreate="true">
-      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
-    </Touch>
-  </Target>
-
   <Target Name="GenerateRootFs"
           Condition="'$(BuildOS)' != 'windows' and '$(CrossBuild)' == 'true' and '$(ROOTFS_DIR)' == ''">
     <PropertyGroup>
@@ -169,18 +146,13 @@
            DestinationFolder="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/"
            SkipUnchangedFiles="true" />
 
-    <!-- When unpacking, this executable file has the wrong permissions on
-         non-windows systems: https://github.com/NuGet/Home/issues/13121. -->
-    <Exec Command="chmod 755 git-clone-to-dir.sh"
-      WorkingDirectory="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/tools/SourceBuild/" />
-
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)ExtractToolPackage.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
   </Target>
 
-  <UsingTask AssemblyFile="$(LeakDetectionTasksAssembly)" TaskName="MarkAndCatalogPackages" Condition="'$(EnablePoison)' == 'true'" />
+  <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.MarkAndCatalogPackages" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" Condition="'$(EnablePoison)' == 'true'" />
   <Target Name="PoisonPrebuiltPackages"
           Condition="'$(EnablePoison)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"

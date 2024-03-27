@@ -10,8 +10,7 @@ using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-
-namespace Microsoft.DotNet.Build.Tasks
+namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     /*
      * This task adds a source to a well-formed NuGet.Config file. If a source with `SourceName` is already present, then

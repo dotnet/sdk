@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using Microsoft.Build.Utilities;
 using Microsoft.Build.Framework;
 using System;
@@ -10,7 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Microsoft.DotNet.SourceBuild.Tasks
+namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     public class MergeAssetManifests : Task
     {
@@ -29,8 +31,7 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
         /// <summary>
         /// Azure DevOps build number
         /// </summary>
-        [Required]
-        public required string VmrBuildNumber { get; init; }
+        public string VmrBuildNumber { get; set; } = string.Empty;
 
         private static readonly string _buildIdAttribute = "BuildId";
         private static readonly string _azureDevOpsBuildNumberAttribute = "AzureDevOpsBuildNumber";

@@ -4,7 +4,6 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.DotNet.Build.Tasks;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 
-namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
+namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
 {
     public class WriteUsageReports : Task
     {

@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Microsoft.DotNet.SourceBuild.Tasks.XPlat/Microsoft.DotNet.SourceBuild.Tasks.XPlat.csproj" />
+    <ProjectReference Include="../Microsoft.DotNet.UnifiedBuild.Tasks/Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
   </ItemGroup>
 
   <ItemGroup>
