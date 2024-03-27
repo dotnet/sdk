@@ -184,7 +184,7 @@
       </trans-unit>
       <trans-unit id="NewWorkloadSet">
         <source>Installing workload version {0}.</source>
-        <target state="new">Installing workload version {0}.</target>
+        <target state="translated">Installazione del carico di lavoro {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
@@ -374,12 +374,12 @@
       </trans-unit>
       <trans-unit id="WorkloadSetUpgrade">
         <source>Updating workload version from {0} to {1}.</source>
-        <target state="new">Updating workload version from {0} to {1}.</target>
+        <target state="translated">Aggiornamento della versione del carico di lavoro da {0} a {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>Update to the specified workload version.</source>
-        <target state="new">Update to the specified workload version.</target>
+        <target state="translated">Eseguire l'aggiornamento alla versione del carico di lavoro specificata.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
