@@ -36,10 +36,11 @@
       <RepoAssetManifest Include="$(AssetManifestsIntermediateDir)\**\*.xml" />
     </ItemGroup>
 
+    <!-- It's OK for the VmrBuildNumber to be empty -->
     <Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests 
       AssetManifest="@(RepoAssetManifest)" 
       MergedAssetManifestOutputPath="$(MergedAssetManifestOutputPath)"
-      VmrBuildNumber="$(VmrBuildNumber)" />
+      VmrBuildNumber="$(BUILD_BUILDNUMBER)" />
   </Target>
 
   <Import Project="$(RepositoryEngineeringDir)build.sourcebuild.targets" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
