@@ -167,7 +167,9 @@
             "defaultRemote": "https://github.com/microsoft/vstest",
             "exclude": [
                 // Non-OSS license used in VS specific build configurations.
-                "src/package/licenses/LICENSE_VS.txt"
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/4255
+                "src/package/licenses/LICENSE_VS.txt",
+                "test/Microsoft.TestPlatform.CoreUtilities.UnitTests/TestAssets/dotnetWinX86.exe"
             ]
         },
         {
@@ -186,7 +188,11 @@
         },
         {
             "name": "winforms",
-            "defaultRemote": "https://github.com/dotnet/winforms"
+            "defaultRemote": "https://github.com/dotnet/winforms",
+            "exclude": [
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/3772
+                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/**"
+            ]
         },
         {
             "name": "wpf",
