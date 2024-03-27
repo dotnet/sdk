@@ -76,19 +76,46 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
             Log.WriteLine($"Deploying SDK from {TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest} to {installedSdkFolder} on VM.");
 
-            var vmVersionFilePath = Path.Combine(installedSdkFolder, ".version");
-
-            var existingVersionFileContents = VM.GetRemoteFile(vmVersionFilePath).ReadAllText().Split(Environment.NewLine);
-            var newVersionFileContents = File.ReadAllLines(Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, ".version"));
-            newVersionFileContents[1] = existingVersionFileContents[1];
-
             //  TODO: It would be nice if the description included the date/time of the SDK build, to distinguish different snapshots
             VM.CreateActionGroup("Deploy Stage 2 SDK",
                     VM.CopyFolder(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, installedSdkFolder),
-                    VM.WriteFile(vmVersionFilePath, string.Join(Environment.NewLine, newVersionFileContents)))
+                    ChangeVersionFileContents(SdkInstallerVersion))
                 .Execute()
                 .Should()
                 .Pass();
+        }
+
+        protected void ChangeSdkVersion(string oldVersion, string newVersion)
+        {
+            var oldSdkFolder = $@"c:\Program Files\dotnet\sdk\{oldVersion}";
+            var newSdkFolder = $@"c:\Program Files\dotnet\sdk\{newVersion}";
+
+            new VMMoveFolderAction(VM)
+            {
+               SourcePath = oldSdkFolder,
+               TargetPath = newSdkFolder
+            }
+                .WithDescription($"Change SDK version to {newVersion}")
+                .Execute().Should().Pass();
+
+            ChangeVersionFileContents(newVersion)
+                .WithDescription("Update .version file")
+                .Execute()
+                .Should()
+                .Pass();
+
+        }
+
+        private VMWriteFileAction ChangeVersionFileContents(string sdkVersion)
+        {
+            var installedSdkFolder = $@"c:\Program Files\dotnet\sdk\{sdkVersion}";
+            var vmVersionFilePath = Path.Combine(installedSdkFolder, ".version");
+
+            var newVersionFileContents = File.ReadAllLines(Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, ".version"));
+            newVersionFileContents[1] = sdkVersion;
+
+            return VM.WriteFile(vmVersionFilePath, string.Join(Environment.NewLine, newVersionFileContents));
+
         }
 
         protected string GetInstalledSdkVersion()

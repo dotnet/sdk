@@ -299,6 +299,14 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
                 return VMActionResult.Success();
             }
+            else if (action.Type == VMActionType.MoveFolderOnVM)
+            {
+                var sourceSharePath = VMPathToSharePath(action.SourcePath);
+                var targetSharePath = VMPathToSharePath(action.TargetPath);
+                Directory.Move(sourceSharePath, targetSharePath);
+
+                return VMActionResult.Success();
+            }
             else if (action.Type == VMActionType.WriteFileToVM)
             {
                 var targetSharePath = VMPathToSharePath(action.TargetPath);
