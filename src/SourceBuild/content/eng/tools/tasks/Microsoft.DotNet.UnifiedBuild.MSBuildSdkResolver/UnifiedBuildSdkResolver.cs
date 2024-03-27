@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Microsoft.DotNet.SourceBuild.Tasks
+namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     /// <summary>
     /// Extends the SDK to handle "SOURCE_BUILT_SDK_*" override environment variables. Each override
@@ -25,9 +25,9 @@ namespace Microsoft.DotNet.SourceBuild.Tasks
     /// SOURCE_BUILT_SDK_VERSION_EXAMPLE=1.0.0-source-built
     ///   (Optional) Version of the SDK package to use. This is informational.
     /// </summary>
-    public class SourceBuiltSdkResolver : SdkResolver
+    public class UnifiedBuildSdkResolver : SdkResolver
     {
-        public override string Name => nameof(SourceBuiltSdkResolver);
+        public override string Name => nameof(UnifiedBuildSdkResolver);
 
         public override int Priority => 0;
 

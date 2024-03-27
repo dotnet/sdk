@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.DotNet.Build.Tasks
+namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     // Takes a path to a path to a json file and a
     // string that represents a dotted path to an attribute

@@ -14,7 +14,7 @@ using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.DotNet.Build.Tasks
+namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     /*
      * This task updates the package source mappings in the NuGet.Config using the following logic:

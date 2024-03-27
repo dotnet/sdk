@@ -5,7 +5,7 @@
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.DotNet.Build.Tasks
+namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
     public abstract partial class BuildTask : ITask
     {

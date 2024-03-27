@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Microsoft.DotNet.SourceBuild.Tasks.UsageReport
+namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
 {
     public class ValidateUsageAgainstBaseline : Task
     {
