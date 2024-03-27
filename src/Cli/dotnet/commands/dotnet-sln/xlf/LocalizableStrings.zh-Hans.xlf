@@ -27,6 +27,11 @@
         <target state="translated">将一个或多个项目添加到解决方案文件。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdFormatDescription">
+        <source>The desired output format of the command</source>
+        <target state="new">The desired output format of the command</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InRoot">
         <source>Place project in root of the solution, rather than creating a solution folder.</source>
         <target state="translated">将项目放在解决方案的根目录下，而不是创建解决方案文件夹。</target>
