@@ -182,6 +182,11 @@
         <target state="translated">Rimozione di {0} </target>
         <note />
       </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">Installazione del carico di lavoro {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">Impossibile stabilire una relazione di attendibilità con il processo padre ({0}).</target>
@@ -365,6 +370,16 @@
       <trans-unit id="WorkloadSetMode">
         <source>Control whether future workload operations should use workload sets or loose manifests.</source>
         <target state="translated">Controllare se le operazioni future del carico di lavoro devono usare set di carichi di lavoro o manifesti separati.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetUpgrade">
+        <source>Updating workload version from {0} to {1}.</source>
+        <target state="translated">Aggiornamento della versione del carico di lavoro da {0} a {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">Eseguire l'aggiornamento alla versione del carico di lavoro specificata.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

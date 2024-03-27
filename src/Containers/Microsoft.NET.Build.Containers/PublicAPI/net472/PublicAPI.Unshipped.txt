@@ -77,6 +77,10 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.g
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> bool
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolName.get -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateCommandLineCommands() -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateFullPathToTool() -> string!
@@ -110,6 +114,8 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkRefer
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.FrameworkReferences.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsAotPublished.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsAotPublished.set -> void
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsTrimmed.get -> bool
+Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsTrimmed.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.IsSelfContained.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetRuntimeIdentifier.get -> string!

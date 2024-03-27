@@ -42,6 +42,11 @@
         <target state="translated">Не удалось обновить рабочую нагрузку "{0}" по следующей причине:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Обновление до файла отката несовместимо с наборами рабочих нагрузок. Теперь установка и обновление будут использовать свободные манифесты. Чтобы выполнить обновление до определенной версии рабочей нагрузки, используйте "--version".</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">Рабочие нагрузки успешно обновлены: {0}.</target>
