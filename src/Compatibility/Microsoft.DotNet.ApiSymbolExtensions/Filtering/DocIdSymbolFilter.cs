@@ -6,12 +6,18 @@ using Microsoft.CodeAnalysis;
 namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
 {
     /// <summary>
-    /// Implements the logic of filtering out api.
-    /// Reads the file with the list of attributes, types, members in DocId format.
+    /// Implements the logic of filtering API.
     /// </summary>
-    public class DocIdSymbolFilter(string[] docIdsToExcludeFiles) : ISymbolFilter
+    /// <param name="docIds">List of DocIDs to operate on.</param>
+    /// <param name="includeDocIds">Determines if DocIds should be included or excluded. Defaults to false which excludes specified DocIds.</param>
+    public class DocIdSymbolFilter(IEnumerable<string> docIds, bool includeDocIds = false) : ISymbolFilter
     {
-        private readonly HashSet<string> _docIdsToExclude = new(ReadDocIdsAttributes(docIdsToExcludeFiles));
+        private readonly HashSet<string> _docIds = new(docIds);
+
+        /// <summary>
+        /// Determines if DocIds should be included or excluded.
+        /// </summary>
+        public bool IncludeDocIds { get; } = includeDocIds;
 
         /// <summary>
         ///  Determines whether the <see cref="ISymbol"/> should be included.
@@ -21,30 +27,42 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         public bool Include(ISymbol symbol)
         {
             string? docId = symbol.GetDocumentationCommentId();
-            if (docId is not null && _docIdsToExclude.Contains(docId))
+            if (docId is not null && _docIds.Contains(docId))
             {
-                return false;
+                return IncludeDocIds;
             }
 
-            return true;
+            return !IncludeDocIds;
         }
 
-        private static IEnumerable<string> ReadDocIdsAttributes(IEnumerable<string> docIdsToExcludeFiles)
+        /// <summary>
+        /// Create a DocIdSymbolFilter from a list of files which contain DocIds.
+        /// Reads the file with the list of attributes, types, members in DocId format.
+        /// </summary>
+        /// <param name="docIdsFiles">List of files which contain DocIds to operate on.</param>
+        /// <param name="includeDocIds">Determines if DocIds should be included or excluded. Defaults to false which excludes specified DocIds.</param>
+        /// <returns></returns>
+        public static DocIdSymbolFilter CreateFromFiles(IEnumerable<string> docIdsFiles, bool includeDocIds = false)
         {
-            foreach (string docIdsToExcludeFile in docIdsToExcludeFiles)
+            static IEnumerable<string> ReadDocIdsAttributes(IEnumerable<string> docIdsToExcludeFiles)
             {
-                foreach (string id in File.ReadAllLines(docIdsToExcludeFile))
+                foreach (string docIdsToExcludeFile in docIdsToExcludeFiles)
                 {
+                    foreach (string id in File.ReadAllLines(docIdsToExcludeFile))
+                    {
 #if NET
                     if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith('#') && !id.StartsWith("//"))
 #else
-                    if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith("#") && !id.StartsWith("//"))
+                        if (!string.IsNullOrWhiteSpace(id) && !id.StartsWith("#") && !id.StartsWith("//"))
 #endif
-                    {
-                        yield return id.Trim();
+                        {
+                            yield return id.Trim();
+                        }
                     }
                 }
             }
+
+            return new(ReadDocIdsAttributes(docIdsFiles), includeDocIds);
         }
     }
 }

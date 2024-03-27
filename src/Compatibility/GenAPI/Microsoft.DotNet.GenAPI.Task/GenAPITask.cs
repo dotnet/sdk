@@ -50,6 +50,17 @@ namespace Microsoft.DotNet.GenAPI.Task
         public string[]? ExcludeAttributesFiles { get; set; }
 
         /// <summary>
+        /// If true API Compat will not include internal attributes commonly defined to
+        /// represent language features (Eg: System.Runtime.CompilerServices.NullableAttribute, etc).
+        /// </summary>
+        public bool ExcludeInternalCompilerAttributes { get; set; }
+
+        /// <summary>
+        /// The path to one or more api inclusion files with types in DocId format.
+        /// </summary>
+        public string[]? IncludeApiFiles { get; set; }
+
+        /// <summary>
         /// If true, includes both internal and public API.
         /// </summary>
         public bool RespectInternals { get; set; }
@@ -70,6 +81,8 @@ namespace Microsoft.DotNet.GenAPI.Task
                 ExceptionMessage,
                 ExcludeApiFiles,
                 ExcludeAttributesFiles,
+                ExcludeInternalCompilerAttributes,
+                IncludeApiFiles,
                 RespectInternals,
                 IncludeAssemblyAttributes
             );

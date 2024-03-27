@@ -50,6 +50,20 @@ namespace Microsoft.DotNet.GenAPI.Tool
                 Recursive = true
             };
 
+            CliOption<bool> excludeInternalCompilerAttributesOption = new("--exclude-internal-compiler-attributes")
+            {
+                Description = "If true, will not include internally defined compiler attributes.",
+                Recursive = true
+            };
+
+            CliOption<string[]?> includeApiFilesOption = new("--include-api-file")
+            {
+                Description = "The path to one or more api inclusion files with types in DocId format.",
+                CustomParser = ParseAssemblyArgument,
+                Arity = ArgumentArity.ZeroOrMore,
+                Recursive = true
+            };
+
             CliOption<string?> outputPathOption = new("--output-path")
             {
                 Description = @"Output path. Default is the console. Can specify an existing directory as well
@@ -89,6 +103,8 @@ namespace Microsoft.DotNet.GenAPI.Tool
             rootCommand.Options.Add(assemblyReferencesOption);
             rootCommand.Options.Add(excludeApiFilesOption);
             rootCommand.Options.Add(excludeAttributesFilesOption);
+            rootCommand.Options.Add(excludeInternalCompilerAttributesOption);
+            rootCommand.Options.Add(includeApiFilesOption);
             rootCommand.Options.Add(outputPathOption);
             rootCommand.Options.Add(headerFileOption);
             rootCommand.Options.Add(exceptionMessageOption);
@@ -105,6 +121,8 @@ namespace Microsoft.DotNet.GenAPI.Tool
                     parseResult.GetValue(exceptionMessageOption),
                     parseResult.GetValue(excludeApiFilesOption),
                     parseResult.GetValue(excludeAttributesFilesOption),
+                    parseResult.GetValue(excludeInternalCompilerAttributesOption),
+                    parseResult.GetValue(includeApiFilesOption),
                     parseResult.GetValue(respectInternalsOption),
                     parseResult.GetValue(includeAssemblyAttributesOption)
                 );
