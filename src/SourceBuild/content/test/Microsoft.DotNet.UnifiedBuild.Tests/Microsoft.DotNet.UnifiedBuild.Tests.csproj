@@ -6,6 +6,7 @@
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <Nullable>enable</Nullable>
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);assets/**/*</DefaultExcludesInProjectFolder>
+    <UBTestsWarnOnSdkContentDiffs>true</UBTestsWarnOnSdkContentDiffs>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,6 +33,13 @@
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.UbBuildVersion">
         <Value>$(SourceBuiltSdkVersion)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.WarnOnSdkContentDiffs">
+        <Value>$(UBTestsWarnOnSdkContentDiffs)</Value>
+      </RuntimeHostConfigurationOption>
+      <!-- Set for local testing to avoid downloading a new SDK each test -->
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.MsftSdkArchivePath">
+        <Value>$(UBTestsMsftSdkArchivePath)</Value>
       </RuntimeHostConfigurationOption>
     </ItemGroup>
   </Target>
