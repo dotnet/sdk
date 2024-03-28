@@ -379,6 +379,7 @@ namespace Microsoft.NET.Build.Tasks
 
                     runtimeFramework.SetMetadata(MetadataKeys.Version, runtimeFrameworkVersion);
                     runtimeFramework.SetMetadata(MetadataKeys.FrameworkName, knownFrameworkReference.Name);
+                    runtimeFramework.SetMetadata("Profile", knownFrameworkReference.Profile);
 
                     runtimeFrameworks.Add(runtimeFramework);
                 }

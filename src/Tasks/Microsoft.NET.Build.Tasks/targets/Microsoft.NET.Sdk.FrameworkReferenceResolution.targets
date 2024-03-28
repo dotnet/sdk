@@ -492,6 +492,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'@(RuntimePack)' != ''">
 
     <ResolveRuntimePackAssets FrameworkReferences="@(FrameworkReference)"
+                              RuntimeFrameworks="@(RuntimeFramework)"
                               ResolvedRuntimePacks="@(ResolvedRuntimePack)"
                               UnavailableRuntimePacks="@(UnavailableRuntimePack)"
                               SatelliteResourceLanguages="$(SatelliteResourceLanguages)"
