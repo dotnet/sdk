@@ -17,7 +17,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(testInstance);
-            build.Execute()
+            build.WithWorkingDirectory(testInstance.Path);
+            build.Execute("/bl")
                 .Should()
                 .Pass();
 

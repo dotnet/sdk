@@ -6,8 +6,11 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
@@ -126,6 +129,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
 
             var workloadIds = GetUpdatableWorkloads();
+            WriteSDKInstallRecordsForVSWorkloads(workloadIds);
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
 
             var useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
@@ -143,6 +147,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             Reporter.WriteLine();
             Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
             Reporter.WriteLine();
+        }
+
+        private void WriteSDKInstallRecordsForVSWorkloads(IEnumerable<WorkloadId> updateableWorkloads)
+        {
+#if !DOT_NET_BUILD_FROM_SOURCE
+            if (OperatingSystem.IsWindows())
+            {
+                VisualStudioWorkloads.WriteSDKInstallRecordsForVSWorkloads(_workloadInstaller, _workloadResolver, updateableWorkloads, Reporter);
+            }
+#endif
         }
 
         private void UpdateWorkloadsWithInstallRecord(

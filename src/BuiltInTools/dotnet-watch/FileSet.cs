@@ -8,12 +8,10 @@ namespace Microsoft.DotNet.Watcher
 {
     internal sealed class FileSet : IEnumerable<FileItem>
     {
-        public ProjectInfo? Project { get; }
         private readonly Dictionary<string, FileItem> _files;
 
-        public FileSet(ProjectInfo? projectInfo, IEnumerable<FileItem> files)
+        public FileSet(IEnumerable<FileItem> files)
         {
-            Project = projectInfo;
             _files = new Dictionary<string, FileItem>(StringComparer.Ordinal);
             foreach (var item in files)
             {
