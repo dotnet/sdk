@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
@@ -16,6 +14,10 @@
     <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' == 'true' and $(VersionPrefix.EndsWith('00'))">rtm</PreReleaseVersionLabel>
     <PreReleaseVersionLabel Condition="'$(StabilizePackageVersion)' == 'true' and !$(VersionPrefix.EndsWith('00'))">servicing</PreReleaseVersionLabel>
     <PreReleaseVersionIteration Condition="'$(StabilizePackageVersion)' != 'true'">4</PreReleaseVersionIteration>
+    <!-- In source-build the version of the compiler must be same or newer than the version of the
+         compiler API targeted by analyzer assemblies. This is mostly an issue on source-build as
+         in that build mode analyzer assemblies always target the live compiler API. -->
+    <UsingToolMicrosoftNetCompilers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</UsingToolMicrosoftNetCompilers>
   </PropertyGroup>
   <!-- Production Dependencies -->
   <PropertyGroup>
@@ -98,14 +100,14 @@
          up overwritten by properties flowing the newest version that are imported after this file.
          These should be used in places where we always want to target the latest. This includes source-only modes (always use the latest)
          as well as some additional cases like the msbuild that is redistributed in the SDK.
-        
+
          In non-source-only modes, some tasks and the resolver will need to run in an MSBuild that is older
          than the very latest, based on what we want the SDK to support. So use a version that matches the version
          in minimumMSBuildVersion. In these cases, we don't want to use MicrosoftBuildVersion and other
          associated properties that are updated by the VMR infrastructure. So, we read this version
          from the 'minimumMSBuildVersion' file in non-source-only cases into MicrosoftBuildMinimumVersion,
          then use that in Directory.Packages.props.
-         
+
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes. -->
     <MicrosoftBuildVersion>17.10.0-preview-24177-05</MicrosoftBuildVersion>
     <MicrosoftBuildLocalizationVersion>17.10.0-preview-24177-05</MicrosoftBuildLocalizationVersion>
@@ -130,7 +132,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn -->
-    <MicrosoftNetCompilersToolsetPackageVersion>4.11.0-1.24177.10</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetVersion>4.11.0-1.24177.10</MicrosoftNetCompilersToolsetVersion>
     <MicrosoftCodeAnalysisPackageVersion>4.11.0-1.24177.10</MicrosoftCodeAnalysisPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>4.11.0-1.24177.10</MicrosoftCodeAnalysisCSharpPackageVersion>
     <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>4.11.0-1.24177.10</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
