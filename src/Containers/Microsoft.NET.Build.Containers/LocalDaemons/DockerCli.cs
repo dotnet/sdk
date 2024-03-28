@@ -183,7 +183,6 @@ internal sealed class DockerCli : ILocalRegistry
             dockerCommand.CaptureStdErr();
             CommandResult dockerCommandResult = dockerCommand.Execute();
 
-
             if (dockerCommandResult.ExitCode != 0)
             {
                 throw new DockerLoadException(Resource.FormatString(
@@ -193,9 +192,17 @@ internal sealed class DockerCli : ILocalRegistry
                     dockerCommandResult.StdErr));
             }
 
-            return JsonDocument.Parse(dockerCommandResult.StdOut);
 
+            var result = JsonDocument.Parse(dockerCommandResult.StdOut);
+            if(result.RootElement.TryGetProperty("ID", out var id) ==false || string.IsNullOrWhiteSpace(id.GetString()))
+            {
+                var serverErrors = result.RootElement.TryGetProperty("ServerErrors",out var error)
+                    ? string.Join(Environment.NewLine, error.EnumerateArray().Select(o=>o.GetString()))
+                    : string.Empty;
+                throw new DockerLoadException(Resource.FormatString(nameof(Strings.DockerInfoFailed_Ex), serverErrors));
+            }
 
+            return result;
         }
         catch (Exception e) when (e is not DockerLoadException)
         {
