@@ -427,6 +427,25 @@
     <RemoveDir Directories="$(OutputPath)/15.0" />
   </Target>
 
+  <!-- Patch version of Newtonsoft.Json in testhost.deps.json, because it is picked up by 
+  compliance checking scripts as a false-positive vulnerability. -->
+  <Target Name="FixNewtonsoftInTesthostDepsJson"
+          BeforeTargets="PublishStage2WithBackwardsCompatibleRuntimes"
+          AfterTargets="Build">
+    <PropertyGroup>
+      <ReplacementPattern>13.0.0.0"</ReplacementPattern>
+      <ReplacementString>13.0.1.0"</ReplacementString>
+    </PropertyGroup>
+    <ItemGroup>
+      <ToolRuntimeConfigPath Include="$(OutputPath)/**/testhost.deps.json"/>
+    </ItemGroup>
+    <ReplaceFileContents
+      InputFiles="@(ToolRuntimeConfigPath)"
+      DestinationFiles="@(ToolRuntimeConfigPath)"
+      ReplacementPatterns="$(ReplacementPattern)"
+      ReplacementStrings="$(ReplacementString)" />
+  </Target>
+
   <Target Name="GenerateLayout"
           DependsOnTargets="PublishVersionFile;
                             PublishRoslyn;
