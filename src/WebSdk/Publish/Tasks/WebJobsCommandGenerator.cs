@@ -5,11 +5,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 {
     public static class WebJobsCommandGenerator
     {
-        public static string RunCommand(string targetPath, bool useAppHost, string executableExtension)
+        public static string RunCommand(string? targetPath, bool useAppHost, string? executableExtension)
         {
-            string appName = Path.GetFileName(targetPath);
+            string? appName = Path.GetFileName(targetPath);
 
-            string command = $"dotnet {appName}";
+            string? command = $"dotnet {appName}";
             if (useAppHost)
             {
                 command = Path.ChangeExtension(appName, !string.IsNullOrWhiteSpace(executableExtension) ? executableExtension : null);

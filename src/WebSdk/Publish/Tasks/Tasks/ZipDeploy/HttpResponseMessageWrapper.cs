@@ -32,7 +32,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
 
         public IEnumerable<string> GetHeader(string name)
         {
-            IEnumerable<string> values;
+            IEnumerable<string>? values;
             if (_message.Headers.TryGetValues(name, out values))
             {
                 return values;

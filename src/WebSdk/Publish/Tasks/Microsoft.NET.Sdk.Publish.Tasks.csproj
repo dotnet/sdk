@@ -4,6 +4,7 @@
     <PublishRoot Condition="'$(PublishRoot)' == ''">$(RepoRoot)\src\WebSdk\Publish\</PublishRoot>
     <PackageId>Microsoft.NET.Sdk.Publish</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

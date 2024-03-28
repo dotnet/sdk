@@ -48,13 +48,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             {
                 TaskItem srcSkipRuleItem = new(SkipFileItemSpecName);
                 srcSkipRuleItem.SetMetadata("ObjectName", p.sourceProvider);
-                srcSkipRuleItem.SetMetadata("AbsolutePath", System.Text.RegularExpressions.Regex.Escape(Path.Combine(rootFolderOfFileToPublish, p.sourceFilePath)) + "$");
+                srcSkipRuleItem.SetMetadata("AbsolutePath", System.Text.RegularExpressions.Regex.Escape(Path.Combine(rootFolderOfFileToPublish, p.sourceFilePath!)) + "$");
                 srcSkipRuleItem.SetMetadata(SkipApplyMetadataName, SourceDeployObject);
                 _items.Add(srcSkipRuleItem);
 
                 TaskItem destSkipRuleItem = new(SkipFileItemSpecName);
                 destSkipRuleItem.SetMetadata("ObjectName", p.destinationProvider);
-                destSkipRuleItem.SetMetadata("AbsolutePath", System.Text.RegularExpressions.Regex.Escape(p.destinationFilePath) + "$");
+                destSkipRuleItem.SetMetadata("AbsolutePath", System.Text.RegularExpressions.Regex.Escape(p.destinationFilePath!) + "$");
                 destSkipRuleItem.SetMetadata(SkipApplyMetadataName, DestinationDeployObject);
                 _items.Add(destSkipRuleItem);
             }
