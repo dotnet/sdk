@@ -9,6 +9,7 @@ using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 #endif
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -143,13 +144,39 @@ public static class ContainerHelpers
         return ReferenceParser.anchoredTagRegexp.IsMatch(imageTag);
     }
 
+
     /// <summary>
     /// Given an already-validated registry domain, this is our hueristic to determine what HTTP protocol should be used to interact with it.
+    /// If the domain is localhost, we default to HTTP. Otherwise, we check the Docker config to see if the registry is marked as insecure.
     /// This is primarily for testing - in the real world almost all usage should be through HTTPS!
     /// </summary>
     internal static Uri TryExpandRegistryToUri(string alreadyValidatedDomain)
     {
-        var prefix = alreadyValidatedDomain.StartsWith("localhost", StringComparison.Ordinal) ? "http" : "https";
+        string prefix = "https";
+        if (alreadyValidatedDomain.StartsWith("localhost", StringComparison.Ordinal))
+        {
+            prefix = "http";
+        }
+#if !NET472
+        //check the docker config to see if the registry is marked as insecure
+        if (DockerCli.GetDockerConfig().RootElement.TryGetProperty("RegistryConfig", out var registryConfig) && registryConfig.ValueKind == System.Text.Json.JsonValueKind.Object)
+        {
+            if(registryConfig.TryGetProperty("IndexConfigs",out var indexConfigs) && indexConfigs.ValueKind == System.Text.Json.JsonValueKind.Object){
+                foreach (var property in indexConfigs.EnumerateObject())
+                {
+                    if(property.Value.ValueKind == System.Text.Json.JsonValueKind.Object && property.Value.TryGetProperty("Secure",out var secure) && !secure.GetBoolean())
+                    {
+                        if (property.Name.Equals(alreadyValidatedDomain,StringComparison.Ordinal))
+                        {
+                            prefix = "http";
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+#endif
+
         return new Uri($"{prefix}://{alreadyValidatedDomain}");
     }
 
