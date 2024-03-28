@@ -58,7 +58,7 @@ stages:
       - publish: $(Build.SourcesDirectory)\eng\BuildConfiguration
         artifact: BuildConfiguration
         displayName: Publish Build Config
-  - template: /eng/build.yml
+  - template: /eng/build-pr.yml
     parameters:
       agentOs: Windows_NT
       pool:
@@ -89,7 +89,7 @@ stages:
         name: 'Managed'
         container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-7-3e800f1-20190501005343'
   - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Windows_NT_FullFramework
         pool:
@@ -111,7 +111,7 @@ stages:
               _SignType: test
               _Test: -test
 
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Windows_NT_TestAsTools
         pool:
@@ -128,7 +128,7 @@ stages:
               _PublishArgs: ''
               _SignType: test
 
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Ubuntu_20_04
         pool:
@@ -150,7 +150,7 @@ stages:
               _SignType: test
               _Test: -test
 
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Darwin
         pool:
