@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Watcher
     internal sealed record EnvironmentOptions(
         string WorkingDirectory,
         string MuxerPath,
+        bool IsPollingEnabled = false,
         bool SuppressHandlingStaticContentFiles = false,
         bool SuppressMSBuildIncrementalism = false,
         bool SuppressLaunchBrowser = false,
@@ -27,6 +28,7 @@ namespace Microsoft.DotNet.Watcher
         (
             WorkingDirectory: Directory.GetCurrentDirectory(),
             MuxerPath: GetMuxerPathFromEnvironment(),
+            IsPollingEnabled: EnvironmentVariables.IsPollingEnabled,
             SuppressHandlingStaticContentFiles: EnvironmentVariables.SuppressHandlingStaticContentFiles,
             SuppressMSBuildIncrementalism: EnvironmentVariables.SuppressMSBuildIncrementalism,
             SuppressLaunchBrowser: EnvironmentVariables.SuppressLaunchBrowser,

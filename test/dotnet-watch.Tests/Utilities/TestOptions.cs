@@ -5,6 +5,6 @@ namespace Microsoft.DotNet.Watcher;
 
 internal static class TestOptions
 {
-    public static readonly CommandLineOptions CommandLine = new() { RemainingArguments = [] };
+    public static readonly CommandLineOptions CommandLine = new() { LaunchProcessArguments = [] };
     public static readonly EnvironmentOptions Environmental = new(WorkingDirectory: "", MuxerPath: "");
 }

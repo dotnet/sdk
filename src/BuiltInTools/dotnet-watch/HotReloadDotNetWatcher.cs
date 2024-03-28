@@ -69,15 +69,13 @@ namespace Microsoft.DotNet.Watcher
             environmentBuilder.Add(EnvironmentVariables.Names.DotnetModifiableAssemblies, "debug");
             environmentBuilder.Add(EnvironmentVariables.Names.DotnetHotReloadNamedPipeName, namedPipeName);
 
+            processSpec.Executable = _context.EnvironmentOptions.MuxerPath;
+
             await using var browserConnector = new BrowserConnector(_context);
 
             for (var iteration = 0;;iteration++)
             {
-                if (await BuildAsync(processSpec.WorkingDirectory, cancellationToken) is not (var project, var files))
-                {
-                    _context.Reporter.Error("Failed to find a list of files to watch");
-                    return;
-                }
+                var (project, files) = await _fileSetFactory.CreateAsync(cancellationToken);
 
                 if (!project.IsNetCoreApp60OrNewer())
                 {
@@ -89,8 +87,7 @@ namespace Microsoft.DotNet.Watcher
 
                 if (iteration == 0)
                 {
-                    ConfigureExecutable(processSpec, project, _context.LaunchSettingsProfile);
-                    environmentBuilder.AddToEnvironment(processSpec.EnvironmentVariables);
+                    processSpec.Arguments = [..environmentBuilder.ToCommandLineDirectives(), ..processSpec.Arguments ?? []];
                 }
 
                 processSpec.EnvironmentVariables[EnvironmentVariables.Names.DotnetWatchIteration] = (iteration + 1).ToString(CultureInfo.InvariantCulture);
@@ -115,10 +112,8 @@ namespace Microsoft.DotNet.Watcher
                     // when the solution captures state of the file after the changes has already been made.
                     await hotReload.InitializeAsync(project, namedPipeName, cancellationToken);
 
-                    _context.Reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{processSpec.GetArgumentsDisplay()}'");
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
-
-                    _context.Reporter.Output("Started", emoji: "🚀");
+                    _context.Reporter.Output("Started");
 
                     Task<FileItem[]?> fileSetTask;
                     Task finishedTask;
@@ -278,113 +273,6 @@ namespace Microsoft.DotNet.Watcher
             }
 
             return default;
-        }
-
-        public async ValueTask<(ProjectInfo project, FileSet files)?> BuildAsync(string? workingDirectory, CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                var arguments = new List<string>()
-                {
-                    "msbuild",
-                    "/nologo",
-                    "/restore",
-                    "/t:Build",
-                };
-
-                if (_context.Options.TargetFramework != null)
-                {
-                    arguments.Add($"/p:TargetFramework={_context.Options.TargetFramework}");
-                }
-
-                if (_context.Options.BuildProperties != null)
-                {
-                    arguments.AddRange(_context.Options.BuildProperties.Select(p => $"/p:{p.name}={p.value}"));
-                }
-
-                var buildProcessSpec = new ProcessSpec
-                {
-                    Executable = _context.EnvironmentOptions.MuxerPath,
-                    Arguments = arguments,
-                    WorkingDirectory = workingDirectory,
-                };
-
-                _context.Reporter.Output("Building...", emoji: "🔧");
-                var exitCode = await _processRunner.RunAsync(buildProcessSpec, cancellationToken);
-
-                var result = await _fileSetFactory.CreateAsync(cancellationToken);
-                if (exitCode == 0)
-                {
-                    return result;
-                }
-
-                // If the build fails, we'll retry until we have a successful build.
-                using var fileSetWatcher = new FileSetWatcher(result.files, _context.Reporter);
-                _ = await fileSetWatcher.GetChangedFileAsync(
-                    () => _context.Reporter.Warn("Waiting for a file to change before restarting dotnet...", emoji: "⏳"),
-                    cancellationToken);
-            }
-
-            return null;
-        }
-
-        private void ConfigureExecutable(ProcessSpec processSpec, ProjectInfo project, LaunchSettingsProfile launchSettingsProfile)
-        {
-            // RunCommand property specifies the host to use to run the project.
-            // RunArguments then specifies the arguments to the host.
-            // Arguments to the executable should follow the host arguments.
-
-            processSpec.Executable = project.RunCommand;
-
-            if (!string.IsNullOrEmpty(project.RunArguments))
-            {
-                var escapedArguments = project.RunArguments;
-
-                if (processSpec.EscapedArguments != null)
-                {
-                    escapedArguments += " " + processSpec.EscapedArguments;
-                }
-
-                if (processSpec.Arguments != null)
-                {
-                    escapedArguments += " " + CommandLineUtilities.JoinArguments(processSpec.Arguments);
-                }
-
-                processSpec.EscapedArguments = escapedArguments;
-                processSpec.Arguments = null;
-            }
-
-            if (!string.IsNullOrEmpty(project.RunWorkingDirectory))
-            {
-                processSpec.WorkingDirectory = project.RunWorkingDirectory;
-            }
-
-            // ASPNETCORE_URLS is set by dotnet run
-            // (https://github.com/dotnet/sdk/blob/61d0eb932e5f34e1cd985e383dca5c1a34b28df7/src/Cli/dotnet/commands/dotnet-run/RunCommand.cs#L64):
-            if (!string.IsNullOrEmpty(launchSettingsProfile.ApplicationUrl))
-            {
-                processSpec.EnvironmentVariables[EnvironmentVariables.Names.AspNetCoreUrls] = launchSettingsProfile.ApplicationUrl;
-            }
-
-            var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
-                project.RuntimeIdentifier ?? "",
-                project.DefaultAppHostRuntimeIdentifier ?? "",
-                project.TargetFrameworkVersion);
-
-            if (rootVariableName != null && string.IsNullOrEmpty(Environment.GetEnvironmentVariable(rootVariableName)))
-            {
-                processSpec.EnvironmentVariables[rootVariableName] = Path.GetDirectoryName(_context.EnvironmentOptions.MuxerPath)!;
-            }
-
-            if (launchSettingsProfile.EnvironmentVariables is { } envVariables)
-            {
-                foreach (var entry in envVariables)
-                {
-                    var value = Environment.ExpandEnvironmentVariables(entry.Value);
-                    // NOTE: MSBuild variables are not expanded like they are in VS
-                    processSpec.EnvironmentVariables[entry.Key] = value;
-                }
-            }
         }
 
         private string GetRelativeFilePath(string path)
