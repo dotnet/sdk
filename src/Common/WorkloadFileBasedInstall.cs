@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 {
     static class WorkloadFileBasedInstall
     {
-        public static bool IsUserLocal(string dotnetDir, string sdkFeatureBand)
+        public static bool IsUserLocal(string? dotnetDir, string? sdkFeatureBand)
             => File.Exists(GetUserInstallFilePath(dotnetDir, sdkFeatureBand));
 
         internal static void SetUserLocal(string dotnetDir, string sdkFeatureBand)
@@ -16,9 +16,9 @@ namespace Microsoft.DotNet.Workloads.Workload
             File.WriteAllText(filePath, "");
         }
 
-        private static string GetUserInstallFilePath(string dotnetDir, string sdkFeatureBand)
+        private static string GetUserInstallFilePath(string? dotnetDir, string? sdkFeatureBand)
         {
-            if (sdkFeatureBand.Contains("-") || !sdkFeatureBand.EndsWith("00", StringComparison.Ordinal))
+            if (sdkFeatureBand != null && (sdkFeatureBand.Contains("-") || !sdkFeatureBand.EndsWith("00", StringComparison.Ordinal)))
             {
                 // The user passed in the sdk version. Derive the feature band version.
                 if (!Version.TryParse(sdkFeatureBand.Split('-')[0], out var sdkVersionParsed))
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 sdkFeatureBand = $"{sdkVersionParsed.Major}.{sdkVersionParsed.Minor}.{Last2DigitsTo0(sdkVersionParsed.Build)}";
             }
 
-            return Path.Combine(dotnetDir, "metadata", "workloads", sdkFeatureBand, "userlocal");
+            return Path.Combine(dotnetDir!, "metadata", "workloads", sdkFeatureBand!, "userlocal");
         }
     }
 }

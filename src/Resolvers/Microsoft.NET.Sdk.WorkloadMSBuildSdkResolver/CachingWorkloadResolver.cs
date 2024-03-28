@@ -175,7 +175,7 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
             return new NullResolutionResult();
         }
 
-        public ResolutionResult Resolve(string sdkReferenceName, string dotnetRootPath, string sdkVersion, string? userProfileDir, string? globalJsonPath)
+        public ResolutionResult Resolve(string sdkReferenceName, string? dotnetRootPath, string? sdkVersion, string? userProfileDir, string? globalJsonPath)
         {
             if (!_enabled)
             {

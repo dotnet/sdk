@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(ResolverTargetFramework)</TargetFrameworks>
     <IsPackable>true</IsPackable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">

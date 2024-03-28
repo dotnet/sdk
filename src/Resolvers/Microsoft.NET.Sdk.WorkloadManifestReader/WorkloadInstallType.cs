@@ -25,9 +25,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// </summary>
         /// <param name="sdkFeatureBand">The SDK version to check.</param>
         /// <returns>The <see cref="InstallType"/> associated with the SDK.</returns>
-        public static InstallType GetWorkloadInstallType(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+        public static InstallType GetWorkloadInstallType(SdkFeatureBand sdkFeatureBand, string? dotnetDir)
         {
-            string installerTypePath = Path.Combine(dotnetDir, "metadata",
+            string installerTypePath = Path.Combine(dotnetDir!, "metadata",
                 "workloads", $"{sdkFeatureBand.ToStringWithoutPrerelease()}", "installertype");
 
             if (File.Exists(Path.Combine(installerTypePath, "msi")))
@@ -38,13 +38,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             return InstallType.FileBased;
         }
 
-        public static string GetInstallStateFolder(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+        public static string GetInstallStateFolder(SdkFeatureBand sdkFeatureBand, string? dotnetDir)
         {
             var installType = GetWorkloadInstallType(sdkFeatureBand, dotnetDir);
 
             if (installType == InstallType.FileBased)
             {
-                return Path.Combine(dotnetDir, "metadata", "workloads", sdkFeatureBand.ToString(), "InstallState");
+                return Path.Combine(dotnetDir!, "metadata", "workloads", sdkFeatureBand.ToString(), "InstallState");
             }
             else if (installType == InstallType.Msi)
             {
