@@ -8,10 +8,8 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings
 
 namespace Microsoft.DotNet.Cli
 {
-    internal static class ToolUpdateCommandParser
+    internal static class ToolUpdateAllCommandParser
     {
-        public static readonly CliArgument<string> PackageIdArgument = ToolInstallCommandParser.PackageIdArgument;
-
         public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
 
         public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
@@ -43,19 +41,14 @@ namespace Microsoft.DotNet.Cli
 
         private static CliCommand ConstructCommand()
         {
-            CliCommand command = new("update", LocalizableStrings.CommandDescription);
-            //  dotnet tool update all
-            command.Subcommands.Add(ToolUpdateAllCommandParser.GetCommand());
-
-
-            command.Arguments.Add(PackageIdArgument);
+            CliCommand command = new("--all", LocalizableStrings.AllUpdateOptionDescription);
+            command.Options.Add(GlobalOption);
+            command.Options.Add(LocalOption);
             ToolInstallCommandParser.AddCommandOptions(command);
-            command.Options.Add(AllowPackageDowngradeOption);
 
-            command.SetAction((parseResult) => new ToolUpdateCommand(parseResult).Execute());
+            command.SetAction((parseResult) => new ToolUpdateAllCommand(parseResult).Execute());
 
             return command;
         }
-
     }
 }
