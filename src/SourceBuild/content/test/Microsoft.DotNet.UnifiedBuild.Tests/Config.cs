@@ -14,7 +14,17 @@ using Xunit.Sdk;
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 public class Config : IDisposable
 {
+    public string MsftSdkArchivePath { get; }
+    public string UbBuildVersion { get; }
+    public string PortableRid { get; }
+    public string UbSdkArchivePath { get; }
+    public string TargetRid { get; }
+    public string TargetArchitecture { get; }
+    public bool WarnOnSdkContentDiffs { get; }
+
+    string? _downloadedMsftSdkPath = null;
     IMessageSink _sink;
+
     public Config(IMessageSink sink)
     {
         _sink = sink;
@@ -23,24 +33,34 @@ public class Config : IDisposable
         PortableRid = (string)(AppContext.GetData(PortableRidSwitch) ?? throw new InvalidOperationException("Portable RID must be specified"));
         UbSdkArchivePath = (string)(AppContext.GetData(UbSdkArchivePathSwitch) ?? throw new InvalidOperationException("Unified Build SDK archive path must be specified"));
         TargetArchitecture = TargetRid.Split('-')[1];
-        MsftSdkArchivePath = AppContext.GetData(MsftSdkArchivePathSwitch) as string ?? DownloadMsftSdkArchive().Result;
+        WarnOnSdkContentDiffs = bool.Parse((string)(AppContext.GetData(WarnOnSdkContentDiffsSwitch) ?? "false"));
+        MsftSdkArchivePath = (string)AppContext.GetData(MsftSdkArchivePathSwitch)!;
+        if (string.IsNullOrEmpty(MsftSdkArchivePath))
+        {
+            MsftSdkArchivePath = DownloadMsftSdkArchive().Result;
+        }
+        else {
+            sink.OnMessage(new DiagnosticMessage($"Skipping downloading latest SDK. Using provided sdk archive: '{MsftSdkArchivePath}'"));
+        }
+        sink.OnMessage(new DiagnosticMessage($$"""
+            Test config values:
+            {{nameof(UbBuildVersion)}}='{{UbBuildVersion}}'
+            {{nameof(TargetRid)}}='{{TargetRid}}'
+            {{nameof(PortableRid)}}='{{PortableRid}}'
+            {{nameof(UbSdkArchivePath)}}='{{UbSdkArchivePath}}'
+            {{nameof(TargetArchitecture)}}='{{TargetArchitecture}}'
+            {{nameof(WarnOnSdkContentDiffs)}}='{{WarnOnSdkContentDiffs}}'
+            {{nameof(MsftSdkArchivePath)}}='{{MsftSdkArchivePath}}'
+            """));
     }
 
-    public const string ConfigSwitchPrefix = "Microsoft.DotNet.UnifiedBuild.Tests.";
-    public const string BuildVersionSwitch = ConfigSwitchPrefix + nameof(UbBuildVersion);
-    public const string TargetRidSwitch = ConfigSwitchPrefix + nameof(TargetRid);
-    public const string PortableRidSwitch = ConfigSwitchPrefix + nameof(PortableRid);
-    public const string UbSdkArchivePathSwitch = ConfigSwitchPrefix + nameof(UbSdkArchivePath);
-    public const string MsftSdkArchivePathSwitch = ConfigSwitchPrefix + nameof(MsftSdkArchivePath);
-
-    public string? MsftSdkArchivePath { get; }
-    public string UbBuildVersion { get; }
-    public string PortableRid { get; }
-    public string UbSdkArchivePath { get; }
-    public string TargetRid { get; }
-    public string TargetArchitecture { get; }
-    public bool WarnOnSdkContentDiffs { get; }
-    string? _downloadedMsftSdkPath = null;
+    const string ConfigSwitchPrefix = "Microsoft.DotNet.UnifiedBuild.Tests.";
+    const string BuildVersionSwitch = ConfigSwitchPrefix + nameof(UbBuildVersion);
+    const string TargetRidSwitch = ConfigSwitchPrefix + nameof(TargetRid);
+    const string PortableRidSwitch = ConfigSwitchPrefix + nameof(PortableRid);
+    const string UbSdkArchivePathSwitch = ConfigSwitchPrefix + nameof(UbSdkArchivePath);
+    const string MsftSdkArchivePathSwitch = ConfigSwitchPrefix + nameof(MsftSdkArchivePath);
+    const string WarnOnSdkContentDiffsSwitch = ConfigSwitchPrefix + nameof(WarnOnSdkContentDiffs);
 
     static string GetArchiveExtension(string path)
     {
