@@ -15,10 +15,28 @@ pr:
     - release/*
     - internal/release/*
 
-stages:
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-  - template: templates/stages/vmr-scan.yml
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
-- template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    isBuiltFromVmr: true
+    sdl:
+      sourceAnalysisPool:
+        name: NetCore1ESPool-Internal
+        image: 1es-windows-2022
+        os: windows
+    
+    customBuildTags:
+    - ES365AIMigrationTooling
+    
+    stages:
+    - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+      - template: /eng/pipelines/templates/stages/vmr-scan.yml@self
+    - template: /src/installer/eng/pipelines/templates/stages/vmr-build.yml@self
+      parameters:
+        isBuiltFromVmr: true
