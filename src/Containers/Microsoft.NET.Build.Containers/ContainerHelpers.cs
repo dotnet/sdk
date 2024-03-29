@@ -159,7 +159,7 @@ public static class ContainerHelpers
         }
 #if !NET472
         //check the docker config to see if the registry is marked as insecure
-        else if (DockerCli.IsInsecureRegistry(alreadyValidatedDomain))
+        else if (DockerCli.IsAvailable() && DockerCli.IsInsecureRegistry(alreadyValidatedDomain))
         {
             prefix = "http";
         }
