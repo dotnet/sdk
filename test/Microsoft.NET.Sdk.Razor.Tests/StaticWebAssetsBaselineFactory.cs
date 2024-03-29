@@ -99,7 +99,7 @@ public class StaticWebAssetsBaselineFactory
             null,
             null,
             null,
-            null).Replace('\\', '/');
+            runtimeIdentifier).Replace('\\', '/');
 
         asset.ContentRoot = TemplatizeFilePath(
             asset.ContentRoot,
@@ -115,7 +115,7 @@ public class StaticWebAssetsBaselineFactory
             projectRoot,
             null,
             null,
-            null);
+            runtimeIdentifier);
 
         asset.OriginalItemSpec = TemplatizeFilePath(
             asset.OriginalItemSpec,
@@ -124,6 +124,9 @@ public class StaticWebAssetsBaselineFactory
             null,
             null,
             runtimeIdentifier);
+
+        asset.Fingerprint = string.IsNullOrEmpty(asset.Fingerprint) ? asset.Fingerprint : "__fingerprint__";
+        asset.Integrity = string.IsNullOrEmpty(asset.Integrity) ? asset.Integrity : "__integrity__";
     }
 
     internal IEnumerable<string> TemplatizeExpectedFiles(

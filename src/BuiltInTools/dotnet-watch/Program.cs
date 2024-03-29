@@ -13,44 +13,13 @@ using IConsole = Microsoft.Extensions.Tools.Internal.IConsole;
 
 namespace Microsoft.DotNet.Watcher
 {
-    internal sealed class Program : IDisposable
+    internal sealed class Program(IConsole console, IReporter reporter, CommandLineOptions options, EnvironmentOptions environmentOptions)
     {
-        private readonly IConsole _console;
-        private readonly string _workingDirectory;
-        private readonly string _muxerPath;
-        private readonly CancellationTokenSource _cts;
-        private IReporter _reporter;
-        private IRequester _requester;
-
-        public Program(IConsole console, string workingDirectory, string muxerPath)
-        {
-            Ensure.NotNull(console, nameof(console));
-            Ensure.NotNullOrEmpty(workingDirectory, nameof(workingDirectory));
-
-            _console = console;
-            _workingDirectory = workingDirectory;
-            _muxerPath = muxerPath;
-            _cts = new CancellationTokenSource();
-            console.CancelKeyPress += OnCancelKeyPress;
-
-            var suppressEmojis = ShouldSuppressEmojis();
-            _reporter = CreateReporter(verbose: true, quiet: false, console: _console, suppressEmojis);
-            _requester = new ConsoleRequester(_console, quiet: false, suppressEmojis);
-        }
-
         public static async Task<int> Main(string[] args)
         {
             try
             {
-                var muxerPath = Environment.ProcessPath;
-                Debug.Assert(muxerPath != null);
-                Debug.Assert(Path.GetFileNameWithoutExtension(muxerPath) == "dotnet", $"Invalid muxer path {muxerPath}");
-
-#if DEBUG
-                var sdkRootDirectory = Environment.GetEnvironmentVariable("DOTNET_WATCH_DEBUG_SDK_DIRECTORY");
-#else
-                var sdkRootDirectory = "";
-#endif
+                var sdkRootDirectory = EnvironmentVariables.SdkRootDirectory;
 
                 // We can register the MSBuild that is bundled with the SDK to perform MSBuild things.
                 // In production deployment dotnet-watch is in a nested folder of the SDK's root, we'll back up to it.
@@ -66,8 +35,21 @@ namespace Microsoft.DotNet.Watcher
                 // Register listeners that load Roslyn-related assemblies from the `Roslyn/bincore` directory.
                 RegisterAssemblyResolutionEvents(sdkRootDirectory);
 
-                using var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory(), muxerPath);
-                return await program.RunAsync(args);
+                var console = PhysicalConsole.Singleton;
+                var verbose = EnvironmentVariables.VerboseCliOutput;
+                var environmentOptions = EnvironmentOptions.FromEnvironment();
+
+                var options = CommandLineOptions.Parse(args, new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis), out var errorCode);
+                if (options == null)
+                {
+                    // an error reported or help printed:
+                    return errorCode;
+                }
+
+                var reporter = new ConsoleReporter(console, verbose || options.Verbose, options.Quiet, environmentOptions.SuppressEmojis);
+                var program = new Program(console, reporter, options, environmentOptions);
+
+                return await program.RunAsync();
             }
             catch (Exception ex)
             {
@@ -77,35 +59,26 @@ namespace Microsoft.DotNet.Watcher
             }
         }
 
-        internal async Task<int> RunAsync(string[] args)
+        internal async Task<int> RunAsync()
         {
-            var options = CommandLineOptions.Parse(args, _reporter, out var errorCode);
-
-            // an error reported or help printed:
-            if (options == null)
-            {
-                return errorCode;
-            }
-
-            // update reporter as configured by options
-            var suppressEmojis = ShouldSuppressEmojis();
-            _reporter = CreateReporter(options.Verbose, options.Quiet, _console, suppressEmojis);
-            _requester = new ConsoleRequester(_console, quiet: options.Quiet, suppressEmojis);
+            var cancellationSource = new CancellationTokenSource();
+            var cancellationToken = cancellationSource.Token;
+            console.CancelKeyPress += OnCancelKeyPress;
 
             try
             {
-                if (_cts.IsCancellationRequested)
+                if (cancellationToken.IsCancellationRequested)
                 {
                     return 1;
                 }
 
                 if (options.List)
                 {
-                    return await ListFilesAsync(options, _reporter, _cts.Token);
+                    return await ListFilesAsync(cancellationToken);
                 }
                 else
                 {
-                    return await RunAsync(options, _cts.Token);
+                    return await RunAsync(cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -116,56 +89,56 @@ namespace Microsoft.DotNet.Watcher
                     return 0;
                 }
 
-                _reporter.Error(ex.ToString());
-                _reporter.Error("An unexpected error occurred");
+                reporter.Error(ex.ToString());
+                reporter.Error("An unexpected error occurred");
                 return 1;
             }
-        }
-
-        private void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs args)
-        {
-            // suppress CTRL+C on the first press
-            args.Cancel = !_cts.IsCancellationRequested;
-
-            if (args.Cancel)
+            finally
             {
-                _reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.", emoji: "🛑");
+                console.CancelKeyPress -= OnCancelKeyPress;
+                cancellationSource.Dispose();
             }
 
-            _cts.Cancel();
+            void OnCancelKeyPress(object? sender, ConsoleCancelEventArgs args)
+            {
+                // suppress CTRL+C on the first press
+                args.Cancel = !cancellationSource.IsCancellationRequested;
+
+                if (args.Cancel)
+                {
+                    reporter.Output("Shutdown requested. Press Ctrl+C again to force exit.", emoji: "🛑");
+                }
+
+                cancellationSource.Cancel();
+            }
         }
 
-        private async Task<int> RunAsync(CommandLineOptions options, CancellationToken cancellationToken)
+        private async Task<int> RunAsync(CancellationToken cancellationToken)
         {
             // TODO multiple projects should be easy enough to add here
             string projectFile;
             try
             {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDirectory, options.Project);
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(environmentOptions.WorkingDirectory, options.Project);
             }
             catch (FileNotFoundException ex)
             {
-                _reporter.Error(ex.Message);
+                reporter.Error(ex.Message);
                 return 1;
             }
 
-            var watchOptions = DotNetWatchOptions.Default;
-            watchOptions.NonInteractive = options.NonInteractive;
-
             var fileSetFactory = new MsBuildFileSetFactory(
-                watchOptions,
-                _reporter,
-                _muxerPath,
+                environmentOptions,
+                reporter,
                 projectFile,
                 options.TargetFramework,
                 options.BuildProperties,
                 outputSink: null,
-                waitOnError: true,
                 trace: true);
 
-            if (FileWatcherFactory.IsPollingEnabled)
+            if (EnvironmentVariables.IsPollingEnabled)
             {
-                _reporter.Output("Polling file watcher is enabled");
+                reporter.Output("Polling file watcher is enabled");
             }
 
             var projectDirectory = Path.GetDirectoryName(projectFile);
@@ -176,61 +149,61 @@ namespace Microsoft.DotNet.Watcher
             bool enableHotReload;
             if (options.Command != "run")
             {
-                _reporter.Verbose($"Command '{options.Command}' does not support Hot Reload.");
+                reporter.Verbose($"Command '{options.Command}' does not support Hot Reload.");
                 enableHotReload = false;
             }
             else if (options.NoHotReload)
             {
-                _reporter.Verbose("Hot Reload disabled by command line switch.");
+                reporter.Verbose("Hot Reload disabled by command line switch.");
                 enableHotReload = false;
             }
             else if (projectGraph is null || !IsHotReloadSupported(projectGraph))
             {
-                _reporter.Verbose("Project does not support Hot Reload.");
+                reporter.Verbose("Project does not support Hot Reload.");
                 enableHotReload = false;
             }
             else
             {
-                _reporter.Verbose("Watching with Hot Reload.");
+                reporter.Verbose("Watching with Hot Reload.");
                 enableHotReload = true;
             }
 
-            var args = options.GetLaunchProcessArguments(enableHotReload, _reporter, out var noLaunchProfile, out var launchProfileName);
-            var launchProfile = (noLaunchProfile ? null : LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, launchProfileName, _reporter)) ?? new();
+            var args = options.GetLaunchProcessArguments(enableHotReload, reporter, out var noLaunchProfile, out var launchProfileName);
+            var launchProfile = (noLaunchProfile ? null : LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, launchProfileName, reporter)) ?? new();
 
             // If no args forwarded to the app were specified use the ones in the profile.
             var escapedArgs = (enableHotReload && args is []) ? launchProfile.CommandLineArgs : null;
 
             var context = new DotNetWatchContext
             {
-                HotReloadEnabled = enableHotReload,
-                ProcessSpec = new ProcessSpec
-                {
-                    WorkingDirectory = projectDirectory,
-                    Arguments = args,
-                    EscapedArguments = escapedArgs,
-                    EnvironmentVariables =
-                    {
-                        ["DOTNET_WATCH"] = "1"
-                    },
-                },
                 ProjectGraph = projectGraph,
-                Reporter = _reporter,
-                SuppressMSBuildIncrementalism = watchOptions.SuppressMSBuildIncrementalism,
+                Reporter = reporter,
                 LaunchSettingsProfile = launchProfile,
-                TargetFramework = options.TargetFramework,
-                BuildProperties = options.BuildProperties,
+                Options = options,
+                EnvironmentOptions = environmentOptions,
+            };
+
+            var processSpec = new ProcessSpec
+            {
+                WorkingDirectory = projectDirectory,
+                Arguments = args,
+                EscapedArguments = escapedArgs,
+                EnvironmentVariables =
+                {
+                    [EnvironmentVariables.Names.DotnetWatch] = "1",
+                    [EnvironmentVariables.Names.DotnetLaunchProfile] = launchProfile.LaunchProfileName ?? string.Empty
+                }
             };
 
             if (enableHotReload)
             {
-                await using var watcher = new HotReloadDotNetWatcher(_reporter, _requester, fileSetFactory, watchOptions, _console, _workingDirectory, _muxerPath);
-                await watcher.WatchAsync(context, cancellationToken);
+                var watcher = new HotReloadDotNetWatcher(context, console, fileSetFactory);
+                await watcher.WatchAsync(processSpec, cancellationToken);
             }
             else
             {
-                await using var watcher = new DotNetWatcher(_reporter, fileSetFactory, watchOptions, _muxerPath);
-                await watcher.WatchAsync(context, cancellationToken);
+                var watcher = new DotNetWatcher(context, fileSetFactory);
+                await watcher.WatchAsync(processSpec, cancellationToken);
             }
 
             return 0;
@@ -258,8 +231,8 @@ namespace Microsoft.DotNet.Watcher
             }
             catch (Exception ex)
             {
-                _reporter.Verbose("Reading the project instance failed.");
-                _reporter.Verbose(ex.ToString());
+                reporter.Verbose("Reading the project instance failed.");
+                reporter.Verbose(ex.ToString());
             }
 
             return null;
@@ -284,16 +257,13 @@ namespace Microsoft.DotNet.Watcher
             return false;
         }
 
-        private async Task<int> ListFilesAsync(
-            CommandLineOptions options,
-            IReporter reporter,
-            CancellationToken cancellationToken)
+        private async Task<int> ListFilesAsync(CancellationToken cancellationToken)
         {
             // TODO multiple projects should be easy enough to add here
             string projectFile;
             try
             {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(_workingDirectory, options.Project);
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(environmentOptions.WorkingDirectory, options.Project);
             }
             catch (FileNotFoundException ex)
             {
@@ -302,51 +272,25 @@ namespace Microsoft.DotNet.Watcher
             }
 
             var fileSetFactory = new MsBuildFileSetFactory(
-                DotNetWatchOptions.Default,
+                environmentOptions,
                 reporter,
-                _muxerPath,
                 projectFile,
                 options.TargetFramework,
                 options.BuildProperties,
                 outputSink: null,
-                waitOnError: false,
                 trace: false);
 
-            var files = await fileSetFactory.CreateAsync(cancellationToken);
-
-            if (files == null)
+            if (await fileSetFactory.TryCreateAsync(cancellationToken) is not (_, var files))
             {
                 return 1;
             }
 
             foreach (var file in files)
             {
-                _console.Out.WriteLine(file.FilePath);
+                console.Out.WriteLine(file.FilePath);
             }
 
             return 0;
-        }
-
-        private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console, bool suppressEmojis)
-            => new ConsoleReporter(console, verbose || IsGlobalVerbose(), quiet, suppressEmojis);
-
-        private static bool IsGlobalVerbose()
-        {
-            bool.TryParse(Environment.GetEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE"), out bool globalVerbose);
-            return globalVerbose;
-        }
-
-        public void Dispose()
-        {
-            _console.CancelKeyPress -= OnCancelKeyPress;
-            _cts.Dispose();
-        }
-
-        private static bool ShouldSuppressEmojis()
-        {
-            var suppressEmojisEnvironmentVariable = Environment.GetEnvironmentVariable("DOTNET_WATCH_SUPPRESS_EMOJIS");
-            var suppressEmojis = suppressEmojisEnvironmentVariable == "1" || string.Equals(suppressEmojisEnvironmentVariable, "true", StringComparison.OrdinalIgnoreCase);
-            return suppressEmojis;
         }
 
         private static void RegisterAssemblyResolutionEvents(string sdkRootDirectory)

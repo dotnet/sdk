@@ -4,6 +4,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
@@ -14,19 +15,13 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class CompilationHandler : IDisposable
+    internal sealed class CompilationHandler(IReporter reporter, ProjectGraph projectGraph, BrowserRefreshServer? browserRefreshServer) : IDisposable
     {
-        private readonly IReporter _reporter;
         private Task<WatchHotReloadService>? _sessionTask;
         private Solution? _currentSolution;
         private WatchHotReloadService? _hotReloadService;
         private DeltaApplier? _deltaApplier;
         private MSBuildWorkspace? _workspace;
-
-        public CompilationHandler(IReporter reporter)
-        {
-            _reporter = reporter;
-        }
 
         public void Dispose()
         {
@@ -35,23 +30,20 @@ namespace Microsoft.DotNet.Watcher.Tools
             _workspace?.Dispose();
         }
 
-        public async Task InitializeAsync(DotNetWatchContext context, CancellationToken cancellationToken)
+        public async Task InitializeAsync(ProjectInfo projectInfo, string namedPipeName, CancellationToken cancellationToken)
         {
-            Debug.Assert(context.ProjectGraph is not null);
-            Debug.Assert(context.FileSet?.Project is not null);
-
             if (_deltaApplier is null)
             {
-                var hotReloadProfile = HotReloadProfileReader.InferHotReloadProfile(context.ProjectGraph, _reporter);
+                var hotReloadProfile = HotReloadProfileReader.InferHotReloadProfile(projectGraph, reporter);
                 _deltaApplier = hotReloadProfile switch
                 {
-                    HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(_reporter),
-                    HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(_reporter),
-                    _ => new DefaultDeltaApplier(_reporter),
+                    HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(reporter, browserRefreshServer!),
+                    HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(reporter, browserRefreshServer!),
+                    _ => new DefaultDeltaApplier(reporter),
                 };
             }
 
-            _deltaApplier.Initialize(context, cancellationToken);
+            _deltaApplier.Initialize(projectInfo, namedPipeName, cancellationToken);
 
             if (_workspace is not null)
             {
@@ -63,18 +55,18 @@ namespace Microsoft.DotNet.Watcher.Tools
             _workspace.WorkspaceFailed += (_sender, diag) =>
             {
                 // Errors reported here are not fatal, an exception would be thrown for fatal issues.
-                _reporter.Verbose($"MSBuildWorkspace warning: {diag.Diagnostic}");
+                reporter.Verbose($"MSBuildWorkspace warning: {diag.Diagnostic}");
             };
 
-            var project = await _workspace.OpenProjectAsync(context.FileSet.Project.ProjectPath, cancellationToken: cancellationToken);
+            var project = await _workspace.OpenProjectAsync(projectInfo.ProjectPath, cancellationToken: cancellationToken);
 
             _currentSolution = project.Solution;
 
             _sessionTask = StartSessionAsync(
                 _workspace.Services,
                 project.Solution,
-                _deltaApplier.GetApplyUpdateCapabilitiesAsync(context, cancellationToken),
-                _reporter,
+                _deltaApplier.GetApplyUpdateCapabilitiesAsync(cancellationToken),
+                reporter,
                 cancellationToken);
 
             PrepareCompilationsAsync(project.Solution, cancellationToken);
@@ -160,7 +152,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                 }
                 else
                 {
-                    _reporter.Verbose($"Could not find document with path {file.FilePath} in the workspace.");
+                    reporter.Verbose($"Could not find document with path {file.FilePath} in the workspace.");
                 }
             }
 
@@ -180,20 +172,20 @@ namespace Microsoft.DotNet.Watcher.Tools
                 var compilationErrors = GetCompilationErrors(updatedSolution, cancellationToken);
                 if (compilationErrors.IsEmpty)
                 {
-                    _reporter.Output("No hot reload changes to apply.");
+                    reporter.Output("No hot reload changes to apply.");
                 }
 
                 // report or clear diagnostics in the browser UI
-                if (context.BrowserRefreshServer != null)
+                if (browserRefreshServer != null)
                 {
-                    _reporter.Verbose($"Updating diagnostics in the browser.");
+                    reporter.Verbose($"Updating diagnostics in the browser.");
                     if (compilationErrors.IsEmpty)
                     {
-                        await context.BrowserRefreshServer.SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
+                        await browserRefreshServer.SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
                     }
                     else
                     {
-                        await context.BrowserRefreshServer.SendJsonSerlialized(new HotReloadDiagnostics { Diagnostics = compilationErrors }, cancellationToken);
+                        await browserRefreshServer.SendJsonSerlialized(new HotReloadDiagnostics { Diagnostics = compilationErrors }, cancellationToken);
                     }
                 }
 
@@ -207,10 +199,10 @@ namespace Microsoft.DotNet.Watcher.Tools
             if (!rudeEdits.IsEmpty)
             {
                 // Rude edit.
-                _reporter.Output("Unable to apply hot reload because of a rude edit.");
+                reporter.Output("Unable to apply hot reload because of a rude edit.");
                 foreach (var diagnostic in hotReloadDiagnostics)
                 {
-                    _reporter.Verbose(CSharpDiagnosticFormatter.Instance.Format(diagnostic));
+                    reporter.Verbose(CSharpDiagnosticFormatter.Instance.Format(diagnostic));
                 }
 
                 HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.CompilationHandler);
@@ -219,18 +211,18 @@ namespace Microsoft.DotNet.Watcher.Tools
 
             _currentSolution = updatedSolution;
 
-            var applyStatus = await _deltaApplier.Apply(context, updates, cancellationToken) != ApplyStatus.Failed;
-            _reporter.Verbose($"Received {(applyStatus ? "successful" : "failed")} apply from delta applier.");
+            var applyStatus = await _deltaApplier.Apply(updates, cancellationToken) != ApplyStatus.Failed;
+            reporter.Verbose($"Received {(applyStatus ? "successful" : "failed")} apply from delta applier.");
             HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.CompilationHandler);
             if (applyStatus)
             {
-                _reporter.Output($"Hot reload of changes succeeded.", emoji: "🔥");
+                reporter.Output($"Hot reload of changes succeeded.", emoji: "🔥");
 
                 // BrowserRefreshServer will be null in non web projects or if we failed to establish a websocket connection
-                if (context.BrowserRefreshServer != null)
+                if (browserRefreshServer != null)
                 {
-                    _reporter.Verbose($"Refreshing browser.");
-                    await context.BrowserRefreshServer.SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
+                    reporter.Verbose($"Refreshing browser.");
+                    await browserRefreshServer.SendJsonSerlialized(new AspNetCoreHotReloadApplied(), cancellationToken);
                 }
             }
 
@@ -272,7 +264,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     if (item.Severity == DiagnosticSeverity.Error)
                     {
                         var diagnostic = CSharpDiagnosticFormatter.Instance.Format(item);
-                        _reporter.Output("\x1B[40m\x1B[31m" + diagnostic);
+                        reporter.Output("\x1B[40m\x1B[31m" + diagnostic);
                         projectDiagnostics = projectDiagnostics.Add(diagnostic);
                     }
                 }
@@ -300,7 +292,7 @@ namespace Microsoft.DotNet.Watcher.Tools
             }
             catch (Exception ex)
             {
-                _reporter.Warn(ex.Message);
+                reporter.Warn(ex.Message);
                 return false;
             }
         }
