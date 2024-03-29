@@ -24,13 +24,13 @@
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="xdt" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <RepositoryReference Include="nuget-client" />
+    <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="source-build-reference-packages" />
     <RepositoryReference Include="symreader" />
