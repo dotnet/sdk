@@ -11,7 +11,7 @@
 
     <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
              Targets="VSTest"
-             ContinueOnError="WarnAndContinue"
+             ContinueOnError="true"
              Properties="ExcludeFromDotNetBuild=false;VsTestUseMSBuildOutput=true" />
 
   </Target>

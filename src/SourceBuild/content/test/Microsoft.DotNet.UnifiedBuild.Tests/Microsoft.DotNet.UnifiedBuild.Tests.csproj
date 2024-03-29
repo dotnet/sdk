@@ -8,6 +8,7 @@
     <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);assets/**/*</DefaultExcludesInProjectFolder>
     <UBTestsWarnOnSdkContentDiffs>true</UBTestsWarnOnSdkContentDiffs>
     <VSTestLogger>console%3bverbosity=diagnostic;trx%3bverbosity=diagnostic</VSTestLogger>
+    <VSTestResultsDirectory>$(ArtifactsTestResultsDir)</VSTestResultsDirectory>
   </PropertyGroup>
 
   <ItemGroup>
