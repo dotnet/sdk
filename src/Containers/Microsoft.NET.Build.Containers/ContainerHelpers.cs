@@ -159,21 +159,9 @@ public static class ContainerHelpers
         }
 #if !NET472
         //check the docker config to see if the registry is marked as insecure
-        if (DockerCli.GetDockerConfig().RootElement.TryGetProperty("RegistryConfig", out var registryConfig) && registryConfig.ValueKind == System.Text.Json.JsonValueKind.Object)
+        else if (DockerCli.IsInsecureRegistry(alreadyValidatedDomain))
         {
-            if(registryConfig.TryGetProperty("IndexConfigs",out var indexConfigs) && indexConfigs.ValueKind == System.Text.Json.JsonValueKind.Object){
-                foreach (var property in indexConfigs.EnumerateObject())
-                {
-                    if(property.Value.ValueKind == System.Text.Json.JsonValueKind.Object && property.Value.TryGetProperty("Secure",out var secure) && !secure.GetBoolean())
-                    {
-                        if (property.Name.Equals(alreadyValidatedDomain,StringComparison.Ordinal))
-                        {
-                            prefix = "http";
-                            break;
-                        }
-                    }
-                }
-            }
+            prefix = "http";
         }
 #endif
 
