@@ -206,16 +206,35 @@ internal sealed class DockerCli : ILocalRegistry
     /// <returns></returns>
     public static bool IsInsecureRegistry(string registryDomain)
     {
-        //check the docker config to see if the registry is marked as insecure
-        var rootElement = GetDockerConfig().RootElement;
-        //for docker
-        if (rootElement.TryGetProperty("RegistryConfig", out var registryConfig) && registryConfig.ValueKind == JsonValueKind.Object)
+        try 
         {
-            if(registryConfig.TryGetProperty("IndexConfigs",out var indexConfigs) && indexConfigs.ValueKind == JsonValueKind.Object)
+            //check the docker config to see if the registry is marked as insecure
+            var rootElement = GetDockerConfig().RootElement;
+
+            //for docker
+            if (rootElement.TryGetProperty("RegistryConfig", out var registryConfig) && registryConfig.ValueKind == JsonValueKind.Object)
             {
-                foreach (var property in indexConfigs.EnumerateObject())
+                if(registryConfig.TryGetProperty("IndexConfigs",out var indexConfigs) && indexConfigs.ValueKind == JsonValueKind.Object)
                 {
-                    if(property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Secure",out var secure) && !secure.GetBoolean())
+                    foreach (var property in indexConfigs.EnumerateObject())
+                    {
+                        if(property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Secure",out var secure) && !secure.GetBoolean())
+                        {
+                            if (property.Name.Equals(registryDomain, StringComparison.Ordinal))
+                            {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            
+            //for podman
+            if(rootElement.TryGetProperty("registries",out var registries) && registries.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var property in registries.EnumerateObject())
+                {
+                    if(property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Insecure",out var insecure) && insecure.GetBoolean())
                     {
                         if (property.Name.Equals(registryDomain, StringComparison.Ordinal))
                         {
@@ -224,23 +243,13 @@ internal sealed class DockerCli : ILocalRegistry
                     }
                 }
             }
+            return false;
         }
-        //for podman
-        if(rootElement.TryGetProperty("registries",out var registries) && registries.ValueKind == JsonValueKind.Object)
+        catch (DockerLoadException)
         {
-            foreach (var property in registries.EnumerateObject())
-            {
-                if(property.Value.ValueKind == JsonValueKind.Object && property.Value.TryGetProperty("Insecure",out var insecure) && insecure.GetBoolean())
-                {
-                    if (property.Name.Equals(registryDomain, StringComparison.Ordinal))
-                    {
-                        return true;
-                    }
-                }
-            }
+            //if docker load fails, we can't check the config so we assume the registry is secure
+            return false;
         }
-
-        return false;
     }
 
     private static void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e) => throw new NotImplementedException();
