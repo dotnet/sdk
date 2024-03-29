@@ -4,6 +4,7 @@
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Microsoft.DotNet.UnifiedBuild.Tasks;
 using System;
 using System.Collections.Generic;
 using System.IO;
