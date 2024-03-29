@@ -6,8 +6,7 @@
   </PropertyGroup>
 
   <Target Name="RunUnifiedBuildValidation"
-          AfterTargets="Build"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion">
+          AfterTargets="Build">
 
     <MSBuild Projects="$(UnifiedBuildValidationTestsProject)"
              Targets="VSTest"
