@@ -8,22 +8,61 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.List;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
+using CreateShellShimRepository = Microsoft.DotNet.Tools.Tool.Install.CreateShellShimRepository;
 
 namespace Microsoft.DotNet.Tools.Tool.Update
 {
     internal class ToolUpdateAllCommand : CommandBase
     {
         private readonly bool _global;
+        private readonly IReporter _reporter;
 
-        public ToolUpdateAllCommand(ParseResult parseResult)
+        // Testing for global update
+        private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _uninstaller;
+        private readonly CreateShellShimRepository _createShell;
+
+        private readonly CreateToolPackageStore _createToolPackageStore;
+
+        // Testing for Local Update
+        private readonly IToolPackageDownloader _toolPackageDownloader;
+        private readonly IToolManifestFinder _toolManifestFinder;
+        private readonly IToolManifestEditor _toolManifestEditor;
+        private readonly ILocalToolsResolverCache _localToolsResolverCache;
+
+        private readonly IToolManifestInspector _manifestInspector;
+
+
+        public ToolUpdateAllCommand(
+            ParseResult parseResult,
+            CreateToolPackageStoresAndDownloaderAndUninstaller createToolPackageStoreDownloaderUninstaller = null,
+            CreateShellShimRepository createShellShimRepository = null,
+            IReporter reporter = null,
+            CreateToolPackageStore createToolPackageStore = null,
+            IToolPackageDownloader toolPackageDownloader = null,
+            IToolManifestFinder toolManifestFinder = null,
+            IToolManifestEditor toolManifestEditor = null,
+            ILocalToolsResolverCache localToolsResolverCache = null,
+            IToolManifestInspector manifestInspector = null)
             : base(parseResult)
         {
             _global = parseResult.GetValue(ToolUpdateAllCommandParser.GlobalOption);
+            _reporter = reporter;
+            _uninstaller = createToolPackageStoreDownloaderUninstaller;
+            _createShell = createShellShimRepository;
+            _createToolPackageStore = createToolPackageStore;
+            _toolPackageDownloader = toolPackageDownloader;
+            _toolManifestFinder = toolManifestFinder;
+            _toolManifestEditor = toolManifestEditor;
+            _localToolsResolverCache = localToolsResolverCache;
+            _manifestInspector = manifestInspector;
         }
 
         public override int Execute()
@@ -45,14 +84,17 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
         private void UpdateAllGlobalTools()
         {
-            var toolListCommand = new ToolListGlobalOrToolPathCommand(_parseResult);
+            var toolListCommand = new ToolListGlobalOrToolPathCommand(
+                _parseResult,
+                _createToolPackageStore
+                );
             var toolList = toolListCommand.GetPackages(null, null);
             UpdateTools(toolList.Select(tool => tool.Id.ToString()), true, null);
         }
 
         private void UpdateAllLocalTools()
         {
-            var toolListLocalCommand = new ToolListLocalCommand(_parseResult);
+            var toolListLocalCommand = new ToolListLocalCommand(_parseResult, _manifestInspector);
             var toolListLocal = toolListLocalCommand.GetPackages(null);
             foreach (var (package, manifestPath) in toolListLocal)
             {
@@ -73,11 +115,20 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                     framework: _parseResult.GetValue(ToolUpdateAllCommandParser.FrameworkOption),
                     prerelease: _parseResult.GetValue(ToolUpdateAllCommandParser.PrereleaseOption),
                     verbosity: _parseResult.GetValue(ToolUpdateAllCommandParser.VerbosityOption),
-                    manifestPath: manifestPath
+                    manifestPath: _parseResult.GetValue(ToolUpdateAllCommandParser.ToolManifestOption)
                 );
 
                 var toolParseResult = Parser.Instance.Parse(args);
-                var toolUpdateCommand = new ToolUpdateCommand(toolParseResult);
+                var toolUpdateCommand = new ToolUpdateCommand(
+                    toolParseResult,
+                    reporter: _reporter,
+                    createToolPackageStoreDownloaderUninstaller: _uninstaller,
+                    createShellShimRepository: _createShell,
+                    toolPackageDownloader: _toolPackageDownloader,
+                    toolManifestFinder: _toolManifestFinder,
+                    toolManifestEditor: _toolManifestEditor,
+                    localToolsResolverCache: _localToolsResolverCache
+                    );
                 toolUpdateCommand.Execute();
             }
         }
