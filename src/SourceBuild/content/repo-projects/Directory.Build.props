@@ -47,6 +47,9 @@
     <RepoArtifactsNonShippingPackagesDir Condition="'$(RepositoryName)' != 'source-build-reference-packages'">$([MSBuild]::NormalizeDirectory('$(ArtifactsNonShippingPackagesDir)', '$(RepositoryName)'))</RepoArtifactsNonShippingPackagesDir>
     <RepoArtifactsNonShippingPackagesDir Condition="'$(RepositoryName)' == 'source-build-reference-packages'">$(ReferencePackagesDir)</RepoArtifactsNonShippingPackagesDir>
 
+    <SbrpCacheNuGetSourceName>source-build-reference-package-cache</SbrpCacheNuGetSourceName>
+    <SourceBuiltSourceNamePrefix>source-built-</SourceBuiltSourceNamePrefix>
+
     <!-- Set the bootstrap version to the VMR's version if empty. (no bootstrap set). -->
     <ArcadeBootstrapVersion>$([MSBuild]::ValueOrDefault('$(ARCADE_BOOTSTRAP_VERSION)', '$(ArcadeSdkVersion)'))</ArcadeBootstrapVersion>
   </PropertyGroup>
