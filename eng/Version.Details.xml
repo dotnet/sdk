@@ -235,22 +235,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>83b0d939bedadf7d782b0b26307c2d8c1d5b76f4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.4.24180.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.4.24180.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>d4a68a3b1c1cb7b32d6db6310f510eaa9a463a16</Sha>
+      <Sha>94527c1d6bde6e61bf88bca63c7e59c1e0823b9f</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.4.24180.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.4.24180.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>d4a68a3b1c1cb7b32d6db6310f510eaa9a463a16</Sha>
+      <Sha>94527c1d6bde6e61bf88bca63c7e59c1e0823b9f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.4.24180.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.4.24180.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>d4a68a3b1c1cb7b32d6db6310f510eaa9a463a16</Sha>
+      <Sha>94527c1d6bde6e61bf88bca63c7e59c1e0823b9f</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.4.24180.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.4.24180.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>d4a68a3b1c1cb7b32d6db6310f510eaa9a463a16</Sha>
+      <Sha>94527c1d6bde6e61bf88bca63c7e59c1e0823b9f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.4.24179.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
