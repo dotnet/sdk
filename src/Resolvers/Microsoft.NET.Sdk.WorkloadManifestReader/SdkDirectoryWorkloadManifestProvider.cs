@@ -139,7 +139,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                                 throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
                             }
                         }
-                        _manifestsFromInstallState = installState.Manifests is null ? new WorkloadSet() : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);
+                        _manifestsFromInstallState = installState.Manifests is null ? new WorkloadSet() : WorkloadSet.FromDictionaryForJson(installState.Manifests!, _sdkVersionBand);
                         _installStateFilePath = installStateFilePath;
                     }
                 }
