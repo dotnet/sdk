@@ -99,22 +99,22 @@
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadCodeFixTitle">
         <source>Use 'Stream.ReadExactly'</source>
-        <target state="new">Use 'Stream.ReadExactly'</target>
+        <target state="translated">'Stream.ReadExactly' kullan</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadDescription">
         <source>A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</source>
-        <target state="new">A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</target>
+        <target state="translated">'Stream.Read' çağrısı istenenden daha az bayt döndürerek dönüş değeri denetlenmezse güvenilir olmayan koda neden olabilir.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadMessage">
         <source>Avoid inexact read with '{0}'</source>
-        <target state="new">Avoid inexact read with '{0}'</target>
+        <target state="translated">'{0}' ile doğru olmayan okumalardan kaçının</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadTitle">
         <source>Avoid inexact read with 'Stream.Read'</source>
-        <target state="new">Avoid inexact read with 'Stream.Read'</target>
+        <target state="translated">'Stream.Read' ile doğru olmayan okumalardan kaçının</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">

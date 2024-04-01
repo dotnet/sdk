@@ -99,22 +99,22 @@
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadCodeFixTitle">
         <source>Use 'Stream.ReadExactly'</source>
-        <target state="new">Use 'Stream.ReadExactly'</target>
+        <target state="translated">使用 'Stream.ReadExactly'</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadDescription">
         <source>A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</source>
-        <target state="new">A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</target>
+        <target state="translated">呼叫 'Stream.Read' 傳回的位元組數可能少於要求的位元組，如果未檢查值，將導致程式碼不可靠。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadMessage">
         <source>Avoid inexact read with '{0}'</source>
-        <target state="new">Avoid inexact read with '{0}'</target>
+        <target state="translated">避免使用 '{0}' 進行不精確的讀取</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadTitle">
         <source>Avoid inexact read with 'Stream.Read'</source>
-        <target state="new">Avoid inexact read with 'Stream.Read'</target>
+        <target state="translated">避免使用 'Stream.Read' 行不精確的讀取。</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
