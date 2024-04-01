@@ -8,10 +8,6 @@
     <VSTestLogger>console%3bverbosity=diagnostic;trx%3bverbosity=diagnostic%3bLogFileName=Microsoft.DotNet.UnifiedBuild.Tests.xml</VSTestLogger>
     <VSTestResultsDirectory>$(ArtifactsTestResultsDir)</VSTestResultsDirectory>
     <VsTestUseMSBuildOutput>true</VsTestUseMSBuildOutput>
-    <!-- DOTNET_ROOT is not set when running the test, so the testhost looks in the global installation location for preview framework assemblies, which aren't there -->
-    <!-- As a workaround, just publish self-contained to copy the framework assemblies from the local sdk -->
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
