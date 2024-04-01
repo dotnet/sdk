@@ -182,6 +182,11 @@
         <target state="translated">{0} kaldırılıyor </target>
         <note />
       </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">{0} iş yükü sürümü yükleniyor.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">Üst işlemle ({0}) bir güven ilişkisi kurulamadı.</target>
@@ -365,6 +370,16 @@
       <trans-unit id="WorkloadSetMode">
         <source>Control whether future workload operations should use workload sets or loose manifests.</source>
         <target state="translated">Gelecekteki iş yükü işlemlerinin iş yükü kümelerini mi yoksa gevşek bildirimleri mi kullanması gerektiğini kontrol edin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetUpgrade">
+        <source>Updating workload version from {0} to {1}.</source>
+        <target state="translated">İş yükü {0} sürümünden {1} sürümüne güncelleştiriliyor.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">Belirtilen iş yükü sürümünde güncelleştirme var.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

@@ -185,6 +185,18 @@ internal class ContainerizeCommand : CliRootCommand
 
     internal CliOption<string> ContainerUserOption { get; } = new("--container-user") { Description = "User to run the container as." };
 
+    internal CliOption<bool> GenerateLabelsOption { get; } = new("--generate-labels")
+    {
+        Description = "If true, the tooling may create labels on the generated images.",
+        Arity = ArgumentArity.Zero
+    };
+
+    internal CliOption<bool> GenerateDigestLabelOption { get; } = new("--generate-digest-label")
+    {
+        Description = "If true, the tooling will generate an 'org.opencontainers.image.base.digest' label on the generated images containing the digest of the chosen base image.",
+        Arity = ArgumentArity.Zero
+    };
+
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
     {
         PublishDirectoryArgument.AcceptLegalFilePathsOnly();
@@ -211,6 +223,8 @@ internal class ContainerizeCommand : CliRootCommand
         LocalRegistryOption.AcceptOnlyFromAmong(KnownLocalRegistryTypes.SupportedLocalRegistryTypes);
         Options.Add(LocalRegistryOption);
         Options.Add(ContainerUserOption);
+        Options.Add(GenerateLabelsOption);
+        Options.Add(GenerateDigestLabelOption);
 
         SetAction(async (parseResult, cancellationToken) =>
         {
@@ -236,6 +250,8 @@ internal class ContainerizeCommand : CliRootCommand
             string _ridGraphPath = parseResult.GetValue(RidGraphPathOption)!;
             string _localContainerDaemon = parseResult.GetValue(LocalRegistryOption)!;
             string? _containerUser = parseResult.GetValue(ContainerUserOption);
+            bool _generateLabels = parseResult.GetValue(GenerateLabelsOption);
+            bool _generateDigestLabel = parseResult.GetValue(GenerateDigestLabelOption);
 
             //setup basic logging
             bool traceEnabled = Env.GetEnvironmentVariableAsBool("CONTAINERIZE_TRACE_LOGGING_ENABLED");
@@ -265,6 +281,8 @@ internal class ContainerizeCommand : CliRootCommand
                 _localContainerDaemon,
                 _containerUser,
                 _archiveOutputPath,
+                _generateLabels,
+                _generateDigestLabel,
                 loggerFactory,
                 cancellationToken).ConfigureAwait(false);
         });

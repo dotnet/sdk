@@ -212,14 +212,41 @@ namespace Microsoft.DotNet.Installer.Windows
             if (IsElevated)
             {
                 // Create the parent folder for the state file and set up all required ACLs
-                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
                 installStateContents.UseWorkloadSets = newMode;
-                File.WriteAllText(path, installStateContents.ToString());
-                SecurityUtils.SecureFile(path);
+                CreateSecureFileInDirectory(path, installStateContents.ToString());
             }
             else if (IsClient)
             {
                 InstallResponseMessage response = Dispatcher.SendUpdateWorkloadModeRequest(sdkFeatureBand, newMode);
+                ExitOnFailure(response, "Failed to update install mode.");
+            }
+            else
+            {
+                throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
+            }
+        }
+
+        public void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
+            var installStateContents = InstallStateContents.FromPath(path);
+            if ((installStateContents.WorkloadVersion == null && workloadVersion == null) ||
+                (installStateContents.WorkloadVersion != null && installStateContents.WorkloadVersion.Equals(workloadVersion)))
+            {
+                return;
+            }
+
+            Elevate();
+
+            if (IsElevated)
+            {
+                // Create the parent folder for the state file and set up all required ACLs
+                installStateContents.WorkloadVersion = workloadVersion;
+                CreateSecureFileInDirectory(path, installStateContents.ToString());
+            }
+            else if (IsClient)
+            {
+                InstallResponseMessage response = Dispatcher.SendUpdateWorkloadSetRequest(sdkFeatureBand, workloadVersion);
                 ExitOnFailure(response, "Failed to update install mode.");
             }
             else
@@ -506,19 +533,21 @@ namespace Microsoft.DotNet.Installer.Windows
             if (IsElevated)
             {
                 // Create the parent folder for the state file and set up all required ACLs
-                SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
-
-                
                 installStateContents.Manifests = manifestContents;
-                File.WriteAllText(path, installStateContents.ToString());
-
-                SecurityUtils.SecureFile(path);
+                CreateSecureFileInDirectory(path, installStateContents.ToString());
             }
             else if (IsClient)
             {
                 InstallResponseMessage respone = Dispatcher.SendSaveInstallStateManifestVersions(sdkFeatureBand, manifestContents);
                 ExitOnFailure(respone, $"Failed to write install state file: {path}");
             }
+        }
+
+        private void CreateSecureFileInDirectory(string path, string contents)
+        {
+            SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
+            File.WriteAllText(path, contents);
+            SecurityUtils.SecureFile(path);
         }
     }
 }
