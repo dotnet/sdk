@@ -117,10 +117,9 @@
           Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" >
     <MSBuild Projects="../../test/Microsoft.DotNet.UnifiedBuild.Tests/Microsoft.DotNet.UnifiedBuild.Tests.csproj"
              Targets="Restore"
-             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid());ExcludeFromDotNetBuild=false" />
+             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
     <MSBuild Projects="../../test/Microsoft.DotNet.UnifiedBuild.Tests/Microsoft.DotNet.UnifiedBuild.Tests.csproj"
-             Targets="Build"
-             Properties="ExcludeFromDotNetBuild=false" />
+             Targets="Build" />
   </Target>
 
   <Target Name="GenerateRootFs"
