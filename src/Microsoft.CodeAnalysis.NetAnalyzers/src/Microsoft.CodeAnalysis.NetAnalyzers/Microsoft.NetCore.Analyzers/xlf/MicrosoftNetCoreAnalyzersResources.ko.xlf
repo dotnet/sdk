@@ -99,22 +99,22 @@
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadCodeFixTitle">
         <source>Use 'Stream.ReadExactly'</source>
-        <target state="new">Use 'Stream.ReadExactly'</target>
+        <target state="translated">'Stream.ReadExactly' 사용</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadDescription">
         <source>A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</source>
-        <target state="new">A call to 'Stream.Read' may return fewer bytes than requested, resulting in unreliable code if the return value is not checked.</target>
+        <target state="translated">'Stream.Read'에 대한 호출은 요청된 바이트보다 적은 바이트를 반환할 수 있으므로 반환 값을 확인하지 않으면 신뢰할 수 없는 코드가 됩니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadMessage">
         <source>Avoid inexact read with '{0}'</source>
-        <target state="new">Avoid inexact read with '{0}'</target>
+        <target state="translated">‘{0}’(으)로 부정확한 읽기 방지</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnreliableStreamReadTitle">
         <source>Avoid inexact read with 'Stream.Read'</source>
-        <target state="new">Avoid inexact read with 'Stream.Read'</target>
+        <target state="translated">'Stream.Read'로 부정확한 읽기 방지</target>
         <note />
       </trans-unit>
       <trans-unit id="AvoidUnsealedAttributesDescription">
