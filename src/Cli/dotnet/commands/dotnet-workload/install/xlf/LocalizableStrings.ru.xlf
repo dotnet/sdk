@@ -287,6 +287,11 @@
         <target state="translated">Печатать только список ссылок для скачивания, не выполняя загрузку.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="new">Successfully updated workload install mode to use {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">Установка пакета {0} версии {1} из автономного кэша {2}.</target>

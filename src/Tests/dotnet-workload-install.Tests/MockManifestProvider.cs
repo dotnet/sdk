@@ -29,7 +29,7 @@ namespace ManifestReaderTests
 
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
 
-        public void RefreshWorkloadManifests() { }
+        public void RefreshWorkloadManifests(bool error = false) { }
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
             {

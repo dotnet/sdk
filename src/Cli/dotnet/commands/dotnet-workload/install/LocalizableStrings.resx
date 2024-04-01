@@ -358,4 +358,7 @@
   <data name="CannotSpecifyVersionOnCommandLineAndInGlobalJson" xml:space="preserve">
     <value>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in the global.json file.</value>
   </data>
+  <data name="UpdatedWorkloadMode" xml:space="preserve">
+    <value>Successfully updated workload install mode to use {0}.</value>
+  </data>
 </root>

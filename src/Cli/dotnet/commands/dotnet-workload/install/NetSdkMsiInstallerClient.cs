@@ -1081,6 +1081,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode) => UpdateInstallMode(sdkFeatureBand, newMode);
+        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
+        {
+            UpdateInstallMode(sdkFeatureBand, newMode);
+            Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newMode ? "workload sets" : "loose manifests"));
+        }
     }
 }

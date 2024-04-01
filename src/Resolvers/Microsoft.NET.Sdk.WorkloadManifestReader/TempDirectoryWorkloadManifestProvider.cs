@@ -14,7 +14,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _sdkVersionBand = sdkFeatureBand;
         }
 
-        public void RefreshWorkloadManifests() { }
+        public void RefreshWorkloadManifests(bool error = false) { }
 
         public IEnumerable<ReadableWorkloadManifest>
             GetManifests()

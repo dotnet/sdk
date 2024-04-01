@@ -287,6 +287,11 @@
         <target state="translated">Stampa solo l'elenco dei collegamenti da scaricare senza scaricarlo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="new">Successfully updated workload install mode to use {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">Installazione del pacchetto {0}, versione {1}, dalla cache offline {2}.</target>

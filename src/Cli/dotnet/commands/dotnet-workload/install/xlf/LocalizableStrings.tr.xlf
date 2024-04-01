@@ -287,6 +287,11 @@
         <target state="translated">İndirmeden, yalnızca indirilecek bağlantıların listesini yazdırın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="new">Successfully updated workload install mode to use {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
         <source>Installing package {0} version {1} from offline cache {2}.</source>
         <target state="translated">{0} paketi sürüm {1}, {2} çevrimdışı önbelleğinden yükleniyor.</target>

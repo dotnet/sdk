@@ -128,6 +128,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         throw new Exception(string.Format(LocalizableStrings.CannotSpecifyVersionOnCommandLineAndInGlobalJson));
                     }
                 }
+                else if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+                {
+                    var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+                    if (File.Exists(installStateFilePath))
+                    {
+                        var installStateContents = InstallStateContents.FromPath(installStateFilePath);
+                        _workloadSetVersion = installStateContents.WorkloadVersion;
+                    }
+                }
 
                 try
                 {

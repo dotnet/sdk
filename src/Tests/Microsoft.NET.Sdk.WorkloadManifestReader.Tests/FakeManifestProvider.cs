@@ -20,7 +20,7 @@ namespace ManifestReaderTests
             _filePaths = filePaths;
         }
 
-        public void RefreshWorkloadManifests() { }
+        public void RefreshWorkloadManifests(bool error = false) { }
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
@@ -49,7 +49,7 @@ namespace ManifestReaderTests
 
         public void Add(string id, string content) => _manifests.Add((id, Encoding.UTF8.GetBytes(content)));
 
-        public void RefreshWorkloadManifests() { }
+        public void RefreshWorkloadManifests(bool error = false) { }
 
         public IEnumerable<ReadableWorkloadManifest> GetManifests()
             => _manifests.Select(m => new ReadableWorkloadManifest(
