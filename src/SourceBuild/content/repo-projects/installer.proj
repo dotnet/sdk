@@ -148,6 +148,13 @@
           UseHardlinksIfPossible="true" />
   </Target>
 
-  <Import Project="$(RepositoryEngineeringDir)unifiedBuildValidation.targets" Condition="'$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'" />
+  <Target Name="RunUnifiedBuildValidation"
+          AfterTargets="Build"
+          Condition="'$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'" >
+    <MSBuild Projects="../test/Microsoft.DotNet.UnifiedBuild.Tests/Microsoft.DotNet.UnifiedBuild.Tests.csproj"
+             Targets="VSTest"
+             ContinueOnError="true"
+             Properties="VsTestUseMSBuildOutput=true" />
+  </Target>
 
 </Project>
