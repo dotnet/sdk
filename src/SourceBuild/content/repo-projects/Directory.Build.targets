@@ -66,8 +66,8 @@
     <ItemGroup Condition="'@(TransitiveRepositoryReference)' != ''">
       <RepositoryReferenceInfo Include="@(TransitiveRepositoryReference)"
                                Exclude="source-build-reference-packages">
-        <ShippingSourceName>source-built-%(Identity)</ShippingSourceName>
-        <NonShippingSourceName>source-built-transport-%(Identity)</NonShippingSourceName>
+        <ShippingSourceName>$(SourceBuiltSourceNamePrefix)%(Identity)</ShippingSourceName>
+        <NonShippingSourceName>$(SourceBuiltSourceNamePrefix)transport-%(Identity)</NonShippingSourceName>
         <ShippingPackagesPath>$(ArtifactsShippingPackagesDir)/%(Identity)/</ShippingPackagesPath>
         <NonShippingPackagesPath>$(ArtifactsNonShippingPackagesDir)/%(Identity)/</NonShippingPackagesPath>
       </RepositoryReferenceInfo>
@@ -190,7 +190,12 @@
       NuGetConfigFile="$(NuGetConfigFile)"
       BuildWithOnlineFeeds="$(DotNetBuildWithOnlineFeeds)"
       SourceBuildSources="@(_BuildSources)"
-      SbrpRepoSrcPath="$(SbrpRepoSrcPath)" />
+      SbrpRepoSrcPath="$(SbrpRepoSrcPath)"
+      SbrpCacheSourceName="$(SbrpCacheNuGetSourceName)"
+      ReferencePackagesSourceName="$(ReferencePackagesNuGetSourceName)"
+      PreviouslySourceBuiltSourceName="$(PreviouslySourceBuiltNuGetSourceName)"
+      SourceBuiltSourceNamePrefix="$(SourceBuiltSourceNamePrefix)"
+      CustomSources="$(NetSdkSupportingFeedName)" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)UpdateNuGetConfig.complete" AlwaysCreate="true">

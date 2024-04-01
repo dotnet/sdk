@@ -94,12 +94,12 @@
     </Touch>
   </Target>
 
-  <!-- Build msbuild tasks for the poisoning feature. -->
+  <!-- Build msbuild tasks for the poisoning feature even when EnablePoison!=true to validate that the task project
+       builds as EnablePoison=true isn't exercised in PR validation. -->
   <Target Name="BuildLeakDetection"
           DependsOnTargets="ExtractToolPackage;BuildMSBuildSdkResolver"
           Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)BuildLeakDetection.complete"
-          Condition="'$(EnablePoison)' == 'true'">
+          Outputs="$(BaseIntermediateOutputPath)BuildLeakDetection.complete">
     <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.csproj"
              Targets="Restore"
              Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />

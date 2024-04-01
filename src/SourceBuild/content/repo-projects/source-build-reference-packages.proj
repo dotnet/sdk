@@ -27,7 +27,7 @@
 
     <AddSourceToNuGetConfig
       NuGetConfigFile="$(NuGetConfigFile)"
-      SourceName="source-build-reference-package-cache"
+      SourceName="$(SbrpCacheNuGetSourceName)"
       SourcePath="$(LocalNuGetPackageCacheDirectory)" />
   </Target>
 
