@@ -137,6 +137,8 @@
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <!-- By default, the VMR builds with online sources when not building source-only. -->
     <DotNetBuildWithOnlineFeeds Condition="'$(DotNetBuildWithOnlineFeeds)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</DotNetBuildWithOnlineFeeds>
+
+    <DisableArcadeExcludeFromBuildSupport>true</DisableArcadeExcludeFromBuildSupport>
   </PropertyGroup>
 
   <PropertyGroup>
