@@ -42,24 +42,27 @@ jobs:
     displayName: Publish to Build Asset Registry
 
   variables:
-  - template: /eng/common/templates/variables/pool-providers.yml
+  - template: /eng/common/templates-official/variables/pool-providers.yml
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
     - group: Publish-Build-Assets
     - group: AzureDevOps-Artifact-Feeds-Pats
     - name: runCodesignValidationInjection
       value: false
     - ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
-      - template: /eng/common/templates/post-build/common-variables.yml
+      - template: /eng/common/templates-official/post-build/common-variables.yml
 
   pool:
     # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
     ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
-      name: VSEngSS-MicroBuild2022-1ES
+      name: AzurePipelines-EO
+      image: 1ESPT-Windows2022
       demands: Cmd
+      os: windows
     # If it's not devdiv, it's dnceng
     ${{ if ne(variables['System.TeamProject'], 'DevDiv') }}:
       name: $(DncEngInternalBuildPool)
-      demands: ImageOverride -equals windows.vs2019.amd64
+      image: 1es-windows-2022
+      os: windows
 
   steps:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -98,14 +101,16 @@ jobs:
       inputs:
         targetType: inline
         script: |
-          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(BARBuildId)
-          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value "$(DefaultChannels)"
-          Add-Content -Path "$(Build.StagingDirectory)/ReleaseConfigs.txt" -Value $(IsStableBuild)
+          New-Item -Path "$(Build.StagingDirectory)/ReleaseConfigs" -ItemType Directory -Force
+          $filePath = "$(Build.StagingDirectory)/ReleaseConfigs/ReleaseConfigs.txt"
+          Add-Content -Path $filePath -Value $(BARBuildId)
+          Add-Content -Path $filePath -Value "$(DefaultChannels)"
+          Add-Content -Path $filePath -Value $(IsStableBuild)
     
-    - task: PublishBuildArtifacts@1
+    - task: 1ES.PublishBuildArtifacts@1
       displayName: Publish ReleaseConfigs Artifact
       inputs:
-        PathtoPublish: '$(Build.StagingDirectory)/ReleaseConfigs.txt'
+        PathtoPublish: '$(Build.StagingDirectory)/ReleaseConfigs'
         PublishLocation: Container
         ArtifactName: ReleaseConfigs
 
@@ -125,7 +130,7 @@ jobs:
            Write-Host "##vso[task.setvariable variable=SymbolExclusionFile]false"
           }
 
-    - task: PublishBuildArtifacts@1
+    - task: 1ES.PublishBuildArtifacts@1
       displayName: Publish SymbolPublishingExclusionsFile Artifact
       condition: eq(variables['SymbolExclusionFile'], 'true') 
       inputs:
@@ -134,7 +139,7 @@ jobs:
         ArtifactName: ReleaseConfigs
 
     - ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
-      - template: /eng/common/templates/post-build/setup-maestro-vars.yml
+      - template: /eng/common/templates-official/post-build/setup-maestro-vars.yml
         parameters:
           BARBuildId: ${{ parameters.BARBuildId }}
           PromoteToChannelIds: ${{ parameters.PromoteToChannelIds }}
@@ -152,6 +157,6 @@ jobs:
             -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
 
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
-      - template: /eng/common/templates/steps/publish-logs.yml
+      - template: /eng/common/templates-official/steps/publish-logs.yml
         parameters:
-          JobLabel: 'Publish_Artifacts_Logs'     
+          JobLabel: 'Publish_Artifacts_Logs'
