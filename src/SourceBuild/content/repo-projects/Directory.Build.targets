@@ -53,7 +53,6 @@
     <!-- Exclude repositories that currently don't build when not building source-only. -->
     <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
       <TransitiveRepositoryReference Remove="nuget-client" />
-      <TransitiveRepositoryReference Remove="fsharp" />
     </ItemGroup>
   </Target>
 
