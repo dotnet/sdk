@@ -134,12 +134,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ToolDepsJsonGeneratorProject>$(MSBuildThisFileDirectory)GenerateDeps\GenerateDeps.proj</ToolDepsJsonGeneratorProject>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(NETCoreSdkBundledMSBuildInformationProps)' == ''">
-    <NETCoreSdkBundledMSBuildInformationProps>$(MSBuildThisFileDirectory)..\..\..\Microsoft.NETCoreSdk.BundledMSBuildInformation.props</NETCoreSdkBundledMSBuildInformationProps>
-  </PropertyGroup>
-
-  <Import Project="$(NETCoreSdkBundledMSBuildInformationProps)" Condition="Exists('$(NETCoreSdkBundledMSBuildInformationProps)')" />
-
   <!-- Default item includes (globs and implicit references) -->
   <Import Project="Microsoft.NET.Sdk.DefaultItems.props" />
 

@@ -19,8 +19,6 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "net6.0",
             };
 
-            // Add an explicit version for the test. This will normally come from the installer.
-            project.AdditionalProperties.Add("_NetFrameworkHostedCompilersVersion", "4.7.0-2.23260.7");
             project.AdditionalProperties.Add("BuildWithNetFrameworkHostedCompiler", "true");
 
             var testAsset = _testAssetsManager
@@ -56,10 +54,8 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "net6.0",
             };
 
-            // Add an explicit version for the test. This will normally come from the installer.
-            project.AdditionalProperties.Add("_NetFrameworkHostedCompilersVersion", "4.7.0-2.23260.7");
-            // simulate mismatched MSBuild versions
-            project.AdditionalProperties.Add("_IsDisjointMSBuildVersion", "true");
+            // simulate mismatched MSBuild versions - use a quite old version here to ensure that we are in a 'torn' state.
+            project.AdditionalProperties.Add("_BundledMSBuildVersionMajorMinor", "15.10");
 
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
