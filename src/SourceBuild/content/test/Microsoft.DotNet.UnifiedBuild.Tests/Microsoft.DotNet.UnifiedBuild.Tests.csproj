@@ -8,10 +8,7 @@
     <VSTestLogger>console%3bverbosity=diagnostic;trx%3bverbosity=diagnostic%3bLogFileName=Microsoft.DotNet.UnifiedBuild.Tests.xml</VSTestLogger>
     <VSTestResultsDirectory>$(ArtifactsTestResultsDir)</VSTestResultsDirectory>
     <VsTestUseMSBuildOutput>true</VsTestUseMSBuildOutput>
-    <!-- DOTNET_ROOT is not set when running the test, so the testhost looks in the global installation location for preview framework assemblies, which aren't there -->
-    <!-- As a workaround, just publish self-contained to copy the framework assemblies from the local sdk -->
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</RuntimeIdentifier>
+    <VSTestCLIRunSettings>$(VSTestCLIRunSettings);RunConfiguration.DotNetHostPath=$(DotnetTool)</VSTestCLIRunSettings>
   </PropertyGroup>
 
   <ItemGroup>
@@ -45,6 +42,9 @@
       <!-- Set for local testing to avoid downloading a new SDK each test -->
       <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.MsftSdkArchivePath">
         <Value>$(UBTestsMsftSdkArchivePath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="Microsoft.DotNet.UnifiedBuild.Tests.NoDiagnosticMessages">
+        <Value>$(VSTestUseMSBuildOutput)</Value>
       </RuntimeHostConfigurationOption>
     </ItemGroup>
   </Target>
