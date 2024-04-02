@@ -211,7 +211,7 @@
 
     <PropertyGroup>
       <_ContainerPackageIsPresent>false</_ContainerPackageIsPresent>
-      <_ContainerPackageIsPresent Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', '$(_ContainersPackageIdentity)'))">true</_ContainerPackageIsPresent>
+      <_ContainerPackageIsPresent Condition="@(PackageReference->AnyHaveMetadataValue('Identity', '$(_ContainersPackageIdentity)'))">true</_ContainerPackageIsPresent>
       <_IsWebProject>false</_IsWebProject>
       <_IsWebProject Condition="'@(_WebCapability)' != ''">true</_IsWebProject>
       <_IsWorkerProject>false</_IsWorkerProject>
