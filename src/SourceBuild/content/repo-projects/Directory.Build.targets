@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Force use of dotnet msbuild (ignoring global.json contents) unless BuildWithDesktopMSBuild is explicitly set in the repo project. -->
-    <BuildArgs Condition="'$(BuildOS)' == 'windows' and '$(BuildWithDesktopMSBuild)' != 'true'">$(BuildArgs) $(FlagParameterPrefix)msbuildEngine dotnet</BuildArgs>
+    <!-- Force use of dotnet msbuild (ignoring global.json contents) unless ForceDotNetMSBuildEngine is explicitly set in the repo project. -->
+    <BuildArgs Condition="'$(BuildOS)' == 'windows' and '$(ForceDotNetMSBuildEngine)' != 'false'">$(BuildArgs) $(FlagParameterPrefix)msbuildEngine dotnet</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup>
