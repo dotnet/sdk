@@ -31,7 +31,35 @@ namespace Microsoft.DotNet.Watcher.Tests
                 }
                 """;
 
-            File.WriteAllText(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
+            var tcs = new TaskCompletionSource<bool>();
+
+            // Create a FileSystemWatcher to monitor file changes
+            using (var watcher = new FileSystemWatcher(dependencyDir))
+            {
+                watcher.NotifyFilter = NotifyFilters.LastWrite;
+                watcher.Filter = "*.cs";
+                watcher.EnableRaisingEvents = true;
+
+                // Define the event handler for changed files
+                watcher.Changed += (sender, e) =>
+                {
+                    if (e.FullPath == Path.Combine(dependencyDir, "Foo.cs"))
+                    {
+                        watcher.EnableRaisingEvents = false;
+                        tcs.SetResult(true);
+                    }
+                };
+
+                File.WriteAllText(Path.Combine(dependencyDir, "Foo.cs"), newSrc);
+
+                // Wait for the Changed event to be triggered or for the timeout to expire
+                if (await Task.WhenAny(tcs.Task, Task.Delay(15000)) != tcs.Task)
+                {
+                    watcher.EnableRaisingEvents = false;
+                    tcs.SetResult(true);
+                }
+            }
+
             await App.AssertOutputLineStartsWith("Changed!");
         }
     }
