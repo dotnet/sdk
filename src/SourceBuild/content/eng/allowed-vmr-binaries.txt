@@ -63,6 +63,7 @@ src/nuget-client/test/TestUtilities/Test.Utility/compiler/resources/*.zip
 
 # razor
 src/razor/src/Razor/test/Microsoft.VisualStudio.Razor.IntegrationTests/TestFiles/BlazorProject.zip
+src/razor/src/Razor/benchmarks/Microsoft.AspNetCore.Razor.Microbenchmarks/Resources/project.razor.bin
 
 # roslyn
 src/roslyn/src/Compilers/Test/Resources/Core/**/*.metadata
