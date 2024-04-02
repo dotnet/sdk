@@ -2,27 +2,23 @@
 
 jobs:
 - job: Source_Build_Create_Tarball
-  container: fedora38
+  container: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-38
   displayName: Source-Build Create Tarball
   pool:
     ${{ if eq(variables['System.TeamProject'], 'public') }}:
       ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
         name: NetCore-Public-XL
-        image: 1es-ubuntu-2004-open
-        os: linux
+        demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
       ${{ else }}:
         name: NetCore-Svc-Public
-        image: 1es-ubuntu-2004-open
-        os: linux
+        demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
     ${{ if eq(variables['System.TeamProject'], 'internal') }}:
       ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
         name: NetCore1ESPool-Internal-XL
-        image: 1es-ubuntu-2004
-        os: linux
+        demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
       ${{ else }}:
         name: NetCore1ESPool-Svc-Internal
-        image: 1es-ubuntu-2004
-        os: linux
+        demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
 
   variables:
   - name: _BuildConfig
@@ -82,10 +78,8 @@ jobs:
     continueOnError: true
     condition: succeededOrFailed()
 
-  - task: 1ES.PublishPipelineArtifact@1
+  - publish: '$(Build.StagingDirectory)/BuildLogs'
+    artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
     displayName: Publish BuildLogs
-    inputs:
-      targetPath: $(Build.StagingDirectory)/BuildLogs
-      artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
     continueOnError: true
     condition: succeededOrFailed()
