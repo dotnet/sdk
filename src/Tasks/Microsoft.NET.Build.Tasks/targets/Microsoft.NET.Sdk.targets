@@ -224,7 +224,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework"
         Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" />
 
-    <ItemGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT' and '$(_IsDisjointMSBuildVersion)' == 'true' ">
+    <ItemGroup Condition="('$(BuildWithNetFrameworkHostedCompiler)' == 'true'or '$(_IsDisjointMSBuildVersion)' == 'true') and '$(OS)' == 'Windows_NT' ">
       <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(_NetFrameworkHostedCompilersVersion)" IsImplicitlyDefined="true" />
     </ItemGroup>
 
