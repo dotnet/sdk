@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Utils
 
         public static void TrackEvent(
             string? eventName = null,
-            IDictionary<string, string>? properties = null,
+            IDictionary<string, string?>? properties = null,
             IDictionary<string, double>? measurements = null)
         {
             EntryPosted?.Invoke(typeof(TelemetryEventEntry),
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Utils
             }
         }
 
-        public static void Subscribe(Action<string?, IDictionary<string, string>?, IDictionary<string, double>?> subscriber)
+        public static void Subscribe(Action<string?, IDictionary<string, string?>?, IDictionary<string, double>?> subscriber)
         {
             void Handler(object? sender, InstrumentationEventArgs eventArgs)
             {
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Utils
         private readonly Dictionary<string, double>? _data;
         private readonly string? _name;
 
-        public PerformanceMeasurement(Dictionary<string, double> data, string name)
+        public PerformanceMeasurement(Dictionary<string, double>? data, string name)
         {
             // Measurement is a no-op if we don't have a dictionary to store the entry.
             if (data == null)
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         internal InstrumentationEventArgs(
             string? eventName,
-            IDictionary<string, string>? properties,
+            IDictionary<string, string?>? properties,
             IDictionary<string, double>? measurements)
         {
             EventName = eventName;
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Cli.Utils
         }
 
         public string? EventName { get; }
-        public IDictionary<string, string>? Properties { get; }
+        public IDictionary<string, string?>? Properties { get; }
         public IDictionary<string, double>? Measurements { get; }
     }
 
@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Cli.Utils
     {
         public ApplicationInsightsEntryFormat(
             string? eventName = null,
-            IDictionary<string, string>? properties = null,
+            IDictionary<string, string?>? properties = null,
             IDictionary<string, double>? measurements = null)
         {
             EventName = eventName;
@@ -103,12 +103,12 @@ namespace Microsoft.DotNet.Cli.Utils
         }
 
         public string? EventName { get; }
-        public IDictionary<string, string>? Properties { get; }
+        public IDictionary<string, string?>? Properties { get; }
         public IDictionary<string, double>? Measurements { get; }
 
-        public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string, string> func)
+        public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string?, string> func)
         {
-            var appliedProperties = Properties?.ToDictionary(p => p.Key, p => func(p.Value));
+            var appliedProperties = Properties?.ToDictionary(p => p.Key, p => (string?)func(p.Value));
             return new ApplicationInsightsEntryFormat(EventName, appliedProperties, Measurements);
         }
     }

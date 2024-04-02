@@ -13,6 +13,7 @@
     <UseAppHost>false</UseAppHost>
     <IsPackable>true</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!--<Nullable>enable</Nullable>-->
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="commands\dotnet-new\**" />
