@@ -17,24 +17,18 @@ parameters:
   ubuntu1804Container: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04
   poolInternalAmd64:
     name: NetCore1ESPool-Svc-Internal
-    image: 1es-ubuntu-2004
-    os: linux
+    demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
   poolInternalAmd64PR:
     name: NetCore1ESPool-Internal-XL
-    image: 1es-ubuntu-2004
-    os: linux
+    demands: ImageOverride -equals Build.Ubuntu.1804.Amd64
   poolInternalArm64:
     name: Docker-Linux-Arm-Internal
-    image: Mariner-2-Docker-ARM64
-    os: linux
-    hostArchitecture: Arm64
   poolPublicAmd64:
     name: NetCore-Public-XL
-    image: 1es-ubuntu-2004-open
-    os: linux
+    demands: ImageOverride -equals Build.Ubuntu.1804.Amd64.Open
 
 jobs:
-- template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml
+- template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball-pr.yml
   parameters:
     architecture: x64
     dependsOn: ${{ parameters.dependsOn }}
@@ -95,7 +89,7 @@ jobs:
           ${{ parameters.poolInternalAmd64 }}
 
 - ${{ if and(eq(variables['System.TeamProject'], 'internal'), ne(variables['Build.Reason'], 'PullRequest')) }}:
-  - template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml
+  - template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball-pr.yml
     parameters:
       architecture: arm64
       dependsOn: ${{ parameters.dependsOn }}
@@ -112,7 +106,7 @@ jobs:
       pool: ${{ parameters.poolInternalArm64 }}
 
 - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-  - template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball.yml
+  - template: /src/SourceBuild/Arcade/eng/common/templates/job/source-build-build-tarball-pr.yml
     parameters:
       architecture: x64
       # Always attempt to run the bootstrap leg (e.g. even when stage 1 tests fail) in order to get a complete assessment of the build status.
