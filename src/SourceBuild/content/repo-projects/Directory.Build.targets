@@ -24,8 +24,6 @@
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
     <ProjectAssetsJsonArchiveFile>$(PackageReportDir)all-project-assets-json-files.zip</ProjectAssetsJsonArchiveFile>
     <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
-    <RepoManifestFile>$([MSBuild]::NormalizePath('$(ProjectDirectory)', 'artifacts', 'RepoManifest.xml'))</RepoManifestFile>
-    <RepoAssetsSymbolsArchive>$(ArtifactsAssetsSymbolsDir)Symbols.$(RepositoryName)$(ArchiveExtension)</RepoAssetsSymbolsArchive>
 
     <IntermediateSymbolsRepoDir>$(IntermediateSymbolsRootDir)$(RepositoryName)</IntermediateSymbolsRepoDir>
   </PropertyGroup>
@@ -410,87 +408,23 @@
     <Message Importance="High" Text="See '$(RepoConsoleLogFile)' for more information." Condition="Exists('$(RepoConsoleLogFile)') and '$(MinimalConsoleLogOutput)' == 'true'" />
   </Target>
 
-  <!--
-    Remove this target after arcade changes for publishing have flown to installer repo.
-    https://github.com/dotnet/source-build/issues/4207
-  -->
-  <Target Name="CopyRepoArtifacts"
+  <!-- Log the new repo artifacts -->
+  <Target Name="LogRepoArtifacts"
           DependsOnTargets="RepoBuild"
-          Condition="'$(IsUtilityProject)' != 'true' and Exists('$(RepoManifestFile)')"
-          Inputs="$(RepoManifestFile)"
-          Outputs="$(BaseIntermediateOutputPath)CopyRepoArtifacts.complete">
-    <Error Text="Repo manifest file doesn't exist." Condition="!Exists('$(RepoManifestFile)')" />
+          Condition="'$(IsUtilityProject)' != 'true'">
+    <ItemGroup>
+      <RepoAssetManifest Include="$(RepoAssetManifestsDir)*.xml" />
+    </ItemGroup>
 
-    <XmlPeek XmlInputPath="$(RepoManifestFile)"
-             Query="Build/Artifact/@Path">
+    <Error Text="Repo manifest files don't exist." Condition="'@(RepoAssetManifest)' == ''" />
+
+    <XmlPeek XmlInputPath="%(RepoAssetManifest.Identity)"
+             Query="/Build/*[self::Package | self::Blob]/@Id">
         <Output TaskParameter="Result" ItemName="RepoManifestArtifact" />
     </XmlPeek>
 
-   <!-- Error if a repository doesn't produce any shipping or non-shipping artifacts. -->
-    <ItemGroup Condition="'@(RepoManifestArtifact)' == ''">
-      <_ArtifactsNotCreatedReason Include="^ There may have been a silent failure in the repo build." />
-      <_ArtifactsNotCreatedReason Include="^ To confirm, check the build log file for undetected errors that may have prevented package creation: $(RepoConsoleLogFile)" Condition="'$(MinimalConsoleLogOutput)' == 'true'" />
-      <_ArtifactsNotCreatedReason Include="^ The packages may have been written to an unexpected directory. For example, some repos used bin/ and changed to artifacts/ to match Arcade. Check RepoManifestFile in $(MSBuildProjectFullPath) (currently '$(RepoManifestFile)')" />
-    </ItemGroup>
-
-    <Error Text="$(RepositoryName) produced no new source-built package identities. Known possible causes:%0A@(_ArtifactsNotCreatedReason, '%0A')"
-           Condition="'@(RepoManifestArtifact)' == ''" />
-
-    <!-- The repo symbol archive shouldn't be copied. -->
-    <ItemGroup>
-      <RepoSymbolsArchive Include="@(RepoManifestArtifact)"
-                          Condition="$([System.String]::Copy('%(Identity)').EndsWith('Symbols.$(RepositoryName)$(ArchiveExtension)'))" />
-      <RepoManifestArtifact Remove="@(RepoSymbolsArchive)" />
-    </ItemGroup>
-
-    <!-- Log the new repo artifacts -->
     <Message Importance="High" Text="New artifact(s) after building $(RepositoryName):" />
-    <Message Importance="High" Text="  -> %(RepoManifestArtifact.Filename)%(RepoManifestArtifact.Extension)" />
-
-    <ItemGroup>
-      <RepoManifestPackage Include="@(RepoManifestArtifact->WithMetadataValue('Extension', '.nupkg'))" />
-      <RepoManifestAsset Include="@(RepoManifestArtifact)" Exclude="@(RepoManifestPackage)" />
-    </ItemGroup>
-
-    <!-- Prepare the repo manifest packages and group them by shipping and non-shipping. -->
-    <ItemGroup>
-      <RepoManifestNonShippingPackage Include="@(RepoManifestPackage)"
-                                      Condition="$([System.String]::Copy('%(Identity)').Contains('$([System.IO.Path]::DirectorySeparatorChar)NonShipping$([System.IO.Path]::DirectorySeparatorChar)'))">
-        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(RepoArtifactsNonShippingPackagesDir)</DestinationFolder>
-        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</DestinationFolder>
-      </RepoManifestNonShippingPackage>
-
-      <RepoManifestShippingPackage Include="@(RepoManifestPackage)"
-                                   Exclude="@(RepoManifestNonShippingPackage)">
-        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(RepoArtifactsShippingPackagesDir)</DestinationFolder>
-        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</DestinationFolder>
-      </RepoManifestShippingPackage>
-
-      <RepoManifestAsset>
-        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(ArtifactsAssetsDir)</DestinationFolder>
-        <DestinationFolder Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferenceAssetsDir)</DestinationFolder>
-      </RepoManifestAsset>
-    </ItemGroup>
-
-    <!-- Copy shipping packages -->
-    <Copy SourceFiles="@(RepoManifestShippingPackage)"
-          DestinationFolder="%(RepoManifestShippingPackage.DestinationFolder)"
-          Condition="'@(RepoManifestShippingPackage)' != ''" />
-
-    <!-- Copy non-shipping packages -->
-    <Copy SourceFiles="@(RepoManifestNonShippingPackage)"
-          DestinationFolder="%(RepoManifestNonShippingPackage.DestinationFolder)"
-          Condition="'@(RepoManifestNonShippingPackage)' != ''" />
-
-    <!-- Copy assets -->
-    <Copy SourceFiles="@(RepoManifestAsset)"
-          DestinationFolder="%(RepoManifestAsset.DestinationFolder)"
-          Condition="'@(RepoManifestAsset)' != ''" />
-
-    <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)CopyRepoArtifacts.complete" AlwaysCreate="true">
-      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
-    </Touch>
+    <Message Importance="High" Text="  -> %(RepoManifestArtifact.Identity)" />
   </Target>
 
   <!-- Copy restored packages from inner build to ensure they're included in the
@@ -566,7 +500,7 @@
   </Target>
 
   <Target Name="ExtractToolPackage"
-          DependsOnTargets="CopyRepoArtifacts"
+          DependsOnTargets="RepoBuild"
           Condition="'@(BuiltSdkPackageOverride)' != ''"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">
@@ -606,16 +540,18 @@
 
   <Target Name="DiscoverSymbolsArchiveFile"
           Condition="'$(DotNetBuildSourceOnly)' == 'true' and
-                     '$(IsUtilityProject)' != 'true' and
-                     Exists('$(RepoAssetsSymbolsArchive)')">
+                     '$(IsUtilityProject)' != 'true'">
+    <PropertyGroup>
+      <RepoAssetsSymbolsArchive>$(ArtifactsAssetsSymbolsDir)Symbols.$(RepositoryName)$(ArchiveExtension)</RepoAssetsSymbolsArchive>
+    </PropertyGroup>
 
     <ItemGroup>
-      <RepoSymbolsArchive Include="$(RepoAssetsSymbolsArchive)" />
+      <RepoSymbolsArchive Include="$(RepoAssetsSymbolsArchive)" Condition="Exists('$(RepoAssetsSymbolsArchive)')" />
     </ItemGroup>
   </Target>
 
   <Target Name="ExtractSymbolsArchiveFile"
-          DependsOnTargets="CopyRepoArtifacts;DiscoverSymbolsArchiveFile"
+          DependsOnTargets="RepoBuild;DiscoverSymbolsArchiveFile"
           Condition="'$(DotNetBuildSourceOnly)' == 'true' and
                      '$(IsUtilityProject)' != 'true' and
                      '@(RepoSymbolsArchive)' != ''"
@@ -634,7 +570,7 @@
           DependsOnTargets="
     BuildRepoReferences;
     RepoBuild;
-    CopyRepoArtifacts;
+    LogRepoArtifacts;
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
     DiscoverSymbolsArchiveFile;
