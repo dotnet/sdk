@@ -11,7 +11,7 @@
     <BuildActions Condition="'$(BuildOS)' != 'windows'">$(BuildActions) $(FlagParameterPrefix)no-build-java</BuildActions>
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
-    <BuildWithDesktopMSBuild>true</BuildWithDesktopMSBuild>
+    <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
   </PropertyGroup>
