@@ -191,6 +191,7 @@
       SbrpCacheSourceName="$(SbrpCacheNuGetSourceName)"
       ReferencePackagesSourceName="$(ReferencePackagesNuGetSourceName)"
       PreviouslySourceBuiltSourceName="$(PreviouslySourceBuiltNuGetSourceName)"
+      PrebuiltSourceName="$(PrebuiltNuGetSourceName)"
       SourceBuiltSourceNamePrefix="$(SourceBuiltSourceNamePrefix)"
       CustomSources="$(NetSdkSupportingFeedName)" />
 

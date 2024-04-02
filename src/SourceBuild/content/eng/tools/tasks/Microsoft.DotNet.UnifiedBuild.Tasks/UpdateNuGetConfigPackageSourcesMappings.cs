@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Compression;
@@ -52,6 +53,8 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         public string ReferencePackagesSourceName { get; set; }
 
         public string PreviouslySourceBuiltSourceName { get; set; }
+
+        public string PrebuiltSourceName { get; set; }
 
         public string[] CustomSources { get; set; }
 
@@ -242,29 +245,31 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 }
                 else if (packageSource.Equals(PreviouslySourceBuiltSourceName))
                 {
-                    foreach (string version in previouslySourceBuiltPackages[packagePattern])
-                    {
-                        if (!currentPackages[packagePattern].Contains(version))
-                        {
-                            pkgSrc.Add(new XElement("package", new XAttribute("pattern", packagePattern)));
-                            break;
-                        }
-                    }
+                    AddPackageSourceMappingIfPackageVersionNotInCurrentPackages(pkgSrc, packagePattern, previouslySourceBuiltPackages);
                 }
-                else // prebuilt source
+                else if (packageSource.Equals(PrebuiltSourceName))
                 {
-                    foreach (string version in prebuiltPackages[packagePattern])
-                    {
-                        if (!currentPackages[packagePattern].Contains(version))
-                        {
-                            pkgSrc.Add(new XElement("package", new XAttribute("pattern", packagePattern)));
-                            break;
-                        }
-                    }
+                    AddPackageSourceMappingIfPackageVersionNotInCurrentPackages(pkgSrc, packagePattern, prebuiltPackages);
+                }
+                else // unknown/unexpected source
+                {
+                    throw new UnreachableException($"Unexpected package source name: {packageSource}");
                 }
             }
 
             return pkgSrc;
+        }
+
+        private void AddPackageSourceMappingIfPackageVersionNotInCurrentPackages(XElement pkgSrc, string packagePattern, Dictionary<string, List<string>> packages)
+        {
+            foreach (string version in packages[packagePattern])
+            {
+                if (!currentPackages[packagePattern].Contains(version))
+                {
+                    pkgSrc.Add(new XElement("package", new XAttribute("pattern", packagePattern)));
+                    return;
+                }
+            }
         }
 
         private void DiscoverPackagesFromAllSourceBuildSources(XElement pkgSourcesElement)
@@ -303,9 +308,13 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                     {
                         AddToDictionary(previouslySourceBuiltPackages, id, version);
                     }
-                    else // prebuilt source
+                    else if (packageSource.Equals(PrebuiltSourceName))
                     {
                         AddToDictionary(prebuiltPackages, id, version);
+                    }
+                    else // unknown/unexpected source
+                    {
+                        throw new UnreachableException($"Unexpected package source name: {packageSource}");
                     }
 
                     AddToDictionary(allSourcesPackages, packageSource, id);
