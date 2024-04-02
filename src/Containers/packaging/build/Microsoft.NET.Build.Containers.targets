@@ -199,24 +199,33 @@
       <_WebDefaultSdkVersion>7.0.300</_WebDefaultSdkVersion>
       <_WorkerDefaultSdkVersion>8.0.100</_WorkerDefaultSdkVersion>
       <_ConsoleDefaultSdkVersion>8.0.200</_ConsoleDefaultSdkVersion>
-      <_SdkCanPublishWeb Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_WebDefaultSdkVersion)'))" >true</_SdkCanPublishWeb>
-      <_SdkCanPublishWorker Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_WorkerDefaultSdkVersion)'))">true</_SdkCanPublishWorker>
-      <_SdkCanPublishConsole Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_ConsoleDefaultSdkVersion)'))">true</_SdkCanPublishConsole>
+      <_SdkCanPublishWeb>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_WebDefaultSdkVersion)'))</_SdkCanPublishWeb>
+      <_SdkCanPublishWorker>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_WorkerDefaultSdkVersion)'))</_SdkCanPublishWorker>
+      <_SdkCanPublishConsole>$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '$(_ConsoleDefaultSdkVersion)'))</_SdkCanPublishConsole>
     </PropertyGroup>
     <ItemGroup>
-      <_ContainersPackage Include="@(PackageReference)" Condition="'%(Identity)' == '$(ContainersPackageIdentity)'"/>
+      <_ContainersPackage Include="@(PackageReference)" Condition="'%(Identity)' == '$(_ContainersPackageIdentity)'"/>
       <_WebCapability Include="@(ProjectCapability)" Condition="'%(Identity)' == 'DotNetCoreWeb'" />
       <_WorkerCapability Include="@(ProjectCapability)" Condition="'%(Identity)' == 'DotNetCoreWorker'" />
     </ItemGroup>
 
+    <PropertyGroup>
+      <_ContainerPackageIsPresent>false</_ContainerPackageIsPresent>
+      <_ContainerPackageIsPresent Condition="'@(_ContainersPackage)' != ''">true</_ContainerPackageIsPresent>
+      <_IsWebProject>false</_IsWebProject>
+      <_IsWebProject Condition="'@(_WebCapability)' != ''">true</_IsWebProject>
+      <_IsWorkerProject>false</_IsWorkerProject>
+      <_IsWorkerProject Condition="'@(_WorkerCapability)' != ''">true</_IsWorkerProject>
+    </PropertyGroup>
+
     <Warning
-      Condition="'@(_ContainersPackage)' != ''
+      Condition="$(_ContainerPackageIsPresent)
         and (
-          ($(_SdkCanPublishWeb) and '@(_WebCapability)' != '') or
-          ($(_SdkCanPublishWorker) and '@(_WorkerCapability)' != '') or
-          ($(_SdkCanPublishConsole) and '$(EnableSdkContainerSupport)' == 'true'
+          ($(_SdkCanPublishWeb) and $(_IsWebProject)) or
+          ($(_SdkCanPublishWorker) and $(_IsWorkerProject)) or
+          ($(_SdkCanPublishConsole) and '$(EnableSdkContainerSupport)' == 'true')
         )"
-      Text="Microsoft.NET.Build.Containers NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to Microsoft.NET.Build.Containers as it no longer needed." />
+      Text="The Microsoft.NET.Build.Containers NuGet package is explicitly referenced but the current SDK can natively publish the project as a container. Consider removing the package reference to Microsoft.NET.Build.Containers as it no longer needed." />
 
     <PropertyGroup>
       <EnableSdkContainerSupport Condition="'@(ContainersPackage)' != ''">true</EnableSdkContainerSupport>
