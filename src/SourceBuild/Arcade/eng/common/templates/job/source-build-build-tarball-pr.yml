@@ -227,11 +227,9 @@ jobs:
     continueOnError: true
     condition: succeededOrFailed()
 
-  - task: 1ES.PublishPipelineArtifact@1
+  - publish: '$(Build.StagingDirectory)/BuildLogs'
+    artifact: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
     displayName: Publish BuildLogs
-    inputs:
-      targetPath: $(Build.StagingDirectory)/BuildLogs
-      artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
     continueOnError: true
     condition: succeededOrFailed()
 
@@ -247,10 +245,8 @@ jobs:
       publishRunAttachments: true
       testRunTitle: SourceBuild_SmokeTests_$(Agent.JobName)
 
-  - task: 1ES.PublishPipelineArtifact@1
+  - publish: '$(tarballDir)/artifacts/${{ parameters.architecture}}/Release/'
+    artifact: $(Agent.JobName)_Artifacts
     displayName: Publish Artifacts
-    inputs:
-      targetPath: $(tarballDir)/artifacts/${{ parameters.architecture}}/Release/
-      artifactName: $(Agent.JobName)_Artifacts
-    continueOnError: true
     condition: succeededOrFailed()
+    continueOnError: true
