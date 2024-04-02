@@ -10,10 +10,10 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public static string GetPackageIdFromSourcePath(string sourcePath)
+        public static string? GetPackageIdFromSourcePath(string sourcePath)
         {
-            string packageId, unused;
-            GetPackageParts(sourcePath, out packageId, out unused);
+            string? packageId;
+            GetPackageParts(sourcePath, out packageId, out _);
             return packageId;
         }
 
@@ -23,7 +23,7 @@ namespace Microsoft.NET.Build.Tasks
         /// <param name="fullPath">full path to package file</param>
         /// <param name="packageId">package ID</param>
         /// <param name="packageSubPath">subpath of asset within package</param>
-        public static void GetPackageParts(string fullPath, out string packageId, out string packageSubPath)
+        public static void GetPackageParts(string fullPath, out string? packageId, out string? packageSubPath)
         {
             packageId = null;
             packageSubPath = null;
@@ -54,7 +54,6 @@ namespace Microsoft.NET.Build.Tasks
             { }
 
             return;
-
         }
     }
 }

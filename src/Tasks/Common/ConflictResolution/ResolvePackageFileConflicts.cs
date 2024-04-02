@@ -8,28 +8,28 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
     public class ResolvePackageFileConflicts : TaskBase
     {
-        private HashSet<ITaskItem> referenceConflicts = new();
-        private HashSet<ITaskItem> analyzerConflicts = new();
-        private HashSet<ITaskItem> copyLocalConflicts = new();
+        private HashSet<ITaskItem?> referenceConflicts = new();
+        private HashSet<ITaskItem?> analyzerConflicts = new();
+        private HashSet<ITaskItem?> copyLocalConflicts = new();
         private HashSet<ConflictItem> compilePlatformWinners = new();
         private HashSet<ConflictItem> allConflicts = new();
 
-        public ITaskItem[] References { get; set; }
+        public ITaskItem[]? References { get; set; }
 
-        public ITaskItem[] Analyzers { get; set; }
+        public ITaskItem[]? Analyzers { get; set; }
 
-        public ITaskItem[] ReferenceCopyLocalPaths { get; set; }
+        public ITaskItem[]? ReferenceCopyLocalPaths { get; set; }
 
-        public ITaskItem[] OtherRuntimeItems { get; set; }
+        public ITaskItem[]? OtherRuntimeItems { get; set; }
 
-        public ITaskItem[] PlatformManifests { get; set; }
+        public ITaskItem[]? PlatformManifests { get; set; }
 
-        public ITaskItem[] TargetFrameworkDirectories { get; set; }
+        public ITaskItem[]? TargetFrameworkDirectories { get; set; }
 
         /// <summary>
         /// NuGet3 and later only.  In the case of a conflict with identical file version information a file from the most preferred package will be chosen.
         /// </summary>
-        public string[] PreferredPackages { get; set; }
+        public string[]? PreferredPackages { get; set; }
 
         /// <summary>
         /// A collection of items that contain information of which packages get overridden
@@ -40,20 +40,20 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         /// in the default cases where platform packages (Microsoft.NETCore.App) should override specific packages
         /// (System.Console v4.3.0).
         /// </remarks>
-        public ITaskItem[] PackageOverrides { get; set; }
+        public ITaskItem[]? PackageOverrides { get; set; }
 
         [Output]
-        public ITaskItem[] ReferencesWithoutConflicts { get; set; }
+        public ITaskItem[]? ReferencesWithoutConflicts { get; set; }
 
         [Output]
-        public ITaskItem[] AnalyzersWithoutConflicts { get; set; }
+        public ITaskItem[]? AnalyzersWithoutConflicts { get; set; }
 
 
         [Output]
-        public ITaskItem[] ReferenceCopyLocalPathsWithoutConflicts { get; set; }
+        public ITaskItem[]? ReferenceCopyLocalPathsWithoutConflicts { get; set; }
 
         [Output]
-        public ITaskItem[] Conflicts { get; set; }
+        public ITaskItem[]? Conflicts { get; set; }
 
         protected override void ExecuteCore()
         {
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             var packageOverrides = new PackageOverrideResolver<ConflictItem>(PackageOverrides);
 
             //  Treat assemblies from FrameworkList.xml as platform assemblies that also get considered at compile time
-            IEnumerable<ConflictItem> compilePlatformItems = null;
+            IEnumerable<ConflictItem>? compilePlatformItems = null;
             if (TargetFrameworkDirectories != null && TargetFrameworkDirectories.Any())
             {
                 var frameworkListReader = new FrameworkListReader(BuildEngine4);
@@ -178,14 +178,14 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                 compilePlatformWinners.Select(c => Path.GetFileNameWithoutExtension(c.FileName))
                                       //  Don't add a reference if we already have one (especially in case the existing one has
                                       //  metadata we want to keep, such as aliases)
-                                      .Where(simplename => !referenceItemSpecs.Contains(simplename))
+                                      .Where(simpleName => !referenceItemSpecs.Contains(simpleName!))
                                       .Select(r => new TaskItem(r)));
 
         }
 
         //  Concatenate two things, either of which may be null.  Interpret null as empty,
         //  and return null if the result would be empty.
-        private ITaskItem[] SafeConcat(ITaskItem[] first, IEnumerable<ITaskItem> second)
+        private ITaskItem[]? SafeConcat(ITaskItem[]? first, IEnumerable<ITaskItem> second)
         {
             if (first == null || first.Length == 0)
             {
@@ -226,7 +226,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             return item;
         }
 
-        private IEnumerable<ConflictItem> GetConflictTaskItems(ITaskItem[] items, ConflictItemType itemType)
+        private IEnumerable<ConflictItem> GetConflictTaskItems(ITaskItem[]? items, ConflictItemType itemType)
         {
             return (items != null) ? items.Select(i => new ConflictItem(i, itemType)) : Enumerable.Empty<ConflictItem>();
         }
@@ -255,7 +255,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         {
             if (loser.ItemType == ConflictItemType.Reference)
             {
-                loser.OriginalItem.SetMetadata(MetadataNames.Private, "False");
+                loser.OriginalItem?.SetMetadata(MetadataNames.Private, "False");
             }
             else if (loser.ItemType == ConflictItemType.CopyLocal)
             {
@@ -270,14 +270,14 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         /// <param name="original"></param>
         /// <param name="conflicts"></param>
         /// <returns></returns>
-        private ITaskItem[] RemoveConflicts(ITaskItem[] original, ICollection<ITaskItem> conflicts)
+        private ITaskItem[]? RemoveConflicts(ITaskItem[]? original, ICollection<ITaskItem?> conflicts)
         {
             if (conflicts.Count == 0)
             {
                 return original;
             }
 
-            var result = new ITaskItem[original.Length - conflicts.Count];
+            var result = new ITaskItem[original!.Length - conflicts.Count];
             int index = 0;
 
             foreach (var originalItem in original)

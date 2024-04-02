@@ -22,10 +22,15 @@ namespace Microsoft.NET.Build.Tasks
 {
     static partial class FileUtilities
     {
-        private static Dictionary<string, (DateTime LastKnownWriteTimeUtc, Version Version)> s_versionCache = new(StringComparer.OrdinalIgnoreCase /* Not strictly correct on *nix. Fix? */);
+        private static Dictionary<string, (DateTime LastKnownWriteTimeUtc, Version? Version)> s_versionCache = new(StringComparer.OrdinalIgnoreCase /* Not strictly correct on *nix. Fix? */);
 
-        private static Version GetAssemblyVersion(string sourcePath)
+        private static Version? GetAssemblyVersion(string? sourcePath)
         {
+            if (sourcePath == null)
+            {
+                return null;
+            }
+
             DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourcePath);
 
             if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry)
@@ -34,7 +39,7 @@ namespace Microsoft.NET.Build.Tasks
                 return cacheEntry.Version;
             }
 
-            Version version = GetAssemblyVersionFromFile(sourcePath);
+            Version? version = GetAssemblyVersionFromFile(sourcePath);
 
             s_versionCache[sourcePath] = (lastWriteTimeUtc, version);
 
@@ -47,11 +52,11 @@ namespace Microsoft.NET.Build.Tasks
 
             return version;
 
-            static Version GetAssemblyVersionFromFile(string sourcePath)
+            static Version? GetAssemblyVersionFromFile(string? sourcePath)
             {
-                using (var assemblyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
+                using (var assemblyStream = new FileStream(sourcePath!, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
                 {
-                    Version result = null;
+                    Version? result = null;
                     try
                     {
                         using (PEReader peReader = new(assemblyStream, PEStreamOptions.LeaveOpen))
