@@ -22,6 +22,7 @@ public class Config : IDisposable
     public string TargetRid { get; }
     public string TargetArchitecture { get; }
     public bool WarnOnSdkContentDiffs { get; }
+    public bool NoDiagnosticMessages { get; }
 
     string? _downloadedMsftSdkPath = null;
     IMessageSink _sink;
@@ -29,6 +30,8 @@ public class Config : IDisposable
     public Config(IMessageSink sink)
     {
         _sink = sink;
+        string? noDiagnosticMessages = (string?)AppContext.GetData(NoDiagnosticMessagesSwitch);
+        NoDiagnosticMessages = string.IsNullOrEmpty(noDiagnosticMessages) ? false : bool.Parse(noDiagnosticMessages);
         UbBuildVersion = (string)(AppContext.GetData(BuildVersionSwitch) ?? throw new InvalidOperationException("Unified Build version must be specified"));
         TargetRid = (string)(AppContext.GetData(TargetRidSwitch) ?? throw new InvalidOperationException("Target RID must be specified"));
         PortableRid = (string)(AppContext.GetData(PortableRidSwitch) ?? throw new InvalidOperationException("Portable RID must be specified"));
@@ -41,9 +44,9 @@ public class Config : IDisposable
             MsftSdkArchivePath = DownloadMsftSdkArchive().Result;
         }
         else {
-            sink.OnMessage(new DiagnosticMessage($"Skipping downloading latest SDK. Using provided sdk archive: '{MsftSdkArchivePath}'"));
+            LogMessage($"Skipping downloading latest SDK. Using provided sdk archive: '{MsftSdkArchivePath}'");
         }
-        sink.OnMessage(new DiagnosticMessage($$"""
+        LogMessage($$"""
             Test config values:
             {{nameof(UbBuildVersion)}}='{{UbBuildVersion}}'
             {{nameof(TargetRid)}}='{{TargetRid}}'
@@ -52,7 +55,8 @@ public class Config : IDisposable
             {{nameof(TargetArchitecture)}}='{{TargetArchitecture}}'
             {{nameof(WarnOnSdkContentDiffs)}}='{{WarnOnSdkContentDiffs}}'
             {{nameof(MsftSdkArchivePath)}}='{{MsftSdkArchivePath}}'
-            """));
+            {{nameof(NoDiagnosticMessages)}}='{{NoDiagnosticMessages}}'
+            """);
     }
 
     const string ConfigSwitchPrefix = "Microsoft.DotNet.UnifiedBuild.Tests.";
@@ -62,6 +66,7 @@ public class Config : IDisposable
     const string UbSdkArchivePathSwitch = ConfigSwitchPrefix + nameof(UbSdkArchivePath);
     const string MsftSdkArchivePathSwitch = ConfigSwitchPrefix + nameof(MsftSdkArchivePath);
     const string WarnOnSdkContentDiffsSwitch = ConfigSwitchPrefix + nameof(WarnOnSdkContentDiffs);
+    const string NoDiagnosticMessagesSwitch = ConfigSwitchPrefix + nameof(NoDiagnosticMessages);
 
     static string GetArchiveExtension(string path)
     {
@@ -77,7 +82,7 @@ public class Config : IDisposable
         var client = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
         var channel = UbBuildVersion[..5] + "xx";
         var akaMsUrl = $"https://aka.ms/dotnet/{channel}/daily/dotnet-sdk-{TargetRid}{GetArchiveExtension(UbSdkArchivePath)}";
-        _sink.OnMessage(new DiagnosticMessage($"Downloading latest sdk from '{akaMsUrl}'"));
+        LogMessage($"Downloading latest sdk from '{akaMsUrl}'");
         var redirectResponse = await client.GetAsync(akaMsUrl);
         // aka.ms returns a 301 for valid redirects and a 302 to Bing for invalid URLs
         if (redirectResponse.StatusCode != HttpStatusCode.Moved)
@@ -85,17 +90,28 @@ public class Config : IDisposable
             throw new InvalidOperationException($"Could not find download link for Microsoft built sdk at '{akaMsUrl}'");
         }
         var closestUrl = redirectResponse.Headers.Location!.ToString();
-        _sink.OnMessage(new DiagnosticMessage($"Redirected to '{closestUrl}'"));
+        LogMessage($"Redirected to '{closestUrl}'");
         HttpResponseMessage packageResponse = await client.GetAsync(closestUrl);
         var packageUriPath = packageResponse.RequestMessage!.RequestUri!.LocalPath;
         _downloadedMsftSdkPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + "." + Path.GetFileName(packageUriPath));
-        _sink.OnMessage(new DiagnosticMessage($"Downloading to '{_downloadedMsftSdkPath}'"));
+        LogMessage($"Downloading to '{_downloadedMsftSdkPath}'");
         using (var file = File.Create(_downloadedMsftSdkPath))
         {
             await packageResponse.Content.CopyToAsync(file);
         }
         return _downloadedMsftSdkPath;
     }
+
+    private void LogMessage(string message)
+    {
+        if (NoDiagnosticMessages)
+            return;
+        if (_sink is null)
+            throw new InvalidOperationException("Cannot log message without a message sink");
+
+        _sink.OnMessage(new DiagnosticMessage(message));
+    }
+
     public void Dispose()
     {
         if (_downloadedMsftSdkPath != null)

@@ -150,11 +150,10 @@
 
   <Target Name="RunUnifiedBuildValidation"
           AfterTargets="Build"
-          Condition="'$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'" >
+          Condition="'$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">
     <MSBuild Projects="../test/Microsoft.DotNet.UnifiedBuild.Tests/Microsoft.DotNet.UnifiedBuild.Tests.csproj"
              Targets="VSTest"
-             ContinueOnError="true"
-             Properties="VsTestUseMSBuildOutput=true" />
+             ContinueOnError="true" />
   </Target>
 
 </Project>
