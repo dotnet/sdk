@@ -10,7 +10,12 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolUpdateCommandParser
     {
-        public static readonly CliArgument<string> PackageIdArgument = ToolInstallCommandParser.PackageIdArgument;
+        public static readonly CliArgument<string> PackageIdArgument = new("packageId")
+        {
+            HelpName = LocalizableStrings.PackageIdArgumentName,
+            Description = LocalizableStrings.PackageIdArgumentDescription,
+            Arity = ArgumentArity.ZeroOrOne
+        };
 
         public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
 

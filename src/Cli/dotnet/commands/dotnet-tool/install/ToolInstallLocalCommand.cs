@@ -27,6 +27,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public ToolInstallLocalCommand(
             ParseResult parseResult,
+            PackageId? packageId = null,
             IToolPackageDownloader toolPackageDownloader = null,
             IToolManifestFinder toolManifestFinder = null,
             IToolManifestEditor toolManifestEditor = null,
@@ -46,7 +47,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
             _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader);
-            _packageId = new PackageId(parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument));
+            _packageId = packageId ?? new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
         }
         
