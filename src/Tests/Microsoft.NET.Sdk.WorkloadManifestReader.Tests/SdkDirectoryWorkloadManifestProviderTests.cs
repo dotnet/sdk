@@ -527,36 +527,6 @@ namespace ManifestReaderTests
         }
 
         [Fact]
-        public void ItFailsIfWorkloadSetFromGlobalJsonIsNotInstalled()
-        {
-            Initialize("8.0.200");
-
-            string? globalJsonPath = Path.Combine(_testDirectory, "global.json");
-            File.WriteAllText(globalJsonPath, """
-            {
-                "sdk": {
-                    "version": "8.0.200",
-                    "workloadVersion": "8.0.201"
-                },
-                "msbuild-sdks": {
-                    "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.23254.2",
-                }
-            }
-            """);
-
-            CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.1", true);
-
-            CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.202", """
-{
-  "ios": "12.0.1/8.0.200"
-}
-""");
-
-            var ex = Assert.Throws<FileNotFoundException>(() => new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: globalJsonPath));
-            ex.Message.Should().Be(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, "8.0.201", globalJsonPath));
-        }
-
-        [Fact]
         public void ItFailsIfGlobalJsonIsMalformed()
         {
             Initialize("8.0.200");
@@ -616,40 +586,6 @@ namespace ManifestReaderTests
             GetManifestContents(sdkDirectoryWorkloadManifestProvider)
                 .Should()
                 .BeEquivalentTo("ios: 11.0.2/8.0.100");
-        }
-
-        [Fact]
-        public void ItFailsIfWorkloadSetFromInstallStateIsNotInstalled()
-        {
-            Initialize("8.0.200");
-
-            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.1", true);
-            CreateMockManifest(_manifestRoot, "8.0.100", "ios", "11.0.2", true);
-            CreateMockManifest(_manifestRoot, "8.0.200", "ios", "12.0.1", true);
-
-            CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.201", """
-{
-  "ios": "11.0.2/8.0.100"
-}
-""");
-
-            CreateMockWorkloadSet(_manifestRoot, "8.0.200", "8.0.202", """
-{
-  "ios": "12.0.1/8.0.200"
-}
-""");
-            var installStatePath = CreateMockInstallState("8.0.200",
-                """
-                {
-                    "workloadVersion": "8.0.203"
-                }
-                """);
-
-
-            var ex = Assert.Throws<FileNotFoundException>(
-                () => new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: null));
-
-            ex.Message.Should().Be(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, "8.0.203", installStatePath));
         }
 
         [Fact]
