@@ -19,6 +19,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
         // char[] myField = "abc".ToCharArray();
         // char[] myField = ConstString.ToCharArray();
         // byte[] myField = new[] { (byte)'a', (byte)'b', (byte)'c' };
+        // char[] myField = ['a', 'b', 'c'];
+        // byte[] myField = [(byte)'a', (byte)'b', (byte)'c'];
         protected override bool IsConstantByteOrCharArrayVariableDeclaratorSyntax(SemanticModel semanticModel, SyntaxNode syntax, out int length)
         {
             length = 0;
@@ -37,6 +39,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
         // ReadOnlySpan<byte> myProperty => "abc"u8;
         // ReadOnlySpan<byte> myProperty { get => "abc"u8; }
         // ReadOnlySpan<byte> myProperty { get { return "abc"u8; } }
+        // ReadOnlySpan<char> myProperty => ['a', 'b', 'c'];
+        // ReadOnlySpan<byte> myProperty => [(byte)'a', (byte)'b', (byte)'c'];
         protected override bool IsConstantByteOrCharReadOnlySpanPropertyDeclarationSyntax(SemanticModel semanticModel, SyntaxNode syntax, out int length)
         {
             length = 0;
@@ -44,7 +48,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             return
                 syntax is PropertyDeclarationSyntax propertyDeclaration &&
                 TryGetPropertyGetterExpression(propertyDeclaration) is { } expression &&
-                (IsConstantByteOrCharArrayCreationExpression(semanticModel, expression, values: null, out length) || IsUtf8StringLiteralExpression(expression, out length));
+                (IsConstantByteOrCharArrayCreationExpression(semanticModel, expression, values: null, out length) ||
+                IsUtf8StringLiteralExpression(expression, out length) ||
+                (semanticModel.GetOperation(expression) is { } operation && IsConstantByteOrCharCollectionExpression(operation, values: null, out length)));
         }
 
         protected override bool IsConstantByteOrCharArrayCreationSyntax(SemanticModel semanticModel, SyntaxNode syntax, out int length)
@@ -105,6 +111,12 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     length = value.Length;
                     return true;
                 }
+            }
+            else
+            {
+                return
+                    semanticModel.GetOperation(expression) is { } operation &&
+                    IsConstantByteOrCharCollectionExpression(operation, values, out length);
             }
 
             if (arrayInitializer?.Expressions is { } valueExpressions)

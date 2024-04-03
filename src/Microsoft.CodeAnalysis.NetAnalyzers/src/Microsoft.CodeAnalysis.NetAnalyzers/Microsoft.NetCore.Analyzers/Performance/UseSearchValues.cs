@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -183,6 +184,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         length >= MinLengthWorthReplacing ||
                         conversion.Operand is IInvocationOperation;
                 }
+                else if (IsConstantByteOrCharCollectionExpression(conversion.Operand, values: null, out length))
+                {
+                    // text.IndexOfAny(['a', 'b', 'c'])
+                    // text.IndexOfAny([(byte)'a', (byte)'b', (byte)'c'])
+                    return length >= MinLengthWorthReplacing;
+                }
             }
             else if (argument.Kind == OperationKindEx.Utf8String)
             {
@@ -309,6 +316,50 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             value = null;
             return false;
+        }
+
+        internal static bool IsConstantByteOrCharCollectionExpression(IOperation operation, List<char>? values, out int length)
+        {
+            if (operation.Kind == OperationKindEx.CollectionExpression &&
+                ICollectionExpressionOperationWrapper.IsInstance(operation) &&
+                ICollectionExpressionOperationWrapper.FromOperation(operation) is { } collection &&
+                AllElementsAreConstantByteOrCharLiterals(collection.Elements, values))
+            {
+                length = collection.Elements.Length;
+                return true;
+            }
+
+            length = 0;
+            return false;
+
+            static bool AllElementsAreConstantByteOrCharLiterals(ImmutableArray<IOperation> elements, List<char>? values)
+            {
+                foreach (IOperation element in elements)
+                {
+                    IOperation operation = element;
+
+                    if (operation is IConversionOperation conversion)
+                    {
+                        if (operation.Type is not { SpecialType: SpecialType.System_Byte })
+                        {
+                            return false;
+                        }
+
+                        operation = conversion.Operand;
+                    }
+
+                    if (operation.Type is not { SpecialType: SpecialType.System_Char } ||
+                        operation is not ILiteralOperation literal ||
+                        literal.ConstantValue.Value is not char charValue)
+                    {
+                        return false;
+                    }
+
+                    values?.Add(charValue);
+                }
+
+                return true;
+            }
         }
     }
 }

@@ -236,6 +236,48 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
+        [Fact]
+        public async Task TestCollectionExpressionAnalyzer()
+        {
+            await VerifyAnalyzerAsync(LanguageVersion.CSharp12,
+                """
+                using System;
+
+                internal sealed class Test
+                {
+                    private static readonly char[] ShortStaticReadonlyCharArrayField = ['a', 'e', 'i', 'o', 'u'];
+                    private static readonly char[] LongStaticReadonlyCharArrayField = ['a', 'e', 'i', 'o', 'u', 'A'];
+                    private ReadOnlySpan<char> ShortReadOnlySpanOfCharRVAProperty => ['a', 'e', 'i', 'o', 'u'];
+                    private ReadOnlySpan<char> LongReadOnlySpanOfCharRVAProperty => ['a', 'e', 'i', 'o', 'u', 'A'];
+                    private static readonly byte[] ShortStaticReadonlyByteArrayField = [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u'];
+                    private static readonly byte[] LongStaticReadonlyByteArrayField = [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A'];
+                    private ReadOnlySpan<byte> ShortReadOnlySpanOfByteRVAProperty => [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u'];
+                    private ReadOnlySpan<byte> LongReadOnlySpanOfByteRVAProperty => [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A'];
+
+                    private void TestMethod(ReadOnlySpan<char> chars, ReadOnlySpan<byte> bytes)
+                    {
+                        _ = chars.IndexOfAny([]);
+                        _ = chars.IndexOfAny(['a', 'e', 'i', 'o', 'u']);
+                        _ = chars.IndexOfAny([|['a', 'e', 'i', 'o', 'u', 'A']|]);
+
+                        _ = chars.IndexOfAny(ShortStaticReadonlyCharArrayField);
+                        _ = chars.IndexOfAny([|LongStaticReadonlyCharArrayField|]);
+                        _ = chars.IndexOfAny(ShortReadOnlySpanOfCharRVAProperty);
+                        _ = chars.IndexOfAny([|LongReadOnlySpanOfCharRVAProperty|]);
+
+                        _ = bytes.IndexOfAny([]);
+                        _ = bytes.IndexOfAny([(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u']);
+                        _ = bytes.IndexOfAny([|[(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A']|]);
+
+                        _ = bytes.IndexOfAny(ShortStaticReadonlyByteArrayField);
+                        _ = bytes.IndexOfAny([|LongStaticReadonlyByteArrayField|]);
+                        _ = bytes.IndexOfAny(ShortReadOnlySpanOfByteRVAProperty);
+                        _ = bytes.IndexOfAny([|LongReadOnlySpanOfByteRVAProperty|]);
+                    }
+                }
+                """);
+        }
+
         public static IEnumerable<object[]> TestAllIndexOfAnyAndContainsAnySpanOverloads_MemberData()
         {
             return
@@ -330,11 +372,15 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [InlineData("static readonly char[]", "= new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
         [InlineData("static readonly byte[]", "= new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", false)]
         [InlineData("readonly char[]", "= new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
+        [InlineData("readonly char[]", "= ['a', 'e', 'i', 'o', 'u', 'A'];", false)]
         [InlineData("readonly byte[]", "= new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", false)]
+        [InlineData("readonly byte[]", "= [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A'];", false)]
         [InlineData("readonly char[]", "= new char[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
         [InlineData("readonly char[]", "= new char[]  { 'a', 'e', 'i', 'o', 'u',  'A' };", false)]
         [InlineData("ReadOnlySpan<char>", "=> new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", false)]
+        [InlineData("ReadOnlySpan<char>", "=> ['a', 'e', 'i', 'o', 'u', 'A'];", false)]
         [InlineData("ReadOnlySpan<byte>", "=> new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", false)]
+        [InlineData("ReadOnlySpan<byte>", "=> [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A'];", false)]
         [InlineData("ReadOnlySpan<byte>", "=> \"aeiouA\"u8;", false)]
         [InlineData("static ReadOnlySpan<char>", "=> new[] { 'a', 'e', 'i', 'o', 'u', 'A' };", true)]
         [InlineData("static ReadOnlySpan<byte>", "=> new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' };", true)]
@@ -342,7 +388,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [InlineData("ReadOnlySpan<byte>", "{ get => \"aeiouA\"u8; }", false)]
         [InlineData("ReadOnlySpan<byte>", "{ get { return \"aeiouA\"u8; } }", false)]
         [InlineData("ReadOnlySpan<char>", "{ get => new[] { 'a', 'e', 'i', 'o', 'u', 'A' }; }", false)]
+        [InlineData("ReadOnlySpan<char>", "{ get => ['a', 'e', 'i', 'o', 'u', 'A']; }", false)]
         [InlineData("ReadOnlySpan<byte>", "{ get { return new[] { (byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A' }; } }", false)]
+        [InlineData("ReadOnlySpan<byte>", "{ get { return [(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A']; } }", false)]
         [InlineData("static ReadOnlySpan<byte>", "{ get => \"aeiouA\"u8; }", true)]
         [InlineData("static ReadOnlySpan<byte>", "{ get { return \"aeiouA\"u8; } }", true)]
         [InlineData("static ReadOnlySpan<char>", "{ get => new[] { 'a', 'e', 'i', 'o', 'u', 'A' }; }", true)]
@@ -395,6 +443,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
             await TestAsync(LanguageVersion.CSharp7_3, createExpression);
             await TestAsync(LanguageVersion.CSharp11, cSharp11CreateExpression ?? createExpression);
+            await TestAsync(LanguageVersion.CSharp12, cSharp11CreateExpression ?? createExpression);
 
             async Task TestAsync(LanguageVersion languageVersion, string expectedCreateExpression)
             {
@@ -402,6 +451,13 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     (memberDefinition.Contains("u8", StringComparison.Ordinal) || expectedCreateExpression.Contains("u8", StringComparison.Ordinal)))
                 {
                     // Need CSharp 11 or newer to use Utf8 string literals
+                    return;
+                }
+
+                if (languageVersion < LanguageVersion.CSharp12 &&
+                    memberDefinition.LastIndexOf(']') - memberDefinition.IndexOf('[', StringComparison.Ordinal) > 1)
+                {
+                    // Need CSharp 12 or newer to use collection expressions
                     return;
                 }
 
@@ -616,6 +672,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [InlineData(LanguageVersion.CSharp7_3, "\"aeiouA\"", "\"aeiouA\"")]
         [InlineData(LanguageVersion.CSharp7_3, "@\"aeiouA\"", "@\"aeiouA\"")]
         [InlineData(LanguageVersion.CSharp11, "\"aeiouA\"u8", "\"aeiouA\"u8")]
+        [InlineData(LanguageVersion.CSharp12, "['a', 'e', 'i', 'o', 'u', 'A']", "\"aeiouA\"")]
+        [InlineData(LanguageVersion.CSharp12, "[(byte)'a', (byte)'e', (byte)'i', (byte)'o', (byte)'u', (byte)'A']", "\"aeiouA\"u8")]
         [InlineData(LanguageVersion.CSharp7_3, "new[] { 'a', 'e', 'i', 'o', 'u', 'A' }", "\"aeiouA\"")]
         [InlineData(LanguageVersion.CSharp7_3, "new char[] { 'a', 'e', 'i', 'o', 'u', 'A' }", "\"aeiouA\"")]
         [InlineData(LanguageVersion.CSharp7_3, "new char[]  { 'a', 'e', 'i', 'o',  'u', 'A' }", "\"aeiouA\"")]
