@@ -54,8 +54,8 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "net6.0",
             };
 
-            // simulate mismatched MSBuild versions - use a quite old version here to ensure that we are in a 'torn' state.
-            project.AdditionalProperties.Add("_BundledMSBuildVersionMajorMinor", "15.10");
+            // simulate mismatched MSBuild versions - use a super-futuristic version here to ensure that we are in a 'torn' state.
+            project.AdditionalProperties.Add("_BundledMSBuildVersionMajorMinor", "42.42");
 
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);

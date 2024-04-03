@@ -132,6 +132,8 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
             testAppProject.AdditionalProperties["ProduceReferenceAssembly"] = "false";
+            // disable implicit use of the Roslyn Toolset compiler package
+            testAppProject.AdditionalProperties["BuildWithNetFrameworkHostedCompiler"] = false.ToString();
             testAppProject.ReferencedProjects.Add(mainLibraryProject);
             testAppProject.SourceFiles["Program.cs"] = @"
                 using System;
