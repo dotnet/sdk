@@ -10,9 +10,15 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolUpdateCommandParser
     {
-        public static readonly CliArgument<string> PackageIdArgument = ToolInstallCommandParser.PackageIdArgument;
+        // public static readonly CliArgument<string> PackageIdArgument = ToolInstallCommandParser.PackageIdArgument;
+        public static readonly CliArgument<string> PackageIdArgument = new("packageId")
+        {
+            HelpName = LocalizableStrings.PackageIdArgumentName,
+            Description = LocalizableStrings.PackageIdArgumentDescription,
+            Arity = ArgumentArity.ZeroOrOne
+        };
 
-        public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+        /*public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
 
         public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
 
@@ -31,6 +37,10 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<bool> PrereleaseOption = ToolSearchCommandParser.PrereleaseOption;
 
         public static readonly CliOption<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
+*/
+        public static readonly CliOption<bool> UpdateAllOption = new("--all")
+        {
+        };
 
         public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
 
@@ -44,29 +54,28 @@ namespace Microsoft.DotNet.Cli
         private static CliCommand ConstructCommand()
         {
             CliCommand command = new("update", LocalizableStrings.CommandDescription);
-            //  dotnet tool update all
-            command.Subcommands.Add(ToolUpdateAllCommandParser.GetCommand());
 
+            // command.Subcommands.Add(ToolUpdateAllCommandParser.GetCommand());
+            // command.Subcommands.Add(UpdateAllCommand());
 
             command.Arguments.Add(PackageIdArgument);
+
             ToolInstallCommandParser.AddCommandOptions(command);
             command.Options.Add(AllowPackageDowngradeOption);
+            command.Options.Add(UpdateAllOption);
 
             command.SetAction((parseResult) => new ToolUpdateCommand(parseResult).Execute());
 
             return command;
         }
 
-        private static CliCommand UpdateAllCommand()
+        /*private static CliCommand UpdateAllCommand()
         {
             CliCommand command = new("--all", LocalizableStrings.AllUpdateOptionDescription);
-            command.Options.Add(GlobalOption);
-            command.Options.Add(LocalOption);
-            command.Options.Add(AllUpdateOption);
-
-            command.SetAction((parseResult) => new ToolUpdateAllCommand(parseResult).Execute());
+            // command.SetAction((parseResult) => new ToolUpdateAllCommand(parseResult).Execute());
 
             return command;
-        }   
+        }*/
     }
 }
+

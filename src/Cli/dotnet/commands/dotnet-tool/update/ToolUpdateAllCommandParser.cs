@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+/*// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolUpdateAllCommandParser
     {
-        public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+        *//*public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
 
         public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
 
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
 
-        public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
+        public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;*//*
 
         private static readonly CliCommand Command = ConstructCommand();
 
@@ -39,16 +39,17 @@ namespace Microsoft.DotNet.Cli
             return Command;
         }
 
-        private static CliCommand ConstructCommand()
+        *//*private static CliCommand ConstructCommand()
         {
             CliCommand command = new("--all", LocalizableStrings.AllUpdateOptionDescription);
-            command.Options.Add(GlobalOption);
-            command.Options.Add(LocalOption);
+            *//*command.Options.Add(GlobalOption);
+            command.Options.Add(LocalOption);*//*
             ToolInstallCommandParser.AddCommandOptions(command);
 
             command.SetAction((parseResult) => new ToolUpdateAllCommand(parseResult).Execute());
 
             return command;
-        }
+        }*//*
     }
 }
+*/

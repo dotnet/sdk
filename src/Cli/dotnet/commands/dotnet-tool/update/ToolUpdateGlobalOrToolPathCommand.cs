@@ -36,9 +36,16 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _createShellShimRepository =
                 createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
 
+            PackageId? packageId = null;
+            if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument) is string s)
+            {
+                packageId = new PackageId(s);
+            }
+
             _toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
                 
                     parseResult,
+                    packageId,
                     _createToolPackageStoreDownloaderUninstaller,
                     _createShellShimRepository,
                     reporter: reporter);

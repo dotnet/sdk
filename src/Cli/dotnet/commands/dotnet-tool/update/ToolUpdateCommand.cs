@@ -51,8 +51,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                     createShellShimRepository,
                     reporter);
 
-            _global = result.GetValue(ToolUpdateCommandParser.GlobalOption);
-            _toolPath = result.GetValue(ToolUpdateCommandParser.ToolPathOption);
+            _global = result.GetValue(ToolInstallCommandParser.GlobalOption);
+            _toolPath = result.GetValue(ToolInstallCommandParser.ToolPathOption);
         }
 
         public override int Execute()

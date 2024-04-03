@@ -145,6 +145,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -191,6 +192,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -235,6 +237,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             return new ToolInstallLocalCommand(
                 _parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -250,6 +253,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -268,6 +272,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -286,6 +291,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
+                _packageIdA,
                 GetToolToolPackageInstallerWithPreviewInFeed(),
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -322,6 +328,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -346,6 +353,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
@@ -367,6 +375,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
+                _packageIdA,
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,

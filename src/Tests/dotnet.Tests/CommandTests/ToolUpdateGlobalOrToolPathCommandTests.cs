@@ -369,6 +369,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
+                _packageId,
                 (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                     fileSystem: _fileSystem,

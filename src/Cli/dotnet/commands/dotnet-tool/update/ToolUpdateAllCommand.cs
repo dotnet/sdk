@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+﻿/*// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             }
         }
 
-        private void UpdateTools(IEnumerable<string> toolIds, bool isGlobal, string manifestPath)
+        *//*private void UpdateTools(IEnumerable<string> toolIds, bool isGlobal, string manifestPath)
         {
             foreach (var toolId in toolIds)
             {
@@ -132,8 +132,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 toolUpdateCommand.Execute();
             }
         }
-
-        private string[] BuildUpdateCommandArguments(string toolId,
+*/
+        /*private string[] BuildUpdateCommandArguments(string toolId,
             bool isGlobal,
             string toolPath,
             string configFile,
@@ -189,7 +189,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             args.AddRange(new[] { "--verbosity", verbosity.ToString() });
 
             return args.ToArray();
-        }
+        }*//*
 
     }
 }
+*/
