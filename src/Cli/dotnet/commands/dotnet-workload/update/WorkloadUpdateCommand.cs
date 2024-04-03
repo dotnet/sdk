@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
             else
             {
-                var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(_userProfileDir);
+                var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
                 var workloadVersion = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
                 if (workloadVersion is not null)
                 {
