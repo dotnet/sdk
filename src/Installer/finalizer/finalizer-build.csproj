@@ -33,6 +33,6 @@
 
   <!-- This imports the CMake SDK and because BuildNative is true, it builds the native project. -->
   <!-- See: https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.CMake.Sdk#referencing-native-assets-with-nativeprojectreference -->
-  <Import Project="ProjectReference.targets" Sdk="Microsoft.DotNet.CMake.Sdk" Condition="'$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x86' Or '$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64' Or '$(Architecture)' == 'arm')" />
+  <Import Project="ProjectReference.targets" Sdk="Microsoft.DotNet.CMake.Sdk" Condition="'$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x86' Or '$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64')" />
 
 </Project>

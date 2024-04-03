@@ -15,7 +15,7 @@
       Instead, the Platform being set here is prior to calling the Arcade SDK, which sets PlatformName in RepoDefaults.props and modifies the OutputPath in ProjectLayout.props to include a PlatformName folder in the path.
       Note: The redist-installer project does use Architecture. The Arcade SDK does not use either BuildArchitecture or Architecture.
     -->
-    <Platform Condition="$(SetPlatformFromArchitecture) == 'true' And ('$(Platform)' == '' Or $(Platform) == 'AnyCPU')">$(Architecture)</Platform>
+    <Platform Condition="'$(SetPlatformFromArchitecture)' == 'true' And ('$(Platform)' == '' Or '$(Platform)' == 'AnyCPU')">$(Architecture)</Platform>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
