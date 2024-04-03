@@ -1,12 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Workloads.Workload;
@@ -25,9 +20,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             "microsoft.net.workload.maccatalyst", "microsoft.net.workload.macos", "microsoft.net.workload.tvos", "microsoft.net.workload.mono.toolchain" };
         private readonly Dictionary<string, int>? _knownManifestIdsAndOrder;
 
-        private readonly WorkloadSet? _workloadSet;
-        private readonly WorkloadSet? _manifestsFromInstallState;
-        private readonly string? _installStateFilePath;
+        private readonly string? _workloadSetVersionFromConstructor;
+        private readonly string? _globalJsonPathFromConstructor;
+
+        private WorkloadSet? _workloadSet;
+        private WorkloadSet? _manifestsFromInstallState;
+        private string? _installStateFilePath;
 
         public SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, string? userProfileDir, string? globalJsonPath)
             : this(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath)
@@ -59,6 +57,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             _sdkRootPath = sdkRootPath;
             _sdkVersionBand = new SdkFeatureBand(sdkVersion);
+            _workloadSetVersionFromConstructor = workloadSetVersion;
+            _globalJsonPathFromConstructor = globalJsonPath;
 
             var knownManifestIdsFilePath = Path.Combine(_sdkRootPath, "sdk", sdkVersion, "KnownWorkloadManifests.txt");
             if (!File.Exists(knownManifestIdsFilePath))
@@ -102,23 +102,28 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             _manifestRoots ??= Array.Empty<string>();
 
+            RefreshWorkloadManifests();
+        }
+
+        public void RefreshWorkloadManifests()
+        {
             var availableWorkloadSets = GetAvailableWorkloadSets();
 
-            if (workloadSetVersion != null)
+            if (_workloadSetVersionFromConstructor != null)
             {
-                if (!availableWorkloadSets.TryGetValue(workloadSetVersion, out _workloadSet))
+                if (!availableWorkloadSets.TryGetValue(_workloadSetVersionFromConstructor, out _workloadSet))
                 {
-                    throw new FileNotFoundException(string.Format(Strings.WorkloadVersionNotFound, workloadSetVersion));
+                    throw new FileNotFoundException(string.Format(Strings.WorkloadVersionNotFound, _workloadSetVersionFromConstructor));
                 }
             }
             else
             {
-                string? globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath);
+                string? globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
                 if (globalJsonWorkloadSetVersion != null)
                 {
                     if (!availableWorkloadSets.TryGetValue(globalJsonWorkloadSetVersion, out _workloadSet))
                     {
-                        throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, globalJsonWorkloadSetVersion, globalJsonPath));
+                        throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
                     }
                 }
                 else
@@ -126,15 +131,15 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
                     if (File.Exists(installStateFilePath))
                     {
-                        var installState = InstallStateReader.ReadInstallState(installStateFilePath);
-                        if (!string.IsNullOrEmpty(installState.WorkloadSetVersion))
+                        var installState = InstallStateContents.FromPath(installStateFilePath);
+                        if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                         {
-                            if (!availableWorkloadSets.TryGetValue(installState.WorkloadSetVersion!, out _workloadSet))
+                            if (!availableWorkloadSets.TryGetValue(installState.WorkloadVersion!, out _workloadSet))
                             {
-                                throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadSetVersion, installStateFilePath));
+                                throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
                             }
                         }
-                        _manifestsFromInstallState = installState.Manifests;
+                        _manifestsFromInstallState = installState.Manifests is null ? new WorkloadSet() : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);
                         _installStateFilePath = installStateFilePath;
                     }
                 }
@@ -147,11 +152,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public string GetWorkloadVersion()
+        public string? GetWorkloadVersion()
         {
             if (_workloadSet?.Version is not null)
             {
                 return _workloadSet?.Version!;
+            }
+
+            if (InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json")).UseWorkloadSets == true)
+            {
+                return null;
             }
 
             using (SHA256 sha256Hash = SHA256.Create())

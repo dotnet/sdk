@@ -42,6 +42,11 @@ namespace Microsoft.DotNet.Cli
 
             bool perfLogEnabled = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_PERF_LOG", false);
 
+            if (string.IsNullOrEmpty(Env.GetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD")))
+            {
+                Environment.SetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD", "1");
+            }
+
             // Avoid create temp directory with root permission and later prevent access in non sudo
             if (SudoEnvironmentDirectoryOverride.IsRunningUnderSudo())
             {

@@ -45,7 +45,9 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string _toolPath;
         private readonly string _architectureOption;
         private IEnumerable<string> _forwardRestoreArguments;
+        private readonly bool _allowRollForward;
         private readonly bool _allowPackageDowngrade;
+
 
         public ToolInstallGlobalOrToolPathCommand(
             ParseResult parseResult,
@@ -64,7 +66,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
             _source = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
             _global = parseResult.GetValue(ToolAppliedOption.GlobalOption);
-            _verbosity = parseResult.GetValue(ToolInstallCommandParser.VerbosityOption);
+            _verbosity = GetValueOrDefault(ToolInstallCommandParser.VerbosityOption, VerbosityOptions.minimal, parseResult);
             _toolPath = parseResult.GetValue(ToolAppliedOption.ToolPathOption);
             _architectureOption = parseResult.GetValue(ToolInstallCommandParser.ArchitectureOption);
 
@@ -81,14 +83,28 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
                 IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreAction);
+            nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreAction, verbosityOptions: _verbosity);
             _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
+
+            _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
+
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
             _createToolPackageStoreDownloaderUninstaller = createToolPackageStoreDownloaderUninstaller ??
                                                   ToolPackageFactory.CreateToolPackageStoresAndDownloaderAndUninstaller;
 
             _reporter = (reporter ?? Reporter.Output);
             _errorReporter = (reporter ?? Reporter.Error);
+        }
+
+        public static T GetValueOrDefault<T>(CliOption<T> option, T defaultOption, ParseResult parseResult)
+        {
+            if (parseResult.GetResult(option) is { } result &&
+                result.GetValueOrDefault<T>() is { } t)
+            {
+                return t;
+            }
+
+            return defaultOption;
         }
 
         public override int Execute()
@@ -138,7 +154,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         versionRange: versionRange,
                         targetFramework: _framework,
                         verbosity: _verbosity,
-                        isGlobalTool: true
+                        isGlobalTool: true,
+                        isGlobalToolRollForward: _allowRollForward
                     );
 
                     EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
