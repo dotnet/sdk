@@ -13,6 +13,7 @@ using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.DotNet.Cli.Utils;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Workload.Search.Tests;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -190,6 +191,64 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             installer.InstalledPacks.Where(pack => pack.Id.ToString().Contains("Android")).Count().Should().Be(8);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void UpdateViaWorkloadSet(bool upgrade)
+        {
+            var versionNumber = "8.0.0";
+            var workloadSetContents = @"
+{
+""android"": ""2.3.4/8.0.200""
+}
+";
+            var nugetPackageDownloader = new MockNuGetPackageDownloader();
+            var workloadResolver = new MockWorkloadResolver(new WorkloadInfo[] { new WorkloadInfo(new WorkloadId("android"), string.Empty) });
+            var workloadInstaller = new MockPackWorkloadInstaller(
+                Path.Combine(Path.GetTempPath(), "dotnetTestPat", "userProfileDir"),
+                installedWorkloads: new List<WorkloadId>() { new WorkloadId("android")},
+                workloadSetContents: workloadSetContents)
+            {
+                WorkloadResolver = workloadResolver
+            };
+            var oldVersion = upgrade ? "2.3.2" : "2.3.6";
+            var workloadManifestUpdater = new MockWorkloadManifestUpdater(
+                manifestUpdates: new ManifestUpdateWithWorkloads[] {
+                    new ManifestUpdateWithWorkloads(new ManifestVersionUpdate(new ManifestId("android"), new ManifestVersion(oldVersion), "8.0.200", new ManifestVersion("2.3.4"), "8.0.200"), Enumerable.Empty<KeyValuePair<WorkloadId, WorkloadDefinition>>().ToDictionary())
+                },
+                fromWorkloadSet: true);
+            var resolverFactory = new MockWorkloadResolverFactory(Path.Combine(Path.GetTempPath(), "dotnetTestPath"), versionNumber, workloadResolver, "userProfileDir");
+            var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater);
+
+            var installStatePath = Path.Combine(Path.GetTempPath(), "dotnetTestPath", "metadata", "workloads", versionNumber, "InstallState", "default.json");
+            var contents = new InstallStateContents();
+            contents.UseWorkloadSets = true;
+            var versionFile = Path.Combine("userProfileDir", "sdk-advertising", "8.0.0", "microsoft.net.workloads", Constants.workloadSetVersionFileName);
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
+                File.WriteAllText(installStatePath, contents.ToString());
+                updateCommand.Execute();
+                File.Exists(versionFile).Should().BeTrue();
+                File.ReadAllText(versionFile).Should().Be("8.0.0");
+            }
+            finally
+            {
+                if (File.Exists(versionFile))
+                {
+                    File.Delete(versionFile);
+                }
+
+                if (File.Exists(installStatePath))
+                {
+                    File.Delete(installStatePath);
+                }
+            }
+
+            workloadInstaller.InstalledManifests.Count.Should().Be(1);
+            workloadInstaller.InstalledManifests[0].manifestUpdate.NewVersion.ToString().Should().Be("2.3.4");
+        }
+
         [Fact]
         public void GivenWorkloadUpdateItRollsBackOnFailedUpdate()
         {
@@ -332,7 +391,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                     };
             (var dotnetPath, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
 
-            updateCommand.UpdateWorkloads();
+            updateCommand.CalculateManifestUpdatesAndUpdateWorkloads();
 
             packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
             packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
@@ -362,7 +421,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                     };
             (_, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", installedFeatureBand: "6.0.300");
 
-            updateCommand.UpdateWorkloads();
+            updateCommand.CalculateManifestUpdatesAndUpdateWorkloads();
 
             packInstaller.InstalledManifests[0].manifestUpdate.ManifestId.Should().Be(manifestsToUpdate[0].ManifestUpdate.ManifestId);
             packInstaller.InstalledManifests[0].manifestUpdate.NewVersion.Should().Be(manifestsToUpdate[0].ManifestUpdate.NewVersion);
