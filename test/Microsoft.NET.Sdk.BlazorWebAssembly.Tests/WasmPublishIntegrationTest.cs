@@ -529,7 +529,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var publishCommand = new PublishCommand(testInstance, "blazorhosted");
             publishCommand.WithWorkingDirectory(testInstance.TestRoot);
-            publishCommand.Execute().Should().Pass();
+            publishCommand.Execute("/bl").Should().Pass();
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
