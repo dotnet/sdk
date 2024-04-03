@@ -52,19 +52,3 @@ index ------------
  ./sdk/x.y.z/Microsoft.Common.CrossTargeting.targets
  ./sdk/x.y.z/Microsoft.Common.CurrentVersion.targets
  ./sdk/x.y.z/Microsoft.Common.overridetasks
-@@ ------------ @@
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/netx.y/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/netx.y/Microsoft.NET.Sdk.WebAssembly.Tasks.dll
--./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WindowsDesktop/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/Sdk/
- ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/Sdk/Sdk.props
-@@ ------------ @@
- ./sdk/x.y.z/testhost-latest.runtimeconfig.json
- ./sdk/x.y.z/testhost.deps.json
- ./sdk/x.y.z/testhost.dll
--./sdk/x.y.z/TestHostNetFramework/
- ./sdk/x.y.z/tr/
- ./sdk/x.y.z/tr/dotnet.resources.dll
- ./sdk/x.y.z/tr/Microsoft.Build.resources.dll

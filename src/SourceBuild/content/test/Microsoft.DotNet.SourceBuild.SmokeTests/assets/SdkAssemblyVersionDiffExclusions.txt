@@ -5,15 +5,15 @@
 #
 # This list is processed using FileSystemName.MatchesSimpleExpression
 #
-# Examples
-# 'folder/*' matches 'folder/' and 'folder/abc'
-# 'folder/?*' matches 'folder/abc' but not 'folder/'
+# '*' in exclusions match zero or more characters.
+# '*' will match files and directory names but it will not match separator characters.
+# '/' will be evaluated as '/**' if it is the last character.
 #
-# We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
+# Examples
+# 'folder/*' matches all files and directories in 'folder/'. It will not match 'folder/abc/def'
+# 'folder/' is equivalent to 'folder/**. It matches 'folder/', 'folder/abc', and 'folder/abc/def/'
 
 # Referenced 6.0/7.0 assemblies (https://github.com/dotnet/sdk/issues/34245)
-./sdk/x.y.z/Containers/tasks/netx.y/runtimes/win/lib/netx.y/?*
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.Composition.*
 ./sdk/x.y.z/Microsoft.Extensions.FileProviders.Abstractions.dll
 ./sdk/x.y.z/Microsoft.Extensions.FileSystemGlobbing.dll
 ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/System.Collections.Immutable.dll
@@ -24,43 +24,3 @@
 ./sdk/**/System.Security.Cryptography.Pkcs.dll
 ./sdk/**/System.Security.Cryptography.ProtectedData.dll
 ./sdk/x.y.z/System.Security.Cryptography.Xml.dll
-
-# These assemblies are lifted to a higher version naturally via SB (https://github.com/dotnet/source-build/issues/3922)
-./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Humanizer.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Microsoft.Build.Locator.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/Microsoft.Extensions.*
-./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Composition.*
-./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.IO.Pipelines.dll
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/Humanizer.dll
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/Microsoft.Build.Locator.dll
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/Microsoft.Extensions.*
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Composition.*
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.IO.Pipelines.dll
-
-# These assemblies are lifted to 9.0 (https://github.com/dotnet/source-build/issues/4013)
-./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/runtimes/browser/lib/netx.y/System.Text.Encodings.Web.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Collections.Immutable.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Reflection.Metadata.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Text.Encodings.Web.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/BuildHost-netcore/System.Text.Json.dll
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Collections.Immutable.dll
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/BuildHost-netcore/System.Reflection.Metadata.dll
-
-# These assemblies are lifted to a higher version naturally via SB
-./sdk/x.y.z/DotnetTools/dotnet-format/dotnet-format.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/*/dotnet-format.resources.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/*/Microsoft.CodeAnalysis.*
-./sdk/x.y.z/DotnetTools/dotnet-format/Humanizer.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Build.Locator.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.CodeAnalysis.*
-./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.DiaSymReader.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/System.CodeDom.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/System.Composition.*
-./sdk/x.y.z/DotnetTools/dotnet-format/System.IO.Pipelines.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/System.Resources.Extensions.dll
-./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.Xml.dll
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Humanizer.dll
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.Build.Locator.dll
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.CodeAnalysis.AnalyzerUtilities.dll
-./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.DiaSymReader.dll
-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.dll
