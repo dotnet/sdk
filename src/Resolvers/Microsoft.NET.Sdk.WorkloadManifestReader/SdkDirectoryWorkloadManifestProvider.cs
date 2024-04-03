@@ -108,6 +108,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public void RefreshWorkloadManifests(bool error = false)
         {
             _workloadSet = null;
+            _manifestsFromInstallState = null;
+            _installStateFilePath = null;
             var availableWorkloadSets = GetAvailableWorkloadSets();
 
             if (_workloadSetVersionFromConstructor != null)
