@@ -114,7 +114,7 @@
           so target one that matches the version in minimumMSBuildVersion.
 
           This avoids the need to juggle references to packages that have been updated in newer MSBuild. -->
-    <MicrosoftBuildPackageVersion Condition="exists('$(RepoRoot)\src\Layout\redist\minimumMSBuildVersion') and '$(DotNetBuildFromSource)' != 'true'">$([System.IO.File]::ReadAllText('$(RepoRoot)\src\Layout\redist\minimumMSBuildVersion').Trim())</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildPackageVersion Condition="'$(DotNetBuildFromSource)' != 'true'">17.4.8</MicrosoftBuildPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>$(MicrosoftBuildPackageVersion)</MicrosoftBuildFrameworkPackageVersion>
     <MicrosoftBuildRuntimePackageVersion>$(MicrosoftBuildPackageVersion)</MicrosoftBuildRuntimePackageVersion>
     <MicrosoftBuildLocalizationPackageVersion>17.7.4-preview-23476-01</MicrosoftBuildLocalizationPackageVersion>
