@@ -500,7 +500,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks.Tests", "test\core-sdk-tasks.Tests\core-sdk-tasks.Tests.csproj", "{EE5F621E-D9CE-4276-849A-EF03D3C016BC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Tools.Tests.Utilities", "test\Microsoft.DotNet.Tools.Tests.Utilities\Microsoft.DotNet.Tools.Tests.Utilities.csproj", "{5C5E619D-C507-4C36-9185-10A72B183DFA}"
-EndProjectGlobal
+EndProject
+Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
