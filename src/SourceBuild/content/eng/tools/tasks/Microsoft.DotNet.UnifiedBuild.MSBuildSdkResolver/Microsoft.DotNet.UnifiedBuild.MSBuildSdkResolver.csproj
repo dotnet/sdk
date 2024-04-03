@@ -5,15 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildVersion)" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <UnifiedBuildMSBuildSdkResolverManifestPath>$([MSBuild]::NormalizePath('$(VSMSBuildSdkResolversDir)', '$(MSBuildProjectName)', '$(MSBuildProjectName).xml'))</UnifiedBuildMSBuildSdkResolverManifestPath>
-  </PropertyGroup>
-
   <Target Name="InstallResolver" BeforeTargets="PrepareForRun">
+    <PropertyGroup>
+      <UnifiedBuildMSBuildSdkResolverManifestPath>$([MSBuild]::NormalizePath('$(VSMSBuildSdkResolversDir)', '$(MSBuildProjectName)', '$(MSBuildProjectName).xml'))</UnifiedBuildMSBuildSdkResolverManifestPath>
+    </PropertyGroup>
+
     <WriteLinesToFile
       File="$(UnifiedBuildMSBuildSdkResolverManifestPath)"
       Lines="&lt;SdkResolver&gt;&lt;Path&gt;$(TargetPath)&lt;/Path&gt;&lt;/SdkResolver&gt;"
