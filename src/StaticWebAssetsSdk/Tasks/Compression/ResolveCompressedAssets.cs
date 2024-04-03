@@ -73,8 +73,9 @@ public class ResolveCompressedAssets : Task
             {
                 Log.LogMessage(
                     MessageImportance.Low,
-                    "Ignoring asset '{0}' for compression because it is already compressed.",
-                    asset.Identity);
+                    "Ignoring asset '{0}' for compression because it is already compressed asset for '{1}'.",
+                    asset.Identity,
+                    asset.RelatedAsset);
                 continue;
             }
 
@@ -137,7 +138,7 @@ public class ResolveCompressedAssets : Task
                     existingFormats.Add(format);
 
                     Log.LogMessage(
-                        "Created compressed asset '{0}' for '{1}'.",
+                        "Accepted compressed asset '{0}' for '{1}'.",
                         compressedAsset.ItemSpec,
                         itemSpec);
                 }
@@ -150,7 +151,12 @@ public class ResolveCompressedAssets : Task
             }
         }
 
-        AssetsToCompress = [.. assetsToCompress];
+        Log.LogMessage(
+            "Resolved {0} compressed assets for {1} candidate assets.",
+            assetsToCompress.Count,
+            matchingCandidateAssets.Count);
+
+        AssetsToCompress = assetsToCompress.ToArray();
 
         return !Log.HasLoggedErrors;
     }

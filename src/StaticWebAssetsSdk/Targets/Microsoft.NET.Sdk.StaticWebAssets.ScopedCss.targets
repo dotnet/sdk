@@ -90,6 +90,9 @@ Integration with static web assets:
     <StaticWebAsset Include="@(_ScopedCssAppBundleStaticWebAsset)" Condition="'$(DisableScopedCssBundling)' != 'true'" />
     <StaticWebAsset Include="@(_ScopedCssProjectBundleStaticWebAsset)" Condition="'$(DisableScopedCssBundling)' != 'true'" />
     <StaticWebAsset Include="@(_ScopedCssStaticWebAsset)" Condition="'$(DisableScopedCssBundling)' == 'true'" />
+    <StaticWebAssetEndpoint Include="@(_ScopedCssAppBundleStaticWebAssetEndpoint)" Condition="'$(DisableScopedCssBundling)' != 'true'" />
+    <StaticWebAssetEndpoint Include="@(_ScopedCssProjectBundleStaticWebAssetEndpoint)" Condition="'$(DisableScopedCssBundling)' != 'true'" />
+    <StaticWebAssetEndpoint Include="@(_ScopedCssStaticWebAssetEndpoint)" Condition="'$(DisableScopedCssBundling)' == 'true'" />
   </ItemGroup>
 </Target>
 
@@ -247,6 +250,15 @@ Integration with static web assets:
     <Output TaskParameter="Assets" ItemName="_ScopedCssAppBundleStaticWebAsset" />
   </DefineStaticWebAssets>
 
+  <DefineStaticWebAssetEndpoints
+    Condition="@(_AllScopedCss) != ''"
+    CandidateAssets="@(_ScopedCssAppBundleStaticWebAsset)"
+    ExistingEndpoints="@(StaticWebAssetEndpoint)"
+    ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+  >
+    <Output TaskParameter="Endpoints" ItemName="_ScopedCssAppBundleStaticWebAssetEndpoint" />
+  </DefineStaticWebAssetEndpoints>
+
   <DefineStaticWebAssets Condition="@(_ScopedCss) != ''"
     CandidateAssets="@(_ScopedCssProjectBundleStaticWebAssetCandidate)"
     SourceType="Computed"
@@ -265,6 +277,15 @@ Integration with static web assets:
   >
     <Output TaskParameter="Assets" ItemName="_ScopedCssProjectBundleStaticWebAsset" />
   </DefineStaticWebAssets>
+
+  <DefineStaticWebAssetEndpoints
+    Condition="@(_ScopedCss) != ''"
+    CandidateAssets="@(_ScopedCssProjectBundleStaticWebAsset)"
+    ExistingEndpoints="@(StaticWebAssetEndpoint)"
+    ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+  >
+    <Output TaskParameter="Endpoints" ItemName="_ScopedCssProjectBundleStaticWebAssetEndpoint" />
+  </DefineStaticWebAssetEndpoints>
 
 </Target>
 
@@ -315,6 +336,15 @@ Integration with static web assets:
   >
     <Output TaskParameter="Assets" ItemName="_ScopedCssStaticWebAsset" />
   </DefineStaticWebAssets>
+
+  <DefineStaticWebAssetEndpoints Condition="@(_ScopedCss) != ''"
+    CandidateAssets="@(_ScopedCssStaticWebAsset)"
+    ExistingEndpoints="@(StaticWebAssetEndpoint)"
+    ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+  >
+    <Output TaskParameter="Endpoints" ItemName="_ScopedCssStaticWebAssetEndpoint" />
+  </DefineStaticWebAssetEndpoints>
+
 </Target>
 
 <Target Name="BundleScopedCssFiles" Condition="'$(DisableScopedCssBundling)' != 'true'" DependsOnTargets="_CollectAllScopedCssAssets;_ProcessScopedCssFiles;_ResolveBundlingConfiguration" >

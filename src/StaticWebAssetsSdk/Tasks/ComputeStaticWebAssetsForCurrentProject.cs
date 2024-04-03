@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Required]
         public string AssetKind { get; set; }
 
+        public bool IncludeReferenceAssets { get; set; }
+
         [Required]
         public string Source { get; set; }
 
@@ -50,7 +52,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         }
                     }
 
-                    if (!selected.IsForReferencedProjectsOnly())
+                    if (!selected.IsForReferencedProjectsOnly() || IncludeReferenceAssets)
                     {
                         resultAssets.Add(selected);
                     }

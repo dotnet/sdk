@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
+using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
@@ -17,7 +18,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             string manifestType,
             ReferencedProjectConfiguration[] referencedProjectConfigurations,
             StaticWebAssetsDiscoveryPattern[] discoveryPatterns,
-            StaticWebAsset[] assets)
+            StaticWebAsset[] assets,
+            StaticWebAssetEndpoint[] endpoints)
         {
             var result = new StaticWebAssetsManifest()
             {
@@ -28,7 +30,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 ManifestType = manifestType,
                 ReferencedProjectsConfiguration = referencedProjectConfigurations,
                 DiscoveryPatterns = discoveryPatterns,
-                Assets = assets
+                Assets = assets,
+                Endpoints = endpoints
             };
             result.Hash = result.ComputeManifestHash();
             return result;
@@ -46,6 +49,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             JsonSerializer.Serialize(writer, ReferencedProjectsConfiguration);
             JsonSerializer.Serialize(writer, DiscoveryPatterns);
             JsonSerializer.Serialize(writer, Assets);
+            JsonSerializer.Serialize(writer, Endpoints);
             writer.Flush();
             stream.Seek(0, SeekOrigin.Begin);
 
@@ -75,6 +79,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public StaticWebAssetsDiscoveryPattern[] DiscoveryPatterns { get; set; }
 
         public StaticWebAsset[] Assets { get; set; }
+
+        public StaticWebAssetEndpoint[] Endpoints { get; set; }
 
         public static StaticWebAssetsManifest FromJsonBytes(byte[] jsonBytes)
         {
@@ -114,6 +120,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         }
 
         public override bool Equals(object obj) => Equals(obj as StaticWebAssetsManifest);
+
         public bool Equals(StaticWebAssetsManifest other) =>
             other != null
             && Version == other.Version
@@ -124,7 +131,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             && ManifestType == other.ManifestType
             && EqualityComparer<ReferencedProjectConfiguration[]>.Default.Equals(ReferencedProjectsConfiguration, other.ReferencedProjectsConfiguration)
             && EqualityComparer<StaticWebAssetsDiscoveryPattern[]>.Default.Equals(DiscoveryPatterns, other.DiscoveryPatterns)
-            && EqualityComparer<StaticWebAsset[]>.Default.Equals(Assets, other.Assets);
+            && EqualityComparer<StaticWebAsset[]>.Default.Equals(Assets, other.Assets)
+            && EqualityComparer<StaticWebAssetEndpoint[]>.Default.Equals(Endpoints, other.Endpoints);
 
         public override int GetHashCode()
         {
@@ -139,6 +147,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             hash.Add(ReferencedProjectsConfiguration);
             hash.Add(DiscoveryPatterns);
             hash.Add(Assets);
+            hash.Add(Endpoints);
             return hash.ToHashCode();
 #else
             int hashCode = 1467594941;
@@ -151,6 +160,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             hashCode = hashCode * -1521134295 + EqualityComparer<ReferencedProjectConfiguration[]>.Default.GetHashCode(ReferencedProjectsConfiguration);
             hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetsDiscoveryPattern[]>.Default.GetHashCode(DiscoveryPatterns);
             hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAsset[]>.Default.GetHashCode(Assets);
+            hashCode = hashCode * -1521134295 + EqualityComparer<StaticWebAssetEndpoint[]>.Default.GetHashCode(Endpoints);
             return hashCode;
 #endif
         }

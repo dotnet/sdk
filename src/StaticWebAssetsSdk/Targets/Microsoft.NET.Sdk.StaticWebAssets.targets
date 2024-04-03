@@ -23,6 +23,26 @@ Copyright (c) .NET Foundation. All rights reserved.
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetEndpointsManifest"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+ <UsingTask
+   TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeEndpointsForReferenceStaticWebAssets"
+   AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+   Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+ <UsingTask
+   TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeEndpointsForCurrentProjectStaticWebAssets"
+   AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+   Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DefineStaticWebAssetEndpoints"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.GenerateStaticWebAssetsDevelopmentManifest"
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
@@ -353,6 +373,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_StaticWebAssetDiscoveryPatternCanonicalMetadata Include="ContentRoot" />
     <_StaticWebAssetDiscoveryPatternCanonicalMetadata Include="Pattern" />
 
+    <!-- Static web assets endpoint metadata -->
+    <_StaticWebAssetEndpointCanonicalMetadata Include="AssetFile" />
+    <_StaticWebAssetEndpointCanonicalMetadata Include="Selectors" />
+    <_StaticWebAssetEndpointCanonicalMetadata Include="EndpointProperties" />
+    <_StaticWebAssetEndpointCanonicalMetadata Include="ResponseHeaders" />
+
     <!-- Static web assets project configuration metadata -->
     <_StaticWebAssetProjectConfigurationCanonicalMetadata Include="Version" />
     <_StaticWebAssetProjectConfigurationCanonicalMetadata Include="Source" />
@@ -381,6 +407,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <StaticWebAssetBasePath Condition="'$(StaticWebAssetBasePath)' == ''">_content/$(PackageId)</StaticWebAssetBasePath>
       <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Default</StaticWebAssetProjectMode>
+      <StaticWebAssetEndpointMode Condition="'$(StaticWebAssetEndpointMode)' == ''" >Hosted</StaticWebAssetEndpointMode>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == 'browser'">Browser</StaticWebAssetMergeTarget>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == ''">Server</StaticWebAssetMergeTarget>
 
@@ -389,22 +416,23 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetBuildManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.build.json</StaticWebAssetBuildManifestPath>
       <StaticWebAssetPackManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.pack.json</StaticWebAssetPackManifestPath>
       <StaticWebAssetDevelopmentManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.development.json</StaticWebAssetDevelopmentManifestPath>
+      <StaticWebAssetEndpointsManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.endpoints.json</StaticWebAssetEndpointsManifestPath>
       <StaticWebAssetPublishManifestPath>$(_StaticWebAssetsManifestBase)staticwebassets.publish.json</StaticWebAssetPublishManifestPath>
 
       <_StaticWebAssetsIntermediateOutputPath>$(IntermediateOutputPath)staticwebassets\</_StaticWebAssetsIntermediateOutputPath>
 
       <!-- Temporary files -->
       <_GeneratedStaticWebAssetsPropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.$(PackageId).Microsoft.AspNetCore.StaticWebAssets.props</_GeneratedStaticWebAssetsPropsFile>
+      <_GeneratedStaticWebAssetEndpointsPropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.$(PackageId).Microsoft.AspNetCore.StaticWebAssetEndpoints.props</_GeneratedStaticWebAssetEndpointsPropsFile>
       <_GeneratedBuildPropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.build.$(PackageId).props</_GeneratedBuildPropsFile>
       <_GeneratedBuildMultitargetingPropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.buildMultiTargeting.$(PackageId).props</_GeneratedBuildMultitargetingPropsFile>
       <_GeneratedBuildTransitivePropsFile>$(_StaticWebAssetsIntermediateOutputPath)msbuild.buildTransitive.$(PackageId).props</_GeneratedBuildTransitivePropsFile>
 
       <!-- Package relative import paths -->
       <_StaticWebAssetsPropsFileImportPath>Microsoft.AspNetCore.StaticWebAssets.props</_StaticWebAssetsPropsFileImportPath>
+      <_StaticWebAssetEndpointsPropsFileImportPath>Microsoft.AspNetCore.StaticWebAssetEndpoints.props</_StaticWebAssetEndpointsPropsFileImportPath>
       <_StaticWebAssetsGeneratedBuildPropsFileImportPath>..\build\$(PackageId).props</_StaticWebAssetsGeneratedBuildPropsFileImportPath>
       <_StaticWebAssetsGeneratedBuildMultiTargetingPropsFileImportPath>..\buildMultiTargeting\$(PackageId).props</_StaticWebAssetsGeneratedBuildMultiTargetingPropsFileImportPath>
-
-      <_CurrentProjectHasStaticWebAssets Condition="'@(_CurrentProjectStaticWebAsset->Count())' != '0'">true</_CurrentProjectHasStaticWebAssets>
 
     </PropertyGroup>
 
@@ -519,6 +547,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ReferencedProjectsConfigurations="@(StaticWebAssetProjectConfiguration)"
       DiscoveryPatterns="@(StaticWebAssetDiscoveryPattern)"
       Assets="@(StaticWebAsset)"
+      Endpoints="@(StaticWebAssetEndpoint)"
       ManifestPath="$(StaticWebAssetBuildManifestPath)">
     </GenerateStaticWebAssetsManifest>
 
@@ -548,7 +577,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ResolveProjectStaticWebAssets"
     Condition="'$(NoBuild)' != 'true'"
     BeforeTargets="AssignTargetPaths"
-    DependsOnTargets="ResolveStaticWebAssetsConfiguration">
+    DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets">
 
     <DefineStaticWebAssets
       CandidateAssets="@(Content)"
@@ -560,6 +589,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetMergeSource="$(StaticWebAssetMergeTarget)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
     </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(StaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
 
     <ItemGroup>
 

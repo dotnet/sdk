@@ -105,16 +105,37 @@ Copyright (c) .NET Foundation. All rights reserved.
       </MSBuild>
 
       <ItemGroup>
-
-        <StaticWebAsset
+        <_ResolvedReferencedProjectBuildStaticWebAssets
           Include="@(_ReferencedProjectBuildStaticWebAssetsItems)"
           Condition="'%(_ReferencedProjectBuildStaticWebAssetsItems.ResultType)' == 'StaticWebAsset'"
           KeepMetadata="@(_StaticWebAssetCanonicalMetadata)" />
+
+        <_ResolvedReferencedProjectBuildStaticWebAssetEndpoints
+          Include="@(_ReferencedProjectBuildStaticWebAssetsItems)"
+          Condition="'%(_ReferencedProjectBuildStaticWebAssetsItems.ResultType)' == 'StaticWebAssetEndpoint'"
+          KeepMetadata="@(_StaticWebAssetEndpointCanonicalMetadata)" />
+      </ItemGroup>
+
+      <DefineStaticWebAssetEndpoints
+        CandidateAssets="@(_ResolvedReferencedProjectBuildStaticWebAssets)"
+        ExistingEndpoints="@(_ResolvedReferencedProjectBuildStaticWebAssetEndpoints)"
+        ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+      >
+        <Output TaskParameter="Endpoints" ItemName="_MissingReferencedProjectBuildStaticWebAssetEndpoints" />
+      </DefineStaticWebAssetEndpoints>
+
+      <ItemGroup>
+
+        <StaticWebAsset Include="@(_ResolvedReferencedProjectBuildStaticWebAssets)" />
+
+        <StaticWebAssetEndpoint Include="@(_ResolvedReferencedProjectBuildStaticWebAssetEndpoints)" />
+        <StaticWebAssetEndpoint Include="@(_MissingReferencedProjectBuildStaticWebAssetEndpoints)" />
 
         <StaticWebAssetDiscoveryPattern
           Include="@(_ReferencedProjectBuildStaticWebAssetsItems)"
           Condition="'%(_ReferencedProjectBuildStaticWebAssetsItems.ResultType)' == 'StaticWebAssetDiscoveryPattern'"
           KeepMetadata="@(_StaticWebAssetDiscoveryPatternCanonicalMetadata)" />
+
       </ItemGroup>
 
   </Target>
@@ -123,13 +144,15 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <PropertyGroup>
         <_ShouldReadBuildManifestAndUpdateItemGroup>false</_ShouldReadBuildManifestAndUpdateItemGroup>
-        <_ShouldReadBuildManifestAndUpdateItemGroup Condition="@(_CachedBuildStaticWebAssets) == '' and @(_CachedBuildStaticWebAssetDiscoveryPatterns) == ''">true</_ShouldReadBuildManifestAndUpdateItemGroup>
+        <_ShouldReadBuildManifestAndUpdateItemGroup Condition="@(_CachedBuildStaticWebAssets) == '' and @(_CachedBuildStaticWebAssetEndpoints) == '' and @(_CachedBuildStaticWebAssetDiscoveryPatterns) == '' and @(_CachedBuildStaticWebAssetReferencedProjectsConfiguration) == ''">true</_ShouldReadBuildManifestAndUpdateItemGroup>
       </PropertyGroup>
 
       <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetBuildManifestPath)"
         Condition="'$(_ShouldReadBuildManifestAndUpdateItemGroup)' == 'true'">
         <Output TaskParameter="Assets" ItemName="_CachedBuildStaticWebAssets" />
+        <Output TaskParameter="Endpoints" ItemName="_CachedBuildStaticWebAssetEndpoints" />
         <Output TaskParameter="DiscoveryPatterns" ItemName="_CachedBuildStaticWebAssetDiscoveryPatterns" />
+        <Output TaskParameter="ReferencedProjectsConfiguration" ItemName="_CachedBuildStaticWebAssetReferencedProjectsConfiguration" />
       </ReadStaticWebAssetsManifestFile>
 
       <ComputeReferenceStaticWebAssetItems
@@ -143,12 +166,22 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Output TaskParameter="DiscoveryPatterns" ItemName="_CachedBuildReferencedStaticWebAssetDiscoveryPatterns" />
       </ComputeReferenceStaticWebAssetItems>
 
+      <ComputeEndpointsForReferenceStaticWebAssets
+        Assets="@(_CachedBuildReferencedStaticWebAsset)"
+        CandidateEndpoints="@(_CachedBuildStaticWebAssetEndpoints)"
+      >
+        <Output TaskParameter="Endpoints" ItemName="_CachedBuildReferencedStaticWebAssetEndpoints" />
+      </ComputeEndpointsForReferenceStaticWebAssets>
+
       <ItemGroup>
         <_CachedBuildStaticWebassetItems Include="@(_CachedBuildReferencedStaticWebAsset)">
           <ResultType>StaticWebAsset</ResultType>
         </_CachedBuildStaticWebassetItems>
         <_CachedBuildStaticWebassetItems Include="@(_CachedBuildReferencedStaticWebAssetDiscoveryPatterns)">
           <ResultType>StaticWebAssetDiscoveryPattern</ResultType>
+        </_CachedBuildStaticWebassetItems>
+        <_CachedBuildStaticWebassetItems Include="@(_CachedBuildReferencedStaticWebAssetEndpoints)">
+          <ResultType>StaticWebAssetEndpoint</ResultType>
         </_CachedBuildStaticWebassetItems>
       </ItemGroup>
 
@@ -158,12 +191,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <PropertyGroup>
         <_ShouldReadPublishManifestAndUpdateItemGroup>false</_ShouldReadPublishManifestAndUpdateItemGroup>
-        <_ShouldReadPublishManifestAndUpdateItemGroup Condition="@(_CachedPublishStaticWebAssets) == '' and @(_CachedPublishStaticWebAssetDiscoveryPatterns) == ''">true</_ShouldReadPublishManifestAndUpdateItemGroup>
+        <_ShouldReadPublishManifestAndUpdateItemGroup Condition="@(_CachedPublishStaticWebAssets) == '' and @(_CachedPublishStaticWebAssetEndpoints) == '' and @(_CachedPublishStaticWebAssetDiscoveryPatterns) == ''">true</_ShouldReadPublishManifestAndUpdateItemGroup>
       </PropertyGroup>
 
       <ReadStaticWebAssetsManifestFile ManifestPath="$(StaticWebAssetPublishManifestPath)"
         Condition="'$(_ShouldReadPublishManifestAndUpdateItemGroup)' == 'true'">
         <Output TaskParameter="Assets" ItemName="_CachedPublishStaticWebAssets" />
+        <Output TaskParameter="Endpoints" ItemName="_CachedPublishStaticWebAssetEndpoints" />
         <Output TaskParameter="DiscoveryPatterns" ItemName="_CachedPublishStaticWebAssetDiscoveryPatterns" />
       </ReadStaticWebAssetsManifestFile>
 
@@ -176,9 +210,19 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Output TaskParameter="StaticWebAssets" ItemName="_CachedPublishReferencedStaticWebAsset" />
       </ComputeReferenceStaticWebAssetItems>
 
+      <ComputeEndpointsForReferenceStaticWebAssets
+        Assets="@(_CachedPublishStaticWebAssets)"
+        CandidateEndpoints="@(_CachedPublishStaticWebAssetEndpoints)"
+      >
+        <Output TaskParameter="Endpoints" ItemName="_CachedPublishReferencedStaticWebAssetEndpoints" />
+      </ComputeEndpointsForReferenceStaticWebAssets>
+
       <ItemGroup>
         <_CachedPublishStaticWebassetItems Include="@(_CachedPublishReferencedStaticWebAsset)">
           <ResultType>StaticWebAsset</ResultType>
+        </_CachedPublishStaticWebassetItems>
+        <_CachedPublishStaticWebassetItems Include="@(_CachedPublishReferencedStaticWebAssetEndpoints)">
+          <ResultType>StaticWebAssetEndpoint</ResultType>
         </_CachedPublishStaticWebassetItems>
       </ItemGroup>
 
