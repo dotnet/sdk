@@ -110,7 +110,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var customDefine = "AspNetSdkTest";
             var build = new BuildCommand(projectDirectory);
-            build.Execute($"/p:DefineConstants={customDefine}").Should().Pass();
+            build.Execute($"/p:DefineConstants={customDefine}", "/p:BuildWithNetFrameworkHostedCompiler=false").Should().Pass();
 
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
 
