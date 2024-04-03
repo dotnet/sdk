@@ -1,9 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
 
   <PropertyGroup>
-    <PublishingVersion>3</PublishingVersion>
     <!-- This repo does its own symbol package generation to avoid generating symbols for a bunch of unrelated test packages. -->
     <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages>
     <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
@@ -16,7 +13,7 @@
     <SdkAssetManifestFileName>$(OS)-$(PlatformName)-SdkAssets.xml</SdkAssetManifestFileName>
     <SdkAssetsManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(SdkAssetManifestFileName)</SdkAssetsManifestFilePath>
 
-    <TempWorkingDirectory>$(ArtifactsDir)\..\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
+    <TempWorkingDirectory>$(ArtifactsDir)\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
     <PublishBinariesAndBadge Condition=" '$(PublishBinariesAndBadge)' == '' ">true</PublishBinariesAndBadge>
   </PropertyGroup>
 
@@ -64,7 +61,7 @@
   <!-- FSharp needs to push different packages to nuget.org depending on whether the SDK is preview or not,
        To achieve this, we find the FSharp compiler package, then the stable or non-stable FSharp.Core and Compiler service
        package contained within, depending on the stability switch of the SDK. The SDK then treats these packages as its own outputs,
-       whch means they get automatically pushed on release day. -->
+       which means they get automatically pushed on release day. -->
   <PropertyGroup>
     <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishFSharpNuGetPackages</PublishDependsOnTargets>
   </PropertyGroup>
@@ -77,17 +74,29 @@
     <ItemGroup>
         <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg" />
         <FSharpPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.FSharp.Compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg" />
-        <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" />
+        <ItemsToPushToBlobFeed Include="@(FSharpPackagesToPush)" IsShipping="true" />
     </ItemGroup>
   </Target>
- 
+
+  <!-- Similarly to FSharp above, Roslyn needs to publish its Framework.Toolset package alongside SDK
+       so it can be picked up in BuildWithNetFrameworkHostedCompiler scenarios. -->
+  <PropertyGroup>
+    <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishRoslynNuGetPackages</PublishDependsOnTargets>
+  </PropertyGroup>
+    
+  <Target Name="_ResolvePublishRoslynNuGetPackages">
+    <ItemGroup>
+      <RoslynPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.Net.Compilers.Toolset.Framework\$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)\*.nupkg" />
+      <ItemsToPushToBlobFeed Include="@(RoslynPackagesToPush)" IsShipping="true" />
+    </ItemGroup>
+  </Target>
+
   <!-- We use a separate target to publish this to blob storage so that we can push this to a relative path inside the blob storage. -->
   <Target Name="PublishToolsetAssets" DependsOnTargets="ReadToolsetVersion" BeforeTargets="Publish">
     <ItemGroup>
-      <ToolsetAssetsToPushToBlobFeed Include="@(ToolsetAssetsToPublish)">
-        <RelativeBlobPath>$(BlobStoragePartialRelativePath)/$(ToolsetVersionValue)/$([System.String]::Copy('%(Filename)%(Extension)').Replace('\' ,'/'))</RelativeBlobPath>
-        <ManifestArtifactData>NonShipping=true</ManifestArtifactData>
-      </ToolsetAssetsToPushToBlobFeed>
+      <ToolsetAssetsToPushToBlobFeed Include="@(ToolsetAssetsToPublish)"
+        RelativeBlobPath="$(BlobStoragePartialRelativePath)/$(ToolsetVersionValue)/$([System.String]::Copy('%(Filename)%(Extension)').Replace('\' ,'/'))"
+        IsShipping="false" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(PostBuildSign)' == 'true'">
@@ -102,7 +111,7 @@
 
     <MakeDir Directories="$(TempWorkingDirectory)" />
 
-    <PushToAzureDevOpsArtifacts
+    <PushToBuildStorage
       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
       AzureDevOpsBuildId="$(BUILD_BUILDID)"
@@ -119,9 +128,13 @@
       ManifestCommit="$(BUILD_SOURCEVERSION)"
       PublishFlatContainer="true"
       AssetManifestPath="$(SdkAssetsManifestFilePath)"
-      AssetsTemporaryDirectory="$(TempWorkingDirectory)" 
-      PublishingVersion="3"
-      IsStableBuild="$(IsStableBuild)" />
+      AssetsTemporaryDirectory="$(TempWorkingDirectory)"
+      IsStableBuild="$(IsStableBuild)"
+      PushToLocalStorage="$(PushToLocalStorage)"
+      AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
+      ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"
+      NonShippingPackagesLocalStorageDir="$(SourceBuiltNonShippingPackagesDir)"
+      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)" />
 
     <Copy SourceFiles="$(SdkAssetsManifestFilePath)" DestinationFolder="$(TempWorkingDirectory)\$(SdkAssetManifestFileName)" />
 

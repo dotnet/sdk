@@ -22,6 +22,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Disable accelerated builds in Visual Studio as the Wasm SDK needs to post process the outputs from the build and the feature won't work as expected. -->
     <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
 
+    <!-- JS Modules - We disable the manifest generation because we are going to inline the modules in the blazor.boot.json manifest -->
+    <GenerateJSModuleManifest>false</GenerateJSModuleManifest>
+
     <_WasmSdkImportsMicrosoftNETSdkPublish Condition="'$(UsingMicrosoftNETSdkPublish)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkPublish>
     <_WasmSdkImportsMicrosoftNETSdkStaticWebAssets Condition="'$(UsingMicrosoftNETSdkStaticWebAssets)' != 'true'">true</_WasmSdkImportsMicrosoftNETSdkStaticWebAssets>
   </PropertyGroup>

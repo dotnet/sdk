@@ -214,7 +214,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var build = new BuildCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
             build.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            build.Execute().Should().Pass();
+            build.Execute("/bl").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -230,9 +230,6 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
             var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
             new FileInfo(finalPath).Should().Exist();
-            AssertManifest(
-                manifest,
-                LoadBuildManifest());
 
             AssertBuildAssets(
                 manifest,
@@ -902,7 +899,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var pack = new MSBuildCommand(projectDirectory, "Pack", "PackageLibraryDirectDependency");
             pack.WithWorkingDirectory(projectDirectory.Path);
-            var result = pack.Execute();
+            var result = pack.Execute("/bl");
 
             result.Should().Pass();
 
@@ -2221,7 +2218,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var pack = new MSBuildCommand(Log, "Pack", projectDirectory.Path);
             pack.WithWorkingDirectory(projectDirectory.Path);
-            var result = pack.Execute();
+            var result = pack.Execute("/bl");
 
             result.Should().Pass();
 

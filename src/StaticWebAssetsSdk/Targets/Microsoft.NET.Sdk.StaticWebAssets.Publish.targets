@@ -37,7 +37,17 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <!-- <Target Name="ResolvePublishStaticWebAssets" DependsOnTargets="$(ResolvePublishStaticWebAssetsDependsOn)" />
+
+  <Target Name="ResolveRelatedPublishStaticWebAssets" DependsOnTargets="$(ResolveRelatedPublishStaticWebAssetsDependsOn)" /> -->
+
+  <Target Name="ResolveCorePublishStaticWebAssets" DependsOnTargets="$(ResolveCorePublishStaticWebAssetsDependsOn)" />
+
   <Target Name="ResolvePublishStaticWebAssets" DependsOnTargets="$(ResolvePublishStaticWebAssetsDependsOn)" />
+
+  <Target Name="ResolvePublishRelatedStaticWebAssets" DependsOnTargets="$(ResolvePublishRelatedStaticWebAssetsDependsOn)" />
+
+  <Target Name="ResolveAllPublishStaticWebAssets" DependsOnTargets="ResolveCorePublishStaticWebAssets;ResolvePublishStaticWebAssets;ResolvePublishRelatedStaticWebAssets" />
 
   <Target Name="LoadStaticWebAssetsBuildManifest" BeforeTargets="ComputeResolvedFilesToPublishList">
     <!-- Before we load assets from the manifest we cleanup any potential existing asset that might be present by default

@@ -192,7 +192,7 @@
   "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.Xml.wasm",
   "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\System.wasm",
   "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\WindowsBase.wasm",
-  "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.boot.json",
+  "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.boot.json.patch",
   "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazor.webassembly.js",
   "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazorwasm.pdb",
   "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\blazorwasm.wasm",
@@ -471,8 +471,10 @@
   "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\zh-Hans\\Microsoft.CodeAnalysis.resources.wasm.gz",
   "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\zh-Hant\\Microsoft.CodeAnalysis.CSharp.resources.wasm.gz",
   "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\zh-Hant\\Microsoft.CodeAnalysis.resources.wasm.gz",
-  "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\custom-service-worker-assets.js.build",
-  "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\my-service-worker.js",
+  "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\custom-service-worker-assets.js.gz",
+  "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\serviceworkers\\my-service-worker.js.gz",
+  "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\custom-service-worker-assets.js.build",
+  "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\service-worker\\my-service-worker.js.build",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.AspNetCore.Authorization.wasm",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.AspNetCore.Authorization.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\Microsoft.AspNetCore.Components.Forms.wasm",
@@ -952,5 +954,7 @@
   "${OutputPath}\\wwwroot\\_framework\\zh-Hant\\Microsoft.CodeAnalysis.resources.wasm",
   "${OutputPath}\\wwwroot\\_framework\\zh-Hant\\Microsoft.CodeAnalysis.resources.wasm.gz",
   "${OutputPath}\\wwwroot\\custom-service-worker-assets.js",
-  "${OutputPath}\\wwwroot\\serviceworkers\\my-service-worker.js"
+  "${OutputPath}\\wwwroot\\custom-service-worker-assets.js.gz",
+  "${OutputPath}\\wwwroot\\serviceworkers\\my-service-worker.js",
+  "${OutputPath}\\wwwroot\\serviceworkers\\my-service-worker.js.gz"
 ]
