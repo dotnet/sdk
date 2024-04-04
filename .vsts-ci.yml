@@ -309,7 +309,7 @@ extends:
             - name: _CIBuild
               value: -restore -build -pack -ci
             - name: _HelixOnly
-                value: false
+              value: false
             - name: _SignType
               value: test
             - name: _Test
