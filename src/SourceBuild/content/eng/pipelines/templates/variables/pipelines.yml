@@ -1,0 +1,11 @@
+variables:
+- name: AZDO_PROJECT
+  value: internal
+- name: AZDO_ORG
+  value: https://dev.azure.com/dnceng/
+- name: INSTALLER_OFFICIAL_CI_PIPELINE_ID
+  value: 286
+- name: INSTALLER_TARBALL_BUILD_CI_PIPELINE_ID
+  value: 1011
+- name: DOTNET_DOTNET_CI_PIPELINE_ID
+  value: 1219
