@@ -31,7 +31,7 @@ public class ApplyCompressionNegotiation : Task
         var compressedAssets = assetsById.Values.Where(a => a.AssetTraitName == "Content-Encoding").ToList();
         var updatedEndpoints = new List<StaticWebAssetEndpoint>();
 
-        var preservedEndpoints = new Dictionary<(string,string), StaticWebAssetEndpoint>();
+        var preservedEndpoints = new Dictionary<(string, string), StaticWebAssetEndpoint>();
 
         // Add response headers to compressed endpoints
         foreach (var compressedAsset in compressedAssets)
@@ -79,12 +79,14 @@ public class ApplyCompressionNegotiation : Task
                     Log.LogMessage(MessageImportance.Low, $"  Skipping endpoint '{compressedEndpoint.Route}' since it already has a Content-Encoding selector");
                     continue;
                 }
-
-                // Add the Content-Encoding and Vary headers
-                compressedEndpoint.ResponseHeaders = [
-                    ..compressedEndpoint.ResponseHeaders,
+                if (!compressedEndpoint.ResponseHeaders.Any(s => s.Name == "Content-Encoding"))
+                {
+                    // Add the Content-Encoding and Vary headers
+                    compressedEndpoint.ResponseHeaders = [
+                        ..compressedEndpoint.ResponseHeaders,
                         ..compressionHeaders
-                ];
+                    ];
+                }
 
                 Log.LogMessage(MessageImportance.Low, "  Updated endpoint '{0}' with Content-Encoding and Vary headers", compressedEndpoint.Route);
                 updatedEndpoints.Add(compressedEndpoint);
@@ -111,10 +113,10 @@ public class ApplyCompressionNegotiation : Task
                     };
 
                     var headers = new List<StaticWebAssetEndpointResponseHeader>();
-                    var compressedHeaders = new HashSet<string>(compressionHeaders.Select(h => h.Name));
-                    ApplyRelatedEndpointCandidateHeaders(headers, relatedEndpointCandidate, compressedHeaders);
+                    var compressedHeaders = new HashSet<string>(compressedEndpoint.ResponseHeaders.Select(h => h.Name));
                     ApplyCompressedEndpointHeaders(headers, compressedEndpoint, relatedEndpointCandidate.Route);
-                    endpointCopy.ResponseHeaders = [..headers];
+                    ApplyRelatedEndpointCandidateHeaders(headers, relatedEndpointCandidate, compressedHeaders);
+                    endpointCopy.ResponseHeaders = [.. headers];
 
                     // Update the endpoint
                     Log.LogMessage(MessageImportance.Low, "  Updated related endpoint '{0}' with Content-Encoding selector '{1}={2}'", relatedEndpointCandidate.Route, encodingSelector.Value, encodingSelector.Quality);
@@ -124,7 +126,7 @@ public class ApplyCompressionNegotiation : Task
                     // the ItemSpec, we want to add the original as well so that it gets re-added.
                     // The endpoint pointing to the uncompressed asset doesn't have a Content-Encoding selector and
                     // will use the default "identity" encoding during content negotiation.
-                    if(!preservedEndpoints.ContainsKey((relatedEndpointCandidate.Route, relatedEndpointCandidate.AssetFile)))
+                    if (!preservedEndpoints.ContainsKey((relatedEndpointCandidate.Route, relatedEndpointCandidate.AssetFile)))
                     {
                         preservedEndpoints.Add(
                             (relatedEndpointCandidate.Route, relatedEndpointCandidate.AssetFile),

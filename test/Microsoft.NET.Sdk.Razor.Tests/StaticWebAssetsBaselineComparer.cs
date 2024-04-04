@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
@@ -65,6 +66,8 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
             .OrderBy(a => a.AssetFile)
             .GroupBy(a => GetEndpointGroup(a))
             .ToDictionary(a => a.Key, a => a.ToArray());
+
+        Debug.Assert(expected.Endpoints.All(e => e.ResponseHeaders.Length < 8));
 
         var expectedEndpoints = expected.Endpoints
             .OrderBy(a => a.AssetFile)

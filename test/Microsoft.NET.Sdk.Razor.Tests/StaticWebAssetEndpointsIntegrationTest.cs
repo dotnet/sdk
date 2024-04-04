@@ -81,6 +81,56 @@ public class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper log)
         var appJsBrEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.br"));
         appJsBrEndpoints.Should().HaveCount(1);
 
+        var uncompressedAppJsEndpoint = appJsEndpoints.Where(ep => ep.Selectors.Length == 0);
+        uncompressedAppJsEndpoint.Should().HaveCount(1);
+        uncompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
+            [
+                "Accept-Ranges",
+                "Content-Length",
+                "Content-Type",
+                "ETag",
+                "Last-Modified"
+            ]
+        );
+
+        var eTagHeader = uncompressedAppJsEndpoint.Single().ResponseHeaders.Single(h => h.Name == "ETag");
+
+        var gzipCompressedAppJsEndpoint = appJsEndpoints.Where(ep => ep.Selectors.Length == 1 && ep.Selectors[0].Value == "gzip");
+        gzipCompressedAppJsEndpoint.Should().HaveCount(1);
+        gzipCompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
+            [
+                "Accept-Ranges",
+                "Content-Length",
+                "Content-Type",
+                "ETag",
+                "Last-Modified",
+                "Content-Encoding",
+                "Vary",
+                "ETag"
+            ]
+        );
+        gzipCompressedAppJsEndpoint.Single().ResponseHeaders.Any(h => h.Name == "ETag" && h.Value.StartsWith("W/")).Should().BeTrue();
+        var gzipWeakEtag = gzipCompressedAppJsEndpoint.Single().ResponseHeaders.Single(h => h.Name == "ETag" && h.Value.StartsWith("W/")).Value;
+        gzipWeakEtag[3..^1].Should().Be(eTagHeader.Value);
+
+        var brotliCompressedAppJsEndpoint = appJsEndpoints.Where(ep => ep.Selectors.Length == 1 && ep.Selectors[0].Value == "br");
+        brotliCompressedAppJsEndpoint.Should().HaveCount(1);
+        brotliCompressedAppJsEndpoint.Single().ResponseHeaders.Select(h => h.Name).Should().BeEquivalentTo(
+            [
+                "Accept-Ranges",
+                "Content-Length",
+                "Content-Type",
+                "ETag",
+                "Last-Modified",
+                "Content-Encoding",
+                "Vary",
+                "ETag",
+            ]
+        );
+        brotliCompressedAppJsEndpoint.Single().ResponseHeaders.Any(h => h.Name == "ETag" && h.Value.StartsWith("W/")).Should().BeTrue();
+        var brWeakEtag = brotliCompressedAppJsEndpoint.Single().ResponseHeaders.Single(h => h.Name == "ETag" && h.Value.StartsWith("W/")).Value;
+        brWeakEtag[3..^1].Should().Be(eTagHeader.Value);
+
         var bundleEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css"));
         bundleEndpoints.Should().HaveCount(3);
         var bundleGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css.gz"));
