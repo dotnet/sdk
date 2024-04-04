@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="GenerateDigestLabelWithoutGenerateLabels">
         <source>CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</source>
-        <target state="new">CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</target>
+        <target state="translated">CONTAINER2030: GenerateLabels è stato disabilitato ma GenerateDigestLabel è stato abilitato. Non verrà creata alcuna etichetta digest.</target>
         <note>{StrBegin="CONTAINER2030: "}</note>
       </trans-unit>
       <trans-unit id="HostObjectNotDetected">

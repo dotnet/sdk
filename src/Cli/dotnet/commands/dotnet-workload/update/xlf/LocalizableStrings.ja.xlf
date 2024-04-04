@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
         <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
-        <target state="new">Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</target>
+        <target state="translated">ロールバック ファイルへの更新は、ワークロード セットと互換性がありません。インストールと更新にルーズ マニフェストが使用されるようになりました。特定のワークロードのバージョンに更新するには、--version を使用します。</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
@@ -55,11 +55,6 @@
       <trans-unit id="WorkloadCacheDownloadFailed">
         <source>Failed to download workload update packages to cache: {0}</source>
         <target state="translated">ワークロード更新パッケージをキャッシュにダウンロードできませんでした: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">.NET ワークロード更新の --mode 引数に対する引数 "{0}" が無効です。サポートされているモードは、"workloadset"、"loosemanifest"、および "auto" のみです。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="GenerateDigestLabelWithoutGenerateLabels">
         <source>CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</source>
-        <target state="new">CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</target>
+        <target state="translated">CONTAINER2030: GenerateLabels를 사용하지 않도록 설정했지만 GenerateDigestLabel을 사용하도록 설정했습니다. 다이제스트 레이블이 만들어지지 않습니다.</target>
         <note>{StrBegin="CONTAINER2030: "}</note>
       </trans-unit>
       <trans-unit id="HostObjectNotDetected">

@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
         <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
-        <target state="new">Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</target>
+        <target state="translated">Обновление до файла отката несовместимо с наборами рабочих нагрузок. Теперь установка и обновление будут использовать свободные манифесты. Чтобы выполнить обновление до определенной версии рабочей нагрузки, используйте "--version".</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceeded">
@@ -55,11 +55,6 @@
       <trans-unit id="WorkloadCacheDownloadFailed">
         <source>Failed to download workload update packages to cache: {0}</source>
         <target state="translated">Не удалось скачать пакеты обновления рабочей нагрузки в кэш: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">Недопустимый аргумент "{0}" для аргумента --mode для обновления рабочей нагрузки dotnet. Поддерживаются только режимы "workloadset", "loosemanifest" и "auto".</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

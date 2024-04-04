@@ -164,11 +164,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 return _workloadSet?.Version!;
             }
 
-            if (InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json")).UseWorkloadSets == true)
-            {
-                return null;
-            }
-
             using (SHA256 sha256Hash = SHA256.Create())
             {
                 byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(string.Join(";",
