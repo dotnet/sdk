@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.PackageIdArgumentDescription,
             Arity = ArgumentArity.ZeroOrOne
         };
-*/
+
         public static readonly CliOption<bool> UpdateAllOption = new("--all")
         {
         };

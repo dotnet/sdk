@@ -16,6 +16,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
+using Microsoft.DotNet.Tools.Tool.List;
 using static System.Formats.Asn1.AsnWriter;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
@@ -111,6 +112,36 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public override int Execute()
         {
+            if (_all)
+            {
+                var toolListCommand = new ToolListGlobalOrToolPathCommand(_parseResult);
+                var toolIds = toolListCommand.GetPackages(null, null);
+                foreach (var toolId in toolIds)
+                {
+                    // Create an install command for each toolId
+                    var args = BuildInstallCommandArguments(
+                        toolId: toolId.Id,
+                        isGlobal: _global,
+                        toolPath: _parseResult.GetValue(ToolInstallCommandParser.ToolPathOption),
+                        configFile: _parseResult.GetValue(ToolInstallCommandParser.ConfigOption),
+                        addSource: _parseResult.GetValue(ToolInstallCommandParser.AddSourceOption),
+                        framework: _parseResult.GetValue(ToolInstallCommandParser.FrameworkOption),
+                        verbosity: _parseResult.GetValue(ToolInstallCommandParser.VerbosityOption),
+                        rollForward: _parseResult.GetValue(ToolInstallCommandParser.RollForwardOption),
+                        allowDowngrade: _parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption)
+                    );
+                    ToolInstallCommand.Execute();
+                }
+            }
+            else
+            {
+                ExecuteInstallCommand();
+            }
+            return 0;
+        }
+
+        private int ExecuteInstallCommand()
+        {
             ValidateArguments();
 
             DirectoryPath? toolPath = null;
@@ -195,8 +226,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 });
 
                 scope.Complete();
-                
-            } 
+
+            }
             return 0;
         }
 
