@@ -63,9 +63,12 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
         }
 
         var manifestEndpoints = manifest.Endpoints
-            .OrderBy(a => a.AssetFile)
+            .OrderBy(a => a.Route)
+            .ThenBy(a => a.AssetFile)
             .GroupBy(a => GetEndpointGroup(a))
             .ToDictionary(a => a.Key, a => a.ToArray());
+
+        SortEndpointProperties(manifestEndpoints);
 
         var expectedEndpoints = expected.Endpoints
             .OrderBy(a => a.Route)
@@ -73,10 +76,25 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
             .GroupBy(a => GetEndpointGroup(a))
             .ToDictionary(a => a.Key, a => a.ToArray());
 
+        SortEndpointProperties(expectedEndpoints);
+
         foreach (var (group, manifestEndpointsGroup) in manifestEndpoints)
         {
             var expectedEndpointsGroup = expectedEndpoints[group];
             CompareEndpointGroup(group, manifestEndpointsGroup, expectedEndpointsGroup);
+        }
+    }
+
+    private static void SortEndpointProperties(Dictionary<string, StaticWebAssetEndpoint[]> endpoints)
+    {
+        foreach (var endpointGroup in endpoints.Values)
+        {
+            foreach (var endpoint in endpointGroup)
+            {
+                Array.Sort(endpoint.Selectors, (a, b) => (a.Name, a.Value).CompareTo((b.Name, b.Value)));
+                Array.Sort(endpoint.ResponseHeaders, (a, b) => (a.Name, a.Value).CompareTo((b.Name, b.Value)));
+                Array.Sort(endpoint.EndpointProperties, (a, b) => (a.Name, a.Value).CompareTo((b.Name, b.Value)));
+            }
         }
     }
 
