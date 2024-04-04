@@ -23,18 +23,11 @@ parameters:
 jobs:
 - template: templates/jobs/sdk-diff-tests.yml
   parameters:
-    buildName: CentOSStream8_Offline_MsftSdk
-    targetRid: centos.8-x64
-    architecture: x64
-    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
-    includeArtifactsSize: true
-
-- template: templates/jobs/sdk-diff-tests.yml
-  parameters:
     buildName: CentOSStream9_Offline_MsftSdk
     targetRid: centos.9-x64
     architecture: x64
     dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+    includeArtifactsSize: true
 
 - template: templates/jobs/sdk-diff-tests.yml
   parameters:
