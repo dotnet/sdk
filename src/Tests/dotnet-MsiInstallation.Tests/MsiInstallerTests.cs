@@ -2,30 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.MsiInstallerTests.Framework;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
-    public class WorkloadTests : SdkTest, IDisposable
+    public class WorkloadTests : VMTestBase
     {
-
-        string SdkInstallerVersion
-        {
-            get
-            {
-                if (!string.IsNullOrEmpty(VM.VMTestSettings.SdkInstallerVersion))
-                {
-                    return VM.VMTestSettings.SdkInstallerVersion;
-                }
-                else
-                {
-                    return "8.0.101";
-                }
-            }
-        }
-
-        string SdkInstallerFileName => $"dotnet-sdk-{SdkInstallerVersion}-win-x64.exe";
-
         const string RollbackRC1 = """
                 {
                   "microsoft.net.sdk.android": "34.0.0-rc.1.432/8.0.100-rc.1",
@@ -61,45 +44,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 }
                 """;
 
-        VirtualMachine VM { get; }
-
         public WorkloadTests(ITestOutputHelper log) : base(log)
         {
-            VM = new VirtualMachine(Log);
-        }
-
-        public void Dispose()
-        {
-            VM.Dispose();
-        }
-
-        void InstallSdk(bool deployStage2 = true)
-        {
-            VM.CreateRunCommand("setx", "DOTNET_NOLOGO", "true")
-                .WithDescription("Disable .NET SDK first run message")
-                .Execute()
-                .Should()
-                .Pass();
-
-            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet")
-                .WithDescription($"Install SDK {SdkInstallerVersion}")
-                .Execute()
-                .Should()
-                .Pass();
-
-            if (deployStage2)
-            {
-                DeployStage2Sdk();
-            }
-        }
-
-        void UninstallSdk()
-        {
-            VM.CreateRunCommand($@"c:\SdkTesting\{SdkInstallerFileName}", "/quiet", "/uninstall")
-                .WithDescription($"Uninstall SDK {SdkInstallerVersion}")
-                .Execute()
-                .Should()
-                .Pass();
         }
 
         private CommandResult ApplyManifests(string manifestContents, string rollbackID)
@@ -286,14 +232,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             throw new NotImplementedException();
         }
 
-        string GetInstalledSdkVersion()
-        {
-            var command = VM.CreateRunCommand("dotnet", "--version");
-            command.IsReadOnly = true;
-            var result = command.Execute();
-            result.Should().Pass();
-            return result.StdOut;
-        }
 
         void TestWasmWorkload()
         {
@@ -372,31 +310,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             return installedManifestVersions;
         }
 
-        void DeployStage2Sdk()
-        {
-            if (!VM.VMTestSettings.ShouldTestStage2)
-            {
-                return;
-            }
 
-            var installedSdkFolder = $@"c:\Program Files\dotnet\sdk\{SdkInstallerVersion}";
-
-            Log.WriteLine($"Deploying SDK from {TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest} to {installedSdkFolder} on VM.");
-
-            var vmVersionFilePath = Path.Combine(installedSdkFolder, ".version");
-
-            var existingVersionFileContents = VM.GetRemoteFile(vmVersionFilePath).ReadAllText().Split(Environment.NewLine);
-            var newVersionFileContents = File.ReadAllLines(Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, ".version"));
-            newVersionFileContents[1] = existingVersionFileContents[1];
-
-            //  TODO: It would be nice if the description included the date/time of the SDK build, to distinguish different snapshots
-            VM.CreateActionGroup("Deploy Stage 2 SDK",
-                    VM.CopyFolder(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, installedSdkFolder),
-                    VM.WriteFile(vmVersionFilePath, string.Join(Environment.NewLine, newVersionFileContents)))
-                .Execute()
-                .Should()
-                .Pass();
-        }
 
         CommandResult InstallWorkload(string workloadName)
         {
@@ -418,26 +332,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             result.Should().Pass();
 
             return result.StdOut;            
-        }
-
-        WorkloadSet GetRollback()
-        {
-            var result = VM.CreateRunCommand("dotnet", "workload", "update", "--print-rollback")
-                .WithIsReadOnly(true)
-                .Execute();
-
-            result.Should().Pass();
-
-            return ParseRollbackOutput(result.StdOut);
-        }
-
-        WorkloadSet ParseRollbackOutput(string output)
-        {
-            var filteredOutput = string.Join(Environment.NewLine,
-                output.Split(Environment.NewLine)
-                .Except(["==workloadRollbackDefinitionJsonOutputStart==", "==workloadRollbackDefinitionJsonOutputEnd=="]));
-
-            return WorkloadSet.FromJson(filteredOutput, defaultFeatureBand: new SdkFeatureBand(SdkInstallerVersion));
         }
     }
 }

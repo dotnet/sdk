@@ -10,7 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.MsiInstallerTests
+namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
     abstract class VMAction
     {
@@ -124,6 +124,26 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
     }
 
+    class VMMoveFolderAction : VMAction
+    {
+        public string SourcePath { get; set; }
+        public string TargetPath { get; set; }
+
+        public VMMoveFolderAction(VirtualMachine vm) : base(vm)
+        {
+        }
+
+        protected override SerializedVMAction SerializeDerivedProperties()
+        {
+            return new SerializedVMAction
+            {
+                Type = VMActionType.MoveFolderOnVM,
+                SourcePath = SourcePath,
+                TargetPath = TargetPath,
+            };
+        }
+    }
+
     class VMWriteFileAction : VMAction
     {
         public string TargetPath { get; set; }
@@ -168,6 +188,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         RunCommand,
         CopyFileToVM,
         CopyFolderToVM,
+        MoveFolderOnVM,
         WriteFileToVM,
         GetRemoteDirectory,
         GetRemoteFile,
@@ -190,10 +211,10 @@ namespace Microsoft.DotNet.MsiInstallerTests
         //  Applies to RunCommand
         public string WorkingDirectory { get; set; }
 
-        //  Applies to CopyFileToVM, CopyFolderToVM, WriteFileToVM, GetRemoteDirectory, GetRemoteFile
+        //  Applies to CopyFileToVM, CopyFolderToVM, MoveFolderOnVM, WriteFileToVM, GetRemoteDirectory, GetRemoteFile
         public string TargetPath { get; set; }
 
-        //  Applies to CopyFileToVM, CopyFolderToVM
+        //  Applies to CopyFileToVM, CopyFolderToVM, MoveFolderOnVM
         public string SourcePath { get; set; }
 
         //  Applies to CopyFileToVM, CopyFolderToVM
@@ -222,6 +243,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
                     return $"Copy file to VM: {SourcePath} -> {TargetPath}";
                 case VMActionType.CopyFolderToVM:
                     return $"Copy folder to VM: {SourcePath} -> {TargetPath}";
+                case VMActionType.MoveFolderOnVM:
+                    return $"Move folder {SourcePath} -> {TargetPath}";
                 case VMActionType.WriteFileToVM:
                     return $"Write file to VM: {TargetPath}";
                 case VMActionType.GetRemoteDirectory:
