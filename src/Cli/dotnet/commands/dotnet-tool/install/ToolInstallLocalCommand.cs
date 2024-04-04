@@ -8,6 +8,8 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
+using Microsoft.DotNet.Tools.Tool.List;
+using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
@@ -56,6 +58,34 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         }
         
         public override int Execute()
+        {
+            if (_all)
+            {
+                var toolListCommand = new ToolListLocalCommand(_parseResult);
+                var toolIds = toolListCommand.GetPackages(null);
+                foreach (var toolId in toolIds)
+                {
+                    // Create an install command for each toolId
+                    var toolInstallCommand = new ToolInstallLocalCommand(
+                        _parseResult,
+                        new PackageId(toolId.ToString()),
+                        null,
+                        _toolManifestFinder,
+                        _toolManifestEditor,
+                        _localToolsResolverCache,
+                        _reporter);
+
+                    toolInstallCommand.Execute();
+                }
+                return 0;
+            }
+            else
+            {
+                return ExecuteCommand();
+            }
+        }
+
+        private int ExecuteCommand()
         {
             FilePath manifestFile = GetManifestFilePath();
 

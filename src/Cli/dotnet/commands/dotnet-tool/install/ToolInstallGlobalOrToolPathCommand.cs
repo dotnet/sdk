@@ -119,18 +119,15 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 foreach (var toolId in toolIds)
                 {
                     // Create an install command for each toolId
-                    var args = BuildInstallCommandArguments(
-                        toolId: toolId.Id,
-                        isGlobal: _global,
-                        toolPath: _parseResult.GetValue(ToolInstallCommandParser.ToolPathOption),
-                        configFile: _parseResult.GetValue(ToolInstallCommandParser.ConfigOption),
-                        addSource: _parseResult.GetValue(ToolInstallCommandParser.AddSourceOption),
-                        framework: _parseResult.GetValue(ToolInstallCommandParser.FrameworkOption),
-                        verbosity: _parseResult.GetValue(ToolInstallCommandParser.VerbosityOption),
-                        rollForward: _parseResult.GetValue(ToolInstallCommandParser.RollForwardOption),
-                        allowDowngrade: _parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption)
-                    );
-                    ToolInstallCommand.Execute();
+                    var toolInstallCommand = new ToolInstallGlobalOrToolPathCommand(
+                        _parseResult,
+                        new PackageId(toolId.ToString()),
+                        _createToolPackageStoreDownloaderUninstaller,
+                        _createShellShimRepository,
+                        _environmentPathInstruction,
+                        _reporter);
+
+                    toolInstallCommand.Execute();
                 }
             }
             else
