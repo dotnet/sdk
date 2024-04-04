@@ -11,7 +11,7 @@
   </PropertyGroup>
   <!-- Repo Version Information -->
   <PropertyGroup>
-    <VersionPrefix>8.0.104</VersionPrefix>
+    <VersionPrefix>8.0.105</VersionPrefix>
     <!-- Enable to remove prerelease label. -->
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">true</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
@@ -81,7 +81,7 @@
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
     <NuGetBuildTasksPackageVersion>6.8.1-rc.2</NuGetBuildTasksPackageVersion>
     <NuGetBuildTasksConsolePackageVersion>6.8.1-rc.2</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.0.0-rc.278</NuGetLocalizationPackageVersion>
+    <NuGetLocalizationPackageVersion>6.8.1-rc.2</NuGetLocalizationPackageVersion>
     <NuGetBuildTasksPackPackageVersion>6.8.1-rc.2</NuGetBuildTasksPackPackageVersion>
     <NuGetCommandLineXPlatPackageVersion>6.8.1-rc.2</NuGetCommandLineXPlatPackageVersion>
     <NuGetProjectModelPackageVersion>6.8.1-rc.2</NuGetProjectModelPackageVersion>
