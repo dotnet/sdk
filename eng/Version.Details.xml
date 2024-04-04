@@ -52,15 +52,15 @@
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.9.8">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>261260c166ed0ef1f4398494c0c2fed42a0e2a90</Sha>
+      <Sha>610b4d3b5008271074fe947bd3bb3c4cb8a9a55b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.9.8-preview-24176-01">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.9.8-preview-24202-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>261260c166ed0ef1f4398494c0c2fed42a0e2a90</Sha>
+      <Sha>610b4d3b5008271074fe947bd3bb3c4cb8a9a55b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.9.8-preview-24176-01">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.9.8-preview-24202-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>261260c166ed0ef1f4398494c0c2fed42a0e2a90</Sha>
+      <Sha>610b4d3b5008271074fe947bd3bb3c4cb8a9a55b</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.200-beta.24108.3">
