@@ -10,33 +10,12 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class ToolUpdateCommandParser
     {
-        // public static readonly CliArgument<string> PackageIdArgument = ToolInstallCommandParser.PackageIdArgument;
         public static readonly CliArgument<string> PackageIdArgument = new("packageId")
         {
             HelpName = LocalizableStrings.PackageIdArgumentName,
             Description = LocalizableStrings.PackageIdArgumentDescription,
             Arity = ArgumentArity.ZeroOrOne
         };
-
-        /*public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
-
-        public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
-
-        public static readonly CliOption<bool> LocalOption = ToolAppliedOption.LocalOption;
-
-        public static readonly CliOption<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
-
-        public static readonly CliOption<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
-
-        public static readonly CliOption<string> FrameworkOption = ToolInstallCommandParser.FrameworkOption;
-
-        public static readonly CliOption<string> VersionOption = ToolInstallCommandParser.VersionOption;
-
-        public static readonly CliOption<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
-
-        public static readonly CliOption<bool> PrereleaseOption = ToolSearchCommandParser.PrereleaseOption;
-
-        public static readonly CliOption<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
 */
         public static readonly CliOption<bool> UpdateAllOption = new("--all")
         {
@@ -55,9 +34,6 @@ namespace Microsoft.DotNet.Cli
         {
             CliCommand command = new("update", LocalizableStrings.CommandDescription);
 
-            // command.Subcommands.Add(ToolUpdateAllCommandParser.GetCommand());
-            // command.Subcommands.Add(UpdateAllCommand());
-
             command.Arguments.Add(PackageIdArgument);
 
             ToolInstallCommandParser.AddCommandOptions(command);
@@ -68,14 +44,6 @@ namespace Microsoft.DotNet.Cli
 
             return command;
         }
-
-        /*private static CliCommand UpdateAllCommand()
-        {
-            CliCommand command = new("--all", LocalizableStrings.AllUpdateOptionDescription);
-            // command.SetAction((parseResult) => new ToolUpdateAllCommand(parseResult).Execute());
-
-            return command;
-        }*/
     }
 }
 
