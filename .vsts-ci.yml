@@ -102,6 +102,8 @@ extends:
             value: '-publish /p:DotNetPublishUsingPipelines=true'
           - name: _CIBuild
             value: -restore -build -sign -pack -ci
+          - name: _HelixOnly
+            value: true
           - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
             - name: _SignType
               value: test
@@ -141,6 +143,8 @@ extends:
               value: ''
             - name: _CIBuild
               value: -restore -build -sign -pack -ci
+            - name: _HelixOnly
+              value: true
             - name: _SignType
               value: test
             - name: _Test
@@ -165,6 +169,8 @@ extends:
               value: ''
             - name: _CIBuild
               value: -restore -build -sign -pack -ci
+            - name: _HelixOnly
+              value: true
             - name: _SignType
               value: test
 
@@ -191,6 +197,8 @@ extends:
               value: ''
             - name: _CIBuild
               value: -restore -build -pack -ci
+            - name: _HelixOnly
+              value: true
             - name: _SignType
               value: test
             - name: _Test
@@ -214,6 +222,8 @@ extends:
               value: ''
             - name: _CIBuild
               value: -restore -build -pack -ci
+            - name: _HelixOnly
+              value: true
             - name: _SignType
               value: test
             - name: _Test
@@ -243,6 +253,8 @@ extends:
                 value: '-publish /p:DotNetPublishUsingPipelines=true'
               - name: _CIBuild
                 value: -restore -build -sign -pack -ci
+              - name: _HelixOnly
+                value: false
               - name: _SignType
                 value: test
               - name: _Test
@@ -271,6 +283,8 @@ extends:
                 value: ''
               - name: _CIBuild
                 value: -restore -build -pack -ci
+              - name: _HelixOnly
+                value: false
               - name: _SignType
                 value: test
               - name: _Test
@@ -294,6 +308,8 @@ extends:
               value: ''
             - name: _CIBuild
               value: -restore -build -pack -ci
+            - name: _HelixOnly
+                value: false
             - name: _SignType
               value: test
             - name: _Test

@@ -17,8 +17,6 @@ pr:
 variables:
   - name: teamName
     value: Roslyn-Project-System
-  - name: _CIBuild
-    value: -restore -build -sign -pack -ci
   - name: _DotNetArtifactsCategory
     value: .NETCore
   - name: _DotNetValidationArtifactsCategory
@@ -83,6 +81,8 @@ stages:
           Build_Release:
             _BuildConfig: Release
             _PublishArgs: '-publish /p:DotNetPublishUsingPipelines=true'
+            _CIBuild: -restore -build -sign -pack -ci
+            _HelixOnly: true
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: test
               _Test: -test
@@ -114,6 +114,8 @@ stages:
             Build_Debug:
               _BuildConfig: Debug
               _PublishArgs: ''
+              _CIBuild: -restore -build -sign -pack -ci
+              _HelixOnly: true
               _SignType: test
               _Test: -test
 
@@ -132,6 +134,8 @@ stages:
             Build_Debug:
               _BuildConfig: Debug
               _PublishArgs: ''
+              _CIBuild: -restore -build -sign -pack -ci
+              _HelixOnly: true
               _SignType: test
 
     - template: /eng/build-pr.yml
@@ -152,6 +156,8 @@ stages:
             Build_Release:
               _BuildConfig: Release
               _PublishArgs: ''
+              _CIBuild: -restore -build -pack -ci
+              _HelixOnly: true
               _SignType: test
               _Test: -test
 
@@ -169,6 +175,8 @@ stages:
             Build_Release:
               _BuildConfig: Release
               _PublishArgs: ''
+              _CIBuild: -restore -build -pack -ci
+              _HelixOnly: true
               _SignType: test
               _Test: -test
 
