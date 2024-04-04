@@ -16,7 +16,6 @@ namespace Microsoft.DotNet.Cli
         public static readonly CliOption<string> UpdateMode = new("--update-mode")
         {
             Description = LocalizableStrings.UpdateModeDescription,
-            //Hidden = true,
             Arity = ArgumentArity.ZeroOrOne
         };
 

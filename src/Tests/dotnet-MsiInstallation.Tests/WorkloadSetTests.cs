@@ -17,26 +17,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
         {
         }
 
-        //  dotnet nuget add source c:\SdkTesting\WorkloadSets
-        //  dotnet workload update --mode workloadset
-
-        //  Show workload mode in dotnet workload --info
-
-
-        //  dotnet workload update-mode set workload-set
-
-        //  dotnet workload config --update-mode workload-set
-
-        //  dotnet workload config update-mode
-        //  dotnet workload config update-mode workload-set
-        //  dotnet workload config update-mode manifests
-
-        //  dotnet workload config update-band [default|release|preview|daily]
-
-        //  dotnet config workload.update-mode workload-set
-
-        //  dotnet setconfig --workload-update-mode workload-set
-
         [Fact]
         public void DoesNotUseWorkloadSetsByDefault()
         {

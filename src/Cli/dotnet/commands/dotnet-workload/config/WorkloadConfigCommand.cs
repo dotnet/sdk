@@ -20,9 +20,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Config
 {
     internal class WorkloadConfigCommand : WorkloadCommandBase
     {
-        bool _hasUpdateMode;
-        string? _updateMode;
-        readonly IWorkloadResolverFactory _workloadResolverFactory;
+        private bool _hasUpdateMode;
+        private string? _updateMode;
+        private readonly IWorkloadResolverFactory _workloadResolverFactory;
 
         private string? _dotnetPath;
         private string _userProfileDir;
@@ -38,7 +38,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Config
             IWorkloadResolverFactory? workloadResolverFactory = null
         ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter)
         {
-            //  TODO: Is it possible to check the order of the options?  This would allow us to print the values out in the same order they are specified on the command line
             _hasUpdateMode = parseResult.HasOption(WorkloadConfigCommandParser.UpdateMode);
             _updateMode = parseResult.GetValue(WorkloadConfigCommandParser.UpdateMode);
 
@@ -57,13 +56,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Config
 
         public override int Execute()
         {
+            //  When we support multiple configuration values, it would be nice if we could process and display them in the order they are passed.
+            //  It seems that the parser doesn't give us a good way to do that, however
             if (_hasUpdateMode)
             {
-                if (_updateMode == WorkloadConfigCommandParser.UpdateMode_WorkloadSet)
+                if (WorkloadConfigCommandParser.UpdateMode_WorkloadSet.Equals(_updateMode, StringComparison.InvariantCultureIgnoreCase))
                 {
                     _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
                 }
-                else if (_updateMode == WorkloadConfigCommandParser.UpdateMode_Manifests)
+                else if (WorkloadConfigCommandParser.UpdateMode_Manifests.Equals(_updateMode, StringComparison.InvariantCultureIgnoreCase))
                 {
                     _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
                 }
