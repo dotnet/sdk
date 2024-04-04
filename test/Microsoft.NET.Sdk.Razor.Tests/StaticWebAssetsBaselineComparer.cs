@@ -68,7 +68,8 @@ Then, using the dogfood SDK run the .\src\RazorSdk\update-test-baselines.ps1 scr
             .ToDictionary(a => a.Key, a => a.ToArray());
 
         var expectedEndpoints = expected.Endpoints
-            .OrderBy(a => a.AssetFile)
+            .OrderBy(a => a.Route)
+            .ThenBy(a => a.AssetFile)
             .GroupBy(a => GetEndpointGroup(a))
             .ToDictionary(a => a.Key, a => a.ToArray());
 

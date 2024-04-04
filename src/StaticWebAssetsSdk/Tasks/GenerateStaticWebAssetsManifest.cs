@@ -52,7 +52,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             {
                 var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem);
 
-                var endpoints = FilterPublishEndpointsIfNeeded(assets);
+                var endpoints = FilterPublishEndpointsIfNeeded(assets)
+                    .OrderBy(a => a.Route)
+                    .ThenBy(a => a.AssetFile)
+                    .ToArray();
 
                 var assetsByTargetPath = assets.GroupBy(a => a.ComputeTargetPath("", '/'), StringComparer.OrdinalIgnoreCase);
                 foreach (var group in assetsByTargetPath)
@@ -91,7 +94,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private StaticWebAssetEndpoint[] FilterPublishEndpointsIfNeeded(IEnumerable<StaticWebAsset> assets)
+        private IEnumerable<StaticWebAssetEndpoint> FilterPublishEndpointsIfNeeded(IEnumerable<StaticWebAsset> assets)
         {
             // Only include endpoints for assets that are going to be available in production. We do the filtering
             // inside the manifest because its cumbersome to do it in MSBuild directly.
@@ -113,10 +116,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     }
                 }
 
-                return [.. filteredEndpoints.OrderBy(a => (a.Route, a.AssetFile))];
+                return filteredEndpoints;
             }
 
-            return [.. Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem).OrderBy(a => (a.Route, a.AssetFile))];
+            return Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem);
         }
 
         private void PersistManifest(StaticWebAssetsManifest manifest)
