@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.Update;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 
@@ -19,6 +18,7 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> UpdateAllOption = new("--all")
         {
+            Description = LocalizableStrings.UpdateAllOptionDescription
         };
 
         public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
