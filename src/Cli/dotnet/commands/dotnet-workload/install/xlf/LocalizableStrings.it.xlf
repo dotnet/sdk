@@ -367,11 +367,6 @@
         <target state="translated">PERCORSO</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetMode">
-        <source>Control whether future workload operations should use workload sets or loose manifests.</source>
-        <target state="translated">Controllare se le operazioni future del carico di lavoro devono usare set di carichi di lavoro o manifesti separati.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetUpgrade">
         <source>Updating workload version from {0} to {1}.</source>
         <target state="translated">Aggiornamento della versione del carico di lavoro da {0} a {1}.</target>

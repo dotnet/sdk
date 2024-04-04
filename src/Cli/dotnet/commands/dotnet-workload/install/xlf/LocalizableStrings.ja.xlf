@@ -367,11 +367,6 @@
         <target state="translated">パス</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetMode">
-        <source>Control whether future workload operations should use workload sets or loose manifests.</source>
-        <target state="translated">将来のワークロード操作でワークロード セットを使用するか、ルーズ マニフェストを使用するかを制御します。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetUpgrade">
         <source>Updating workload version from {0} to {1}.</source>
         <target state="translated">ワークロードのバージョンを {0} から {1} に更新しています。</target>
