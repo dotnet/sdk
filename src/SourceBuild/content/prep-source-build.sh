@@ -12,7 +12,7 @@
 ###   --no-prebuilts              Exclude the download of the prebuilts archive
 ###   --no-sdk                    Exclude the download of the .NET SDK
 ###   --artifacts-rid             The RID of the previously source-built artifacts archive to download
-###                               Default is centos.8-x64
+###                               Default is centos.9-x64
 ###   --runtime-source-feed       URL of a remote server or a local directory, from which SDKs and
 ###                               runtimes can be downloaded
 ###   --runtime-source-feed-key   Key for accessing the above server, if necessary
@@ -35,7 +35,7 @@ function print_help () {
 }
 
 # SB prep default arguments
-defaultArtifactsRid='centos.8-x64'
+defaultArtifactsRid='centos.9-x64'
 
 # Binary Tooling default arguments
 defaultDotnetSdk="$REPO_ROOT/.dotnet"

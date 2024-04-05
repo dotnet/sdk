@@ -24,8 +24,6 @@
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
     <ProjectAssetsJsonArchiveFile>$(PackageReportDir)all-project-assets-json-files.zip</ProjectAssetsJsonArchiveFile>
     <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
-
-    <IntermediateSymbolsRepoDir>$(IntermediateSymbolsRootDir)$(RepositoryName)</IntermediateSymbolsRepoDir>
   </PropertyGroup>
 
   <!-- Returns the repository references of this project and all the projects this project references, recursively -->
@@ -538,34 +536,6 @@
     </Touch>
   </Target>
 
-  <Target Name="DiscoverSymbolsArchiveFile"
-          Condition="'$(DotNetBuildSourceOnly)' == 'true' and
-                     '$(IsUtilityProject)' != 'true'">
-    <PropertyGroup>
-      <RepoAssetsSymbolsArchive>$(ArtifactsAssetsSymbolsDir)Symbols.$(RepositoryName)$(ArchiveExtension)</RepoAssetsSymbolsArchive>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <RepoSymbolsArchive Include="$(RepoAssetsSymbolsArchive)" Condition="Exists('$(RepoAssetsSymbolsArchive)')" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="ExtractSymbolsArchiveFile"
-          DependsOnTargets="RepoBuild;DiscoverSymbolsArchiveFile"
-          Condition="'$(DotNetBuildSourceOnly)' == 'true' and
-                     '$(IsUtilityProject)' != 'true' and
-                     '@(RepoSymbolsArchive)' != ''"
-          Inputs="@(RepoSymbolsArchive)"
-          Outputs="$(IntermediateSymbolsRepoDir)">
-
-    <Error Text="There must only be a single repository symbols archive file. Found: @(RepoSymbolsArchive)"
-           Condition="@(RepoSymbolsArchive->Count()) &gt; 1" />
-
-    <!-- Extract repo symbols tarball -->
-    <MakeDir Directories="$(IntermediateSymbolsRepoDir)" />
-    <Exec Command="tar -xzf %(RepoSymbolsArchive.Identity) -C $(IntermediateSymbolsRepoDir)" />
-  </Target>
-
   <Target Name="Build"
           DependsOnTargets="
     BuildRepoReferences;
@@ -573,8 +543,6 @@
     LogRepoArtifacts;
     CopyInnerBuildRestoredPackages;
     ExtractToolPackage;
-    DiscoverSymbolsArchiveFile;
-    ExtractSymbolsArchiveFile;
     CleanupRepo" />
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WritePackageUsageData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />

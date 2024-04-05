@@ -90,7 +90,6 @@ Microsoft.Css.Parser.x.y.z.nupkg: 52964
 Microsoft.Deployment.DotNet.Releases.x.y.z.nupkg: 79562
 Microsoft.Diagnostics.NETCore.Client.x.y.z.nupkg: 63738
 Microsoft.DiaSymReader.x.y.z-1.nupkg: 57796
-Microsoft.DiaSymReader.x.y.z-2.nupkg: 57817
 Microsoft.DiaSymReader.x.y.z.nupkg: 57811
 Microsoft.DotNet.ApiCompat.Task.x.y.z.nupkg: 1280207
 Microsoft.DotNet.Arcade.Sdk.x.y.z.nupkg: 876107
@@ -2504,6 +2503,7 @@ sdk/x.y.z/Microsoft.NET.Sdk.WorkloadManifestReader.dll: 253952
 sdk/x.y.z/Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.dll: 48128
 sdk/x.y.z/Microsoft.NET.StringTools.dll: 41984
 sdk/x.y.z/Microsoft.NETCoreSdk.BundledCliTools.props: 599
+sdk/x.y.z/Microsoft.NETCoreSdk.BundledMSBuildInformation.props: 985
 sdk/x.y.z/Microsoft.NETCoreSdk.BundledVersions.props: 50236
 sdk/x.y.z/Microsoft.NETFramework.CurrentVersion.props: 11741
 sdk/x.y.z/Microsoft.NETFramework.CurrentVersion.targets: 9313
@@ -3083,7 +3083,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_7_recommen
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_all_warnaserror.globalconfig: 29701
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_all.globalconfig: 27752
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default_warnaserror.globalconfig: 3272
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig: 829
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_default.globalconfig: 1179
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_minimum_warnaserror.globalconfig: 11410
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_minimum.globalconfig: 9089
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_8_none_warnaserror.globalconfig: 16373
@@ -3432,8 +3432,8 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_7_recommended.globalconfig: 4987
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_all_warnaserror.globalconfig: 6211
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_all.globalconfig: 6040
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_default_warnaserror.globalconfig: 726
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_default.globalconfig: 461
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_default_warnaserror.globalconfig: 1009
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_default.globalconfig: 623
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_minimum_warnaserror.globalconfig: 4702
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_minimum.globalconfig: 4497
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelperformance_8_none_warnaserror.globalconfig: 5165
@@ -3483,7 +3483,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelreliability
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelreliability_8_all_warnaserror.globalconfig: 2098
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelreliability_8_all.globalconfig: 1304
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelreliability_8_default_warnaserror.globalconfig: 1154
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelreliability_8_default.globalconfig: 340
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelreliability_8_default.globalconfig: 430
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelreliability_8_minimum_warnaserror.globalconfig: 1712
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelreliability_8_minimum.globalconfig: 910
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevelreliability_8_none_warnaserror.globalconfig: 1694

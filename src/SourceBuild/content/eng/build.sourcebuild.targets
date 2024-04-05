@@ -15,13 +15,28 @@
     <MSBuild Projects="$(RepoProjectsDir)$(RootRepo).proj" Targets="WritePrebuiltUsageData;ReportPrebuiltUsage" />
   </Target>
 
-  <!-- After building, repackage symbols into a single tarball. -->
-  <Target Name="RepackageSymbols"
+  <!--
+    Determine symbols tarball names and discover all intermediate symbols,
+    to be used as inputs and outputs of symbols repackaging targets.
+  -->
+  <Target Name="DetermineSymbolsTargetsInputsAndOutputs"
           AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion">
     <PropertyGroup>
       <UnifiedSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-all-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</UnifiedSymbolsTarball>
+      <SdkSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-sdk-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
     </PropertyGroup>
+    <ItemGroup>
+      <IntermediateSymbol Include="$(IntermediateSymbolsRootDir)**/*" />
+    </ItemGroup>
+  </Target>
+ 
+  <!-- After building, repackage symbols into a single tarball. -->
+  <Target Name="RepackageSymbols"
+          AfterTargets="Build"
+          DependsOnTargets="DetermineSymbolsTargetsInputsAndOutputs"
+          Inputs="@(IntermediateSymbol)"
+          Outputs="$(UnifiedSymbolsTarball)">
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(UnifiedSymbolsTarball)'))" />
     <Exec Command="tar --numeric-owner -czf $(UnifiedSymbolsTarball) *"
@@ -34,10 +49,10 @@
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.CreateSdkSymbolsLayout" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
   <Target Name="CreateSdkSymbolsTarball"
           AfterTargets="Build"
-          DependsOnTargets="RepackageSymbols">
+          DependsOnTargets="RepackageSymbols"
+          Inputs="@(IntermediateSymbol);$(SdkTarballPath)"
+          Outputs="$(SdkSymbolsTarball)">
     <PropertyGroup>
-      <SdkSymbolsTarball>$(ArtifactsAssetsDir)dotnet-symbols-sdk-$(SourceBuiltSdkVersion)-$(TargetRid)$(ArchiveExtension)</SdkSymbolsTarball>
-
       <IntermediateSdkSymbolsLayout>$(BaseIntermediateOutputPath)SdkSymbols</IntermediateSdkSymbolsLayout>
       <IntermediateSdkLayout>$(BaseIntermediateOutputPath)Sdk</IntermediateSdkLayout>
     </PropertyGroup>
@@ -55,7 +70,6 @@
 
     <Message Importance="High" Text="Packaged sdk symbols in '$(SdkSymbolsTarball)'" />
 
-    <RemoveDir Directories="$(IntermediateSymbolsRootDir)" />
     <RemoveDir Directories="$(IntermediateSdkSymbolsLayout)" />
     <RemoveDir Directories="$(IntermediateSdkLayout)" />
   </Target>
