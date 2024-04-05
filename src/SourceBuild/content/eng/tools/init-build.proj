@@ -17,7 +17,7 @@
       BuildMSBuildSdkResolver;
       RestoreUnifiedBuildValidationTests;
       BuildLeakDetection;
-      ExtractToolPackage;
+      ExtractToolsetPackages;
       GenerateRootFs;
       PoisonPrebuiltPackages" />
 
@@ -97,7 +97,7 @@
   <!-- Build msbuild tasks for the poisoning feature even when EnablePoison!=true to validate that the task project
        builds as EnablePoison=true isn't exercised in PR validation. -->
   <Target Name="BuildLeakDetection"
-          DependsOnTargets="ExtractToolPackage;BuildMSBuildSdkResolver"
+          DependsOnTargets="ExtractToolsetPackages;BuildMSBuildSdkResolver"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)BuildLeakDetection.complete">
     <MSBuild Projects="tasks\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.csproj"
@@ -133,18 +133,24 @@
           Condition="'$(TargetArchitecture)' == 'armel'" />
   </Target>
 
-  <!-- Extract Arcade prebuilt package into the bootstrap folder and prepare it. -->
-  <Target Name="ExtractToolPackage"
+  <!-- Extract toolset packages into the bootstrap folder -->
+  <Target Name="ExtractToolsetPackages"
           Condition="'$(DotNetBuildSourceOnly)' == 'true'"
           DependsOnTargets="UnpackTarballs"
           Inputs="$(MSBuildProjectFullPath)"
-          Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">
-    <Unzip SourceFiles="$(PrebuiltSourceBuiltPackagesPath)Microsoft.DotNet.Arcade.Sdk.$(ARCADE_BOOTSTRAP_VERSION).nupkg"
-           DestinationFolder="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ARCADE_BOOTSTRAP_VERSION)/"
+          Outputs="$(BaseIntermediateOutputPath)ExtractToolsetPackages.complete">
+    <ItemGroup>
+      <ToolsetPackage Include="Microsoft.DotNet.Arcade.Sdk" SourceFolder="$(PrebuiltSourceBuiltPackagesPath)" Version="$(ARCADE_BOOTSTRAP_VERSION)" />
+      <ToolsetPackage Include="Microsoft.Build.NoTargets" SourceFolder="$(ReferencePackagesDir)" Version="$(NOTARGETS_BOOTSTRAP_VERSION)" />
+      <ToolsetPackage Include="Microsoft.Build.Traversal" SourceFolder="$(ReferencePackagesDir)" Version="$(TRAVERSAL_BOOTSTRAP_VERSION)" />
+    </ItemGroup>
+
+    <Unzip SourceFiles="%(ToolsetPackage.SourceFolder)%(ToolsetPackage.Identity).%(ToolsetPackage.Version).nupkg"
+           DestinationFolder="$(BootstrapPackagesDir)$([System.String]::Copy('%(ToolsetPackage.Identity)').ToLowerInvariant())/%(ToolsetPackage.Version)"
            SkipUnchangedFiles="true" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
-    <Touch Files="$(BaseIntermediateOutputPath)ExtractToolPackage.complete" AlwaysCreate="true">
+    <Touch Files="$(BaseIntermediateOutputPath)ExtractToolsetPackages.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
   </Target>

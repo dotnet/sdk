@@ -225,7 +225,7 @@ function Build {
     if [ "$test" == "true" ]; then
       "$CLI_ROOT/dotnet" msbuild "$scriptroot/build.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildTests.binlog" -flp:"LogFile=$scriptroot/artifacts/log/$configuration/BuildTests.log" -clp:v=m $properties
     else
-      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/tools/init-build.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.binlog" -flp:LogFile="$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.log" /t:ExtractToolPackage,BuildMSBuildSdkResolver $properties
+      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/tools/init-build.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.binlog" -flp:LogFile="$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.log" /t:ExtractToolsetPackages,BuildMSBuildSdkResolver $properties
 
       # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
       "$CLI_ROOT/dotnet" build-server shutdown
@@ -351,20 +351,46 @@ if [[ "$sourceOnly" == "true" ]]; then
     exit 1
   fi
 
+  # Extract toolset packages
+
+  # Ensure that by default, the bootstrap version of the toolset SDK is used. Source-build infra
+  # projects use bootstrap toolset SDKs, and would fail to find it in the build. The repo
+  # projects overwrite this so that they use the source-built toolset SDK instad.
+
+  # 1. Microsoft.DotNet.Arcade.Sdk
   arcadeSdkLine=$(grep -m 1 'MicrosoftDotNetArcadeSdkVersion' "$packageVersionsPath")
-  versionPattern="<MicrosoftDotNetArcadeSdkVersion>(.*)</MicrosoftDotNetArcadeSdkVersion>"
-  if [[ $arcadeSdkLine =~ $versionPattern ]]; then
+  arcadeSdkPattern="<MicrosoftDotNetArcadeSdkVersion>(.*)</MicrosoftDotNetArcadeSdkVersion>"
+  if [[ $arcadeSdkLine =~ $arcadeSdkPattern ]]; then
     export ARCADE_BOOTSTRAP_VERSION=${BASH_REMATCH[1]}
 
-    # Ensure that by default, the bootstrap version of the Arcade SDK is used. Source-build infra
-    # projects use bootstrap Arcade SDK, and would fail to find it in the build. The repo
-    # projects overwrite this so that they use the source-built Arcade SDK instad.
     export SOURCE_BUILT_SDK_ID_ARCADE=Microsoft.DotNet.Arcade.Sdk
     export SOURCE_BUILT_SDK_VERSION_ARCADE=$ARCADE_BOOTSTRAP_VERSION
-    export SOURCE_BUILT_SDK_DIR_ARCADE=$packagesRestoredDir/ArcadeBootstrapPackage/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
+    export SOURCE_BUILT_SDK_DIR_ARCADE=$packagesRestoredDir/BootstrapPackages/microsoft.dotnet.arcade.sdk/$ARCADE_BOOTSTRAP_VERSION
   fi
 
-  echo "Found bootstrap SDK $SDK_VERSION, bootstrap Arcade $ARCADE_BOOTSTRAP_VERSION"
+  # 2. Microsoft.Build.NoTargets
+  notargetsSdkLine=$(grep -m 1 'Microsoft.Build.NoTargets' "$scriptroot/global.json")
+  notargetsSdkPattern="\"Microsoft\.Build\.NoTargets\" *: *\"(.*)\""
+  if [[ $notargetsSdkLine =~ $notargetsSdkPattern ]]; then
+    export NOTARGETS_BOOTSTRAP_VERSION=${BASH_REMATCH[1]}
+
+    export SOURCE_BUILT_SDK_ID_NOTARGETS=Microsoft.Build.NoTargets
+    export SOURCE_BUILT_SDK_VERSION_NOTARGETS=$NOTARGETS_BOOTSTRAP_VERSION
+    export SOURCE_BUILT_SDK_DIR_NOTARGETS=$packagesRestoredDir/BootstrapPackages/microsoft.build.notargets/$NOTARGETS_BOOTSTRAP_VERSION
+  fi
+
+  # 3. Microsoft.Build.Traversal
+  traversalSdkLine=$(grep -m 1 'Microsoft.Build.Traversal' "$scriptroot/global.json")
+  traversalSdkPattern="\"Microsoft\.Build\.Traversal\" *: *\"(.*)\""
+  if [[ $traversalSdkLine =~ $traversalSdkPattern ]]; then
+    export TRAVERSAL_BOOTSTRAP_VERSION=${BASH_REMATCH[1]}
+
+    export SOURCE_BUILT_SDK_ID_TRAVERSAL=Microsoft.Build.Traversal
+    export SOURCE_BUILT_SDK_VERSION_TRAVERSAL=$TRAVERSAL_BOOTSTRAP_VERSION
+    export SOURCE_BUILT_SDK_DIR_TRAVERSAL=$packagesRestoredDir/BootstrapPackages/microsoft.build.traversal/$TRAVERSAL_BOOTSTRAP_VERSION
+  fi
+
+  echo "Found bootstrap versions: SDK $SDK_VERSION, Arcade $ARCADE_BOOTSTRAP_VERSION, NoTargets $NOTARGETS_BOOTSTRAP_VERSION and Traversal $TRAVERSAL_BOOTSTRAP_VERSION"
 fi
 
 Build
