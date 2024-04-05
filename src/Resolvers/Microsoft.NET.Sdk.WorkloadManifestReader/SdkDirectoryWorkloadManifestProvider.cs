@@ -104,7 +104,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _manifestRoots ??= Array.Empty<string>();
         }
 
-        public void RefreshWorkloadManifests()
+        public void RefreshWorkloadManifests(bool error = true)
         {
             _workloadSet = null;
             _manifestsFromInstallState = null;
@@ -113,7 +113,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (_workloadSetVersionFromConstructor != null)
             {
-                if (!availableWorkloadSets.TryGetValue(_workloadSetVersionFromConstructor, out _workloadSet))
+                if (!availableWorkloadSets.TryGetValue(_workloadSetVersionFromConstructor, out _workloadSet) && error)
                 {
                     throw new FileNotFoundException(string.Format(Strings.WorkloadVersionNotFound, _workloadSetVersionFromConstructor));
                 }
@@ -124,7 +124,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 string? globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
                 if (globalJsonWorkloadSetVersion != null)
                 {
-                    if (!availableWorkloadSets.TryGetValue(globalJsonWorkloadSetVersion, out _workloadSet))
+                    if (!availableWorkloadSets.TryGetValue(globalJsonWorkloadSetVersion, out _workloadSet) && error)
                     {
                         throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
                     }
@@ -139,13 +139,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var installState = InstallStateContents.FromPath(installStateFilePath);
                     if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                     {
-                        if (!availableWorkloadSets.TryGetValue(installState.WorkloadVersion!, out _workloadSet))
+                        if (availableWorkloadSets.TryGetValue(installState.WorkloadVersion!, out _workloadSet))
+                        {
+                            _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);
+                            _installStateFilePath = installStateFilePath;
+                        }
+                        else if (error)
                         {
                             throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
                         }
                     }
-                    _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);
-                    _installStateFilePath = installStateFilePath;
                 }
             }
 
@@ -155,14 +158,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
             }
 
-            _initializedManifests = true;
+            _initializedManifests |= error;
         }
 
-        public string? GetWorkloadVersion()
+        public string? GetWorkloadVersion(bool error = true)
         {
             if (!_initializedManifests)
             {
-                RefreshWorkloadManifests();
+                RefreshWorkloadManifests(error);
             }
 
             if (_workloadSet?.Version is not null)
@@ -173,7 +176,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             using (SHA256 sha256Hash = SHA256.Create())
             {
                 byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(string.Join(";",
-                            GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}.{m.ManifestVersion}").ToArray()
+                            GetManifests(initializeManifests: false).OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}.{m.ManifestVersion}").ToArray()
                         )));
 
                 // Only append the first four bytes to the version hash.
@@ -188,9 +191,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public IEnumerable<ReadableWorkloadManifest> GetManifests()
+        public IEnumerable<ReadableWorkloadManifest> GetManifests(bool initializeManifests = true)
         {
-            if (!_initializedManifests)
+            if (!_initializedManifests && initializeManifests)
             {
                 RefreshWorkloadManifests();
             }

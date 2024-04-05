@@ -142,7 +142,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         private void PrintWorkloadSetTransition(string newVersion)
         {
-            var currentVersion = _workloadResolver.GetWorkloadVersion();
+            var currentVersion = _workloadResolver.GetWorkloadVersion(error: false);
             if (currentVersion == null)
             {
                 Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));

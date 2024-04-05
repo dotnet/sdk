@@ -20,9 +20,9 @@ namespace ManifestReaderTests
             _filePaths = filePaths;
         }
 
-        public void RefreshWorkloadManifests() { }
+        public void RefreshWorkloadManifests(bool error = true) { }
 
-        public IEnumerable<ReadableWorkloadManifest> GetManifests()
+        public IEnumerable<ReadableWorkloadManifest> GetManifests(bool initializeManifests = true)
         {
             foreach (var filePath in _filePaths)
             {
@@ -40,7 +40,7 @@ namespace ManifestReaderTests
 
         public string GetSdkFeatureBand() => "8.0.100";
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => throw new NotImplementedException();
-        public string? GetWorkloadVersion() => "8.0.100.2";
+        public string? GetWorkloadVersion(bool error = true) => "8.0.100.2";
     }
 
     internal class InMemoryFakeManifestProvider : IWorkloadManifestProvider, IEnumerable<(string id, string content)>
@@ -49,9 +49,9 @@ namespace ManifestReaderTests
 
         public void Add(string id, string content) => _manifests.Add((id, Encoding.UTF8.GetBytes(content)));
 
-        public void RefreshWorkloadManifests() { }
+        public void RefreshWorkloadManifests(bool error = true) { }
 
-        public IEnumerable<ReadableWorkloadManifest> GetManifests()
+        public IEnumerable<ReadableWorkloadManifest> GetManifests(bool initializeManifests = true)
             => _manifests.Select(m => new ReadableWorkloadManifest(
                 m.id,
                 $@"C:\fake\{m.id}",
@@ -67,6 +67,6 @@ namespace ManifestReaderTests
         IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
         public string GetSdkFeatureBand() => "8.0.100";
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => throw new NotImplementedException();
-        public string? GetWorkloadVersion() => "8.0.100.2";
+        public string? GetWorkloadVersion(bool error = true) => "8.0.100.2";
     }
 }

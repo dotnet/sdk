@@ -84,11 +84,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _manifestProvider = manifestProvider;
         }
 
-        private void InitializeManifests()
+        private void InitializeManifests(bool error = true)
         {
             if (!_initializedManifests)
             {
-                LoadManifestsFromProvider(_manifestProvider);
+                LoadManifestsFromProvider(_manifestProvider, error);
                 ComposeWorkloadManifests();
                 _initializedManifests = true;
             }
@@ -117,11 +117,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             ComposeWorkloadManifests();
         }
 
-        public string? GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
+        public string? GetWorkloadVersion(bool error = true) => _manifestProvider.GetWorkloadVersion(error: error);
 
-        private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider)
+        private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider, bool error = true)
         {
-            foreach (var readableManifest in manifestProvider.GetManifests())
+            foreach (var readableManifest in manifestProvider.GetManifests(initializeManifests: error))
             {
                 using (Stream manifestStream = readableManifest.OpenManifestStream())
                 using (Stream? localizationStream = readableManifest.OpenLocalizationStream())
@@ -751,9 +751,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             throw new Exception($"Manifest with id {manifestId} does not exist.");
         }
             
-        public IEnumerable<WorkloadManifestInfo> GetInstalledManifests()
+        public IEnumerable<WorkloadManifestInfo> GetInstalledManifests(bool error = true)
         {
-            InitializeManifests();
+            InitializeManifests(error);
             return _manifests.Select(t => t.Value.info);
         }
 
@@ -766,11 +766,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _sdkFeatureBand = sdkFeatureBand;
             }
 
-            public void RefreshWorkloadManifests() { }
+            public void RefreshWorkloadManifests(bool error = true) { }
             public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
-            public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
+            public IEnumerable<ReadableWorkloadManifest> GetManifests(bool initializeManifests = true) => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
-            public string? GetWorkloadVersion() => _sdkFeatureBand.ToString() + ".2";
+            public string? GetWorkloadVersion(bool error = true) => _sdkFeatureBand.ToString() + ".2";
         }
     }
 
