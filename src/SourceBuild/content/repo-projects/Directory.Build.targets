@@ -11,6 +11,15 @@
   <PropertyGroup>
     <!-- Force use of dotnet msbuild (ignoring global.json contents) unless ForceDotNetMSBuildEngine is explicitly set in the repo project. -->
     <BuildArgs Condition="'$(BuildOS)' == 'windows' and '$(ForceDotNetMSBuildEngine)' != 'false'">$(BuildArgs) $(FlagParameterPrefix)msbuildEngine dotnet</BuildArgs>
+    <!-- Add the overrides for the shipping and non-shipping packages here to allow repo projects to identify a project as reference-only -->
+    <RepoArtifactsShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$([MSBuild]::NormalizeDirectory('$(ArtifactsShippingPackagesDir)', '$(RepositoryName)'))</RepoArtifactsShippingPackagesDir>
+    <RepoArtifactsShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</RepoArtifactsShippingPackagesDir>
+    <RepoArtifactsNonShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$([MSBuild]::NormalizeDirectory('$(ArtifactsNonShippingPackagesDir)', '$(RepositoryName)'))</RepoArtifactsNonShippingPackagesDir>
+    <RepoArtifactsNonShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</RepoArtifactsNonShippingPackagesDir>
+    <!-- Pass location for packages -->
+    <BuildArgs>$(BuildArgs) /p:SourceBuiltShippingPackagesDir=$(RepoArtifactsShippingPackagesDir)</BuildArgs>
+    <!-- Trim the trailing slash as it breaks argument parsing on Windows if this is the last argument. -->
+    <BuildArgs>$(BuildArgs) /p:SourceBuiltNonShippingPackagesDir=$(RepoArtifactsNonShippingPackagesDir.TrimEnd('\'))</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -503,8 +512,7 @@
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ExtractToolPackage.complete">
     <PropertyGroup>
-      <_ToolPackagesRoot Condition="'$(ReferenceOnlyRepoArtifacts)' != 'true'">$(RepoArtifactsNonShippingPackagesDir)</_ToolPackagesRoot>
-      <_ToolPackagesRoot Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</_ToolPackagesRoot>
+      <_ToolPackagesRoot>$(RepoArtifactsNonShippingPackagesDir)</_ToolPackagesRoot>
     </PropertyGroup>
 
     <ItemGroup>
