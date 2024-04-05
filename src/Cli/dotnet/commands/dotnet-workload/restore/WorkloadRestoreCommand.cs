@@ -36,12 +36,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Restore
             List<WorkloadId> allWorkloadId = RunTargetToGetWorkloadIds(allProjects);
             Reporter.WriteLine(string.Format(LocalizableStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
 
-            var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Directory.GetCurrentDirectory());
-            var workloadVersion = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
-
             var workloadInstallCommand = new WorkloadInstallCommand(_result,
-                workloadIds: allWorkloadId.Select(a => a.ToString()).ToList().AsReadOnly(),
-                workloadSetVersion: workloadVersion);
+                workloadIds: allWorkloadId.Select(a => a.ToString()).ToList().AsReadOnly());
 
             workloadInstallCommand.Execute();
             return 0;

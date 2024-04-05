@@ -35,6 +35,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly ReleaseVersion _targetSdkVersion;
         protected readonly string _fromRollbackDefinition;
         protected string _workloadSetVersion;
+        protected string _workloadSetVersionFromGlobalJson;
         protected readonly PackageSourceLocation _packageSourceLocation;
         protected readonly IWorkloadResolverFactory _workloadResolverFactory;
         protected IWorkloadResolver _workloadResolver;
@@ -104,6 +105,14 @@ namespace Microsoft.DotNet.Workloads.Workload
             return installStateContents.UseWorkloadSets ?? false;
         }
 
+        protected void ErrorIfGlobalJsonAndCommandLineMismatch(string globaljsonPath)
+        {
+            if (!string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson) && !string.IsNullOrWhiteSpace(_workloadSetVersion) && !_workloadSetVersion.Equals(_workloadSetVersionFromGlobalJson))
+            {
+                throw new Exception(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, globaljsonPath));
+            }
+        }
+
         protected IEnumerable<ManifestVersionUpdate> HandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache)
         {
             // Ensure workload set mode is set to 'workloadset'
@@ -114,7 +123,7 @@ namespace Microsoft.DotNet.Workloads.Workload
                 _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
             }
 
-            _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
+            _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersionFromGlobalJson ?? _workloadSetVersion, offlineCache);
             return InstallWorkloadSet(context);
         }
 

@@ -92,23 +92,13 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             else
             {
                 var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
-                var workloadVersion = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
-                if (workloadVersion is not null)
-                {
-                    if (string.IsNullOrWhiteSpace(_workloadSetVersion))
-                    {
-                        _workloadSetVersion = workloadVersion;
-                    }
-                    else if (!workloadVersion.Equals(_workloadSetVersion))
-                    {
-                        // Consider setting this in the global.json? Or logging a warning?
-                    }
-                }
+                _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
+                ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
 
                 try
                 {
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
-                    if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
                     {
                         CalculateManifestUpdatesAndUpdateWorkloads(_includePreviews, offlineCache);
                     }
@@ -217,7 +207,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                         _workloadInstaller.RemoveManifestsFromInstallState(sdkFeatureBand);
                     }
 
-                    _workloadInstaller.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : _workloadSetVersion);
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
+                    {
+                        _workloadInstaller.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : _workloadSetVersion);
+                    }
 
                     _workloadResolver.RefreshWorkloadManifests();
 
