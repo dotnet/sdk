@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             new List<(ManifestVersionUpdate manifestUpdate, DirectoryPath?)>();
         public string CachePath;
         public bool GarbageCollectionCalled = false;
+        public bool InstallWorkloadSetCalled = false;
         public MockInstallationRecordRepository InstallationRecordRepository;
         public bool FailingRollback;
         public bool FailingGarbageCollection;
@@ -105,12 +106,12 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             });
         }
 
-        public string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath)
+        public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
         {
-            var version = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath ?? string.Empty));
-            Directory.CreateDirectory(advertisingPackagePath);
-            File.WriteAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName), version);
-            return Path.GetDirectoryName(advertisingPackagePath ?? string.Empty);
+            InstallWorkloadSetCalled = true;
+            var workloadSet = WorkloadSet.FromJson(workloadSetContents, new SdkFeatureBand("6.0.100"));
+            workloadSet.Version = workloadSetVersion;
+            return workloadSet;
         }
 
         public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null) => throw new NotImplementedException();

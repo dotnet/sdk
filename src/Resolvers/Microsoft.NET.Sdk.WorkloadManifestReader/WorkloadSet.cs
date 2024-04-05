@@ -81,6 +81,45 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 #endif
         }
 
+        public static WorkloadSet FromWorkloadSetFolder(string path, string workloadSetVersion, SdkFeatureBand defaultFeatureBand)
+        {
+            WorkloadSet? workloadSet = null;
+            foreach (var jsonFile in Directory.GetFiles(path, "*.workloadset.json"))
+            {
+                var newWorkloadSet = WorkloadSet.FromJson(File.ReadAllText(jsonFile), defaultFeatureBand);
+                if (workloadSet == null)
+                {
+                    workloadSet = newWorkloadSet;
+                }
+                else
+                {
+                    //  If there are multiple workloadset.json files, merge them
+                    foreach (var kvp in newWorkloadSet.ManifestVersions)
+                    {
+                        if (workloadSet.ManifestVersions.ContainsKey(kvp.Key))
+                        {
+                            throw new InvalidOperationException($"Workload set files in {path} defined the same manifest ({kvp.Key}) multiple times");
+                        }
+                        workloadSet.ManifestVersions.Add(kvp.Key, kvp.Value);
+                    }
+                }
+            }
+
+            if (workloadSet == null)
+            {
+                throw new InvalidOperationException("No workload set information found in: " + path);
+            }
+
+            if (File.Exists(Path.Combine(path, "baseline.workloadset.json")))
+            {
+                workloadSet.IsBaselineWorkloadSet = true;
+            }
+
+            workloadSet.Version = workloadSetVersion;
+
+            return workloadSet;
+        }
+
         public Dictionary<string, string> ToDictionaryForJson()
         {
             var dictionary = ManifestVersions.ToDictionary(kvp => kvp.Key.ToString(), kvp => kvp.Value.Version + "/" + kvp.Value.FeatureBand, StringComparer.OrdinalIgnoreCase);

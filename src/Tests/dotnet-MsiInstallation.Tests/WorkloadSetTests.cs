@@ -257,6 +257,22 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             return result.StdOut;
         }
+		
+        [Fact]
+        public void WorkloadSetInstallationRecordIsWrittenCorrectly()
+        {
+            //  Should the workload set version or the package version be used in the registry?
+            throw new NotImplementedException();
+        }
+
+        [Fact]
+        public void TurnOffWorkloadSetUpdateMode()
+        {
+            //  If you have a workload set installed and then turn off workload set update mode, what should happen?
+            //  - Update should update individual manifests
+            //  - Resolver should ignore workload sets that are installed
+            throw new NotImplementedException();
+        }
 
         string GetUpdateMode()
         {
