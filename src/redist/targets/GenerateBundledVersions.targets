@@ -377,6 +377,7 @@
         @(Net80ILCompilerSupportedRids);
         linux-arm;
         linux-musl-arm;
+        win-x86;
         " />
 
       <!-- The subset of ILCompiler target RIDs that are officially supported. Should be a subset of
@@ -410,6 +411,7 @@
           linux-musl-x64;
           linux-musl-arm;
           linux-musl-arm64;
+          win-x86;
           win-x64;
           win-arm64;
           browser-wasm;
