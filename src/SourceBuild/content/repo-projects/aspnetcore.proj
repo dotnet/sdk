@@ -4,13 +4,14 @@
     <!-- AspNetCore doesn't have a root build script but one under the eng folder. -->
     <BuildScript>$(ProjectDirectory)eng\build$(ShellExtension)</BuildScript>
 
-    <!-- BuildActions includes -publish which is not supported by the aspnetcore build script. -->
-    <BuildActions>$(FlagParameterPrefix)restore $(FlagParameterPrefix)build $(FlagParameterPrefix)pack</BuildActions>
-    <!-- On Windows, build all for the VB PoC -->
-    <BuildActions Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore $(FlagParameterPrefix)all $(FlagParameterPrefix)pack</BuildActions>
+    <BuildActions Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(FlagParameterPrefix)restore $(FlagParameterPrefix)all $(FlagParameterPrefix)pack $(FlagParameterPrefix)publish</BuildActions>
+    <!-- On windows, native tooling (JDK) is pre-installed on the machine. -->
+    <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) -NativeToolsOnMachine</BuildActions>
+    <!-- On non-windows, we don't have the JDK available and don't need to build those projects anyway because they are not consumed downstream. -->
+    <BuildActions Condition="'$(BuildOS)' != 'windows'">$(BuildActions) $(FlagParameterPrefix)no-build-java</BuildActions>
 
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
-    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(BuildOS)' != 'windows'">$(BuildArgs) $(FlagParameterPrefix)no-build-repo-tasks</BuildArgs>
+    <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
 
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
   </PropertyGroup>
@@ -18,17 +19,18 @@
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <BuildArgs>$(BuildArgs) /p:PortableBuild=$(PortableBuild)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:TargetRuntimeIdentifier=$(TargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)no-build-repo-tasks</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
     <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="xdt" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <RepositoryReference Include="nuget-client" />
+    <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="source-build-reference-packages" />
     <RepositoryReference Include="symreader" />

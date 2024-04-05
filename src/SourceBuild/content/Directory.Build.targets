@@ -7,7 +7,7 @@
       <SdkFilenamePrefix>dotnet-sdk-</SdkFilenamePrefix>
     </PropertyGroup>
     <ItemGroup>
-      <SdkTarballItem Include="$(ArtifactsAssetsDir)$(SdkFilenamePrefix)*$(ArchiveExtension)" />
+      <SdkTarballItem Include="$(ArtifactsAssetsDir)Sdk/**/$(SdkFilenamePrefix)*$(ArchiveExtension)" />
     </ItemGroup>
 
     <!--
@@ -19,6 +19,7 @@
     -->
     <PropertyGroup>
       <SdkFilename>%(SdkTarballItem.Filename)%(SdkTarballItem.Extension)</SdkFilename>
+      <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
       <SourceBuiltSdkVersion>$(SdkFilename.Replace('$(SdkFilenamePrefix)','').Replace('-$(TargetRid)$(ArchiveExtension)',''))</SourceBuiltSdkVersion>
     </PropertyGroup>
   </Target>

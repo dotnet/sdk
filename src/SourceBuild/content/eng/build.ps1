@@ -10,6 +10,7 @@ Param(
   [switch][Alias('h')]$help,
 
   # Advanced settings
+  [switch]$buildTests,
   [switch]$ci,
   [switch][Alias('cwb')]$cleanWhileBuilding,
   [switch][Alias('nobl')]$excludeCIBinarylog,
@@ -30,6 +31,7 @@ function Get-Usage() {
   Write-Host ""
 
   Write-Host "Advanced settings:"
+  Write-Host "  -build-tests            Build repository tests"
   Write-Host "  -ci                     Set when running on CI server"
   Write-Host "  -cleanWhileBuilding     Cleans each repo after building (reduces disk space usage, short: -cwb)"
   Write-Host "  -excludeCIBinarylog     Don't output binary log (short: -nobl)"
@@ -53,12 +55,14 @@ function Build {
 
   $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
   $cwb = if ($cleanWhileBuilding) { '/p:CleanWhileBuilding=true' } else { '' }
+  $btst = if ($buildTests) { '/p:DotNetBuildTests=true' } else { '' }
   $buildProj = Join-Path $RepoRoot 'build.proj'
 
   MSBuild $buildProj `
     $bl `
     /p:Configuration=$configuration `
     $cwb `
+    $btst `
     @properties
 }
 

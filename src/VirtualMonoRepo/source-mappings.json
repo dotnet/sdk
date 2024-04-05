@@ -36,29 +36,14 @@
     // The default filters do not apply to submodules
     // Only filters which start with submodule's path are applied when syncing submodules
     "defaults": {
-        "defaultRef": "main",
-        "exclude": [
-            "**/*.dll",
-            "**/*.Dll",
-            "**/*.exe",
-            "**/*.mdb",
-            "**/*.nupkg",
-            "**/*.pdb",
-            "**/*.tgz",
-            "**/*.zip"
-        ]
+        "defaultRef": "main"
     },
 
     // Each of these mappings has a corresponding folder in the src/ directory
     "mappings": [
         {
             "name": "arcade",
-            "defaultRemote": "https://github.com/dotnet/arcade",
-            "exclude": [
-                "src/Microsoft.DotNet.SignTool.Tests/*.mpack",
-                "src/Microsoft.DotNet.SignTool.Tests/*.msi",
-                "src/Microsoft.DotNet.SignTool.Tests/*.vsix"
-            ]
+            "defaultRemote": "https://github.com/dotnet/arcade"
         },
         {
             "name": "aspire",
@@ -72,11 +57,8 @@
             "name": "aspnetcore",
             "defaultRemote": "https://github.com/dotnet/aspnetcore",
             "exclude": [
-                "src/submodules/MessagePack-CSharp/**/*.dll",
-                "**/samples/**/jquery-validation-unobtrusive/.bower.json",
-                "**/samples/**/jquery-validation-unobtrusive/*.js",
-                "src/Installers/Windows/AspNetCoreModule-Setup/*",
-                "src/SignalR/clients/java/signalr/gradle/wrapper/gradle-wrapper.jar"
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/3537
+                "src/Installers/Windows/AspNetCoreModule-Setup/*"
             ]
         },
         {
@@ -100,10 +82,6 @@
             "defaultRemote": "https://github.com/dotnet/emsdk"
         },
         {
-            "name": "format",
-            "defaultRemote": "https://github.com/dotnet/format"
-        },
-        {
             "name": "fsharp",
             "defaultRemote": "https://github.com/dotnet/fsharp"
         },
@@ -111,7 +89,7 @@
             "name": "installer",
             "defaultRemote": "https://github.com/dotnet/installer",
             "exclude": [
-                // We don't need the tarball content in the VMR again, it's already copied in the root
+                // Exclude the VMR content as this is copied to the root of VMR via the synchronization process.
                 "src/SourceBuild/content/**/*"
             ]
         },
@@ -122,10 +100,7 @@
         {
             "name": "nuget-client",
             "defaultRemote": "https://github.com/NuGet/NuGet.Client",
-            "defaultRef": "dev",
-            "exclude":[
-                "src/NuGet.Clients/NuGet.VisualStudio.Client"
-            ]
+            "defaultRef": "dev"
         },
         {
             "name": "razor",
@@ -192,7 +167,9 @@
             "defaultRemote": "https://github.com/microsoft/vstest",
             "exclude": [
                 // Non-OSS license used in VS specific build configurations.
-                "src/package/licenses/LICENSE_VS.txt"
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/4255
+                "src/package/licenses/LICENSE_VS.txt",
+                "test/Microsoft.TestPlatform.CoreUtilities.UnitTests/TestAssets/dotnetWinX86.exe"
             ]
         },
         {
@@ -211,7 +188,14 @@
         },
         {
             "name": "winforms",
-            "defaultRemote": "https://github.com/dotnet/winforms"
+            "defaultRemote": "https://github.com/dotnet/winforms",
+            "exclude": [
+                // Non-OSS license - https://github.com/dotnet/source-build/issues/3772
+                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/**/*.cs",
+                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/**/*.ico",
+                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/**/*.resx",
+                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/LICENSE.txt"
+            ]
         },
         {
             "name": "wpf",

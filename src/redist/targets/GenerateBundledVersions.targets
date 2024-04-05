@@ -2,7 +2,8 @@
 
   <Target Name="GenerateBundledVersions"
           Condition="'$(PgoInstrument)' != 'true'"
-          DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps">
+          DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps;GenerateBundledMSBuildProps">
+
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productVersion.txt"
       Lines="$(PackageVersion)"
@@ -95,7 +96,6 @@
 
       <_NET80RuntimePackVersion>8.0.$(VersionFeature80)</_NET80RuntimePackVersion>
       <_NET80TargetingPackVersion>8.0.$(VersionFeature80)</_NET80TargetingPackVersion>
-      <_NET80WebAssemblyPackVersion>8.0.$(VersionFeature80)</_NET80WebAssemblyPackVersion>
       <_WindowsDesktop80RuntimePackVersion>8.0.$(VersionFeature80)</_WindowsDesktop80RuntimePackVersion>
       <_WindowsDesktop80TargetingPackVersion>8.0.$(VersionFeature80)</_WindowsDesktop80TargetingPackVersion>
       <_AspNet80RuntimePackVersion>8.0.$(VersionFeature80)</_AspNet80RuntimePackVersion>
@@ -264,6 +264,10 @@
         Condition="'$(BundleRuntimePacks)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
+      <ILCompilerSupportedRids
+        Condition="'$(BundleNativeAotCompiler)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <Net60MonoRuntimePackRids Include="
           @(Net60RuntimePackRids);
           browser-wasm;
@@ -401,6 +405,7 @@
           linux-x64;
           linux-arm;
           linux-arm64;
+          linux-bionic-arm;
           linux-musl-x64;
           linux-musl-arm;
           linux-musl-arm64;
@@ -687,7 +692,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net8.0"
-                             WebAssemblySdkPackVersion="$(_NET80WebAssemblyPackVersion)" />
+                             WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net8.0"
@@ -788,7 +793,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net7.0"
-                             WebAssemblySdkPackVersion="$(_NET80WebAssemblyPackVersion)" />
+                             WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net7.0"
@@ -882,7 +887,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <KnownWebAssemblySdkPack Include="Microsoft.NET.Sdk.WebAssembly.Pack"
                              TargetFramework="net6.0"
-                             WebAssemblySdkPackVersion="$(_NET80WebAssemblyPackVersion)" />
+                             WebAssemblySdkPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
 
     <KnownRuntimePack Include="Microsoft.NETCore.App"
                       TargetFramework="net6.0"
@@ -1238,6 +1243,54 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledBundledCliToolsPropsFileName)"
                       Lines="$(BundledBundledCliToolsPropsContent)"
                       Overwrite="true" />
+  </Target>
+
+  <Target Name="GenerateBundledMSBuildProps" DependsOnTargets="SetupBundledComponents">
+    <PropertyGroup>
+      <MinimumMSBuildVersionFile>$(RedistLayoutPath)sdk/$(Version)/minimumMSBuildVersion</MinimumMSBuildVersionFile>
+      <BundledMSBuildPropsFileName>Microsoft.NETCoreSdk.BundledMSBuildInformation.props</BundledMSBuildPropsFileName>
+      <BundledMSBuildVersion>$(MSBuildVersion)</BundledMSBuildVersion>
+    </PropertyGroup>
+
+    <Error Text="No MSBuild version file found under '$(RedistLayoutPath)sdk/$(Version)'" Condition="!Exists('$(MinimumMSBuildVersionFile)')" />
+    
+    <ReadLinesFromFile File="$(MinimumMSBuildVersionFile)">
+      <Output TaskParameter="Lines" PropertyName="MinimumMSBuildVersion"/>
+    </ReadLinesFromFile>
+
+    <PropertyGroup>
+      <_BundledMSBuildVersionMajorMinor>$([System.Version]::Parse('$(BundledMSBuildVersion)').ToString(2))</_BundledMSBuildVersionMajorMinor>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <BundledMSBuildPropsFileContent>
+<![CDATA[
+<!--
+***********************************************************************************************
+$(BundledMSBuildPropsFileName)
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project>
+  <PropertyGroup>
+    <MinimumMSBuildVersion>$(MinimumMSBuildVersion)</MinimumMSBuildVersion>
+    <BundledMSBuildVersion>$(BundledMSBuildVersion)</BundledMSBuildVersion>
+    <_MSBuildVersionMajorMinor>%24([System.Version]::Parse('%24(MSBuildVersion)').ToString(2))</_MSBuildVersionMajorMinor>
+    <_IsDisjointMSBuildVersion>%24([MSBuild]::VersionGreaterThan('%24(_MSBuildVersionMajorMinor)', '$(_BundledMSBuildVersionMajorMinor)'))</_IsDisjointMSBuildVersion>
+  </PropertyGroup>
+</Project>
+]]>
+      </BundledMSBuildPropsFileContent>
+    </PropertyGroup>
+
+  <WriteLinesToFile File="$(SdkOutputDirectory)$(BundledMSBuildPropsFileName)"
+    Lines="$(BundledMSBuildPropsFileContent)"
+    Overwrite="true" />
   </Target>
 
   <ItemGroup>
