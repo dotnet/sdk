@@ -44,12 +44,6 @@
     <FileSignInfo Include="comhost.dll" CertificateName="None" />
     <FileSignInfo Include="singlefilehost.exe" CertificateName="None" />
 
-    <!-- These are 3rd party nupkgs and should not be signed with an MS cert -->
-    <FileSignInfo Include="nunit3.dotnetnew.template.$(NUnit3Templates21PackageVersion).nupkg" CertificateName="None" />
-    <FileSignInfo Include="nunit3.dotnetnew.template.$(NUnit3Templates30PackageVersion).nupkg" CertificateName="None" />
-    <FileSignInfo Include="nunit3.dotnetnew.template.$(NUnit3Templates31PackageVersion).nupkg" CertificateName="None" />
-    <FileSignInfo Include="nunit3.dotnetnew.template.$(NUnit3Templates50PackageVersion).nupkg" CertificateName="None" />
-
     <!-- .ttf and .js files come in from some older aspnetcore packages (e.g. 2.1).
           These files in the 5.0 packages are NOT signed. When doing postbuild signing,
           SignTool will recognize that the files in the installer zips came from the 5.0 packages

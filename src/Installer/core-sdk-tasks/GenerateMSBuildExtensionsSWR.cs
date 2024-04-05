@@ -17,8 +17,7 @@ namespace Microsoft.DotNet.Cli.Build
 
             AddFolder(sb,
                       @"MSBuildSdkResolver",
-                      @"MSBuild\Current\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver",
-                      ngenAssemblies: true);
+                      @"MSBuild\Current\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver");
 
             AddFolder(sb,
                       @"msbuildExtensions",
@@ -33,7 +32,7 @@ namespace Microsoft.DotNet.Cli.Build
             return true;
         }
 
-        private void AddFolder(StringBuilder sb, string relativeSourcePath, string swrInstallDir, bool ngenAssemblies = false)
+        private void AddFolder(StringBuilder sb, string relativeSourcePath, string swrInstallDir)
         {
             string sourceFolder = Path.Combine(MSBuildExtensionsLayoutDirectory, relativeSourcePath);
             var files = Directory.GetFiles(sourceFolder)
@@ -49,16 +48,7 @@ namespace Microsoft.DotNet.Cli.Build
                 {
                     sb.Append(@"  file source=""$(PkgVS_Redist_Common_Net_Core_SDK_MSBuildExtensions)\");
                     sb.Append(Path.Combine(relativeSourcePath, Path.GetFileName(file)));
-                    sb.Append('"');
-
-                    if (ngenAssemblies && file.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-                    {
-                        sb.Append(@" vs.file.ngenApplications=""[installDir]\Common7\IDE\vsn.exe""");
-                        sb.Append(@" vs.file.ngenApplications=""[installDir]\MSBuild\Current\Bin\MSBuild.exe""");
-                        sb.Append(" vs.file.ngenArchitecture=all");
-                    }
-
-                    sb.AppendLine();
+                    sb.AppendLine("\"");
                 }
 
                 sb.AppendLine();
@@ -70,7 +60,6 @@ namespace Microsoft.DotNet.Cli.Build
                 string newRelativeSourcePath = Path.Combine(relativeSourcePath, subfolderName);
                 string newSwrInstallDir = Path.Combine(swrInstallDir, subfolderName);
 
-                // Don't propagate ngenAssemblies to subdirectories.
                 AddFolder(sb, newRelativeSourcePath, newSwrInstallDir);
             }
         }
