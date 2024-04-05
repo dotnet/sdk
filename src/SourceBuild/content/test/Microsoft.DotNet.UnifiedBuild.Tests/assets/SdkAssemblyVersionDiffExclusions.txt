@@ -29,7 +29,6 @@
 ./sdk/x.y.z/*/NuGet.VisualStudio.Contracts.resources.dll
 ./sdk/x.y.z/*/Test.Utility.resources.dll
 
-
 ./sdk/x.y.z/DotnetTools/dotnet-format/dotnet-format.dll
 ./sdk/x.y.z/DotnetTools/dotnet-format/*/dotnet-format.resources.dll
 ./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Bcl.AsyncInterfaces.dll
