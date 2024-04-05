@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _availableWorkloads = availableWorkloads;
         }
 
-        public IEnumerable<WorkloadResolver.WorkloadInfo> GetAvailableWorkloads() => _availableWorkloads;
+        public IEnumerable<WorkloadResolver.WorkloadInfo> GetAvailableWorkloads(bool error = true) => _availableWorkloads;
 
         public IEnumerable<WorkloadResolver.PackInfo> GetInstalledWorkloadPacksOfKind(WorkloadPackKind kind) => throw new NotImplementedException();
         public IEnumerable<WorkloadPackId> GetPacksInWorkload(WorkloadId workloadId) => Array.Empty<WorkloadPackId>();

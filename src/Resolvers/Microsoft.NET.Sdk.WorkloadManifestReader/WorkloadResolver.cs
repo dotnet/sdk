@@ -550,12 +550,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <summary>
         /// Returns the list of workloads available (installed or not) on the current platform, defined by the manifests on disk
         /// </summary>
-        public IEnumerable<WorkloadInfo> GetAvailableWorkloads()
-            => GetAvailableWorkloadDefinitions().Select(w => new WorkloadInfo(w.workload.Id, w.workload.Description));
+        public IEnumerable<WorkloadInfo> GetAvailableWorkloads(bool error = true)
+            => GetAvailableWorkloadDefinitions(error).Select(w => new WorkloadInfo(w.workload.Id, w.workload.Description));
 
-        private IEnumerable<(WorkloadDefinition workload, WorkloadManifest manifest)> GetAvailableWorkloadDefinitions()
+        private IEnumerable<(WorkloadDefinition workload, WorkloadManifest manifest)> GetAvailableWorkloadDefinitions(bool error = true)
         {
-            InitializeManifests();
+            InitializeManifests(error);
             foreach ((WorkloadId _, (WorkloadDefinition workload, WorkloadManifest manifest)) in _workloads)
             {
                 if (!workload.IsAbstract && IsWorkloadPlatformCompatible(workload, manifest) && !IsWorkloadImplicitlyAbstract(workload, manifest))

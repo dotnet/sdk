@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private void ValidateWorkloadIdsInput()
         {
-            var availableWorkloads = _workloadResolver.GetAvailableWorkloads();
+            var availableWorkloads = _workloadResolver.GetAvailableWorkloads(error: false);
             foreach (var workloadId in _workloadIds)
             {
                 if (!availableWorkloads.Select(workload => workload.Id.ToString()).Contains(workloadId))

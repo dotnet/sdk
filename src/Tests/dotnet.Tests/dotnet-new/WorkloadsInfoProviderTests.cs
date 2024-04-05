@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             var repoMock = new Mock<IWorkloadInstallationRecordRepository>();
 
             resolverMock
-                .Setup(r => r.GetAvailableWorkloads())
+                .Setup(r => r.GetAvailableWorkloads(true))
                 .Returns(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
 
             repoMock
