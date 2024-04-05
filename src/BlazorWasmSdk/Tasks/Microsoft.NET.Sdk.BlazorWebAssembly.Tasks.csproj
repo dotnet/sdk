@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAsset.cs" />
+    <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Utils\FileHasher.cs" />    
   </ItemGroup>
 
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">

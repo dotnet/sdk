@@ -8,24 +8,18 @@ using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Tools
 {
-    internal sealed class BlazorWebAssemblyHostedDeltaApplier : DeltaApplier
+    internal sealed class BlazorWebAssemblyHostedDeltaApplier(IReporter reporter, BrowserRefreshServer browserRefreshServer) : DeltaApplier
     {
-        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier;
-        private readonly DefaultDeltaApplier _hostApplier;
+        private readonly BlazorWebAssemblyDeltaApplier _wasmApplier = new(reporter, browserRefreshServer);
+        private readonly DefaultDeltaApplier _hostApplier = new(reporter);
 
-        public BlazorWebAssemblyHostedDeltaApplier(IReporter reporter)
+        public override void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken)
         {
-            _wasmApplier = new BlazorWebAssemblyDeltaApplier(reporter);
-            _hostApplier = new DefaultDeltaApplier(reporter);
+            _wasmApplier.Initialize(project, namedPipeName, cancellationToken);
+            _hostApplier.Initialize(project, namedPipeName, cancellationToken);
         }
 
-        public override void Initialize(DotNetWatchContext context, CancellationToken cancellationToken)
-        {
-            _wasmApplier.Initialize(context, cancellationToken);
-            _hostApplier.Initialize(context, cancellationToken);
-        }
-
-        public override async Task<ApplyStatus> Apply(DotNetWatchContext context, ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
+        public override async Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken)
         {
             // Apply to both processes.
             // The module the change is for does not need to be loaded in either of the processes, yet we still consider it successful if the application does not fail.
@@ -34,14 +28,14 @@ namespace Microsoft.DotNet.Watcher.Tools
             // the compiler (producing wrong delta), or rude edit detection (the change shouldn't have been allowed).
 
             var result = await Task.WhenAll(
-                _wasmApplier.Apply(context, updates, cancellationToken),
-                _hostApplier.Apply(context, updates, cancellationToken));
+                _wasmApplier.Apply(updates, cancellationToken),
+                _hostApplier.Apply(updates, cancellationToken));
 
             var wasmResult = result[0];
             var hostResult = result[1];
 
-            ReportStatus(context.Reporter, wasmResult, "client");
-            ReportStatus(context.Reporter, hostResult, "host");
+            ReportStatus(reporter, wasmResult, "client");
+            ReportStatus(reporter, hostResult, "host");
 
             return (wasmResult, hostResult) switch
             {
@@ -70,11 +64,11 @@ namespace Microsoft.DotNet.Watcher.Tools
             _wasmApplier.Dispose();
         }
 
-        public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(DotNetWatchContext context, CancellationToken cancellationToken)
+        public override async Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
             var result = await Task.WhenAll(
-                _wasmApplier.GetApplyUpdateCapabilitiesAsync(context, cancellationToken),
-                _hostApplier.GetApplyUpdateCapabilitiesAsync(context, cancellationToken));
+                _wasmApplier.GetApplyUpdateCapabilitiesAsync(cancellationToken),
+                _hostApplier.GetApplyUpdateCapabilitiesAsync(cancellationToken));
 
             // Allow updates that are supported by at least one process.
             // When applying changes we will filter updates applied to a specific process based on their required capabilities.
