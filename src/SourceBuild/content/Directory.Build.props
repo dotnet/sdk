@@ -169,10 +169,10 @@
     <KeysDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'keys'))</KeysDir>
     <PrereqsPackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'packages'))</PrereqsPackagesDir>
 
-    <!-- When SB mode, the initial arcade is unzipped to the "ArcadeBootstrapPackage" dir.
-         When running in VBPOC, the bootstrap package is the arcade restored at the beginning of the build. -->
-    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildSourceOnly)' == 'true'">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'ArcadeBootstrapPackage'))</ArcadeBootstrapPackageDir>
-    <ArcadeBootstrapPackageDir Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(NuGetPackageRoot)</ArcadeBootstrapPackageDir>
+    <!-- When SB mode, the initial toolsets are unzipped to the "BootstrapPackages" dir.
+         When running in non-source-build, the bootstrap package is the one restored at the beginning of the build. -->
+    <BootstrapPackagesDir Condition="'$(DotNetBuildSourceOnly)' == 'true'">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'BootstrapPackages'))</BootstrapPackagesDir>
+    <BootstrapPackagesDir Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(NuGetPackageRoot)</BootstrapPackagesDir>
 
     <VSMSBuildSdkResolversDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'toolset', 'VSSdkResolvers'))</VSMSBuildSdkResolversDir>
     <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>

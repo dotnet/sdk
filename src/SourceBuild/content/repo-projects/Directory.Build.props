@@ -54,13 +54,6 @@
     <ArcadeBootstrapVersion>$([MSBuild]::ValueOrDefault('$(ARCADE_BOOTSTRAP_VERSION)', '$(ArcadeSdkVersion)'))</ArcadeBootstrapVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <!-- Get Microsoft.Build.NoTargets and Microsoft.Build.Traversal versions from VMR's global.json -->
-    <VMRGlobalJsonContents>$([System.IO.File]::ReadAllText($(RepoRoot)global.json))</VMRGlobalJsonContents>
-    <NoTargetsSdkVersion>$([System.Text.RegularExpressions.Regex]::Match($(VMRGlobalJsonContents), '"Microsoft.Build.NoTargets": "([^"]*)"').Groups.get_Item(1))</NoTargetsSdkVersion>
-    <TraversalSdkVersion>$([System.Text.RegularExpressions.Regex]::Match($(VMRGlobalJsonContents), '"Microsoft.Build.Traversal": "([^"]*)"').Groups.get_Item(1))</TraversalSdkVersion>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(BuildOS)' == 'windows'">
     <FlagParameterPrefix>-</FlagParameterPrefix>
     <ArcadeFalseBoolBuildArg>0</ArcadeFalseBoolBuildArg>
@@ -201,7 +194,7 @@
 
     <SourceBuiltSdkOverride Include="@(ArcadeSdkOverride)"
                             Version="$(ArcadeBootstrapVersion)"
-                            Location="$(ArcadeBootstrapPackageDir)microsoft.dotnet.arcade.sdk/$(ArcadeBootstrapVersion)"
+                            Location="$(BootstrapPackagesDir)microsoft.dotnet.arcade.sdk/$(ArcadeBootstrapVersion)"
                             Condition="'$(UseBootstrapArcade)' == 'true'" />
 
     <!-- When not bootstrapping, use the just-built versions. -->
@@ -221,8 +214,8 @@
       RestoreConfigFile property. MSBuild uses NuGetSdkResolver to restore missing SDKs, which doesn't honor
       RestoreConfigFile property and uses NuGet.config file from repo's root which has online feeds.
     -->
-    <NoTargetsSdkOverride Include="Microsoft.Build.NoTargets" Group="NOTARGETS" Version="$(NoTargetsSdkVersion)" />
-    <TraversalSdkOverride Include="Microsoft.Build.Traversal" Group="TRAVERSAL" Version="$(TraversalSdkVersion)" />
+    <NoTargetsSdkOverride Include="Microsoft.Build.NoTargets" Group="NOTARGETS" Version="$(NOTARGETS_BOOTSTRAP_VERSION)" />
+    <TraversalSdkOverride Include="Microsoft.Build.Traversal" Group="TRAVERSAL" Version="$(TRAVERSAL_BOOTSTRAP_VERSION)" />
     <SourceBuiltSdkOverride Include="@(NoTargetsSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(RepositoryName)' != 'source-build-reference-packages'" />
     <SourceBuiltSdkOverride Include="@(TraversalSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(RepositoryName)' != 'source-build-reference-packages'" />
   </ItemGroup>
