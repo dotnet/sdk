@@ -16,11 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EnvironmentVariables Include="UsingToolMicrosoftNetCompilers=false" />
-    <EnvironmentVariables Include="useInstalledDotNetCli=false" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ExtraPackageVersionPropsPackageInfo Include="NuGetVersion" Version="%24(NuGetPackagingVersion)" />
   </ItemGroup>
 

@@ -27,16 +27,8 @@
 
     <AddSourceToNuGetConfig
       NuGetConfigFile="$(NuGetConfigFile)"
-      SourceName="source-build-reference-package-cache"
+      SourceName="$(SbrpCacheNuGetSourceName)"
       SourcePath="$(LocalNuGetPackageCacheDirectory)" />
-  </Target>
-
-  <Target Name="ClearPreviousSBRP"
-          BeforeTargets="CopyRepoArtifacts"
-          DependsOnTargets="RepoBuild">
-    <!-- Building SBRP: At this point the References directory contains the previously-source-built SBRPs,
-         clear it before copying the current SBRPs.  This ensures n-1 SBRPs aren't required to build the product repos. -->
-    <RemoveDir Directories="$(ReferencePackagesDir)" />
   </Target>
 
 </Project>
