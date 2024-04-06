@@ -10,9 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <BuiltSdkPackageOverride Include="@(ArcadeSdkOverride)" />
-    <BuiltSdkPackageOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
-    <BuiltSdkPackageOverride Include="@(ArcadeCMakeSdkOverride)" />
+    <BuiltSdkPackageOverride Include="Microsoft.DotNet.Arcade.Sdk" Version="$(OutputPackageVersion)" />
+    <BuiltSdkPackageOverride Include="Microsoft.DotNet.SharedFramework.Sdk" Version="$(OutputPackageVersion)" />
+    <BuiltSdkPackageOverride Include="Microsoft.DotNet.CMake.Sdk" Version="$(OutputPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
