@@ -342,7 +342,40 @@
              RunEachTargetSeparately="$(RunEachTargetSeparately)" />
   </Target>
 
+  <!-- Discover the Arcade SDKs built from the live Arcade source and set them as overrides here. -->
+  <Target Name="DiscoverArcadeSourceBuiltSdkOverrides"
+          DependsOnTargets="BuildRepoReferences;GetRepositoryReferenceInfo"
+          Condition="'$(UseBootstrapArcade)' != 'true'">
+    <PropertyGroup>
+      <_ArcadeSdkName>Microsoft.DotNet.Arcade.Sdk</_ArcadeSdkName>
+    </PropertyGroup>
+
+    <!--
+      Discover the version of the Arcade SDK NuGet package by matching the name of the nupkg file and extracting the version.
+      In the future, we should use the asset manifests to discover this information.
+    -->
+    <ItemGroup>
+      <_BuiltArcadeSdkPackage Include="@(DependentRepoPackageFile)"
+                              Condition="!$([System.String]::new('%(Identity)').EndsWith('.symbols.nupkg')) and $([System.String]::new('%(Identity)').Contains($(_ArcadeSdkName)))" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_BuiltArcadeSdkPackageVersion>$([System.String]::new('%(_BuiltArcadeSdkPackage.FileName)').Substring($([MSBuild]::Add($(_ArcadeSdkName.Length), 1))))</_BuiltArcadeSdkPackageVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <SourceBuiltSdkOverride Include="Microsoft.DotNet.Arcade.Sdk" Group="ARCADE" Version="$(_BuiltArcadeSdkPackageVersion)" />
+      <SourceBuiltSdkOverride Include="Microsoft.DotNet.SharedFramework.Sdk" Group="ARCADE_SHARED_FX_SDK" Version="$(_BuiltArcadeSdkPackageVersion)" />
+      <SourceBuiltSdkOverride Include="Microsoft.DotNet.CMake.Sdk" Group="ARCADE_CMAKE_SDK" Version="$(_BuiltArcadeSdkPackageVersion)" />
+  
+      <SourceBuiltSdkOverride Include="@(ArcadeSdkOverride)" />
+      <SourceBuiltSdkOverride Include="@(ArcadeCMakeSdkOverride)" />
+      <SourceBuiltSdkOverride Include="@(ArcadeSharedFrameworkSdkOverride)" />
+    </ItemGroup>
+  </Target>
+
   <Target Name="SetSourceBuiltSdkOverrides"
+          DependsOnTargets="DiscoverArcadeSourceBuiltSdkOverrides"
           Condition="'@(SourceBuiltSdkOverride)' != ''">
     <ItemGroup>
       <!-- Set the environment variables for MSBuild to look for our additional SDK Resolvers and or our resolver to find our source-built SDKs. -->
@@ -363,6 +396,7 @@
                             UpdateGlobalJsonVersions;
                             UpdateEngCommonFiles;
                             CreateBuildInputProps;
+                            DiscoverArcadeSourceBuiltSdkOverrides;
                             SetSourceBuiltSdkOverrides">
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Building $(RepositoryName)" />
     <Message Importance="High" Text="Running command:" />
