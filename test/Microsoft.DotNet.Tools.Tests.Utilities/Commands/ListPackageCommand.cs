@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         public override CommandResult Execute(string args = "")
         {
             args = $"list {_path} package {args}";
-            return base.ExecuteWithCapturedOutput(args);
+            return ExecuteWithCapturedOutput(args);
         }
 
         public ListPackageCommand WithPath(string path)

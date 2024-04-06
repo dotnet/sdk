@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -88,39 +87,22 @@ namespace Microsoft.DotNet.Build.Tasks
             return retVal;
         }
 
-        public override bool Execute()
-        {
-            return base.Execute();
-        }
+        public override bool Execute() => base.Execute();
 
-        protected override string ToolName
-        {
-            get { return "tar"; }
-        }
+        protected override string ToolName => "tar";
 
-        protected override MessageImportance StandardOutputLoggingImportance
-        {
-            get { return MessageImportance.High; } // or else the output doesn't get logged by default
-        }
+        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
-        protected override string GenerateFullPathToTool()
-        {
-            return "tar";
-        }
+        protected override string GenerateFullPathToTool() => "tar";
 
-        protected override string GenerateCommandLineCommands()
-        {
-            return $"{GetDestinationArchive()} {GetSourceSpecification()}";
-        }
+        protected override string GenerateCommandLineCommands() => $"{GetDestinationArchive()} {GetSourceSpecification()}";
 
         private string GetSourceSpecification()
         {
             if (IncludeBaseDirectory)
             {
                 var parentDirectory = Directory.GetParent(SourceDirectory).Parent.FullName;
-
                 var sourceDirectoryName = Path.GetFileName(Path.GetDirectoryName(SourceDirectory));
-
                 return $"--directory {parentDirectory} {sourceDirectoryName}  {GetExcludes()}";
             }
             else
@@ -129,14 +111,11 @@ namespace Microsoft.DotNet.Build.Tasks
             }
         }
 
-        private string GetDestinationArchive()
-        {
-            return $"-czf {DestinationArchive}";
-        }
+        private string GetDestinationArchive() => $"-czf {DestinationArchive}";
 
         private string GetExcludes()
         {
-            var excludes = String.Empty;
+            var excludes = string.Empty;
 
             if (ExcludePatterns != null)
             {
@@ -148,10 +127,7 @@ namespace Microsoft.DotNet.Build.Tasks
             
             return excludes;
         }
-        
-        protected override void LogToolCommand(string message)
-        {
-            base.LogToolCommand($"{base.GetWorkingDirectory()}> {message}");
-        }
+
+        protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
     }
 }

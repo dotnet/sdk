@@ -133,7 +133,7 @@
               Path="[ProgramFiles64Folder]dotnet"/>
     <?endif?>
 
-    <!-- 
+    <!--
         When installing the SDK bundle to a custom location using the commandline parameters, it is intended, not mandatory, that 
         both "DOTNETHOME_X86" and "DOTNETHOME_X64" should be used on the commandline and should take this convention:
             DOTNETHOME_X86=<InstallFolder>\x86
@@ -154,10 +154,10 @@
     <Variable Name="VERSIONMAJOR" Type="string" Value="$(var.VersionMajor)" bal:Overridable="no" />
     <Variable Name="VERSIONMINOR" Type="string" Value="$(var.VersionMinor)" bal:Overridable="no" />
     <Variable Name="MINIMUMVSVERSION" Type="string" Value="$(var.MinimumVSVersion)" bal:Overridable="no" />
-      
+
     <Chain DisableSystemRestore="yes" ParallelCache="yes">
-      
-      <!-- 
+
+      <!--
         The finalizer is not an actual installation package. We "detect" the EXE
         based on the action the bundle is performing to ensure that it runs the uninstall
         command only when the bundle is being removed. The package is always installable because the bundle
@@ -232,8 +232,6 @@
       <?elseif $(var.Platform)=arm64?>
         <PackageGroupRef Id="PG_AspNetCoreSharedFramework_arm64"/>
       <?endif?>
-
-      
     </Chain>
   </Bundle>
 
@@ -242,7 +240,7 @@
       <Payload Name="thm.xml" Compressed="yes" SourceFile="bundle.thm" />
       <!-- Default/Neutral localized content is US English -->
       <Payload Name="thm.wxl" Compressed="yes" SourceFile="LCID\1033\bundle.wxl" />
-      <Payload Name="bg.png" Compressed="yes" SourceFile="..\..\osx\clisdk\resources\dotnetbackground.png" />
+      <Payload Name="bg.png" Compressed="yes" SourceFile="..\osx\resources\dotnetbackground.png" />
       <?foreach LCID in $(var.LocalizedContentDirs)?>
         <Payload Id="thm-$(var.LCID)" Compressed="yes" Name="$(var.LCID)\thm.wxl" SourceFile="LCID\$(var.LCID)\bundle.wxl" />
       <?endforeach?>

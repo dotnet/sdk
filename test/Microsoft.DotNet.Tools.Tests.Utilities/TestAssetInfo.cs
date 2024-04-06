@@ -68,10 +68,7 @@ namespace Microsoft.DotNet.TestFramework
                         .Where(f => !FilesToExclude.Contains(f.Name));
         }
 
-        private DirectoryInfo GetTestDestinationDirectory(string callingMethod, string identifier)
-        {
-            return _testAssets.CreateTestDirectory(AssetName, callingMethod, identifier);
-        }
+        private DirectoryInfo GetTestDestinationDirectory(string callingMethod, string identifier) => _testAssets.CreateTestDirectory(AssetName, callingMethod, identifier);
 
         private void ThrowIfTestAssetDoesNotExist()
         {

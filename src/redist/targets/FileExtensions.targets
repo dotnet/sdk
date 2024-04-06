@@ -1,4 +1,5 @@
 <Project>
+
   <Target Name="SetupFileExtensions" DependsOnTargets="GetCurrentRuntimeInformation">
     <PropertyGroup>
       <ArchiveExtension>.tar.gz</ArchiveExtension>
@@ -26,7 +27,7 @@
 
       <PlatformScriptExtension>.sh</PlatformScriptExtension>
       <PlatformScriptExtension Condition=" $([MSBuild]::IsOSPlatform('WINDOWS')) ">.ps1</PlatformScriptExtension>
-
     </PropertyGroup>
   </Target>
+
 </Project>

@@ -1,6 +1,6 @@
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Target Name="CalculateTemplatesVersions" DependsOnTargets="SetupWixProperties">
+<Project>
 
+  <Target Name="CalculateTemplatesVersions" DependsOnTargets="SetupWixProperties">
     <CalculateTemplateVersions
       BundledTemplates="@(BundledTemplates)"
       FullNugetVersion="$(FullNugetVersion)"
@@ -17,7 +17,6 @@
         <MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)%(TemplatesComponents.TemplateBaseFilename)-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</MSIInstallerFile>
       </TemplatesComponents>
     </ItemGroup>
-
   </Target>
 
   <ItemGroup Label=".NET 9.0 templates">
@@ -48,7 +47,7 @@
     <Bundled70Templates Include="Microsoft.DotNet.Web.Spa.ProjectTemplates.7.0" PackageVersion="$(AspNetCorePackageVersionFor70Templates)" />  
     <Bundled70Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates70PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <Bundled70Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates70PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    
+
     <!-- NUnit templates are shipped in Test.ProjectTemplates -->
     <Bundled70Templates Include="Microsoft.DotNet.Test.ProjectTemplates.7.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates70PackageVersion)" />
   </ItemGroup>
@@ -67,13 +66,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <CurrentVersionBundledTemplates Include="@(Bundled90Templates)" TemplateFrameworkVersion="9.0"/>
+    <CurrentVersionBundledTemplates Include="@(Bundled90Templates)" TemplateFrameworkVersion="9.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PreviousVersionBundledTemplates Include="@(Bundled80Templates)" TemplateFrameworkVersion="8.0"/>
-    <PreviousVersionBundledTemplates Include="@(Bundled70Templates)" TemplateFrameworkVersion="7.0"/>
-    <PreviousVersionBundledTemplates Include="@(Bundled60Templates)" TemplateFrameworkVersion="6.0"/>
+    <PreviousVersionBundledTemplates Include="@(Bundled80Templates)" TemplateFrameworkVersion="8.0" />
+    <PreviousVersionBundledTemplates Include="@(Bundled70Templates)" TemplateFrameworkVersion="7.0" />
+    <PreviousVersionBundledTemplates Include="@(Bundled60Templates)" TemplateFrameworkVersion="6.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -114,15 +113,14 @@
       <TemplatePackageDownloadProjectPath>$(TemplatePackageDownloadProjectDirectory)TemplatePackageDownloader.csproj</TemplatePackageDownloadProjectPath>
     </PropertyGroup>
 
-    <MakeDir Directories="$(TemplatePackageDownloadProjectDirectory)"/>
+    <MakeDir Directories="$(TemplatePackageDownloadProjectDirectory)" />
     <WriteLinesToFile Lines="$(TemplatePackageDownloadProjectContent)"
                       File="$(TemplatePackageDownloadProjectPath)"
                       Overwrite="True" WriteOnlyWhenDifferent="True" />
 
     <MSBuild Projects="$(TemplatePackageDownloadProjectPath)"
-             Targets="Restore"/>
+             Targets="Restore" />
   </Target>
-
 
   <Target Name="LayoutTemplates"
         DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesForMSI" />
@@ -135,7 +133,7 @@
     </ItemGroup>
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
           DestinationFolder="$(RedistLayoutPath)templates/%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
-          Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'"/>
+          Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'" />
   </Target>
 
   <Target Name="LayoutTemplatesForMSI"
@@ -143,8 +141,7 @@
           Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
 
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
-          DestinationFolder="$(BaseOutputPath)$(Configuration)\templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)\templates/%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"/>
-    
+          DestinationFolder="$(BaseOutputPath)$(Configuration)\templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)\templates/%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
   </Target>
 
 </Project>

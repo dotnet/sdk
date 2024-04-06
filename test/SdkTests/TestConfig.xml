@@ -37,7 +37,6 @@
     <Method Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASelfContainedApp.It_can_make_a_Windows_GUI_exe" />
     <Class Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishASingleFileApp" />
     <Class Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToPublishAWebApp" />
-    <Class Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunCrossgen" />
     <Class Name="Microsoft.NET.Publish.Tests.GivenThatWeWantToRunILLink" />
     <Class Name="Microsoft.NET.Publish.Tests.PublishWebApp" />
     <Class Name="Microsoft.NET.Publish.Tests.PublishWpfApp" />

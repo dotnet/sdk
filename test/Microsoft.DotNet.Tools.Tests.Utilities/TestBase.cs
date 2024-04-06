@@ -6,13 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
 {
-
     /// <summary>
     /// Base class for all unit test classes.
     /// </summary>
@@ -34,13 +32,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             }
         }
 
-        protected static string RepoRoot
-        {
-            get
-            {
-                return RepoDirectoriesProvider.RepoRoot;
-            }
-        }
+        protected static string RepoRoot => RepoDirectoriesProvider.RepoRoot;
 
         public static TestAssets TestAssets
         {
@@ -53,7 +45,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                     s_testAssets = new TestAssets(
                         new DirectoryInfo(assetsRoot),
                         new FileInfo(RepoDirectoriesProvider.DotnetUnderTest),
-                        RepoDirectoriesProvider.TestWorkingFolder); 
+                        RepoDirectoriesProvider.TestWorkingFolder);
                 }
 
                 return s_testAssets;
@@ -64,10 +56,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         {
         }
 
-        public static string GetUniqueName()
-        {
-            return Guid.NewGuid().ToString("D");
-        }
+        public static string GetUniqueName() => Guid.NewGuid().ToString("D");
 
         public TempRoot Temp
         {
@@ -132,15 +121,9 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             string outputDir,
             string executableName,
             string expectedOutput,
-            bool native = false)
-        {
-            TestExecutable(GetCompilationOutputPath(outputDir, native), executableName, expectedOutput);
-        }
+            bool native = false) => TestExecutable(GetCompilationOutputPath(outputDir, native), executableName, expectedOutput);
 
-        protected void TestNativeOutputExecutable(string outputDir, string executableName, string expectedOutput)
-        {
-            TestOutputExecutable(outputDir, executableName, expectedOutput, true);
-        }
+        protected void TestNativeOutputExecutable(string outputDir, string executableName, string expectedOutput) => TestOutputExecutable(outputDir, executableName, expectedOutput, true);
 
         protected string GetCompilationOutputPath(string outputDir, bool native)
         {

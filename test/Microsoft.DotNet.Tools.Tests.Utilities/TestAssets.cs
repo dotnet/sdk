@@ -2,12 +2,8 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.TestFramework
 {
@@ -49,19 +45,13 @@ namespace Microsoft.DotNet.TestFramework
             _testWorkingFolder = testWorkingFolder;
         }
 
-        public TestAssetInfo Get(string name)
-        {
-            return Get(TestAssetKinds.TestProjects, name);
-        }
+        public TestAssetInfo Get(string name) => Get(TestAssetKinds.TestProjects, name);
 
         public TestAssetInfo Get(string kind, string name)
         {
             var assetDirectory = new DirectoryInfo(Path.Combine(_root.FullName, kind, name));
 
-            return new TestAssetInfo(
-                assetDirectory, 
-                name, 
-                this);
+            return new TestAssetInfo(assetDirectory, name, this);
         }
 
         public DirectoryInfo CreateTestDirectory(string testProjectName = "", [CallerMemberName] string callingMethod = "", string identifier = "")

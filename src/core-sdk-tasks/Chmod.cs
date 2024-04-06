@@ -16,44 +16,18 @@ namespace Microsoft.DotNet.Cli.Build
 
         public bool Recursive { get; set; }
 
-        protected override string ToolName
-        {
-            get { return "chmod"; }
-        }
+        protected override string ToolName => "chmod";
 
-        protected override MessageImportance StandardOutputLoggingImportance
-        {
-            get { return MessageImportance.High; } // or else the output doesn't get logged by default
-        }
+        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
-        protected override string GenerateFullPathToTool()
-        {
-            return "chmod";
-        }
+        protected override string GenerateFullPathToTool() => "chmod";
 
-        protected override string GenerateCommandLineCommands()
-        {
-            return $"{GetRecursive()} {GetMode()} {GetGlob()}";
-        }
+        protected override string GenerateCommandLineCommands() => $"{GetRecursive()} {GetMode()} {GetGlob()}";
 
-        private string GetGlob()
-        {
-            return Glob;
-        }
+        private string GetGlob() => Glob;
 
-        private string GetMode()
-        {
-            return Mode;
-        }
+        private string GetMode() => Mode;
 
-        private string GetRecursive()
-        {
-            if(Recursive)
-            {
-                return "--recursive";
-            }
-
-            return null;
-        }
+        private string GetRecursive() => Recursive ? "--recursive" : null;
     }
 }

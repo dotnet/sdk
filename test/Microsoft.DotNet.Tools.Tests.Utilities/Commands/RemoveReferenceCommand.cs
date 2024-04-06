@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
         public override CommandResult Execute(string args = "")
         {
             args = $"remove {_projectName} reference {args}";
-            return base.ExecuteWithCapturedOutput(args);
+            return ExecuteWithCapturedOutput(args);
         }
 
         public RemoveReferenceCommand WithProject(string projectName)

@@ -7,14 +7,8 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 {
     public sealed class ToolCommand : DotnetCommand
     {
-        public override CommandResult Execute(string args = "")
-        {
-            return base.Execute($"tool {args}");
-        }
+        public override CommandResult Execute(string args = "") => base.Execute($"tool {args}");
 
-        public override CommandResult ExecuteWithCapturedOutput(string args = "")
-        {
-            return base.ExecuteWithCapturedOutput($"tool {args}");
-        }
+        public override CommandResult ExecuteWithCapturedOutput(string args = "") => base.ExecuteWithCapturedOutput($"tool {args}");
     }
 }

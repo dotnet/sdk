@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using FluentAssertions;
 
@@ -12,7 +13,6 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
     public class RepoDirectoriesProvider
     {
         public readonly static string RepoRoot;
-   
         public readonly static string TestWorkingFolder;
         public readonly static string DotnetUnderTest;
         public readonly static string DotnetRidUnderTest;
@@ -55,20 +55,17 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
                 }
                 else
                 {
-                    string configuration = new DirectoryInfo(AppContext.BaseDirectory).Parent.Name;
+                    // https://stackoverflow.com/a/60545278/294804
+                    var assemblyConfigurationAttribute = typeof(RepoDirectoriesProvider).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>();
+                    string configuration = assemblyConfigurationAttribute?.Configuration;
                     DotnetUnderTest = Path.Combine(RepoRoot, "artifacts", "bin", "redist", configuration, "dotnet", "dotnet" + dotnetExtension);
                 }
             }
 
-            string AspNetCoreDir = Path.Combine(
-                Path.GetDirectoryName(DotnetUnderTest),
-                "shared",
-                "Microsoft.AspNetCore.App");
-
+            string AspNetCoreDir = Path.Combine(Path.GetDirectoryName(DotnetUnderTest), "shared", "Microsoft.AspNetCore.App");
             if (Directory.Exists(AspNetCoreDir))
             {
-                Stage2AspNetCore =
-                    Directory.EnumerateDirectories(AspNetCoreDir).First();
+                Stage2AspNetCore = Directory.EnumerateDirectories(AspNetCoreDir).First();
             }
 
             //  TODO: Resolve dotnet folder even if DotnetUnderTest doesn't have full path
@@ -81,6 +78,5 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             var lines = File.ReadAllLines(versionFile);
             DotnetRidUnderTest = lines[2].Trim();
         }
-
     }
 }

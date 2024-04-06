@@ -25,50 +25,30 @@ namespace Microsoft.DotNet.Cli.Build
 
         protected override string ToolName => "package_tool.sh";
 
-        private string GetInputDir()
-        {
-            return $"-i {InputDirectory}";
-        }
+        private string GetInputDir() => $"-i {InputDirectory}";
 
-        private string GetOutputFile()
-        {
-            return $"-o {OutputDirectory}";
-        }
+        private string GetOutputFile() => $"-o {OutputDirectory}";
 
-        private string GetPackageName()
-        {
-            return $"-n {PackageName}";
-        }
+        private string GetPackageName() => $"-n {PackageName}";
 
-        private string GetPackageVersion()
-        {
-            return $"-v {PackageVersion}";
-        }
+        private string GetPackageVersion() => $"-v {PackageVersion}";
 
-        protected override MessageImportance StandardOutputLoggingImportance
-        {
-            get { return MessageImportance.High; } // or else the output doesn't get logged by default
-        }
+        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
         protected override string GenerateFullPathToTool()
         {
-            string path = ToolPath;
-
             // if ToolPath was not provided by the MSBuild script 
-            if (string.IsNullOrEmpty(path))
+            if (string.IsNullOrEmpty(ToolPath))
             {
                 Log.LogError($"Could not find the Path to {ToolName}");
 
                 return string.Empty;
             }
 
-            return path;
+            return ToolPath;
         }
 
-        protected override string GetWorkingDirectory()
-        {
-            return WorkingDirectory ?? base.GetWorkingDirectory();
-        }
+        protected override string GetWorkingDirectory() => WorkingDirectory ?? base.GetWorkingDirectory();
 
         protected override string GenerateCommandLineCommands()
         {
@@ -79,26 +59,13 @@ namespace Microsoft.DotNet.Cli.Build
             return commandLineCommands;
         }
 
-        protected override void LogToolCommand(string message)
-        {
-            base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
-        }
+        protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
 
-        protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
-        {
-            Log.LogMessage(messageImportance, singleLine, null);
-        }
+        protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance) => Log.LogMessage(messageImportance, singleLine, null);
 
-        protected override ProcessStartInfo GetProcessStartInfo(
-            string pathToTool,
-            string commandLineCommands,
-            string responseFileSwitch)
+        protected override ProcessStartInfo GetProcessStartInfo(string pathToTool, string commandLineCommands, string responseFileSwitch)
         {
-            var psi = base.GetProcessStartInfo(
-                pathToTool,
-                commandLineCommands,
-                responseFileSwitch);
-
+            var psi = base.GetProcessStartInfo(pathToTool, commandLineCommands, responseFileSwitch);
             foreach (var environmentVariableName in new EnvironmentFilter().GetEnvironmentVariableNamesToRemove())
             {
                 psi.Environment.Remove(environmentVariableName);

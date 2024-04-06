@@ -4,11 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
@@ -129,10 +126,7 @@ namespace Microsoft.DotNet.TestFramework
             return this;
         }
 
-        public TestAssetInstance WithProjectChanges(Action<XDocument> xmlAction)
-        {
-            return WithProjectChanges((path, project) => xmlAction(project));
-        }
+        public TestAssetInstance WithProjectChanges(Action<XDocument> xmlAction) => WithProjectChanges((path, project) => xmlAction(project));
 
         public TestAssetInstance WithProjectChanges(Action<string, XDocument> xmlAction)
         {
@@ -211,10 +205,7 @@ namespace Microsoft.DotNet.TestFramework
             }
         }
 
-        private IEnumerable<FileInfo> GetProjectFiles()
-        {
-            return Root.GetFiles(TestAssetInfo.ProjectFilePattern, SearchOption.AllDirectories);
-        }
+        private IEnumerable<FileInfo> GetProjectFiles() => Root.GetFiles(TestAssetInfo.ProjectFilePattern, SearchOption.AllDirectories);
 
         private void Restore(FileInfo projectFile)
         {

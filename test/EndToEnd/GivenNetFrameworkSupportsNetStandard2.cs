@@ -1,10 +1,7 @@
 ﻿using FluentAssertions;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace EndToEnd
 {

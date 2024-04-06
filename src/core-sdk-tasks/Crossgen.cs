@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Build.Framework;
@@ -63,12 +61,12 @@ namespace Microsoft.DotNet.Build.Tasks
 
             if (toolResult)
             {
-                var files = System.IO.Directory.GetFiles(Path.GetDirectoryName(TempOutputPath));
-                var dest = Path.GetDirectoryName(DestinationPath);
+                var files = Directory.GetFiles(Path.GetDirectoryName(TempOutputPath));
+                var destination = Path.GetDirectoryName(DestinationPath);
                 // Copy both dll and pdb files to the destination folder
                 foreach(var file in files)
                 {
-                    File.Copy(file, Path.Combine(dest, Path.GetFileName(file)), overwrite: true);
+                    File.Copy(file, Path.Combine(destination, Path.GetFileName(file)), overwrite: true);
                     // Delete file in temp
                     File.Delete(file);
                 }
@@ -83,22 +81,13 @@ namespace Microsoft.DotNet.Build.Tasks
             return toolResult;
         }
 
-        protected override string ToolName
-        {
-            get { return "crossgen2"; }
-        }
+        protected override string ToolName => "crossgen2";
 
-        protected override MessageImportance StandardOutputLoggingImportance
-        {
-            // Default is low, but we want to see output at normal verbosity.
-            get { return MessageImportance.Normal; }
-        }
+        // Default is low, but we want to see output at normal verbosity.
+        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.Normal;
 
-        protected override MessageImportance StandardErrorLoggingImportance
-        {
-            // This turns stderr messages into msbuild errors below.
-            get { return MessageImportance.High; }
-        }
+        // This turns stderr messages into msbuild errors below.
+        protected override MessageImportance StandardErrorLoggingImportance => MessageImportance.High;
 
         protected override void LogEventsFromTextOutput(string singleLine, MessageImportance messageImportance)
         {
@@ -124,56 +113,21 @@ namespace Microsoft.DotNet.Build.Tasks
             }
         }
 
-        protected override string GenerateFullPathToTool()
-        {
-            if (CrossgenPath != null)
-            {
-                return CrossgenPath;
-            }
+        protected override string GenerateFullPathToTool() => CrossgenPath ?? "crossgen2";
 
-            return "crossgen2";
-        }
+        protected override string GenerateCommandLineCommands() => $"{GetInPath()} {GetOutPath()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
 
-        protected override string GenerateCommandLineCommands()
-        {
-            return $"{GetInPath()} {GetOutPath()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
-        }
+        private string GetArchitecture() => $"--targetarch {Architecture}";
 
-        private string GetArchitecture()
-        {
-            return $"--targetarch {Architecture}";
-        }
+        private string GetCreateSymbols() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap";
 
-        private string GetCreateSymbols()
-        {
-            var option = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap";
-            return $"{option}";
-        }
+        private string GetInPath() => $"\"{SourceAssembly}\"";
 
-        private string GetReadyToRun()
-        {
-            if (ReadyToRun)
-            {
-                return "-readytorun";
-            }
-
-            return null;
-        }
-
-        private string GetInPath()
-        {
-            return $"\"{SourceAssembly}\"";
-        }
-        
-        private string GetOutPath()
-        {
-            return $"-o \"{TempOutputPath}\"";
-        }
+        private string GetOutPath() => $"-o \"{TempOutputPath}\"";
 
         private string GetPlatformAssemblyPaths()
         {
-            var platformAssemblyPaths = String.Empty;
-
+            var platformAssemblyPaths = string.Empty;
             if (PlatformAssemblyPaths != null)
             {
                 foreach (var excludeTaskItem in PlatformAssemblyPaths)
@@ -184,15 +138,7 @@ namespace Microsoft.DotNet.Build.Tasks
             
             return platformAssemblyPaths;
         }
-        
-        private string GetMissingDependenciesOk()
-        {
-            return "-MissingDependenciesOK";
-        }
 
-        protected override void LogToolCommand(string message)
-        {
-            base.LogToolCommand($"{base.GetWorkingDirectory()}> {message}");
-        }
+        protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
     }
 }

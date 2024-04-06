@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using Microsoft.Build.Utilities;
 using Microsoft.Build.Framework;
 using System.IO;
-using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -116,32 +115,29 @@ namespace Microsoft.DotNet.Build.Tasks
             //      --verbose : Set verbose output for FPM tool     --Static  
             //      <All folder mappings> : Add all the folder mappings for package_root, docs, man pages   --Static
 
-            var parameters = new List<string>();
-            parameters.Add("-s dir");
-            parameters.Add("-t rpm");
-            parameters.Add(string.Concat("-n ", configJson.Package_Name));
-            parameters.Add(string.Concat("-v ", package_version));
-            parameters.Add(string.Concat("-a ", configJson.Control.Architecture));
+            var parameters = new List<string>
+            {
+                "-s dir",
+                "-t rpm",
+                string.Concat("-n ", configJson.Package_Name),
+                string.Concat("-v ", package_version),
+                string.Concat("-a ", configJson.Control.Architecture)
+            };
 
             // Build the list of dependencies as -d <dep1> -d <dep2>
             if (configJson.Rpm_Dependencies != null)
             {
                 foreach (RpmDependency rpmdep in configJson.Rpm_Dependencies)
                 {
-                    string dependency = "";
                     if (rpmdep.Package_Name != "")
                     {
                         // If no version is specified then the dependency is just the package without >= check
-                        if (rpmdep.Package_Version == "")
-                        {
-                            dependency = rpmdep.Package_Name;
-                        }
-                        else
-                        {
-                            dependency = string.Concat(rpmdep.Package_Name, " >= ", rpmdep.Package_Version);
-                        }
+                        string dependency = rpmdep.Package_Version != "" ?
+                            string.Concat(rpmdep.Package_Name, " >= ", rpmdep.Package_Version) :
+                            rpmdep.Package_Name;
+
+                        parameters.Add(string.Concat("-d ", EscapeArg(dependency)));
                     }
-                    if (dependency != "") parameters.Add(string.Concat("-d ", EscapeArg(dependency)));
                 }
             }
 
@@ -183,14 +179,11 @@ namespace Microsoft.DotNet.Build.Tasks
 
             // Map all the payload directories as they need to install on the system 
             if (configJson.Install_Root != null)
-                parameters.Add(string.Concat(Path.Combine(InputDir, "package_root/="),
-                    configJson.Install_Root)); // Package Files
+                parameters.Add(string.Concat(Path.Combine(InputDir, "package_root/="), configJson.Install_Root)); // Package Files
             if (configJson.Install_Man != null)
-                parameters.Add(string.Concat(Path.Combine(InputDir, "docs", "host/="),
-                    configJson.Install_Man)); // Man Pages
+                parameters.Add(string.Concat(Path.Combine(InputDir, "docs", "host/="), configJson.Install_Man)); // Man Pages
             if (configJson.Install_Doc != null)
-                parameters.Add(string.Concat(Path.Combine(InputDir, "templates", "copyright="),
-                    configJson.Install_Doc)); // CopyRight File
+                parameters.Add(string.Concat(Path.Combine(InputDir, "templates", "copyright="), configJson.Install_Doc)); // CopyRight File
 
             return string.Join(" ", parameters);
         }
@@ -220,14 +213,12 @@ namespace Microsoft.DotNet.Build.Tasks
                 {
                     sb.Append('\\', 2 * backslashCount);
                 }
-
                 // Escape any preceding backslashes and the quote
                 else if (arg[i] == '"')
                 {
                     sb.Append('\\', (2 * backslashCount) + 1);
                     sb.Append('"');
                 }
-
                 // Output any consumed backslashes and the character
                 else
                 {
@@ -255,6 +246,7 @@ namespace Microsoft.DotNet.Build.Tasks
             {
                 return true;
             }
+
             return false;
         }
     }

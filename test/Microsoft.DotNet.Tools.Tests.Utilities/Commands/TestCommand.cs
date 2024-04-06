@@ -6,9 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
@@ -48,10 +45,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             CurrentProcess.KillTree();
         }
 
-        public virtual CommandResult Execute(string args = "")
-        {
-            return Task.Run(async () => await ExecuteAsync(args)).Result;
-        }
+        public virtual CommandResult Execute(string args = "") => Task.Run(async () => await ExecuteAsync(args)).Result;
 
         public async virtual Task<CommandResult> ExecuteAsync(string args = "")
         {
@@ -77,9 +71,9 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 
         private async Task<CommandResult> ExecuteAsyncInternal(string executable, string args)
         {
-            var stdOut = new List<String>();
+            var stdOut = new List<string>();
 
-            var stdErr = new List<String>();
+            var stdErr = new List<string>();
 
             CurrentProcess = CreateProcess(executable, args); 
 
@@ -124,8 +118,8 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             return new CommandResult(
                 CurrentProcess.StartInfo,
                 CurrentProcess.ExitCode,
-                String.Join(System.Environment.NewLine, stdOut),
-                String.Join(System.Environment.NewLine, stdErr));
+                string.Join(System.Environment.NewLine, stdOut),
+                string.Join(System.Environment.NewLine, stdErr));
         }
 
         private Process CreateProcess(string executable, string args)
@@ -194,14 +188,12 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             }
         }
 
-        private string GetBaseDirectory()
-        {
+        private string GetBaseDirectory() =>
 #if NET451
-            return AppDomain.CurrentDomain.BaseDirectory;
+            AppDomain.CurrentDomain.BaseDirectory;
 #else
-            return AppContext.BaseDirectory;
+            AppContext.BaseDirectory;
 #endif
-        }
 
         private void ResolveCommand(ref string executable, ref string args)
         {

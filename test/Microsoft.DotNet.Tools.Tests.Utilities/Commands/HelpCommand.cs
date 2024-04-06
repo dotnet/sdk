@@ -7,19 +7,10 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 {
     public sealed class HelpCommand : DotnetCommand
     {
-        public override CommandResult Execute(string args = "")
-        {
-            return base.Execute(AppendHelp(args));
-        }
+        public override CommandResult Execute(string args = "") => base.Execute(AppendHelp(args));
 
-        public override CommandResult ExecuteWithCapturedOutput(string args = "")
-        {
-            return base.ExecuteWithCapturedOutput(AppendHelp(args));
-        }
+        public override CommandResult ExecuteWithCapturedOutput(string args = "") => base.ExecuteWithCapturedOutput(AppendHelp(args));
 
-        private string AppendHelp(string args)
-        {
-            return args = $"help {args}";
-        }
+        private string AppendHelp(string args) => args = $"help {args}";
     }
 }

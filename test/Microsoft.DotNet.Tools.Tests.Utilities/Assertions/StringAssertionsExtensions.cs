@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
@@ -10,10 +9,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 {
     public static class StringAssertionsExtensions
     {
-        private static string NormalizeLineEndings(string s)
-        {
-            return s.Replace("\r\n", "\n");
-        }
+        private static string NormalizeLineEndings(string s) => s.Replace("\r\n", "\n");
 
         public static AndConstraint<StringAssertions> BeVisuallyEquivalentTo(this StringAssertions assertions, string expected, string because = "", params object[] becauseArgs)
         {

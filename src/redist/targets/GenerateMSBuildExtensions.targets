@@ -1,4 +1,5 @@
 <Project>
+
   <PropertyGroup>
       <MSBuildExtensionsLayoutDirectory>$(BaseOutputPath)$(Configuration)\MSBuildExtensionsLayout\</MSBuildExtensionsLayoutDirectory>
 
@@ -13,9 +14,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ExtensionPackageToRestore Include="$(MSBuildExtensionsPackageName)" Version="$(MicrosoftNETBuildExtensionsPackageVersion)"/>
-    <ExtensionPackageToRestore Include="$(NETStandardLibraryNETFrameworkPackageName)" Version="$(CLI_NETStandardLibraryNETFrameworkVersion)"/>
-    <ExtensionPackageToRestore Include="$(DotNetDeploymentReleasesPackageName)" Version="$(MicrosoftDeploymentDotNetReleasesVersion)"/>
+    <ExtensionPackageToRestore Include="$(MSBuildExtensionsPackageName)" Version="$(MicrosoftNETBuildExtensionsPackageVersion)" />
+    <ExtensionPackageToRestore Include="$(NETStandardLibraryNETFrameworkPackageName)" Version="$(CLI_NETStandardLibraryNETFrameworkVersion)" />
+    <ExtensionPackageToRestore Include="$(DotNetDeploymentReleasesPackageName)" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
   </ItemGroup>
 
   <!-- Restore msbuild extensions via PackageReference -->
@@ -29,14 +30,14 @@
            package and inserted into Visual Studio -->
       <VSMSBuildExtensionsContent Include="$(MSBuildExtensionsNuPkgPath)\msbuildExtensions\**\*.*"
                                   Exclude="$(MSBuildExtensionsNuPkgPath)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\net*\**"
-                                  DeploymentSubpath="msbuildExtensions/"/>
+                                  DeploymentSubpath="msbuildExtensions/" />
 
       <!-- Don't include .NET Core MS.NET.Build.Extensions tasks in Full Framework MSBuild layout -->
       <VSMSBuildExtensionsContent Remove="$(MSBuildExtensionsNuPkgPath)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\tools\netcoreapp*\**" />
       <VSMSBuildExtensionsContent Remove="$(MSBuildExtensionsNuPkgPath)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\tools\net*.*\**" />
 
       <VSMSBuildExtensionsContent Include="$(MSBuildExtensionsNuPkgPath)\msbuildExtensions-ver\**\*.*"
-                                  DeploymentSubpath="msbuildExtensions-ver/"/>
+                                  DeploymentSubpath="msbuildExtensions-ver/" />
 
       <!-- Don't include .NET Core targets in the Full Framework MSBuild layout-->
       <VSMSBuildExtensionsContent Remove="$(MSBuildExtensionsNuPkgPath)\msbuildExtensions-ver\SolutionFile\**" />
@@ -58,4 +59,5 @@
 
     <Copy SourceFiles="@(VSMSBuildExtensionsContent)" DestinationFiles="%(VSMSBuildExtensionsContent.DestinationPath)" />
   </Target>
+
 </Project>

@@ -47,13 +47,10 @@ namespace Microsoft.DotNet.Build.Tasks
 
             var retVal = true;
 
-            if (Directory.Exists(DestinationDirectory))
+            if (Directory.Exists(DestinationDirectory) && CleanDestination == true)
             {
-                if (CleanDestination == true)
-                {
-                    Log.LogMessage(MessageImportance.Low, "'{0}' already exists, trying to delete before unzipping...", DestinationDirectory);
-                    Directory.Delete(DestinationDirectory, recursive: true);
-                }
+                Log.LogMessage(MessageImportance.Low, "'{0}' already exists, trying to delete before unzipping...", DestinationDirectory);
+                Directory.Delete(DestinationDirectory, recursive: true);
             }
 
             if (!File.Exists(SourceArchive))
@@ -178,35 +175,14 @@ namespace Microsoft.DotNet.Build.Tasks
             return retVal;
         }
 
-        private bool ShouldExtractItem(string path)
-        {
-            if (DirectoriesToCopy != null)
-            {
-                return DirectoriesToCopy.Any(p => path.StartsWith(p.ItemSpec));
+        private bool ShouldExtractItem(string path) => DirectoriesToCopy?.Any(p => path.StartsWith(p.ItemSpec)) ?? false;
 
-            }
+        protected override string ToolName => "tar";
 
-            return false;
-        }
+        protected override MessageImportance StandardOutputLoggingImportance => MessageImportance.High;
 
-        protected override string ToolName
-        {
-            get { return "tar"; }
-        }
+        protected override string GenerateFullPathToTool() => "tar";
 
-        protected override MessageImportance StandardOutputLoggingImportance
-        {
-            get { return MessageImportance.High; } // or else the output doesn't get logged by default
-        }
-
-        protected override string GenerateFullPathToTool()
-        {
-            return "tar";
-        }
-
-        protected override string GenerateCommandLineCommands()
-        {
-            return $"xf {SourceArchive} -C {DestinationDirectory}";
-        }
+        protected override string GenerateCommandLineCommands() => $"xf {SourceArchive} -C {DestinationDirectory}";
     }
 }

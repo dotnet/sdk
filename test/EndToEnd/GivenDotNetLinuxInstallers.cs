@@ -31,8 +31,7 @@ namespace Microsoft.DotNet.Tests.EndToEnd
             }
         }
 
-        private void DebianPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(string installerFile)
-        {
+        private void DebianPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(string installerFile) =>
             // Example output:
 
             // $ dpkg --info dotnet-sdk-2.1.105-ubuntu-x64.deb
@@ -58,10 +57,8 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 .Should().Pass()
                     .And.HaveStdOutMatching(@"Depends:.*\s?dotnet-runtime-\d+(\.\d+){2}")
                     .And.HaveStdOutMatching(@"Depends:.*\s?aspnetcore-store-\d+(\.\d+){2}");
-        }
 
-        private void RpmPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(string installerFile)
-        {
+        private void RpmPackageHasDependencyOnAspNetCoreStoreAndDotnetRuntime(string installerFile) =>
             // Example output:
 
             // $ rpm -qpR dotnet-sdk-2.1.105-rhel-x64.rpm
@@ -78,6 +75,5 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 .Should().Pass()
                     .And.HaveStdOutMatching(@"dotnet-runtime-\d+(\.\d+){2} >= \d+(\.\d+){2}")
                     .And.HaveStdOutMatching(@"aspnetcore-store-\d+(\.\d+){2} >= \d+(\.\d+){2}");
-        }
     }
 }

@@ -28,7 +28,6 @@ namespace Microsoft.DotNet.Cli.Build
         [Required]
         public int CombinedBuildNumberAndRevision { get; set; }
 
-
         //  Should be the BundledTemplates with BundledTemplateInstallPath metadata set to the value calculated for that group
         [Output]
         public ITaskItem [] BundledTemplatesWithInstallPaths { get; set; }
@@ -39,11 +38,10 @@ namespace Microsoft.DotNet.Cli.Build
         //  TemplatesMajorMinorVersion: 6.0 (from BundledTemplateMajorMinorVersion from group)
         //  InstallerUpgradeCode: Guid generated using GenerateGuidFromName, combining TemplateBaseFilename, FullNugetVersion, ProductMonikerRid, and InstallerExtension
         //  MSIVersion: Result of calling GenerateMsiVersionFromFullVersion logic with CombinedBuildNumberAndRevision and BundledTemplateMajorMinorPatchVersion from template group
-
         [Output]
         public ITaskItem [] TemplatesComponents { get; set; }
 
-        private const int _patchVersionResetOffset = 1;
+        private const int PatchVersionResetOffset = 1;
 
         public override bool Execute()
         {
@@ -62,20 +60,20 @@ namespace Microsoft.DotNet.Cli.Build
             BundledTemplatesWithInstallPaths = BundledTemplates.Select(t =>
             {
                 var templateWithInstallPath = new TaskItem(t);
-                templateWithInstallPath.SetMetadata("BundledTemplateInstallPath", groups[t.GetMetadata("TemplateFrameworkVersion")].BundledTemplateInstallPath);
+                templateWithInstallPath.SetMetadata("BundledTemplateInstallPath", groups[t.GetMetadata("TemplateFrameworkVersion")].InstallPath);
                 return templateWithInstallPath;
             }).ToArray();
 
             TemplatesComponents = groups.Select(g =>
             {
-                string majorMinorWithoutDots = g.Value.BundledTemplateMajorMinorVersion.Replace(".", "");
+                string majorMinorWithoutDots = g.Value.MajorMinorVersion.Replace(".", "");
                 var componentItem = new TaskItem($"NetCore{majorMinorWithoutDots}Templates");
                 var templateBaseFilename = $"dotnet-{majorMinorWithoutDots}templates";
                 componentItem.SetMetadata("TemplateBaseFilename", templateBaseFilename);
-                componentItem.SetMetadata("TemplatesMajorMinorVersion", g.Value.BundledTemplateMajorMinorVersion);
+                componentItem.SetMetadata("TemplatesMajorMinorVersion", g.Value.MajorMinorVersion);
                 var installerUpgradeCode = GenerateGuidFromName.GenerateGuid(string.Join("-", templateBaseFilename, FullNugetVersion, ProductMonikerRid) + InstallerExtension).ToString().ToUpper();
                 componentItem.SetMetadata("InstallerUpgradeCode", installerUpgradeCode);
-                componentItem.SetMetadata("MSIVersion", GenerateMsiVersionFromFullVersion.GenerateMsiVersion(CombinedBuildNumberAndRevision, g.Value.BundledTemplateMajorMinorPatchVersion));
+                componentItem.SetMetadata("MSIVersion", GenerateMsiVersionFromFullVersion.GenerateMsiVersion(CombinedBuildNumberAndRevision, g.Value.MajorMinorPatchVersion));
 
                 var brandName = System.Version.Parse(g.Key).Major >= 5 ?
                     $"Microsoft .NET {g.Key} Templates" :
@@ -89,24 +87,20 @@ namespace Microsoft.DotNet.Cli.Build
             return true;
         }
 
-        public static
-            (string BundledTemplateInstallPath,
-            string BundledTemplateMajorMinorVersion,
-			string BundledTemplateMajorMinorPatchVersion) 
-            Calculate(string aspNetCorePackageVersionTemplate)
+        public static BundledTemplate Calculate(string aspNetCorePackageVersionTemplate)
         {
             var aspNetCoreTemplate = NuGetVersion.Parse(aspNetCorePackageVersionTemplate);
-
             NuGetVersion baseMajorMinorPatch = GetBaseMajorMinorPatch(aspNetCoreTemplate);
-
             string bundledTemplateInstallPath = aspNetCoreTemplate.IsPrerelease
                 ? $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}-{aspNetCoreTemplate.Release}"
                 : $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}";
 
-            return (
-                bundledTemplateInstallPath,
-                $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}", 
-                $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}");
+            return new BundledTemplate
+            {
+                InstallPath = bundledTemplateInstallPath,
+                MajorMinorVersion = $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}",
+                MajorMinorPatchVersion = $"{baseMajorMinorPatch.Major}.{baseMajorMinorPatch.Minor}.{baseMajorMinorPatch.Patch}"
+            };
         }
 
         private static NuGetVersion GetBaseMajorMinorPatch(NuGetVersion aspNetCoreTemplate)
@@ -116,15 +110,17 @@ namespace Microsoft.DotNet.Cli.Build
             // more in the above bug's detail.
             // There is no non-deterministic existing ComponentId under Major version 5.
             // so only apply the patch bump when below 5
-
-            int basePatch =
-                aspNetCoreTemplate.Major < 5
-                ? aspNetCoreTemplate.Patch + _patchVersionResetOffset
-                : aspNetCoreTemplate.Patch;
-
-            var baseMajorMinorPatch = new NuGetVersion(aspNetCoreTemplate.Major, aspNetCoreTemplate.Minor,
-                basePatch);
-            return baseMajorMinorPatch;
+            int basePatch = aspNetCoreTemplate.Major < 5 ?
+                aspNetCoreTemplate.Patch + PatchVersionResetOffset :
+                aspNetCoreTemplate.Patch;
+            return new NuGetVersion(aspNetCoreTemplate.Major, aspNetCoreTemplate.Minor, basePatch);
         }
+    }
+
+    public class BundledTemplate
+    {
+        public string InstallPath { get; set; }
+        public string MajorMinorVersion { get; set; }
+        public string MajorMinorPatchVersion { get; set; }
     }
 }

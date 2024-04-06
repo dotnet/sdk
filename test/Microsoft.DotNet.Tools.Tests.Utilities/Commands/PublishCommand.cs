@@ -21,10 +21,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             return this;
         }
 
-        public PublishCommand WithFramework(NuGetFramework framework)
-        {
-            return WithFramework(framework.GetShortFolderName());
-        }
+        public PublishCommand WithFramework(NuGetFramework framework) => WithFramework(framework.GetShortFolderName());
 
         public PublishCommand WithOutput(string output)
         {
@@ -62,15 +59,12 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
             return base.ExecuteWithCapturedOutput(args);
         }
 
-        private string BuildArgs()
-        {
-            return string.Join(" ", 
+        private string BuildArgs() => string.Join(" ",
                 FrameworkOption,
                 OutputOption,
                 TargetOption,
                 RuntimeOption,
                 SelfContainedOption);
-        }
 
         private string FrameworkOption => string.IsNullOrEmpty(_framework) ? "" : $"-f {_framework}";
 

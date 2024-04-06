@@ -1,5 +1,6 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
-   <PropertyGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
     <TargetFramework>$(CoreSdkTargetFramework)</TargetFramework>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
@@ -11,22 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Update="Microsoft.NETCore.App" 
-                        TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)"
-                        RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
-                        />
+    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
 
-    <ProjectReference Include="..\SdkResolver\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <ProjectReference Include="..\VSTemplateLocator\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
-     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="targets\DownloadPackage.csproj" />
-    <None Include="targets\LayoutTool.csproj" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
   </ItemGroup>
 
   <Import Project="targets\BuildCoreSdkTasks.targets" />
@@ -42,7 +35,6 @@
   <Import Project="targets\GenerateLayout.targets" />
   <Import Project="targets\GenerateMSBuildExtensions.targets" />
   <Import Project="targets\FileExtensions.targets" />
-  
   <Import Project="targets\GenerateArchives.targets" />
   <Import Project="targets\GenerateMSIs.targets" />
   <Import Project="targets\LinuxNativeInstallerDependencyVersions.targets" />
@@ -51,4 +43,5 @@
   <Import Project="targets\GeneratePKG.targets" />
   <Import Project="targets\GenerateInstallers.targets" />
   <Import Project="targets\Badge.targets" />
+
 </Project>

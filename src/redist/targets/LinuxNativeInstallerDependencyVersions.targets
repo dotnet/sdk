@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Project>
+
   <Target Name="CalculateLinuxNativeInstallerDependencyVersions">
     <GetLinuxNativeInstallerDependencyVersions PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)">
       <Output TaskParameter="VersionWithTilde" PropertyName="MicrosoftNETCoreAppRuntimePackageVersionWithTilde" />
@@ -31,4 +31,5 @@
       <Output TaskParameter="MajorMinorPatchVersion" PropertyName="NetStandardTargetingPackMajorMinorPatchVersion" />
     </GetLinuxNativeInstallerDependencyVersions>
   </Target>
+
 </Project>
