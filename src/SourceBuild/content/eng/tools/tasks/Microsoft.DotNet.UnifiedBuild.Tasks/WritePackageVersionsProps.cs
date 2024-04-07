@@ -209,7 +209,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             using (var outStream = File.Open(OutputPath, FileMode.Create))
             using (var sw = new StreamWriter(outStream, new UTF8Encoding(false)))
             {
-                sw.WriteLine(@"<?xml version=""1.0"" encoding=""utf-8""?>");
                 sw.WriteLine(@"<Project ToolsVersion=""14.0"" xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">");
 
                 WriteVersionEntries(sw, packageElementsToWrite, "packages");
