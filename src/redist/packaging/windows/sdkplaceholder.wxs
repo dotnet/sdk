@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
   <?include "Variables.wxi" ?>
   <Product Id="*" Name="$(var.ProductName) from Visual Studio" Language="$(var.ProductLanguage)" Version="$(var.SDKBundleVersion)" Manufacturer="$(var.Manufacturer)" UpgradeCode="$(var.UpgradeCode)">

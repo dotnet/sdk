@@ -95,8 +95,7 @@ namespace Microsoft.DotNet.TestFramework
             var newNuGetConfig = Root.GetFile("NuGet.Config");
             externalRestoreSources = externalRestoreSources ?? string.Empty;
 
-            var content = @"<?xml version=""1.0"" encoding=""utf-8""?>
-            <configuration>
+            var content = @"<configuration>
               <packageSources>
                 <add key=""dotnet-core"" value=""https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json"" />
                 <add key=""test-packages"" value=""$fullpath$"" />
