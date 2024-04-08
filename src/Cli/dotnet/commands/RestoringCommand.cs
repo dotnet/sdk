@@ -19,13 +19,13 @@ namespace Microsoft.DotNet.Tools
             bool noRestore,
             string msbuildPath = null,
             string userProfileDir = null,
-            bool advertiseWorkloadUpdates = true)
+            bool? advertiseWorkloadUpdates = null)
             : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath)
         {
             userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
             Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
             SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
-            AdvertiseWorkloadUpdates = advertiseWorkloadUpdates;
+            AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
 
             if (!noRestore)
             {

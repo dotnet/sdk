@@ -456,12 +456,13 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
             var finalPath = Path.Combine(outputPath, "AppWithPackageAndP2PReference.staticwebassets.runtime.json");
             new FileInfo(finalPath).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
             AssertManifest(
-                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json"))),
+                manifest,
                 LoadBuildManifest());
 
             AssertBuildAssets(
-                StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json"))),
+                manifest,
                 outputPath,
                 intermediateOutputPath);
 
