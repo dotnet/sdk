@@ -27,10 +27,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public ToolInstallLocalInstaller(
             ParseResult parseResult,
+            PackageId? packageId = null,
             IToolPackageDownloader toolPackageDownloader = null)
         {
             _parseResult = parseResult;
-            _packageId = new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
+            _packageId = packageId ?? new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
             _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             _sources = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);

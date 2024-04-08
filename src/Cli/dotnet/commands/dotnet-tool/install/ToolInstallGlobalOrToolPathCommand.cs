@@ -61,7 +61,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             INuGetPackageDownloader nugetPackageDownloader = null)
             : base(parseResult)
         {
-            // _packageId = new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
             _packageId = packageId ?? new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
             _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
