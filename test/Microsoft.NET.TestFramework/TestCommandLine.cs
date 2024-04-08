@@ -29,9 +29,9 @@ namespace Microsoft.NET.TestFramework
 
         public string MsbuildAdditionalSdkResolverFolder { get; set; }
 
-        public List<(string name, string value)> EnvironmentVariables { get; set; }
+        public List<(string name, string value)> EnvironmentVariables { get; set; } = [];
 
-        public List<string> TestConfigFiles { get; private set; } = new List<string>();
+        public List<string> TestConfigFiles { get; private set; } = [];
 
         public HashSet<string> TestListsToRun { get; private set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
