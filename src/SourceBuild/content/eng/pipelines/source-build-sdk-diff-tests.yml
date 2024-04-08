@@ -4,8 +4,18 @@ schedules:
   branches:
     include:
     - main
-    - release/*.0.1xx*
-    - internal/release/*.0.1xx*
+
+# Relies on dotnet-source-build being in the same repo as this pipeline
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/process/pipeline-triggers?view=azure-devops#branch-considerations
+resources:
+  pipelines:
+  - pipeline: dotnet-source-build
+    source: dotnet-source-build
+    trigger:
+      branches:
+        include:
+          - release/*.0.1xx*
+          - internal/release/*.0.1xx*
 
 pr: none
 trigger: none
