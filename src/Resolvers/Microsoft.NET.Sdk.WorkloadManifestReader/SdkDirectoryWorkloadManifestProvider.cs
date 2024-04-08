@@ -151,16 +151,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var installState = InstallStateContents.FromPath(installStateFilePath);
                     if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                     {
-                        if (availableWorkloadSets.TryGetValue(installState.WorkloadVersion!, out _workloadSet))
-                        {
-                            _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);
-                            _installStateFilePath = installStateFilePath;
-                        }
-                        else
+                        if (!availableWorkloadSets.TryGetValue(installState.WorkloadVersion!, out _workloadSet))
                         {
                             throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
                         }
                     }
+
+                    //  Note: It is possible here to have both a workload set and loose manifests listed in the install state.  This might happen if there is a
+                    //  third-party workload manifest installed that's not part of the workload set
+                    _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);
+                    _installStateFilePath = installStateFilePath;
                 }
             }
 

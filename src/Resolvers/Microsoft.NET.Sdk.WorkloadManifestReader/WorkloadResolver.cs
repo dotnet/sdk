@@ -113,8 +113,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             _manifestProvider.RefreshWorkloadManifests();
             _manifests.Clear();
-            LoadManifestsFromProvider(_manifestProvider);
-            ComposeWorkloadManifests();
+            _initializedManifests = false;
+            InitializeManifests();
         }
 
         public string? GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
@@ -646,6 +646,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
 
             overlayResolver.ComposeWorkloadManifests();
+
+            //  Because we're injecting additional manifests, InitializeManifests isn't used for the overlay resolver
+            overlayResolver._initializedManifests = true;
 
             return overlayResolver;
         }

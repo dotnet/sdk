@@ -326,8 +326,10 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var parseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "install", mockWorkloadId });
             var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver, userProfileDir: testDirectory);
 
-            var exceptionThrown = Assert.Throws<GracefulException>(() => new WorkloadInstallCommand(parseResult, reporter: _reporter, workloadResolverFactory, workloadInstaller: installer,
-                nugetPackageDownloader: nugetDownloader, workloadManifestUpdater: manifestUpdater));
+            var command = new WorkloadInstallCommand(parseResult, reporter: _reporter, workloadResolverFactory, workloadInstaller: installer,
+                nugetPackageDownloader: nugetDownloader, workloadManifestUpdater: manifestUpdater);
+
+            var exceptionThrown = Assert.Throws<GracefulException>(() => command.Execute());
             exceptionThrown.Message.Should().Be(String.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadNotSupportedOnPlatform, mockWorkloadId));
         }
 
