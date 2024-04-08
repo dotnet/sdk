@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _availableWorkloads = availableWorkloads;
         }
 
-        public IEnumerable<WorkloadResolver.WorkloadInfo> GetAvailableWorkloads(bool error = true) => _availableWorkloads;
+        public IEnumerable<WorkloadResolver.WorkloadInfo> GetAvailableWorkloads() => _availableWorkloads;
 
         public IEnumerable<WorkloadResolver.PackInfo> GetInstalledWorkloadPacksOfKind(WorkloadPackKind kind) => throw new NotImplementedException();
         public IEnumerable<WorkloadPackId> GetPacksInWorkload(WorkloadId workloadId) => Array.Empty<WorkloadPackId>();
@@ -25,10 +25,10 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         public WorkloadResolver.PackInfo TryGetPackInfo(WorkloadPackId packId) => throw new NotImplementedException();
         public bool IsPlatformIncompatibleWorkload(WorkloadId workloadId) => throw new NotImplementedException();
         public string GetManifestVersion(string manifestId) => throw new NotImplementedException();
-        public IEnumerable<WorkloadManifestInfo> GetInstalledManifests(bool error = true) => throw new NotImplementedException();
+        public IEnumerable<WorkloadManifestInfo> GetInstalledManifests() => throw new NotImplementedException();
         public IWorkloadResolver CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider) => throw new NotImplementedException();
         public string GetSdkFeatureBand() => "12.0.400";
-        public string GetWorkloadVersion(bool error = true) => "12.0.400.2";
+        public string GetWorkloadVersion() => "12.0.400.2";
         public IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads) => throw new NotImplementedException();
         WorkloadResolver IWorkloadResolver.CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider) => throw new NotImplementedException();
         WorkloadManifest IWorkloadResolver.GetManifestFromWorkload(WorkloadId workloadId) => throw new NotImplementedException();

@@ -29,9 +29,9 @@ namespace ManifestReaderTests
 
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
 
-        public void RefreshWorkloadManifests(bool error = true) { }
+        public void RefreshWorkloadManifests() { }
 
-        public IEnumerable<ReadableWorkloadManifest> GetManifests(bool initializeManifests = true)
+        public IEnumerable<ReadableWorkloadManifest> GetManifests()
             {
                 foreach ((var id, var path, var featureBand) in _manifests)
                 {
@@ -48,6 +48,6 @@ namespace ManifestReaderTests
             }
 
         public string GetSdkFeatureBand() => SdkFeatureBand.ToString();
-        public string GetWorkloadVersion(bool error = true) => SdkFeatureBand.ToString() + ".2";
+        public string GetWorkloadVersion() => SdkFeatureBand.ToString() + ".2";
     }
 }
