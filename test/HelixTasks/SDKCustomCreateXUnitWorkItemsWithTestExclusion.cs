@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                 }
                 else
                 {
-                    command = $"{driver} [env:HELIX_WORK_ITEM_TIMEOUT={timeout}] exec {assemblyName} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
+                    command = $"{driver} exec {assemblyName} -e HELIX_WORK_ITEM_TIMEOUT={timeout} {testExecutionDirectory} {msbuildAdditionalSdkResolverFolder} " +
                               $"{(XUnitArguments != null ? " " + XUnitArguments : "")} -xml testResults.xml {assemblyPartitionInfo.ClassListArgumentString} {arguments}";
                 }
 
