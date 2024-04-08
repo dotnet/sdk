@@ -84,11 +84,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _manifestProvider = manifestProvider;
         }
 
-        private void InitializeManifests(bool error = true)
+        private void InitializeManifests()
         {
             if (!_initializedManifests)
             {
-                LoadManifestsFromProvider(_manifestProvider, error);
+                LoadManifestsFromProvider(_manifestProvider);
                 ComposeWorkloadManifests();
                 _initializedManifests = true;
             }
@@ -117,11 +117,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             ComposeWorkloadManifests();
         }
 
-        public string? GetWorkloadVersion(bool error = true) => _manifestProvider.GetWorkloadVersion(error: error);
+        public string? GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
 
-        private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider, bool error = true)
+        private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider)
         {
-            foreach (var readableManifest in manifestProvider.GetManifests(initializeManifests: error))
+            foreach (var readableManifest in manifestProvider.GetManifests())
             {
                 using (Stream manifestStream = readableManifest.OpenManifestStream())
                 using (Stream? localizationStream = readableManifest.OpenLocalizationStream())
@@ -550,12 +550,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <summary>
         /// Returns the list of workloads available (installed or not) on the current platform, defined by the manifests on disk
         /// </summary>
-        public IEnumerable<WorkloadInfo> GetAvailableWorkloads(bool error = true)
-            => GetAvailableWorkloadDefinitions(error).Select(w => new WorkloadInfo(w.workload.Id, w.workload.Description));
+        public IEnumerable<WorkloadInfo> GetAvailableWorkloads()
+            => GetAvailableWorkloadDefinitions().Select(w => new WorkloadInfo(w.workload.Id, w.workload.Description));
 
-        private IEnumerable<(WorkloadDefinition workload, WorkloadManifest manifest)> GetAvailableWorkloadDefinitions(bool error = true)
+        private IEnumerable<(WorkloadDefinition workload, WorkloadManifest manifest)> GetAvailableWorkloadDefinitions()
         {
-            InitializeManifests(error);
+            InitializeManifests();
             foreach ((WorkloadId _, (WorkloadDefinition workload, WorkloadManifest manifest)) in _workloads)
             {
                 if (!workload.IsAbstract && IsWorkloadPlatformCompatible(workload, manifest) && !IsWorkloadImplicitlyAbstract(workload, manifest))
@@ -751,9 +751,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             throw new Exception($"Manifest with id {manifestId} does not exist.");
         }
             
-        public IEnumerable<WorkloadManifestInfo> GetInstalledManifests(bool error = true)
+        public IEnumerable<WorkloadManifestInfo> GetInstalledManifests()
         {
-            InitializeManifests(error);
+            InitializeManifests();
             return _manifests.Select(t => t.Value.info);
         }
 
@@ -766,11 +766,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _sdkFeatureBand = sdkFeatureBand;
             }
 
-            public void RefreshWorkloadManifests(bool error = true) { }
+            public void RefreshWorkloadManifests() { }
             public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
-            public IEnumerable<ReadableWorkloadManifest> GetManifests(bool initializeManifests = true) => Enumerable.Empty<ReadableWorkloadManifest>();
+            public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
-            public string? GetWorkloadVersion(bool error = true) => _sdkFeatureBand.ToString() + ".2";
+            public string? GetWorkloadVersion() => _sdkFeatureBand.ToString() + ".2";
         }
     }
 

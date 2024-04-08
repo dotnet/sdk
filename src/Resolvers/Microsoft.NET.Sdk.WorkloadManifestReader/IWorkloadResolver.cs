@@ -14,12 +14,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <returns>Deduplicated enumeration of workload infos.</returns>
         IEnumerable<WorkloadResolver.WorkloadInfo> GetExtendedWorkloads(IEnumerable<WorkloadId> workloadIds);
         ISet<WorkloadResolver.WorkloadInfo>? GetWorkloadSuggestionForMissingPacks(IList<WorkloadPackId> packId, out ISet<WorkloadPackId> unsatisfiablePacks);
-        IEnumerable<WorkloadResolver.WorkloadInfo> GetAvailableWorkloads(bool error = true);
+        IEnumerable<WorkloadResolver.WorkloadInfo> GetAvailableWorkloads();
         bool IsPlatformIncompatibleWorkload(WorkloadId workloadId);
         string GetManifestVersion(string manifestId);
-        IEnumerable<WorkloadManifestInfo> GetInstalledManifests(bool error = true);
+        IEnumerable<WorkloadManifestInfo> GetInstalledManifests();
         string GetSdkFeatureBand();
-        string? GetWorkloadVersion(bool error = true);
+        string? GetWorkloadVersion();
         IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads);
         WorkloadManifest GetManifestFromWorkload(WorkloadId workloadId);
 

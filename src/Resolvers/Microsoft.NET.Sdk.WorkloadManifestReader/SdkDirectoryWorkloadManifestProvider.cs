@@ -26,7 +26,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private WorkloadSet? _workloadSet;
         private WorkloadSet? _manifestsFromInstallState;
         private string? _installStateFilePath;
-        private bool _initializedManifests = false;
+
+        //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
+        //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
+        //  we can successfully construct a resolver and install that workload set
+        private Exception? _exceptionToThrow = null;
+        string? _globalJsonWorkloadSetVersion;
 
         public SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, string? userProfileDir, string? globalJsonPath)
             : this(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath)
@@ -102,10 +107,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
 
             _manifestRoots ??= Array.Empty<string>();
+
+            RefreshWorkloadManifests();
         }
 
-        public void RefreshWorkloadManifests(bool error = true)
+        public void RefreshWorkloadManifests()
         {
+            //  Reset exception state, we may be refreshing manifests after a missing workload set was installed
+            _exceptionToThrow = null;
+            _globalJsonWorkloadSetVersion = null;
+
             _workloadSet = null;
             _manifestsFromInstallState = null;
             _installStateFilePath = null;
@@ -113,7 +124,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (_workloadSetVersionFromConstructor != null)
             {
-                if (!availableWorkloadSets.TryGetValue(_workloadSetVersionFromConstructor, out _workloadSet) && error)
+                if (!availableWorkloadSets.TryGetValue(_workloadSetVersionFromConstructor, out _workloadSet))
                 {
                     throw new FileNotFoundException(string.Format(Strings.WorkloadVersionNotFound, _workloadSetVersionFromConstructor));
                 }
@@ -121,12 +132,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (_workloadSet is null)
             {
-                string? globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
-                if (globalJsonWorkloadSetVersion != null)
+                _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
+                if (_globalJsonWorkloadSetVersion != null)
                 {
-                    if (!availableWorkloadSets.TryGetValue(globalJsonWorkloadSetVersion, out _workloadSet) && error)
+                    if (!availableWorkloadSets.TryGetValue(_globalJsonWorkloadSetVersion, out _workloadSet))
                     {
-                        throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
+                        _exceptionToThrow = new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, _globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
+                        return;
                     }
                 }
             }
@@ -144,7 +156,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                             _manifestsFromInstallState = installState.Manifests is null ? null : WorkloadSet.FromDictionaryForJson(installState.Manifests, _sdkVersionBand);
                             _installStateFilePath = installStateFilePath;
                         }
-                        else if (error)
+                        else
                         {
                             throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
                         }
@@ -157,16 +169,24 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Select(k => new ReleaseVersion(k)).Max()!;
                 _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
             }
-
-            _initializedManifests |= error;
         }
 
-        public string? GetWorkloadVersion(bool error = true)
+        void ThrowExceptionIfManifestsNotAvailable()
         {
-            if (!_initializedManifests)
+            if (_exceptionToThrow != null)
             {
-                RefreshWorkloadManifests(error);
+                throw _exceptionToThrow;
             }
+        }
+
+        public string? GetWorkloadVersion()
+        {
+            if (_globalJsonWorkloadSetVersion != null)
+            {
+                return _globalJsonWorkloadSetVersion;
+            }
+
+            ThrowExceptionIfManifestsNotAvailable();
 
             if (_workloadSet?.Version is not null)
             {
@@ -176,7 +196,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             using (SHA256 sha256Hash = SHA256.Create())
             {
                 byte[] bytes = sha256Hash.ComputeHash(Encoding.UTF8.GetBytes(string.Join(";",
-                            GetManifests(initializeManifests: false).OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}.{m.ManifestVersion}").ToArray()
+                            GetManifests().OrderBy(m => m.ManifestId).Select(m => $"{m.ManifestId}.{m.ManifestFeatureBand}.{m.ManifestVersion}").ToArray()
                         )));
 
                 // Only append the first four bytes to the version hash.
@@ -191,12 +211,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public IEnumerable<ReadableWorkloadManifest> GetManifests(bool initializeManifests = true)
+        public IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
-            if (!_initializedManifests && initializeManifests)
-            {
-                RefreshWorkloadManifests();
-            }
+            ThrowExceptionIfManifestsNotAvailable();
 
             //  Scan manifest directories
             var manifestIdsToManifests = new Dictionary<string, ReadableWorkloadManifest>(StringComparer.OrdinalIgnoreCase);

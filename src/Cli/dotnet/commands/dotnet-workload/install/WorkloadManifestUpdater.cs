@@ -301,7 +301,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             return downloads;
         }
 
-        private IEnumerable<ManifestId> GetInstalledManifestIds() => _workloadResolver.GetInstalledManifests(error: false).Select(manifest => new ManifestId(manifest.Id));
+        private IEnumerable<ManifestId> GetInstalledManifestIds() => _workloadResolver.GetInstalledManifests().Select(manifest => new ManifestId(manifest.Id));
 
         private async Task<bool> UpdateManifestWithVersionAsync(string id, bool includePreviews, SdkFeatureBand band, NuGetVersion packageVersion = null, DirectoryPath? offlineCache = null)
         {

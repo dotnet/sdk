@@ -45,13 +45,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
 
             _workloadSetVersion = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
-
-            ValidateWorkloadIdsInput();
         }
 
         private void ValidateWorkloadIdsInput()
         {
-            var availableWorkloads = _workloadResolver.GetAvailableWorkloads(error: false);
+            var availableWorkloads = _workloadResolver.GetAvailableWorkloads();
             foreach (var workloadId in _workloadIds)
             {
                 if (!availableWorkloads.Select(workload => workload.Id.ToString()).Contains(workloadId))
@@ -69,6 +67,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
             if (_printDownloadLinkOnly)
             {
+                ValidateWorkloadIdsInput();
+
                 Reporter.WriteLine(string.Format(LocalizableStrings.ResolvingPackageUrls, string.Join(", ", _workloadIds)));
 
                 //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
@@ -85,6 +85,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
             {
+                ValidateWorkloadIdsInput();
+
                 try
                 {
                     //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
@@ -111,6 +113,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
                 _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
                 ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
+
+                //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
+                //  set version specified, and we might update the workload version, then we don't do that check here, because we might not have the right
+                //  workload set installed yet, and trying to list the available workloads would throw an error
+                if (_skipManifestUpdate || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
+                {
+                    ValidateWorkloadIdsInput();
+                }
 
                 if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
                 {
