@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.Update;
+using Newtonsoft.Json.Bson;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -80,6 +81,22 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
+        }
+
+        [Fact]
+        public void WhenRunWithAllAndVersionShowErrorMessage()
+        {
+            var result =
+                Parser.Instance.Parse(
+                    $"dotnet tool update --all --version 1.0.0");
+
+            var toolUpdateCommand = new ToolUpdateCommand(
+                result);
+
+            Action a = () => toolUpdateCommand.Execute();
+
+            a.Should().Throw<GracefulException>().And.Message
+                .Should().Contain(LocalizableStrings.UpdateToolCommandInvalidAllAndVersion);
         }
     }
 }

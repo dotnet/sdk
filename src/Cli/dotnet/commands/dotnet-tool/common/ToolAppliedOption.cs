@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tools.Tool.Common
@@ -11,6 +12,10 @@ namespace Microsoft.DotNet.Tools.Tool.Common
         public static CliOption<bool> GlobalOption = new("--global", "-g");
 
         public static CliOption<bool> LocalOption = new("--local");
+
+        public static CliOption<bool> UpdateAllOption = new("--all");
+
+        public static readonly CliOption<string> VersionOption = new("--version");
 
         public static CliOption<string> ToolPathOption = new("--tool-path")
         {
@@ -45,7 +50,30 @@ namespace Microsoft.DotNet.Tools.Tool.Common
 
             if (options.Count > 1)
             {
+                throw new GracefulException(
+                    string.Format(
+                        message,
+                        string.Join(" ", options)));
+            }
+        }
 
+        internal static void EnsureNoConflictUpdateAllVersionOption(
+            ParseResult parseResult,
+            string message)
+        {
+            List<string> options = new List<string>();
+            if (parseResult.GetResult(UpdateAllOption) is not null)
+            {
+                options.Add(UpdateAllOption.Name);
+            }
+
+            if (parseResult.GetResult(VersionOption) is not null)
+            {
+                options.Add(VersionOption.Name);
+            }
+
+            if (options.Count > 1)
+            {
                 throw new GracefulException(
                     string.Format(
                         message,

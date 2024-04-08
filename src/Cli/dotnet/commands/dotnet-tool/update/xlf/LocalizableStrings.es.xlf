@@ -72,6 +72,11 @@
         <target state="translated">La versión solicitada {0} es inferior a la versión existente {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndVersion">
+        <source>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</source>
+        <target state="new">The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateToolCommandInvalidGlobalAndLocalAndToolPath">
         <source>The local option (--local), the global option (--global), and the tool path option (--tool-path) cannot be used together. Specify only one of the options: {0}.</source>
         <target state="translated">La opción local (--local), la opción global (--global) y la opción tool path (--tool-path) no se pueden usar juntas. Especifique solo una de ellas: {0}.</target>

@@ -234,7 +234,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 result,
-                _packageIdA,
+                new PackageId("non-exist"),
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,

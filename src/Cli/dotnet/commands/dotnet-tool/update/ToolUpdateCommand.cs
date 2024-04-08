@@ -63,6 +63,10 @@ namespace Microsoft.DotNet.Tools.Tool.Update
 
             ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
 
+            ToolAppliedOption.EnsureNoConflictUpdateAllVersionOption(
+                _parseResult,
+                LocalizableStrings.UpdateToolCommandInvalidAllAndVersion);
+
             if (_global || !string.IsNullOrWhiteSpace(_toolPath))
             {
                 return _toolUpdateGlobalOrToolPathCommand.Execute();

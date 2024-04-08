@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
     {
         private readonly CreateShellShimRepository _createShellShimRepository;
         private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
-        private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand;
+        private readonly Lazy<ToolInstallGlobalOrToolPathCommand> _toolInstallGlobalOrToolPathCommand;
 
         public ToolUpdateGlobalOrToolPathCommand(ParseResult parseResult,
             CreateToolPackageStoresAndDownloaderAndUninstaller createToolPackageStoreDownloaderUninstaller = null,
@@ -42,18 +42,18 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 packageId = new PackageId(s);
             }
 
-            _toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
-                
+            _toolInstallGlobalOrToolPathCommand = new Lazy<ToolInstallGlobalOrToolPathCommand>(
+                () => new ToolInstallGlobalOrToolPathCommand(
                     parseResult,
                     packageId,
                     _createToolPackageStoreDownloaderUninstaller,
                     _createShellShimRepository,
-                    reporter: reporter);
+                    reporter: reporter));
         }
 
         public override int Execute()
         {
-            _toolInstallGlobalOrToolPathCommand.Execute();
+            _toolInstallGlobalOrToolPathCommand.Value.Execute();
             return 0;
         }
     }

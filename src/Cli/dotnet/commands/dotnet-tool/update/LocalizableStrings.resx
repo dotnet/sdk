@@ -227,4 +227,7 @@ and the corresponding package Ids for installed tools using the command
   <data name="UpdateAllOptionDescription" xml:space="preserve">
     <value>Update all tools.</value>
   </data>
+  <data name="UpdateToolCommandInvalidAllAndVersion" xml:space="preserve">
+    <value>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</value>
+  </data>
 </root>
