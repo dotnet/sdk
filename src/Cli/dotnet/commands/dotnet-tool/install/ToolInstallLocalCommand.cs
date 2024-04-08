@@ -63,12 +63,17 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             {
                 var toolListCommand = new ToolListLocalCommand(_parseResult);
                 var toolIds = toolListCommand.GetPackages(null);
+
                 foreach (var toolId in toolIds)
                 {
                     // Create an install command for each toolId
+                    List<string> args = new List<string> { "dotnet", "tool", "install", toolId.Item1.PackageId.ToString() };
+                    args = args.Concat(_parseResult.Tokens.Skip(3).Select(t => t.Value)).ToList();
+                    ParseResult newParseResult = Parser.Instance.Parse(args);
+
                     var toolInstallCommand = new ToolInstallLocalCommand(
                         _parseResult,
-                        new PackageId(toolId.ToString()),
+                        new PackageId(toolId.Item1.PackageId.ToString()),
                         null,
                         _toolManifestFinder,
                         _toolManifestEditor,

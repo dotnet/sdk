@@ -18,6 +18,7 @@ using NuGet.Frameworks;
 using NuGet.Versioning;
 using Microsoft.DotNet.Tools.Tool.List;
 using static System.Formats.Asn1.AsnWriter;
+using System.CommandLine.Parsing;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
 {
@@ -118,9 +119,13 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 foreach (var toolId in toolIds)
                 {
                     // Create an install command for each toolId
+                    List<string> args = new List<string> { "dotnet", "tool", "install", toolId.Id.ToString() };
+                    args = args.Concat(_parseResult.Tokens.Skip(3).Select(t => t.Value)).ToList();
+                    ParseResult newParseResult = Parser.Instance.Parse(args);
+
                     var toolInstallCommand = new ToolInstallGlobalOrToolPathCommand(
-                        _parseResult,
-                        new PackageId(toolId.ToString()),
+                        newParseResult,
+                        new PackageId(toolId.Id.ToString()),
                         _createToolPackageStoreDownloaderUninstaller,
                         _createShellShimRepository,
                         _environmentPathInstruction,
