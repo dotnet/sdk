@@ -245,11 +245,11 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                 }
                 else if (packageSource.Equals(PreviouslySourceBuiltSourceName))
                 {
-                    AddPackageSourceMappingIfPackageVersionNotInCurrentPackages(pkgSrc, packagePattern, previouslySourceBuiltPackages);
+                    AddPackageSourceMappingIfPackageVersionsNotInCurrentPackages(pkgSrc, packagePattern, previouslySourceBuiltPackages);
                 }
                 else if (packageSource.Equals(PrebuiltSourceName))
                 {
-                    AddPackageSourceMappingIfPackageVersionNotInCurrentPackages(pkgSrc, packagePattern, prebuiltPackages);
+                    AddPackageSourceMappingIfPackageVersionsNotInCurrentPackages(pkgSrc, packagePattern, prebuiltPackages);
                 }
                 else // unknown/unexpected source
                 {
@@ -260,16 +260,18 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             return pkgSrc;
         }
 
-        private void AddPackageSourceMappingIfPackageVersionNotInCurrentPackages(XElement pkgSrc, string packagePattern, Dictionary<string, List<string>> packages)
+        private void AddPackageSourceMappingIfPackageVersionsNotInCurrentPackages(XElement pkgSrc, string packagePattern, Dictionary<string, List<string>> packages)
         {
             foreach (string version in packages[packagePattern])
             {
-                if (!currentPackages[packagePattern].Contains(version))
+                // If any package version is in current packages, skip this package pattern
+                if (currentPackages[packagePattern].Contains(version))
                 {
-                    pkgSrc.Add(new XElement("package", new XAttribute("pattern", packagePattern)));
                     return;
                 }
             }
+
+            pkgSrc.Add(new XElement("package", new XAttribute("pattern", packagePattern)));
         }
 
         private void DiscoverPackagesFromAllSourceBuildSources(XElement pkgSourcesElement)
