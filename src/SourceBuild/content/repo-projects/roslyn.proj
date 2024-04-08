@@ -34,9 +34,11 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="roslyn-analyzers" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="source-build-externals" />
     <RepositoryReference Include="source-build-reference-packages" />
+    <RepositoryReference Include="symreader" />
   </ItemGroup>
 
   <ItemGroup>
