@@ -883,6 +883,13 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetProperties("
                 });
             }
+            if (Net9Plus.Any(tfm => (string)tfm[0] == targetFramework))
+            {
+                expectedWarnings.AddRange(new string[] {
+                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible.",
+                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible."
+                });
+            }
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
