@@ -234,7 +234,7 @@ function Build {
 
     if [ "$test" != "true" ]; then
       "$CLI_ROOT/dotnet" build-server shutdown
-      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/tools/init-build.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.binlog" -flp:LogFile="$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.log" /t:ExtractToolsetPackages,BuildMSBuildSdkResolver $properties
+      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.binlog" $properties
       # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
       "$CLI_ROOT/dotnet" build-server shutdown
     fi
