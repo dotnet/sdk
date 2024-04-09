@@ -55,6 +55,13 @@ namespace Microsoft.NET.Publish.Tests
             new object[] { ToolsetInfo.CurrentTargetFramework },
             // new object[] { ToolsetInfo.NextTargetFramework },
         };
+
+        // This list should contain all supported TFMs after net9.0
+        public static IEnumerable<object[]> Net9Plus { get; } = new List<object[]>
+        {
+            new object[] { ToolsetInfo.CurrentTargetFramework },
+            // new object[] { ToolsetInfo.NextTargetFramework },
+        };
 #else
 #error If building for a newer TFM, please update the values above to include both the old and new TFMs.
 #endif
