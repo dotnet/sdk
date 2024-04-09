@@ -26,9 +26,7 @@ dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget add source $DOTNET_ROOT/.nuget --configfile $TestExecutionDirectory/NuGet.config
 #Remove feeds not needed for tests
 dotnet nuget remove source dotnet6-transport --configfile $TestExecutionDirectory/NuGet.config
-dotnet nuget remove source dotnet6-internal-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet7-transport --configfile $TestExecutionDirectory/NuGet.config
-dotnet nuget remove source dotnet7-internal-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source richnav --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source vs-impl --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet-libraries-transport --configfile $TestExecutionDirectory/NuGet.config
