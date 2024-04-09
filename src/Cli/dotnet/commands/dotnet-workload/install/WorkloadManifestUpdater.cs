@@ -88,10 +88,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public async void DownloadWorkloadSet(string version, DirectoryPath? offlineCache = null)
+        public void DownloadWorkloadSet(string version, DirectoryPath? offlineCache = null)
         {
             var correctedVersion = WorkloadSetVersionToWorkloadSetPackageVersion(version);
-            await UpdateManifestWithVersionAsync("Microsoft.NET.Workloads", includePreviews: true, _sdkFeatureBand, new NuGetVersion(correctedVersion), offlineCache);
+            Task.Run(() => UpdateManifestWithVersionAsync("Microsoft.NET.Workloads", includePreviews: true, _sdkFeatureBand, new NuGetVersion(correctedVersion), offlineCache)).Wait();
         }
 
         public async static Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
