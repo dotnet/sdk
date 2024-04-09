@@ -40,7 +40,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public static SdkDirectoryWorkloadManifestProvider ForWorkloadSet(string sdkRootPath, string sdkVersion, string? userProfileDir, string workloadSetVersion)
         {
-            return new SdkDirectoryWorkloadManifestProvider(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath: null, workloadSetVersion);
+            return new SdkDirectoryWorkloadManifestProvider(
+                sdkRootPath,
+                sdkVersion,
+                Environment.GetEnvironmentVariable,
+                userProfileDir,
+                globalJsonPath: workloadSetVersion is null ? GetGlobalJsonPath(Environment.CurrentDirectory) : null,
+                workloadSetVersion);
         }
 
         internal SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null, string? workloadSetVersion = null)
