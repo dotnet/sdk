@@ -8,6 +8,10 @@
     <BuildScript>$([MSBuild]::NormalizePath('$(ProjectDirectory)', 'eng', 'source-build', 'build$(ShellExtension)'))</BuildScript>
   </PropertyGroup>
 
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <RepositoryReference Include="msbuild" />
     <RepositoryReference Include="source-build-externals" />
