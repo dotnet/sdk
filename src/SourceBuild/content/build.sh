@@ -18,7 +18,7 @@ usage()
   echo "Actions:"
   echo "  --clean                         Clean the solution"
   echo "  --help                          Print help and exit (short: -h)"
-  echo "  --test                          Run smoke tests (short: -t)"
+  echo "  --test                          Run tests (short: -t)"
   echo ""
 
   echo "Source-only settings:"
@@ -33,7 +33,7 @@ usage()
   echo ""
 
   echo "Advanced settings:"
-  echo "  --build-tests                   Build repository tests. May not be supported with --source-only"
+  echo "  --build-repo-tests              Build repository tests. May not be supported with --source-only"
   echo "  --ci                            Set when running on CI server"
   echo "  --clean-while-building          Cleans each repo after building (reduces disk space usage, short: -cwb)"
   echo "  --excludeCIBinarylog            Don't output binary log (short: -nobl)"
@@ -56,10 +56,7 @@ while [[ -h "$source" ]]; do
 done
 scriptroot="$( cd -P "$( dirname "$source" )" && pwd )"
 
-# Set the NUGET_PACKAGES dir so that we don't accidentally pull some packages from the global location,
-# They should be pulled from the local feeds.
 packagesRestoredDir="$scriptroot/.packages/"
-export NUGET_PACKAGES=$packagesRestoredDir/
 
 # Common settings
 binary_log=false
@@ -112,8 +109,6 @@ while [[ $# > 0 ]]; do
       exit 0
       ;;
     -test|-t)
-      export NUGET_PACKAGES=$NUGET_PACKAGES/smoke-tests
-      properties="$properties /t:RunSmokeTest"
       test=true
       ;;
 
@@ -180,7 +175,6 @@ while [[ $# > 0 ]]; do
     -use-mono-runtime)
       properties="$properties /p:SourceBuildUseMonoRuntime=true"
       ;;
-
     *)
       properties="$properties $1"
       ;;
@@ -195,19 +189,37 @@ if [[ "$ci" == true ]]; then
   fi
 fi
 
+# Never use the global nuget cache folder
+use_global_nuget_cache=false
+
 . "$scriptroot/eng/common/tools.sh"
+
+project="$scriptroot/build.proj"
+targets="/t:Build"
+
+# This repo uses the VSTest integration instead of the Arcade Test target
+if [[ "$test" == true ]]; then
+  project="$scriptroot/test/tests.proj"
+  targets="$targets;VSTest"
+fi
 
 function Build {
   if [[ "$sourceOnly" != "true" ]]; then
 
     InitializeToolset
 
+    # Manually unset NUGET_PACKAGES as InitializeToolset sets it unconditionally.
+    # The env var shouldn't be set so that the RestorePackagesPath msbuild property is respected.
+    unset NUGET_PACKAGES
+
     local bl=""
     if [[ "$binary_log" == true ]]; then
       bl="/bl:\"$log_dir/Build.binlog\""
     fi
 
-    MSBuild "$scriptroot/build.proj" \
+    MSBuild --restore \
+      $project \
+      $targets \
       $bl \
       /p:Configuration=$configuration \
       $properties
@@ -220,22 +232,22 @@ function Build {
       properties="$properties /p:ContinuousIntegrationBuild=true"
     fi
 
-    "$CLI_ROOT/dotnet" build-server shutdown
-
-    if [ "$test" == "true" ]; then
-      "$CLI_ROOT/dotnet" msbuild "$scriptroot/build.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildTests.binlog" -flp:"LogFile=$scriptroot/artifacts/log/$configuration/BuildTests.log" -clp:v=m $properties
-    else
+    if [ "$test" != "true" ]; then
+      "$CLI_ROOT/dotnet" build-server shutdown
       "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/tools/init-build.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.binlog" -flp:LogFile="$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.log" /t:ExtractToolsetPackages,BuildMSBuildSdkResolver $properties
-
       # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
       "$CLI_ROOT/dotnet" build-server shutdown
-
-      # Point MSBuild to the custom SDK resolvers folder, so it will pick up our custom SDK Resolver
-      export MSBUILDADDITIONALSDKRESOLVERSFOLDER="$scriptroot/artifacts/toolset/VSSdkResolvers/"
-
-      "$CLI_ROOT/dotnet" msbuild "$scriptroot/build.proj" -bl:"$scriptroot/artifacts/log/$configuration/Build.binlog" -flp:"LogFile=$scriptroot/artifacts/log/$configuration/Build.log" $properties
     fi
 
+    # Point MSBuild to the custom SDK resolvers folder, so it will pick up our custom SDK Resolver
+    export MSBUILDADDITIONALSDKRESOLVERSFOLDER="$scriptroot/artifacts/toolset/VSSdkResolvers/"
+
+    local bl=""
+    if [[ "$binary_log" == true ]]; then
+      bl="/bl:\"$log_dir/Build.binlog\""
+    fi
+
+    "$CLI_ROOT/dotnet" msbuild --restore "$project" $bl $targets $properties
   fi
 }
 

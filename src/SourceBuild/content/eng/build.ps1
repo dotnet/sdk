@@ -8,9 +8,10 @@ Param(
   # Actions
   [switch]$clean,
   [switch][Alias('h')]$help,
+  [switch][Alias('t')]$test,
 
   # Advanced settings
-  [switch]$buildTests,
+  [switch]$buildRepoTests,
   [switch]$ci,
   [switch][Alias('cwb')]$cleanWhileBuilding,
   [switch][Alias('nobl')]$excludeCIBinarylog,
@@ -28,10 +29,11 @@ function Get-Usage() {
   Write-Host "Actions:"
   Write-Host "  -clean                  Clean the solution"
   Write-Host "  -help                   Print help and exit (short: -h)"
+  Write-Host "  -test                   Run tests (repo tests omitted by default) (short: -t)"
   Write-Host ""
 
   Write-Host "Advanced settings:"
-  Write-Host "  -build-tests            Build repository tests"
+  Write-Host "  -buildRepoTests         Build repository tests"
   Write-Host "  -ci                     Set when running on CI server"
   Write-Host "  -cleanWhileBuilding     Cleans each repo after building (reduces disk space usage, short: -cwb)"
   Write-Host "  -excludeCIBinarylog     Don't output binary log (short: -nobl)"
@@ -39,31 +41,49 @@ function Get-Usage() {
   Write-Host ""
 }
 
-. $PSScriptRoot\common\tools.ps1
+$useGlobalNuGetCache=$false
 
-# Set the NUGET_PACKAGES dir so that we don't accidentally pull some packages from the global location,
-# They should be pulled from the local feeds.
-$env:NUGET_PACKAGES="$RepoRoot\.packages\"
+. $PSScriptRoot\common\tools.ps1
 
 if ($help) {
   Get-Usage
   exit 0
 }
 
+$project = Join-Path $RepoRoot "build.proj"
+$arguments = @()
+$targets = "/t:Build"
+
+# This repo uses the VSTest integration instead of the Arcade Test target
+if ($test) {
+  $project = Join-Path (Join-Path $RepoRoot "test") "tests.proj"
+  $targets += ";VSTest"
+}
+
+if ($buildRepoTests) {
+  $arguments += "/p:DotNetBuildTests=true"
+}
+
+if ($cleanWhileBuilding) {
+  $arguments += "/p:CleanWhileBuilding=true"
+}
+
 function Build {
   InitializeToolset
 
-  $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
-  $cwb = if ($cleanWhileBuilding) { '/p:CleanWhileBuilding=true' } else { '' }
-  $btst = if ($buildTests) { '/p:DotNetBuildTests=true' } else { '' }
-  $buildProj = Join-Path $RepoRoot 'build.proj'
+  # Manually unset NUGET_PACKAGES as InitializeToolset sets it unconditionally.
+  # The env var shouldn't be set so that the RestorePackagesPath msbuild property is respected.
+  $env:NUGET_PACKAGES=''
 
-  MSBuild $buildProj `
+  $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
+
+  MSBuild -restore `
+    $project `
     $bl `
+    $targets `
     /p:Configuration=$configuration `
-    $cwb `
-    $btst `
-    @properties
+    @properties `
+    @arguments
 }
 
 try {

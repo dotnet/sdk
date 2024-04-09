@@ -1,15 +1,11 @@
-<Project>
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+<Project Sdk="Microsoft.Build.Traversal">
 
-  <PropertyGroup>
-    <!-- Fake, to satisfy the SDK. -->
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(ToolsDir)init-build.proj" BuildInParallel="false" />
+    <ProjectReference Include="$(RepoProjectsDir)$(RootRepo).proj" BuildInParallel="false" />
+  </ItemGroup>
 
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-
-  <Target Name="Build">
+  <Target Name="PrintInfo" BeforeTargets="Build">
     <PropertyGroup>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' == 'true'">source-build</BuildModeInfoText>
       <BuildModeInfoText Condition="'$(DotNetBuildSourceOnly)' != 'true'">non-source-build</BuildModeInfoText>
@@ -17,18 +13,12 @@
 
     <Message Text="Build Mode: $(BuildModeInfoText)" Importance="high" />
     <Message Text="Build Environment: $(TargetArchitecture) $(Configuration) $(TargetOS) $(TargetRid)" Importance="high" />
-
-    <MSBuild Projects="$(ToolsDir)init-build.proj;
-                       $(RepoProjectsDir)$(RootRepo).proj"
-             Targets="Build"
-             BuildInParallel="false"
-             StopOnFirstFailure="true" />
   </Target>
 
   <!-- Create a merge manifest from the individual repository manifest files. -->
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="MergeAssetManifests" AfterTargets="Build">
-    <PropertyGroup>      
+    <PropertyGroup>
       <MergedAssetManifestOutputPath>$(ArtifactsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
     </PropertyGroup>
 
@@ -48,8 +38,8 @@
   <!-- Intentionally below the import to appear at the end. -->
   <Target Name="LogBuildOutputFolders"
           AfterTargets="Build">
-   <Message Importance="high" Text="Shipping packages are located in '$(ArtifactsShippingPackagesDir)'." />
-   <Message Importance="high" Text="Shipping assets are located in '$(ArtifactsAssetsDir)'." />
+    <Message Importance="high" Text="Shipping packages are located in '$(ArtifactsShippingPackagesDir)'." />
+    <Message Importance="high" Text="Shipping assets are located in '$(ArtifactsAssetsDir)'." />
   </Target>
 
 </Project>

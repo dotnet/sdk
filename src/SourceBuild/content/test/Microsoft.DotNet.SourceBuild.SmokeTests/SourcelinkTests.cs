@@ -48,7 +48,7 @@ public class SourcelinkTests : SdkTests
             // We are validating dotnet-symbols-all-*.tar.gz which contains all source-built symbols, including
             // SDK-specific symbols that are also packaged in dotnet-symbols-sdk-*.tar.gz.
             Utilities.ExtractTarball(
-                Utilities.GetFile(Path.GetDirectoryName(Config.SourceBuiltArtifactsPath), "dotnet-symbols-all-*.tar.gz"),
+                Utilities.GetFile(Path.GetDirectoryName(Config.SourceBuiltArtifactsPath)!, "dotnet-symbols-all-*.tar.gz"),
                 symbolsRoot,
                 OutputHelper);
 

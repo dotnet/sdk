@@ -68,7 +68,7 @@ internal class ExclusionsHelper
         string updatedFileName = updatedFileTag is null
             ? $"Updated{_exclusionsFileName}"
             : $"Updated{Path.GetFileNameWithoutExtension(_exclusionsFileName)}.{updatedFileTag}{Path.GetExtension(_exclusionsFileName)}";
-        string actualFilePath = Path.Combine(TestBase.LogsDirectory, updatedFileName);
+        string actualFilePath = Path.Combine(Config.LogsDirectory, updatedFileName);
         File.WriteAllLines(actualFilePath, newLines!);
     }
 

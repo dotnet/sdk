@@ -72,7 +72,7 @@ internal class DotNetHelper
             if (!Directory.Exists(Config.PrereqsPath))
             {
                 throw new InvalidOperationException(
-                    $"Prereqs path '{Config.PrereqsPath}' specified in {Config.PrereqsPathEnv} does not exist.");
+                    $"Prereqs path '{Config.PrereqsPath}' specified via /p:SmokeTestsPrereqsPath='...' does not exist.");
             }
 
             string nugetConfig = File.ReadAllText(nugetConfigPath);
@@ -130,6 +130,10 @@ internal class DotNetHelper
         process.StartInfo.EnvironmentVariables["DOTNET_ROOT"] = Config.DotNetDirectory;
         process.StartInfo.EnvironmentVariables["NUGET_PACKAGES"] = PackagesDirectory;
         process.StartInfo.EnvironmentVariables["PATH"] = $"{Config.DotNetDirectory}:{Environment.GetEnvironmentVariable("PATH")}";
+        // Don't use the repo infrastructure
+        process.StartInfo.EnvironmentVariables["ImportDirectoryBuildProps"] = "false";
+        process.StartInfo.EnvironmentVariables["ImportDirectoryBuildTargets"] = "false";
+        process.StartInfo.EnvironmentVariables["ImportDirectoryPackagesProps"] = "false";
     }
 
     public void ExecuteBuild(string projectName) =>
@@ -253,7 +257,7 @@ internal class DotNetHelper
             fileName += $"-{differentiator}";
         }
 
-        return $"/bl:{Path.Combine(TestBase.LogsDirectory, $"{fileName}.binlog")}";
+        return $"/bl:{Path.Combine(Config.LogsDirectory, $"{fileName}.binlog")}";
     }
 
     private static bool DetermineIsMonoRuntime(string dotnetRoot)

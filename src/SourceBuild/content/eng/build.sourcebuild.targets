@@ -1,13 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <SmokeTestsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'test', 'Microsoft.DotNet.SourceBuild.SmokeTests'))</SmokeTestsDir>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(EnablePoison)' == 'true'">
-    <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
-  </PropertyGroup>
-
   <!-- After building, generate a prebuilt usage report. -->
   <Target Name="ReportPrebuiltUsage"
           AfterTargets="Build"
@@ -46,7 +38,7 @@
   </Target>
 
   <!-- After building, create the sdk symbols tarball. -->
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.CreateSdkSymbolsLayout" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.CreateSdkSymbolsLayout" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreateSdkSymbolsTarball"
           AfterTargets="Build"
           DependsOnTargets="RepackageSymbols"
@@ -85,7 +77,7 @@
              Targets="ReportPrebuiltUsage" />
   </Target>
 
-  <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.CheckForPoison" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" Condition="'$(EnablePoison)' == 'true'" />
+  <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.CheckForPoison" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" TaskFactory="TaskHostFactory" Condition="'$(EnablePoison)' == 'true'" />
   <Target Name="ReportPoisonUsage"
           AfterTargets="Build"
           Condition="'$(EnablePoison)' == 'true'"
@@ -117,7 +109,7 @@
     </Touch>
   </Target>
 
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WriteUsageBurndownData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WriteUsageBurndownData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="GeneratePrebuiltBurndownData"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)GeneratePrebuiltBurndownData.complete" >
@@ -133,70 +125,6 @@
     <Touch Files="$(BaseIntermediateOutputPath)GeneratePrebuiltBurndownData.complete" AlwaysCreate="true">
       <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
     </Touch>
-  </Target>
-
-  <Target Name="RunSmokeTest">
-    <ItemGroup>
-      <SdkTarballItem Include="$(ArtifactsAssetsDir)dotnet-sdk*$(ArchiveExtension)" />
-      <SourceBuiltArtifactsItem Include="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <CustomTestEnvVars Condition="'$(EnablePoison)' == 'true'">SMOKE_TESTS_POISON_REPORT_PATH=$(PoisonUsageReportFile);</CustomTestEnvVars>
-      <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
-      <SourceBuiltArtifactsPath>%(SourceBuiltArtifactsItem.Identity)</SourceBuiltArtifactsPath>
-      <SmokeTestConsoleVerbosity Condition="'$(SmokeTestConsoleVerbosity)' == ''">normal</SmokeTestConsoleVerbosity>
-    </PropertyGroup>
-
-    <!-- Multiple loggers are specified so that results are captured in trx and pipelines can fail with AzDO pipeline warnings -->
-    <!-- Workaround https://github.com/dotnet/source-build/issues/4003 by disabling VSTestUseMSBuildOutput -->
-    <Exec Command="$(DotnetTool) test $(SmokeTestsDir) --logger:trx --logger:'console;verbosity=$(SmokeTestConsoleVerbosity)' -c $(Configuration) -p:VSTestUseMSBuildOutput=false"
-          IgnoreStandardErrorWarningFormat="true"
-          EnvironmentVariables="
-            SMOKE_TESTS_SDK_TARBALL_PATH=$(SdkTarballPath);
-            SMOKE_TESTS_SOURCEBUILT_ARTIFACTS_PATH=$(SourceBuiltArtifactsPath);
-            SMOKE_TESTS_TARGET_RID=$(TargetRid);
-            SMOKE_TESTS_PORTABLE_RID=$(PortableRid);
-            SMOKE_TESTS_CUSTOM_PACKAGES_PATH=$(CustomSourceBuiltPackagesPath);
-            $(CustomTestEnvVars)" />
-  </Target>
-
-  <Target Name="CreateSmokeTestPrereqsTarball"
-          AfterTargets="RunSmokeTest"
-          Condition="'$(SkipSmokeTestPrereqsTarballCreation)' != 'true'"
-          DependsOnTargets="
-            CheckIfCreateSmokeTestPrereqsExistToPack;
-            CreateSmokeTestPrereqsTarballIfPrereqsExist"/>
-
-  <Target Name="CheckIfCreateSmokeTestPrereqsExistToPack">
-    <PropertyGroup>
-      <SmokeTestsArtifactsDir>$(SmokeTestsDir)bin/$(Configuration)/$(NetCurrent)/</SmokeTestsArtifactsDir>
-      <SmokeTestsPackagesDir>$(SmokeTestsArtifactsDir)packages/</SmokeTestsPackagesDir>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <SmokeTestsPrereqs Include="$(SmokeTestsPackagesDir)**/*.nupkg" />
-    </ItemGroup>
-
-    <Message Text="Found @(SmokeTestsPrereqs->Count()) prereqs in '$(SmokeTestsPackagesDir)'." Importance="High" />
-  </Target>
-
-  <Target Name="CreateSmokeTestPrereqsTarballIfPrereqsExist"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion"
-          Condition="'@(SmokeTestsPrereqs->Count())' != '0'">
-    <PropertyGroup>
-      <SmokeTestPrereqsTarball>$(ArtifactsAssetsDir)dotnet-smoke-test-prereqs.$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</SmokeTestPrereqsTarball>
-      <SmokeTestsPrereqPackagesDir>$(SmokeTestsArtifactsDir)prereq-packages/</SmokeTestsPrereqPackagesDir>
-    </PropertyGroup>
-
-    <Copy SourceFiles="@(SmokeTestsPrereqs)"
-          DestinationFolder="$(SmokeTestsPrereqPackagesDir)" />
-
-    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(SmokeTestPrereqsTarball)'))" />
-    <Exec Command="tar --numeric-owner -czf $(SmokeTestPrereqsTarball) ."
-          WorkingDirectory="$(SmokeTestsPrereqPackagesDir)"/>
-
-    <Message Importance="High" Text="Packaged smoke-test prereqs in '$(SmokeTestPrereqsTarball)'" />
   </Target>
 
   <Target Name="CreatePrebuiltsTarball"

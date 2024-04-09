@@ -35,19 +35,21 @@ public static class Utilities
         using GZipStream decompressorStream = new(fileStream, CompressionMode.Decompress);
         using TarReader reader = new(decompressorStream);
 
-        TarEntry entry;
+        TarEntry? entry;
         while ((entry = reader.GetNextEntry()) is not null)
         {
             if (matcher.Match(entry.Name).HasMatches)
             {
                 string outputPath = Path.Join(outputDir, entry.Name);
-                Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
 
                 using FileStream outputFileStream = File.Create(outputPath);
-                entry.DataStream.CopyTo(outputFileStream);
-                break;
+                entry.DataStream!.CopyTo(outputFileStream);
+                return;
             }
         }
+
+        throw new FileNotFoundException($"Could not find {targetFilePath} in {tarballPath}.");
     }
 
     public static IEnumerable<string> GetTarballContentNames(string tarballPath)
@@ -56,7 +58,7 @@ public static class Utilities
         using GZipStream decompressorStream = new(fileStream, CompressionMode.Decompress);
         using TarReader reader = new(decompressorStream);
 
-        TarEntry entry;
+        TarEntry? entry;
         while ((entry = reader.GetNextEntry()) is not null)
         {
             yield return entry.Name;
@@ -71,7 +73,7 @@ public static class Utilities
         foreach (ZipArchiveEntry entry in zip.Entries)
         {
             string outputPath = Path.Combine(outputDir, entry.FullName);
-            Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+            Directory.CreateDirectory(Path.GetDirectoryName(outputPath)!);
             entry.ExtractToFile(outputPath);
         }
     }
@@ -127,14 +129,6 @@ public static class Utilities
 
         outputHelper.WriteLine($"{Environment.NewLine}{prefix}{message}.{Environment.NewLine}");
         outputHelper.WriteLine("##vso[task.complete result=SucceededWithIssues;]");
-    }
-
-    public static void ValidateNotNullOrWhiteSpace(string? variable, string variableName)
-    {
-        if (string.IsNullOrWhiteSpace(variable))
-        {
-            throw new ArgumentException($"{variableName} is null, empty, or whitespace.");
-        }
     }
 
     public static string GetFile(string path, string pattern)

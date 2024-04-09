@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EnvironmentVariables Include="NUGET_PACKAGES=$(NuGetPackageRoot)" />
     <EnvironmentVariables Include="MS_PFX_PATH=$(NuGetKeyFilePath)" />
     <EnvironmentVariables Include="NUGET_PFX_PATH=$(NuGetKeyFilePath)" />
   </ItemGroup>

@@ -99,9 +99,9 @@
     </Copy>
   </Target>
 
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.AddSourceToNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.RemoveInternetSourcesFromNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UpdateNuGetConfigPackageSourcesMappings" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.AddSourceToNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.RemoveInternetSourcesFromNuGetConfig" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UpdateNuGetConfigPackageSourcesMappings" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="UpdateNuGetConfig"
           DependsOnTargets="CopyNuGetConfig;GetRepositoryReferenceInfo"
           Condition="'$(NuGetConfigFile)' != ''"
@@ -216,7 +216,7 @@
 
   <!-- Update the SDK version in the repo's global.json file.
        This guarantees that all repositories build with the VMR's SDK version. -->
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UpdateJson" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UpdateJson" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="UpdateGlobalJsonVersions"
           Condition="'$(GlobalJsonFile)' != ''"
           Inputs="$(MSBuildProjectFullPath);$(MSBuildThisFileFullPath)"
@@ -256,7 +256,7 @@
 
   <!-- Before a repository builds, set up the version property files that override the repo's defaults.
        There are 3 files generated -->
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreateBuildInputProps"
           DependsOnTargets="GetRepositoryReferenceInfo"
           Inputs="$(MSBuildProjectFullPath)"
@@ -587,7 +587,7 @@
     ExtractToolPackage;
     CleanupRepo" />
 
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WritePackageUsageData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WritePackageUsageData" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="WritePrebuiltUsageData"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)WritePrebuiltUsageData.complete">
@@ -598,7 +598,8 @@
     <Copy SourceFiles="@(PackageVersionPropsSnapshotFiles)" DestinationFolder="$(PackageReportDir)snapshots/" />
 
     <ItemGroup>
-      <RestoredPackageFile Include="$(NuGetPackageRoot)**/*.nupkg" />
+      <RestoredPackageFile Include="$(NuGetPackageRoot)**/*.nupkg"
+                           Exclude="$(NuGetPackageRoot)tests/**/*.nupkg" />
 
       <!-- Only contains packages when building. -->
       <TarballPrebuiltPackageFile Include="$(PrebuiltPackagesPath)*.nupkg" />
@@ -662,8 +663,8 @@
     </Touch>
   </Target>
 
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.ValidateUsageAgainstBaseline" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WriteUsageReports" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.ValidateUsageAgainstBaseline" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport.WriteUsageReports" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="ReportPrebuiltUsage"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ReportPrebuiltUsage.complete">

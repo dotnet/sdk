@@ -41,9 +41,9 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests
             Assert.Null(message);
         }
 
-        public static void CompareBaselineContents(string baselineFileName, string actualContents, ITestOutputHelper outputHelper, bool warnOnDiffs = false, string baselineSubDir = "")
+        public static void CompareBaselineContents(string baselineFileName, string actualContents, string logsDirectory, ITestOutputHelper outputHelper, bool warnOnDiffs = false, string baselineSubDir = "")
         {
-            string actualFilePath = Path.Combine(TestBase.LogsDirectory, $"Updated{baselineFileName}");
+            string actualFilePath = Path.Combine(logsDirectory, $"Updated{baselineFileName}");
             if (!actualContents.EndsWith(Environment.NewLine))
                 actualContents += Environment.NewLine;
             File.WriteAllText(actualFilePath, actualContents);
