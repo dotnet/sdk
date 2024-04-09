@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\..\..\test\Common\Program.UnitTests.cs" />
+    <Compile Include="..\..\..\test\Common\Program.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockBuildEngine.cs" />
     <Compile Include="..\Microsoft.NET.Build.Tasks.UnitTests\Mocks\MockTaskItem.cs" />
   </ItemGroup>
