@@ -30,7 +30,7 @@
       These URLs can't be composed from their base URL and version as we read them from the
       prep.sh and pipeline scripts, outside of MSBuild.
     -->
-    <PrivateSourceBuiltArtifactsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Artifacts.8.0.103-servicing.24117.1.centos.8-x64.tar.gz</PrivateSourceBuiltArtifactsUrl>
-    <PrivateSourceBuiltSdkUrl_CentOS8Stream>https://dotnetcli.azureedge.net/source-built-artifacts/sdks/dotnet-sdk-8.0.103-centos.8-x64.tar.gz</PrivateSourceBuiltSdkUrl_CentOS8Stream>
+    <PrivateSourceBuiltArtifactsUrl>https://dotnetcli.azureedge.net/source-built-artifacts/assets/Private.SourceBuilt.Artifacts.8.0.104-servicing.24171.1.centos.8-x64.tar.gz</PrivateSourceBuiltArtifactsUrl>
+    <PrivateSourceBuiltSdkUrl_CentOS8Stream>https://dotnetcli.azureedge.net/source-built-artifacts/sdks/dotnet-sdk-8.0.104-centos.8-x64.tar.gz</PrivateSourceBuiltSdkUrl_CentOS8Stream>
   </PropertyGroup>
 </Project>
