@@ -340,14 +340,14 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>79ef5e329b1e31c3775a1977798253cc8f7da6cc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24204.1">
+    <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24208.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>67956470ccbe5a51255b5b014811076ae99ae79f</Sha>
+      <Sha>282e0064c30d5cef9b1c1cabb12ef6b55775c54d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24204.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="9.0.0-preview.24208.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>67956470ccbe5a51255b5b014811076ae99ae79f</Sha>
+      <Sha>282e0064c30d5cef9b1c1cabb12ef6b55775c54d</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.24208.2">
