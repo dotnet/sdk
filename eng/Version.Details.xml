@@ -66,13 +66,13 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>189fbbd88d97dd6d65515ba2da05b62eab4e5039</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.0.1">
-      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
-      <Sha>b177f8fa703370c80b2e56469208c2bb099efba0</Sha>
+    <Dependency Name="Microsoft.Build" Version="17.0.3">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d679d209277a156cdc0963c993585ffa5744dc5f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.0.1-preview-22463-07">
-      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
-      <Sha>b177f8fa703370c80b2e56469208c2bb099efba0</Sha>
+    <Dependency Name="Microsoft.Build.Localization" Version="17.0.3-preview-24178-04">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d679d209277a156cdc0963c993585ffa5744dc5f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.0.0-beta.21522.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
@@ -123,11 +123,15 @@
     </Dependency>
     <Dependency Name="NuGet.Build.Tasks" Version="6.0.6-rc.4">
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
-      <Sha>7fe6b814c901490292f02d8ea12749505fbb959a</Sha>
+      <Sha>451e9bc27184dc49d04e975122c9e7189d525872</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="6.0.6-rc.4">
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
-      <Sha>7fe6b814c901490292f02d8ea12749505fbb959a</Sha>
+      <Sha>451e9bc27184dc49d04e975122c9e7189d525872</Sha>
+    </Dependency>
+    <Dependency Name="NuGet.Localization" Version="6.0.6-rc.4">
+      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
+      <Sha>451e9bc27184dc49d04e975122c9e7189d525872</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.0.3-release-20230412-05">
       <Uri>https://github.com/microsoft/vstest</Uri>
@@ -292,22 +296,22 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.24163.13">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="6.0.0-beta.24176.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>100394106fe203c112ab72bcc1576fb3753f7910</Sha>
+      <Sha>e438144bbffb29ed5d7c113dc4947b51650344dc</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="6.0.0-beta.24163.13">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="6.0.0-beta.24176.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>100394106fe203c112ab72bcc1576fb3753f7910</Sha>
+      <Sha>e438144bbffb29ed5d7c113dc4947b51650344dc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="6.0.0-beta.24163.13">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="6.0.0-beta.24176.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>100394106fe203c112ab72bcc1576fb3753f7910</Sha>
+      <Sha>e438144bbffb29ed5d7c113dc4947b51650344dc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="6.0.0-beta.24163.13">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="6.0.0-beta.24176.9">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>100394106fe203c112ab72bcc1576fb3753f7910</Sha>
+      <Sha>e438144bbffb29ed5d7c113dc4947b51650344dc</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="6.0.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
