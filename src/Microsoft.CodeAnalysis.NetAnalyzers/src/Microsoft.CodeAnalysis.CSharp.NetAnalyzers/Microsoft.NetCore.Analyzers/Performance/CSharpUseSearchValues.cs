@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -112,7 +113,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     return true;
                 }
             }
-            else
+            else if (expression.IsKind(SyntaxKindEx.CollectionExpression))
             {
                 return
                     semanticModel.GetOperation(expression) is { } operation &&
@@ -165,12 +166,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
         private static bool IsUtf8StringLiteralExpression(ExpressionSyntax expression, out int length)
         {
-            const SyntaxKind Utf8StringLiteralExpression = (SyntaxKind)8756;
-            const SyntaxKind Utf8StringLiteralToken = (SyntaxKind)8520;
-
-            if (expression.IsKind(Utf8StringLiteralExpression) &&
+            if (expression.IsKind(SyntaxKindEx.Utf8StringLiteralExpression) &&
                 expression is LiteralExpressionSyntax literal &&
-                literal.Token.IsKind(Utf8StringLiteralToken) &&
+                literal.Token.IsKind(SyntaxKindEx.Utf8StringLiteralToken) &&
                 literal.Token.Value is string value)
             {
                 length = value.Length;
