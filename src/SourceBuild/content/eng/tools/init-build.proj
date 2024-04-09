@@ -15,7 +15,6 @@
       UnpackTarballs;
       BuildUnifiedBuildTasks;
       BuildMSBuildSdkResolver;
-      RestoreUnifiedBuildValidationTests;
       BuildLeakDetection;
       ExtractToolsetPackages;
       GenerateRootFs;
@@ -113,13 +112,6 @@
     </Touch>
   </Target>
 
-  <Target Name="RestoreUnifiedBuildValidationTests"
-          Condition="'$(ShortStack)' != 'true' and '$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true'" >
-    <MSBuild Projects="../../test/Microsoft.DotNet.UnifiedBuild.Tests/Microsoft.DotNet.UnifiedBuild.Tests.csproj"
-             Targets="Restore"
-             Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
-  </Target>
-
   <Target Name="GenerateRootFs"
           Condition="'$(BuildOS)' != 'windows' and '$(CrossBuild)' == 'true' and '$(ROOTFS_DIR)' == ''">
     <PropertyGroup>
@@ -155,7 +147,7 @@
     </Touch>
   </Target>
 
-  <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.MarkAndCatalogPackages" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" Condition="'$(EnablePoison)' == 'true'" />
+  <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.MarkAndCatalogPackages" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" TaskFactory="TaskHostFactory" Condition="'$(EnablePoison)' == 'true'" />
   <Target Name="PoisonPrebuiltPackages"
           Condition="'$(EnablePoison)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"

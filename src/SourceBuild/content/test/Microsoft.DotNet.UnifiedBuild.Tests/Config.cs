@@ -15,6 +15,7 @@ using Xunit.Sdk;
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 public class Config : IDisposable
 {
+    public string LogsDirectory { get; }
     public string MsftSdkArchivePath { get; }
     public string UbBuildVersion { get; }
     public string PortableRid { get; }
@@ -31,6 +32,7 @@ public class Config : IDisposable
     {
         _sink = sink;
         string? noDiagnosticMessages = (string?)AppContext.GetData(NoDiagnosticMessagesSwitch);
+        LogsDirectory = (string)(AppContext.GetData(LogsDirectorySwitch) ?? throw new InvalidOperationException("Logs directory must be specified"));
         NoDiagnosticMessages = string.IsNullOrEmpty(noDiagnosticMessages) ? false : bool.Parse(noDiagnosticMessages);
         UbBuildVersion = (string)(AppContext.GetData(BuildVersionSwitch) ?? throw new InvalidOperationException("Unified Build version must be specified"));
         TargetRid = (string)(AppContext.GetData(TargetRidSwitch) ?? throw new InvalidOperationException("Target RID must be specified"));
@@ -48,6 +50,7 @@ public class Config : IDisposable
         }
         LogMessage($$"""
             Test config values:
+            {{nameof(LogsDirectory)}}='{{LogsDirectory}}'
             {{nameof(UbBuildVersion)}}='{{UbBuildVersion}}'
             {{nameof(TargetRid)}}='{{TargetRid}}'
             {{nameof(PortableRid)}}='{{PortableRid}}'
@@ -60,6 +63,7 @@ public class Config : IDisposable
     }
 
     const string ConfigSwitchPrefix = "Microsoft.DotNet.UnifiedBuild.Tests.";
+    const string LogsDirectorySwitch = ConfigSwitchPrefix + nameof(LogsDirectory);
     const string BuildVersionSwitch = ConfigSwitchPrefix + nameof(UbBuildVersion);
     const string TargetRidSwitch = ConfigSwitchPrefix + nameof(TargetRid);
     const string PortableRidSwitch = ConfigSwitchPrefix + nameof(PortableRid);

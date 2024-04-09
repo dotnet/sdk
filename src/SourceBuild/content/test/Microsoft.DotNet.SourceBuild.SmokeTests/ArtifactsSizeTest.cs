@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Formats.Tar;
 using System.Text;
 using System.Threading.Tasks;
+using TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -42,12 +43,11 @@ public class ArtifactsSizeTest : SdkTests
         }
     }
 
-    [SkippableFact(Config.IncludeArtifactsSizeEnv, skipOnFalseEnv: true)]
+    [ConditionalFact(typeof(Config), nameof(Config.IncludeArtifactsSizeTests))]
     public void CompareArtifactsToBaseline()
     {
-        Utilities.ValidateNotNullOrWhiteSpace(Config.SourceBuiltArtifactsPath, Config.SourceBuiltArtifactsPathEnv);
-        Utilities.ValidateNotNullOrWhiteSpace(Config.SdkTarballPath, Config.SdkTarballPathEnv);
-        Utilities.ValidateNotNullOrWhiteSpace(Config.TargetRid, Config.TargetRidEnv);
+        Assert.False(string.IsNullOrWhiteSpace(Config.SourceBuiltArtifactsPath));
+        Assert.False(string.IsNullOrWhiteSpace(Config.SdkTarballPath));
 
         var tarEntries = ProcessSdkAndArtifactsTarballs();
         ScanForDifferences(tarEntries);
@@ -63,8 +63,8 @@ public class ArtifactsSizeTest : SdkTests
         string tempTarballDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(tempTarballDir);
 
-        Utilities.ExtractTarball(Config.SdkTarballPath, tempTarballDir, OutputHelper);
-        Utilities.ExtractTarball(Config.SourceBuiltArtifactsPath, tempTarballDir, OutputHelper);
+        Utilities.ExtractTarball(Config.SdkTarballPath!, tempTarballDir, OutputHelper);
+        Utilities.ExtractTarball(Config.SourceBuiltArtifactsPath!, tempTarballDir, OutputHelper);
 
         Dictionary<string, long> tarEntries = Directory.EnumerateFiles(tempTarballDir, "*", SearchOption.AllDirectories)
             .Where(filePath => !filePath.Contains("SourceBuildReferencePackages"))
@@ -201,7 +201,7 @@ public class ArtifactsSizeTest : SdkTests
     {
         try
         {
-            string actualFilePath = Path.Combine(LogsDirectory, $"UpdatedArtifactsSizes_{Config.TargetRid}.txt");
+            string actualFilePath = Path.Combine(Config.LogsDirectory, $"UpdatedArtifactsSizes_{Config.TargetRid}.txt");
             File.WriteAllLines(
                 actualFilePath,
                 Baseline

@@ -8,6 +8,7 @@ using System.IO;
 using System.Net.Http;
 using System.Security.AccessControl;
 using System.Threading.Tasks;
+using TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -23,9 +24,11 @@ public class OmniSharpTests : SdkTests
 
     private string OmniSharpDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), nameof(OmniSharpTests));
 
+    public static bool IncludeOmniSharpTests => !Config.ExcludeOmniSharpTests && Config.TargetArchitecture != "ppc64le" && Config.TargetArchitecture != "s390x";
+
     public OmniSharpTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [SkippableTheory(Config.ExcludeOmniSharpEnv, skipOnTrueEnv: true, skipArchitectures: new[] { "ppc64le", "s390x" })]
+    [ConditionalTheoryAttribute(typeof(OmniSharpTests), nameof(IncludeOmniSharpTests))]
     [InlineData(DotNetTemplate.BlazorWasm)]
     [InlineData(DotNetTemplate.ClassLib)]
     [InlineData(DotNetTemplate.Console)]
@@ -37,7 +40,7 @@ public class OmniSharpTests : SdkTests
     [InlineData(DotNetTemplate.WebApi)]
     [InlineData(DotNetTemplate.Worker)]
     [InlineData(DotNetTemplate.XUnit)]
-    public async void VerifyScenario(DotNetTemplate template)
+    public async Task VerifyScenario(DotNetTemplate template)
     {
         await InitializeOmniSharp();
 
@@ -69,7 +72,7 @@ public class OmniSharpTests : SdkTests
 
             Directory.CreateDirectory(OmniSharpDirectory);
             Utilities.ExtractTarball(omniSharpTarballFile, OmniSharpDirectory, OutputHelper);
-            
+
             // Ensure the run script is executable (see https://github.com/OmniSharp/omnisharp-roslyn/issues/2547)
             File.SetUnixFileMode($"{OmniSharpDirectory}/run", UnixFileMode.UserRead | UnixFileMode.UserExecute);
         }

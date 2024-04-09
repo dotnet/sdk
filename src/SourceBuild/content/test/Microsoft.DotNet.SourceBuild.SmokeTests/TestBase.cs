@@ -9,17 +9,15 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 public abstract class TestBase
 {
-    public static string LogsDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), "logs");
-
     public ITestOutputHelper OutputHelper { get; }
 
     public TestBase(ITestOutputHelper outputHelper)
     {
         OutputHelper = outputHelper;
 
-        if (!Directory.Exists(LogsDirectory))
+        if (!Directory.Exists(Config.LogsDirectory))
         {
-            Directory.CreateDirectory(LogsDirectory);
+            Directory.CreateDirectory(Config.LogsDirectory);
         }
     }
 }

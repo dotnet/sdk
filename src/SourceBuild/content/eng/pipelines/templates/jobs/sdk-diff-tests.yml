@@ -123,15 +123,13 @@ jobs:
       -bl:$(Build.SourcesDirectory)/artifacts/log/Debug/BuildTests_$(date +"%m%d%H%M%S").binlog 
       -flp:LogFile=$(Build.SourcesDirectory)/artifacts/logs/BuildTests_$(date +"%m%d%H%M%S").log
       -clp:v=m
-      -e SMOKE_TESTS_MSFT_SDK_TARBALL_PATH=$(MsftSdkTarballPath)
-      -e SMOKE_TESTS_SDK_TARBALL_PATH=$(SdkTarballPath)
-      -e SMOKE_TESTS_SOURCEBUILT_ARTIFACTS_PATH=$(SourceBuiltArtifactsPath)
-      -e SMOKE_TESTS_WARN_SDK_CONTENT_DIFFS=false
-      -e SMOKE_TESTS_RUNNING_IN_CI=true
-      -e SMOKE_TESTS_TARGET_RID=${{ parameters.targetRid }}
-      -e SMOKE_TESTS_PORTABLE_RID=$(Platform)-${{ parameters.architecture }}
-      -e SMOKE_TESTS_CUSTOM_PACKAGES_PATH=
-      -e SMOKE_TESTS_INCLUDE_ARTIFACTSSIZE=${{ parameters.includeArtifactsSize }}
+      /p:MsftSdkTarballPath=$(MsftSdkTarballPath)
+      /p:SdkTarballPath=$(SdkTarballPath)
+      /p:SourceBuiltArtifactsPath=$(SourceBuiltArtifactsPath)
+      /p:SmokeTestsWarnOnSdkContentDiffs=false
+      /p:SmokeTestsIncludeArtifactsSizeTests=${{ parameters.includeArtifactsSize }}
+      /p:TargetRid=${{ parameters.targetRid }}
+      /p:PortableRid=$(Platform)-${{ parameters.architecture }}
     displayName: Run Tests
     workingDirectory: $(Build.SourcesDirectory)
 
@@ -140,12 +138,12 @@ jobs:
       targetFolder=$(Build.StagingDirectory)/BuildLogs/
       mkdir -p ${targetFolder}
       cd "$(Build.SourcesDirectory)"
-      find artifacts/ -type f -name "BuildTests*.binlog" -exec cp {} --parents -t ${targetFolder} \;
-      find artifacts/ -type f -name "BuildTests*.log" -exec cp {} --parents -t ${targetFolder} \;
-      find artifacts/ -type f -name "Build.binlog" -exec cp {} --parents -t ${targetFolder} \;
-      find test/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
-      find test/ -type f -name "Updated*.diff" -exec cp {} --parents -t ${targetFolder} \;
-      find test/ -type f -name "Updated*.txt" -exec cp {} --parents -t ${targetFolder} \;
+      find artifacts/log/ -type f -name "BuildTests*.binlog" -exec cp {} --parents -t ${targetFolder} \;
+      find artifacts/log/ -type f -name "BuildTests*.log" -exec cp {} --parents -t ${targetFolder} \;
+      find artifacts/TestResults/ -type f -name "*.binlog" -exec cp {} --parents -t ${targetFolder} \;
+      find artifacts/TestResults/ -type f -name "*.log" -exec cp {} --parents -t ${targetFolder} \;
+      find artifacts/TestResults/ -type f -name "*.diff" -exec cp {} --parents -t ${targetFolder} \;
+      find artifacts/TestResults/ -type f -name "Updated*.txt" -exec cp {} --parents -t ${targetFolder} \;
     displayName: Prepare BuildLogs staging directory
     continueOnError: true
     condition: succeededOrFailed()

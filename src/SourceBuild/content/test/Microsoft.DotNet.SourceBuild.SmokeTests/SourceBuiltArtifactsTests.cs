@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TestUtilities;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,12 +16,15 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 public class SourceBuiltArtifactsTests : SdkTests
 {
+    public static bool IncludeSourceBuiltArtifactsTests => !string.IsNullOrWhiteSpace(Config.SourceBuiltArtifactsPath);
+    
     public SourceBuiltArtifactsTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
-    [SkippableFact(Config.SourceBuiltArtifactsPathEnv, skipOnNullOrWhiteSpaceEnv: true)]
+    [ConditionalFact(typeof(SourceBuiltArtifactsTests), nameof(IncludeSourceBuiltArtifactsTests))]
     public void VerifyVersionFile()
     {
         Assert.NotNull(Config.SourceBuiltArtifactsPath);
+
         string outputDir = Path.Combine(Directory.GetCurrentDirectory(), "sourcebuilt-artifacts");
         Directory.CreateDirectory(outputDir);
         try

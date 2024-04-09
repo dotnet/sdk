@@ -141,19 +141,10 @@
   <Target Name="CopySdkArchive"
           AfterTargets="Build"
           DependsOnTargets="DetermineSourceBuiltSdkVersion">
-
-    <Copy SourceFiles="@(SdkTarballItem)"
+    <Copy SourceFiles="$(SdkTarballPath)"
           DestinationFolder="$(ArtifactsAssetsDir)"
           SkipUnchangedFiles="true"
           UseHardlinksIfPossible="true" />
-  </Target>
-
-  <Target Name="RunUnifiedBuildValidation"
-          AfterTargets="Build"
-          Condition="'$(PortableBuild)' == 'true' and '$(PgoInstrument)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true'">
-    <MSBuild Projects="../test/Microsoft.DotNet.UnifiedBuild.Tests/Microsoft.DotNet.UnifiedBuild.Tests.csproj"
-             Targets="VSTest"
-             ContinueOnError="true" />
   </Target>
 
 </Project>

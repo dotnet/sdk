@@ -73,15 +73,18 @@
     <TargetRid Condition="'$(ShortStack)' == 'true' and '$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</TargetRid>
   </PropertyGroup>
 
+  <!-- Set NuGetPackageRoot before Arcade SDK sets it. -->
+  <PropertyGroup>
+    <!-- Set RestorePackagesPath so that we don't accidentally pull some packages from the global location. -->
+    <RestorePackagesPath Condition="'$(RestorePackagesPath)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '.packages'))</RestorePackagesPath>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == ''">$(RestorePackagesPath)</NuGetPackageRoot>
+  </PropertyGroup>
+
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
 
   <!-- Init basic Arcade props, if the project importing this file doesn't use Arcade.
        Keep in sync with props/targets in the Arcade.Sdk. -->
   <PropertyGroup Condition="'$(SkipArcadeSdkImport)' == 'true'">
-    <!-- RepoLayout.props -->
-    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' != ''">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)'))</NuGetPackageRoot>
-    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == '' and '$(NUGET_PACKAGES)' != ''">$([MSBuild]::NormalizeDirectory('$(NUGET_PACKAGES)'))</NuGetPackageRoot>
-
     <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::NormalizeDirectory('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'global.json'))'))</RepoRoot>
 
     <!-- Respect environment variable for the .NET install directory if set; otherwise, use the repo default location -->
@@ -212,6 +215,7 @@
     <PoisonMarkerFile>.prebuilt.xml</PoisonMarkerFile>
     <PoisonReportDataFile>$(PackageReportDir)poison-catalog.xml</PoisonReportDataFile>
     <PoisonedReportFile>$(PackageReportDir)poisoned.txt</PoisonedReportFile>
+    <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
   </PropertyGroup>
 
 </Project>

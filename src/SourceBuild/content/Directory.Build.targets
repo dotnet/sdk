@@ -6,20 +6,22 @@
     <PropertyGroup>
       <SdkFilenamePrefix>dotnet-sdk-</SdkFilenamePrefix>
     </PropertyGroup>
+  
     <ItemGroup>
       <SdkTarballItem Include="$(ArtifactsAssetsDir)Sdk/**/$(SdkFilenamePrefix)*$(ArchiveExtension)" />
     </ItemGroup>
 
     <!--
       Extract SDK version from SDK tarball filename.
+      Keep in sync with dotnet-sdk's archive location and filename.
 
       Example:
-      dotnet-sdk-9.0.100-alpha.1.24057.1-fedora.38-x64.tar.gz
-      dotnet-sdk-<SdkVersion>-<TargetRid><ArchiveExtension>
+      artifacts\assets\<config>\Sdk\9.0.100-alpha.1.24057.1\dotnet-sdk-9.0.100-alpha.1.24057.1-fedora.38-x64.tar.gz
+      artifacts\assets\<config>\Sdk\<SdkVersion>\dotnet-sdk-<SdkVersion>-<TargetRid><ArchiveExtension>
     -->
     <PropertyGroup>
       <SdkFilename>%(SdkTarballItem.Filename)%(SdkTarballItem.Extension)</SdkFilename>
-      <SdkTarballPath>%(SdkTarballItem.Identity)</SdkTarballPath>
+      <SdkTarballPath Condition="'$(SdkTarballPath)' == ''">%(SdkTarballItem.Identity)</SdkTarballPath>
       <SourceBuiltSdkVersion>$(SdkFilename.Replace('$(SdkFilenamePrefix)','').Replace('-$(TargetRid)$(ArchiveExtension)',''))</SourceBuiltSdkVersion>
     </PropertyGroup>
   </Target>

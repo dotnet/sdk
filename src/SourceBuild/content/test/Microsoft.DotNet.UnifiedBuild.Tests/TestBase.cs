@@ -10,8 +10,7 @@ namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 public abstract class TestBase : IClassFixture<Config>
 {
-    protected Config Config;
-    public static string LogsDirectory { get; } = Path.Combine(Directory.GetCurrentDirectory(), "logs");
+    protected readonly Config Config;
 
     public ITestOutputHelper OutputHelper { get; }
 
@@ -19,9 +18,10 @@ public abstract class TestBase : IClassFixture<Config>
     {
         OutputHelper = outputHelper;
         Config = config;
-        if (!Directory.Exists(LogsDirectory))
+
+        if (!Directory.Exists(Config.LogsDirectory))
         {
-            Directory.CreateDirectory(LogsDirectory);
+            Directory.CreateDirectory(Config.LogsDirectory);
         }
     }
 }
