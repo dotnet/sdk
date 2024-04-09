@@ -1,4 +1,14 @@
-<Project>
+
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
+    <ProjectReference Include="$(TasksDir)Microsoft.DotNet.SourceBuild.Tasks.LeakDetection\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.csproj" />
+  </ItemGroup>
 
   <!-- After building, generate a prebuilt usage report. -->
   <Target Name="ReportPrebuiltUsage"
@@ -145,7 +155,7 @@
 
   <Target Name="CreatePrebuiltsTarballIfPrebuiltsExist"
           DependsOnTargets="DetermineSourceBuiltSdkVersion"
-          Condition="'@(PrebuiltFile->Count())' != '0'">
+          Condition="'@(PrebuiltFile)' != ''">
     <PropertyGroup>
       <PrebuiltsTarball>$(ArtifactsAssetsDir)$(SourceBuiltPrebuiltsTarballName).$(SourceBuiltSdkVersion).$(TargetRid)$(ArchiveExtension)</PrebuiltsTarball>
       <PrebuiltsTarballWorkingDir>$(ResultingPrebuiltPackagesDir)</PrebuiltsTarballWorkingDir>
@@ -158,7 +168,7 @@
   </Target>
 
   <Target Name="ErrorOnPrebuilts"
-          Condition="'@(PrebuiltFile->Count())' != '0' AND '$(SkipErrorOnPrebuilts)' != 'true'">
+          Condition="'@(PrebuiltFile)' != '' and '$(SkipErrorOnPrebuilts)' != 'true'">
     <Error Text="@(PrebuiltFile->Count()) Prebuilts Exist" />
   </Target>
 
