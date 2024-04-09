@@ -805,7 +805,8 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssemblyInContextWhenSupported(IntPtr, IntPtr"
                 });
             }
-            if (Net9Plus.Any(tfm => (string)tfm[0] == targetFramework))
+            // windows-only COM warnings
+            if (Net9Plus.Any(tfm => (string)tfm[0] == targetFramework) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 expectedWarnings.AddRange(new string[] {
                     "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible.",
