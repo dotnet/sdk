@@ -37,7 +37,7 @@ dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
 PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure"
 dotnet nuget add source %DOTNET_ROOT%\.nuget --configfile %TestExecutionDirectory%\nuget.config
 
-dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirectory%\nuget.configfile
+dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet7-transport --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source richnav --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source vs-impl --configfile %TestExecutionDirectory%\nuget.config
