@@ -22,6 +22,7 @@ MSBuild Directory.Build.props file            buildprops                        
 MSBuild Directory.Build.targets file          buildtargets                            MSBuild/props                 
 MSBuild Directory.Packages.props file         packagesprops                           MSBuild/packages/props/CPM    
 MSTest Playwright Test Project                mstest-playwright           [C#]        Test/MSTest/Playwright        
+MSTest Test Class                             mstest-class                [C#],F#,VB  Test/MSTest                   
 MSTest Test Project                           mstest                      [C#],F#,VB  Test/MSTest                   
 MVC Controller                                mvccontroller               [C#]        Web/ASP.NET                   
 MVC ViewImports                               viewimports                 [C#]        Web/ASP.NET                   
