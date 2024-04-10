@@ -40,13 +40,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public static SdkDirectoryWorkloadManifestProvider ForWorkloadSet(string sdkRootPath, string sdkVersion, string? userProfileDir, string workloadSetVersion)
         {
-            return new SdkDirectoryWorkloadManifestProvider(
-                sdkRootPath,
-                sdkVersion,
-                Environment.GetEnvironmentVariable,
-                userProfileDir,
-                globalJsonPath: workloadSetVersion is null ? GetGlobalJsonPath(Environment.CurrentDirectory) : null,
-                workloadSetVersion);
+            return new SdkDirectoryWorkloadManifestProvider(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath: null, workloadSetVersion);
         }
 
         internal SdkDirectoryWorkloadManifestProvider(string sdkRootPath, string sdkVersion, Func<string, string?> getEnvironmentVariable, string? userProfileDir, string? globalJsonPath = null, string? workloadSetVersion = null)
@@ -508,6 +502,26 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 directory = Path.GetDirectoryName(directory);
             }
             return null;
+        }
+
+        public GlobalJsonInformation? GetGlobalJsonInformation()
+        {
+            return _globalJsonWorkloadSetVersion is null || _globalJsonPathFromConstructor is null ?
+                null :
+                new GlobalJsonInformation(_globalJsonPathFromConstructor, _globalJsonWorkloadSetVersion, _exceptionToThrow is null);
+        }
+
+        public record GlobalJsonInformation
+        {
+            public string GlobalJsonPath { get; }
+            public string GlobalJsonVersion { get; }
+            public bool WorkloadVersionInstalled { get; }
+            public GlobalJsonInformation(string path, string version, bool installed)
+            {
+                GlobalJsonPath = path;
+                GlobalJsonVersion = version;
+                WorkloadVersionInstalled = installed;
+            }
         }
     }
 }

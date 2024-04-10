@@ -74,11 +74,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             var installedWorkloadSets = resolver.GetWorkloadManifestProvider().GetAvailableWorkloadSets();
 
-            // This version corresponds to the version currently in use, whether from a global.json, install state, etc.
-            var versionInUse = resolver.GetWorkloadVersion();
-            if (installedWorkloadSets.ContainsKey(versionInUse))
+            foreach (var set in installedWorkloadSets.Keys)
             {
-                WorkloadSetsToKeep.Add(versionInUse);
+                WorkloadSetsToKeep.Add(set);
             }
 
             var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetDir), "default.json");
