@@ -1,0 +1,14 @@
+{
+    "profiles": {
+      "app": {
+        "commandName": "Project",
+        "environmentVariables": {
+          "EnvironmentFromProfile": "Development"
+        }
+      },
+      "P1": {
+        "commandName": "Project",
+        "commandLineArgs": "\"Arg1 from launch profile\" \"Arg2 from launch profile\""
+      }
+    }
+  }

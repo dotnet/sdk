@@ -1,0 +1,154 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+
+  <PropertyGroup>
+    <PackageId>Microsoft.NET.Sdk</PackageId>
+    <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <Description>The MSBuild targets and properties for building .NET Core projects.</Description>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+    <Nullable>annotations</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+
+    <!-- only copy symbols from project references (omit xml docs and config files) -->
+    <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
+
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- MSBuild Task DLLs need to be versioned with every build -->
+    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+  </PropertyGroup>
+
+
+  <PropertyGroup>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+    <IsPackable>true</IsPackable>
+    <PackageLayoutOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\$(PackageId)\</PackageLayoutOutputPath>
+
+    <!-- Allow .editorconfig file for analyzers to be packed -->
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <PackageReference>
+      <PrivateAssets>All</PrivateAssets>
+      <Publish>true</Publish>
+    </PackageReference>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" />
+    <PackageReference Include="Microsoft.NET.HostModel" />
+    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="NuGet.ProjectModel" />
+    <PackageReference Include="NuGet.Build.Tasks.Pack" ExcludeAssets="All" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+    <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types -->
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" />
+  </ItemGroup>
+
+  <!-- Packages that are in-box for .NET Core, so we only need to reference them for .NET Framework -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <!--
+        Microsoft.NET.HostModel also uses System.Reflection.Metadata. Don't move ahead of the version of System.Reflection.Metadata
+        that MSBuild supports with the binding redirect to ensure that both this project and Microsoft.NET.HostModel can load
+        the same System.Reflection.Metadata assembly and their types can unify. See the following link for the MSBuild binding redirect config.
+          https://github.com/dotnet/msbuild/blob/299e0514835a1588e6ef21b1da748462dec706b8/src/MSBuild/app.config#L60
+    -->
+    <PackageReference Include="System.Collections.Immutable" VersionOverride="8.0.0" />
+    <PackageReference Include="System.Reflection.Metadata" VersionOverride="8.0.0" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="8.0.0" />
+  </ItemGroup>
+
+  <!-- These are loaded from the CLI's copy on .NET Core, we don't need to duplicate them on disk -->
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+    <PackageReference Update="Microsoft.Extensions.DependencyModel" ExcludeAssets="Runtime" />
+    <PackageReference Update="Microsoft.NET.HostModel" ExcludeAssets="Runtime" />
+    <PackageReference Update="NuGet.ProjectModel" ExcludeAssets="Runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <Compile Include="..\Common\**\*.cs" LinkBase="Common" />
+    <Compile Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs" LinkBase="WorkloadManifestReader" />
+    <Compile Include="..\..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="WorkloadManifestReader"/>
+    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common"/>
+    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common"/>
+    <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
+    <EmbeddedResource Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Strings.resx" LinkBase="Resources\WorkloadManifestReoder" GenerateSource="True" Namespace="Microsoft.NET.Sdk.Localization"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.NET.Build.Tasks.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.NET.Build.Tests" />
+    <InternalsVisibleTo Include="Microsoft.NET.ToolPack.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="targets\**\*" PackagePath="targets\" />
+    <None Include="sdk\**\*" PackagePath="Sdk\" />
+    <None Include="..\Common\targets\**\*" PackagePath="targets\" LinkBase="targets" />
+    <None Include="..\Common\Resources\xlf\**\*" LinkBase="Resources\xlf" />
+    <UpToDateCheckInput Include="@(None)" />
+  </ItemGroup>
+
+  <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">
+    <PropertyGroup>
+      <_NugetBuildTasksPackPath>$(NuGetPackageRoot)nuget.build.tasks.pack\$(NuGetBuildTasksPackageVersion)</_NugetBuildTasksPackPath>
+      <_Stage0SdksFolder>$(DOTNET_INSTALL_DIR)\sdk\$(NETCoreSdkVersion)\Sdks</_Stage0SdksFolder>
+    </PropertyGroup>
+    <ItemGroup>
+      <LayoutFile Include="@(None)" Condition="'%(None.PackagePath)' != '' and '%(None.PackagePath)' != 'Icon.png'">
+        <TargetPath>%(None.PackagePath)\%(None.RecursiveDir)%(None.Filename)%(None.Extension)</TargetPath>
+      </LayoutFile>
+      <PackFile Include="$(_NugetBuildTasksPackPath)\**\*" Exclude="$(_NugetBuildTasksPackPath)\*" />
+      <LayoutFile Include="@(PackFile)">
+        <TargetPath>..\NuGet.Build.Tasks.Pack\%(PackFile.RecursiveDir)%(PackFile.Filename)%(PackFile.Extension)</TargetPath>
+      </LayoutFile>
+
+      <!-- Include some of the Sdks from the Stage 0 CLI for performance tests-->
+      <Stage0SdkFile Include="$(_Stage0SdksFolder)\FSharp.NET.Sdk\**" SdkName="FSharp.NET.Sdk" />
+      <Stage0SdkFile Include="$(_Stage0SdksFolder)\Microsoft.NET.Sdk.WindowsDesktop\**" SdkName="Microsoft.NET.Sdk.WindowsDesktop" />
+      <LayoutFile Include="@(Stage0SdkFile)">
+        <TargetPath>..\%(Stage0SdkFile.SdkName)\%(Stage0SdkFile.RecursiveDir)%(Stage0SdkFile.Filename)%(Stage0SdkFile.Extension)</TargetPath>
+      </LayoutFile>
+
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyAdditionalFilesToLayout" Condition="'$(TargetFramework)' == ''" DependsOnTargets="PrepareAdditionalFilesToLayout" AfterTargets="Build" Inputs="@(LayoutFile)" Outputs="@(LayoutFile->'$(PackageLayoutOutputPath)%(TargetPath)')">
+    <Copy SourceFiles="@(LayoutFile)" DestinationFiles="@(LayoutFile->'$(PackageLayoutOutputPath)%(TargetPath)')">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
+  <Target Name="PackLayout" DependsOnTargets="CopyAdditionalFilesToLayout" BeforeTargets="$(GenerateNuspecDependsOn)">
+    <ItemGroup>
+      <Content Include="$(PackageLayoutOutputPath)**\*" PackagePath="\" />
+    </ItemGroup>
+  </Target>
+
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+</Project>

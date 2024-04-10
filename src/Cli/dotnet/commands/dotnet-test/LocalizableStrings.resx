@@ -1,0 +1,288 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppFullName" xml:space="preserve">
+    <value>.NET Test Driver</value>
+  </data>
+  <data name="AppDescription" xml:space="preserve">
+    <value>Test Driver for the .NET Platform</value>
+  </data>
+  <data name="CmdSettingsFile" xml:space="preserve">
+    <value>SETTINGS_FILE</value>
+  </data>
+  <data name="CmdSettingsDescription" xml:space="preserve">
+    <value>The settings file to use when running tests.</value>
+  </data>
+  <data name="CmdListTestsDescription" xml:space="preserve">
+    <value>List the discovered tests instead of running the tests.</value>
+  </data>
+  <data name="CmdTestCaseFilterExpression" xml:space="preserve">
+    <value>EXPRESSION</value>
+  </data>
+  <data name="CmdTestCaseFilterDescription" xml:space="preserve">
+    <value>Run tests that match the given expression.
+                                        Examples:
+                                        Run tests with priority set to 1: --filter "Priority = 1"
+                                        Run a test with the specified full name: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
+                                        Run tests that contain the specified name: --filter "FullyQualifiedName~Namespace.Class"
+                                        See https://aka.ms/vstest-filtering for more information on filtering support.
+                                        </value>
+  </data>
+  <data name="CmdTestAdapterPathDescription" xml:space="preserve">
+    <value>The path to the custom adapters to use for the test run.</value>
+  </data>
+  <data name="CmdTestAdapterPath" xml:space="preserve">
+    <value>ADAPTER_PATH</value>
+  </data>
+  <data name="CmdLoggerOption" xml:space="preserve">
+    <value>LOGGER</value>
+  </data>
+  <data name="CmdLoggerDescription" xml:space="preserve">
+    <value>The logger to use for test results.
+                                        Examples:
+                                        Log in trx format using a unique file name: --logger trx
+                                        Log in trx format using the specified file name: --logger "trx;LogFileName=&lt;TestResults.trx&gt;"
+                                        See https://aka.ms/vstest-report for more information on logger arguments.</value>
+  </data>
+  <data name="CmdOutputDir" xml:space="preserve">
+    <value>OUTPUT_DIR</value>
+  </data>
+  <data name="CmdOutputDescription" xml:space="preserve">
+    <value>The output directory to place built artifacts in.</value>
+  </data>
+  <data name="CmdPathToLogFile" xml:space="preserve">
+    <value>LOG_FILE</value>
+  </data>
+  <data name="CmdPathTologFileDescription" xml:space="preserve">
+    <value>Enable verbose logging to the specified file.</value>
+  </data>
+  <data name="CmdNoBuildDescription" xml:space="preserve">
+    <value>Do not build the project before testing. Implies --no-restore.</value>
+  </data>
+  <data name="CmdResultsDirectoryDescription" xml:space="preserve">
+    <value>The directory where the test results will be placed.
+The specified directory will be created if it does not exist.</value>
+  </data>
+  <data name="CmdPathToResultsDirectory" xml:space="preserve">
+    <value>RESULTS_DIR</value>
+  </data>
+  <data name="RunSettingsArgumentsDescription" xml:space="preserve">
+    <value>
+
+RunSettings arguments:
+  Arguments to pass as RunSettings configurations. Arguments are specified as '[name]=[value]' pairs after "-- " (note the space after --). 
+  Use a space to separate multiple '[name]=[value]' pairs.
+  See https://aka.ms/vstest-runsettings-arguments for more information on RunSettings arguments.
+  Example: dotnet test -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True</value>
+  </data>
+  <data name="cmdCollectFriendlyName" xml:space="preserve">
+    <value>DATA_COLLECTOR_NAME</value>
+  </data>
+  <data name="cmdCollectDescription" xml:space="preserve">
+    <value>The friendly name of the data collector to use for the test run.
+                                        More info here: https://aka.ms/vstest-collect</value>
+  </data>
+  <data name="CmdBlameDescription" xml:space="preserve">
+    <value>Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default. 
+
+When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.
+
+Based on the additional settings, hang dump or crash dump can also be collected.
+
+Example: 
+  Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly. 
+  (Crash dumps require additional setup, see below.)
+  dotnet test --blame-hang --blame-crash
+Example: 
+  Timeout the test run when a test takes more than 20 minutes and collect hang dump. 
+  dotnet test --blame-hang-timeout 20min
+</value>
+  </data>
+  <data name="FrameworkOptionDescription" xml:space="preserve">
+    <value>The target framework to run tests for. The target framework must also be specified in the project file.</value>
+  </data>
+  <data name="RuntimeOptionDescription" xml:space="preserve">
+    <value>The target runtime to test for.</value>
+  </data>
+  <data name="ConfigurationOptionDescription" xml:space="preserve">
+    <value>The configuration to use for running tests. The default for most projects is 'Debug'.</value>
+  </data>
+  <data name="CmdNoLogo" xml:space="preserve">
+    <value>Run test(s), without displaying Microsoft Testplatform banner</value>
+  </data>
+  <data name="IgnoredArgumentsMessage" xml:space="preserve">
+    <value>The following arguments have been ignored : "{0}"</value>
+  </data>
+  <data name="CmdBlameCrashCollectAlwaysDescription" xml:space="preserve">
+    <value>Enables collecting crash dump on expected as well as unexpected testhost exit.</value>
+  </data>
+  <data name="CmdBlameCrashDescription" xml:space="preserve">
+    <value>Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.
+  
+For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.
+
+Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.
+
+The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downloads/procdump
+  
+To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.
+
+Implies --blame.</value>
+  </data>
+  <data name="CmdBlameCrashDumpTypeDescription" xml:space="preserve">
+    <value>The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.</value>
+  </data>
+  <data name="CmdBlameHangDescription" xml:space="preserve">
+    <value>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout. Implies --blame-hang.</value>
+  </data>
+  <data name="CmdBlameHangDumpTypeDescription" xml:space="preserve">
+    <value>The type of crash dump to be collected. The supported values are full (default), mini, and none. When 'none' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.</value>
+  </data>
+  <data name="CmdBlameHangTimeoutDescription" xml:space="preserve">
+    <value>Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h.
+The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds.
+When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case,
+For MSTest before 2.2.4, the timeout is used for all testcases.</value>
+  </data>
+  <data name="CrashDumpTypeArgumentName" xml:space="preserve">
+    <value>DUMP_TYPE</value>
+  </data>
+  <data name="HangDumpTypeArgumentName" xml:space="preserve">
+    <value>DUMP_TYPE</value>
+  </data>
+  <data name="HangTimeoutArgumentName" xml:space="preserve">
+    <value>TIMESPAN</value>
+  </data>
+  <data name="CmdEnvironmentVariableDescription" xml:space="preserve">
+    <value>Sets the value of an environment variable. 
+Creates the variable if it does not exist, overrides if it does. 
+This will force the tests to be run in an isolated process. 
+This argument can be specified multiple times to provide multiple variables.
+
+Examples:
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;seperated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
+</value>
+  </data>
+  <data name="CmdEnvironmentVariableExpression" xml:space="preserve">
+    <value>NAME="VALUE"</value>
+  </data>
+</root>

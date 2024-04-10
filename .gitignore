@@ -1,0 +1,44 @@
+###############################################################################
+# Build Artifacts
+###############################################################################
+artifacts/
+bin/
+obj/
+
+###############################################################################
+# Visual Studio
+###############################################################################
+.vs/
+.vscode/
+.dotnet/
+.tools/
+.packages/
+
+# OS X Device Services Store
+.DS_Store
+
+*.binlog
+
+# User specific files
+*.user
+
+# Debian and python stuff
+*.dsc
+*.tar.gz
+*.build
+*.changes
+*.deb
+*.pyc
+*.pyo
+
+# OSX Packaging temp files
+*.pkg
+
+# CMake generated files
+cmake/
+
+# Helix payload
+.dotnet.payload
+
+# MSBuild Logs
+**/MSBuild_Logs/MSBuild_pid-*.failure.txt

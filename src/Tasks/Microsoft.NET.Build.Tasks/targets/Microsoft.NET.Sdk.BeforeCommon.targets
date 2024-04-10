@@ -1,0 +1,295 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.BeforeCommon.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- For projects that aren't using Microsoft.NET.Sdk, these props files won't have been imported yet.
+       So import them here. -->
+  <ImportGroup Condition="'$(UsingNETSdkDefaults)' != 'true'">
+    <Import Project="Microsoft.NET.Sdk.DefaultItems.props" />
+    <Import Project="Microsoft.NET.SupportedTargetFrameworks.props" />
+    <Import Project="Microsoft.NET.SupportedPlatforms.props" />
+    <Import Project="Microsoft.NET.WindowsSdkSupportedTargetPlatforms.props" />
+  </ImportGroup>
+
+  <PropertyGroup>
+    <_IsExecutable Condition="'$(OutputType)' == 'Exe' or '$(OutputType)'=='WinExe'">true</_IsExecutable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(HasRuntimeOutput)' == ''">
+    <HasRuntimeOutput>$(_IsExecutable)</HasRuntimeOutput>
+    <_UsingDefaultForHasRuntimeOutput>true</_UsingDefaultForHasRuntimeOutput>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DefaultAssemblyInfo.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'"/>
+
+  <!--
+    Apply these defaults from Microsoft.Common.CurrentVersion.targets now since we're running before them,
+    but need to adjust them and/or make decisions in terms of them.
+   -->
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
+    <Platform Condition="'$(Platform)'==''">AnyCPU</Platform>
+    <PlatformName Condition="'$(PlatformName)' == ''">$(Platform)</PlatformName>
+  </PropertyGroup>
+
+  <!-- Before any additional SDK targets are imported, import the publish profile.
+       This allows the publish profile to set properties like RuntimeIdentifier and them be
+       respected by the SDK. -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.ImportPublishProfile.targets"
+          Condition="'$(PublishProfileImported)' != 'true'"/>
+
+  <!--
+    Expand TargetFramework to TargetFrameworkIdentifier and TargetFrameworkVersion,
+    and adjust intermediate and output paths to include it.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.TargetFrameworkInference.targets" />
+
+  <!-- Set default intermediate and output paths -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DefaultOutputPaths.targets" Condition="'$(UsingNETSdkDefaults)' == 'true'"/>
+
+  <!-- Related issue: https://github.com/dotnet/sdk/issues/12324-->
+  <PropertyGroup>
+    <!-- Import winfx targets when we're targeting .NETFramework and not importing the newer WindowsDesktop targets via `UseWPF`. -->
+    <ImportFrameworkWinFXTargets Condition="'$(ImportFrameworkWinFXTargets)' == '' and '$(UseWPF)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">true</ImportFrameworkWinFXTargets>
+
+    <!-- Otherwise, don't import. -->
+    <ImportFrameworkWinFXTargets Condition="'$(ImportFrameworkWinFXTargets)' == ''">false</ImportFrameworkWinFXTargets>
+  </PropertyGroup>
+
+  <!--
+    Import targets from RazorSDK if referenced
+    Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.BeforeCommon.targets
+    Sdks\Microsoft.NET.Sdk.Razor\targets\Microsoft.NET.Sdk.Razor.BeforeCommon.targets
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)..\..\Microsoft.NET.Sdk.Razor\targets\Microsoft.NET.Sdk.Razor.BeforeCommon.targets" Condition="'$(UsingMicrosoftNETSdkRazor)' == 'true'" />
+
+  <!-- Import workload targets -->
+  <Import Project="Microsoft.NET.Sdk.ImportWorkloads.targets" Condition="'$(MSBuildEnableWorkloadResolver)' == 'true'" />
+
+  <!--
+    Use RuntimeIdentifier to determine PlatformTarget.
+    Also, enforce that RuntimeIdentifier is always specified for .NETFramework executables.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.RuntimeIdentifierInference.targets" />
+
+  <!-- Checks for EOL frameworks -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.EolTargetFrameworks.targets" />
+
+  <!-- Check if the Target Framework is coreclr based -->
+  <PropertyGroup Condition="'$(_IsNETCoreOrNETStandard)' == ''">
+    <_IsNETCoreOrNETStandard Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">true</_IsNETCoreOrNETStandard>
+    <_IsNETCoreOrNETStandard Condition="'$(TargetFrameworkIdentifier)' == '.NETStandard'">true</_IsNETCoreOrNETStandard>
+  </PropertyGroup>
+
+  <!-- Unification / automatic binding redirect logic -->
+  <PropertyGroup>
+    <DesignTimeAutoUnify Condition="'$(DesignTimeAutoUnify)' == ''">true</DesignTimeAutoUnify>
+    <AutoUnifyAssemblyReferences Condition="'$(AutoUnifyAssemblyReferences)' == '' and $(OutputType) == 'Library'">true</AutoUnifyAssemblyReferences>
+    <AutoUnifyAssemblyReferences Condition="'$(AutoUnifyAssemblyReferences)' == '' and '$(_IsNETCoreOrNETStandard)' == 'true'">true</AutoUnifyAssemblyReferences>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(HasRuntimeOutput)' == 'true'">
+    <AutoGenerateBindingRedirects Condition="'$(AutoGenerateBindingRedirects)' == ''">true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+
+  <!-- Default settings for .NET Core and .NET Standard build logic -->
+  <PropertyGroup Condition="'$(_IsNETCoreOrNETStandard)' == 'true'">
+    <GenerateDependencyFile Condition=" '$(GenerateDependencyFile)' == '' ">true</GenerateDependencyFile>
+
+    <!-- Assembly and file versions of runtime assets should be written to the deps.json by default, to support
+         runtime minor version roll-forward: https://github.com/dotnet/core-setup/issues/3546 -->
+    <IncludeFileVersionsInDependencyFile Condition="'$(IncludeFileVersionsInDependencyFile)' == ''">true</IncludeFileVersionsInDependencyFile>
+
+    <!-- Force .dll extension for .NETCoreApp and .NETStandard projects even if output type is exe. -->
+    <TargetExt Condition="'$(TargetExt)' == ''">.dll</TargetExt>
+
+    <!-- Disable the use of FrameworkPathOverride in Microsoft.Common.CurrentVersion.targets which can slow down evaluation.  FrameworkPathOverride
+    is not needed for NETStandard or NETCore since references come from NuGet packages-->
+    <EnableFrameworkPathOverride Condition="'$(EnableFrameworkPathOverride)' == ''">false</EnableFrameworkPathOverride>
+  </PropertyGroup>
+
+  <!-- Regardless of platform, enable dependency file generation if PreserveCompilationContext is set. -->
+  <PropertyGroup>
+    <GenerateDependencyFile Condition="'$(GenerateDependencyFile)' == ''">$(PreserveCompilationContext)</GenerateDependencyFile>
+  </PropertyGroup>
+
+  <!-- Set PublishDir here, before Microsoft.Common.targets, to avoid a competing default there.
+       If using artifacts output path format, PublishDir is already set in Microsoft.NET.DefaultOutputPaths.targets -->
+  <PropertyGroup Condition="'$(UseArtifactsOutput)' != 'true'">
+    <PublishDirName Condition="'$(PublishDirName)' == ''">publish</PublishDirName>
+    <!-- ensure the PublishDir is RID specific-->
+    <PublishDir Condition="'$(PublishDir)' == '' and
+                           '$(AppendRuntimeIdentifierToOutputPath)' != 'true' and
+                           '$(RuntimeIdentifier)' != '' and
+                           '$(_UsingDefaultRuntimeIdentifier)' != 'true'">$(OutputPath)$(RuntimeIdentifier)\$(PublishDirName)\</PublishDir>
+    <PublishDir Condition="'$(PublishDir)' == ''">$(OutputPath)$(PublishDirName)\</PublishDir>
+  </PropertyGroup>
+
+  <!--
+    Sets RestoreAdditionalProjectSources or RestoreAdditionalProjectFallbackFolders to the SDK Offline Cache based
+    on the TargetFramework.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.NuGetOfflineCache.targets" />
+
+  <ItemGroup Condition=" '$(DisableImplicitFrameworkReferences)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
+
+    <_SDKImplicitReference Include="System"/>
+    <_SDKImplicitReference Include="System.Data"/>
+    <_SDKImplicitReference Include="System.Drawing"/>
+    <_SDKImplicitReference Include="System.Xml"/>
+
+    <!-- When doing greater than/less than comparisons between strings, MSBuild will try to parse the strings as Version objects and compare them as
+         such if the parse succeeds. -->
+
+    <!-- Framework assemblies introduced in .NET 3.5 -->
+    <_SDKImplicitReference Include="System.Core" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' "/>
+    <_SDKImplicitReference Include="System.Runtime.Serialization" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' "/>
+    <_SDKImplicitReference Include="System.Xml.Linq" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '3.5' "/>
+
+    <!-- Framework assemblies introduced in .NET 4.0 -->
+    <_SDKImplicitReference Include="System.Numerics" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.0' "/>
+
+    <!-- Framework assemblies introduced in .NET 4.5 -->
+    <_SDKImplicitReference Include="System.IO.Compression.FileSystem" Condition=" '$(_TargetFrameworkVersionWithoutV)' >= '4.5' "/>
+
+    <_SDKImplicitReference Update="@(_SDKImplicitReference)"
+                           Pack="false"
+                           IsImplicitlyDefined="true" />
+
+    <!-- Don't duplicate any references that are explicit in the project file.  This means that if you do want to include a framework assembly in your
+         NuGet package, you can just add the Reference to your project file. -->
+    <_SDKImplicitReference Remove="@(Reference)" />
+
+    <!-- Add the implicit references to @(Reference) -->
+    <Reference Include="@(_SDKImplicitReference)" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- Prevent System.Core reference from being added separately (see Microsoft.NETFramework.CurrentVersion.props) -->
+    <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DisableImplicitAssetTargetFallback)' != 'true' and '$(_IsNETCoreOrNETStandard)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' >= '2.0'">
+    <AssetTargetFallback>$(AssetTargetFallback);net461;net462;net47;net471;net472;net48;net481</AssetTargetFallback>
+  </PropertyGroup>
+
+  <!-- Add conditional compilation symbols for the target framework (for example NET461, NETSTANDARD2_0, NETCOREAPP1_0) -->
+  <PropertyGroup Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetFrameworkIdentifier)' != '.NETPortable' and '$(TargetFrameworkIdentifier)' != ''">
+    <_FrameworkIdentifierForImplicitDefine>$(TargetFrameworkIdentifier.Replace('.', '').ToUpperInvariant())</_FrameworkIdentifierForImplicitDefine>
+    <_FrameworkIdentifierForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) ">NET</_FrameworkIdentifierForImplicitDefine>
+    <VersionlessImplicitFrameworkDefine>$(_FrameworkIdentifierForImplicitDefine)</VersionlessImplicitFrameworkDefine>
+    <_FrameworkIdentifierForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">NET</_FrameworkIdentifierForImplicitDefine>
+
+    <_FrameworkVersionForImplicitDefine>$(TargetFrameworkVersion.TrimStart('vV'))</_FrameworkVersionForImplicitDefine>
+    <_FrameworkVersionForImplicitDefine>$(_FrameworkVersionForImplicitDefine.Replace('.', '_'))</_FrameworkVersionForImplicitDefine>
+    <_FrameworkVersionForImplicitDefine Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework'">$(_FrameworkVersionForImplicitDefine.Replace('_', ''))</_FrameworkVersionForImplicitDefine>
+
+    <ImplicitFrameworkDefine>$(_FrameworkIdentifierForImplicitDefine)$(_FrameworkVersionForImplicitDefine)</ImplicitFrameworkDefine>
+
+    <BackwardsCompatFrameworkDefine Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0))">$(TargetFrameworkIdentifier.Replace('.', '').ToUpperInvariant())</BackwardsCompatFrameworkDefine>
+  </PropertyGroup>
+
+  <!-- Add conditional compilation symbols for the target platform (for example ANDROID, IOS, WINDOWS) -->
+  <Target Name="GenerateTargetPlatformDefineConstants"
+        Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) " >
+    <PropertyGroup>
+      <_PlatformIdentifierForImplicitDefine>$(TargetPlatformIdentifier.ToUpperInvariant())</_PlatformIdentifierForImplicitDefine>
+      <_PlatformVersionForImplicitDefine>$(TargetPlatformVersion.Replace('.', '_'))</_PlatformVersionForImplicitDefine>
+    </PropertyGroup>
+    <ItemGroup>
+      <_ImplicitDefineConstant Include="$(_PlatformIdentifierForImplicitDefine)" />
+      <_ImplicitDefineConstant Include="$(_PlatformIdentifierForImplicitDefine)$(_PlatformVersionForImplicitDefine)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Add OR_GREATER compilation symbols for target frameworks with .NET Framework, .NET Standard, .NET Core, and .NET -->
+  <Target Name="GenerateNETCompatibleDefineConstants"
+          Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and ('$(TargetFrameworkIdentifier)' == '.NETCoreApp' or '$(TargetFrameworkIdentifier)' == '.NETFramework' or '$(TargetFrameworkIdentifier)' == '.NETStandard')" >
+    <ItemGroup>
+      <_SupportedFrameworkVersions Include="@(SupportedNETCoreAppTargetFramework->'%(Identity)'->TrimStart('.NETCoreApp,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' " />
+      <_SupportedFrameworkVersions Include="@(SupportedNETFrameworkTargetFramework->'%(Identity)'->TrimStart('.NETFramework,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' " />
+      <_SupportedFrameworkVersions Include="@(SupportedNETStandardTargetFramework->'%(Identity)'->TrimStart('.NETStandard,Version=v'))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETStandard' " />
+      <_CompatibleFrameworkVersions Include="@(_SupportedFrameworkVersions)" Condition=" $([MSBuild]::VersionLessThanOrEquals(%(Identity), $(TargetFrameworkVersion))) " />
+      <_FormattedCompatibleFrameworkVersions Include="@(_CompatibleFrameworkVersions)" Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' or '$(TargetFrameworkIdentifier)' == '.NETStandard' " />
+      <_FormattedCompatibleFrameworkVersions Include="@(_CompatibleFrameworkVersions->'%(Identity)'->Replace('.', ''))" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' " />
+      <_ImplicitDefineConstant Include="@(_FormattedCompatibleFrameworkVersions->'$(_FrameworkIdentifierForImplicitDefine)%(Identity)_OR_GREATER'->Replace('.', '_'))"
+                               Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' or $([MSBuild]::VersionGreaterThanOrEquals(%(_FormattedCompatibleFrameworkVersions.Identity), 5.0)) " />
+      <_ImplicitDefineConstant Include="@(_FormattedCompatibleFrameworkVersions->'NETCOREAPP%(Identity)_OR_GREATER'->Replace('.', '_'))"
+                               Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionLessThan(%(_FormattedCompatibleFrameworkVersions.Identity), 5.0)) " />
+    </ItemGroup>
+  </Target>
+
+  <!-- Add OR_GREATER compilation symbols for target platforms. -->
+  <Target Name="GeneratePlatformCompatibleDefineConstants"
+          Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' and '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) " >
+    <ItemGroup>
+      <_SupportedPlatformCompatibleVersions Include="@(SdkSupportedTargetPlatformVersion)" Condition=" %(Identity) != '' and $([MSBuild]::VersionLessThanOrEquals(%(Identity), $(TargetPlatformVersion))) " />
+      <_ImplicitDefineConstant Include="@(_SupportedPlatformCompatibleVersions->Distinct()->'$(TargetPlatformIdentifier.ToUpper())%(Identity)_OR_GREATER'->Replace('.', '_'))" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Remove TRACE when DisableDiagnosticTracing is true -->
+  <Target Name="_DisableDiagnosticTracing"
+          Condition="'$(DisableDiagnosticTracing)' == 'true'"
+          DependsOnTargets="GenerateTargetPlatformDefineConstants;GenerateNETCompatibleDefineConstants;GeneratePlatformCompatibleDefineConstants"
+          BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <_DefineConstantsWithoutTrace Include="$(DefineConstants)" />
+      <_DefineConstantsWithoutTrace Remove="TRACE"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <DefineConstants>@(_DefineConstantsWithoutTrace)</DefineConstants>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Add implicitly defined preprocessor symbols to DefineConstants -->
+  <Target Name="AddImplicitDefineConstants"
+          Condition=" '$(DisableImplicitFrameworkDefines)' != 'true' "
+          DependsOnTargets="GenerateTargetPlatformDefineConstants;GenerateNETCompatibleDefineConstants;GeneratePlatformCompatibleDefineConstants;_DisableDiagnosticTracing"
+          BeforeTargets="CoreCompile" >
+    <PropertyGroup>
+      <DefineConstants Condition=" '@(_ImplicitDefineConstant)' != '' " >$(DefineConstants);@(_ImplicitDefineConstant)</DefineConstants>
+      <FinalDefineConstants Condition=" '@(_ImplicitDefineConstant)' != '' and '$(Language)' == 'VB' " >$(FinalDefineConstants),@(_ImplicitDefineConstant->'%(Identity)=-1', ',')</FinalDefineConstants>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Handle XML documentation file settings -->
+  <PropertyGroup Condition="'$(GenerateDocumentationFile)' == ''">
+    <GenerateDocumentationFile Condition="'$(DocumentationFile)' == ''">false</GenerateDocumentationFile>
+    <GenerateDocumentationFile Condition="'$(DocumentationFile)' != ''">true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GenerateDocumentationFile)' == 'true' and '$(DocumentationFile)' == ''">
+    <DocumentationFile Condition="'$(MSBuildProjectExtension)' == '.vbproj'">$(AssemblyName).xml</DocumentationFile>
+    <DocumentationFile Condition="'$(MSBuildProjectExtension)' != '.vbproj'">$(IntermediateOutputPath)$(AssemblyName).xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GenerateDocumentationFile)' != 'true'">
+    <DocumentationFile />
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PublishDocumentationFiles Condition="'$(PublishDocumentationFiles)' == ''">true</PublishDocumentationFiles>
+    <PublishDocumentationFile Condition="'$(PublishDocumentationFile)' == '' and '$(PublishDocumentationFiles)' == 'true'">true</PublishDocumentationFile>
+    <PublishReferencesDocumentationFiles Condition="'$(PublishReferencesDocumentationFiles)' == '' and '$(PublishDocumentationFiles)' == 'true'">true</PublishReferencesDocumentationFiles>
+  </PropertyGroup>
+
+  <!-- Add a project capability so that the project properties in the IDE can show the option to generate an XML documentation file without specifying the filename -->
+  <ItemGroup>
+    <ProjectCapability Include="GenerateDocumentationFile" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <IsNetCoreAppTargetingLatestTFM Condition="'$(IsNetCoreAppTargetingLatestTFM)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' == '$(NETCoreAppMaximumVersion)'">true</IsNetCoreAppTargetingLatestTFM>
+  </PropertyGroup>
+
+</Project>

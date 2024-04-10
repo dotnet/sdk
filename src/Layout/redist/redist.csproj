@@ -1,0 +1,111 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+    <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <AssetTargetFallback>dotnet5.4</AssetTargetFallback>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <DisableImplicitNETCorePlatformsReference>true</DisableImplicitNETCorePlatformsReference>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <!-- do not import analyzer assemblies from the sdk as they will be double loaded -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <!-- Disable the fast up-to-date check as it relies on the redist.dll, which we delete as part of the build process in GereateLayout.targets. -->
+    <!-- Property info: https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md#disabling-the-up-to-date-check -->
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+    <!-- NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. -->
+    <MSBuildWarningsAsMessages>$(MSBuildWarningsAsMessages);NETSDK1205</MSBuildWarningsAsMessages>
+  </PropertyGroup>
+
+  <Import Project="targets\BuildToolsetTasks.targets" />
+  <Import Project="targets\GetRuntimeInformation.targets" />
+  <Import Project="targets\Version.targets" />
+  <Import Project="targets\BundledSdks.targets" />
+  <Import Project="targets\BundledTools.targets" />
+  <Import Project="targets\PublishDotnetWatch.targets" />
+  <Import Project="targets\GenerateLayout.targets" />
+  <Import Project="targets\GenerateArchive.targets" />
+  <Import Project="targets\OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
+  <Import Project="targets\MSBuildExtensions.targets" />
+
+  <ItemGroup>
+    <PackageReference Include="NuGet.Build.Tasks" />
+    <PackageReference Include="NuGet.Build.Tasks.Console" />
+    <PackageReference Include="NuGet.Common" /><!-- Keeps this from being bumped by transitive refs (templating) -->
+    <PackageReference Include="Microsoft.Build.NuGetSdkResolver" />
+    <PackageReference Include="Microsoft.TestPlatform.CLI" ExcludeAssets="All" />
+    <PackageReference Include="Microsoft.TestPlatform.Build" />
+    <PackageReference Condition=" '$(DotNetBuildSourceOnly)' != 'true' " Include="NuGet.Localization" />
+    <PackageReference Include="NuGet.ProjectModel" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" ExcludeAssets="All" GeneratePathProperty="true"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true"/>
+    <PackageReference Include="Microsoft.FSharp.Compiler" ExcludeAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" GeneratePathProperty="true" />
+    <PackageDownload Include="Microsoft.Net.Compilers.Toolset" Version="[$(MicrosoftNetCompilersToolsetVersion)]" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" ExcludeAssets="All" GeneratePathProperty="true" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+
+    <!-- Lift up dependencies of dependencies to prevent build tasks from getting pinned to older versions -->
+    <PackageReference Include="System.CodeDom" />
+    <PackageReference Include="System.Text.Encoding.CodePages" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <PackageReference Include="System.Resources.Extensions" />
+    <!-- Override to use the newest version. In source-only modes this will be a no-diff change. -->
+    <PackageReference Include="Microsoft.Build.Runtime" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="$(MicrosoftBuildVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- These project references with ReferenceOutputAssembly="false" should also set SkipGetTargetFrameworkProperties="true".  Otherwise, only the inner
+         build of a multi-targeted project will be built to fulfill the project reference, and if the redist project depends on output that is created
+         in the outer build (which is the case for some of these references), there may be sporadic incorrect builds if the outer build happens to run concurrently
+         with or after the redist build. -->
+    <ProjectReference Include="..\..\Containers\packaging\package.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+    <ProjectReference Include="..\tool_msbuild\tool_msbuild.csproj" />
+    <ProjectReference Include="..\tool_nuget\tool_nuget.csproj" />
+    <ProjectReference Include="..\..\Cli\dotnet\dotnet.csproj" />
+    <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
+    <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-watch\dotnet-watch.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+    <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-format\dotnet-format.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"  Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="minimumMSBuildVersion">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="trustedroots\codesignctl.pem">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="trustedroots\timestampctl.pem">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- We will reference newer analyzer packages that what can be referenced by the SDK we build with
+       To break the cycle we remove all analyzers before this compiles. -->
+  <Target Name="RemoveAnalyzers" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="RemoveMSBuildRef" AfterTargets="ResolvePackageAssets">
+    <!-- MSBuild.dll is now in the ref folder of the Microsoft.Build.Runtime NuGet package.
+           This counter-intuitively was stopping it from being written to the deps.json file.
+           (This may have been because there wasn't a corresponding implementation in the lib
+           folder).
+
+           This target works around that by removing the item that is generated from the
+           ref assembly in the NuGet package. -->
+    <ItemGroup>
+      <ResolvedCompileFileDefinitions Remove="@(ResolvedCompileFileDefinitions)" Condition="'%(FileName)' == 'MSBuild'" />
+    </ItemGroup>
+  </Target>
+
+</Project>

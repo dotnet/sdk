@@ -1,0 +1,157 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="cs" original="../Strings.resx">
+    <body>
+      <trans-unit id="ConcreteWorkloadHasNoDescription">
+        <source>Workload definition '{0}' is a concrete dev workload but has no description</source>
+        <target state="translated">Definice úlohy {0} je konkrétní vývojářská úloha, která ale nemá žádný popis.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConflictingWorkloadDefinition">
+        <source>Workload definition '{0}' in manifest '{1}' [{2}] conflicts with manifest '{3}' [{4}]</source>
+        <target state="translated">Definice úlohy {0} v manifestu {1} [{2}] je v konfliktu s manifestem {3} [{4}].</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConflictingWorkloadPack">
+        <source>Workload pack '{0}' in manifest '{1}' [{2}] conflicts with manifest '{3}' [{4}]</source>
+        <target state="translated">Balíček úlohy {0} v manifestu {1} [{2}] je v konfliktu s manifestem {3} [{4}].</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CyclicWorkloadRedirect">
+        <source>Cyclic workload redirect '{0}' in manifest '{1}' [{2}]</source>
+        <target state="translated">Cyklické přesměrování úlohy {0} v manifestu {1} [{2}]</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DuplicateKeyAtOffset">
+        <source>Duplicate key '{0}' at offset {1}</source>
+        <target state="translated">Duplicitní klíč {0} u posunu {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DuplicateManifestID">
+        <source>Manifest provider {0} returned a duplicate manifest ID '{1}' [{2}] that conflicts with existing manifest [{3}]</source>
+        <target state="translated">Zprostředkovatel manifestu {0} vrátil duplicitní ID manifestu {1} [{2}], který je v konfliktu s existujícím manifestem [{3}].</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExpectedBoolAtOffset">
+        <source>Expected boolean value at offset {0}</source>
+        <target state="translated">Očekávána logická hodnota u posunu {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExpectedIntegerAtOffset">
+        <source>Expected integer value at offset {0}</source>
+        <target state="translated">Očekávána celočíselná hodnota u posunu {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExpectedStringAtOffset">
+        <source>Expected string value at offset {0}</source>
+        <target state="translated">Očekávána řetězcová hodnota u posunu {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExpectedTokenAtOffset">
+        <source>Expected {0} token at offset {1}</source>
+        <target state="translated">Očekáván token {0} u posunu {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IncompleteDocument">
+        <source>Document ended prematurely</source>
+        <target state="translated">Dokument předčasně ukončen</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidManifestVersion">
+        <source>Invalid version: {0}</source>
+        <target state="translated">Neplatná verze: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidVersionForWorkload">
+        <source>Error parsing version '{1}' for workload manifest ID '{0}'</source>
+        <target state="translated">Chyba při analýze verze {1} pro ID manifestu úlohy {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestDependencyMissing">
+        <source>Did not find workload manifest dependency '{0}' required by manifest '{1}' [{2}]</source>
+        <target state="translated">Nebyla nalezena závislost manifestu úlohy {0} požadovaná manifestem {1} [{2}].</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestDependencyVersionTooLow">
+        <source>Workload manifest dependency '{0}' version '{1}' is lower than version '{2}' required by manifest '{3}' [{4}]</source>
+        <target state="translated">Závislost manifestu úlohy {0} verze {1} je nižší než verze {2} požadovaná manifestem {3} [{4}].</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ManifestFromInstallStateNotFound">
+        <source>Workload manifest {0}, which was specified in {1}, was not found. Running "dotnet workload repair" may resolve this.</source>
+        <target state="translated">Manifest úlohy {0}, který byl určen v {1}, nebyl nalezen. Tento problém může vyřešit spuštění „dotnet workload repair“.</target>
+        <note>{Locked="dotnet workload repair"}</note>
+      </trans-unit>
+      <trans-unit id="ManifestFromWorkloadSetNotFound">
+        <source>Workload manifest {0} from workload version {1} was not installed. Running "dotnet workload repair" may resolve this.</source>
+        <target state="translated">Manifest úlohy {0} z verze úlohy {1} nebyl nainstalován. Tento problém může vyřešit spuštění „dotnet workload repair“.</target>
+        <note>{Locked="dotnet workload repair"}</note>
+      </trans-unit>
+      <trans-unit id="MissingBaseWorkload">
+        <source>Could not find workload '{0}' extended by workload '{1}' in manifest '{2}' [{3}]</source>
+        <target state="translated">Nepovedlo se najít úlohu {0} rozšířenou podle úlohy {1} v manifestu {2} [{3}].</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingOrInvalidManifestVersion">
+        <source>Missing or invalid manifest version</source>
+        <target state="translated">Chybějící nebo neplatná verze manifestu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingWorkloadPackKind">
+        <source>Missing kind for workload pack '{0}'</source>
+        <target state="translated">Chybějící typ pro sadu úloh {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingWorkloadPackVersion">
+        <source>Missing version for workload pack '{0}'</source>
+        <target state="translated">Chybějící verze pro sadu úloh {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RedirectWorkloadHasOtherKeys">
+        <source>Redirect workload '{0}' has keys other than 'redirect-to'</source>
+        <target state="translated">Přesměrování úlohy {0} má jiné klíče než redirect-to.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedTokenAtOffset">
+        <source>Unexpected token '{0}' at offset {1}</source>
+        <target state="translated">Neočekávaný token {0} u posunu {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownKeyAtOffset">
+        <source>Unknown key '{0}' at offset {1}</source>
+        <target state="translated">Neznámý klíč {0} u posunu {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownWorkloadDefinitionKind">
+        <source>Unknown workload definition kind '{0}' at offset {1}</source>
+        <target state="translated">Neznámý typ definice úlohy {0} u posunu {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnknownWorkloadPackKind">
+        <source>Unknown workload pack kind '{0}' at offset {1}</source>
+        <target state="translated">Neznámý druh sady úloh {0} u posunu {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnresolvedWorkloadRedirect">
+        <source>Unresolved target '{0}' for workload redirect '{1}' in manifest '{2}' [{3}]</source>
+        <target state="translated">Nevyřešený cíl {0} pro přesměrování úlohy {1} v manifestu {2} [{3}]</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionFromGlobalJsonNotFound">
+        <source>Workload version {0}, which was specified in {1}, was not found. Run "dotnet workload restore" to install this workload version.</source>
+        <target state="translated">Verze {0} úlohy, která byla zadána v {1}, nebyla nalezena. Spuštěním příkazu dotnet workload restore nainstalujte tuto verzi úlohy.</target>
+        <note>{Locked="dotnet workload restore"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadVersionFromInstallStateNotFound">
+        <source>Workload version {0}, which was specified in {1}, was not found.</source>
+        <target state="translated">Verze úlohy {0}, která byla zadána v {1}, nebyla nalezena.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionNotFound">
+        <source>Workload version {0} was not found.</source>
+        <target state="translated">{0} verze úlohy se nenašla.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

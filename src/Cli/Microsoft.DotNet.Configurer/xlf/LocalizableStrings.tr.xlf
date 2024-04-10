@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="tr" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="FailedToDetermineUserHomeDirectory">
+        <source>The user's home directory could not be determined. Set the '{0}' environment variable to specify the directory to use.</source>
+        <target state="translated">Kullanıcının giriş dizini belirlenemedi. Kullanılacak dizini belirtmek için '{0}' ortam değişkenini ayarlayın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FirstTimeMessageAspNetCertificate">
+        <source>----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate, run 'dotnet dev-certs https --trust'
+Learn about HTTPS: https://aka.ms/dotnet-https</source>
+        <target state="translated">----------------
+Bir ASP.NET Core HTTPS geliştirme sertifikası yüklendi.
+Sertifikaya güvenmek için 'dotnet dev-certs https --trust' çalıştırın
+Bilgi edinmek için bkz. https://aka.ms/dotnet-https</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FirstTimeMessageAspNetCertificateLinux">
+        <source>----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate, view the instructions: https://aka.ms/dotnet-https-linux</source>
+        <target state="translated">----------------
+Bir ASP.NET Core HTTPS geliştirme sertifikası yüklendi.
+Sertifikaya güvenmek için https://aka.ms/dotnet-https adresindeki yönergeleri görüntüleyin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FirstTimeMessageMoreInformation">
+        <source>----------------
+Write your first app: https://aka.ms/dotnet-hello-world
+Find out what's new: https://aka.ms/dotnet-whats-new
+Explore documentation: https://aka.ms/dotnet-docs
+Report issues and find source on GitHub: https://github.com/dotnet/core
+Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
+--------------------------------------------------------------------------------------</source>
+        <target state="translated">----------------
+İlk uygulamanızı yazın: https://aka.ms/dotnet-hello-world
+Yenilikleri öğrenin: https://aka.ms/dotnet-whats-new
+Belgeleri keşfedin: https://aka.ms/dotnet-docs
+Sorunları bildirin ve GitHub'da kaynak bulun: https://github.com/dotnet/core
+Kullanılabilir komutları görmek için 'dotnet --help' komutunu kullanın veya şu adresi ziyaret edin: https://aka.ms/dotnet-cli
+--------------------------------------------------------------------------------------</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FirstTimeMessageWelcome">
+        <source>Welcome to .NET {0}!
+---------------------
+SDK Version: {1}</source>
+        <target state="translated">.NET {0} sürümüne hoş geldiniz!
+---------------------
+SDK Sürümü: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TelemetryMessage">
+        <source>Telemetry
+---------
+The .NET tools collect usage data in order to help us improve your experience. It is collected by Microsoft and shared with the community. You can opt-out of telemetry by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1' or 'true' using your favorite shell.
+
+Read more about .NET CLI Tools telemetry: https://aka.ms/dotnet-cli-telemetry</source>
+        <target state="translated">Telemetri
+----------
+.NET araçları, deneyiminizi geliştirmemize yardımcı olmak amacıyla kullanım verilerini toplar. Bu veriler Microsoft tarafından toplanır ve toplulukla paylaşılır. Telemetriyi geri çevirmek için dilediğiniz kabuğu kullanarak DOTNET_CLI_TELEMETRY_OPTOUT ortam değişkenini '1' veya 'true' olarak ayarlayabilirsiniz.
+
+.NET CLI Araçları telemetrisi hakkında daha fazla bilgi edinin: https://aka.ms/dotnet-cli-telemetry</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

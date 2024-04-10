@@ -1,0 +1,28 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.BeforeCommonCrossTargeting.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+    Apply these defaults from Microsoft.Common.CurrentVersion.targets now since we're running before them,
+    but need to adjust them and/or make decisions in terms of them.
+   -->
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
+    <Platform Condition="'$(Platform)'==''">AnyCPU</Platform>
+    <PlatformName Condition="'$(PlatformName)' == ''">$(Platform)</PlatformName>
+  </PropertyGroup>
+  
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DefaultAssemblyInfo.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.DefaultOutputPaths.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.Workloads.CrossTargeting.targets" />
+
+</Project>

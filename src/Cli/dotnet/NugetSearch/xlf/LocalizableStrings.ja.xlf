@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ja" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="NonRetriableNugetSearchFailure">
+        <source>Failed to search. NuGet Search API response detail:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</source>
+        <target state="translated">検索に失敗しました。NuGet Search API からの応答の詳細:
+    RequestUrl: {0}。ReasonPhrase: {1}。StatusCode: {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RetriableNugetSearchFailure">
+        <source>Failed to search. Retry later may resolve the issue. NuGet Search API response detail:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</source>
+        <target state="translated">検索に失敗しました。後でもう一度試すと、問題が解決する可能性があります。NuGet Search API からの応答の詳細:
+    RequestUrl: {0}。ReasonPhrase: {1}。StatusCode: {2}。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

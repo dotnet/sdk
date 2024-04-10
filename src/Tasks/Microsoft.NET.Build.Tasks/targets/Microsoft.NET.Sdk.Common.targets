@@ -1,0 +1,60 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Common.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- This file is imported by both cross-targeting and inner builds. Set properties that need to be available to both here. -->
+
+  <PropertyGroup>
+    <MicrosoftNETBuildTasksDirectoryRoot>$(MSBuildThisFileDirectory)..\tools\</MicrosoftNETBuildTasksDirectoryRoot>
+    <MicrosoftNETBuildTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net9.0</MicrosoftNETBuildTasksTFM>
+    <MicrosoftNETBuildTasksTFM Condition=" '$(MicrosoftNETBuildTasksTFM)' == ''">net472</MicrosoftNETBuildTasksTFM>
+    <MicrosoftNETBuildTasksDirectory>$(MicrosoftNETBuildTasksDirectoryRoot)$(MicrosoftNETBuildTasksTFM)\</MicrosoftNETBuildTasksDirectory>
+    <MicrosoftNETBuildTasksAssembly>$(MicrosoftNETBuildTasksDirectory)Microsoft.NET.Build.Tasks.dll</MicrosoftNETBuildTasksAssembly>
+
+    <!--
+          Hardcoded list of known implicit packages that are added to project from default SDK targets implicitly.
+          Should be re-visited when multiple TFM support is added to Dependencies logic.
+    -->
+    <DefaultImplicitPackages>Microsoft.NETCore.App;NETStandard.Library</DefaultImplicitPackages>
+  </PropertyGroup>
+
+  <!--
+     Some versions of Microsoft.NET.Test.Sdk.targets change the OutputType after we've set _IsExecutable and
+     HasRuntimeOutput default in Microsoft.NET.Sdk.BeforeCommon.targets. Refresh these value here for backwards
+     compatibilty with that.
+   -->
+  <PropertyGroup>
+    <_IsExecutable Condition="'$(OutputType)' == 'Exe' or '$(OutputType)'=='WinExe'">true</_IsExecutable>
+    <HasRuntimeOutput Condition="'$(_UsingDefaultForHasRuntimeOutput)' == 'true'">$(_IsExecutable)</HasRuntimeOutput>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(DotnetCliToolTargetFramework)' == ''">
+    <!-- Maximum supported target framework for DotnetCliProjectTools is .NET Core 2.2 -->
+    <DotnetCliToolTargetFramework>netcoreapp2.2</DotnetCliToolTargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IncludeBuildOutput Condition=" '$(PackAsTool)' == 'true' ">false</IncludeBuildOutput>
+    <PackageType Condition=" '$(PackAsTool)' == 'true' ">DotnetTool</PackageType>
+    <RuntimeIdentifiers Condition=" '$(PackAsTool)' == 'true' ">$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnablePreviewFeatures)' == 'true' And '$(IsNetCoreAppTargetingLatestTFM)' == 'true'">
+    <LangVersion>Preview</LangVersion>
+  </PropertyGroup>
+
+  <UsingTask TaskName="NETSdkError" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="NETSdkWarning" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="NETSdkInformation" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="ShowPreviewMessage" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+</Project>

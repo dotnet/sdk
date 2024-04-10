@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)\SmallNameDir\**\*.*" >
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)\Signature.Newest.Stamp" Condition="'$(PlaceStamp)' == 'true'">
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>$(ExcludeNewest)</ExcludeFromSingleFile>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)\Signature.Always.Stamp" Condition="'$(PlaceStamp)' == 'true'">
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      <ExcludeFromSingleFile>$(ExcludeAlways)</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
+</Project>

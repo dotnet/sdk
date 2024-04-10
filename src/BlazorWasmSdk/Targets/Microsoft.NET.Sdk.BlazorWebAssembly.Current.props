@@ -1,0 +1,41 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.BlazorWebAssembly.props
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project ToolsVersion="14.0" TreatAsLocalProperty="RuntimeIdentifier">
+  <PropertyGroup>
+    <OutputType>exe</OutputType>
+
+    <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CopyOutputSymbolsToPublishDirectory>false</CopyOutputSymbolsToPublishDirectory>
+
+    <!-- Trimmer defaults -->
+    <PublishTrimmed Condition="'$(PublishTrimmed)' == ''">true</PublishTrimmed>
+    <TrimMode Condition="'$(TrimMode)' == ''">partial</TrimMode>
+    <TrimmerRemoveSymbols Condition="'$(TrimmerRemoveSymbols)' == ''">false</TrimmerRemoveSymbols>
+
+    <!-- Disable accelerated builds in Visual Studio -->
+    <AccelerateBuildsInVisualStudio>false</AccelerateBuildsInVisualStudio>
+
+    <!-- Static web assets defaults -->
+    <StaticWebAssetProjectMode Condition="'$(StaticWebAssetProjectMode)' == ''">Root</StaticWebAssetProjectMode>
+    <StaticWebAssetsAdditionalPublishProperties>$(StaticWebAssetsAdditionalPublishProperties);_PublishingBlazorWasmProject=true</StaticWebAssetsAdditionalPublishProperties>
+    <StaticWebAssetsAdditionalEmbeddedPublishProperties>$(StaticWebAssetsAdditionalEmbeddedPublishProperties);_PublishingBlazorWasmProject=true</StaticWebAssetsAdditionalEmbeddedPublishProperties>
+
+    <StaticWebAssetsGetEmbeddedPublishAssetsTargets>ComputeFilesToPublish;GetCurrentProjectEmbeddedPublishStaticWebAssetItems</StaticWebAssetsGetEmbeddedPublishAssetsTargets>
+  </PropertyGroup>
+
+  <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.props" />
+  <Import Sdk="Microsoft.NET.Sdk.Web.ProjectSystem" Project="Sdk.props" />
+  <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.props" />
+  <Import Sdk="Microsoft.NET.Sdk.WebAssembly" Project="Sdk.props" />
+
+</Project>

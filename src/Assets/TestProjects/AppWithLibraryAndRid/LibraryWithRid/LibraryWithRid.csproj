@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard1.4</TargetFramework>
+    <RuntimeIdentifier>$(TestRuntimeIdentifier)</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Description>'$(RuntimeIdentifier)'</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Libuv" Version="1.10.0" />
+  </ItemGroup>
+</Project>

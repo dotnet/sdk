@@ -1,0 +1,30 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+
+  <ItemGroup>
+    <Foo Include="Bar" />
+    <_CopyDirectoryBuildTestDependenciesInput Include="$(MSBuildThisFileDirectory)..\Common\Empty.props" />
+    <_CopyDirectoryBuildTestDependenciesInput Include="$(MSBuildThisFileDirectory)..\Common\Empty.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <_CopyDirectoryBuildTestDependenciesOutput Include="$(ArtifactsTmpDir)Directory.Build.props" />
+    <_CopyDirectoryBuildTestDependenciesOutput Include="$(ArtifactsTmpDir)Directory.Build.targets" />
+  </ItemGroup>
+
+  <!-- Since TestFramework is multi-targeted, only copy these files for one of the inner builds -->
+  <Target Name="_CopyDirectoryBuildTestDependencies" AfterTargets="Build" Inputs="@(_CopyDirectoryBuildTestDependenciesInput)" Outputs="@(_CopyDirectoryBuildTestDependenciesOutput)"
+          Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">
+    <Copy SourceFiles="@(_CopyDirectoryBuildTestDependenciesInput)" DestinationFiles="@(_CopyDirectoryBuildTestDependenciesOutput)" />
+  </Target>
+  
+  <Target Name="WriteNugetConfigFile" 
+          AfterTargets="Build"
+          Inputs="$(RepoRoot)NuGet.config"
+          Outputs="$(ArtifactsTmpDir)NuGet.config"
+          Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'"
+          >
+    <Copy SourceFiles="$(RepoRoot)NuGet.config" DestinationFiles="$(ArtifactsTmpDir)NuGet.config" />
+  </Target>
+
+</Project>

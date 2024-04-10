@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+
+  <!-- This is a smaller build of Microsoft.NET.Build.Tasks to be used outside of SDK projects -->
+
+  <PropertyGroup>
+    <PackageId>Microsoft.NET.Build.Extensions</PackageId>
+    <OutDirName>$(Configuration)\Sdks\$(PackageId)\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\tools</OutDirName>
+  </PropertyGroup>
+  
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <Description>The MSBuild targets and tasks which extend MSBuild's common targets.</Description>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Microsoft.NET.Build.Tasks</RootNamespace>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <!-- MSBuild Task DLLs need to be versioned with every build -->
+    <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <OutputPath>$(BaseOutputPath)</OutputPath>
+    <DefineConstants>$(DefineConstants);EXTENSIONS</DefineConstants>
+    <IsPackable>true</IsPackable>
+    <PackageLayoutOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\$(PackageId)\</PackageLayoutOutputPath>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <PackageReference>
+      <PrivateAssets>All</PrivateAssets>
+      <Publish>true</Publish>
+    </PackageReference>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="NETStandard.Library.NETFramework" ExcludeAssets="All" NoWarn="NU1701" />
+    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
+    <PackageReference Include="NETStandard.Library" VersionOverride="2.0.3" ExcludeAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- don't reference MS.NET.Build.Tasks, but make sure it builds before this project -->
+    <ProjectReference Include="..\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <Compile Include="..\Common\**\*.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="..\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="msbuildExtensions\**\*" PackagePath="msbuildExtensions\" />
+    <None Include="msbuildExtensions-ver\**\*" PackagePath="msbuildExtensions-ver\" />
+    <None Include="..\Common\Resources\xlf\**\*" LinkBase="Resources\xlf" />
+    <None Include="..\Common\targets\**\*" PackagePath="msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\" LinkBase="%(PackagePath)" />
+    <UpToDateCheckInput Include="@(None)" />
+  </ItemGroup>
+
+  <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">
+    <PropertyGroup>
+      <_NETStandardLibraryNETFrameworkPath>$(NuGetPackageRoot)netstandard.library.netframework\$(NETStandardLibraryNETFrameworkVersion)\build</_NETStandardLibraryNETFrameworkPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <LayoutFile Include="@(None)" Condition="'%(None.PackagePath)' != '' and '%(None.PackagePath)' != 'Icon.png'">
+        <TargetPath>%(None.PackagePath)\%(None.RecursiveDir)%(None.Filename)%(None.Extension)</TargetPath>
+      </LayoutFile>
+      <NetStandardNetFxFile Include="$(_NETStandardLibraryNETFrameworkPath)\**\*" Exclude="$(_NETStandardLibraryNETFrameworkPath)\**\*.props;$(_NETStandardLibraryNETFrameworkPath)\**\*.targets" />
+      <LayoutFile Include="@(NetStandardNetFxFile)">
+        <TargetPath>msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\%(NetStandardNetFxFile.RecursiveDir)%(NetStandardNetFxFile.FileName)%(NetStandardNetFxFile.Extension)</TargetPath>
+      </LayoutFile>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyAdditionalFilesToLayout" Condition="'$(TargetFramework)' == ''" DependsOnTargets="PrepareAdditionalFilesToLayout" AfterTargets="Build" Inputs="@(LayoutFile)" Outputs="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
+    <Copy SourceFiles="@(LayoutFile)" DestinationFiles="@(LayoutFile-&gt;'$(PackageLayoutOutputPath)%(TargetPath)')">
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
+  <Target Name="PackLayout" DependsOnTargets="CopyAdditionalFilesToLayout" BeforeTargets="$(GenerateNuspecDependsOn)">
+    <ItemGroup>
+      <Content Include="$(PackageLayoutOutputPath)**\*" PackagePath="\" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+</Project>

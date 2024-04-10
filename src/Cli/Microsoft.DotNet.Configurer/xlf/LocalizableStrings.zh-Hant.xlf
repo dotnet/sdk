@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="FailedToDetermineUserHomeDirectory">
+        <source>The user's home directory could not be determined. Set the '{0}' environment variable to specify the directory to use.</source>
+        <target state="translated">無法判定該使用者的主目錄。請設定 '{0}' 環境變數，指定要使用的目錄。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FirstTimeMessageAspNetCertificate">
+        <source>----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate, run 'dotnet dev-certs https --trust'
+Learn about HTTPS: https://aka.ms/dotnet-https</source>
+        <target state="translated">----------------
+安裝 ASP.NET 核心 HTTPS 開發憑證。
+若要信任憑證，請執行 'dotnet dev-certs https --trust'
+了解 HTTPS: https://aka.ms/dotnet-https</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FirstTimeMessageAspNetCertificateLinux">
+        <source>----------------
+Installed an ASP.NET Core HTTPS development certificate.
+To trust the certificate, view the instructions: https://aka.ms/dotnet-https-linux</source>
+        <target state="translated">----------------
+安裝 ASP.NET 核心 HTTPS 開發憑證。
+若要信任憑證，請檢視指示: https://aka.ms/dotnet-https-linux</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FirstTimeMessageMoreInformation">
+        <source>----------------
+Write your first app: https://aka.ms/dotnet-hello-world
+Find out what's new: https://aka.ms/dotnet-whats-new
+Explore documentation: https://aka.ms/dotnet-docs
+Report issues and find source on GitHub: https://github.com/dotnet/core
+Use 'dotnet --help' to see available commands or visit: https://aka.ms/dotnet-cli
+--------------------------------------------------------------------------------------</source>
+        <target state="translated">----------------
+編寫您的第一個應用程式: https://aka.ms/dotnet-hello-world
+了解新功能: https://aka.ms/dotnet-whats-new
+探索文件: https://aka.ms/dotnet-docs
+在 GitHub 上報告問題和尋找來源: https://github.com/dotnet/core
+使用 'dotnet --help' 查看可用的命令或瀏覽: https://aka.ms/dotnet-cli
+--------------------------------------------------------------------------------------</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FirstTimeMessageWelcome">
+        <source>Welcome to .NET {0}!
+---------------------
+SDK Version: {1}</source>
+        <target state="translated">歡迎使用 .NET {0}!
+---------------------
+SDK 版本: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TelemetryMessage">
+        <source>Telemetry
+---------
+The .NET tools collect usage data in order to help us improve your experience. It is collected by Microsoft and shared with the community. You can opt-out of telemetry by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1' or 'true' using your favorite shell.
+
+Read more about .NET CLI Tools telemetry: https://aka.ms/dotnet-cli-telemetry</source>
+        <target state="translated">遙測
+---------
+.NET 工具會收集使用資料，協助我們改進您的體驗。資料會由 Microsoft 收集，並分享給社群使用。您可以選擇退出遙測，只要使用您慣用的殼層，將 DOTNET_CLI_TELEMETRY_OPTOUT 環境變數設定為 '1' 或 'true' 即可。
+
+閱讀更多有關 .NET CLI 工具遙測的內容: https://aka.ms/dotnet-cli-telemetry</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

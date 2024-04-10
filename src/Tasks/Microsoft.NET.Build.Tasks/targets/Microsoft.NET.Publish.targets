@@ -1,0 +1,1324 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Publish.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <DefaultCopyToPublishDirectoryMetadata Condition="'$(DefaultCopyToPublishDirectoryMetadata)' == ''">true</DefaultCopyToPublishDirectoryMetadata>
+    <_GetChildProjectCopyToPublishDirectoryItems Condition="'$(_GetChildProjectCopyToPublishDirectoryItems)' == ''">true</_GetChildProjectCopyToPublishDirectoryItems>
+    <IsPublishable Condition="'$(IsPublishable)' == ''">true</IsPublishable>
+  </PropertyGroup>
+
+  <!-- Trimming/AOT/publish* property configuration -->
+  <PropertyGroup>
+    <!-- PublishAot depends on PublishTrimmed. This must be set early enough for the KnownILLinkPack to be restored. -->
+    <PublishTrimmed Condition="'$(PublishTrimmed)' == '' And '$(PublishAot)' == 'true'">true</PublishTrimmed>
+    <IsTrimmable Condition="'$(IsTrimmable)' == '' and '$(IsAotCompatible)' == 'true'">true</IsTrimmable>
+
+    <_FirstTargetFrameworkToSupportTrimming>net6.0</_FirstTargetFrameworkToSupportTrimming>
+    <_FirstTargetFrameworkToSupportAot>net7.0</_FirstTargetFrameworkToSupportAot>
+    <_FirstTargetFrameworkToSupportSingleFile>net6.0</_FirstTargetFrameworkToSupportSingleFile>
+
+    <_FirstTargetFrameworkVersionToSupportTrimAnalyzer>$([MSBuild]::GetTargetFrameworkVersion('$(_FirstTargetFrameworkToSupportTrimming)'))</_FirstTargetFrameworkVersionToSupportTrimAnalyzer>
+    <_FirstTargetFrameworkVersionToSupportAotAnalyzer>$([MSBuild]::GetTargetFrameworkVersion('$(_FirstTargetFrameworkToSupportAot)'))</_FirstTargetFrameworkVersionToSupportAotAnalyzer>
+    <_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer>$([MSBuild]::GetTargetFrameworkVersion('$(_FirstTargetFrameworkToSupportSingleFile)'))</_FirstTargetFrameworkVersionToSupportSingleFileAnalyzer>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <ResolvedFileToPublish>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </ResolvedFileToPublish>
+  </ItemDefinitionGroup>
+
+  <Target Name="_ComputeToolPackInputsToProcessFrameworkReferences" BeforeTargets="ProcessFrameworkReferences">
+    <!-- Keep this in sync with the warnings produced for RequiresILLinkPack in ProcessFrameworkReferences.cs.
+         Must be set late enough to see the inferred value of EnableSingleFileAnalyzer. -->
+    <PropertyGroup>
+      <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == '' And (
+          '$(PublishAot)' == 'true' Or
+          '$(IsAotCompatible)' == 'true' Or '$(EnableAotAnalyzer)' == 'true' Or
+          '$(PublishTrimmed)' == 'true' Or
+          '$(IsTrimmable)' == 'true' Or '$(EnableTrimAnalyzer)' == 'true' Or
+          '$(EnableSingleFileAnalyzer)' == 'true')">true</_RequiresILLinkPack>
+      <_RequiresILLinkPack Condition="'$(_RequiresILLinkPack)' == ''">false</_RequiresILLinkPack>
+    </PropertyGroup>
+
+    <!-- ProcessFrameworkReferences warns when the project settings introduce a dependency on a
+         tool pack that's not available for the target framework. For trimming, AOT, and single-file, the recommendation
+         is to multitarget the project to include a more recent TargetFramework. For correctly multitargeted
+         projects, the warning is usually just noise, so we silence it.
+
+         Correctly multitargeted projects include a TargetFramework that is compatible with the requested
+         functionality (trimming/AOT/single-file), and doesn't leave a "gap" where the incompatible TargetFramework's
+         assembly could be consumed from an app that uses the functionality. In other words, correctly multitargeted
+         projects should include at least one TFM that:
+         - supports the given functionality, and
+         - is no larger than the minimum non-EOL TargetFramework that supports this functionality.
+
+         The following logic determines whether the project is correctly multi-targeted based on its TargetFrameworks,
+         and silences the warning if it is. -->
+
+    <PropertyGroup>
+      <!-- The min non-EOL TFM has already caught up with the first TFM to support trimming/singlefile. No need to compare against it. -->
+      <_MinNonEolTargetFrameworkForTrimming>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForTrimming>
+      <_MinNonEolTargetFrameworkForSingleFile>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForSingleFile>
+      <!-- Get the min non-EOL TFM that supports AOT. -->
+      <_MinNonEolTargetFrameworkForAot>$(_MinimumNonEolSupportedNetCoreTargetFramework)</_MinNonEolTargetFrameworkForAot>
+      <_MinNonEolTargetFrameworkForAot Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(_FirstTargetFrameworkToSupportAot)', '$(_MinimumNonEolSupportedNetCoreTargetFramework)'))">$(_FirstTargetFrameworkToSupportAot)</_MinNonEolTargetFrameworkForAot>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFrameworks)" />
+      <_DecomposedTargetFramework Include="@(_TargetFramework)">
+        <SupportsTrimming>$([MSBuild]::IsTargetFrameworkCompatible('%(Identity)', '$(_FirstTargetFrameworkToSupportTrimming)'))</SupportsTrimming>
+        <SupportedByMinNonEolTargetFrameworkForTrimming>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForTrimming)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForTrimming>
+        <SupportsAot>$([MSBuild]::IsTargetFrameworkCompatible('%(Identity)', '$(_FirstTargetFrameworkToSupportAot)'))</SupportsAot>
+        <SupportedByMinNonEolTargetFrameworkForAot>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForAot)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForAot>
+        <SupportsSingleFile>$([MSBuild]::IsTargetFrameworkCompatible('%(Identity)', '$(_FirstTargetFrameworkToSupportSingleFile)'))</SupportsSingleFile>
+        <SupportedByMinNonEolTargetFrameworkForSingleFile>$([MSBuild]::IsTargetFrameworkCompatible('$(_MinNonEolTargetFrameworkForSingleFile)', '%(Identity)'))</SupportedByMinNonEolTargetFrameworkForSingleFile>
+      </_DecomposedTargetFramework>
+
+      <_TargetFrameworkToSilenceIsTrimmableUnsupportedWarning
+        Include="@(_DecomposedTargetFramework)"
+        Condition="'%(SupportsTrimming)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForTrimming)' == 'true'" />
+      <_TargetFrameworkToSilenceIsAotCompatibleUnsupportedWarning
+        Include="@(_DecomposedTargetFramework->'%(Identity)')"
+        Condition="'%(SupportsAot)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForAot)' == 'true'" />
+      <_TargetFrameworkToSilenceEnableSingleFileAnalyzerUnsupportedWarning
+        Include="@(_DecomposedTargetFramework)"
+        Condition="'%(SupportsSingleFile)' == 'true' And '%(SupportedByMinNonEolTargetFrameworkForSingleFile)' == 'true'" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <!-- Don't warn if the library multitargets and includes TFM that's supported by trimming/AOT and is supported by the min non-EOL TFM that supports trimming/AOT. -->
+      <_SilenceIsTrimmableUnsupportedWarning Condition="'$(_SilenceIsTrimmableUnsupportedWarning)' == '' And
+                                                        @(_TargetFrameworkToSilenceIsTrimmableUnsupportedWarning->Count()) > 0">true</_SilenceIsTrimmableUnsupportedWarning>
+      <_SilenceIsAotCompatibleUnsupportedWarning Condition="'$(_SilenceIsAotCompatibleUnsupportedWarning)' == '' And
+                                                            @(_TargetFrameworkToSilenceIsAotCompatibleUnsupportedWarning->Count()) > 0">true</_SilenceIsAotCompatibleUnsupportedWarning>
+      <_SilenceEnableSingleFileAnalyzerUnsupportedWarning Condition="'$(_SilenceEnableSingleFileAnalyzerUnsupportedWarning)' == '' And
+                                                          @(_TargetFrameworkToSilenceEnableSingleFileAnalyzerUnsupportedWarning->Count()) > 0">true</_SilenceEnableSingleFileAnalyzerUnsupportedWarning>
+    </PropertyGroup>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        Publish
+
+    The main publish entry point.
+    ============================================================
+    -->
+
+  <Import Project="Microsoft.NET.ClickOnce.targets" Condition="'$(PublishProtocol)' == 'ClickOnce'" />
+
+  <PropertyGroup>
+    <!-- We still need to resolve references even if we are not building during publish. -->
+    <!-- BuildOnlySettings are required for RAR to find satellites and dependencies -->
+    <_BeforePublishNoBuildTargets>
+      BuildOnlySettings;
+      _PreventProjectReferencesFromBuilding;
+      ResolveReferences;
+      PrepareResourceNames;
+      ComputeIntermediateSatelliteAssemblies;
+      ComputeEmbeddedApphostPaths;
+    </_BeforePublishNoBuildTargets>
+
+    <_CorePublishTargets>
+      PrepareForPublish;
+      ComputeAndCopyFilesToPublishDirectory;
+      $(PublishProtocolProviderTargets);
+      PublishItemsOutputGroup;
+    </_CorePublishTargets>
+
+    <_PublishNoBuildAlternativeDependsOn>$(_BeforePublishNoBuildTargets);$(_CorePublishTargets)</_PublishNoBuildAlternativeDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_PublishBuildAlternative"
+          Condition="'$(NoBuild)' != 'true'"
+          DependsOnTargets="Build;$(_CorePublishTargets)" />
+
+  <Target Name="_PublishNoBuildAlternative"
+          Condition="'$(NoBuild)' == 'true'"
+          DependsOnTargets="$(_PublishNoBuildAlternativeDependsOn)" />
+
+  <Target Name="Publish"
+          Condition="$(IsPublishable) == 'true'"
+          DependsOnTargets="_PublishBuildAlternative;_PublishNoBuildAlternative" >
+
+    <!-- Ensure there is minimal verbosity output pointing to the publish directory and not just the
+         build step's minimal output. Otherwise there is no indication at minimal verbosity of where
+         the published assets were copied. -->
+    <Message Importance="High" Text="$(MSBuildProjectName) -> $([System.IO.Path]::GetFullPath('$(PublishDir)'))" />
+
+    <ItemGroup>
+      <PublishTelemetry Include="PublishReadyToRun" Value="$(PublishReadyToRun)" />
+      <PublishTelemetry Include="PublishTrimmed" Value="$(PublishTrimmed)" />
+      <PublishTelemetry Include="PublishSingleFile" Value="$(PublishSingleFile)" />
+      <PublishTelemetry Include="PublishAot" Value="$(PublishAot)" />
+      <PublishTelemetry Include="PublishProtocol" Value="$(PublishProtocol)" />
+    </ItemGroup>
+    <AllowEmptyTelemetry EventName="PublishProperties" EventData="@(PublishTelemetry)" />
+  </Target>
+
+  <!-- Don't let project reference resolution build project references in NoBuild case. -->
+  <Target Name="_PreventProjectReferencesFromBuilding">
+    <PropertyGroup>
+      <BuildProjectReferences>false</BuildProjectReferences>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    ============================================================
+                                        PrepareForPublish
+
+    Prepare the prerequisites for publishing.
+    ============================================================
+    -->
+  <Target Name="PrepareForPublish">
+
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' And '$(_IsExecutable)' != 'true'"
+                 ResourceName="CannotHaveSingleFileWithoutExecutable" />
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' And '$(_IsExecutable)' == 'true' And '$(TargetFrameworkIdentifier)' != '.NETCoreApp'"
+                 ResourceName="CanOnlyHaveSingleFileWithNetCoreApp" />
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' And
+                            '$(IncludeSymbolsInSingleFile)' == 'true' And
+                            '$(_TargetFrameworkVersionWithoutV)' >= '5.0' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
+                 ResourceName="CannotIncludeSymbolsInSingleFile" />
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(RuntimeIdentifier)' == ''"
+                 ResourceName="CannotHaveSingleFileWithoutRuntimeIdentifier" />
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' and '$(UseAppHost)' != 'true' and '$(PublishAot)' != 'true'"
+                 ResourceName="CannotHaveSingleFileWithoutAppHost" />
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' And
+                            '$(EnableCompressionInSingleFile)' == 'true' And
+                            '$(_TargetFrameworkVersionWithoutV)' &lt; '6.0'"
+                 ResourceName="CompressionInSingleFileRequires60" />
+    <NETSdkError Condition="'$(PublishSingleFile)' == 'true' And
+                            '$(EnableCompressionInSingleFile)' == 'true' And
+                            '$(SelfContained)' != 'true'"
+                 ResourceName="CompressionInSingleFileRequiresSelfContained" />
+
+    <NETSdkWarning Condition="'$(PublishProfileImported)' != 'true' and '$(PublishProfile)' != ''"
+                   ResourceName="PublishProfileNotPresent"
+                   FormatArguments="$(PublishProfile)"/>
+
+    <!-- Projects in a solution cannot have conflicting configurations. This checks if PublishRelease conflicted at runtime to avoid extra project evaluations.
+    SolutionExt is used to check if we are publishing a solution. Will be undefined if not.-->
+    <NETSdkError Condition="'$(_IsPublishing)' == 'true' and
+                            '$(DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE)' != 'true' and
+                            '$(DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS)' == 'true' and
+                            '$(SolutionExt)' == '.sln' and
+                            '$(_SolutionLevelPublishRelease)' != '$(PublishRelease)'"
+                 ResourceName="SolutionProjectConfigurationsConflict"
+                 FormatArguments="PublishRelease;$(ProjectName)"/>
+
+    <PropertyGroup>
+      <!-- Ensure any PublishDir has a trailing slash, so it can be concatenated -->
+      <PublishDir Condition="!HasTrailingSlash('$(PublishDir)')">$(PublishDir)\</PublishDir>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(PublishDir)" />
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        ComputeAndCopyFilesToPublishDirectory
+
+    Computes the list of all files to copy to the publish directory and then publishes them.
+    ============================================================
+    -->
+  <Target Name="ComputeAndCopyFilesToPublishDirectory"
+          DependsOnTargets="ComputeFilesToPublish;
+                            CopyFilesToPublishDirectory" />
+
+  <!--
+    ============================================================
+                                        CopyFilesToPublishDirectory
+
+    Copy all build outputs, satellites and other necessary files to the publish directory.
+    When publishing to a single file, only those files that are not bundled are copied.
+    The remaining files are directly written to the bundle file.
+    ============================================================
+    -->
+  <Target Name="CopyFilesToPublishDirectory"
+          DependsOnTargets="_IncrementalCleanPublishDirectory;
+                            _CopyResolvedFilesToPublishPreserveNewest;
+                            _CopyResolvedFilesToPublishAlways;
+                            _HandleFileConflictsForPublish" />
+
+  <!--
+    ============================================================
+                                        _IncrementalCleanPublishDirectory
+
+    Remove files that were produced in a prior publish but weren't produced in the current publish.
+    ============================================================
+    -->
+  <Target Name="_IncrementalCleanPublishDirectory"
+          DependsOnTargets="_GetCurrentAndPriorPublishFileWrites">
+
+    <!-- Subtract list of files produced in the prior publish from list of files produced in this publish. -->
+    <ItemGroup>
+      <_OrphanPublishFileWrites Include="@(_PriorPublishFileWrites)" Exclude="@(_CurrentPublishFileWrites)"/>
+    </ItemGroup>
+
+    <!-- Delete the orphaned files. -->
+    <Delete
+        Files="@(_OrphanPublishFileWrites)"
+        TreatErrorsAsWarnings="true">
+      <Output TaskParameter="DeletedFiles" ItemName="_OrphanFilesDeleted"/>
+    </Delete>
+
+    <!-- Write new list of current files back to clean file. -->
+    <WriteLinesToFile
+        File="$(IntermediateOutputPath)$(_PublishCleanFile)"
+        Lines="@(_CurrentPublishFileWrites)"
+        Overwrite="true"/>
+  </Target>
+
+  <!--
+    ============================================================
+                                        _GetCurrentAndPriorPublishFileWrites
+    Get the list of files written in the previous publish and the list of files to be written in this publish.
+    ============================================================
+    -->
+  <Target Name="_GetCurrentAndPriorPublishFileWrites" >
+    <PropertyGroup>
+      <_NormalizedPublishDir>$([MSBuild]::NormalizeDirectory($(PublishDir)))</_NormalizedPublishDir>
+    </PropertyGroup>
+
+    <Hash ItemstoHash="$(_NormalizedPublishDir)">
+      <Output TaskParameter="HashResult" PropertyName="_NormalizedPublishDirHash" />
+    </Hash>
+    <PropertyGroup>
+      <_PublishCleanFile Condition="'$(PublishCleanFile)'==''">PublishOutputs.$(_NormalizedPublishDirHash.Substring(0, 10)).txt</_PublishCleanFile>
+    </PropertyGroup>
+
+    <!-- Read in writes made by prior publish. -->
+    <ReadLinesFromFile File="$(IntermediateOutputPath)$(_PublishCleanFile)">
+      <Output TaskParameter="Lines" ItemName="_UnfilteredPriorPublishFileWrites"/>
+    </ReadLinesFromFile>
+
+    <ConvertToAbsolutePath Paths="@(_UnfilteredPriorPublishFileWrites)">
+      <Output TaskParameter="AbsolutePaths" ItemName="_UnfilteredAbsolutePriorPublishFileWrites"/>
+    </ConvertToAbsolutePath>
+
+    <!-- Find all files in the final output directory. -->
+    <FindUnderPath Path="$(_NormalizedPublishDir)" Files="@(_UnfilteredAbsolutePriorPublishFileWrites)" UpdateToAbsolutePaths="true">
+      <Output TaskParameter="InPath" ItemName="_PriorPublishFileWritesInOuput"/>
+    </FindUnderPath>
+
+    <!-- Remove duplicates from files produced in the previous publish. -->
+    <RemoveDuplicates Inputs="@(_PriorPublishFileWritesInOuput)" >
+      <Output TaskParameter="Filtered" ItemName="_PriorPublishFileWrites"/>
+    </RemoveDuplicates>
+
+    <ItemGroup>
+      <_CurrentPublishFileWritesUnfiltered Include="@(ResolvedFileToPublish->'$(_NormalizedPublishDir)%(RelativePath)')"/>
+      <_CurrentPublishFileWritesUnfiltered Include="$(_NormalizedPublishDir)$(AssemblyName)$(_NativeExecutableExtension)" Condition="'$(UseAppHost)' == 'true'"/>
+    </ItemGroup>
+
+    <ConvertToAbsolutePath Paths="@(_CurrentPublishFileWritesUnfiltered)">
+      <Output TaskParameter="AbsolutePaths" ItemName="_CurrentAbsolutePublishFileWritesUnfiltered"/>
+    </ConvertToAbsolutePath>
+
+    <!-- Remove duplicates from the files produced in this publish-->
+    <RemoveDuplicates Inputs="@(_CurrentAbsolutePublishFileWritesUnfiltered)" >
+      <Output TaskParameter="Filtered" ItemName="_CurrentPublishFileWrites"/>
+    </RemoveDuplicates>
+  </Target>
+
+  <!--
+    ============================================================
+                                        _CopyResolvedFilesToPublishPreserveNewest
+
+    Copy _ResolvedFileToPublishPreserveNewest items to the publish directory
+    ============================================================
+    -->
+  <Target Name="_CopyResolvedFilesToPublishPreserveNewest"
+          DependsOnTargets="_ComputeResolvedFilesToPublishTypes"
+          Inputs="@(_ResolvedFileToPublishPreserveNewest)"
+          Outputs="@(_ResolvedFileToPublishPreserveNewest->'$(PublishDir)%(RelativePath)')">
+
+    <!--
+      PreserveNewest means that we will only copy the source to the destination if the source is newer.
+      SkipUnchangedFiles is not used for that purpose because it will copy if the source and destination
+      differ by size too.  Instead, this target uses inputs and outputs to only copy when the source is newer.
+      -->
+    <Copy SourceFiles = "@(_ResolvedFileToPublishPreserveNewest)"
+          DestinationFiles="@(_ResolvedFileToPublishPreserveNewest->'$(PublishDir)%(RelativePath)')"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+          UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+          UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        _CopyResolvedFilesToPublishAlways
+
+    Copy _ResolvedFileToPublishAlways items to the publish directory
+    ============================================================
+    -->
+  <Target Name="_CopyResolvedFilesToPublishAlways"
+          DependsOnTargets="_ComputeResolvedFilesToPublishTypes">
+
+    <!--
+      Use SkipUnchangedFiles to prevent unnecessary file copies. The copy will occur if the
+      destination doesn't exist, the source is newer than the destination, or if the source and
+      destination differ by file size.
+      -->
+    <Copy SourceFiles = "@(_ResolvedFileToPublishAlways)"
+          DestinationFiles="@(_ResolvedFileToPublishAlways->'$(PublishDir)%(RelativePath)')"
+          SkipUnchangedFiles="$(SkipCopyUnchangedFiles)"
+          OverwriteReadOnlyFiles="$(OverwriteReadOnlyFiles)"
+          Retries="$(CopyRetryCount)"
+          RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+          UseHardlinksIfPossible="$(CreateHardLinksForPublishFilesIfPossible)"
+          UseSymboliclinksIfPossible="$(CreateSymbolicLinksForPublishFilesIfPossible)">
+
+      <Output TaskParameter="DestinationFiles" ItemName="FileWrites"/>
+
+    </Copy>
+  </Target>
+
+  <UsingTask TaskName="ResolveReadyToRunCompilers" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="ResolveReadyToRunCompilers">
+    <ResolveReadyToRunCompilers RuntimePacks="@(ResolvedRuntimePack)"
+                                Crossgen2Packs="@(ResolvedCrossgen2Pack)"
+                                TargetingPacks="@(ResolvedTargetingPack)"
+                                RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
+                                NETCoreSdkRuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)"
+                                EmitSymbols="$(PublishReadyToRunEmitSymbols)"
+                                ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
+                                PerfmapFormatVersion="$(PublishReadyToRunPerfmapFormatVersion)">
+
+      <Output TaskParameter="CrossgenTool" ItemName="CrossgenTool" />
+      <Output TaskParameter="Crossgen2Tool" ItemName="Crossgen2Tool" />
+    </ResolveReadyToRunCompilers>
+  </Target>
+
+  <!--
+    ============================================================
+                                        _ComputeResolvedFilesToPublishTypes
+
+    Splits ResolvedFileToPublish items into 'PreserveNewest' and 'Always' buckets.
+    Then further splits those into 'Unbundled' buckets based on the single file setting.
+    ============================================================
+    -->
+  <Target Name="_ComputeResolvedFilesToPublishTypes">
+    <ItemGroup>
+
+      <_ResolvedFileToPublishPreserveNewest Include="@(ResolvedFileToPublish)"
+                                            Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='PreserveNewest'" />
+
+      <_ResolvedFileToPublishAlways Include="@(ResolvedFileToPublish)"
+                                    Condition="'%(ResolvedFileToPublish.CopyToPublishDirectory)'=='Always'" />
+    </ItemGroup>
+
+    <ItemGroup>
+
+      <_ResolvedUnbundledFileToPublishPreserveNewest
+                    Include="@(_ResolvedFileToPublishPreserveNewest)"
+                    Condition="'$(PublishSingleFile)' != 'true' or
+                               '%(_ResolvedFileToPublishPreserveNewest.ExcludeFromSingleFile)'=='true'" />
+
+      <_ResolvedUnbundledFileToPublishAlways
+              Include="@(_ResolvedFileToPublishAlways)"
+              Condition="'$(PublishSingleFile)' != 'true' or
+                         '%(_ResolvedFileToPublishAlways.ExcludeFromSingleFile)'=='true'" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+                                        ComputeFilesToPublish
+
+    Gathers all the files that need to be copied to the publish directory, including R2R and ILLinker transformations
+    ============================================================
+    -->
+  <Target Name="ComputeFilesToPublish"
+          DependsOnTargets="PrepareForPublish;
+                            ComputeResolvedFilesToPublishList;
+                            ILLink;
+                            CreateReadyToRunImages;
+                            GeneratePublishDependencyFile;
+                            GenerateSingleFileBundle">
+  </Target>
+
+  <!--
+    ============================================================
+                                        ILLink
+
+    Initially an empty placeholder target. When trimming, this
+    will be redefined to invoke ILLink to perform IL trimming.
+    The placeholder exists to allow other targets to depend on it for ordering purposes.
+    ============================================================
+    -->
+  <Target Name="ILLink" />
+
+  <PropertyGroup>
+    <CopyBuildOutputToPublishDirectory Condition="'$(CopyBuildOutputToPublishDirectory)'==''">true</CopyBuildOutputToPublishDirectory>
+    <CopyOutputSymbolsToPublishDirectory Condition="'$(CopyOutputSymbolsToPublishDirectory)'==''">true</CopyOutputSymbolsToPublishDirectory>
+    <IncludeSymbolsInSingleFile Condition="'$(IncludeSymbolsInSingleFile)' == ''">false</IncludeSymbolsInSingleFile>
+  </PropertyGroup>
+
+  <UsingTask TaskName="ResolveOverlappingItemGroupConflicts" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <!--
+    ============================================================
+                                        ComputeResolvedFilesToPublishList
+
+    Gathers all the files that need to be copied to the publish directory.
+    ============================================================
+    -->
+  <Target Name="ComputeResolvedFilesToPublishList"
+          DependsOnTargets="_ComputeResolvedCopyLocalPublishAssets;
+                            _ComputeCopyToPublishDirectoryItems;
+                            ComputeRefAssembliesToPublish">
+    <ItemGroup>
+      <!-- Copy the build product (.dll or .exe). -->
+      <ResolvedFileToPublish Include="@(IntermediateAssembly)"
+                             Condition="'$(CopyBuildOutputToPublishDirectory)' == 'true'">
+        <RelativePath>@(IntermediateAssembly->'%(Filename)%(Extension)')</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <!-- Copy the deps file if using the build deps file. -->
+      <ResolvedFileToPublish Include="$(ProjectDepsFilePath)"
+                             Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' == 'true'">
+        <RelativePath>$(ProjectDepsFileName)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <!-- Copy the runtime config file. -->
+      <ResolvedFileToPublish Include="$(ProjectRuntimeConfigFilePath)"
+                             Condition="'$(GenerateRuntimeConfigurationFiles)' == 'true'  and '$(PublishAot)' != 'true'">
+        <RelativePath>$(ProjectRuntimeConfigFileName)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <!-- Copy the app.config (if any) -->
+      <ResolvedFileToPublish Include="@(AppConfigWithTargetPath)"
+                             Condition="'$(CopyBuildOutputToPublishDirectory)' == 'true'">
+        <RelativePath>@(AppConfigWithTargetPath->'%(TargetPath)')</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <!-- Copy the debug information file (.pdb), if any -->
+      <ResolvedFileToPublish Include="@(_DebugSymbolsIntermediatePath)"
+                             Condition="'$(_DebugSymbolsProduced)'=='true' and '$(CopyOutputSymbolsToPublishDirectory)'=='true'">
+        <RelativePath>@(_DebugSymbolsIntermediatePath->'%(Filename)%(Extension)')</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <ExcludeFromSingleFile Condition="'$(IncludeSymbolsInSingleFile)'!='true'">true</ExcludeFromSingleFile>
+      </ResolvedFileToPublish>
+
+      <!-- Copy satellite assemblies. -->
+      <ResolvedFileToPublish Include="@(IntermediateSatelliteAssembliesWithTargetPath)">
+        <RelativePath>%(IntermediateSatelliteAssembliesWithTargetPath.Culture)\%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <!-- Copy generated COM References. -->
+      <ResolvedFileToPublish Include="@(ReferenceComWrappersToCopyLocal)">
+        <RelativePath>%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+
+    <!-- Remove conflicting items that appear in both _ResolvedCopyLocalPublishAssets and ResolvedFileToPublish
+         to ensure that we don't get duplicate files in the publish output. -->
+    <ResolveOverlappingItemGroupConflicts ItemGroup1="@(_ResolvedCopyLocalPublishAssets->Distinct())"
+                        ItemGroup2="@(ResolvedFileToPublish->Distinct())"
+                        PreferredPackages="$(PackageConflictPreferredPackages)">
+      <Output TaskParameter="RemovedItemGroup1" ItemName="_ResolvedCopyLocalPublishAssetsRemoved" />
+      <Output TaskParameter="RemovedItemGroup2" ItemName="ResolvedFileToPublishRemoved" />
+    </ResolveOverlappingItemGroupConflicts>
+
+    <ItemGroup>
+      <_ResolvedCopyLocalPublishAssets Remove="@(_ResolvedCopyLocalPublishAssetsRemoved)"/>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublishRemoved)"/>
+
+      <!-- Copy the resolved copy local publish assets. -->
+      <ResolvedFileToPublish Include="@(_ResolvedCopyLocalPublishAssets)">
+        <RelativePath>%(_ResolvedCopyLocalPublishAssets.DestinationSubDirectory)%(Filename)%(Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <!-- Copy the xml documentation (if enabled) -->
+      <ResolvedFileToPublish Include="@(FinalDocFile)"
+                              Condition="'$(PublishDocumentationFile)' == 'true'">
+        <RelativePath>@(FinalDocFile->'%(Filename)%(Extension)')</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <!-- Copy all PackAsTool shims (if any) -->
+      <ResolvedFileToPublish Include="@(_EmbeddedApphostPaths->Distinct())">
+        <RelativePath>shims/%(_EmbeddedApphostPaths.ShimRuntimeIdentifier)/%(_EmbeddedApphostPaths.Filename)%(_EmbeddedApphostPaths.Extension)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ResolvedFileToPublish>
+
+      <!-- Filter files for PublishSingleFiles scenario -->
+      <_FilesToDrop Include="@(ResolvedFileToPublish)"
+                    Condition="'$(PublishSingleFile)' == 'true' and
+                               '%(ResolvedFileToPublish.DropFromSingleFile)' == 'true'"/>
+      <ResolvedFileToPublish Remove="@(_FilesToDrop)"/>
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    ============================================================
+    _ResolveCopyLocalAssetsForPublish
+    Resolves the assets from packages to copy locally for publish.
+    We can just use the build's copy local assets if we can reuse the build deps file.
+    ============================================================
+  -->
+  <UsingTask TaskName="ResolveCopyLocalAssets" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="_ResolveCopyLocalAssetsForPublish"
+          DependsOnTargets="ResolveLockFileCopyLocalFiles;
+                            _ComputeUseBuildDependencyFile;
+                            _DefaultMicrosoftNETPlatformLibrary;
+                            ResolveRuntimePackAssets;
+                            _ComputePackageReferencePublish">
+
+    <!-- For future: Delete ResolveCopyLocalAssets task.  Need to figure out how to get correct DestinationSubPath for
+           PreserveStoreLayout without this task, and how to handle RuntimeStorePackages. -->
+    <ResolveCopyLocalAssets AssetsFilePath="$(ProjectAssetsFile)"
+                            TargetFramework="$(TargetFramework)"
+                            RuntimeIdentifier="$(RuntimeIdentifier)"
+                            PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
+                            RuntimeFrameworks="@(RuntimeFramework)"
+                            ExcludedPackageReferences="@(_ExcludeFromPublishPackageReference)"
+                            RuntimeStorePackages="@(RuntimeStorePackages)"
+                            PreserveStoreLayout="$(PreserveStoreLayout)"
+                            ResolveRuntimeTargets="$(CopyLocalRuntimeTargetAssets)"
+                            IsSelfContained="$(SelfContained)"
+                            Condition="'$(PreserveStoreLayout)' == 'true' Or '@(RuntimeStorePackages)' != ''">
+      <Output TaskParameter="ResolvedAssets" ItemName="_ResolvedCopyLocalPublishAssets" />
+    </ResolveCopyLocalAssets>
+
+
+    <ItemGroup>
+      <_ResolvedCopyLocalPublishAssets Include="@(RuntimePackAsset)"
+                                       Condition="('$(SelfContained)' == 'true' Or '%(RuntimePackAsset.RuntimePackAlwaysCopyLocal)' == 'true') and '%(RuntimePackAsset.AssetType)' != 'pgodata'" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(_UseBuildDependencyFile)' != 'true'">
+      <!-- Remove the apphost executable from publish copy local assets; we will copy the generated apphost instead -->
+      <_ResolvedCopyLocalPublishAssets Remove="@(_NativeRestoredAppHostNETCore)" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(PreserveStoreLayout)' != 'true' And '@(RuntimeStorePackages)' == ''">
+      <_ResolvedCopyLocalPublishAssets Include="@(_ResolvedCopyLocalBuildAssets)"
+                                       Condition="'%(_ResolvedCopyLocalBuildAssets.CopyToPublishDirectory)' != 'false' "/>
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    ============================================================
+    _ParseTargetManifestFiles
+    Parses the $(TargetManifestFiles) which contains a list of files into @(RuntimeStorePackages) items
+    which describes which packages should be excluded from publish since they are contained in the runtime store.
+    ============================================================
+    -->
+  <UsingTask TaskName="ParseTargetManifests" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="_ParseTargetManifestFiles"
+          Condition="'$(TargetManifestFiles)' != ''"
+          Returns="@(RuntimeStorePackages)">
+
+    <ParseTargetManifests TargetManifestFiles="$(TargetManifestFiles)">
+      <Output TaskParameter="RuntimeStorePackages" ItemName="RuntimeStorePackages"/>
+    </ParseTargetManifests>
+
+  </Target>
+
+  <!--
+    ============================================================
+    _FilterSatelliteResourcesForPublish
+    Filters the resolved resource assets for build to the given resource languages.
+    ============================================================
+  -->
+  <Target Name="_FilterSatelliteResourcesForPublish"
+          Condition="'$(SatelliteResourceLanguages)' != ''">
+
+    <ItemGroup>
+      <_PublishSatelliteResources Include="@(_ResolvedCopyLocalPublishAssets)"
+                                  Condition="'%(_ResolvedCopyLocalPublishAssets.AssetType)' == 'resources'" />
+    </ItemGroup>
+
+    <JoinItems Left="@(_PublishSatelliteResources)" LeftKey="Culture" LeftMetadata="*"
+               Right="$(SatelliteResourceLanguages)" RightKey="" RightMetadata=""
+               ItemSpecToUse="Left">
+      <Output TaskParameter="JoinResult" ItemName="_FilteredPublishSatelliteResources" />
+    </JoinItems>
+
+    <ItemGroup Condition="'@(_PublishSatelliteResources)' != ''">
+      <_ResolvedCopyLocalPublishAssets Remove="@(_PublishSatelliteResources)" />
+      <_ResolvedCopyLocalPublishAssets Include="@(_FilteredPublishSatelliteResources)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    ============================================================
+    _ComputeResolvedCopyLocalPublishAssets
+    Computes the files from both project and package references.
+    ============================================================
+  -->
+  <Target Name="_ComputeResolvedCopyLocalPublishAssets"
+          DependsOnTargets="_ResolveCopyLocalAssetsForPublish;
+                            _FilterSatelliteResourcesForPublish">
+
+    <ItemGroup>
+      <_ResolvedCopyLocalPublishAssets Include="@(ReferenceCopyLocalPaths)"
+                                       Exclude="@(_ResolvedCopyLocalBuildAssets);@(RuntimePackAsset)"
+                                       Condition="('$(PublishReferencesDocumentationFiles)' == 'true' or '%(ReferenceCopyLocalPaths.Extension)' != '.xml') and '%(ReferenceCopyLocalPaths.Private)' != 'false'">
+        <DestinationSubPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</DestinationSubPath>
+      </_ResolvedCopyLocalPublishAssets>
+
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+                                        _CreateSingleFileHost
+      Create the single-file host for the publish scenario if app is being published as a self-contained single-file .net5+ app
+    ============================================================
+     -->
+  <Target Name="_CreateSingleFileHost"
+          Inputs="@(IntermediateAssembly);$(SingleFileHostSourcePath)"
+          Outputs="$(SingleFileHostIntermediatePath)"
+          DependsOnTargets="_GetAppHostPaths;_GetAppHostCreationConfiguration"
+          Condition="'$(_UseSingleFileHostForPublish)' == 'true' and
+                     Exists('@(IntermediateAssembly)') and
+                     Exists('$(SingleFileHostSourcePath)')">
+    <CreateAppHost AppHostSourcePath="$(SingleFileHostSourcePath)"
+                   AppHostDestinationPath="$(SingleFileHostIntermediatePath)"
+                   AppBinaryName="$(AssemblyName)$(TargetExt)"
+                   IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
+                   WindowsGraphicalUserInterface="$(_UseWindowsGraphicalUserInterface)"
+                   Retries="$(CopyRetryCount)"
+                   RetryDelayMilliseconds="$(CopyRetryDelayMilliseconds)"
+                   EnableMacOSCodeSign="$(_EnableMacOSCodeSign)"
+                   />
+  </Target>
+
+  <!--
+    ============================================================
+                                        _ComputeCopyToPublishDirectoryItems
+    ============================================================
+    -->
+  <Target Name="_ComputeCopyToPublishDirectoryItems"
+          DependsOnTargets="GetCopyToPublishDirectoryItems">
+
+    <ItemGroup>
+      <ResolvedFileToPublish Include="@(_SourceItemsToCopyToPublishDirectoryAlways)">
+        <RelativePath>%(_SourceItemsToCopyToPublishDirectoryAlways.TargetPath)</RelativePath>
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectoryAlways.FullPath)' == '$(AppHostIntermediatePath)'">True</IsKeyOutput>
+      </ResolvedFileToPublish>
+
+      <ResolvedFileToPublish Include="@(_SourceItemsToCopyToPublishDirectory)">
+        <RelativePath>%(_SourceItemsToCopyToPublishDirectory.TargetPath)</RelativePath>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <IsKeyOutput Condition="'%(_SourceItemsToCopyToPublishDirectory.FullPath)' == '$(AppHostIntermediatePath)'">True</IsKeyOutput>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        GetCopyToPublishDirectoryItems
+
+    Get all project items that may need to be transferred to the publish directory.
+    This includes baggage items from transitively referenced projects. It would appear
+    that this target computes full transitive closure of content items for all referenced
+    projects; however that is not the case. It only collects the content items from its
+    immediate children and not children of children.
+
+    See comment on GetCopyToOutputDirectoryItems, from which this logic was taken.
+    ============================================================
+    -->
+  <Target Name="GetCopyToPublishDirectoryItems"
+          Returns="@(AllPublishItemsFullPathWithTargetPath)"
+          KeepDuplicateOutputs=" '$(MSBuildDisableGetCopyToPublishDirectoryItemsOptimization)' == '' "
+          DependsOnTargets="AssignTargetPaths;
+                            DefaultCopyToPublishDirectoryMetadata;
+                            _CreateSingleFileHost;
+                            _SplitProjectReferencesByFileExistence;
+                            _GetProjectReferenceTargetFrameworkProperties">
+
+
+    <!-- In the general case, clients need very little of the metadata which is generated by invoking this target on this project and its children.  For those
+         cases, we can immediately discard the unwanted metadata, reducing memory usage, particularly in very large and interconnected systems of projects.
+         However, if some client does require the original functionality, it is sufficient to set MSBuildDisableGetCopyToPublishDirectoryItemsOptimization to
+         a non-empty value and the original behavior will be restored. -->
+    <PropertyGroup Condition=" '$(MSBuildDisableGetCopyToPublishDirectoryItemsOptimization)' == '' ">
+      <_GCTPDIKeepDuplicates>false</_GCTPDIKeepDuplicates>
+      <_GCTPDIKeepMetadata>CopyToPublishDirectory;ExcludeFromSingleFile;TargetPath</_GCTPDIKeepMetadata>
+    </PropertyGroup>
+
+    <!-- Get items from child projects first. -->
+    <MSBuild Projects="@(_MSBuildProjectReferenceExistent)"
+             Targets="GetCopyToPublishDirectoryItems"
+             BuildInParallel="$(BuildInParallel)"
+             Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration); %(_MSBuildProjectReferenceExistent.SetPlatform); %(_MSBuildProjectReferenceExistent.SetTargetFramework)"
+             Condition="'@(_MSBuildProjectReferenceExistent)' != '' and '$(_GetChildProjectCopyToPublishDirectoryItems)' == 'true' and '%(_MSBuildProjectReferenceExistent.Private)' != 'false'"
+             ContinueOnError="$(ContinueOnError)"
+             RemoveProperties="%(_MSBuildProjectReferenceExistent.GlobalPropertiesToRemove)$(_GlobalPropertiesToRemoveFromProjectReferences)">
+
+      <Output TaskParameter="TargetOutputs" ItemName="_AllChildProjectPublishItemsWithTargetPath"/>
+
+    </MSBuild>
+
+    <!-- Target outputs must be full paths because they will be consumed by a different project. -->
+    <ItemGroup>
+      <_SourceItemsToCopyToPublishDirectoryAlways KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                                  KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                                  Include="@(_AllChildProjectPublishItemsWithTargetPath->'%(FullPath)')"
+                                                  Condition="'%(_AllChildProjectPublishItemsWithTargetPath.CopyToPublishDirectory)'=='Always'"/>
+
+      <_SourceItemsToCopyToPublishDirectory KeepDuplicates=" '$(_GCTPDIKeepDuplicates)' != 'false' "
+                                            KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                            Include="@(_AllChildProjectPublishItemsWithTargetPath->'%(FullPath)')"
+                                            Condition="'%(_AllChildProjectPublishItemsWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <!-- Remove items which we will never again use - they just sit around taking up memory otherwise -->
+    <ItemGroup>
+      <_AllChildProjectPublishItemsWithTargetPath Remove="@(_AllChildProjectPublishItemsWithTargetPath)"/>
+    </ItemGroup>
+
+    <!-- Get items from this project last so that they will be copied last. -->
+    <ItemGroup>
+      <_SourceItemsToCopyToPublishDirectoryAlways KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                                  Include="@(ContentWithTargetPath->'%(FullPath)')"
+                                                  Condition="'%(ContentWithTargetPath.CopyToPublishDirectory)'=='Always'"/>
+      <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                            Include="@(ContentWithTargetPath->'%(FullPath)')"
+                                            Condition="'%(ContentWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_SourceItemsToCopyToPublishDirectoryAlways KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                                  Include="@(EmbeddedResource->'%(FullPath)')"
+                                                  Condition="'%(EmbeddedResource.CopyToPublishDirectory)'=='Always'"/>
+      <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                            Include="@(EmbeddedResource->'%(FullPath)')"
+                                            Condition="'%(EmbeddedResource.CopyToPublishDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_CompileItemsToPublish Include="@(Compile->'%(FullPath)')"
+                              Condition="'%(Compile.CopyToPublishDirectory)'=='Always' or '%(Compile.CopyToPublishDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <AssignTargetPath Files="@(_CompileItemsToPublish)" RootFolder="$(MSBuildProjectDirectory)">
+      <Output TaskParameter="AssignedFiles" ItemName="_CompileItemsToPublishWithTargetPath" />
+    </AssignTargetPath>
+
+    <ItemGroup>
+      <_SourceItemsToCopyToPublishDirectoryAlways KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                                  Include="@(_CompileItemsToPublishWithTargetPath)"
+                                                  Condition="'%(_CompileItemsToPublishWithTargetPath.CopyToPublishDirectory)'=='Always'"/>
+      <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                           Include="@(_CompileItemsToPublishWithTargetPath)"
+                                           Condition="'%(_CompileItemsToPublishWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_SourceItemsToCopyToPublishDirectoryAlways KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                                  Include="@(_NoneWithTargetPath->'%(FullPath)')"
+                                                  Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='Always'"/>
+      <_SourceItemsToCopyToPublishDirectory KeepMetadata="$(_GCTPDIKeepMetadata)"
+                                            Include="@(_NoneWithTargetPath->'%(FullPath)')"
+                                            Condition="'%(_NoneWithTargetPath.CopyToPublishDirectory)'=='PreserveNewest'"/>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(_UseSingleFileHostForPublish)' == 'true' and Exists('$(SingleFileHostIntermediatePath)')">
+      <!-- Remove non-single-file apphost from items to publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Remove="$(AppHostIntermediatePath)" />
+      <_SourceItemsToCopyToPublishDirectory Remove="$(AppHostIntermediatePath)" />
+
+      <!-- Add the single-file host created as part of publish -->
+      <_SourceItemsToCopyToPublishDirectoryAlways Include="$(SingleFileHostIntermediatePath)" CopyToOutputDirectory="Always" TargetPath="$(AssemblyName)$(_NativeExecutableExtension)" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <AllPublishItemsFullPathWithTargetPath Include="@(_SourceItemsToCopyToPublishDirectoryAlways->'%(FullPath)');@(_SourceItemsToCopyToPublishDirectory->'%(FullPath)')"/>
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        DefaultCopyToPublishDirectoryMetadata
+
+    If CopyToPublishDirectory isn't set on these items, the value should be taken from CopyToOutputDirectory.
+    This way, projects can just set "CopyToOutputDirectory = Always/PreserveNewest" and by default the item will be copied
+    to both the build output and publish directories.
+    ============================================================
+    -->
+  <Target Name="DefaultCopyToPublishDirectoryMetadata"
+          DependsOnTargets="AssignTargetPaths"
+          Condition=" '$(DefaultCopyToPublishDirectoryMetadata)' == 'true' ">
+
+    <ItemGroup>
+      <ContentWithTargetPath Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='Always' and '%(ContentWithTargetPath.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      </ContentWithTargetPath>
+      <ContentWithTargetPath Condition="'%(ContentWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest' and '%(ContentWithTargetPath.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </ContentWithTargetPath>
+
+      <EmbeddedResource Condition="'%(EmbeddedResource.CopyToOutputDirectory)'=='Always' and '%(EmbeddedResource.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      </EmbeddedResource>
+      <EmbeddedResource Condition="'%(EmbeddedResource.CopyToOutputDirectory)'=='PreserveNewest' and '%(EmbeddedResource.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </EmbeddedResource>
+
+      <Compile Condition="'%(Compile.CopyToOutputDirectory)'=='Always' and '%(Compile.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      </Compile>
+      <Compile Condition="'%(Compile.CopyToOutputDirectory)'=='PreserveNewest' and '%(Compile.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </Compile>
+
+      <_NoneWithTargetPath Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='Always' and '%(_NoneWithTargetPath.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+      </_NoneWithTargetPath>
+      <_NoneWithTargetPath Condition="'%(_NoneWithTargetPath.CopyToOutputDirectory)'=='PreserveNewest' and '%(_NoneWithTargetPath.CopyToPublishDirectory)' == ''">
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+      </_NoneWithTargetPath>
+
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup Condition="'$(SelfContained)' == 'true'">
+    <_ComputeManagedRuntimePackAssembliesIfSelfContained>_ComputeManagedRuntimePackAssemblies</_ComputeManagedRuntimePackAssembliesIfSelfContained>
+  </PropertyGroup>
+
+  <!-- Determine the managed assembly subset of ResolvedFileToPublish that should be post-processed by linker, and ready to run compilation -->
+  <Target Name="_ComputeAssembliesToPostprocessOnPublish"
+          DependsOnTargets="_ComputeUserRuntimeAssemblies;$(_ComputeManagedRuntimePackAssembliesIfSelfContained)">
+
+    <!--
+      Default set of files to post-process correspond to the items that would be designated
+      as managed runtime assemblies in .deps.json, and published to root of the application.
+      RuntimeTargets and satellite assemblies are excluded. Currently, both linker and ready
+      to run require a RID, so there will not be RuntimeTargets. Linker could conceptually
+      operate without a RID, but would not know how to handle multiple assemblies with same
+      identity.
+    -->
+    <ItemGroup>
+      <!-- Assemblies from packages -->
+      <_ManagedRuntimeAssembly Include="@(RuntimeCopyLocalItems)" />
+
+      <!-- Assemblies from other references -->
+      <_ManagedRuntimeAssembly Include="@(UserRuntimeAssembly)" />
+
+      <!-- Assembly produced by this project -->
+      <_ManagedRuntimeAssembly Include="@(IntermediateAssembly)" />
+    </ItemGroup>
+
+    <!-- Assemblies from runtime packs for self-contained apps -->
+    <ItemGroup Condition="'$(SelfContained)' == 'true'">
+      <_ManagedRuntimeAssembly Include="@(_ManagedRuntimePackAssembly)" />
+    </ItemGroup>
+
+    <!--
+      Match above with ResolvedFileToPublish. Some of above would have been excluded from publish in
+      various ways and should be excluded from the list of files to postprocess as well. Furthermore,
+      the metadata must match ResolvedFileToPublish as the tools modify or remove these items in that
+      list to implement their post-processing.
+    -->
+    <JoinItems Left="@(_ManagedRuntimeAssembly)" Right="@(ResolvedFileToPublish)" RightMetadata="*">
+      <Output TaskParameter="JoinResult" ItemName="_AssemblyToPostprocessOnPublish" />
+    </JoinItems>
+
+    <!--
+      Set PostprocessAssembly=true metadata on ResolvedFileToPublish, which will be honored by linker
+      and crossgen.
+
+      Assemblies injected into ResolvedFileToPublish outside the set above (such as razor views) are
+      responsible for setting this metadata to opt in to post-processing.
+    -->
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(_AssemblyToPostprocessOnPublish)" />
+      <ResolvedFileToPublish Include="@(_AssemblyToPostprocessOnPublish)" PostprocessAssembly="true" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ComputeManagedRuntimePackAssemblies" Returns="@(_ManagedRuntimePackAssembly)">
+    <ItemGroup>
+      <!-- Special case for System.Private.Corelib due to https://github.com/dotnet/core-setup/issues/7728 -->
+      <_ManagedRuntimePackAssembly Include="@(RuntimePackAsset)"
+                                   Condition="'%(RuntimePackAsset.AssetType)' == 'runtime'
+                                                or '%(RuntimePackAsset.Filename)' == 'System.Private.Corelib'" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_ComputeUseBuildDependencyFile"
+          DependsOnTargets="_ComputePackageReferencePublish;
+                            _ParseTargetManifestFiles">
+    <!-- Check to see whether we can re-use the .deps.json file from the build for publish, or whether we have to
+         generate a different one. -->
+    <PropertyGroup>
+      <_TrimRuntimeAssets Condition="'$(PublishSingleFile)' == 'true' and '$(SelfContained)' == 'true'">true</_TrimRuntimeAssets>
+      <_UseBuildDependencyFile Condition="'@(_ExcludeFromPublishPackageReference)' == '' and
+                                          '@(RuntimeStorePackages)' == '' and
+                                          '$(PreserveStoreLayout)' != 'true' and
+                                          '$(PublishTrimmed)' != 'true' and
+                                          '$(_TrimRuntimeAssets)' != 'true'">true</_UseBuildDependencyFile>
+    </PropertyGroup>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        GenerateSingleFileBundle
+
+    Bundle the ResolvedFileToPublish items into one file in PublishDir
+    (except those marked ExcludeFromSingleFile)
+    ============================================================
+    -->
+  <Target Name="_ComputeFilesToBundle"
+        DependsOnTargets="_HandleFileConflictsForPublish"
+        Condition="'$(PublishSingleFile)' == 'true'">
+
+    <ItemGroup>
+      <_FilesToBundle Include="@(ResolvedFileToPublish)"
+                      Condition="'%(ResolvedFileToPublish.ExcludeFromSingleFile)' != 'true'"/>
+
+      <ResolvedFileToPublish Remove="@(_FilesToBundle)"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <PublishedSingleFileName>$(AssemblyName)$(_NativeExecutableExtension)</PublishedSingleFileName>
+      <PublishedSingleFilePath>$(PublishDir)$(PublishedSingleFileName)</PublishedSingleFilePath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="PrepareForBundle"
+      DependsOnTargets="_ComputeFilesToBundle"
+      Condition="'$(PublishSingleFile)' == 'true'">
+
+    <ItemGroup>
+      <FilesToBundle Include="@(_FilesToBundle)"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <AppHostFile>$(PublishedSingleFileName)</AppHostFile>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_GenerateSingleFileBundleInputCache">
+    <ItemGroup>
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(PublishedSingleFilePath)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(TraceSingleFileBundler)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(IncludeSymbolsInSingleFile)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(IncludeAllContentForSelfExtract)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(IncludeNativeLibrariesForSelfExtract)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(EnableCompressionInSingleFile)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(PublishedSingleFileName)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(RuntimeIdentifier)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(PublishDir)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="$(_TargetFrameworkVersionWithoutV)" />
+      <_GenerateSingleFileBundlePropertyInputsCacheToHash Include="@(FilesToBundle)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_GenerateSingleFileBundlePropertyInputsCacheToHash)">
+      <Output TaskParameter="HashResult" PropertyName="_GenerateSingleFileBundlePropertyInputsCacheHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_GenerateSingleFileBundlePropertyInputsCacheHash)"
+      File="$(_GenerateSingleFileBundlePropertyInputsCache)"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <UsingTask TaskName="GenerateBundle" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="GenerateSingleFileBundle"
+          Condition="'$(PublishSingleFile)' == 'true' and '$(PublishAot)' != 'true'"
+          DependsOnTargets="_ComputeFilesToBundle;PrepareForBundle;_GenerateSingleFileBundleInputCache"
+          Inputs="@(FilesToBundle);$(_GenerateSingleFileBundlePropertyInputsCache)"
+          Outputs="$(PublishedSingleFilePath)">
+
+    <PropertyGroup>
+      <TraceSingleFileBundler Condition="'$(TraceSingleFileBundler)' == ''">false</TraceSingleFileBundler>
+      <IncludeSymbolsInSingleFile Condition="'$(IncludeSymbolsInSingleFile)' == ''">false</IncludeSymbolsInSingleFile>
+      <IncludeAllContentForSelfExtract Condition="'$(IncludeAllContentForSelfExtract)' == ''">false</IncludeAllContentForSelfExtract>
+      <IncludeNativeLibrariesForSelfExtract Condition="'$(IncludeNativeLibrariesForSelfExtract)' == ''">$(IncludeAllContentForSelfExtract)</IncludeNativeLibrariesForSelfExtract>
+      <EnableCompressionInSingleFile Condition="'$(EnableCompressionInSingleFile)' == ''">false</EnableCompressionInSingleFile>
+    </PropertyGroup>
+
+    <NETSdkError Condition="'$(IncludeAllContentForSelfExtract)' == 'true' And '$(IncludeNativeLibrariesForSelfExtract)' != 'true'"
+                 ResourceName="CannotIncludeAllContentButNotNativeLibrariesInSingleFile" />
+
+    <GenerateBundle FilesToBundle="@(FilesToBundle)"
+                    AppHostName="$(PublishedSingleFileName)"
+                    IncludeSymbols="$(IncludeSymbolsInSingleFile)"
+                    EnableCompressionInSingleFile="$(EnableCompressionInSingleFile)"
+                    IncludeNativeLibraries="$(IncludeNativeLibrariesForSelfExtract)"
+                    IncludeAllContent="$(IncludeAllContentForSelfExtract)"
+                    TargetFrameworkVersion="$(_TargetFrameworkVersionWithoutV)"
+                    RuntimeIdentifier="$(RuntimeIdentifier)"
+                    OutputDir="$(PublishDir)"
+                    ShowDiagnosticOutput="$(TraceSingleFileBundler)">
+      <Output TaskParameter="ExcludedFiles" ItemName="_FilesExcludedFromBundle"/>
+    </GenerateBundle>
+
+    <ItemGroup>
+      <ResolvedFileToPublish Include="@(_FilesExcludedFromBundle)"/>
+      <!-- ResolvedFileToPublish shouldn't include PublishedSingleFilePath, since the single-file bundle is written directly to the publish directory -->
+    </ItemGroup>
+
+  </Target>
+
+  <Target Name="_ComputeIntermediateDepsFilePath">
+    <PropertyGroup>
+      <!-- IntermediateDepsFilePath is the location where the deps.json file is originally created -->
+      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' != ''">$(PublishDepsFilePath)</IntermediateDepsFilePath >
+      <IntermediateDepsFilePath Condition=" '$(PublishDepsFilePath)' == ''">$(IntermediateOutputPath)$(ProjectDepsFileName)</IntermediateDepsFilePath >
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_GeneratePublishDependencyFileInputCache"
+          DependsOnTargets="_ComputeIntermediateDepsFilePath">
+    <ItemGroup>
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(PublishDepsFilePath)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(PublishSingleFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(MSBuildProjectFullPath)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(ProjectAssetsFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IntermediateDepsFilePath)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(TargetFramework)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(AssemblyName)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(TargetExt)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(Version)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeMainProjectInDepsFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(RuntimeIdentifier)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(MicrosoftNETPlatformLibrary)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(SelfContained)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeFileVersionsInDependencyFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(RuntimeIdentifierGraphPath)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeProjectsNotInAssetsFileInDepsFile)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_GeneratePublishDependencyFilePropertyInputsCacheToHash)">
+      <Output TaskParameter="HashResult" PropertyName="_GeneratePublishDependencyFilePropertyInputsCacheHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_GeneratePublishDependencyFilePropertyInputsCacheHash)"
+      File="$(_GeneratePublishDependencyFilePropertyInputsCache)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratePublishDependencyFilePropertyInputsCache)" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    _GeneratePublishDependencyFile
+    Generates the $(project).deps.json file for a published app
+    ============================================================
+    -->
+  <Target Name="GeneratePublishDependencyFile"
+          DependsOnTargets="_ComputeUseBuildDependencyFile;
+                            _ComputeIntermediateDepsFilePath;
+                            _DefaultMicrosoftNETPlatformLibrary;
+                            _HandlePackageFileConflicts;
+                            _HandlePackageFileConflictsForPublish;
+                            _ComputeReferenceAssemblies;
+                            _ComputeUserRuntimeAssemblies;
+                            ResolveRuntimePackAssets;
+                            _ComputePackageReferencePublish;
+                            _GeneratePublishDependencyFileInputCache"
+          Condition="'$(GenerateDependencyFile)' == 'true' and '$(_UseBuildDependencyFile)' != 'true' and '$(PublishAot)' != 'true'"
+          Inputs="$(ProjectAssetsFile);$(ProjectAssetsCacheFile);$(MSBuildAllProjects);$(_GeneratePublishDependencyFilePropertyInputsCache)"
+          Outputs="$(IntermediateDepsFilePath)">
+
+    <PropertyGroup>
+      <!-- PublishDepsFilePath is the location where the deps.json resides when published
+           PublishDepsFilePath is empty (by default) for PublishSingleFile, since the deps.json file is embedded within the single-file bundle -->
+      <PublishDepsFilePath Condition=" '$(PublishDepsFilePath)' == '' And '$(PublishSingleFile)' != 'true'">$(PublishDir)$(ProjectDepsFileName)</PublishDepsFilePath>
+      <_IsSingleFilePublish Condition="'$(PublishSingleFile)' == ''">false</_IsSingleFilePublish>
+      <_IsSingleFilePublish Condition="'$(PublishSingleFile)' != ''">$(PublishSingleFile)</_IsSingleFilePublish>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ResolvedCompileFileDefinitions Remove="@(_PublishConflictPackageFiles)" Condition="'%(_PublishConflictPackageFiles.ConflictItemType)' == 'Reference'" />
+      <RuntimeTargetsCopyLocalItems Remove="@(_PublishConflictPackageFiles)" Condition="'%(_PublishConflictPackageFiles.ConflictItemType)' != 'Reference'" />
+      <RuntimePackAsset Remove="@(_PublishConflictPackageFiles)" Condition="'%(_PublishConflictPackageFiles.ConflictItemType)' != 'Reference'" />
+
+      <_ResolvedNuGetFilesForPublish Include="@(NativeCopyLocalItems)" Condition="'%(NativeCopyLocalItems.CopyToPublishDirectory)' != 'false'" />
+      <_ResolvedNuGetFilesForPublish Include="@(ResourceCopyLocalItems)" Condition="'%(ResourceCopyLocalItems.CopyToPublishDirectory)' != 'false'" />
+      <_ResolvedNuGetFilesForPublish Include="@(RuntimeCopyLocalItems)" Condition="'%(RuntimeCopyLocalItems.CopyToPublishDirectory)' != 'false'" />
+      <_ResolvedNuGetFilesForPublish Remove="@(_PublishConflictPackageFiles)" Condition="'%(_PublishConflictPackageFiles.ConflictItemType)' != 'Reference'" />
+
+    </ItemGroup>
+
+    <GenerateDepsFile ProjectPath="$(MSBuildProjectFullPath)"
+                      AssetsFilePath="$(ProjectAssetsFile)"
+                      DepsFilePath="$(IntermediateDepsFilePath)"
+                      TargetFramework="$(TargetFramework)"
+                      AssemblyName="$(AssemblyName)"
+                      AssemblyExtension="$(TargetExt)"
+                      AssemblyVersion="$(Version)"
+                      AssemblySatelliteAssemblies="@(IntermediateSatelliteAssembliesWithTargetPath)"
+                      ReferencePaths="@(ReferencePath)"
+                      ReferenceDependencyPaths="@(ReferenceDependencyPaths)"
+                      ReferenceSatellitePaths="@(ReferenceSatellitePaths)"
+                      ReferenceAssemblies="@(_ReferenceAssemblies)"
+                      RuntimePackAssets="@(RuntimePackAsset)"
+                      IncludeMainProject="$(IncludeMainProjectInDepsFile)"
+                      RuntimeIdentifier="$(RuntimeIdentifier)"
+                      PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
+                      RuntimeFrameworks="@(RuntimeFramework)"
+                      CompilerOptions="@(DependencyFileCompilerOptions)"
+                      RuntimeStorePackages="@(RuntimeStorePackages)"
+                      CompileReferences="@(ResolvedCompileFileDefinitions)"
+                      ResolvedNuGetFiles="@(_ResolvedNuGetFilesForPublish)"
+                      ResolvedRuntimeTargetsFiles="@(RuntimeTargetsCopyLocalItems)"
+                      UserRuntimeAssemblies="@(UserRuntimeAssembly)"
+                      IsSelfContained="$(SelfContained)"
+                      IsSingleFile="$(_IsSingleFilePublish)"
+                      IncludeRuntimeFileVersions="$(IncludeFileVersionsInDependencyFile)"
+                      RuntimeGraphPath="$(RuntimeIdentifierGraphPath)"
+                      IncludeProjectsNotInAssetsFile="$(IncludeProjectsNotInAssetsFileInDepsFile)"/>
+
+    <ItemGroup>
+      <ResolvedFileToPublish Include="$(IntermediateDepsFilePath)">
+        <RelativePath>$(ProjectDepsFileName)</RelativePath>
+      </ResolvedFileToPublish>
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                        ComputeEmbeddedApphostPaths
+
+    When no build flag is set, EmbeddedApphostPaths is not available. Compute EmbeddedApphostPaths is required to find build asset.
+    ============================================================
+    -->
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
+          AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <Target Name="ComputeEmbeddedApphostPaths">
+
+    <ItemGroup>
+      <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>
+    </ItemGroup>
+
+    <GetEmbeddedApphostPaths
+      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(TargetFramework)"
+      ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
+      ToolCommandName="$(ToolCommandName)"
+      >
+
+      <Output TaskParameter="EmbeddedApphostPaths" ItemName="_EmbeddedApphostPaths" />
+    </GetEmbeddedApphostPaths>
+
+  </Target>
+
+  <!--
+    ============================================================
+                                            ComputeFilesCopiedToPublishDir
+
+    Gathers all the files that will be copied to the publish directory.  This is used by wapproj and is required for back compat.
+    ============================================================
+    -->
+  <Target Name="ComputeFilesCopiedToPublishDir"
+          DependsOnTargets="ComputeResolvedFilesToPublishList;
+                            _ComputeFilesToBundle">
+    <ItemGroup>
+      <FilesCopiedToPublishDir Include="@(ResolvedFileToPublish)"/>
+      <FilesCopiedToPublishDir Include="$(PublishedSingleFilePath)" RelativePath="$(PublishedSingleFileName)" IsKeyOutput="true" Condition="'$(PublishSingleFile)' == 'true'"/>
+
+      <!-- Wapproj handles adding the correct deps.json file, so remove it here to avoid duplicates. -->
+      <FilesCopiedToPublishDir Remove="@(FilesCopiedToPublishDir)" Condition="'%(FilesCopiedToPublishDir.Filename)%(FilesCopiedToPublishDir.Extension)' == '$(ProjectDepsFileName)'"/>
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
+                                            PublishItemsOutputGroup
+
+    Emit an output group containing all files that get published.  This will be consumed by VS installer projects.
+    ============================================================
+    -->
+  <PropertyGroup>
+    <PublishItemsOutputGroupDependsOn>
+      $(PublishItemsOutputGroupDependsOn);
+      ResolveReferences;
+      ComputeResolvedFilesToPublishList;
+      _ComputeFilesToBundle;
+    </PublishItemsOutputGroupDependsOn>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetPublishItemsOutputGroupOutputs"
+          AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <Target Name="PublishItemsOutputGroup" DependsOnTargets="$(PublishItemsOutputGroupDependsOn)" Returns="@(PublishItemsOutputGroupOutputs)">
+    <GetPublishItemsOutputGroupOutputs
+      ResolvedFileToPublish="@(ResolvedFileToPublish)"
+      PublishDir="$(PublishDir)"
+        >
+
+      <Output TaskParameter="PublishItemsOutputGroupOutputs" ItemName="PublishItemsOutputGroupOutputs" />
+    </GetPublishItemsOutputGroupOutputs>
+
+    <ItemGroup>
+      <PublishItemsOutputGroupOutputs Include="$(PublishedSingleFilePath)"
+                                      TargetPath="$(PublishedSingleFileName)"
+                                      IsKeyOutput="true"
+                                      Condition="'$(PublishSingleFile)' == 'true'"
+                                      OutputPath="$(PublishedSingleFilePath)"
+                                      OutputGroup="PublishItemsOutputGroup" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    This target exists for back-compat with Azure Functions SDK: https://github.com/dotnet/cli/issues/10363
+    Because build copy-local now behaves the same as publish with respect to package dependency resolution,
+    the Azure Functions SDK doesn't need to resolve publish assets for build.
+    TODO: Remove this target when no longer needed as a workaround.
+    -->
+  <Target Name="RunResolvePublishAssemblies" />
+
+  <!--
+    ============================================================
+    _CheckForLanguageAndPublishFeatureCombinationSupport
+
+    Block unsupported language and feature combination.
+    ============================================================
+    -->
+  <Target Name="_CheckForLanguageAndPublishFeatureCombinationSupport"
+        Condition="$(IsPublishable) == 'true'"
+        BeforeTargets="Publish;PrepareForPublish">
+
+    <NETSdkError Condition="('$(Language)' == 'C++' and '$(_EnablePackageReferencesInVCProjects)' != 'true') and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'"
+                 ResourceName="NoSupportCppPublishDotnetCore" />
+
+  </Target>
+</Project>
