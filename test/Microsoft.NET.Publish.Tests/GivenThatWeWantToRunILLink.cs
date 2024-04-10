@@ -1022,6 +1022,8 @@ namespace Microsoft.NET.Publish.Tests
                     .Should().BeTrue();
                 configProperties["System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"].Value<bool>()
                     .Should().BeFalse();
+                configProperties["System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"].Value<bool>()
+                    .Should().BeFalse();
                 configProperties["System.Resources.ResourceManager.AllowCustomResourceTypes"].Value<bool>()
                     .Should().BeFalse();
                 configProperties["System.Runtime.InteropServices.BuiltInComInterop.IsSupported"].Value<bool>()
