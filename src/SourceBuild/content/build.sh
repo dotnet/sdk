@@ -233,8 +233,13 @@ function Build {
     fi
 
     if [ "$test" != "true" ]; then
+      initSourceOnlyBinaryLog=""
+      if [[ "$binary_log" == true ]]; then
+        initSourceOnlyBinaryLog="/bl:\"$log_dir/init-source-only.binlog\""
+      fi
+
       "$CLI_ROOT/dotnet" build-server shutdown
-      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.binlog" $properties
+      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog $properties
       # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
       "$CLI_ROOT/dotnet" build-server shutdown
     fi
