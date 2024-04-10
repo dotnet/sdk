@@ -67,10 +67,23 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 foreach (var toolId in toolIds)
                 {
                     // Create an install command for each toolId
-                    List<string> args = new List<string> { "dotnet", "tool", "install", toolId.Item1.PackageId.ToString() };
-                    args = args.Concat(_parseResult.Tokens.Skip(3).Select(t => t.Value)).ToList();
-                    ParseResult newParseResult = Parser.Instance.Parse(args);
+                    var args = ToolInstallCommandParser.BuildInstallCommandArguments(
+                        toolId: toolId.Item1.PackageId.ToString(),
+                        isGlobal: _parseResult.GetValue(ToolInstallCommandParser.GlobalOption),
+                        toolPath: _parseResult.GetValue(ToolInstallCommandParser.ToolPathOption),
+                        configFile: _parseResult.GetValue(ToolInstallCommandParser.ConfigOption),
+                        addSource: _parseResult.GetValue(ToolInstallCommandParser.AddSourceOption),
+                        framework: _parseResult.GetValue(ToolInstallCommandParser.FrameworkOption),
+                        prerelease: _parseResult.GetValue(ToolInstallCommandParser.PrereleaseOption),
+                        disableParallel: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+                        ignoreFailedSource: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
+                        noCache: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
+                        interactiveRestore: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption),
+                        verbosity: _parseResult.GetValue(ToolInstallCommandParser.VerbosityOption),
+                        manifestPath: _parseResult.GetValue(ToolInstallCommandParser.ToolManifestOption)
+                    );
 
+                    ParseResult newParseResult = Parser.Instance.Parse(args);
                     var toolInstallCommand = new ToolInstallLocalCommand(
                         _parseResult,
                         new PackageId(toolId.Item1.PackageId.ToString()),

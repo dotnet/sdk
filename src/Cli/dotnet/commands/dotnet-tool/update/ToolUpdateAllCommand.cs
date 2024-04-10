@@ -1,21 +1,14 @@
 ﻿/*// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.CommandLine;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolManifest;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Common;
-using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tool.List;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
 using CreateShellShimRepository = Microsoft.DotNet.Tools.Tool.Install.CreateShellShimRepository;
 
 namespace Microsoft.DotNet.Tools.Tool.Update
@@ -40,7 +33,7 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         private readonly IToolManifestInspector _manifestInspector;
 
 
-        public ToolUpdateAllCommand(
+        *//*public ToolUpdateAllCommand(
             ParseResult parseResult,
             CreateToolPackageStoresAndDownloaderAndUninstaller createToolPackageStoreDownloaderUninstaller = null,
             CreateShellShimRepository createShellShimRepository = null,
@@ -100,9 +93,9 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             {
                 UpdateTools(new[] { package.PackageId.ToString() }, false, manifestPath.Value);
             }
-        }
+        }*//*
 
-        *//*private void UpdateTools(IEnumerable<string> toolIds, bool isGlobal, string manifestPath)
+        private void UpdateTools(IEnumerable<string> toolIds, bool isGlobal, string manifestPath)
         {
             foreach (var toolId in toolIds)
             {
@@ -132,8 +125,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                 toolUpdateCommand.Execute();
             }
         }
-*/
-        /*private string[] BuildUpdateCommandArguments(string toolId,
+
+        private string[] BuildUpdateCommandArguments(string toolId,
             bool isGlobal,
             string toolPath,
             string configFile,
@@ -189,8 +182,9 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             args.AddRange(new[] { "--verbosity", verbosity.ToString() });
 
             return args.ToArray();
-        }*//*
+        }
 
     }
 }
+
 */

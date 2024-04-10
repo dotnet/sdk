@@ -1,18 +1,14 @@
 ﻿/*// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Utils;
+using System.CommandLine;
+using Microsoft.DotNet.ShellShim;
 using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Update;
+using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
-using Microsoft.DotNet.ShellShim;
-using System.CommandLine;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -22,11 +18,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly IFileSystem _fileSystem;
         private readonly EnvironmentPathInstructionMock _environmentPathInstructionMock;
         private readonly ToolPackageStoreMock _store;
+
         private readonly PackageId _packageId = new PackageId("global.tool.console.demo");
+        private readonly PackageId _packageId2 = new PackageId("global.tool.console.demo2");
         private readonly List<MockFeed> _mockFeeds;
         private const string LowerPackageVersion = "1.0.4";
         private const string HigherPackageVersion = "1.0.5";
-        private const string HigherPreviewPackageVersion = "1.0.5-preview3";
         private readonly string _shimsDirectory;
         private readonly string _toolsDirectory;
 
@@ -67,9 +64,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     }
                 }
             };
-        }
+        }*/
 
-        [Fact]
+        /*[Fact]
         public void GivenAnExistedLowerVersionInstallationItCanUpdateThePackageVersion()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -150,9 +147,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(
                 string.Format(LocalizableStrings.UpdateToolFailed, _packageId) + Environment.NewLine +
                 string.Format(Tools.Tool.Install.LocalizableStrings.InvalidToolConfiguration, "Simulated error"));
-        }
+        }*/
 
-        private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)
+        /*private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)
         {
             ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
             var store = new ToolPackageStoreMock(
@@ -201,5 +198,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
     }
 }
+
 
 */
