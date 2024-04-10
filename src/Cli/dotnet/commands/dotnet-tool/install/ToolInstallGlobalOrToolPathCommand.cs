@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
         private readonly ShellShimTemplateFinder _shellShimTemplateFinder;
 
-        private readonly PackageId _packageId;
+        private readonly PackageId? _packageId;
         private readonly string _packageVersion;
         private readonly string _configFilePath;
         private readonly string _framework;
@@ -62,7 +62,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             INuGetPackageDownloader nugetPackageDownloader = null)
             : base(parseResult)
         {
-            _packageId = packageId ?? new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
+            var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
+            _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
             _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
@@ -118,43 +119,17 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 var toolIds = toolListCommand.GetPackages(null, null);
                 foreach (var toolId in toolIds)
                 {
-                    // Create an install command for each toolId
-                    var args = ToolInstallCommandParser.BuildInstallCommandArguments(
-                        toolId: toolId.Id.ToString(),
-                        isGlobal: _parseResult.GetValue(ToolInstallCommandParser.GlobalOption),
-                        toolPath: _parseResult.GetValue(ToolInstallCommandParser.ToolPathOption),
-                        configFile: _parseResult.GetValue(ToolInstallCommandParser.ConfigOption),
-                        addSource: _parseResult.GetValue(ToolInstallCommandParser.AddSourceOption),
-                        framework: _parseResult.GetValue(ToolInstallCommandParser.FrameworkOption),
-                        prerelease: _parseResult.GetValue(ToolInstallCommandParser.PrereleaseOption),
-                        disableParallel: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-                        ignoreFailedSource: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
-                        noCache: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
-                        interactiveRestore: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption),
-                        verbosity: _parseResult.GetValue(ToolInstallCommandParser.VerbosityOption),
-                        manifestPath: _parseResult.GetValue(ToolInstallCommandParser.ToolManifestOption)
-                    );
-
-                    ParseResult newParseResult = Parser.Instance.Parse(args);
-                    var toolInstallCommand = new ToolInstallGlobalOrToolPathCommand(
-                        newParseResult,
-                        new PackageId(toolId.Id.ToString()),
-                        _createToolPackageStoreDownloaderUninstaller,
-                        _createShellShimRepository,
-                        _environmentPathInstruction,
-                        _reporter);
-
-                    toolInstallCommand.Execute();
+                    ExecuteInstallCommand(new PackageId(toolId.Id.ToString()));
                 }
             }
             else
             {
-                ExecuteInstallCommand();
+                ExecuteInstallCommand((PackageId)_packageId);
             }
             return 0;
         }
 
-        private int ExecuteInstallCommand()
+        private int ExecuteInstallCommand(PackageId packageId)
         {
             ValidateArguments();
 
@@ -174,7 +149,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
             IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
 
-            IToolPackage oldPackageNullable = GetOldPackage(toolPackageStoreQuery);
+            IToolPackage oldPackageNullable = GetOldPackage(toolPackageStoreQuery, packageId);
 
             using (var scope = new TransactionScope(
                 TransactionScopeOption.Required,
@@ -190,14 +165,14 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         }
 
                         toolPackageUninstaller.Uninstall(oldPackageNullable.PackageDirectory);
-                    });
+                    }, packageId);
                 }
 
                 RunWithHandlingInstallError(() =>
                 {
                     IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
                     new PackageLocation(nugetConfig: GetConfigFile(), additionalFeeds: _source),
-                        packageId: _packageId,
+                        packageId: packageId,
                         versionRange: versionRange,
                         targetFramework: _framework,
                         verbosity: _verbosity,
@@ -237,7 +212,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     }
 
                     PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
-                });
+                }, packageId);
 
                 scope.Complete();
 
@@ -271,7 +246,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             }
         }
 
-        private void RunWithHandlingInstallError(Action installAction)
+        private void RunWithHandlingInstallError(Action installAction, PackageId packageId)
         {
             try
             {
@@ -282,10 +257,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             {
                 var message = new List<string>
                 {
-                    string.Format(Update.LocalizableStrings.UpdateToolFailed, _packageId)
+                    string.Format(Update.LocalizableStrings.UpdateToolFailed, packageId)
                 };
                 message.AddRange(
-                    InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId));
+                    InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
 
 
                 throw new GracefulException(
@@ -295,7 +270,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             }
         }
 
-        private void RunWithHandlingUninstallError(Action uninstallAction)
+        private void RunWithHandlingUninstallError(Action uninstallAction, PackageId packageId)
         {
             try
             {
@@ -306,10 +281,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             {
                 var message = new List<string>
                 {
-                    string.Format(Update.LocalizableStrings.UpdateToolFailed, _packageId)
+                    string.Format(Update.LocalizableStrings.UpdateToolFailed, packageId)
                 };
                 message.AddRange(
-                    ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId));
+                    ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
 
                 throw new GracefulException(
                     messages: message,
@@ -329,12 +304,12 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             return configFile;
         }
 
-        private IToolPackage GetOldPackage(IToolPackageStoreQuery toolPackageStoreQuery)
+        private IToolPackage GetOldPackage(IToolPackageStoreQuery toolPackageStoreQuery, PackageId packageId)
         {
             IToolPackage oldPackageNullable;
             try
             {
-                oldPackageNullable = toolPackageStoreQuery.EnumeratePackageVersions(_packageId).SingleOrDefault();
+                oldPackageNullable = toolPackageStoreQuery.EnumeratePackageVersions(packageId).SingleOrDefault();
             }
             catch (InvalidOperationException)
             {
@@ -343,7 +318,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                     {
                         string.Format(
                             Update.LocalizableStrings.ToolHasMultipleVersionsInstalled,
-                            _packageId),
+                            packageId),
                     },
                     isUserError: false);
             }
