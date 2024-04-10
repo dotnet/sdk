@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(Reporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
 
-            _workloadSetVersion = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
+            
         }
 
         private void ValidateWorkloadIdsInput()
@@ -110,25 +110,28 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             else
             {
-                var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
-                _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
-                ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
+                bool shouldUpdateWorkloads = !_skipManifestUpdate;
 
                 //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
                 //  set version specified, and we might update the workload version, then we don't do that check here, because we might not have the right
                 //  workload set installed yet, and trying to list the available workloads would throw an error
-                if (_skipManifestUpdate || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
+                if (!shouldUpdateWorkloads || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
                 {
                     ValidateWorkloadIdsInput();
                 }
 
-                if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
+                if (string.IsNullOrWhiteSpace(_workloadSetVersionFromCommandLine) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
                 {
                     var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
                     if (File.Exists(installStateFilePath))
                     {
                         var installStateContents = InstallStateContents.FromPath(installStateFilePath);
-                        _workloadSetVersion = installStateContents.WorkloadVersion;
+                        //  If install state has pinned workload set or manifest versions, then don't update workloads
+                        if (!string.IsNullOrEmpty(installStateContents.WorkloadVersion) || installStateContents.Manifests != null)
+                        {
+                            //  TODO: respect shouldUpdateWorkloads, or figure out update / install manifest difference in InstallingWorkloadCommand
+                            shouldUpdateWorkloads = false;
+                        }
                     }
                 }
 
@@ -161,6 +164,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         }
                     }
 
+                    //  TODO: Should we still install a workload specified in global.json even if we are skipping updates?
+
                     RunInNewTransaction(context =>
                     {
                         if (_skipManifestUpdate)
@@ -174,7 +179,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                 //  TODO: Change this message to account for workload set wording
                                 Reporter.WriteLine(LocalizableStrings.CheckForUpdatedWorkloadManifests);
                             }
-                            UpdateWorkloads(context, workloadIds, offlineCache);
+                            InstallWorkloads(context, workloadIds, shouldUpdateManifests: true, offlineCache);
                         }
 
                         //  Write workload installation records

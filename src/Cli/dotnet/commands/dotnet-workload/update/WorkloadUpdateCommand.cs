@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                   tempDirPath: tempDirPath)
 
         {
-            _workloadSetVersion = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
+            
             _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);
             _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
             _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);
@@ -91,23 +91,21 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             }
             else
             {
-                var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
-                _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
-
+                Reporter.WriteLine();
                 try
                 {
-                    ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
                     var workloadIds = WriteSDKInstallRecordsForVSWorkloads(GetUpdatableWorkloads());
 
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
 
                     RunInNewTransaction(context =>
                     {
-                        UpdateWorkloads(context, workloadIds, offlineCache);
+                        InstallWorkloads(context, workloadIds, shouldUpdateManifests: true, offlineCache);
                     });
 
                     WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
+                    //  TODO: potentially only do this in some cases (ie not if global.json specifies workload set)
                     _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
 
                     Reporter.WriteLine();

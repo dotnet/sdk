@@ -520,6 +520,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public IEnumerable<ManifestVersionUpdate> CalculateManifestUpdatesForWorkloadSet(WorkloadSet workloadSet)
         {
+            //  TODO: Don't look up previous manifest versions (since we may be in the mode where there's a global.json with a workload set
+            //  that's not installed, and trying to get the current manifests will throw an exception)
             return CalculateManifestRollbacks(workloadSet.ManifestVersions.Select(kvp => (kvp.Key, new ManifestVersionWithBand(kvp.Value.Version, kvp.Value.FeatureBand))));
         }
 
