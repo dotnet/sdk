@@ -598,7 +598,18 @@
     <Copy SourceFiles="@(PackageVersionPropsSnapshotFiles)" DestinationFolder="$(PackageReportDir)snapshots/" />
 
     <ItemGroup>
-      <RestoredPackageFile Include="$(NuGetPackageRoot)**/*.nupkg"
+      <!--
+        Note the usage of */*/*.nupkg and not **/*.nupkg. The latter would include nupkgs
+        carried as content, i.e. in Microsoft.FSharp.Compiler nupkg, and cause false positives.
+        Content nupkgs were not restored and should not be used in prebuit detection.
+
+        Example of a restored package:
+        $(NuGetPackageRoot)microsoft.fsharp.compiler/12.8.300-beta.24203.1/microsoft.fsharp.compiler.12.8.300-beta.24203.1.nupkg
+
+        Example of a content package:
+        $(NuGetPackageRoot)microsoft.fsharp.compiler/12.8.300-beta.24203.1/contentFiles/Release/FSharp.Core.8.0.300.nupkg
+      -->
+      <RestoredPackageFile Include="$(NuGetPackageRoot)*/*/*.nupkg"
                            Exclude="$(NuGetPackageRoot)tests/**/*.nupkg" />
 
       <!-- Only contains packages when building. -->
