@@ -30,6 +30,9 @@ extends:
         name: NetCore1ESPool-Internal
         image: 1es-windows-2022
         os: windows
+
+      baseline:
+        baselineFile: $(Build.SourcesDirectory)\.config\guardian\.gdnbaselines
     
     customBuildTags:
     - ES365AIMigrationTooling
