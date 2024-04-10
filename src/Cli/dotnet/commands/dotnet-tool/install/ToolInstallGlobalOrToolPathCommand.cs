@@ -36,6 +36,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private CreateShellShimRepository _createShellShimRepository;
         private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
         private readonly ShellShimTemplateFinder _shellShimTemplateFinder;
+        private readonly IToolPackageStoreQuery _store;
 
         private readonly PackageId? _packageId;
         private readonly string _packageVersion;
@@ -49,7 +50,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private IEnumerable<string> _forwardRestoreArguments;
         private readonly bool _allowRollForward;
         private readonly bool _allowPackageDowngrade;
-        private readonly bool _all; 
+        private readonly bool _all;
 
 
         public ToolInstallGlobalOrToolPathCommand(
@@ -59,7 +60,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             CreateShellShimRepository createShellShimRepository = null,
             IEnvironmentPathInstruction environmentPathInstruction = null,
             IReporter reporter = null,
-            INuGetPackageDownloader nugetPackageDownloader = null)
+            INuGetPackageDownloader nugetPackageDownloader = null,
+            IToolPackageStoreQuery store = null)
             : base(parseResult)
         {
             var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
@@ -88,6 +90,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
             nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreAction, verbosityOptions: _verbosity);
             _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
+            _store = store;
 
             _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
 
@@ -115,18 +118,21 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         {
             if (_all)
             {
-                var toolListCommand = new ToolListGlobalOrToolPathCommand(_parseResult);
+                var toolListCommand = new ToolListGlobalOrToolPathCommand(
+                    _parseResult
+                    , toolPath => { return _store; }
+                    );
                 var toolIds = toolListCommand.GetPackages(null, null);
                 foreach (var toolId in toolIds)
                 {
                     ExecuteInstallCommand(new PackageId(toolId.Id.ToString()));
                 }
+                return 0;
             }
             else
             {
-                ExecuteInstallCommand((PackageId)_packageId);
+                return ExecuteInstallCommand((PackageId)_packageId);
             }
-            return 0;
         }
 
         private int ExecuteInstallCommand(PackageId packageId)

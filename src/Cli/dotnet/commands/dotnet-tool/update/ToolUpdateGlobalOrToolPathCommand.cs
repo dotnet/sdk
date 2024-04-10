@@ -27,7 +27,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
         public ToolUpdateGlobalOrToolPathCommand(ParseResult parseResult,
             CreateToolPackageStoresAndDownloaderAndUninstaller createToolPackageStoreDownloaderUninstaller = null,
             CreateShellShimRepository createShellShimRepository = null,
-            IReporter reporter = null)
+            IReporter reporter = null,
+            IToolPackageStoreQuery _store = null)
             : base(parseResult)
         {
             _createToolPackageStoreDownloaderUninstaller = createToolPackageStoreDownloaderUninstaller ??
@@ -48,7 +49,8 @@ namespace Microsoft.DotNet.Tools.Tool.Update
                     packageId,
                     _createToolPackageStoreDownloaderUninstaller,
                     _createShellShimRepository,
-                    reporter: reporter));
+                    reporter: reporter,
+                    store: _store));
         }
 
         public override int Execute()

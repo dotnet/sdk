@@ -64,9 +64,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     }
                 }
             };
-        }*/
+        }
 
-        /*[Fact]
+        [Fact]
         public void GivenAnExistedLowerVersionInstallationItCanUpdateThePackageVersion()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -147,9 +147,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(
                 string.Format(LocalizableStrings.UpdateToolFailed, _packageId) + Environment.NewLine +
                 string.Format(Tools.Tool.Install.LocalizableStrings.InvalidToolConfiguration, "Simulated error"));
-        }*/
+        }
 
-        /*private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)
+        private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)
         {
             ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
             var store = new ToolPackageStoreMock(
@@ -198,6 +198,4 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
     }
 }
-
-
 */
