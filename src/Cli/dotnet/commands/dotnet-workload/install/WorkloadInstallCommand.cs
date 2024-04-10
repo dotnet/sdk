@@ -148,7 +148,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         RunInNewTransaction(context =>
                         {
-                            var manifests = HandleWorkloadUpdateFromVersion(context, offlineCache);
+                            if (!TryHandleWorkloadUpdateFromVersion(context, offlineCache, out var manifests))
+                            {
+                                return;
+                            }
                             InstallWorkloadsAndGarbageCollect(context, workloadIds, manifests, offlineCache, false);
                         });
                     }
@@ -210,7 +213,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (useWorkloadSets)
                     {
-                        manifestsToUpdate = InstallWorkloadSet(context);
+                        if (!TryInstallWorkloadSet(context, out manifestsToUpdate))
+                        {
+                            return;
+                        }
                     }
                     else
                     {
