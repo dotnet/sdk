@@ -222,11 +222,11 @@ src/source-build-externals/patches/application-insights/0002-Remove-WebGrease-fr
 
 # False positive
 src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.netcore.app.ref/3.*/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
-src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/1.6.1/ThirdPartyNotices.txt|unknown
-src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.0.*/THIRD-PARTY-NOTICES.TXT|unknown
+src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/1.6.1/ThirdPartyNotices.txt|unknown-license-reference
+src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.0.*/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library.ref/2.1.0/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.codeanalysis.collections/4.2.0-1.22102.8/ThirdPartyNotices.rtf|json
-src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.netcore.*/1.*/ThirdPartyNotices.txt|unknown
+src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.netcore.*/1.*/ThirdPartyNotices.txt|unknown-license-reference
 src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.private.intellisense/8.0.*/IntellisenseFiles/*/1033/System.Security.Permissions.xml|unknown-license-reference
 
 # Contains references to licenses which are not applicable to the source
