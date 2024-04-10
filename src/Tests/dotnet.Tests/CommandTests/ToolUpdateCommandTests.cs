@@ -96,7 +96,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolUpdateCommand.Execute();
 
             a.Should().Throw<GracefulException>().And.Message
-                .Should().Contain(LocalizableStrings.UpdateToolCommandInvalidAllAndVersion);
+                .Should().Contain(
+                    string.Format(
+                        LocalizableStrings.UpdateToolCommandInvalidAllAndVersion, "--all --version")
+                );
         }
     }
 }

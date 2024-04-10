@@ -56,46 +56,12 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
             _all = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
         }
-        
+
         public override int Execute()
         {
             if (_all)
             {
-                var toolListCommand = new ToolListLocalCommand(_parseResult);
-                var toolIds = toolListCommand.GetPackages(null);
-
-                foreach (var toolId in toolIds)
-                {
-                    // Create an install command for each toolId
-                    var args = ToolInstallCommandParser.BuildInstallCommandArguments(
-                        toolId: toolId.Item1.PackageId.ToString(),
-                        isGlobal: _parseResult.GetValue(ToolInstallCommandParser.GlobalOption),
-                        toolPath: _parseResult.GetValue(ToolInstallCommandParser.ToolPathOption),
-                        configFile: _parseResult.GetValue(ToolInstallCommandParser.ConfigOption),
-                        addSource: _parseResult.GetValue(ToolInstallCommandParser.AddSourceOption),
-                        framework: _parseResult.GetValue(ToolInstallCommandParser.FrameworkOption),
-                        prerelease: _parseResult.GetValue(ToolInstallCommandParser.PrereleaseOption),
-                        disableParallel: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-                        ignoreFailedSource: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
-                        noCache: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
-                        interactiveRestore: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption),
-                        verbosity: _parseResult.GetValue(ToolInstallCommandParser.VerbosityOption),
-                        manifestPath: _parseResult.GetValue(ToolInstallCommandParser.ToolManifestOption)
-                    );
-
-                    ParseResult newParseResult = Parser.Instance.Parse(args);
-                    var toolInstallCommand = new ToolInstallLocalCommand(
-                        _parseResult,
-                        new PackageId(toolId.Item1.PackageId.ToString()),
-                        null,
-                        _toolManifestFinder,
-                        _toolManifestEditor,
-                        _localToolsResolverCache,
-                        _reporter);
-
-                    toolInstallCommand.Execute();
-                }
-                return 0;
+                return ExecuteInstallAllCommand();
             }
             else
             {
@@ -132,6 +98,44 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 toolDownloadedPackage,
                 _toolLocalPackageInstaller.TargetFrameworkToInstall);
 
+            return 0;
+        }
+
+        private int ExecuteInstallAllCommand()
+        {
+            var toolListCommand = new ToolListLocalCommand(_parseResult);
+            var toolIds = toolListCommand.GetPackages(null);
+
+            foreach (var toolId in toolIds)
+            {
+                var args = ToolInstallCommandParser.BuildInstallCommandArguments(
+                    toolId: toolId.Item1.PackageId.ToString(),
+                    isGlobal: _parseResult.GetValue(ToolInstallCommandParser.GlobalOption),
+                    toolPath: _parseResult.GetValue(ToolInstallCommandParser.ToolPathOption),
+                    configFile: _parseResult.GetValue(ToolInstallCommandParser.ConfigOption),
+                    addSource: _parseResult.GetValue(ToolInstallCommandParser.AddSourceOption),
+                    framework: _parseResult.GetValue(ToolInstallCommandParser.FrameworkOption),
+                    prerelease: _parseResult.GetValue(ToolInstallCommandParser.PrereleaseOption),
+                    disableParallel: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+                    ignoreFailedSource: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
+                    noCache: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
+                    interactiveRestore: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption),
+                    verbosity: _parseResult.GetValue(ToolInstallCommandParser.VerbosityOption),
+                    manifestPath: _parseResult.GetValue(ToolInstallCommandParser.ToolManifestOption)
+                );
+
+                ParseResult newParseResult = Parser.Instance.Parse(args);
+                var toolInstallCommand = new ToolInstallLocalCommand(
+                    newParseResult,
+                    new PackageId(toolId.Item1.PackageId.ToString()),
+                    null,
+                    _toolManifestFinder,
+                    _toolManifestEditor,
+                    _localToolsResolverCache,
+                    _reporter);
+
+                toolInstallCommand.Execute();
+            }
             return 0;
         }
 

@@ -4,6 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using UpdateToolsLocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tools.Tool.Common
 {
@@ -13,9 +14,12 @@ namespace Microsoft.DotNet.Tools.Tool.Common
 
         public static CliOption<bool> LocalOption = new("--local");
 
-        public static CliOption<bool> UpdateAllOption = new("--all");
+        public static CliOption<bool> UpdateAllOption = new("--all")
+        {
+            Description = UpdateToolsLocalizableStrings.UpdateAllOptionDescription
+        };
 
-        public static readonly CliOption<string> VersionOption = new("--version");
+        public static readonly CliOption<string> VersionOption = ToolInstallCommandParser.VersionOption;
 
         public static CliOption<string> ToolPathOption = new("--tool-path")
         {
