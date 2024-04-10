@@ -236,6 +236,9 @@
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
 
+    <!-- Used by windowsdesktop to determine msi version -->
+    <ExtraPackageVersionPropsPackageInfo Include="VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
+
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion" Version="%24(MicrosoftWindowsDesktopAppRefPackageVersion)" />
 
     <!-- Used by installer to determine sdk version -->
