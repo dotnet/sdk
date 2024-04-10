@@ -29,7 +29,9 @@ namespace Microsoft.NET.TestFramework
 
         public string MsbuildAdditionalSdkResolverFolder { get; set; }
 
-        public List<string> TestConfigFiles { get; private set; } = new List<string>();
+        public List<(string name, string value)> EnvironmentVariables { get; set; } = [];
+
+        public List<string> TestConfigFiles { get; private set; } = [];
 
         public HashSet<string> TestListsToRun { get; private set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -91,6 +93,10 @@ namespace Microsoft.NET.TestFramework
                 {
                     ret.TestListsToRun.Add(argStack.Pop());
                 }
+                else if (arg.Equals("-e", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    ret.EnvironmentVariables.Add(ParseEnvironmentVariableArg(argStack.Pop()));
+                }
                 else if (arg.Equals("-showSdkInfo", StringComparison.CurrentCultureIgnoreCase))
                 {
                     ret.ShowSdkInfo = true;
@@ -123,6 +129,17 @@ namespace Microsoft.NET.TestFramework
             }
 
             return ret;
+        }
+
+        private static (string name, string value) ParseEnvironmentVariableArg(string arg)
+        {
+            var i = arg.IndexOf('=');
+            if (i <= 0)
+            {
+                throw new ArgumentException($"Invalid environment variable specification (expected 'name=value'): '{arg}'");
+            }
+
+            return (arg.Substring(0, i), arg.Substring(i + 1));
         }
 
         public List<string> GetXunitArgsFromTestConfig()
