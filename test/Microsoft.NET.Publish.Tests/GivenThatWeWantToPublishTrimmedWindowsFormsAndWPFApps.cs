@@ -175,6 +175,40 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
+        public void It_publishes_windows_forms_wpf_app()
+        {
+            var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
+            var projectName = "WinformsWpfAssemblies";
+
+            var testProject = CreateWpfTestProject(targetFramework, projectName, true);
+
+            testProject.AdditionalProperties["UseWindowsForms"] = "true";
+            testProject.AdditionalProperties["UseWPF"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["SelfContained"] = "true";
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute()
+                .Should()
+                .Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, configuration: "Debug", runtimeIdentifier: "win-x64").FullName;
+
+            var wpfPresentationCoreDll = Path.Combine(publishDirectory, "PresentationCore.dll");
+            var wpfPresentationFxDll = Path.Combine(publishDirectory, "PresentationFramework.dll");
+            var winFormsDll = Path.Combine(publishDirectory, "System.Windows.Forms.dll");
+            var accessibilitysDll = Path.Combine(publishDirectory, "Accessibility.dll");
+
+            // Wpf assemblies should  be present and winforms assemblies should not be present in the output directory
+            // Wpf/WinForms assemblies, like Accessibility.dll should present in the output directory
+            File.Exists(wpfPresentationCoreDll).Should().BeTrue();
+            File.Exists(wpfPresentationFxDll).Should().BeTrue();
+            File.Exists(accessibilitysDll).Should().BeTrue();
+            File.Exists(winFormsDll).Should().BeTrue();
+        }
+
+        [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
         public void It_builds_wpf_app_with_error()
         {
             var targetFramework = $"{ToolsetInfo.CurrentTargetFramework}-windows";
