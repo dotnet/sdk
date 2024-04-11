@@ -26,12 +26,6 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             return ProcessInternal(environment, action, creationEffects, templateCreationResult, outputBasePath);
         }
 
-        // TODO: The method below is returning null when it can't find a file change (File changes are specified as creation effects in AddRefCanHandleProjectFilesWithoutRenames test) that matches the targetFiles. The target needs to be the full relative path because it is also used to find the physical file where the update needs to take place. How does this work when adding a project to a solution?
-        // TODO: Try performing a fake modification to the target file so it appears in the list of file modifications
-        // TODO: Check if the output directory can be specified
-        // TODO: Check if we could instead execute the dotnet new command from the folder that has the project we want to add the reference to
-        // TODO: Check were the error message is being set to confirm if it is the execution path of the test mentioned above
-
         /// <summary>
         /// Gets absolute normalized path for a target matching <paramref name="sourcePathGlob"/>.
         /// </summary>
