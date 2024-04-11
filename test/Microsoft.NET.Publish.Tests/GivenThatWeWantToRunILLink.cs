@@ -1022,8 +1022,6 @@ namespace Microsoft.NET.Publish.Tests
                     .Should().BeTrue();
                 configProperties["System.ComponentModel.TypeConverter.EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization"].Value<bool>()
                     .Should().BeFalse();
-                configProperties["System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"].Value<bool>()
-                    .Should().BeFalse();
                 configProperties["System.Resources.ResourceManager.AllowCustomResourceTypes"].Value<bool>()
                     .Should().BeFalse();
                 configProperties["System.Runtime.InteropServices.BuiltInComInterop.IsSupported"].Value<bool>()
@@ -1044,6 +1042,12 @@ namespace Microsoft.NET.Publish.Tests
                 if (parsedVersion.Major >= 8)
                 {
                     configProperties["System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"].Value<bool>()
+                        .Should().BeFalse();
+                }
+
+                if (parsedVersion.Major >= 9)
+                {
+                    configProperties["System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"].Value<bool>()
                         .Should().BeFalse();
                 }
             }
