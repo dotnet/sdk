@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly IReporter _reporter;
         private readonly PackageId _packageId;
         private readonly bool _allowPackageDowngrade;
+        private readonly IToolPackageDownloader _toolPackageDownloader;
 
         private readonly string _explicitManifestFile;
         private readonly bool _createManifestIfNeeded;
@@ -40,7 +41,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             )
             : base(parseResult)
         {
-            _packageId = packageId ?? new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
+            _all = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
+            if (!_all)
+            {
+                _packageId = packageId ?? new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
+            }
             _explicitManifestFile = parseResult.GetValue(ToolAppliedOption.ToolManifestOption);
 
             _createManifestIfNeeded = parseResult.GetValue(ToolInstallCommandParser.CreateManifestIfNeededOption);
@@ -52,9 +57,9 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
             _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, _packageId, toolPackageDownloader);
+            _toolPackageDownloader = toolPackageDownloader;
             _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
-            _all = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
         }
 
         public override int Execute()
@@ -103,7 +108,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         private int ExecuteInstallAllCommand()
         {
-            var toolListCommand = new ToolListLocalCommand(_parseResult);
+            var toolListCommand = new ToolListLocalCommand(_parseResult, (IToolManifestInspector)_toolManifestFinder);
             var toolIds = toolListCommand.GetPackages(null);
 
             foreach (var toolId in toolIds)
@@ -128,7 +133,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                 var toolInstallCommand = new ToolInstallLocalCommand(
                     newParseResult,
                     new PackageId(toolId.Item1.PackageId.ToString()),
-                    null,
+                    _toolPackageDownloader,
                     _toolManifestFinder,
                     _toolManifestEditor,
                     _localToolsResolverCache,
