@@ -601,9 +601,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public void AddProjectReference_WithOutputAbsolutePath()
         {
             string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Basic", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
+            string expectedTemplateName = "TestAssets.PostActions.AddProjectReference.Basic";
             string home = CreateTemporaryFolder(folderName: "Home");
             string workingDirectory = CreateTemporaryFolder();
-            string expectedTemplateName = "TestAssets.PostActions.AddProjectReference.Basic";
             string outputDirectory = CreateTemporaryFolder("output");
             InstallTestTemplate(templateLocation, _log, home, workingDirectory);
 
