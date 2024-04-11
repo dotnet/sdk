@@ -8,6 +8,10 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal class AwaitableProcess : IDisposable
     {
+        // cancel just before we hit timeout used on CI (XUnitWorkItemTimeout value in sdk\test\UnitTests.proj)
+        private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
+            ? TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)) : TimeSpan.FromMinutes(1);
+
         private readonly object _testOutputLock = new();
 
         private Process _process;
@@ -70,8 +74,7 @@ namespace Microsoft.DotNet.Watcher.Tools
         {
             using var cancellationOnFailure = new CancellationTokenSource();
 
-            // cancel just before we hit 2 minute time out used on CI (sdk\test\UnitTests.proj)
-            cancellationOnFailure.CancelAfter(TimeSpan.FromSeconds(110));
+            cancellationOnFailure.CancelAfter(s_timeout);
 
             var failedLineCount = 0;
             while (!_source.Completion.IsCompleted && failedLineCount == 0)
