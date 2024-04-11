@@ -1044,6 +1044,12 @@ namespace Microsoft.NET.Publish.Tests
                     configProperties["System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"].Value<bool>()
                         .Should().BeFalse();
                 }
+
+                if (parsedVersion.Major >= 9)
+                {
+                    configProperties["System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"].Value<bool>()
+                        .Should().BeFalse();
+                }
             }
             else
             {
