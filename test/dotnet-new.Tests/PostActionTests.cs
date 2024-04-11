@@ -553,7 +553,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Fact]
-        public void AddProjectReference_ExistngProject()
+        public void AddProjectReference_ExistingProject()
         {
             string templateLocation = _testAssetsManager.CopyTestAsset("PostActions/AddProjectReference/Existing", testAssetSubdirectory: DotnetNewTestTemplatesBasePath).WithSource().Path;
             string expectedTemplateName = "TestAssets.PostActions.AddProjectReference.Existing";
