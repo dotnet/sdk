@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly IToolManifestFinder _toolManifestFinder;
         private readonly IToolManifestEditor _toolManifestEditor;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
-        private readonly ToolInstallLocalInstaller _toolLocalPackageInstaller;
+        private ToolInstallLocalInstaller _toolLocalPackageInstaller;
         private readonly IReporter _reporter;
         private readonly PackageId _packageId;
         private readonly bool _allowPackageDowngrade;
@@ -66,27 +66,26 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         {
             if (_all)
             {
-                 // return ExecuteInstallAllCommand();
                 var toolListCommand = new ToolListLocalCommand(_parseResult, (IToolManifestInspector)_toolManifestFinder);
                 var toolIds = toolListCommand.GetPackages(null);
                 foreach (var toolId in toolIds)
                 {
-                    ExecuteInstallCommand(new PackageId(toolId.Item1.PackageId.ToString().ToString()));
+                    ExecuteInstallCommand(toolId.Item1.PackageId);
                 }
                 return 0;
             }
             else
             {
-                return ExecuteInstallCommand((PackageId)_packageId);
+                return ExecuteInstallCommand(_packageId);
             }
         }
 
-        private int ExecuteInstallCommand()
+        private int ExecuteInstallCommand(PackageId packageId)
         {
             FilePath manifestFile = GetManifestFilePath();
 
             (FilePath? manifestFileOptional, string warningMessage) =
-                _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, _packageId);
+                _toolManifestFinder.ExplicitManifestOrFindManifestContainPackageId(_explicitManifestFile, packageId);
 
             if (warningMessage != null)
             {
@@ -94,7 +93,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             }
 
             manifestFile = manifestFileOptional ?? GetManifestFilePath();
-            var existingPackageWithPackageId = _toolManifestFinder.Find(manifestFile).Where(p => p.PackageId.Equals(_packageId));
+            var existingPackageWithPackageId = _toolManifestFinder.Find(manifestFile).Where(p => p.PackageId.Equals(packageId));
 
             if (!existingPackageWithPackageId.Any())
             {
@@ -102,9 +101,13 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             }
 
             var existingPackage = existingPackageWithPackageId.Single();
+            if (!packageId.Equals(_packageId))
+            {
+                _toolLocalPackageInstaller = new ToolInstallLocalInstaller(_parseResult, packageId, _toolPackageDownloader);
+            }
             var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
 
-            InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile);
+            InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile, packageId);
 
             _localToolsResolverCache.SaveToolPackage(
                 toolDownloadedPackage,
@@ -113,45 +116,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             return 0;
         }
 
-        private int ExecuteInstallAllCommand()
-        {
-            var toolListCommand = new ToolListLocalCommand(_parseResult, (IToolManifestInspector)_toolManifestFinder);
-            var toolIds = toolListCommand.GetPackages(null);
-
-            foreach (var toolId in toolIds)
-            {
-                var args = ToolInstallCommandParser.BuildInstallCommandArguments(
-                    toolId: toolId.Item1.PackageId.ToString(),
-                    isGlobal: _parseResult.GetValue(ToolInstallCommandParser.GlobalOption),
-                    toolPath: _parseResult.GetValue(ToolInstallCommandParser.ToolPathOption),
-                    configFile: _parseResult.GetValue(ToolInstallCommandParser.ConfigOption),
-                    addSource: _parseResult.GetValue(ToolInstallCommandParser.AddSourceOption),
-                    framework: _parseResult.GetValue(ToolInstallCommandParser.FrameworkOption),
-                    prerelease: _parseResult.GetValue(ToolInstallCommandParser.PrereleaseOption),
-                    disableParallel: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-                    ignoreFailedSource: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
-                    noCache: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
-                    interactiveRestore: _parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption),
-                    verbosity: _parseResult.GetValue(ToolInstallCommandParser.VerbosityOption),
-                    manifestPath: _parseResult.GetValue(ToolInstallCommandParser.ToolManifestOption)
-                );
-
-                ParseResult newParseResult = Parser.Instance.Parse(args);
-                var toolInstallCommand = new ToolInstallLocalCommand(
-                    newParseResult,
-                    new PackageId(toolId.Item1.PackageId.ToString()),
-                    _toolPackageDownloader,
-                    _toolManifestFinder,
-                    _toolManifestEditor,
-                    _localToolsResolverCache,
-                    _reporter);
-
-                toolInstallCommand.Execute();
-            }
-            return 0;
-        }
-
-        public int InstallToolUpdate(ToolManifestPackage existingPackage, IToolPackage toolDownloadedPackage, FilePath manifestFile)
+        public int InstallToolUpdate(ToolManifestPackage existingPackage, IToolPackage toolDownloadedPackage, FilePath manifestFile, PackageId packageId)
         {
             if (existingPackage.Version > toolDownloadedPackage.Version && !_allowPackageDowngrade)
             {
@@ -178,7 +143,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             {
                 _toolManifestEditor.Edit(
                     manifestFile,
-                    _packageId,
+                    packageId,
                     toolDownloadedPackage.Version,
                     toolDownloadedPackage.Commands.Select(c => c.Name).ToArray());
                 _reporter.WriteLine(

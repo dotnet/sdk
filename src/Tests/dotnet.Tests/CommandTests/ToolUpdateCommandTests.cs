@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.Update;
-using Newtonsoft.Json.Bson;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
