@@ -66,7 +66,14 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         {
             if (_all)
             {
-                return ExecuteInstallAllCommand();
+                 // return ExecuteInstallAllCommand();
+                var toolListCommand = new ToolListLocalCommand(_parseResult, (IToolManifestInspector)_toolManifestFinder);
+                var toolIds = toolListCommand.GetPackages(null);
+                foreach (var toolId in toolIds)
+                {
+                    ExecuteInstallCommand(new PackageId(toolId.Item1.PackageId.ToString().ToString()));
+                }
+                return 0;
             }
             else
             {
