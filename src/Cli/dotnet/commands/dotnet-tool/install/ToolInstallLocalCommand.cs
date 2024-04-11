@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             }
             else
             {
-                return ExecuteInstallCommand();
+                return ExecuteInstallCommand((PackageId)_packageId);
             }
         }
 
