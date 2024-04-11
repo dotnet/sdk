@@ -78,6 +78,10 @@
             "defaultRemote": "https://github.com/dotnet/diagnostics"
         },
         {
+            "name": "efcore",
+            "defaultRemote": "https://github.com/dotnet/efcore"
+        },
+        {
             "name": "emsdk",
             "defaultRemote": "https://github.com/dotnet/emsdk"
         },
