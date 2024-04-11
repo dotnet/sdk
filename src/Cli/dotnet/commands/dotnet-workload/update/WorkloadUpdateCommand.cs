@@ -93,10 +93,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             {
                 var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
                 _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
-                ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
 
                 try
                 {
+                    ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
                     if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
                     {

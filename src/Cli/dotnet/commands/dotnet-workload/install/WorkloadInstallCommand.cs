@@ -112,28 +112,29 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
                 _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
-                ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
-
-                //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
-                //  set version specified, and we might update the workload version, then we don't do that check here, because we might not have the right
-                //  workload set installed yet, and trying to list the available workloads would throw an error
-                if (_skipManifestUpdate || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
-                {
-                    ValidateWorkloadIdsInput();
-                }
-
-                if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
-                {
-                    var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-                    if (File.Exists(installStateFilePath))
-                    {
-                        var installStateContents = InstallStateContents.FromPath(installStateFilePath);
-                        _workloadSetVersion = installStateContents.WorkloadVersion;
-                    }
-                }
 
                 try
                 {
+                    ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
+
+                    //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
+                    //  set version specified, and we might update the workload version, then we don't do that check here, because we might not have the right
+                    //  workload set installed yet, and trying to list the available workloads would throw an error
+                    if (_skipManifestUpdate || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
+                    {
+                        ValidateWorkloadIdsInput();
+                    }
+
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
+                    {
+                        var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+                        if (File.Exists(installStateFilePath))
+                        {
+                            var installStateContents = InstallStateContents.FromPath(installStateFilePath);
+                            _workloadSetVersion = installStateContents.WorkloadVersion;
+                        }
+                    }
+
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
                     var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
                     if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
