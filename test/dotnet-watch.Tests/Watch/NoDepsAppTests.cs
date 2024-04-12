@@ -18,7 +18,8 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                 .WithSource();
 
-            await App.StartWatcherAsync(testAsset, applicationArguments: ["--no-hot-reload", "--no-exit"]);
+            App.DotnetWatchArgs.Add("--no-hot-reload");
+            await App.StartWatcherAsync(testAsset, applicationArguments: ["--no-exit"]);
             var processIdentifier = await App.AssertOutputLineStartsWith("Process identifier =");
 
             // Then wait for it to restart when we change a file

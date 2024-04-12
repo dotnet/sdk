@@ -46,7 +46,10 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                 .WithSource();
 
-            await App.StartWatcherAsync(testAsset, applicationArguments: [ "--launch-profile", "Second"]);
+            App.DotnetWatchArgs.Add("--launch-profile");
+            App.DotnetWatchArgs.Add("Second");
+            
+            await App.StartWatcherAsync(testAsset);
             Assert.Equal("<<<Second>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
         }
 
@@ -58,7 +61,10 @@ namespace Microsoft.DotNet.Watcher.Tests
             var testAsset = TestAssets.CopyTestAsset(AppName)
                 .WithSource();
 
-            await App.StartWatcherAsync(testAsset, applicationArguments: ["--launch-profile", "Third"]);
+            App.DotnetWatchArgs.Add("--launch-profile");
+            App.DotnetWatchArgs.Add("Third");
+
+            await App.StartWatcherAsync(testAsset);
             Assert.Equal("<<<First>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
         }
 
