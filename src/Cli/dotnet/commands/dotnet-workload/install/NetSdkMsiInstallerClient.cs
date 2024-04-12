@@ -35,6 +35,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private readonly string _dependent;
 
+        private bool _installComplete = false;
+
         public int ExitCode => Restart ? unchecked((int)Error.SUCCESS_REBOOT_REQUIRED) : unchecked((int)Error.SUCCESS);
 
         public NetSdkMsiInstallerClient(InstallElevationContextBase elevationContext,
@@ -98,6 +100,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
 
             return msis.ToList(); ;
+        }
+
+        public void NotifyInstallComplete()
+        {
+            _installComplete = true;
         }
 
         //  Wrap the setup logger in an IReporter so it can be passed to the garbage collector
@@ -462,7 +469,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     },
                     rollback: () =>
                     {
-                        InstallWorkloadManifestImplementation(manifestUpdate.Reverse(), offlineCache: null, isRollback: true);
+                        if (!_installComplete)
+                        {
+                            InstallWorkloadManifestImplementation(manifestUpdate, offlineCache: null, isRollback: true, action: InstallAction.Uninstall);
+                        }
                     });
             }
             catch (Exception e)
@@ -472,7 +482,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, bool isRollback = false)
+        void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, bool isRollback = false, InstallAction action = InstallAction.Install)
         {
             ReportPendingReboot();
 
@@ -491,7 +501,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
             VerifyPackage(msi);
             DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
-            InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
+            InstallAction plannedAction = PlanPackage(msi, state, action, installedVersion);
 
             ExecutePackage(msi, plannedAction, msiPackageId);
 

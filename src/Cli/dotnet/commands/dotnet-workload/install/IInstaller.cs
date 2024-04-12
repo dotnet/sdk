@@ -29,6 +29,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         void AdjustWorkloadSetInInstallState(SdkFeatureBand sdkFeatureBand, string workloadVersion);
 
+        void NotifyInstallComplete();
+
         /// <summary>
         /// Replace the workload resolver used by this installer. Typically used to call <see cref="GetDownloads(IEnumerable{WorkloadId}, SdkFeatureBand, bool)"/>
         /// for a set of workload manifests that isn't currently installed

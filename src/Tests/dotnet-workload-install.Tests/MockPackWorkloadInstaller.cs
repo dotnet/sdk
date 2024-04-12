@@ -75,6 +75,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             }
         }
 
+        public void NotifyInstallComplete() { }
+
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
             List<PackInfo> packs = new List<PackInfo>();
