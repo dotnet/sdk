@@ -3,10 +3,7 @@
 
 #if USE_SYSTEM_TEXT_JSON
 
-using System;
 using System.Buffers;
-using System.Collections.Generic;
-using System.IO;
 using System.Text.Json;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
@@ -47,7 +44,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             Utf8JsonReader reader;
             readonly Stream stream;
 
-            IMemoryOwner<byte> buffer;
+            byte[]? buffer;
 
             Span<byte> span;
 
@@ -55,9 +52,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 this.stream = stream;
 
-                buffer = MemoryPool<byte>.Shared.Rent(segmentSize);
-                var readCount = stream.Read(buffer.Memory.Span);
-                span = buffer.Memory.Slice(0, readCount).Span;
+                buffer = ArrayPool<byte>.Shared.Rent(segmentSize);
+                var readCount = stream.Read(buffer, 0, buffer.Length);
+                span = buffer.AsSpan().Slice(0, readCount);
 
                 if (span.StartsWith(utf8Bom))
                 {
@@ -73,6 +70,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 {
                     if (reader.IsFinalBlock)
                     {
+                        if (buffer != null)
+                        {
+                            ArrayPool<byte>.Shared.Return(buffer);
+                            buffer = null;
+                        }
                         return false;
                     }
 
@@ -86,18 +88,21 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
                     int remaining = (int)(span.Length - reader.BytesConsumed);
 
-                    var newBuffer = MemoryPool<byte>.Shared.Rent(newSegmentSize);
+                    var newBuffer = ArrayPool<byte>.Shared.Rent(newSegmentSize);
 
                     if (remaining > 0)
                     {
-                        span.Slice((int)reader.BytesConsumed).CopyTo(newBuffer.Memory.Span);
+                        span.Slice((int)reader.BytesConsumed).CopyTo(newBuffer);
                     }
 
-                    var readCount = stream.Read(newBuffer.Memory.Span.Slice(remaining));
+                    var readCount = stream.Read(newBuffer, remaining, newBuffer.Length - remaining);
 
-                    buffer.Dispose();
+                    if (buffer != null)
+                    {
+                        ArrayPool<byte>.Shared.Return(buffer);
+                    }
                     buffer = newBuffer;
-                    span = newBuffer.Memory.Slice(0, remaining + readCount).Span;
+                    span = newBuffer.AsSpan().Slice(0, remaining + readCount);
 
                     reader = new Utf8JsonReader(span, stream.Position >= stream.Length, reader.CurrentState);
                 }
