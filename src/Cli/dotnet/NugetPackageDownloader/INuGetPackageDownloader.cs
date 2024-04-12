@@ -16,7 +16,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false,
             bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null);
+            PackageSourceMapping packageSourceMapping = null,
+            bool verifySigning = true);
 
         Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion = null,

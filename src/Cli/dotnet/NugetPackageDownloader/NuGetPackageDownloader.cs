@@ -86,7 +86,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false,
             bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null)
+            PackageSourceMapping packageSourceMapping = null,
+            bool verifySigning = true)
         {
             CancellationToken cancellationToken = CancellationToken.None;
 
@@ -130,8 +131,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         packageVersion.ToNormalizedString()));
             }
 
-            VerifySigning(nupkgPath);
-
+            if (verifySigning)
+            {
+                VerifySigning(nupkgPath);
+            }
+            
             return nupkgPath;
         }
 
