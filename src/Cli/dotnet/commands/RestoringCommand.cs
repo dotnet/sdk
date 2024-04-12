@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tools
             userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
             Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
             SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
-            AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
+            AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.All(arg => FlagsToExcludeFromRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
 
             if (!noRestore)
             {
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tools
 
             if (HasArgumentToExcludeFromRestore(arguments))
             {
-                return Prepend("-nologo", arguments);
+                return Prepend("-nologo", Prepend("-verbosity:quiet", arguments));
             }
 
             return Prepend("-restore", arguments);
@@ -84,18 +84,13 @@ namespace Microsoft.DotNet.Tools
             "TargetFramework"
         ];
 
-        private static readonly string[] FlagsThatTriggerSilentRestore =
-            [
-                "getProperty",
-                "getItem",
-                "getTargetResult"
-            ];
-
         //  These arguments don't by themselves require that restore be run in a separate process,
         //  but if there is a separate restore process they shouldn't be passed to it
         private static readonly string[] FlagsToExcludeFromRestore =
         [
-            ..FlagsThatTriggerSilentRestore,
+            "getProperty",
+            "getItem",
+            "getTargetResult"
             "t",
             "target",
             "consoleloggerparameters",
@@ -104,9 +99,6 @@ namespace Microsoft.DotNet.Tools
 
         private static List<string> FlagsToExcludeFromSeparateRestore =
             ComputeFlags(FlagsToExcludeFromRestore).ToList();
-
-        private static List<string> FlagsThatTriggerSilentSeparateRestore =
-            ComputeFlags(FlagsThatTriggerSilentRestore).ToList();
 
         private static List<string> PropertiesToExcludeFromSeparateRestore =
             ComputePropertySwitches(PropertiesToExcludeFromRestore).ToList();
@@ -125,12 +117,6 @@ namespace Microsoft.DotNet.Tools
                 if (!IsExcludedFromSeparateRestore(argument) && !IsExcludedFromRestore(argument))
                 {
                     existingArgumentsToForward.Add(argument);
-                }
-
-                if (TriggersSilentSeparateRestore(argument))
-                {
-                    newArgumentsToAdd.Add("-nologo");
-                    newArgumentsToAdd.Add("-verbosity:quiet");
                 }
             }
             return (newArgumentsToAdd.ToArray(), existingArgumentsToForward.ToArray());
@@ -164,9 +150,6 @@ namespace Microsoft.DotNet.Tools
 
         private static bool IsExcludedFromSeparateRestore(string argument)
             => FlagsToExcludeFromSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
-
-        private static bool TriggersSilentSeparateRestore(string argument)
-            => FlagsThatTriggerSilentSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
         public override int Execute()
         {
