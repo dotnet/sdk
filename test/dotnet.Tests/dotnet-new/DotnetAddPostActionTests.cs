@@ -206,6 +206,47 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.Equal(referencedProjFileFullPath, callback.Reference);
         }
 
+        [Fact(DisplayName = nameof(AddRefCanHandleExistingProjectFiles))]
+        public void AddRefCanHandleExistingProjectFiles()
+        {
+            var callback = new MockAddProjectReferenceCallback();
+            DotnetAddPostActionProcessor actionProcessor = new(callback.AddPackageReference, callback.AddProjectReference);
+            const string targetBasePath = "/"; // _engineEnvironmentSettings.GetTempVirtualizedPath(); Commented code throws exception
+            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
+
+            string existingProjectPath = Path.Combine(targetBasePath, "ExistingProjectFolder");
+
+            string existingProjectFileFullPath = Path.Combine(existingProjectPath, "ExistingProject.csproj");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(existingProjectFileFullPath, TestCsprojFile);
+
+            string referencedProjectFileFullPath = Path.Combine(targetBasePath, "Reference.csproj");
+
+            //TODO: Add test for both target files passed as array and string
+            var args = new Dictionary<string, string>()
+            {
+                { "targetFiles", $"[\"{existingProjectFileFullPath}\"]" },
+                { "referenceType", "project" },
+                { "reference", "Reference.csproj" }
+            };
+            var postAction =
+                new MockPostAction(default, default, default, default, default!)
+                {
+                    ActionId = DotnetAddPostActionProcessor.ActionProcessorId, Args = args
+                };
+
+            MockCreationEffects creationEffects = new MockCreationEffects();
+
+            actionProcessor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                creationEffects,
+                new MockCreationResult(),
+                targetBasePath);
+
+            Assert.Equal(existingProjectFileFullPath, callback.Target);
+            Assert.Equal(referencedProjectFileFullPath, callback.Reference);
+        }
+
         [Fact(DisplayName = nameof(AddRefCanTargetASingleProjectWithAJsonArray))]
         public void AddRefCanTargetASingleProjectWithAJsonArray()
         {
