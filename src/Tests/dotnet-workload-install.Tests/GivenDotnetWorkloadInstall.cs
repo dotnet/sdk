@@ -330,7 +330,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 nugetPackageDownloader: nugetDownloader, workloadManifestUpdater: manifestUpdater);
 
             var exceptionThrown = Assert.Throws<GracefulException>(() => command.Execute());
-            exceptionThrown.Message.Should().Be(String.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadNotSupportedOnPlatform, mockWorkloadId));
+            exceptionThrown.Message.Should().Be(String.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadInstallationFailed, String.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadNotSupportedOnPlatform, mockWorkloadId)));
         }
 
         [Theory]
