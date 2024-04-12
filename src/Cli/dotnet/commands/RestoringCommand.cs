@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Tools
         [
             "getProperty",
             "getItem",
-            "getTargetResult"
+            "getTargetResult",
             "t",
             "target",
             "consoleloggerparameters",
