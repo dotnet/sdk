@@ -35,7 +35,7 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\..\..\test\Common\Program.UnitTests.cs" />
+    <Compile Include="..\..\..\test\Common\Program.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -792,23 +792,26 @@ namespace Microsoft.NET.Publish.Tests
                 "ILLink : Trim analysis warning IL2063: System.RuntimeType.GetInterface(String, Boolean",
                 "ILLink : Trim analysis warning IL2065: System.Runtime.Serialization.FormatterServices.InternalGetSerializableMembers(Type",
             };
-            switch (targetFramework)
+            if (Net6Plus.Any(tfm => (string)tfm[0] == targetFramework))
             {
-                case "net6.0":
-                    expectedWarnings.AddRange(new string[] {
+                expectedWarnings.AddRange(new string[] {
                     "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssembly(IntPtr, IntPtr",
                 });
-                    break;
-                case "net7.0":
-                case "net8.0":
-                case "net9.0":
-                    expectedWarnings.AddRange(new string[] {
+            }
+            if (Net7Plus.Any(tfm => (string)tfm[0] == targetFramework))
+            {
+                expectedWarnings.AddRange(new string[] {
                     "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssembly(IntPtr, IntPtr",
-                    "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssemblyInContextWhenSupported(IntPtr, IntPtr",
+                    "ILLink : Trim analysis warning IL2026: Internal.Runtime.InteropServices.InMemoryAssemblyLoader.LoadInMemoryAssemblyInContextWhenSupported(IntPtr, IntPtr"
                 });
-                    break;
-                default:
-                    throw new InvalidOperationException();
+            }
+            // windows-only COM warnings
+            if (Net9Plus.Any(tfm => (string)tfm[0] == targetFramework) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                expectedWarnings.AddRange(new string[] {
+                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible.",
+                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible."
+                });
             }
 
             var testProject = CreateTestProjectForILLinkTesting(targetFramework, projectName);
@@ -881,6 +884,13 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetEvents(Attribute[]",
                     "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetProperties(Attribute[]",
                     "ILLink : Trim analysis warning IL2112: System.Data.Common.DbConnectionStringBuilder.System.ComponentModel.ICustomTypeDescriptor.GetProperties("
+                });
+            }
+            if (Net9Plus.Any(tfm => (string)tfm[0] == targetFramework))
+            {
+                expectedWarnings.AddRange(new string[] {
+                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible.",
+                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible."
                 });
             }
 
@@ -1032,6 +1042,12 @@ namespace Microsoft.NET.Publish.Tests
                 if (parsedVersion.Major >= 8)
                 {
                     configProperties["System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault"].Value<bool>()
+                        .Should().BeFalse();
+                }
+
+                if (parsedVersion.Major >= 9)
+                {
+                    configProperties["System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"].Value<bool>()
                         .Should().BeFalse();
                 }
             }

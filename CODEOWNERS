@@ -38,6 +38,8 @@
 /test/dotnet-add-package.Tests @dotnet/nuget-team
 /src/Cli/dotnet/commands/dotnet-nuget @dotnet/nuget-team
 /test/dotnet-nuget.UnitTests @dotnet/nuget-team
+/src/Cli/dotnet/commands/dotnet-list/dotnet-list-package @dotnet/nuget-team
+/test/dotnet-list-package.Tests @dotnet/nuget-team
 
 # Area-FSharp
 /src/Cli/dotnet/commands/dotnet-fsi @dotnet/fsharp
