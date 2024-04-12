@@ -254,9 +254,14 @@
           DependsOnTargets="GetProducedPackagesFromTransitiveReferences"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)CreateBuildInputProps.complete">
-    <ItemGroup>
-      <_PreviouslyBuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
-    </ItemGroup>
+
+    <!-- Get the previously-built-source-built package information from the manifest from that build. -->
+    <MSBuild Project="$(MSBuildThisFileFullPath)"
+             Targets="GetProducedPackages"
+             AdditionalProperties="RepoAssetManifestsDir=$(PrebuiltSourceBuiltPackagesPath)"
+             BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_PreviouslyBuiltSourceBuiltPackages" />
+    </MSBuild>
 
     <Error Condition="'$(PackageVersionPropsFlowType)' != 'AllPackages' and '$(PackageVersionPropsFlowType)' != 'DependenciesOnly'"
       Text="Invalid PackageVersionPropsFlowType '$(PackageVersionPropsFlowType)'. Must be 'AllPackages' or 'DependenciesOnly'." />
@@ -273,7 +278,7 @@
                                OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
 
     <!-- Create previously source-built inputs info -->
-    <WritePackageVersionsProps NuGetPackages="@(_PreviouslyBuiltSourceBuiltPackages)"
+    <WritePackageVersionsProps KnownPackages="@(_PreviouslyBuiltSourceBuiltPackages)"
                                VersionPropsFlowType="$(PackageVersionPropsFlowType)"
                                VersionDetails="$(_VersionDetailsXml)"
                                OutputPath="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
