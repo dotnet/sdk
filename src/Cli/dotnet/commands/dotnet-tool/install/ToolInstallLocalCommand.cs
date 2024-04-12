@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
         private ToolInstallLocalInstaller _toolLocalPackageInstaller;
         private readonly IReporter _reporter;
-        private readonly PackageId _packageId;
+        private readonly PackageId? _packageId;
         private readonly bool _allowPackageDowngrade;
         private readonly IToolPackageDownloader _toolPackageDownloader;
 
@@ -42,10 +42,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             : base(parseResult)
         {
             _all = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
-            if (!_all)
-            {
-                _packageId = packageId ?? new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
-            }
+            var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
+            _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
             _explicitManifestFile = parseResult.GetValue(ToolAppliedOption.ToolManifestOption);
 
             _createManifestIfNeeded = parseResult.GetValue(ToolInstallCommandParser.CreateManifestIfNeededOption);
@@ -76,7 +74,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             }
             else
             {
-                return ExecuteInstallCommand(_packageId);
+                return ExecuteInstallCommand((PackageId) _packageId);
             }
         }
 
@@ -97,7 +95,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             if (!existingPackageWithPackageId.Any())
             {
-                return InstallNewTool(manifestFile);
+                return InstallNewTool(manifestFile, packageId);
             }
 
             var existingPackage = existingPackageWithPackageId.Single();
@@ -105,7 +103,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             {
                 _toolLocalPackageInstaller = new ToolInstallLocalInstaller(_parseResult, packageId, _toolPackageDownloader);
             }
-            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile);
+            var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile, packageId);
 
             InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile, packageId);
 
@@ -161,10 +159,11 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             return 0;
         }
-        public int InstallNewTool(FilePath manifestFile)
+
+        public int InstallNewTool(FilePath manifestFile, PackageId packageId)
         {
             IToolPackage toolDownloadedPackage =
-                _toolLocalPackageInstaller.Install(manifestFile);
+                _toolLocalPackageInstaller.Install(manifestFile, packageId);
 
             _toolManifestEditor.Add(
                 manifestFile,

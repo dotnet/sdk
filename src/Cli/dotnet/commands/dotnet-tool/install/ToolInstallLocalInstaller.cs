@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         private readonly IToolPackageStore _toolPackageStore;
         private readonly IToolPackageDownloader _toolPackageDownloader;
-        private readonly PackageId _packageId;
+        private readonly PackageId? _packageId;
         private readonly string _packageVersion;
         private readonly string _configFilePath;
         private readonly string[] _sources;
@@ -31,7 +31,8 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             IToolPackageDownloader toolPackageDownloader = null)
         {
             _parseResult = parseResult;
-            _packageId = packageId ?? new PackageId(parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
+            var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
+            _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
             _packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
             _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
             _sources = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
@@ -49,7 +50,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
         }
 
-        public IToolPackage Install(FilePath manifestFile)
+        public IToolPackage Install(FilePath manifestFile, PackageId packaegId)
         {
             if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
             {
@@ -74,7 +75,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                             nugetConfig: configFile,
                             additionalFeeds: _sources,
                             rootConfigDirectory: manifestFile.GetDirectoryPath().GetParentPath()),
-                        _packageId,
+                        packaegId,
                         verbosity: _verbosity,
                         versionRange,
                         TargetFrameworkToInstall
@@ -85,7 +86,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             catch (Exception ex) when (InstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
             {
                 throw new GracefulException(
-                    messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, _packageId),
+                    messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, (PackageId)_packageId),
                     verboseMessages: new[] {ex.ToString()},
                     isUserError: false);
             }
