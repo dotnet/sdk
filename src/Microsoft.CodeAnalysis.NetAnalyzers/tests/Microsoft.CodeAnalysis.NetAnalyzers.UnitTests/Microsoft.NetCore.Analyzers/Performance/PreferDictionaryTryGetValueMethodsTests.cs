@@ -1730,6 +1730,42 @@ namespace UnitTests {
             }.RunAsync();
         }
 
+        [Fact, WorkItem(7217, "https://github.com/dotnet/roslyn-analyzers/issues/7217")]
+        public Task WhenIndexerInIndirectContainsKeyClause_NoDiagnostic()
+        {
+            const string code = """
+                                using System.Collections.Generic;
+                                using System.Linq;
+
+                                class Program
+                                {
+                                    private Dictionary<string, List<string>> _dictionary = new Dictionary<string, List<string>>();
+                                
+                                    public void Test(string key)
+                                    {
+                                        List<string> data = new List<string>();
+                                
+                                        if (_dictionary.ContainsKey(key))
+                                        {
+                                            DbContext context = new DbContext();
+                                            data = context.LoadData(key);
+                                            if (data != null && data.Any())
+                                            {
+                                                var x = _dictionary[key];
+                                            }
+                                        }
+                                    }
+                                
+                                    public class DbContext
+                                    {
+                                        public List<string> LoadData(string key) => new List<string>();
+                                    }
+                                }
+                                """;
+
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
+
         private static string CreateCSharpCode(string content)
         {
             return string.Format(CultureInfo.InvariantCulture, CSharpTemplate, content);

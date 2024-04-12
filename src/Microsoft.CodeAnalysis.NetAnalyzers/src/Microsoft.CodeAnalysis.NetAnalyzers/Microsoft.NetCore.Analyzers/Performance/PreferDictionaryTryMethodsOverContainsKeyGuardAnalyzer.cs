@@ -321,7 +321,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static bool FindUsages(IOperation operation, ref DictionaryUsageContext usageContext, SearchContext searchContext)
         {
-            foreach (var descendant in operation.DescendantsAndSelf())
+            // We don't want to step into multiple layers of conditional statements.
+            foreach (var descendant in GetNonConditionalDescendantsAndSelf(operation))
             {
                 if (IsSameReferenceOperation(descendant, usageContext.DictionaryReference))
                 {
@@ -589,6 +590,21 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             return false;
+        }
+
+        private static IEnumerable<IOperation> GetNonConditionalDescendantsAndSelf(IOperation operation)
+        {
+            var childOperations = operation.Children.SelectMany(c =>
+            {
+                if (c is not IConditionalOperation)
+                {
+                    return GetNonConditionalDescendantsAndSelf(c);
+                }
+
+                return Enumerable.Empty<IOperation>();
+            });
+
+            return[operation, .. childOperations];
         }
 
         private enum SearchContext
