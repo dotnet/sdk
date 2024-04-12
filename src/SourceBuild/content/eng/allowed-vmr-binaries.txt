@@ -13,6 +13,9 @@ src/arcade/src/Microsoft.DotNet.*.Tests/**/*
 src/arcade/src/Microsoft.DotNet.NuGetRepack/tests/Resources/*.nupkg
 src/arcade/src/Microsoft.DotNet.NuGetRepack/tests/Resources/.signature.p7s
 
+# aspire
+src/aspire/tests/Shared/TestCertificates/*.pfx
+
 # aspnetcore
 src/aspnetcore/src/submodules/MessagePack-CSharp/**/*.dll
 src/aspnetcore/src/SignalR/clients/java/signalr/gradle/wrapper/gradle-wrapper.jar
