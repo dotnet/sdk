@@ -157,13 +157,13 @@ public static class ContainerHelpers
         {
             prefix = "http";
         }
-#if !NET472
+
         //check the docker config to see if the registry is marked as insecure
         else if (DockerCli.IsInsecureRegistry(alreadyValidatedDomain))
         {
             prefix = "http";
         }
-#endif
+
 
         return new Uri($"{prefix}://{alreadyValidatedDomain}");
     }
