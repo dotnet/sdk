@@ -14,6 +14,10 @@ namespace Microsoft.NET.Build.Containers;
 /// </summary>
 internal sealed class ImageBuilder
 {
+    // a snapshot of the manifest that this builder is based on
+    private readonly ManifestV2 _baseImageManifest;
+
+    // the mutable internal manifest that we're building by modifying the base and applying customizations
     private readonly ManifestV2 _manifest;
     private readonly ImageConfig _baseImageConfig;
     private readonly ILogger _logger;
@@ -26,9 +30,15 @@ internal sealed class ImageBuilder
 
     public ImageConfig BaseImageConfig => _baseImageConfig;
 
+    /// <summary>
+    /// MediaType of the output manifest.
+    /// </summary>
+    public string ManifestMediaType => _manifest.MediaType; // output the same media type as the base image manifest.
+
     internal ImageBuilder(ManifestV2 manifest, ImageConfig baseImageConfig, ILogger logger)
     {
-        _manifest = manifest;
+        _baseImageManifest = manifest;
+        _manifest = new ManifestV2() { SchemaVersion = manifest.SchemaVersion, Config = manifest.Config, Layers = new(manifest.Layers), MediaType = manifest.MediaType };
         _baseImageConfig = baseImageConfig;
         _logger = logger;
     }
@@ -58,9 +68,12 @@ internal sealed class ImageBuilder
             size = imageSize
         };
 
-        ManifestV2 newManifest = _manifest with
+        ManifestV2 newManifest = new ManifestV2()
         {
-            Config = newManifestConfig
+            Config = newManifestConfig,
+            SchemaVersion = _manifest.SchemaVersion,
+            MediaType = _manifest.MediaType,
+            Layers = _manifest.Layers
         };
 
         return new BuiltImage()
@@ -80,6 +93,11 @@ internal sealed class ImageBuilder
     {
         _manifest.Layers.Add(new(l.Descriptor.MediaType, l.Descriptor.Size, l.Descriptor.Digest, l.Descriptor.Urls));
         _baseImageConfig.AddLayer(l);
+    }
+
+    internal void AddBaseImageDigestLabel()
+    {
+        AddLabel("org.opencontainers.image.base.digest", _baseImageManifest.GetDigest());
     }
 
     /// <summary>

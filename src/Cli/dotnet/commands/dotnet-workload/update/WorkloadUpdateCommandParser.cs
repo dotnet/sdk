@@ -43,11 +43,11 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(TempDirOption);
             command.Options.Add(FromPreviousSdkOption);
             command.Options.Add(AdManifestOnlyOption);
+            command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
             command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
             command.Options.Add(CommonOptions.VerbosityOption);
             command.Options.Add(PrintRollbackOption);
             command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
-            command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetMode);
 
             command.SetAction((parseResult) => new WorkloadUpdateCommand(parseResult).Execute());
 
