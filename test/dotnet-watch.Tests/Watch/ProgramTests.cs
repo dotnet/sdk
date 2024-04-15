@@ -87,16 +87,15 @@ namespace Microsoft.DotNet.Watcher.Tests
             [
                 "--no-hot-reload",
                 "run",
-                "-f",         // dotnet watch does not recognize this arg -> dotnet run arg
+                "-f",
                 "net6.0",
                 "--property:AssemblyVersion=1.2.3.4",
                 "--property",
                 "AssemblyTitle= | A=B'\tC | ",
-                "--",         // the following args are not dotnet watch args
-                "-v",         // dotnet run arg
+                "-v",
                 "minimal",
-                "--",         // the following args are not dotnet run args
-                "-v",         // application arg
+                "--",         // the following args are application args
+                "-v",         
             ]);
 
             Assert.Equal("-v", await App.AssertOutputLineStartsWith("Arguments = "));

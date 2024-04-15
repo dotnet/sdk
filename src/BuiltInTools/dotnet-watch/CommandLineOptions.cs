@@ -63,7 +63,7 @@ internal sealed class CommandLineOptions
         // dotnet watch specific options:
 
         var quietOption = new CliOption<bool>("--quiet", "-q") { Description = Resources.Help_Quiet };
-        var verboseOption = new CliOption<bool>("--verbose", "-v") { Description = Resources.Help_Verbose };
+        var verboseOption = new CliOption<bool>("--verbose") { Description = Resources.Help_Verbose };
         var listOption = new CliOption<bool>("--list") { Description = Resources.Help_List };
         var noHotReloadOption = new CliOption<bool>("--no-hot-reload") { Description = Resources.Help_NoHotReload };
         var nonInteractiveOption = new CliOption<bool>("--non-interactive") { Description = Resources.Help_NonInteractive };
