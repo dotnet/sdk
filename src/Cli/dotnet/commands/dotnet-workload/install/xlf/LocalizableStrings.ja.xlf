@@ -182,6 +182,11 @@
         <target state="translated">{0} を削除しています </target>
         <note />
       </trans-unit>
+      <trans-unit id="NewWorkloadSet">
+        <source>Installing workload version {0}.</source>
+        <target state="translated">ワークロードのバージョン {0} をインストールしています。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
         <target state="translated">親プロセス ({0}) との信頼関係を確立できませんでした。</target>
@@ -360,6 +365,16 @@
       <trans-unit id="WorkloadPathOptionName">
         <source>PATH</source>
         <target state="translated">パス</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetUpgrade">
+        <source>Updating workload version from {0} to {1}.</source>
+        <target state="translated">ワークロードのバージョンを {0} から {1} に更新しています。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionOptionDescription">
+        <source>Update to the specified workload version.</source>
+        <target state="translated">指定されたワークロード バージョンに更新します。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

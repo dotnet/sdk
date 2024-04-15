@@ -3,8 +3,11 @@
 
 using System.CommandLine;
 using System.IO;
+using System.Linq;
 using System.Net.Http.Json;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -31,6 +34,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly SdkFeatureBand _sdkFeatureBand;
         protected readonly ReleaseVersion _targetSdkVersion;
         protected readonly string _fromRollbackDefinition;
+        protected string _workloadSetVersion;
         protected readonly PackageSourceLocation _packageSourceLocation;
         protected readonly IWorkloadResolverFactory _workloadResolverFactory;
         protected IWorkloadResolver _workloadResolver;
@@ -88,37 +92,56 @@ namespace Microsoft.DotNet.Workloads.Workload
             _workloadManifestUpdaterFromConstructor = workloadManifestUpdater;
         }
 
-        protected internal void UpdateInstallState(bool createDefaultJson, IEnumerable<ManifestVersionUpdate> manifestVersionUpdates)
-        {
-            var defaultJsonPath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-            if (createDefaultJson)
-            {
-                var jsonContents = WorkloadSet.FromManifests(
+        protected static Dictionary<string, string> GetInstallStateContents(IEnumerable<ManifestVersionUpdate> manifestVersionUpdates) =>
+            WorkloadSet.FromManifests(
                     manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
                     ).ToDictionaryForJson();
-                Directory.CreateDirectory(Path.GetDirectoryName(defaultJsonPath));
-                File.WriteAllLines(defaultJsonPath, ToJsonEnumerable(jsonContents));
+
+        public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
+            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            return installStateContents.UseWorkloadSets ?? false;
+        }
+
+        protected IEnumerable<ManifestVersionUpdate> HandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache)
+        {
+            // Ensure workload set mode is set to 'workloadset'
+            // Do not skip checking the mode first, as setting it triggers
+            // an admin authorization popup for MSI-based installs.
+            if (!ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
+            {
+                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+            }
+
+            _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
+            return InstallWorkloadSet(context);
+        }
+
+        public IEnumerable<ManifestVersionUpdate> InstallWorkloadSet(ITransactionContext context)
+        {
+            var advertisingPackagePath = Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads");
+            if (File.Exists(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)))
+            {
+                // This file isn't created in tests.
+                PrintWorkloadSetTransition(File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)));
+            }
+            var workloadSetPath = _workloadInstaller.InstallWorkloadSet(context, advertisingPackagePath);
+            var files = Directory.EnumerateFiles(workloadSetPath, "*.workloadset.json");
+            return _workloadManifestUpdater.ParseRollbackDefinitionFiles(files);
+        }
+
+        private void PrintWorkloadSetTransition(string newVersion)
+        {
+            var currentVersion = _workloadResolver.GetWorkloadVersion();
+            if (currentVersion == null)
+            {
+                Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));
             }
             else
             {
-                if (File.Exists(defaultJsonPath))
-                {
-                    File.Delete(defaultJsonPath);
-                }
+                Reporter.WriteLine(string.Format(Strings.WorkloadSetUpgrade, currentVersion, newVersion));
             }
-        }
-
-        private IEnumerable<string> ToJsonEnumerable(Dictionary<string, string> dict)
-        {
-            yield return "{";
-            yield return "\"manifests\": {";
-            foreach (KeyValuePair<string, string> line in dict)
-            {
-                yield return $"\"{line.Key}\": \"{line.Value}\",";
-            }
-            yield return "}";
-            yield return "}";
-            yield break;
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)
@@ -221,6 +244,11 @@ namespace Microsoft.DotNet.Workloads.Workload
 
     internal static class InstallingWorkloadCommandParser
     {
+        public static readonly CliOption<string> WorkloadSetVersionOption = new("--version")
+        {
+            Description = Strings.WorkloadSetVersionOptionDescription
+        };
+
         public static readonly CliOption<bool> PrintDownloadLinkOnlyOption = new("--print-download-link-only")
         {
             Description = Strings.PrintDownloadLinkOnlyDescription,

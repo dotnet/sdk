@@ -1,4 +1,4 @@
-﻿ASP.NET Core Web App (C#)
+﻿ASP.NET Core Web App (Razor Pages) (C#)
 Author: Microsoft
 Description: A project template for creating an ASP.NET Core application with example ASP.NET Core Razor Pages content
 This template contains technologies from parties other than Microsoft, see https://aka.ms/aspnetcore/%version%-third-party-notices for details.

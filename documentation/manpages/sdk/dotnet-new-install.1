@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-install" "1" "2022-11-08" "" ".NET Documentation"
+.TH "dotnet-new-install" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet new install
 .PP
@@ -56,7 +56,7 @@ To use a template package installed in .NET SDK 6.0.100 or later in earlier .NET
 .PP
 Starting with the .NET 7 SDK, the \f[V]dotnet new\f[R] syntax has changed:
 .IP \[bu] 2
-The \f[V]--list\f[R], \f[V]--search\f[R], \f[V]--install\f[R], and \f[V]--uninstall\f[R] options became \f[V]list\f[R], \f[V]search\f[R], \f[V]install\f[R] and \f[V]uninstall\f[R] subcommands.
+The \f[V]--list\f[R], \f[V]--search\f[R], \f[V]--install\f[R], and \f[V]--uninstall\f[R] options became \f[V]list\f[R], \f[V]search\f[R], \f[V]install\f[R], and \f[V]uninstall\f[R] subcommands.
 .IP \[bu] 2
 The \f[V]--update-apply\f[R] option became the \f[V]update\f[R] subcommand.
 .IP \[bu] 2
@@ -90,6 +90,12 @@ If \f[V]--nuget-source\f[R] is specified, the source will be added to the list o
 .PD
 To check the configured sources for the current directory use \f[V]dotnet nuget list source\f[R].
 For more information, see Common NuGet Configurations
+.RS
+.PP
+Following NuGet\[cq]s Https Everywhere (https://devblogs.microsoft.com/nuget/https-everywhere/) initiative, \f[V]dotnet new\f[R] is phasing out \f[V]http\f[R] feeds.
+If an \f[V]http\f[R] feed is passed, it isn\[cq]t queried for packages and a warning is displayed.
+The \f[V]--force\f[R] option can be used to override this behavior if necessary.
+.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-d|--diagnostics\f[B]\f[R]

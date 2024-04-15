@@ -42,6 +42,11 @@
         <target state="translated">Fehler beim Update der Workload "{0}". Ursache:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Das Aktualisieren auf eine Rollbackdatei ist nicht mit Workloadsätzen kompatibel. Installation und Update verwenden jetzt lose Manifeste. Verwenden Sie „--version“, um auf eine bestimmte Workloadversion zu aktualisieren.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">Workload(s) erfolgreich aktualisiert: {0}.</target>

@@ -33,7 +33,7 @@ internal class DefaultManifestOperations : IManifestOperations
         {
             HttpStatusCode.OK => response,
             HttpStatusCode.NotFound => throw new RepositoryNotFoundException(_registryName, repositoryName, reference),
-            HttpStatusCode.Unauthorized => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
+            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
             _ => await LogAndThrowContainerHttpException<HttpResponseMessage>(response, cancellationToken).ConfigureAwait(false)
         };
     }
@@ -42,7 +42,7 @@ internal class DefaultManifestOperations : IManifestOperations
     {
         string jsonString = JsonSerializer.SerializeToNode(manifest)?.ToJsonString() ?? "";
         HttpContent manifestUploadContent = new StringContent(jsonString);
-        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(SchemaTypes.DockerManifestV2);
+        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(manifest.MediaType);
 
         HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
 

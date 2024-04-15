@@ -7,8 +7,8 @@ ASP.NET Core Empty                            web                         [C#],F
 ASP.NET Core gRPC Service                     grpc                        [C#]        Web/gRPC/API/Service          
 ASP.NET Core Web API                          webapi                      [C#],F#     Web/Web API/API/Service/WebAPI
 ASP.NET Core Web API (native AOT)             webapiaot                   [C#]        Web/Web API/API/Service       
-ASP.NET Core Web App                          webapp,razor                [C#]        Web/MVC/Razor Pages           
 ASP.NET Core Web App (Model-View-Controller)  mvc                         [C#],F#     Web/MVC                       
+ASP.NET Core Web App (Razor Pages)            webapp,razor                [C#]        Web/MVC/Razor Pages           
 Blazor Server App                             blazorserver                [C#]        Web/Blazor                    
 Blazor Web App                                blazor                      [C#]        Web/Blazor/WebAssembly        
 Blazor WebAssembly Standalone App             blazorwasm                  [C#]        Web/Blazor/WebAssembly/PWA    

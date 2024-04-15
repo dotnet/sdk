@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-push" "1" "2022-10-10" "" ".NET Documentation"
+.TH "dotnet-nuget-push" "1" "2023-10-25" "" ".NET Documentation"
 .hy
 .SH dotnet nuget push
 .PP
@@ -45,6 +45,24 @@ NuGet\[cq]s default configuration is obtained by loading \f[I]%AppData%.config\f
 The command pushes an existing package.
 It doesn\[cq]t create a package.
 To create a package, use \f[V]dotnet pack\f[R].
+.SS Hierarchical folder structure
+.PP
+This command can store packages in a hierarchical folder structure, which is recommended to optimize performance.
+It stores packages in a hierarchical folder structure when publishing to a local folder (feed), like \f[V]nuget add\f[R] does, if there already is at least one package in the feed that is in a hierarchical folder structure.
+If the feed has a hierarchical folder structured package already in it, \f[V]dotnet nuget push\f[R] respects that structure.
+So, if you want to publish to a local feed using the .NET CLI instead of the NuGet CLI:
+.IP \[bu] 2
+Before you publish the first package, go to your global packages folder, at *%userprofile%.nuget, and select the root folder of a package id.
+It can be any package that is not part of a framework, like .NET standard or ASP.NET.
+.IP \[bu] 2
+Copy the selected package folder into the root folder of the local feed.
+.IP \[bu] 2
+Use \f[V]dotnet nuget push\f[R] to publish your package to the local feed.
+.IP \[bu] 2
+You can now delete the folder you previously copied in, and you can freely use \f[V]dotnet nuget push\f[R] to publish to your local feed.
+.PP
+Alternatively, use the NuGet CLI for the first package, then you can use \f[V]dotnet nuget push\f[R] for the rest.
+For more information, see Local feeds.
 .SH ARGUMENTS
 .IP \[bu] 2
 \f[B]\f[VB]ROOT\f[B]\f[R]
@@ -110,7 +128,7 @@ For more information, see Configuring NuGet behavior.
 \f[B]\f[VB]--skip-duplicate\f[B]\f[R]
 .RS 2
 .PP
-When pushing multiple packages to an HTTP(S) server, treats any 409 Conflict response as a warning so that the push can continue.
+When pushing multiple packages to an HTTP(S) server, treats any 409 Conflict response as a warning so that other pushes can continue.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-sk|--symbol-api-key <API_KEY>\f[B]\f[R]
@@ -235,8 +253,3 @@ dotnet nuget push \[dq]*.nupkg\[dq] -s c:\[rs]mydir
 .RE
 .IP \[bu] 2
 For pushing to Azure Artifacts, see Azure Artifacts\[cq] push documentation.
-.RS 2
-.PP
-This command doesn\[cq]t store packages in a hierarchical folder structure, which is recommended to optimize performance.
-For more information, see Local feeds.
-.RE
