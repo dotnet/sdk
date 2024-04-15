@@ -65,6 +65,14 @@ src/deployment-tools/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 src/diagnostics/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 
 #
+# efcore
+#
+
+# False positive
+src/efcore/test/EfCore.Tests/ChangeTracking/ComplexPropertyEntryTest.cs|proprietary-license
+src/efcore/test/EfCore.Tests/ChangeTracking/MemberEntryTest.cs|proprietary-license
+
+#
 # fsharp
 #
 

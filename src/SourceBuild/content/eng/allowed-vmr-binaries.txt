@@ -38,6 +38,10 @@ src/cecil/symbols/**/Test/Resources/assemblies/*.pdb
 src/cecil/symbols/**/Test/Resources/assemblies/*.dll
 src/cecil/symbols/**/Test/Resources/assemblies/*.mdb
 
+# efcore
+src/efcore/test/EFCore.Sqlite.FunctionalTests/northwind.db # https://github.com/dotnet/source-build/issues/4326
+src/efcore/benchmark/EFCore.Sqlite.Benchmarks/AdventureWorks2014.db # https://github.com/dotnet/source-build/issues/4326
+
 # fsharp
 src/fsharp/tests/**/*.resources
 src/fsharp/tests/**/*.dll
