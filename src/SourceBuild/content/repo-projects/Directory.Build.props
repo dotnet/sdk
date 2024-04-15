@@ -246,10 +246,6 @@
 
     <!-- Used by sdk to determine msbuild version for fsharp -->
     <ExtraPackageVersionPropsPackageInfo Include="FSharpBuildVersion" Version="%24(MicrosoftBuildPackageVersion)" />
-
-    <!-- non-rid-specific versions of RID-specific version variables to use for bootstrapping -->
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimeVersion" Version="%24(MicrosoftAspNetCoreAppRefPackageVersion)" />
-    <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppCrossgen2Version" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
   </ItemGroup>
 
 </Project>

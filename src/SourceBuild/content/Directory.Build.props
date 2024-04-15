@@ -191,4 +191,8 @@
     <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <MergedAssetManifestOutputPath>$(ArtifactsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
+  </PropertyGroup>
+
 </Project>

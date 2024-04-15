@@ -11,9 +11,6 @@
   <!-- Create a merge manifest from the individual repository manifest files. -->
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="MergeAssetManifests" AfterTargets="Build">
-    <PropertyGroup>
-      <MergedAssetManifestOutputPath>$(ArtifactsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
-    </PropertyGroup>
 
     <ItemGroup>
       <RepoAssetManifest Include="$(AssetManifestsIntermediateDir)\**\*.xml" />
