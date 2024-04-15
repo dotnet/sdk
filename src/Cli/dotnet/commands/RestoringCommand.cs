@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Tools
             userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
             Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
             SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
-            AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.All(arg => FlagsToExcludeFromRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
+            AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
 
             if (!noRestore)
             {
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tools
 
             if (HasArgumentToExcludeFromRestore(arguments))
             {
-                return Prepend("-nologo", Prepend("-verbosity:quiet", arguments));
+                return Prepend("-nologo", arguments);
             }
 
             return Prepend("-restore", arguments);
@@ -84,13 +84,19 @@ namespace Microsoft.DotNet.Tools
             "TargetFramework"
         ];
 
+        //  These arguments should lead to absolutely no output from the restore command
+        private static readonly string[] FlagsThatTriggerSilentRestore =
+        [
+            "getProperty",
+            "getItem",
+            "getTargetResult"
+        ];
+
         //  These arguments don't by themselves require that restore be run in a separate process,
         //  but if there is a separate restore process they shouldn't be passed to it
         private static readonly string[] FlagsToExcludeFromRestore =
         [
-            "getProperty",
-            "getItem",
-            "getTargetResult",
+            ..FlagsThatTriggerSilentRestore,
             "t",
             "target",
             "consoleloggerparameters",
@@ -108,7 +114,7 @@ namespace Microsoft.DotNet.Tools
         // that we need to compensate for, so we might yield new arguments that should be included in the overall restore call.
         private static (string[] newArgumentsToAdd, string[] existingArgumentsToForward) ProcessForwardedArgumentsForSeparateRestore(IEnumerable<string> forwardedArguments)
         {
-            HashSet<string> newArgumentsToAdd = new();
+            HashSet<string> newArgumentsToAdd = new() { "-nologo", "-verbosity:quiet" };
             List<string> existingArgumentsToForward = new();
 
             foreach (var argument in forwardedArguments)
