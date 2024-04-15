@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
-            RestoreActionConfig restoreActionConfig = null
+            RestoreActionConfig restoreActionConfig = null,
             bool isGlobalToolRollForward = false
         );
     }

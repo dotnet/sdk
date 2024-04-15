@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             VersionRange versionRange = null,
             string targetFramework = null,
             bool isGlobalTool = false,
-            RestoreActionConfig restoreActionConfig = null
+            RestoreActionConfig restoreActionConfig = null,
             bool isGlobalToolRollForward = false
             )
         {
