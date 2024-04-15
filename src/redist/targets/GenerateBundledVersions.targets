@@ -232,12 +232,14 @@
           @(Net80AppHostRids);
           linux-riscv64;
           linux-musl-riscv64;
+          linux-musl-loongarch64;
           " />
 
       <Net90RuntimePackRids Include="
           @(Net80RuntimePackRids);
           linux-riscv64;
           linux-musl-riscv64;
+          linux-musl-loongarch64
           " />
 
       <NetCoreAppHostRids Include="@(Net90AppHostRids)" />
@@ -306,6 +308,8 @@
         @(Net80MonoRuntimePackRids);
         linux-riscv64;
         linux-musl-riscv64;
+        linux-loongarch64;
+        linux-musl-loongarch64;
         " />
 
       <MonoRuntimePackRids Include="@(Net90MonoRuntimePackRids)" />
@@ -350,7 +354,9 @@
       <Net90Crossgen2SupportedRids Include="
         @(Net80Crossgen2SupportedRids);
         linux-riscv64;
-        linux-musl-riscv64
+        linux-musl-riscv64;
+        linux-loongarch64;
+        linux-musl-loongarch64;
         " />
 
       <Crossgen2SupportedRids Include="@(Net90Crossgen2SupportedRids);" />
@@ -426,7 +432,7 @@
       <AspNetCore70RuntimePackRids Include="@(AspNetCore60RuntimePackRids);linux-ppc64le" />
       <AspNetCore80RuntimePackRids Include="@(AspNetCore70RuntimePackRids);freebsd-x64;freebsd-arm64" />
       <AspNetCore80RuntimePackRids Remove="win-arm" />
-      <AspNetCore90RuntimePackRids Include="@(AspNetCore80RuntimePackRids);linux-riscv64;linux-musl-riscv64" />
+      <AspNetCore90RuntimePackRids Include="@(AspNetCore80RuntimePackRids);linux-riscv64;linux-musl-riscv64;linux-loongarch64;linux-musl-loongarch64;" />
       <AspNetCoreRuntimePackRids Include="@(AspNetCore90RuntimePackRids)" />
 
       <WindowsDesktop30RuntimePackRids Include="win-x64;win-x86" />
