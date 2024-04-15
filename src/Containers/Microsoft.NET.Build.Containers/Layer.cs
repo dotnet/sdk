@@ -6,6 +6,7 @@ using System.Formats.Tar;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.IO.Enumeration;
+using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -49,7 +50,7 @@ internal class Layer
         return new(ContentStore.PathForDescriptor(descriptor), descriptor);
     }
 
-    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer)
+    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string manifestMediaType)
     {
         long fileSize;
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
@@ -186,9 +187,17 @@ internal class Layer
         string contentHash = Convert.ToHexString(hash).ToLowerInvariant();
         string uncompressedContentHash = Convert.ToHexString(uncompressedHash).ToLowerInvariant();
 
+        string layerMediaType = manifestMediaType switch
+        {
+            // TODO: configurable? gzip always?
+            SchemaTypes.DockerManifestV2 => SchemaTypes.DockerLayerGzip,
+            SchemaTypes.OciManifestV1 => SchemaTypes.OciLayerGzipV1,
+            _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), manifestMediaType))
+        };
+
         Descriptor descriptor = new()
         {
-            MediaType = "application/vnd.docker.image.rootfs.diff.tar.gzip", // TODO: configurable? gzip always?
+            MediaType = layerMediaType,
             Size = fileSize,
             Digest = $"sha256:{contentHash}",
             UncompressedDigest = $"sha256:{uncompressedContentHash}",

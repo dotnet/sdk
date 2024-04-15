@@ -9,9 +9,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// </summary>
     public interface IWorkloadManifestProvider
     {
+        void RefreshWorkloadManifests();
         IEnumerable<ReadableWorkloadManifest> GetManifests();
 
         string GetSdkFeatureBand();
+
+        string? GetWorkloadVersion();
 
         Dictionary<string, WorkloadSet> GetAvailableWorkloadSets();
     }

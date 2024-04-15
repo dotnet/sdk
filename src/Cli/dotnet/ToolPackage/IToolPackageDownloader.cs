@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             string targetFramework = null,
             bool isGlobalTool = false,
             RestoreActionConfig restoreActionConfig = null
+            bool isGlobalToolRollForward = false
         );
     }
 }

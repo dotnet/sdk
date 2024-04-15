@@ -99,6 +99,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string targetFramework = null,
             bool isGlobalTool = false,
             RestoreActionConfig restoreActionConfig = null
+            bool isGlobalToolRollForward = false
             )
         {
             string rollbackDirectory = null;

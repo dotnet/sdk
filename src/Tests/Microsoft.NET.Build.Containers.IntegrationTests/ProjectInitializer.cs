@@ -41,11 +41,12 @@ public sealed class ProjectInitializer
         props["TargetFileName"] = "foo.dll";
         props["AssemblyName"] = "foo";
         props["TargetFrameworkVersion"] = "v7.0";
+
         props["TargetFrameworkIdentifier"] = ".NETCoreApp";
         props["TargetFramework"] = "net7.0";
         props["_NativeExecutableExtension"] = ".exe"; //TODO: windows/unix split here
         props["Version"] = "1.0.0"; // TODO: need to test non-compliant version strings here
-        props["NetCoreSdkVersion"] = "7.0.100"; // TODO: float this to current SDK?
+        props["NETCoreSdkVersion"] = "7.0.100"; // TODO: float this to current SDK?
         // test setup parameters so that we can load the props/targets/tasks
         props["ContainerCustomTasksAssembly"] = Path.GetFullPath(Path.Combine(".", "Microsoft.NET.Build.Containers.dll"));
         props["_IsTest"] = "true";
