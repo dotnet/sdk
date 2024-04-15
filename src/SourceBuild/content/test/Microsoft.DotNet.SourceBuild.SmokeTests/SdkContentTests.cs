@@ -43,11 +43,11 @@ public class SdkContentTests : SdkTests
         WriteTarballFileList(Config.MsftSdkTarballPath, msftFileListingFileName, isPortable: true, MsftSdkType, exclusionsHelper);
         WriteTarballFileList(Config.SdkTarballPath, sbFileListingFileName, isPortable: false, SourceBuildSdkType, exclusionsHelper);
 
+        exclusionsHelper.GenerateNewBaselineFile("FileList");
+        
         string diff = BaselineHelper.DiffFiles(msftFileListingFileName, sbFileListingFileName, OutputHelper);
         diff = RemoveDiffMarkers(diff);
         BaselineHelper.CompareBaselineContents("MsftToSbSdkFiles.diff", diff, OutputHelper, Config.WarnOnSdkContentDiffs);
-
-        exclusionsHelper.GenerateNewBaselineFile("FileList");
     }
 
     [ConditionalFact(typeof(SdkContentTests), nameof(IncludeSdkContentTests))]
