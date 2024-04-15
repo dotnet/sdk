@@ -11,6 +11,7 @@ using System.Linq;
 
 namespace Microsoft.NET.Build.Containers.Targets.IntegrationTests;
 
+[Collection(nameof(MSBuildCollection))]
 public class TargetsTests
 {
     [InlineData(true, "/app/foo.exe")]
