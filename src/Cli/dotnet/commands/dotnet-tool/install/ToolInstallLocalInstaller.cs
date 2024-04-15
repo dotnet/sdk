@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.IO;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
@@ -24,6 +25,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string _configFilePath;
         private readonly string[] _sources;
         private readonly VerbosityOptions _verbosity;
+        private readonly RestoreActionConfig _restoreActionConfig;
 
         public ToolInstallLocalInstaller(
             ParseResult parseResult,
@@ -43,6 +45,12 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                         additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()));
             _toolPackageStore = toolPackageStoresAndDownloader.store;
             _toolPackageDownloader = toolPackageDownloader?? toolPackageStoresAndDownloader.downloader;
+
+            _restoreActionConfig = new RestoreActionConfig(
+                DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
+                NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption),
+                IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
+                Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
             
             
             TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
@@ -75,8 +83,10 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                             rootConfigDirectory: manifestFile.GetDirectoryPath().GetParentPath()),
                         _packageId,
                         verbosity: _verbosity,
-                        versionRange,
-                        TargetFrameworkToInstall
+                        versionRange: versionRange,
+                        targetFramework: TargetFrameworkToInstall,
+                        isGlobalTool: false,
+                        restoreActionConfig: _restoreActionConfig
                         );
 
                 return toolDownloadedPackage;
