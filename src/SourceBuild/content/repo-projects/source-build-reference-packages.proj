@@ -15,8 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <BuiltSdkPackageOverride Include="@(NoTargetsSdkOverride)" />
-    <BuiltSdkPackageOverride Include="@(TraversalSdkOverride)" />
+    <BuiltSdkPackage Include="Microsoft.Build.NoTargets" />
+    <BuiltSdkPackage Include="Microsoft.Build.Traversal" />
   </ItemGroup>
 
   <Target Name="AddLocalNuGetPackageCacheDirectory"
