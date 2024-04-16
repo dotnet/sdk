@@ -62,6 +62,11 @@
         <target state="translated">無法將屬性 '{0}' 新增到 '{1}'。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotAddGenericConstraint">
+        <source>Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</source>
+        <target state="new">Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CannotAddMemberToInterface">
         <source>Cannot add interface member '{0}' to {1} because it does not exist on {2}</source>
         <target state="translated">無法將介面成員 '{0}' 新增至 {1}，因為其不存在於 {2} 上</target>
@@ -110,6 +115,11 @@
       <trans-unit id="CannotRemoveBaseType">
         <source>Type '{0}' does not inherit from base type '{1}' on {2} but it does on {3}</source>
         <target state="translated">類型 '{0}' 在 {2} 並未繼承來自 '{1}' 的基底類型，但在 {3} 上有</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotRemoveGenericConstraint">
+        <source>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</source>
+        <target state="new">Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotRemoveVirtualFromMember">
