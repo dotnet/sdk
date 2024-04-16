@@ -256,7 +256,7 @@
           Outputs="$(BaseIntermediateOutputPath)CreateBuildInputProps.complete">
 
     <!-- Get the previously-built-source-built package information from the manifest from that build. -->
-    <MSBuild Project="$(MSBuildThisFileFullPath)"
+    <MSBuild Projects="$(MSBuildThisFileFullPath)"
              Targets="GetProducedPackages"
              AdditionalProperties="RepoAssetManifestsDir=$(PrebuiltSourceBuiltPackagesPath)"
              BuildInParallel="true">

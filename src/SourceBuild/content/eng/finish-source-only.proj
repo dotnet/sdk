@@ -248,14 +248,6 @@
           DestinationFolder="$(SourceBuiltLayoutDir)"
           UseSymbolicLinksIfPossible="true" />
 
-    <!-- non-rid-specific versions of RID-specific version variables to use for bootstrapping -->
-    <ItemGroup>
-      <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppRuntimeVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-      <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppHostPackageVersion" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />
-      <ExtraPackageVersionPropsPackageInfo Include="MicrosoftAspNetCoreAppRuntimeVersion" Version="%24(MicrosoftAspNetCoreAppRefPackageVersion)" />
-      <ExtraPackageVersionPropsPackageInfo Include="MicrosoftNETCoreAppCrossgen2Version" Version="%24(MicrosoftNETCoreAppRefPackageVersion)" />  
-    </ItemGroup>
-
     <!-- Create a PackageVersions.props file that includes entries for all packages. -->
     <WritePackageVersionsProps KnownPackages="@(ProducedPackage)"
                                ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
