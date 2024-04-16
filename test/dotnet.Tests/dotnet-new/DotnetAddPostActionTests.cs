@@ -211,12 +211,14 @@ namespace Microsoft.DotNet.Cli.New.Tests
         {
             var callback = new MockAddProjectReferenceCallback();
             DotnetAddPostActionProcessor actionProcessor = new(callback.AddPackageReference, callback.AddProjectReference);
-            const string targetBasePath = "/"; // _engineEnvironmentSettings.GetTempVirtualizedPath(); Commented code throws exception
+             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath(); //Commented code throws exception
             _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
 
-            string existingProjectPath = Path.Combine(targetBasePath, "ExistingProjectFolder");
+            const string existingProjectFolder = "ExistingProjectFolder";
+            string existingProjectPath = Path.Combine(targetBasePath, existingProjectFolder);
 
-            string existingProjectFileFullPath = Path.Combine(existingProjectPath, "ExistingProject.csproj");
+            const string existingProjectFile = "ExistingProject.csproj";
+            string existingProjectFileFullPath = Path.Combine(existingProjectPath, existingProjectFile);
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(existingProjectFileFullPath, TestCsprojFile);
 
             string referencedProjectFileFullPath = Path.Combine(targetBasePath, "Reference.csproj");
@@ -224,7 +226,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             //TODO: Add test for both target files passed as array and string
             var args = new Dictionary<string, string>()
             {
-                { "targetFiles", $"[\"{existingProjectFileFullPath}\"]" },
+                { "targetFiles", $"[\"{existingProjectFolder}/{existingProjectFile}\"]" },
                 { "referenceType", "project" },
                 { "reference", "Reference.csproj" }
             };

@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
 
                     extensionLimiters.UnionWith(projectFileExtensions.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
                 }
-                projectsToProcess = FindProjFileAtOrAbovePath(environment.Host.FileSystem, outputBasePath, extensionLimiters);
+                projectsToProcess = TryFindProjects(environment, outputBasePath, extensionLimiters);
                 if (projectsToProcess.Count > 1)
                 {
                     // multiple projects at the same level. Error.
@@ -96,6 +96,18 @@ namespace Microsoft.DotNet.Tools.New.PostActionProcessors
                 }
             }
             return true;
+        }
+
+        private static IReadOnlyList<string> TryFindProjects(IEngineEnvironmentSettings environment, string outputBasePath, HashSet<string> extensionLimiters)
+        {
+            try
+            {
+                return FindProjFileAtOrAbovePath(environment.Host.FileSystem, outputBasePath, extensionLimiters);
+            }
+            catch (DirectoryNotFoundException)
+            {
+                return [];
+            }
         }
 
         private static IReadOnlyList<string> FindExistingTargetFiles(IPhysicalFileSystem fileSystem, IReadOnlyDictionary<string, string> actionArgs, string outputBasePath)
