@@ -22,6 +22,11 @@
         <target state="translated">지정된 롤백 정의 파일을 기반으로 워크로드를 업데이트합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">이 기능 밴드에 대해 설치된 워크로드가 없습니다. 이전 SDK 버전으로 설치된 워크로드를 업데이트하려면 --from-previous-sdk 옵션을 포함합니다.</target>

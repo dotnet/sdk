@@ -12,6 +12,16 @@
         <target state="translated">`dotnet workload search` を使用して追加ワークロードを検出し、インストールします。</target>
         <note>{Locked="dotnet workload search"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
+        <source>Found workload version {0} pinned in the global.json file at {1}.</source>
+        <target state="new">Found workload version {0} pinned in the global.json file at {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
+        <source>Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</source>
+        <target state="new">Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadSetVersion">
         <source>Workload version: {0}</source>
         <target state="translated">ワークロードのバージョン: {0}</target>

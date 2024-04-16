@@ -22,6 +22,11 @@
         <target state="translated">根據指定的復原定義檔更新工作負載。</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">此功能帶未安裝任何工作負載。若要更新與舊版本 SDK 一起安裝的工作負載，請包含 --from-previous-sdk 選項。</target>
