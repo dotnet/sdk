@@ -1,0 +1,55 @@
+id: close-stale-issues
+name: Label and Close Stale Issues
+description: Label 'stale' issues and close them after another period of inactivity
+resource: repository
+configuration:
+  resourceManagementConfiguration:
+    scheduledSearches:
+      - description: Apply 'stale' label to issues not updated for 6 years
+        frequencies:
+          - weekday:
+              day: Monday
+              time: 12:00
+        filters:
+          - isIssue
+          - isOpen
+          - noActivitySince:
+              days: 2192
+          - isNotLabeledWith:
+              label: stale
+        actions:
+          - addReply:
+              reply: >-
+                Due to lack of recent activity, this issue has been labeled as 'stale'. It will be closed if no further activity occurs within 30 more days. Any new comment will remove the label.
+          - addLabel:
+              label: stale
+      - description: Close 'stale' issues that have not been updated for 30 days
+        frequencies:
+          - weekday:
+              day: Wednesday
+              time: 16:00
+        filters:
+          - isIssue
+          - isOpen
+          - noActivitySince:
+              days: 30
+          - hasLabel:
+              label: stale
+        actions:
+          - addReply:
+              reply: >-
+                This issue will now be closed since it has been labeled 'stale' without activity for 30 days.
+          - closeIssue
+    eventResponderTasks:
+      - description: Remove 'stale' label from issues when a comment is added
+        if:
+          - payloadType: Issue_Comment
+          - isAction:
+              action: Created
+          - isIssue
+          - isOpen
+          - hasLabel:
+              label: stale
+        then:
+          - removeLabel:
+              label: stale
