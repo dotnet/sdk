@@ -153,8 +153,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             {
                                 return;
                             }
-                            InstallWorkloadsAndGarbageCollect(context, workloadIds, manifests, offlineCache, false);
+                            InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, _sdkFeatureBand, manifests, offlineCache, false);
                         });
+
+                        TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
+
+                        Reporter.WriteLine();
+                        Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIds)));
+                        Reporter.WriteLine();
                     }
                 }
                 catch (Exception e)
@@ -226,14 +232,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
                 }
 
-                InstallWorkloadsAndGarbageCollect(context, workloadIds, manifestsToUpdate, offlineCache, useRollback);
+                InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
             });
-        }
 
-        private void InstallWorkloadsAndGarbageCollect(ITransactionContext context, IEnumerable<WorkloadId> workloadIds, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, bool useRollback)
-        {
-            InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
-            _workloadInstaller.NotifyInstallComplete();
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
             Reporter.WriteLine();

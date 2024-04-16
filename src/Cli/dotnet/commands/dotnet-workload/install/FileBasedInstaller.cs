@@ -74,8 +74,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _workloadResolver = workloadResolver;
         }
 
-        public void NotifyInstallComplete() { }
-
         IEnumerable<PackInfo> GetPacksInWorkloads(IEnumerable<WorkloadId> workloadIds)
         {
             var packs = workloadIds

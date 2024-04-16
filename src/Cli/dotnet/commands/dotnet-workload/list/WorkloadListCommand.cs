@@ -88,7 +88,8 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                         globalJsonInformation.GlobalJsonVersion,
                         globalJsonInformation.GlobalJsonPath));
                 }
-                else
+
+                if (globalJsonInformation?.WorkloadVersionInstalled != false)
                 {
                     var manifestInfoDict = _workloadListHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
 
@@ -105,11 +106,14 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
                     table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
 
-                    var installState = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.DotnetPath), "default.json"));
-                    if (installState.UseWorkloadSets == true)
+                    if (globalJsonInformation is null)
                     {
-                        Reporter.WriteLine();
-                        Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion() ?? "unknown"));
+                        var installState = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.DotnetPath), "default.json"));
+                        if (installState.UseWorkloadSets == true)
+                        {
+                            Reporter.WriteLine();
+                            Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion() ?? "unknown"));
+                        }
                     }
                 }
 

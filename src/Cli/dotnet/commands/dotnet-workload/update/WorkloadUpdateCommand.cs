@@ -161,11 +161,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                 }
 
                 UpdateWorkloads(useRollback, manifestsToUpdate, offlineCache, context);
-                
-                Reporter.WriteLine();
-                Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
-                Reporter.WriteLine();
             });
+
+            WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
+
+            _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
+
+            Reporter.WriteLine();
+            Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
+            Reporter.WriteLine();
         }
 
         private void UpdateWorkloads(bool useRollback, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, ITransactionContext context)
@@ -173,10 +177,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
             var workloadIds = GetUpdatableWorkloads();
 
             UpdateWorkloadsWithInstallRecord(_sdkFeatureBand, manifestsToUpdate, useRollback, context, offlineCache);
-            _workloadInstaller.NotifyInstallComplete();
-            WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
-
-            _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
         }
 
         private void WriteSDKInstallRecordsForVSWorkloads(IEnumerable<WorkloadId> updateableWorkloads)

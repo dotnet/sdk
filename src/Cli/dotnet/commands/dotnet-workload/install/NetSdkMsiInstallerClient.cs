@@ -35,8 +35,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         private readonly string _dependent;
 
-        private bool _installComplete = false;
-
         public int ExitCode => Restart ? unchecked((int)Error.SUCCESS_REBOOT_REQUIRED) : unchecked((int)Error.SUCCESS);
 
         public NetSdkMsiInstallerClient(InstallElevationContextBase elevationContext,
@@ -100,11 +98,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
 
             return msis.ToList(); ;
-        }
-
-        public void NotifyInstallComplete()
-        {
-            _installComplete = true;
         }
 
         //  Wrap the setup logger in an IReporter so it can be passed to the garbage collector
@@ -469,10 +462,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     },
                     rollback: () =>
                     {
-                        if (!_installComplete)
-                        {
-                            InstallWorkloadManifestImplementation(manifestUpdate, offlineCache: null, isRollback: true, action: InstallAction.Uninstall);
-                        }
+                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache: null, isRollback: true, action: InstallAction.Uninstall);
                     });
             }
             catch (Exception e)
