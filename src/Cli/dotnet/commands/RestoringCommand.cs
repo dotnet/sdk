@@ -106,6 +106,9 @@ namespace Microsoft.DotNet.Tools
         private static List<string> FlagsToExcludeFromSeparateRestore =
             ComputeFlags(FlagsToExcludeFromRestore).ToList();
 
+        private static List<string> FlagsThatTriggerSilentSeparateRestore =
+            ComputeFlags(FlagsThatTriggerSilentRestore).ToList();
+
         private static List<string> PropertiesToExcludeFromSeparateRestore =
             ComputePropertySwitches(PropertiesToExcludeFromRestore).ToList();
 
@@ -114,15 +117,20 @@ namespace Microsoft.DotNet.Tools
         // that we need to compensate for, so we might yield new arguments that should be included in the overall restore call.
         private static (string[] newArgumentsToAdd, string[] existingArgumentsToForward) ProcessForwardedArgumentsForSeparateRestore(IEnumerable<string> forwardedArguments)
         {
-            HashSet<string> newArgumentsToAdd = new() { "-nologo", "-verbosity:quiet" };
+            // Separate restore should be silent in terminal logger - regardless of actual scenario
+            HashSet<string> newArgumentsToAdd = new() { "-nologo", "-tlp:verbosity=quiet" };
             List<string> existingArgumentsToForward = new();
 
             foreach (var argument in forwardedArguments)
             {
-
                 if (!IsExcludedFromSeparateRestore(argument) && !IsExcludedFromRestore(argument))
                 {
                     existingArgumentsToForward.Add(argument);
+                }
+
+                if (TriggersSilentSeparateRestore(argument))
+                {
+                    newArgumentsToAdd.Add("-verbosity:quiet");
                 }
             }
             return (newArgumentsToAdd.ToArray(), existingArgumentsToForward.ToArray());
@@ -156,6 +164,10 @@ namespace Microsoft.DotNet.Tools
 
         private static bool IsExcludedFromSeparateRestore(string argument)
             => FlagsToExcludeFromSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
+
+        // These arguments should lead to absolutely no output from the restore command - regardless of loggers
+        private static bool TriggersSilentSeparateRestore(string argument)
+            => FlagsThatTriggerSilentSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
         public override int Execute()
         {
