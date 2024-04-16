@@ -172,16 +172,6 @@ jobs:
               HelixAccessToken: $(_HelixApiToken)
               RunAoTTests: 'false'
 
-      - task: PublishTestResults@2
-        displayName: Publish Test Results
-        inputs:
-          testResultsFormat: xUnit
-          testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
-          testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'
-          buildPlatform: '$(BuildPlatform)'
-          buildConfiguration: '$(_BuildConfig)'
-        condition: always()
-
       - task: CopyFiles@2
         displayName: Gather Logs
         inputs:
