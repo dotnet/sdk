@@ -10,13 +10,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <BuiltSdkPackageOverride Include="Microsoft.DotNet.Arcade.Sdk" Version="$(OutputPackageVersion)" />
-    <BuiltSdkPackageOverride Include="Microsoft.DotNet.SharedFramework.Sdk" Version="$(OutputPackageVersion)" />
-    <BuiltSdkPackageOverride Include="Microsoft.DotNet.CMake.Sdk" Version="$(OutputPackageVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ExtraPackageVersionPropsPackageInfo Include="NuGetVersion" Version="%24(NuGetPackagingVersion)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <BuiltSdkPackage Include="Microsoft.DotNet.Arcade.Sdk" />
+    <BuiltSdkPackage Include="Microsoft.DotNet.SharedFramework.Sdk" />
+    <BuiltSdkPackage Include="Microsoft.DotNet.CMake.Sdk" />
+  </ItemGroup>
 </Project>
