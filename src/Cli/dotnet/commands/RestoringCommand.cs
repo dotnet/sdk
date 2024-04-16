@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Tools
         private static (string[] newArgumentsToAdd, string[] existingArgumentsToForward) ProcessForwardedArgumentsForSeparateRestore(IEnumerable<string> forwardedArguments)
         {
             // Separate restore should be silent in terminal logger - regardless of actual scenario
-            HashSet<string> newArgumentsToAdd = new() { "-nologo", "-tlp:verbosity=quiet" };
+            HashSet<string> newArgumentsToAdd = new() { "-tlp:verbosity=quiet" };
             List<string> existingArgumentsToForward = new();
 
             foreach (var argument in forwardedArguments)
@@ -130,6 +130,7 @@ namespace Microsoft.DotNet.Tools
 
                 if (TriggersSilentSeparateRestore(argument))
                 {
+                    newArgumentsToAdd.Add("-nologo");
                     newArgumentsToAdd.Add("-verbosity:quiet");
                 }
             }

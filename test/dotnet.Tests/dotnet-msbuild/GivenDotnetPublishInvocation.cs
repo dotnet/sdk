@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             command.SeparateRestoreCommand
                    .GetArgumentsToMSBuild()
                    .Should()
-                   .Be($"{ExpectedPrefix} -target:Restore -nologo -tlp:verbosity=quiet {ExpectedProperties}");
+                   .Be($"{ExpectedPrefix} -target:Restore -tlp:verbosity=quiet {ExpectedProperties}");
 
             command.GetArgumentsToMSBuild()
                    .Should()
