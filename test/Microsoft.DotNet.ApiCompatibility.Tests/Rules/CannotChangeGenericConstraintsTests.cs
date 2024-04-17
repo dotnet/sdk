@@ -40,13 +40,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
 
         private static readonly CompatDifference[] RemovedClassConstraintDifferences =
         {
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.First`1$0#new()"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Second`1$0#notnull"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Third`1$0#class"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Fourth`1$0#struct"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Fifth`1$0#unmanaged"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Sixth`1$0#System.Enum"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Seventh`1$0#System.Runtime.Serialization.ISerializable")
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.First`1``0:new()"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Second`1``0:notnull"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Third`1``0:class"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Fourth`1``0:struct"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Fifth`1``0:unmanaged"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Sixth`1``0:System.Enum"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "T:CompatTests.Seventh`1``0:System.Runtime.Serialization.ISerializable")
         };
         private static readonly CompatDifference[] AddedClassConstraintDifferences = RemovedClassConstraintDifferences
             .Select(d => CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Added, d.ReferenceId)).ToArray();
@@ -85,13 +85,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         private static readonly string VirtualMethodsWithoutConstraints = MethodsWithoutConstraints.Replace("void", "virtual void");
         private static readonly CompatDifference[] RemovedMethodConstraintDifferences =
         {
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.First``1$0#new()"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Second``1$0#notnull"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Third``1$0#class"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Fourth``1$0#struct"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Fifth``1$0#unmanaged"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Sixth``1$0#System.Enum"),
-            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Seventh``1$0#System.Runtime.Serialization.ISerializable")
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.First``1``0:new()"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Second``1``0:notnull"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Third``1``0:class"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Fourth``1``0:struct"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Fifth``1``0:unmanaged"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Sixth``1``0:System.Enum"),
+            CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Removed, "M:CompatTests.C.Seventh``1``0:System.Runtime.Serialization.ISerializable")
         };
         private static readonly CompatDifference[] AddedMethodConstraintDifferences = RemovedMethodConstraintDifferences
             .Select(d => CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeGenericConstraint, string.Empty, DifferenceType.Added, d.ReferenceId)).ToArray();
@@ -194,7 +194,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         public static TheoryData<string, string, CompatDifference[]> StrictMode => new()
         {
             // in strict mode we don't allow removals even on sealed classes / virtual methods
-            
             
             // removing constraints sealed class
             {

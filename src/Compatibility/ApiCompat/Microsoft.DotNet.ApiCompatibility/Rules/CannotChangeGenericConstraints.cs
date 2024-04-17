@@ -100,8 +100,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 CompareBoolConstraint(typeParam => typeParam.HasUnmanagedTypeConstraint, "unmanaged");
                 // unmanaged implies struct
                 CompareBoolConstraint(typeParam => typeParam.HasValueTypeConstraint & !typeParam.HasUnmanagedTypeConstraint, "struct");
-                // Not available
-                // CompareBoolConstraint(typeParam => typeParam.HasDefaultConstraint, "default");
 
                 var rightOnlyConstraints = rightTypeParam.ConstraintTypes.ToHashSet(_settings.SymbolEqualityComparer);
                 rightOnlyConstraints.ExceptWith(leftTypeParam.ConstraintTypes);
@@ -121,7 +119,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                         DiagnosticIds.CannotChangeGenericConstraint,
                         string.Format(Resources.CannotAddGenericConstraint, addedConstraint, leftTypeParam, left),
                         DifferenceType.Added,
-                        $"{left.GetDocumentationCommentId()}${i}#{addedConstraint}"));
+                        $"{left.GetDocumentationCommentId()}``{i}:{addedConstraint}"));
                 }
 
                 // removals
@@ -143,7 +141,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                             DiagnosticIds.CannotChangeGenericConstraint,
                             string.Format(Resources.CannotRemoveGenericConstraint, removedConstraint, leftTypeParam, left),
                             DifferenceType.Removed,
-                            $"{left.GetDocumentationCommentId()}${i}#{removedConstraint}"));
+                            $"{left.GetDocumentationCommentId()}``{i}:{removedConstraint}"));
                     }
                 }
 
