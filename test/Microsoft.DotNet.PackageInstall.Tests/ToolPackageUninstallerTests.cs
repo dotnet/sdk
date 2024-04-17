@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySigning: false);
+                verifySignatures: false);
 
             package.PackagedShims.Should().ContainSingle(f => f.Value.Contains("demo.exe") || f.Value.Contains("demo"));
 
