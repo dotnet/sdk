@@ -71,14 +71,14 @@ stages:
       pool:
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
           name: NetCore-Svc-Public
-          demands: ImageOverride -equals 1es-windows-2019-open
+          demands: ImageOverride -equals 1es-windows-2022-open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
           name: NetCore1ESPool-Svc-Internal
-          demands: ImageOverride -equals windows.vs2019.amd64
+          demands: ImageOverride -equals windows.vs2022preview.amd64
       ${{ if eq(variables['System.TeamProject'], 'public') }}:
-        helixTargetQueue: windows.server.amd64.vs2019.open
+        helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
       ${{ if ne(variables['System.TeamProject'], 'public') }}:
-        helixTargetQueue: windows.server.amd64.vs2019
+        helixTargetQueue: Windows.Amd64.VS2022.Pre
       strategy:
         matrix:
           Build_Release:
@@ -102,14 +102,14 @@ stages:
         pool:
           ${{ if eq(variables['System.TeamProject'], 'public') }}:
             name: NetCore-Svc-Public
-            demands: ImageOverride -equals 1es-windows-2019-open
+            demands: ImageOverride -equals 1es-windows-2022-open
           ${{ if ne(variables['System.TeamProject'], 'public') }}:
             name: NetCore1ESPool-Svc-Internal
-            demands: ImageOverride -equals windows.vs2019.amd64
+            demands: ImageOverride -equals windows.vs2022preview.amd64
         ${{ if eq(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: windows.server.amd64.vs2019.open
+          helixTargetQueue: Windows.Amd64.VS2022.Pre.Open
         ${{ if ne(variables['System.TeamProject'], 'public') }}:
-          helixTargetQueue: windows.server.amd64.vs2019
+          helixTargetQueue: Windows.Amd64.VS2022.Pre
         strategy:
           matrix:
             Build_Debug:
