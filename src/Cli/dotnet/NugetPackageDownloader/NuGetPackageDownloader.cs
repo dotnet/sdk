@@ -127,10 +127,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         packageVersion.ToNormalizedString()));
             }
 
-            if (_verifySignatures)
-            {
-                VerifySigning(nupkgPath);
-            }
+            VerifySigning(nupkgPath);
             
             return nupkgPath;
         }
