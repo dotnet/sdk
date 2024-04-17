@@ -133,7 +133,16 @@ namespace Microsoft.DotNet.Workloads.Workload
             if (File.Exists(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)))
             {
                 // This file isn't created in tests.
-                PrintWorkloadSetTransition(File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)));
+                var version = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
+                PrintWorkloadSetTransition(version);
+                if (!version.Equals(_workloadSetVersion) && !version.Equals(_workloadSetVersionFromGlobalJson))
+                {
+                    // NuGet found a partial match. Reject in favor of a full match.
+                    Reporter.WriteLine(
+                        string.Format(Update.LocalizableStrings.WrongWorkloadSetVersion, _workloadSetVersionFromGlobalJson ?? _workloadSetVersion, version));
+                    updates = null;
+                    return false;
+                }
             }
             else if (_workloadInstaller is FileBasedInstaller || _workloadInstaller is NetSdkMsiInstallerClient)
             {
