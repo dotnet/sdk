@@ -72,6 +72,11 @@
         <target state="translated">工作负载更新失败: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="WrongWorkloadSetVersion">
+        <source>Workload version {0} could not be found. Approximate best match of version {1} was found.</source>
+        <target state="new">Workload version {0} could not be found. Approximate best match of version {1} was found.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

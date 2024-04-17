@@ -159,4 +159,7 @@
   <data name="NoWorkloadUpdateFound" xml:space="preserve">
     <value>No workload update found.</value>
   </data>
+  <data name="WrongWorkloadSetVersion" xml:space="preserve">
+    <value>Workload version {0} could not be found. Approximate best match of version {1} was found.</value>
+  </data>
 </root>

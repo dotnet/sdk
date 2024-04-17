@@ -26,6 +26,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private WorkloadSet? _workloadSet;
         private WorkloadSet? _manifestsFromInstallState;
         private string? _installStateFilePath;
+        private bool _workloadSetDominatesInstallState = true;
 
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
@@ -120,6 +121,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _workloadSet = null;
             _manifestsFromInstallState = null;
             _installStateFilePath = null;
+            _workloadSetDominatesInstallState = true;
             var availableWorkloadSets = GetAvailableWorkloadSets();
 
             if (_workloadSetVersionFromConstructor != null)
@@ -166,6 +168,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (_workloadSet == null && availableWorkloadSets.Any())
             {
+                _workloadSetDominatesInstallState = false;
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Select(k => new ReleaseVersion(k)).Max()!;
                 _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
             }
@@ -243,6 +246,24 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
+            void LoadManifestsFromWorkloadSet()
+            {
+                //  Load manifests from workload set, if any.  This will override any manifests for the same IDs that were loaded previously in this method
+                if (_workloadSet != null)
+                {
+                    foreach (var kvp in _workloadSet.ManifestVersions)
+                    {
+                        var manifestSpecifier = new ManifestSpecifier(kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand);
+                        var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
+                        if (manifestDirectory == null)
+                        {
+                            throw new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
+                        }
+                        AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
+                    }
+                }
+            }
+
             if (_manifestRoots.Length == 1)
             {
                 //  Optimization for common case where test hook to add additional directories isn't being used
@@ -277,20 +298,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            //  Load manifests from workload set, if any.  This will override any manifests for the same IDs that were loaded previously in this method
-            if (_workloadSet != null)
+            if (!_workloadSetDominatesInstallState)
             {
-                foreach (var kvp in _workloadSet.ManifestVersions)
-                {
-                    var manifestSpecifier = new ManifestSpecifier(kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand);
-                    var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
-                    if (manifestDirectory == null)
-                    {
-                        throw new FileNotFoundException(string.Format(Strings.ManifestFromWorkloadSetNotFound, manifestSpecifier.ToString(), _workloadSet.Version));
-                    }
-                    AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
-                    
-                }
+                LoadManifestsFromWorkloadSet();
             }
 
             //  Load manifests from install state
@@ -308,9 +318,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            if (_knownManifestIdsAndOrder != null && _knownManifestIdsAndOrder.Keys.Any(id => !manifestIdsToManifests.ContainsKey(id)))
+            if (_workloadSetDominatesInstallState)
             {
-                var missingManifestIds = _knownManifestIdsAndOrder.Keys.Where(id => !manifestIdsToManifests.ContainsKey(id));
+                LoadManifestsFromWorkloadSet();
+            }
+
+            var missingManifestIds = _knownManifestIdsAndOrder?.Keys.Where(id => !manifestIdsToManifests.ContainsKey(id));
+            if (missingManifestIds != null && missingManifestIds.Any())
+            {
                 foreach (var missingManifestId in missingManifestIds)
                 {
                     var (manifestDir, featureBand) = FallbackForMissingManifest(missingManifestId);
@@ -321,7 +336,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            //  Return manifests in a stable order.  Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
+            //  Return manifests in a stable order. Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
             //  Then the rest of the manifests (if any) will be returned in (ordinal case-insensitive) alphabetical order.
             return manifestIdsToManifests
                 .OrderBy(kvp =>
