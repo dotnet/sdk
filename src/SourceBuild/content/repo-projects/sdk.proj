@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <BuildArgs>$(BuildArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PortableRid=$(PortableRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
+
+    <!-- Just like mono, arm does not support NativeAot -->
+    <BuildArgs Condition="'$(BuildArchitecture)' == 'arm'">$(BuildArgs) /p:NativeAotSupported=false</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="aspnetcore" />
+    <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
+    <RepositoryReference Include="command-line-api" />
+    <RepositoryReference Include="deployment-tools" />
+    <RepositoryReference Include="emsdk" />
+    <RepositoryReference Include="fsharp" />
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="nuget-client" />
+    <RepositoryReference Include="razor" />
+    <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="roslyn-analyzers" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="sourcelink" />
+    <RepositoryReference Include="symreader" />
+    <RepositoryReference Include="templating" />
+    <RepositoryReference Include="vstest" />
+    <RepositoryReference Include="xdt" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-reference-packages" />
+  </ItemGroup>
+
+</Project>

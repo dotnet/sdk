@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+
+first_run() {
+    /usr/share/dotnet/dotnet exec /usr/share/dotnet/sdk/%SDK_VERSION%/dotnet.dll internal-reportinstallsuccess "debianpackage" > /dev/null 2>&1 || true
+}
+
+INSTALL_TEMP_HOME=$(mktemp -d) # mktemp should set 700 perm automatically
+HOME=$INSTALL_TEMP_HOME first_run

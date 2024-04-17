@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+    <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
+
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="winforms" />
+  </ItemGroup>
+
+</Project>

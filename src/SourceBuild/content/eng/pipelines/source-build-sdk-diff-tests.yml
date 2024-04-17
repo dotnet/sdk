@@ -1,0 +1,68 @@
+schedules:
+- cron: "0 11 * * 1-5"
+  displayName: Run on weekdays at 11am UTC
+  branches:
+    include:
+    - main
+
+# Relies on dotnet-source-build being in the same repo as this pipeline
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/process/pipeline-triggers?view=azure-devops#branch-considerations
+resources:
+  pipelines:
+  - pipeline: dotnet-source-build
+    source: dotnet-source-build
+    trigger:
+      branches:
+        include:
+          - release/*.0.1xx*
+          - internal/release/*.0.1xx*
+
+pr: none
+trigger: none
+
+pool:
+  name: NetCore1ESPool-Svc-Internal
+  demands: ImageOverride -equals 1es-ubuntu-2004
+
+parameters:
+- name: dotnetDotnetRunId
+  displayName: 'Specific dotnet-dotnet run ID number (e.g `2108850`)'
+  type: string
+  default: ' '
+
+jobs:
+- template: templates/jobs/sdk-diff-tests.yml
+  parameters:
+    buildName: CentOSStream9_Offline_MsftSdk
+    targetRid: centos.9-x64
+    architecture: x64
+    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+    includeArtifactsSize: true
+
+- template: templates/jobs/sdk-diff-tests.yml
+  parameters:
+    buildName: Alpine319_Online_MsftSdk
+    targetRid: alpine.3.19-x64
+    architecture: x64
+    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+
+- template: templates/jobs/sdk-diff-tests.yml
+  parameters:
+    buildName: Fedora39_Offline_MsftSdk
+    targetRid: fedora.39-x64
+    architecture: x64
+    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+
+- template: templates/jobs/sdk-diff-tests.yml
+  parameters:
+    buildName: Ubuntu2204_Offline_MsftSdk
+    targetRid: ubuntu.22.04-x64
+    architecture: x64
+    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
+
+- template: templates/jobs/sdk-diff-tests.yml
+  parameters:
+    buildName: Ubuntu2204Arm64_Offline_MsftSdk
+    targetRid: ubuntu.22.04-arm64
+    architecture: arm64
+    dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}

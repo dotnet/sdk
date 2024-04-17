@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);assets/**/*</DefaultExcludesInProjectFolder>
+    <UBTestsWarnOnSdkContentDiffs>true</UBTestsWarnOnSdkContentDiffs>
+    <VSTestLogger>console%3bverbosity=diagnostic;trx%3bverbosity=diagnostic%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="assets\**" CopyToOutputDirectory="Always" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="SetRuntimeConfigOptions"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).LogsDirectory">
+        <Value>$(ArtifactsTestResultsDir)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).UbSdkArchivePath">
+        <Value>$(SdkTarballPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).TargetRid">
+        <Value>$(TargetRid)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PortableRid">
+        <Value>$(PortableRid)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).UbBuildVersion">
+        <Value>$(SourceBuiltSdkVersion)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).WarnOnSdkContentDiffs">
+        <Value>$(UBTestsWarnOnSdkContentDiffs)</Value>
+      </RuntimeHostConfigurationOption>
+      <!-- Set for local testing to avoid downloading a new SDK each test -->
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).MsftSdkArchivePath">
+        <Value>$(UBTestsMsftSdkArchivePath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).NoDiagnosticMessages">
+        <Value>$(VSTestUseMSBuildOutput)</Value>
+      </RuntimeHostConfigurationOption>
+    </ItemGroup>
+  </Target>
+
+</Project>
