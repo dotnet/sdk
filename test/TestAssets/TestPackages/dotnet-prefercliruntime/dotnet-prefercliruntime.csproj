@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- netcoreapp2.2 is the maximum TFM project tools support -->
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <VersionSuffix></VersionSuffix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="prefercliruntime">
+      <Pack>true</Pack>
+      <PackagePath>/</PackagePath>
+    </Content>
+  </ItemGroup>
+</Project>
