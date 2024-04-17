@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
-using System.Threading;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.TemplateEngine.Abstractions;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
@@ -86,8 +83,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool includePreview = false,
             bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
-            PackageSourceMapping packageSourceMapping = null,
-            bool verifySigning = true)
+            PackageSourceMapping packageSourceMapping = null)
         {
             CancellationToken cancellationToken = CancellationToken.None;
 
@@ -131,7 +127,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                         packageVersion.ToNormalizedString()));
             }
 
-            if (verifySigning)
+            if (_verifySignatures)
             {
                 VerifySigning(nupkgPath);
             }

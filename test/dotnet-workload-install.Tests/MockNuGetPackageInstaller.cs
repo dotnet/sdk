@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             bool? includeUnlisted = null,
             DirectoryPath? downloadFolder = null,
             PackageSourceMapping packageSourceMapping = null,
-            bool verifySigning = false)
+            bool verifySignatures = false)
         {
             DownloadCallParams.Add((packageId, packageVersion, downloadFolder, packageSourceLocation));
 

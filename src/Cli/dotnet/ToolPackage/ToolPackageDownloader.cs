@@ -1,21 +1,17 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.CommandLine;
 using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.TemplateEngine.Utils;
+using Newtonsoft.Json.Linq;
 using NuGet.Client;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -25,12 +21,6 @@ using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using NuGet.Configuration;
-using Microsoft.TemplateEngine.Utils;
-using System.Text.Json;
-using System.Xml;
-using System.Text.Json.Nodes;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.DotNet.Cli.ToolPackage
 {
@@ -78,7 +68,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             string targetFramework = null,
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
-            bool verifySigning = true
+            bool verifySignatures = true
             )
         {
             var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
@@ -101,7 +91,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
                     var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
-                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, verifySignatures: true, isNuGetTool: true, verbosityOptions: verbosity);
+
+                    var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(toolDownloadDir, verboseLogger: nugetLogger, verifySignatures: verifySignatures, isNuGetTool: true, verbosityOptions: verbosity);
 
                     var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);
 
@@ -133,7 +124,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
 
                     if (package == null)
                     {
-                        DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion, verifySigning: verifySigning).GetAwaiter().GetResult();
+                        DownloadAndExtractPackage(packageLocation, packageId, nugetPackageDownloader, toolDownloadDir.Value, _toolPackageStore, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
                     }
                     else if(isGlobalTool)
                     {
@@ -286,11 +277,10 @@ namespace Microsoft.DotNet.Cli.ToolPackage
             IToolPackageStore toolPackageStore,
             NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation,
-            bool verifySigning,
             bool includeUnlisted = false
             )
         {
-            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted, verifySigning: verifySigning).ConfigureAwait(false);
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted).ConfigureAwait(false);
 
             // look for package on disk and read the version
             NuGetVersion version;

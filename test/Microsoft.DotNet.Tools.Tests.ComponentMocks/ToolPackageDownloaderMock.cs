@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string targetFramework = null,
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
-            bool verifySigning = false
+            bool verifySignatures = false
             )
         {
             string rollbackDirectory = null;
