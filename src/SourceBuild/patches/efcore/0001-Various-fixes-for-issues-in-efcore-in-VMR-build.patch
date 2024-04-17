@@ -1,0 +1,37 @@
+From a6d02a6f3859f341707a8c5fd76b68e2f13a5a86 Mon Sep 17 00:00:00 2001
+From: Jeremy Koritzinsky <jekoritz@microsoft.com>
+Date: Mon, 15 Apr 2024 12:16:14 -0700
+Subject: [PATCH] Various fixes for issues in efcore-in-VMR build (#33540)
+
+Backport: https://github.com/dotnet/efcore/pull/33540
+
+---
+ Directory.Build.props    | 1 +
+ src/dotnet-ef/Project.cs | 2 +-
+ 2 files changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/Directory.Build.props b/Directory.Build.props
+index 3a445c23b9d..80858aaddfc 100644
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -10,6 +10,7 @@
+         ( $(MSBuildProjectName.EndsWith('.Tests')) OR
+           $(MSBuildProjectName.EndsWith('.FunctionalTests'))) ">true</IsUnitTestProject>
+     <IsUnitTestProject Condition=" '$(IsUnitTestProject)' == '' ">false</IsUnitTestProject>
++    <IsTestUtilityProject Condition="'$(IsSpecificationTestProject)' == 'true'">true</IsTestUtilityProject>
+     <SolutionRoot>$(MSBuildThisFileDirectory)</SolutionRoot>
+   </PropertyGroup>
+ 
+diff --git a/src/dotnet-ef/Project.cs b/src/dotnet-ef/Project.cs
+index 1296a2d1c41..4b923364899 100644
+--- a/src/dotnet-ef/Project.cs
++++ b/src/dotnet-ef/Project.cs
+@@ -58,7 +58,7 @@ public Project(string file, string? framework, string? configuration, string? ru
+                    "Microsoft.EntityFrameworkCore.Tools.Resources.EntityFrameworkCore.targets")!)
+         {
+             efTargets = new byte[input.Length];
+-            input.Read(efTargets);
++            input.ReadExactly(efTargets);
+         }
+ 
+         var efTargetsPath = Path.Combine(

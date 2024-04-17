@@ -172,7 +172,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
             if (VersionPropsFlowType == DependenciesOnlyVersionPropsFlowType && (string.IsNullOrEmpty(VersionDetails) || !File.Exists(VersionDetails)))
             {
                 Log.LogError($"When version flow type is DependenciesOnly, the VersionDetails task parameter must point to a valid path to the Version.Details.xml file for the repo. " +
-                    "Provided file path '{VersionDetails}' does not exist.");
+                    $"Provided file path '{VersionDetails}' does not exist.");
                 return !Log.HasLoggedErrors;
             }
 
