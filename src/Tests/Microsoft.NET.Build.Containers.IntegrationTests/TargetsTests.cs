@@ -7,6 +7,7 @@ using Microsoft.NET.Build.Containers.IntegrationTests;
 
 namespace Microsoft.NET.Build.Containers.Targets.IntegrationTests;
 
+[Collection(nameof(MSBuildCollection))]
 public class TargetsTests
 {
     [InlineData("SelfContained", true, "/app/foo.exe")]
