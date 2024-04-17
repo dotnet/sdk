@@ -1,7 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-<PropertyGroup>
-    <TargetFrameworks>$(CoreSdkTargetFramework);net472</TargetFrameworks>
-    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(CoreSdkTargetFramework)</TargetFrameworks>
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+    <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(SdkTargetFramework)</TargetFrameworks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,4 +12,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\core-sdk-tasks\core-sdk-tasks.csproj" />
   </ItemGroup>
+
 </Project>
