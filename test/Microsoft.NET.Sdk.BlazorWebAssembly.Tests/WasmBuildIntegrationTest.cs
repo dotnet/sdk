@@ -547,7 +547,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var buildCommand = new BuildCommand(ProjectDirectory, "blazorwasm");
             buildCommand.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            buildCommand.Execute().Should().Pass();
+            buildCommand.Execute("/bl").Should().Pass();
 
             var outputPath = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
             var intermediateOutputPath = buildCommand.GetIntermediateDirectory(DefaultTfm).ToString();
