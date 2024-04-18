@@ -13,13 +13,16 @@
 
   <ItemGroup>
     <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="$(MicrosoftNETCoreAppRefPackageVersion)" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+  </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Layout\redist\redist.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="projects\SdkResolver.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <ProjectReference Include="projects\VSTemplateLocator.csproj" ReferenceOutputAssembly="false" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
+    <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 
   <Import Project="targets\BuildCoreSdkTasks.targets" />

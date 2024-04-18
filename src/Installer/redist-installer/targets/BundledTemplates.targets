@@ -19,13 +19,16 @@
     </ItemGroup>
   </Target>
 
+  <ItemGroup Label="Repo Templates">
+    <RepoTemplates Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.symbols.nupkg" />
+    <RepoTemplates Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.symbols.nupkg" />
+  </ItemGroup>
+
   <ItemGroup Label=".NET 9.0 templates">
-    <Bundled90Templates Include="Microsoft.DotNet.Common.ItemTemplates" PackageVersion="$(MicrosoftDotNetCommonItemTemplates90PackageVersion)" />
     <Bundled90Templates Include="Microsoft.DotNet.Web.ItemTemplates.9.0" PackageVersion="$(AspNetCorePackageVersionFor90Templates)" />
     <Bundled90Templates Include="Microsoft.DotNet.Web.ProjectTemplates.9.0" PackageVersion="$(AspNetCorePackageVersionFor90Templates)" UseVersionForTemplateInstallPath="true" />
     <Bundled90Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplates90PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
     <Bundled90Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplates90PackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <Bundled90Templates Include="Microsoft.DotNet.Common.ProjectTemplates.9.0" PackageVersion="$(MicrosoftDotNetCommonItemTemplates90PackageVersion)" />
     <Bundled90Templates Include="Microsoft.DotNet.Test.ProjectTemplates.9.0" PackageVersion="$(MicrosoftDotNetTestProjectTemplates90PackageVersion)" />
   </ItemGroup>
 
@@ -125,23 +128,35 @@
   <Target Name="LayoutTemplates"
         DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesForMSI" />
 
-  <Target Name="LayoutTemplatesForSDK"
-          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions;DownloadBundledTemplateNupkgs">
+  <Target Name="LayoutTemplatesForSDK" DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions;DownloadBundledTemplateNupkgs">
     <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
       <BundledTemplatesWithInstallPaths Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
       <BundledTemplatesWithInstallPaths Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
     </ItemGroup>
+
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
-          DestinationFolder="$(RedistLayoutPath)templates/%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
+          DestinationFolder="$(RedistLayoutPath)templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
           Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'" />
+
+    <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
+    <PropertyGroup>
+      <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
+    </PropertyGroup>
+    <Copy SourceFiles="%(RepoTemplates.Identity)"
+          DestinationFolder="$(RedistLayoutPath)templates\$(CurrentTemplateInstallPath)" />
   </Target>
 
-  <Target Name="LayoutTemplatesForMSI"
-          DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions"
-          Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
-
+  <Target Name="LayoutTemplatesForMSI" DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions" Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
-          DestinationFolder="$(BaseOutputPath)$(Configuration)\templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)\templates/%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
+          DestinationFolder="$(BaseOutputPath)$(Configuration)\templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)\templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
+
+    <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
+    <PropertyGroup>
+      <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
+      <CurrentTemplateFrameworkVersion>%(CurrentVersionBundledTemplates.TemplateFrameworkVersion)</CurrentTemplateFrameworkVersion>
+    </PropertyGroup>
+    <Copy SourceFiles="%(RepoTemplates.Identity)"
+          DestinationFolder="$(BaseOutputPath)$(Configuration)\templates-$(CurrentTemplateFrameworkVersion)\templates\$(CurrentTemplateInstallPath)" />
   </Target>
 
 </Project>

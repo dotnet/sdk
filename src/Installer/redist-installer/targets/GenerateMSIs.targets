@@ -29,8 +29,7 @@
       <VSToolsNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Tools.Net.Core.SDK.nuspec</VSToolsNuspecFile>
       <VSToolsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.$(Architecture).$(FullNugetVersion).nupkg</VSToolsNupkgFile>
 
-      <!-- Hard-coded to Debug since this project is not in the SLN, so it won't pick up $(Configuration) on build. The configuration is irrelevant since this project only creates a package. -->
-      <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/Debug</SdkResolverLayoutPath>
+      <SdkResolverLayoutPath>$(ArtifactsDir)bin/SdkResolver/$(Configuration)</SdkResolverLayoutPath>
       <VSToolsResolverNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Tools.Net.Core.SDK.Resolver.nuspec</VSToolsResolverNuspecFile>
       <VSToolsResolverNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Tools.Net.Core.SDK.Resolver.nupkg</VSToolsResolverNupkgFile>
 
@@ -38,8 +37,7 @@
       <SdkMSBuildExtensionsNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.$(FullNugetVersion).nupkg</SdkMSBuildExtensionsNupkgFile>
       <SdkMSBuildExtensionsSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.swr</SdkMSBuildExtensionsSwrFile>
 
-      <!-- Hard-coded to Debug since this project is not in the SLN, so it won't pick up $(Configuration) on build. The configuration is irrelevant since this project only creates a package. -->
-      <VSTemplateLocatorLayoutPath>$(ArtifactsDir)bin/VSTemplateLocator/Debug</VSTemplateLocatorLayoutPath>
+      <VSTemplateLocatorLayoutPath>$(ArtifactsDir)bin/VSTemplateLocator/$(Configuration)</VSTemplateLocatorLayoutPath>
       <VSTemplateLocatorNuspecFile>$(SdkPkgSourcesRootDirectory)/VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.nuspec</VSTemplateLocatorNuspecFile>
       <VSTemplateLocatorNupkgFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.$(FullNugetVersion).nupkg</VSTemplateLocatorNupkgFile>
 
@@ -283,6 +281,7 @@
       <WorkloadManifestsWxsPath>$(IntermediateOutputPath)WorkloadManifests.wxs</WorkloadManifestsWxsPath>
       <WorkloadManifestsWxsContent>
 <![CDATA[
+<?xml version="1.0" encoding="utf-8"?>
 <!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
@@ -334,7 +333,7 @@
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
       <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)"
-                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/>
+                                        Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'" />
     </ItemGroup>
     <PropertyGroup>
       <LatestTemplateMsiInstallerFile>@(LatestTemplateInstallerComponent->'%(MSIInstallerFile)')</LatestTemplateMsiInstallerFile>

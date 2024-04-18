@@ -50,7 +50,7 @@
       <Version>[%(Version)]</Version>
     </PackageDownload>
 
-    <PackageReference Include="Microsoft.DotNet.SignCheck" Version="$(ArcadeSdkVersion)" />
+    <PackageReference Include="Microsoft.DotNet.SignCheck" GeneratePathProperty="true" />
   </ItemGroup>
 
   <Target Name="ValidateBundledManifestSigning"
@@ -71,7 +71,7 @@
       <SignCheckWorkloadManifestMsiInputFiles Include="@(BundledManifestsToValidateSigning->'%(RestoredMsiPathInNupkg)')" />
     </ItemGroup>
 
-    <Exec Condition="'@(SignCheckWorkloadManifestMsiInputFiles->Count())' != '0'" 
+    <Exec Condition="'@(SignCheckWorkloadManifestMsiInputFiles->Count())' != '0'"
                    Command="$(SignCheckExe) ^
                    --recursive ^
                    -f UnsignedFiles ^

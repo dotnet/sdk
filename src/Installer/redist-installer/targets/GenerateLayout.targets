@@ -120,8 +120,6 @@
       <CombinedSharedHostAndFrameworkArchive>$(NetRuntimeDownloadDirectory)/combinedSharedHostAndFrameworkArchive$(ArchiveExtension)</CombinedSharedHostAndFrameworkArchive>
     </PropertyGroup>
 
-
-
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) And !$(Architecture.StartsWith('arm'))">
       <AlternateAppHostRid>win-$(AlternateArchitecture)</AlternateAppHostRid>
       <Arm64AppHostRid>win-arm64</Arm64AppHostRid>
@@ -247,7 +245,7 @@
 
       <!-- WORKAROUND: Generating the MSIs for x86 and x64 requires the outputs from the other VMR build. Disabled for now. -->
       <BundledInstallerComponent Include="DownloadedAlternateNetCoreAppHostPackInstallerFile"
-                                Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
+                                 Condition="'$(SkipBuildingInstallers)' != 'true' And '$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))">
         <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
         <!-- Alternate and arm64 apphosts aren't currently built in the same vertical.
              This is an issue (see https://github.com/dotnet/source-build/issues/4114). For now, use the
@@ -271,12 +269,6 @@
         <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)</BaseUrl>
         <DownloadFileName>$(DownloadedWindowsDesktopTargetingPackInstallerFileName)</DownloadFileName>
       </BundledInstallerComponent>
-
-      <BundledLayoutComponent Include="ToolsetArchive">
-        <BaseUrl>$(ToolsetArchiveRootUrl)</BaseUrl>
-        <DownloadFileName>dotnet-toolset-internal-$(MicrosoftDotnetToolsetInternalPackageVersion).zip</DownloadFileName>
-        <RelativeLayoutPath>sdk/$(Version)</RelativeLayoutPath>
-      </BundledLayoutComponent>
     </ItemGroup>
 
     <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
@@ -465,6 +457,27 @@
           DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
           SkipUnchangedFiles="true"
           />
+
+    <!-- From Version.targets in SDK redist -->
+    <PropertyGroup>
+      <ArtifactNameSdk>dotnet-toolset-internal</ArtifactNameSdk>
+      <ArtifactNameSdkLanguagePack>dotnet-toolset-langpack</ArtifactNameSdkLanguagePack>
+    </PropertyGroup>
+
+    <!-- From GenerateLayout.targets in SDK redist -->
+    <PropertyGroup>
+      <LayoutDirectory>$(ArtifactsBinDir)redist\$(Configuration)\layouts\</LayoutDirectory>
+      <SdkLayoutOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdk)\</SdkLayoutOutputDirectory>
+      <SdkLanguagePackOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdkLanguagePack)\</SdkLanguagePackOutputDirectory>
+    </PropertyGroup>
+
+    <!-- https://github.com/dotnet/msbuild/issues/5881#issuecomment-802492423 -->
+    <ItemGroup>
+      <DotnetToolsetInternalSource Include="$(SdkLayoutOutputDirectory)**\*" />
+      <DotnetToolsetInternalDestination Include="@(DotnetToolsetInternalSource->'$(RedistLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(DotnetToolsetInternalSource)" DestinationFiles="@(DotnetToolsetInternalDestination)" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="RetargetTools">
@@ -512,7 +525,6 @@
     <WriteLinesToFile File="$(RedistLayoutPath)metadata/workloads/$(CliProductBandVersion)00/userlocal"
                       Overwrite="true" />
   </Target>
-
 
   <Target Name="LayoutAppHostTemplate" DependsOnTargets="RunResolvePackageDependencies">
     <PropertyGroup>

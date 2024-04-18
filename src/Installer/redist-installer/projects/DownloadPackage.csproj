@@ -4,7 +4,7 @@
     Crossgen.targets
     GenerateLayout.targets
 -->
-<Project Sdk="Microsoft.Build.NoTargets" DefaultTargets="Restore">
+<Project Sdk="Microsoft.Build.NoTargets/3.7.0" DefaultTargets="Restore">
 
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>

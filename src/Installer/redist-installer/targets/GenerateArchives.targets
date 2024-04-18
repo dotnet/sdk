@@ -26,7 +26,6 @@
         DestinationArchive="$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk).tar.gz"
         OverwriteDestination="true"
         IgnoreExitCode="$(IgnoreTarExitCode)" />
-    
   </Target>
 
 </Project>

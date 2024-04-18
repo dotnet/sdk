@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets">
+﻿<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -10,10 +10,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.MSBuildSdkResolver" Version="$(MicrosoftDotNetMSBuildSdkResolverPackageVersion)" ExcludeAssets="all" GeneratePathProperty="true"/>
-    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" Version="$(MicrosoftNETCoreAppRuntimePackageVersion)" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x86" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-x64" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.NETCore.App.Runtime.win-arm64" ExcludeAssets="all" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <Target Name="GenerateLayout" Condition="'$(OS)' == 'Windows_NT'" BeforeTargets="AfterBuild">
@@ -26,7 +29,8 @@
       <_SdkResolverSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-x86)\runtimes\win-x86\native\hostfxr.dll" Arch="x86\" />
       <_SdkResolverSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-x64)\runtimes\win-x64\native\hostfxr.dll" Arch="x64\" />
       <_SdkResolverSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-arm64)\runtimes\win-arm64\native\hostfxr.dll" Arch="arm64\" />
-      <_SdkResolverSrc Include="$(PkgMicrosoft_DotNet_MSBuildSdkResolver)\lib\net472\**\*.dll" Arch="" />
+      <_SdkResolverSrc Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\Newtonsoft.Json.dll" Arch="" />
+      <_SdkResolverSrc Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\**\Microsoft.DotNet.MSBuildSdkResolver*.dll" Arch="" />
       <_SdkResolverDst Include="@(_SdkResolverSrc->'$(OutputPath)%(Arch)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
 

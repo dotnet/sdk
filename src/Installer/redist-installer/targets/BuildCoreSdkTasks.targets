@@ -5,8 +5,8 @@
     <TaskTargetFramework>$(SdkTargetFramework)</TaskTargetFramework>
     <TaskTargetFramework Condition="'$(MSBuildRuntimeType)' != 'Core'">net472</TaskTargetFramework>
 
-    <CoreSdkTaskDll>$(ArtifactsDir)tasks\bin\core-sdk-tasks\$(Configuration)\$(TaskTargetFramework)\core-sdk-tasks.dll</CoreSdkTaskDll>
-    <CoreSdkTaskProject>$(RepoRoot)src\core-sdk-tasks\core-sdk-tasks.csproj</CoreSdkTaskProject>
+    <CoreSdkTaskDll>$(ArtifactsDir)bin\core-sdk-tasks\$(Configuration)\$(TaskTargetFramework)\core-sdk-tasks.dll</CoreSdkTaskDll>
+    <CoreSdkTaskProject>$(RepoRoot)src\Installer\core-sdk-tasks\core-sdk-tasks.csproj</CoreSdkTaskProject>
   </PropertyGroup>
 
   <Target Name="BuildCoreSdkTasks" BeforeTargets="_CheckForInvalidConfigurationAndPlatform">
