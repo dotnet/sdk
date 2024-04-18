@@ -160,15 +160,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         private void PrintWorkloadSetTransition(string newVersion)
         {
-            var currentVersion = _workloadResolver.GetWorkloadVersion();
-            if (currentVersion == null || !string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
-            {
-                Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));
-            }
-            else
-            {
-                Reporter.WriteLine(string.Format(Strings.WorkloadSetUpgrade, currentVersion, newVersion));
-            }
+            Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)

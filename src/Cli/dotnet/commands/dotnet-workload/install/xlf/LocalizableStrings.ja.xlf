@@ -377,11 +377,6 @@
         <target state="translated">パス</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">ワークロードのバージョンを {0} から {1} に更新しています。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>Update to the specified workload version.</source>
         <target state="translated">指定されたワークロード バージョンに更新します。</target>

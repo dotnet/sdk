@@ -377,11 +377,6 @@
         <target state="translated">ŚCIEŻKA</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">Aktualizowanie wersji obciążenia z {0} do {1}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>Update to the specified workload version.</source>
         <target state="translated">Zaktualizuj do określonej wersji obciążenia.</target>

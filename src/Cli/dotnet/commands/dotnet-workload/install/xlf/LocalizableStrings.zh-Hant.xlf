@@ -377,11 +377,6 @@
         <target state="translated">路徑</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">正在將工作負載版本從 {0} 更新為 {1}。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>Update to the specified workload version.</source>
         <target state="translated">更新至指定的工作負載版本。</target>

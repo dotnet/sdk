@@ -377,11 +377,6 @@
         <target state="translated">경로</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">워크로드 버전을 {0}에서 {1}(으)로 업데이트하는 중입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>Update to the specified workload version.</source>
         <target state="translated">지정된 워크로드 버전으로 업데이트합니다.</target>
