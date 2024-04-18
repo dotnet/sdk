@@ -197,6 +197,11 @@ public class EndToEndTests : IDisposable
             new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", tfm, "-c", "Debug")
                 .WithWorkingDirectory(workingDirectory);
 
+        if (tfm == ToolsetInfo.CurrentTargetFramework)
+        {
+            publishCommand.Arguments.AddRange(new[] { "-p", $"RuntimeFrameworkVersion=9.0.0-preview.3.24172.9" });
+        }
+
         publishCommand.Execute()
             .Should().Pass();
 
