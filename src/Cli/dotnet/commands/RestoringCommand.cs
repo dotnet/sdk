@@ -61,11 +61,8 @@ namespace Microsoft.DotNet.Tools
             }
 
             IEnumerable<string> restoreArguments = ["-target:Restore"];
-            if (arguments != null)
-            {
-                (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(arguments);
-                restoreArguments = [.. restoreArguments, .. newArgumentsToAdd, .. existingArgumentsToForward];
-            }
+            (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(arguments);
+            restoreArguments = [.. restoreArguments, .. newArgumentsToAdd, .. existingArgumentsToForward];
 
             return new RestoreCommand(restoreArguments, msbuildPath);
         }
@@ -121,7 +118,7 @@ namespace Microsoft.DotNet.Tools
             HashSet<string> newArgumentsToAdd = new() { "-tlp:verbosity=quiet" };
             List<string> existingArgumentsToForward = new();
 
-            foreach (var argument in forwardedArguments)
+            foreach (var argument in forwardedArguments ?? Enumerable.Empty<string>)
             {
                 if (!IsExcludedFromSeparateRestore(argument) && !IsExcludedFromRestore(argument))
                 {
