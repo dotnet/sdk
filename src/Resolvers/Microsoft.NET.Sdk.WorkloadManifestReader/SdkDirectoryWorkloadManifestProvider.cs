@@ -26,7 +26,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private WorkloadSet? _workloadSet;
         private WorkloadSet? _manifestsFromInstallState;
         private string? _installStateFilePath;
-        private bool _workloadSetDominatesInstallState = true;
+        private bool _workloadSetDominatesInstallState = false;
 
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
@@ -121,7 +121,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _workloadSet = null;
             _manifestsFromInstallState = null;
             _installStateFilePath = null;
-            _workloadSetDominatesInstallState = true;
+            _workloadSetDominatesInstallState = false;
             var availableWorkloadSets = GetAvailableWorkloadSets();
 
             if (_workloadSetVersionFromConstructor != null)
@@ -137,6 +137,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
                 if (_globalJsonWorkloadSetVersion != null)
                 {
+                    _workloadSetDominatesInstallState = true;
                     if (!availableWorkloadSets.TryGetValue(_globalJsonWorkloadSetVersion, out _workloadSet))
                     {
                         _exceptionToThrow = new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, _globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
@@ -168,7 +169,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             if (_workloadSet == null && availableWorkloadSets.Any())
             {
-                _workloadSetDominatesInstallState = false;
                 var maxWorkloadSetVersion = availableWorkloadSets.Keys.Select(k => new ReleaseVersion(k)).Max()!;
                 _workloadSet = availableWorkloadSets[maxWorkloadSetVersion.ToString()];
             }
