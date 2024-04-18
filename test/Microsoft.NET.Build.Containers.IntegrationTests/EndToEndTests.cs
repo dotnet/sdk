@@ -519,7 +519,7 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
-            $"/p:RuntimeFrameworkVersion=9.0.0-preview.4.24215.5")
+            $"/p:RuntimeFrameworkVersion=9.0.0-preview.3.24172.9")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
