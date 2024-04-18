@@ -53,6 +53,12 @@
       <Sha>86a1911d7cbff65fc82b373e7fece572c9f0fd52</Sha>
       <SourceBuild RepoName="runtime" ManagedOnly="false" />
     </Dependency>
+    <!-- Change blob version in GenerateLayout.targets if this is unpinned to service targeting pack -->
+    <!-- No new netstandard.library planned for 3.1 timeframe at this time. -->
+    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
+      <Uri>https://github.com/dotnet/core-setup</Uri>
+      <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-9.0.100.Transport" Version="9.0.0-preview.4.24209.5" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>c42ff642a91a8aa4345de1728c3fa585ec13e1e6</Sha>
@@ -136,6 +142,7 @@
     <Dependency Name="NuGet.Build.Tasks" Version="6.11.0-preview.1.23">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>d01e48ace560689897c1c642591659126736feb8</Sha>
+      <SourceBuildTarball RepoName="nuget-client" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="NuGet.Build.Tasks.Console" Version="6.11.0-preview.1.23">
       <Uri>https://github.com/nuget/nuget.client</Uri>
@@ -300,6 +307,22 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>48dd6a9e0ba11b3f6410eec7c8e4b218627e8dab</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0-preview.4.24217.1">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>48dd6a9e0ba11b3f6410eec7c8e4b218627e8dab</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.4.24217.1">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>48dd6a9e0ba11b3f6410eec7c8e4b218627e8dab</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.4.24217.1">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>48dd6a9e0ba11b3f6410eec7c8e4b218627e8dab</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.JSInterop" Version="9.0.0-preview.4.24217.1">
+      <Uri>https://github.com/dotnet/aspnetcore</Uri>
+      <Sha>48dd6a9e0ba11b3f6410eec7c8e4b218627e8dab</Sha>
+    </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.aspnetcore" Version="9.0.0-preview.4.24217.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -339,6 +362,45 @@
     <Dependency Name="Microsoft.JSInterop" Version="9.0.0-preview.4.24217.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>48dd6a9e0ba11b3f6410eec7c8e4b218627e8dab</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.2.1" Version="1.0.2-beta4.22406.1">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>0385265f4d0b6413d64aea0223172366a9b9858c</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.5.0" Version="1.1.0-rc.23558.1">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>307b8f538d83a955d8f6dd909eee41a5555f2f4d</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.6.0" Version="1.1.0-rc.24069.1">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>becc4bd157cd6608b51a5ffe414a5d2de6330272</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.7.0" Version="1.1.0-rc.24069.1">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>becc4bd157cd6608b51a5ffe414a5d2de6330272</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.8.0" Version="1.1.0-rc.24120.2">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>1591b24326caa98288e04e18e5c1b75c36c917c1</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.24120.2">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>1591b24326caa98288e04e18e5c1b75c36c917c1</Sha>
+    </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rc.24120.2">
+      <Uri>https://github.com/dotnet/test-templates</Uri>
+      <Sha>1591b24326caa98288e04e18e5c1b75c36c917c1</Sha>
+      <SourceBuild RepoName="test-templates" ManagedOnly="true" />
+    </Dependency>
+    <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-preview.4.24201.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/winforms</Uri>
+      <Sha>6710618bf954958130cd0e940cc25223079b12d5</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-preview.4.24202.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+      <Uri>https://github.com/dotnet/wpf</Uri>
+      <Sha>25ba139a0c67220a843c989343d27580877c3f8b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24215.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
@@ -500,6 +562,46 @@
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.0-preview.4.24215.5">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>86a1911d7cbff65fc82b373e7fece572c9f0fd52</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24112.3">
+      <Uri>https://github.com/dotnet/arcade-services</Uri>
+      <Sha>c041bcdab75f5447be8bd11ddcfbe8e639f13f32</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24112.3">
+      <Uri>https://github.com/dotnet/arcade-services</Uri>
+      <Sha>c041bcdab75f5447be8bd11ddcfbe8e639f13f32</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.2.24076.4">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>bcc1d3d6f00fbcea3f454b2e35bceeaa51e604b1</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.24057.2">
+      <Uri>https://github.com/dotnet/scenario-tests</Uri>
+      <Sha>bfde902a10d7b672f4fc7e844198ede405dbb9c6</Sha>
+    </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.24057.2">
+      <Uri>https://github.com/dotnet/scenario-tests</Uri>
+      <Sha>bfde902a10d7b672f4fc7e844198ede405dbb9c6</Sha>
+      <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
+    </Dependency>
+    <!--
+      Aspire isn't really a toolset dependency. However, it only inserts a baseline manifest in installer,
+      and if you squint at it, this means we can say that its specific dependency versions don't matter to installer.
+      Avoiding this as a product dependency avoids a long coherency path (aspnetcore->extensions->aspire->installer).
+      **It is** of course possible that an incoherent aspire means that aspire depends on versions of extensions that
+      aren't shipping, or those extensions packages depend on aspnetcore packages that won't ship. However, given the cost
+      of maintaining this coherency path is high. This being toolset means that aspire is responsible for its own coherency.
+    -->
+    <Dependency Name="Microsoft.NET.Sdk.Aspire.Manifest-9.0.100-preview.1" Version="9.0.0-preview.1.24116.3">
+      <Uri>https://github.com/dotnet/aspire</Uri>
+      <Sha>1dd4b3265f01a50b20522fd3d7f3cd315db5be6b</Sha>
+    </Dependency>
+    <!-- Intermediate is necessary for source build. -->
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspire" Version="9.0.0-preview.1.24116.3">
+      <Uri>https://github.com/dotnet/aspire</Uri>
+      <Sha>1dd4b3265f01a50b20522fd3d7f3cd315db5be6b</Sha>
+      <SourceBuild RepoName="aspire" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
