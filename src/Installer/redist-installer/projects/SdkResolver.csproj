@@ -29,7 +29,6 @@
       <_SdkResolverSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-x86)\runtimes\win-x86\native\hostfxr.dll" Arch="x86\" />
       <_SdkResolverSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-x64)\runtimes\win-x64\native\hostfxr.dll" Arch="x64\" />
       <_SdkResolverSrc Include="$(PkgMicrosoft_NETCore_App_Runtime_win-arm64)\runtimes\win-arm64\native\hostfxr.dll" Arch="arm64\" />
-      <_SdkResolverSrc Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\Newtonsoft.Json.dll" Arch="" />
       <_SdkResolverSrc Include="$(ArtifactsBinDir)Microsoft.DotNet.MSBuildSdkResolver\$(Configuration)\net472\**\Microsoft.DotNet.MSBuildSdkResolver*.dll" Arch="" />
       <_SdkResolverDst Include="@(_SdkResolverSrc->'$(OutputPath)%(Arch)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
