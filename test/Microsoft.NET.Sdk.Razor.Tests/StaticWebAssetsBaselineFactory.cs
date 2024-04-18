@@ -26,6 +26,8 @@ public class StaticWebAssetsBaselineFactory
 
     public IList<string> KnownFilePrefixesWithHashOrVersion { get; } = new List<string>()
     {
+        "dotnet.runtime",
+        "dotnet.native",
         "dotnet"
     };
 
@@ -37,18 +39,29 @@ public class StaticWebAssetsBaselineFactory
     {
         manifest.Hash = "__hash__";
         var assetsByIdentity = manifest.Assets.ToDictionary(a => a.Identity);
+        var endpointsByAssetFile = manifest.Endpoints.GroupBy(e => e.AssetFile).ToDictionary(g => g.Key, g => g.ToArray());
         foreach (var asset in manifest.Assets)
         {
+            var relatedEndpoints = endpointsByAssetFile.GetValueOrDefault(asset.Identity);
             TemplatizeAsset(projectRoot, restorePath, runtimeIdentifier, asset);
+            foreach (var endpoint in relatedEndpoints ?? [])
+            {
+                endpoint.AssetFile = asset.Identity;
+            }
             if (asset.AssetTraitName == "Content-Encoding")
             {
+                var basePath = asset.BasePath.Replace('/', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
                 var relativePath = asset.RelativePath.Replace('/', Path.DirectorySeparatorChar);
                 var identity = asset.Identity.Replace('\\', Path.DirectorySeparatorChar);
                 var originalItemSpec = asset.OriginalItemSpec.Replace('\\', Path.DirectorySeparatorChar);
 
-                asset.Identity = Path.Combine(Path.GetDirectoryName(identity), relativePath);
+                asset.Identity = Path.Combine(Path.GetDirectoryName(identity), basePath, relativePath);
                 asset.Identity = asset.Identity.Replace(Path.DirectorySeparatorChar, '\\');
-                asset.OriginalItemSpec = Path.Combine(Path.GetDirectoryName(originalItemSpec), relativePath);
+                foreach (var endpoint in relatedEndpoints ?? [])
+                {
+                    endpoint.AssetFile = asset.Identity;
+                }
+                asset.OriginalItemSpec = Path.Combine(Path.GetDirectoryName(originalItemSpec), basePath, relativePath);
                 asset.OriginalItemSpec = asset.OriginalItemSpec.Replace(Path.DirectorySeparatorChar, '\\');
             }
             else if ((asset.Identity.EndsWith(".gz") || asset.Identity.EndsWith(".br"))
@@ -61,6 +74,42 @@ public class StaticWebAssetsBaselineFactory
                 asset.Identity = Path.Combine(Path.GetDirectoryName(identity), Path.GetFileName(originalItemSpec) + Path.GetExtension(identity))
                     .Replace(Path.DirectorySeparatorChar, '\\');
             }
+        }
+
+        foreach (var endpoint in manifest.Endpoints)
+        {
+            foreach (var header in endpoint.ResponseHeaders)
+            {
+                switch (header.Name)
+                {
+                    case "Content-Length":
+                        header.Value = "__content-length__";
+                        break;
+                    case "ETag":
+                        header.Value = "__etag__";
+                        break;
+                    case "Last-Modified":
+                        header.Value = "__last-modified__";
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            foreach (var selector in endpoint.Selectors)
+            {
+                selector.Quality = "__quality__";
+            }
+
+            endpoint.Route = TemplatizeFilePath(endpoint.Route, null, null, null, null, null).Replace("\\", "/");
+
+            endpoint.AssetFile = TemplatizeFilePath(
+                endpoint.AssetFile,
+                restorePath,
+                projectRoot,
+                null,
+                null,
+                runtimeIdentifier);
         }
 
         foreach (var discovery in manifest.DiscoveryPatterns)
