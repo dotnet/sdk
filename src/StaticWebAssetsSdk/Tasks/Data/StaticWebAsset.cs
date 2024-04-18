@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
     [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 #if WASM_TASKS
-    internal class StaticWebAsset
+    internal class StaticWebAsset : IEquatable<StaticWebAsset>
 #else
-    public class StaticWebAsset
+    public class StaticWebAsset : IEquatable<StaticWebAsset>
 #endif
     {
         public StaticWebAsset()
@@ -264,15 +264,17 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         public string ComputeTargetPath(string pathPrefix, char separator)
         {
-            var prefix = pathPrefix != null ? Normalize(pathPrefix) : "";
-            // These have been normalized already, so only contain forward slashes
-            string computedBasePath = IsDiscovered() || IsComputed() ? "" : BasePath;
-            if (computedBasePath == "/")
-            {
-                // We need to special case the base path "/" to make sure it gets correctly combined with the prefix
-                computedBasePath = "";
-            }
-            return Path.Combine(prefix, computedBasePath, RelativePath)
+            return CombineNormalizedPaths(
+                pathPrefix,
+                IsDiscovered() || IsComputed() ? "" : BasePath,
+                RelativePath, separator);
+        }
+
+        public static string CombineNormalizedPaths(string prefix, string basePath, string route, char separator)
+        {
+            var normalizedPrefix = prefix != null ? Normalize(prefix) : "";
+            var computedBasePath = basePath == null || basePath == "/" ? "" : basePath;
+            return Path.Combine(normalizedPrefix, computedBasePath, route)
                 .Replace('/', separator)
                 .Replace('\\', separator)
                 .TrimStart(separator);
@@ -547,29 +549,28 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return asset.ItemSpec;
         }
 
-        public override bool Equals(object obj)
-        {
-            return obj is StaticWebAsset asset &&
-                   Identity == asset.Identity &&
-                   SourceType == asset.SourceType &&
-                   SourceId == asset.SourceId &&
-                   ContentRoot == asset.ContentRoot &&
-                   BasePath == asset.BasePath &&
-                   RelativePath == asset.RelativePath &&
-                   AssetKind == asset.AssetKind &&
-                   AssetMode == asset.AssetMode &&
-                   AssetRole == asset.AssetRole &&
-                   AssetMergeSource == asset.AssetMergeSource &&
-                   AssetMergeBehavior == asset.AssetMergeBehavior &&
-                   RelatedAsset == asset.RelatedAsset &&
-                   AssetTraitName == asset.AssetTraitName &&
-                   AssetTraitValue == asset.AssetTraitValue &&
-                   Fingerprint == asset.Fingerprint &&
-                   Integrity == asset.Integrity &&
-                   CopyToOutputDirectory == asset.CopyToOutputDirectory &&
-                   CopyToPublishDirectory == asset.CopyToPublishDirectory &&
-                   OriginalItemSpec == asset.OriginalItemSpec;
-        }
+        public override bool Equals(object obj) => obj is StaticWebAsset asset && Equals(asset);
+
+        public bool Equals(StaticWebAsset other) =>
+            Identity == other.Identity &&
+            SourceType == other.SourceType &&
+            SourceId == other.SourceId &&
+            ContentRoot == other.ContentRoot &&
+            BasePath == other.BasePath &&
+            RelativePath == other.RelativePath &&
+            AssetKind == other.AssetKind &&
+            AssetMode == other.AssetMode &&
+            AssetRole == other.AssetRole &&
+            AssetMergeSource == other.AssetMergeSource &&
+            AssetMergeBehavior == other.AssetMergeBehavior &&
+            RelatedAsset == other.RelatedAsset &&
+            AssetTraitName == other.AssetTraitName &&
+            AssetTraitValue == other.AssetTraitValue &&
+            Fingerprint == other.Fingerprint &&
+            Integrity == other.Integrity &&
+            CopyToOutputDirectory == other.CopyToOutputDirectory &&
+            CopyToPublishDirectory == other.CopyToPublishDirectory &&
+            OriginalItemSpec == other.OriginalItemSpec;
 
         public static class AssetModes
         {
@@ -660,7 +661,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         public override int GetHashCode()
         {
 #if NET6_0_OR_GREATER
-            HashCode hash = new HashCode();
+            var hash = new HashCode();
             hash.Add(Identity);
             hash.Add(SourceType);
             hash.Add(SourceId);
