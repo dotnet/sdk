@@ -77,19 +77,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             MetadataInformation rightMetadata,
             IList<CompatDifference> differences)
         {
-
             Debug.Assert(leftTypeParameters.Length == rightTypeParameters.Length);
             for (int i = 0; i < leftTypeParameters.Length; i++)
             {
                 ITypeParameterSymbol leftTypeParam = leftTypeParameters[i];
                 ITypeParameterSymbol rightTypeParam = rightTypeParameters[i];
-
-                // Currently our symbol formatting for comparison includes generic parameter names rather than just arity
-                // https://github.com/dotnet/roslyn/issues/73051
-                // As a result this will only be called with matching parameters.
-                // When parameters don't match the symbol will be treated as different because it's key repesentation will differ.
-                // See SymbolEqualityComparer.GetKey https://github.com/dotnet/sdk/blob/5c8c0a75bba35c1fd0db879eb821c8635c142f79/src/Compatibility/ApiCompat/Microsoft.DotNet.ApiCompatibility/Comparing/SymbolEqualityComparer.cs#L22-L41
-                Debug.Assert(leftTypeParam.Name.Equals(rightTypeParam.Name));
 
                 List<string> addedConstraints = new();
                 List<string> removedConstraints = new();
@@ -101,14 +93,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // unmanaged implies struct
                 CompareBoolConstraint(typeParam => typeParam.HasValueTypeConstraint & !typeParam.HasUnmanagedTypeConstraint, "struct");
 
-                var rightOnlyConstraints = rightTypeParam.ConstraintTypes.ToHashSet(_settings.SymbolEqualityComparer);
+                HashSet<ISymbol> rightOnlyConstraints = rightTypeParam.ConstraintTypes.ToHashSet(_settings.SymbolEqualityComparer);
                 rightOnlyConstraints.ExceptWith(leftTypeParam.ConstraintTypes);
 
                 // we could allow an addition if removals are allowed, and the addition is a less-derived base type or interface
                 // for example: changing a constraint from MemoryStream to Stream on a sealed type, or non-virtual member
                 // but we'll leave this to suppressions
                 
-                addedConstraints.AddRange(rightOnlyConstraints.Select(x => x.ToString()!));
+                addedConstraints.AddRange(rightOnlyConstraints.Select(x => x.GetDocumentationCommentId()!));
 
                 // additions
                 foreach(var addedConstraint in addedConstraints) 
@@ -129,9 +121,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
                 if (!permitConstraintRemoval)
                 {
-                    var leftOnlyConstraints = leftTypeParam.ConstraintTypes.ToHashSet(_settings.SymbolEqualityComparer);
+                    HashSet<ISymbol> leftOnlyConstraints = leftTypeParam.ConstraintTypes.ToHashSet(_settings.SymbolEqualityComparer);
                     leftOnlyConstraints.ExceptWith(rightTypeParam.ConstraintTypes);
-                    removedConstraints.AddRange(leftOnlyConstraints.Select(x => x.ToString()!));
+                    removedConstraints.AddRange(leftOnlyConstraints.Select(x => x.GetDocumentationCommentId()!));
 
                     foreach (var removedConstraint in removedConstraints)
                     {
@@ -147,8 +139,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
                 void CompareBoolConstraint(Func<ITypeParameterSymbol, bool> boolConstraint, string constraintName)
                 {
-                    var leftBoolConstraint = boolConstraint(leftTypeParam);
-                    var rightBoolConstraint = boolConstraint(rightTypeParam);
+                    bool leftBoolConstraint = boolConstraint(leftTypeParam);
+                    bool rightBoolConstraint = boolConstraint(rightTypeParam);
 
                     // addition
                     if (!leftBoolConstraint && rightBoolConstraint)
