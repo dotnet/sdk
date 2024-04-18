@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.Build.NoTargets">
+﻿<Project Sdk="Microsoft.Build.NoTargets/3.7.0">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -9,8 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- The MicrosoftSignedWixVersion property comes from the Arcade SDK DefaultVersions.props -->
-    <PackageReference Include="Microsoft.Signed.Wix" Version="$(MicrosoftSignedWixVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Signed.Wix" GeneratePathProperty="true" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,6 +33,6 @@
 
   <!-- This imports the CMake SDK and because BuildNative is true, it builds the native project. -->
   <!-- See: https://github.com/dotnet/arcade/tree/main/src/Microsoft.DotNet.CMake.Sdk#referencing-native-assets-with-nativeprojectreference -->
-  <Import Project="ProjectReference.targets" Sdk="Microsoft.DotNet.CMake.Sdk" />
+  <Import Project="ProjectReference.targets" Sdk="Microsoft.DotNet.CMake.Sdk" Condition="'$(OS)' == 'Windows_NT' And ('$(Architecture)' == 'x86' Or '$(Architecture)' == 'x64' Or '$(Architecture)' == 'arm64')" />
 
 </Project>
