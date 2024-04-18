@@ -2,11 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.DotNet.Cli.Utils;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
 {
@@ -194,6 +190,7 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 #else
             AppContext.BaseDirectory;
 #endif
+
 
         private void ResolveCommand(ref string executable, ref string args)
         {

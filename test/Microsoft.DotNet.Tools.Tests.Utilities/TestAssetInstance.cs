@@ -1,15 +1,10 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
-using System.Text;
-using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
-using Microsoft.DotNet.Tools.Test.Utilities;
+using DotnetCommand = Microsoft.DotNet.Tools.Test.Utilities.DotnetCommand;
 
 namespace Microsoft.DotNet.TestFramework
 {
@@ -194,13 +189,8 @@ namespace Microsoft.DotNet.TestFramework
                     }
                 }
 
-                using (var file = new FileStream(
-                    destination.FullName,
-                    FileMode.CreateNew,
-                    FileAccess.ReadWrite))
-                {
-                    doc.Save(file, SaveOptions.None);
-                }
+                using var file = new FileStream(destination.FullName, FileMode.CreateNew, FileAccess.ReadWrite);
+                doc.Save(file, SaveOptions.None);
             }
         }
 
