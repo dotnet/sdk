@@ -14,9 +14,6 @@ using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Runtime.InteropServices;
 #endif
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-
 namespace Microsoft.DotNet.Build.Tasks
 {
     /// <summary>

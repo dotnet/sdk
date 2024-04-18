@@ -1,10 +1,6 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Linq;
-using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
-
 namespace Microsoft.DotNet.Cli.Build
 {
     //  Multiple PackageDownload items for the same package are not supported.  Rather, to download multiple versions of the same
