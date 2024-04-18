@@ -2021,7 +2021,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             attributes.SupportedFirst = null;
                         }
                     }
-                    // For deny list UnsupportedSecond should only set if there is SupportedFirst verison between UnsupportedSecond and UnsupportedFirst 
+                    // For deny list UnsupportedSecond should only set if there is SupportedFirst version between UnsupportedSecond and UnsupportedFirst 
                     else if (attributes.SupportedFirst == null ||
                             (attributes.UnsupportedSecond != null &&
                              attributes.SupportedFirst > attributes.UnsupportedSecond))
