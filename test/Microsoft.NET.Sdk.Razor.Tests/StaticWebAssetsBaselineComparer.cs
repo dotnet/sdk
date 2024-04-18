@@ -489,7 +489,7 @@ For {expectedAsset.AssetFile}:
         {
             if (!manifest.Contains(difference))
             {
-                assetDifferences.Add($"Expected manifest to have selector '{difference.Name}={difference.Value};q={difference.Quality}' with a quality of but it was not found.");
+                assetDifferences.Add($"Expected manifest to have selector '{difference.Name}={difference.Value};q={difference.Quality}' but it was not found.");
             }
             else
             {

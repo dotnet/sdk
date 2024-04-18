@@ -238,16 +238,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_CompressionCurrentProjectBuildAssets Include="@(StaticWebAsset)" />
     </ItemGroup>
 
-    <!-- <ComputeStaticWebAssetsForCurrentProject
-      Assets="@(StaticWebAsset)"
-      ProjectMode="$(StaticWebAssetProjectMode)"
-      AssetKind="Build"
-      IncludeReferenceAssets="true"
-      Source="$(PackageId)"
-    >
-      <Output TaskParameter="StaticWebAssets" ItemName="_CompressionCurrentProjectBuildAssets" />
-    </ComputeStaticWebAssetsForCurrentProject> -->
-
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"
       CandidateAssets="@(_CompressionCurrentProjectBuildAssets)"
@@ -329,16 +319,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetEndpoint Include="@(_CompressionPublishStaticWebAssetEndpoint)" />
       <_CompressionCurrentProjectPublishAssets Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build'" />
     </ItemGroup>
-
-    <!-- <ComputeStaticWebAssetsForCurrentProject
-      Assets="@(StaticWebAsset)"
-      ProjectMode="$(StaticWebAssetProjectMode)"
-      AssetKind="Publish"
-      IncludeReferenceAssets="true"
-      Source="$(PackageId)"
-    >
-      <Output TaskParameter="StaticWebAssets" ItemName="_CompressionCurrentProjectPublishAssets" />
-    </ComputeStaticWebAssetsForCurrentProject> -->
 
     <ApplyCompressionNegotiation
       CandidateEndpoints="@(StaticWebAssetEndpoint)"

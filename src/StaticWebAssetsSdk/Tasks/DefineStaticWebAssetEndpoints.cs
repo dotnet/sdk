@@ -56,15 +56,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             {
                 var asset = kvp.Value;
                 StaticWebAssetEndpoint endpoint = null;
-                //if (!asset.IsDiscovered() && !asset.IsComputed())
-                //{
-                //    // If the asset is not for the current project, we skip it.
-                //    // Package endpoints are already defined in the package Endpoints.props file.
-                //    // Referenced project endpoints are retrieved from the call to GetCurrentProjectBuildStaticWebAssetItems and
-                //    // GetCurrentProjectPublishStaticWebAssetItems respectively.
-                //    Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because it is not for the current project.");
-                //    continue;
-                //}
 
                 // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
                 // package or a referenced project and ignored if it comes from the current project.

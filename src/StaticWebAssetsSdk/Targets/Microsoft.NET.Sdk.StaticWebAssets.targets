@@ -27,15 +27,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
     Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
- <UsingTask
-   TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeEndpointsForReferenceStaticWebAssets"
-   AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-   Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
-
- <UsingTask
-   TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeEndpointsForCurrentProjectStaticWebAssets"
-   AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
-   Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.ComputeEndpointsForReferenceStaticWebAssets"
+    AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)"
+    Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
 
   <UsingTask
     TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.DefineStaticWebAssetEndpoints"
