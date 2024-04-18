@@ -65,7 +65,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
                     Array.Empty<VulnerabilityInfo>()));
         }
 
-        public Task<(string LatestVersion, bool IsLatestVersion, IReadOnlyList<VulnerabilityInfo> Vulnerabilities)> GetLatestVersionAsync(string identifier, string? version = null, string? additionalNuGetSource = null, CancellationToken cancellationToken = default)
+        public Task<(string LatestVersion, bool IsLatestVersion, IReadOnlyList<VulnerabilityInfo> Vulnerabilities)> GetLatestVersionAsync(string identifier, string? version = null)
         {
             // names of exceptions throw them for test purposes
             return identifier switch
