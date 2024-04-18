@@ -1,14 +1,11 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using FluentAssertions;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using Xunit;
+using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
 
 namespace EndToEnd
 {
@@ -31,8 +28,7 @@ namespace EndToEnd
             //  Get the version rolled forward to
             new RestoreCommand()
                     .WithWorkingDirectory(projectDirectory)
-                    .Execute()
-                    .Should().Pass();
+                    .Execute().Should().Pass();
 
             string assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
             var assetsFile = new LockFileFormat().Read(assetsFilePath);
@@ -77,8 +73,7 @@ namespace EndToEnd
 
             new RestoreCommand()
                     .WithWorkingDirectory(floatingProjectInstance.Root.FullName)
-                    .Execute()
-                    .Should().Pass();
+                    .Execute().Should().Pass();
 
             string floatingAssetsFilePath = Path.Combine(floatingProjectInstance.Root.FullName, "obj", "project.assets.json");
 
@@ -106,8 +101,7 @@ namespace EndToEnd
 
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("console --no-restore")
-                .Should().Pass();
+                .Execute("console --no-restore").Should().Pass();
 
             string projectPath = Path.Combine(projectDirectory, Path.GetFileName(projectDirectory) + ".csproj");
 
@@ -133,8 +127,7 @@ namespace EndToEnd
 
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("web --no-restore")
-                .Should().Pass();
+                .Execute("web --no-restore").Should().Pass();
 
             string projectPath = Path.Combine(projectDirectory, Path.GetFileName(projectDirectory) + ".csproj");
 

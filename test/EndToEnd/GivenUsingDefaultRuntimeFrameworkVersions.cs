@@ -1,11 +1,9 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
-using FluentAssertions;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.DotNet.Tools.Test.Utilities;
 using NuGet.Versioning;
-using Xunit;
+using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
 
 namespace EndToEnd
 {
@@ -54,8 +52,7 @@ namespace EndToEnd
 
             new RestoreCommand()
                     .WithWorkingDirectory(testProject.Root.FullName)
-                    .Execute()
-                    .Should().Pass();
+                    .Execute().Should().Pass();
 
             var binDirectory = new DirectoryInfo(testProject.Root.FullName).Sub("bin").Sub("Debug").GetDirectories().FirstOrDefault();
             binDirectory.Should().HaveFilesMatching(outputFile, SearchOption.TopDirectoryOnly);

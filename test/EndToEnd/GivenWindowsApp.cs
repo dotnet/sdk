@@ -1,12 +1,10 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.IO;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
+using WindowsOnlyTheory = Microsoft.DotNet.Tools.Test.Utilities.WindowsOnlyTheoryAttribute;
+using BuildCommand = Microsoft.DotNet.Tools.Test.Utilities.BuildCommand;
 
 namespace EndToEnd
 {
@@ -34,17 +32,15 @@ namespace EndToEnd
                 .Add(new XElement(ns + "TargetPlatformVersion", targetPlatformVersion));
             project.Root.Element(ns + "PropertyGroup")
                 .Element(ns + "TargetFramework").Value = TestAssetInfo.currentTfm;
-
             project.Save(projectPath);
 
             new BuildCommand()
                     .WithProjectFile(new FileInfo(testInstance.Root.FullName))
-                    .Execute()
-                    .Should().Pass();
+                    .Execute().Should().Pass();
 
-            new RunCommand().WithWorkingDirectory(testInstance.Root.FullName)
-                    .Execute("--no-build")
-                    .Should().Pass().And.HaveStdOutContaining("Hello");
+            new RunCommand()
+                .WithWorkingDirectory(testInstance.Root.FullName)
+                .Execute("--no-build").Should().Pass().And.HaveStdOutContaining("Hello");
         }
     }
 }

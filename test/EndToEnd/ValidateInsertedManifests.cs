@@ -1,23 +1,13 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Xunit;
-using Xunit.Abstractions;
 
 namespace EndToEnd.Tests
 {
     public class ValidateInsertedManifests : TestBase
     {
-        private readonly ITestOutputHelper output;
-
-        public ValidateInsertedManifests(ITestOutputHelper output)
-        {
-            this.output = output;
-        }
-
         [Fact]
         public void ManifestReaderCanReadManifests()
         {
@@ -36,7 +26,7 @@ namespace EndToEnd.Tests
                         new FileInfo(manifestFile).Exists.Should().BeTrue();
                         using var fileStream = new FileStream(manifestFile, FileMode.Open, FileAccess.Read);
                         Action readManifest = () => WorkloadManifestReader.ReadWorkloadManifest(manifestId, fileStream, manifestFile);
-                        readManifest.ShouldNotThrow("manifestId:" + manifestId + " manifestFile:" + manifestFile + "is invalid");
+                        readManifest.Should().NotThrow("manifestId:" + manifestId + " manifestFile:" + manifestFile + "is invalid");
                     }
                 }
             }

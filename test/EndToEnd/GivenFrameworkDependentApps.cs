@@ -1,14 +1,10 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using Xunit;
+using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
 
 namespace EndToEnd
 {
@@ -63,8 +59,7 @@ namespace EndToEnd
                 //  Get the resolved version of .NET Core
                 new RestoreCommand()
                         .WithWorkingDirectory(projectDirectory)
-                        .Execute()
-                        .Should().Pass();
+                        .Execute().Should().Pass();
 
                 string assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
                 var assetsFile = new LockFileFormat().Read(assetsFilePath);

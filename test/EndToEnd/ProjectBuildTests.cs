@@ -1,16 +1,13 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Xml.Linq;
-using FluentAssertions;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
+using WindowsOnlyTheory = Microsoft.DotNet.Tools.Test.Utilities.WindowsOnlyTheoryAttribute;
+using BuildCommand = Microsoft.DotNet.Tools.Test.Utilities.BuildCommand;
+using PublishCommand = Microsoft.DotNet.Tools.Test.Utilities.PublishCommand;
+using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
+using CleanCommand = Microsoft.DotNet.Tools.Test.Utilities.CleanCommand;
 
 namespace EndToEnd.Tests
 {
@@ -25,8 +22,7 @@ namespace EndToEnd.Tests
             string newArgs = "console --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)
-                .Should().Pass();
+                .Execute(newArgs).Should().Pass();
 
             string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
 
@@ -39,26 +35,22 @@ namespace EndToEnd.Tests
 
             new RestoreCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
-                .Should().Pass();
+                .Execute().Should().Pass();
 
             new BuildCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
-                .Should().Pass();
+                .Execute().Should().Pass();
 
-            var runCommand = new RunCommand()
+            new RunCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .ExecuteWithCapturedOutput()
-                .Should().Pass().And.HaveStdOutContaining("Hello, World!");
+                .ExecuteWithCapturedOutput().Should().Pass().And.HaveStdOutContaining("Hello, World!");
 
             var binDirectory = new DirectoryInfo(projectDirectory).Sub("bin");
             binDirectory.Should().HaveFilesMatching("*.dll", SearchOption.AllDirectories);
 
             new CleanCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
-                .Should().Pass();
+                .Execute().Should().Pass();
 
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
@@ -72,8 +64,7 @@ namespace EndToEnd.Tests
             string newArgs = "console --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)
-                .Should().Pass();
+                .Execute(newArgs).Should().Pass();
 
             string projectPath = Path.Combine(projectDirectory, directory.Name + ".csproj");
 
@@ -87,18 +78,14 @@ namespace EndToEnd.Tests
 
             new BuildCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
-                .Should().Pass();
+                .Execute().Should().Pass();
 
-            var runCommand = new RunCommand()
+            new RunCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .ExecuteWithCapturedOutput()
-                .Should().Pass().And.HaveStdOutContaining("Hello, World!");
+                .ExecuteWithCapturedOutput().Should().Pass().And.HaveStdOutContaining("Hello, World!");
         }
 
         [WindowsOnlyTheory]
-        // [InlineData("net6.0", true)]
-        // [InlineData("net6.0", false)]
         [InlineData("current", true)]
         [InlineData("current", false)]
         public void ItCanPublishArm64Winforms(string TargetFramework, bool selfContained)
@@ -114,19 +101,17 @@ namespace EndToEnd.Tests
             string newArgs = $"winforms {TargetFrameworkParameter} --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)
-                .Should().Pass();
+                .Execute(newArgs).Should().Pass();
 
             string selfContainedArgs = selfContained ? " --self-contained" : "";
             string publishArgs = "-r win-arm64" + selfContainedArgs;
             new PublishCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(publishArgs)
-                .Should().Pass();
+                .Execute(publishArgs).Should().Pass();
 
             var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
-                .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release").GetDirectories().FirstOrDefault()
-                .Sub("win-arm64").Sub("publish");
+                .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release")
+                .GetDirectories().FirstOrDefault().Sub("win-arm64").Sub("publish");
 
             if (selfContained)
             {
@@ -136,8 +121,6 @@ namespace EndToEnd.Tests
         }
 
         [WindowsOnlyTheory]
-        // [InlineData("net6.0", true)]
-        // [InlineData("net6.0", false)]
         [InlineData("current", true)]
         [InlineData("current", false)]
         public void ItCanPublishArm64Wpf(string TargetFramework, bool selfContained)
@@ -154,19 +137,17 @@ namespace EndToEnd.Tests
             string newArgs = $"wpf {TargetFrameworkParameter} --no-restore";
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)
-                .Should().Pass();
+                .Execute(newArgs).Should().Pass();
 
             string selfContainedArgs = selfContained ? " --self-contained" : "";
             string publishArgs = "-r win-arm64" + selfContainedArgs;
             new PublishCommand()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(publishArgs)
-                .Should().Pass();
+                .Execute(publishArgs).Should().Pass();
 
             var selfContainedPublishDir = new DirectoryInfo(projectDirectory)
-                .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release").GetDirectories().FirstOrDefault()
-                .Sub("win-arm64").Sub("publish");
+                .Sub("bin").Sub(TargetFramework != "current" ? "Debug" : "Release")
+                .GetDirectories().FirstOrDefault().Sub("win-arm64").Sub("publish");
 
             if (selfContained)
             {
@@ -186,7 +167,6 @@ namespace EndToEnd.Tests
         [InlineData("classlib", "C#")]
         [InlineData("classlib", "VB")]
         [InlineData("classlib", "F#")]
-
         [InlineData("mstest")]
         [InlineData("nunit")]
         [InlineData("web")]
@@ -199,7 +179,7 @@ namespace EndToEnd.Tests
         [Fact]
         public void DotnetNewShowsCuratedListCorrectly()
         {
-            string locale = System.Threading.Thread.CurrentThread.CurrentUICulture.Name;
+            string locale = Thread.CurrentThread.CurrentUICulture.Name;
             if (!string.IsNullOrWhiteSpace(locale)
                 && !locale.StartsWith("en", StringComparison.OrdinalIgnoreCase))
             {
@@ -226,8 +206,7 @@ namespace EndToEnd.Tests
             expectedOutput += Environment.NewLine;
 
             new NewCommandShim()
-             .Execute()
-             .Should().Pass()
+             .Execute().Should().Pass()
              .And.HaveStdOutMatching(expectedOutput);
         }
 
@@ -248,8 +227,7 @@ namespace EndToEnd.Tests
 
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)
-                .Should().Pass();
+                .Execute(newArgs).Should().Pass();
 
             //check if the template created files
             Assert.True(directory.Exists);
@@ -294,8 +272,7 @@ namespace EndToEnd.Tests
 
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)
-                .Should().Pass();
+                .Execute(newArgs).Should().Pass();
 
             //check if the template created files
             Assert.True(directory.Exists);
@@ -470,8 +447,7 @@ namespace EndToEnd.Tests
                 new BuildCommand()
                      .WithEnvironmentVariable("PATH", dotnetRoot) // override PATH since razor rely on PATH to find dotnet
                      .WithWorkingDirectory(projectDirectory)
-                     .Execute(buildArgs)
-                     .Should().Pass();
+                     .Execute(buildArgs).Should().Pass();
             }
 
             // delete test directory for some tests so we aren't leaving behind non-compliant package files
@@ -497,8 +473,7 @@ namespace EndToEnd.Tests
 
             new NewCommandShim()
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(newArgs)
-                .Should().Pass();
+                .Execute(newArgs).Should().Pass();
 
             return directory;
         }

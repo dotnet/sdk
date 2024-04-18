@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.IO;
-using System.Xml.Linq;
 using EndToEnd;
-using FluentAssertions;
 using Microsoft.DotNet.Tools.Test.Utilities;
-using Xunit;
+using PlatformSpecificFact = Microsoft.DotNet.Tools.Test.Utilities.PlatformSpecificFact;
+using TestPlatforms = Microsoft.DotNet.Tools.Test.Utilities.TestPlatforms;
+using BuildCommand = Microsoft.DotNet.Tools.Test.Utilities.BuildCommand;
+using PublishCommand = Microsoft.DotNet.Tools.Test.Utilities.PublishCommand;
 
 namespace Microsoft.DotNet.Tests.EndToEnd
 {
@@ -27,8 +27,7 @@ namespace Microsoft.DotNet.Tests.EndToEnd
 
             new BuildCommand()
                     .WithWorkingDirectory(testInstance.Root.FullName)
-                    .Execute()
-                    .Should().Pass();
+                    .Execute().Should().Pass();
 
             string packagesPath = Path.Combine(testInstance.Root.FullName, "packages");
             Directory.Exists(packagesPath).Should().BeFalse(packagesPath + " should not exist");
@@ -64,13 +63,12 @@ namespace Microsoft.DotNet.Tests.EndToEnd
                 target.Name = ns + target.Name.LocalName;
                 project.Root.Add(target);
             }
-            TestFramework.TestAssetInstance testInstance 
-                = testProjectCreator.Create().WithProjectChanges(overrideLastRuntimeFrameworkVersionToExistingOlderVersion);
+            TestFramework.TestAssetInstance testInstance = testProjectCreator.Create()
+                .WithProjectChanges(overrideLastRuntimeFrameworkVersionToExistingOlderVersion);
 
             new PublishCommand()
                     .WithWorkingDirectory(testInstance.Root.FullName)
-                    .Execute()
-                    .Should().Pass();
+                    .Execute().Should().Pass();
 
             string packagesPath = Path.Combine(testInstance.Root.FullName, "packages", $"runtime.{Rid}.microsoft.windowsdesktop.app"); 
             Directory.Exists(packagesPath).Should().BeFalse(packagesPath + " should not exist");

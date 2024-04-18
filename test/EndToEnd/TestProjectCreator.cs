@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 using System.Runtime.CompilerServices;
-using System.Xml.Linq;
 using Microsoft.DotNet.TestFramework;
 using Microsoft.DotNet.Tools.Test.Utilities;
 
@@ -14,16 +13,11 @@ namespace EndToEnd
         public const string AspNetCoreAppPackageName = "Microsoft.AspNetCore.App";
         public const string AspNetCoreAllPackageName = "Microsoft.AspNetCore.All";
 
-
         public string TestName { get; set; }
         public string Identifier { get; set; }
-
         public string PackageName { get; set; } = NETCorePackageName;
-
         public string MinorVersion { get; set; }
-
         public string RuntimeIdentifier { get; set; }
-
         public Dictionary<string, string> AdditionalProperties { get; } = new Dictionary<string, string>();
 
         public TestProjectCreator([CallerMemberName] string testName = null, string identifier = "")
@@ -77,7 +71,6 @@ namespace EndToEnd
             }
 
             project.Save(projectPath);
-
             return testInstance;
         }
     }
