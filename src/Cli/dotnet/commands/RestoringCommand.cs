@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Tools
             HashSet<string> newArgumentsToAdd = new() { "-tlp:verbosity=quiet" };
             List<string> existingArgumentsToForward = new();
 
-            foreach (var argument in forwardedArguments ?? Enumerable.Empty<string>)
+            foreach (var argument in forwardedArguments ?? Enumerable.Empty<string>())
             {
                 if (!IsExcludedFromSeparateRestore(argument) && !IsExcludedFromRestore(argument))
                 {
