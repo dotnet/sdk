@@ -147,7 +147,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             _toolRestoreCommand.Execute();
             new ToolRestoreCommand(
-                Parser.Instance.Parse($"dotnet tool update {_packageIdB.ToString()} --local"),
+                Parser.Instance.Parse($"dotnet tool restore"),
                 _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _localToolsResolverCache,
