@@ -37,36 +37,17 @@
   </Target>
 
   <Target Name="_CorrectPublishFilesIntegrity" AfterTargets="ProcessPublishFilesForWasm">
-    <ItemGroup>
-      <_PublishFilesToCorrectIntegrity Include="@(_NewWebCilPublishStaticWebAssets)" RemoveMetadata="Integrity;Fingerprint" />
-    </ItemGroup>
-
-    <PatchWasmPublishStaticWebAsset StaticWebAssets="@(_NewWasmPublishStaticWebAssets)">
-      <Output TaskParameter="AssetsToRemove" ItemName="_WasmIncorrectAssetsToRemove" />
-    </PatchWasmPublishStaticWebAsset>
-
-    <ItemGroup>
-      <_PublishFilesToCorrectIntegrity Remove="@(_WasmIncorrectAssetsToRemove)" />
-    </ItemGroup>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_PublishFilesToCorrectIntegrity)"
-    >
-      <Output TaskParameter="Assets" ItemName="_NewPublishFilesToCorrectIntegrity" />
-    </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(_NewPublishFilesToCorrectIntegrity)"
+      CandidateAssets="@(_NewWebCilPublishStaticWebAssets)"
       ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
-      <Output TaskParameter="Endpoints" ItemName="_NewPublishFilesToCorrectIntegrityEndpoint" />
+      <Output TaskParameter="Endpoints" ItemName="_NewWebCilPublishStaticWebAssetsEndpoint" />
     </DefineStaticWebAssetEndpoints>
 
     <ItemGroup>
-      <StaticWebAsset Remove="@(_NewWebCilPublishStaticWebAssets)" />
-      <StaticWebAsset Include="@(_NewPublishFilesToCorrectIntegrity)" />
-      <StaticWebAssetEndpoint Include="@(_NewPublishFilesToCorrectIntegrityEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(_NewWebCilPublishStaticWebAssetsEndpoint)" />
     </ItemGroup>
   </Target>
 
