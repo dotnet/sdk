@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     new()
                     {
                         Name = "ETag",
-                        Value = asset.Integrity,
+                        Value = $"\"{asset.Integrity}\"",
                     },
                     new()
                     {
@@ -162,8 +162,16 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 return TestLengthResolver(asset.Identity).ToString(CultureInfo.InvariantCulture);
             }
 
-            var path = File.Exists(asset.OriginalItemSpec) ? asset.OriginalItemSpec : asset.Identity;
-            return new FileInfo(path).Length.ToString(CultureInfo.InvariantCulture);
+            if (File.Exists(asset.Identity))
+            {
+                Log.LogMessage(MessageImportance.Low, $"File {asset.Identity} exists.");
+                return new FileInfo(asset.Identity).Length.ToString(CultureInfo.InvariantCulture);
+            }
+            else
+            {
+                Log.LogMessage(MessageImportance.Low, $"File {asset.Identity} does not exist. Using {asset.OriginalItemSpec} instead.");
+                return new FileInfo(asset.OriginalItemSpec).Length.ToString(CultureInfo.InvariantCulture);
+            }
         }
 
         private string ResolveContentType(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
@@ -188,7 +196,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         private class ContentTypeMapping
         {
-            private Matcher _matcher;
+            private readonly Matcher _matcher;
 
             public ContentTypeMapping(string mimeType, string pattern, int priority)
             {
@@ -197,7 +205,6 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 Priority = priority;
                 _matcher = new Matcher();
                 _matcher.AddInclude(pattern);
-
             }
 
             public string Pattern { get; set; }
@@ -206,13 +213,10 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
             public int Priority { get; }
 
-            internal static ContentTypeMapping FromTaskItem(ITaskItem contentTypeMappings)
-            {
-                return new ContentTypeMapping(
+            internal static ContentTypeMapping FromTaskItem(ITaskItem contentTypeMappings) => new(
                     contentTypeMappings.ItemSpec,
                     contentTypeMappings.GetMetadata(nameof(Pattern)),
                     int.Parse(contentTypeMappings.GetMetadata(nameof(Priority))));
-            }
 
             internal bool Matches(string identity) => _matcher.Match(identity).HasMatches;
         }
