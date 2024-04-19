@@ -45,6 +45,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
 
+            _workloadSetVersion = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
+            if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+            {
+                // If the version of the workload set is currently pinned, treat it as if it were freshly pinned.
+                var installStateContents = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json"));
+                _workloadSetVersion = installStateContents.WorkloadVersion;
+            }
+
             ValidateWorkloadIdsInput();
         }
 
@@ -113,11 +121,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 try
                 {
-                    InstallWorkloads(
-                        _workloadIds.Select(id => new WorkloadId(id)),
-                        _skipManifestUpdate,
-                        _includePreviews,
-                        string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption));
+                    DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
+                    var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+                    {
+                        InstallWorkloads(
+                            workloadIds,
+                            _skipManifestUpdate,
+                            _includePreviews,
+                            offlineCache);
+                    }
+                    else
+                    {
+                        RunInNewTransaction(context =>
+                        {
+                            var manifests = HandleWorkloadUpdateFromVersion(context, offlineCache);
+                            InstallWorkloadsAndGarbageCollect(context, workloadIds, manifests, offlineCache, false);
+                        });
+                    }
                 }
                 catch (Exception e)
                 {
@@ -150,32 +171,46 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
             }
 
-            if (!skipManifestUpdate)
+            RunInNewTransaction(context =>
             {
-                if (Verbosity != VerbosityOptions.quiet && Verbosity != VerbosityOptions.q)
+                if (!skipManifestUpdate)
                 {
-                    Reporter.WriteLine(LocalizableStrings.CheckForUpdatedWorkloadManifests);
+                    if (Verbosity != VerbosityOptions.quiet && Verbosity != VerbosityOptions.q)
+                    {
+                        Reporter.WriteLine(LocalizableStrings.CheckForUpdatedWorkloadManifests);
+                    }
+                    // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
+                    var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
+                    var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
+                    if (previouslyInstalledWorkloads.Any())
+                    {
+                        Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadAlreadyInstalled, string.Join(" ", previouslyInstalledWorkloads)).Yellow());
+                    }
+                    workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
+
+                    var useWorkloadSets = ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath);
+                    useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
+
+                    _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, useWorkloadSets, offlineCache).Wait();
+
+                    if (useWorkloadSets)
+                    {
+                        manifestsToUpdate = InstallWorkloadSet(context);
+                    }
+                    else
+                    {
+                        manifestsToUpdate = useRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
+                            _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
+                    }
                 }
 
-                // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
-                var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
-                var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
-                if (previouslyInstalledWorkloads.Any())
-                {
-                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadAlreadyInstalled, string.Join(" ", previouslyInstalledWorkloads)).Yellow());
-                }
+                InstallWorkloadsAndGarbageCollect(context, workloadIds, manifestsToUpdate, offlineCache, useRollback);
+            });
+        }
 
-                workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
-
-                useRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
-
-                _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(includePreviews, offlineCache).Wait();
-                manifestsToUpdate = useRollback ?
-                    _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition) :
-                    _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
-            }
-
-            InstallWorkloadsWithInstallRecord(_workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
+        private void InstallWorkloadsAndGarbageCollect(ITransactionContext context, IEnumerable<WorkloadId> workloadIds, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, bool useRollback)
+        {
+            InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
 
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
@@ -210,6 +245,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         }
 
         private void InstallWorkloadsWithInstallRecord(
+            ITransactionContext context,
             IInstaller installer,
             IEnumerable<WorkloadId> workloadIds,
             SdkFeatureBand sdkFeatureBand,
@@ -220,15 +256,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             IEnumerable<PackInfo> workloadPackToInstall = new List<PackInfo>();
             IEnumerable<WorkloadId> newWorkloadInstallRecords = new List<WorkloadId>();
 
-            var transaction = new CliTransaction
-            {
-                RollbackStarted = () => Reporter.WriteLine(LocalizableStrings.RollingBackInstall),
-                // Don't hide the original error if roll back fails, but do log the rollback failure
-                RollbackFailed = ex => Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message))
-            };
-
-            transaction.Run(
-                action: context =>
+            context.Run(
+                action: () =>
                 {
                     bool rollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
 
@@ -242,6 +271,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         installer.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
 
+                    installer.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : _workloadSetVersion);
+
                     _workloadResolver.RefreshWorkloadManifests();
 
                     installer.InstallWorkloads(workloadIds, sdkFeatureBand, context, offlineCache);
@@ -252,13 +283,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         recordRepo.WriteWorkloadInstallationRecord(workloadId, sdkFeatureBand);
                     }
-
                 },
                 rollback: () =>
                 {
                     //  InstallWorkloadManifest and InstallWorkloadPacks already handle rolling back their actions, so here we only
                     //  need to delete the installation records
-
                     foreach (var workloadId in newWorkloadInstallRecords)
                     {
                         installer.GetWorkloadInstallationRecordRepository()
@@ -289,6 +318,17 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         private Task DownloadToOfflineCacheAsync(IEnumerable<WorkloadId> workloadIds, DirectoryPath offlineCache, bool skipManifestUpdate, bool includePreviews)
         {
             return GetDownloads(workloadIds, skipManifestUpdate, includePreviews, offlineCache.Value);
+        }
+
+        private void RunInNewTransaction(Action<ITransactionContext> a)
+        {
+            var transaction = new CliTransaction()
+            {
+                RollbackStarted = () => Reporter.WriteLine(LocalizableStrings.RollingBackInstall),
+                // Don't hide the original error if roll back fails, but do log the rollback failure
+                RollbackFailed = ex => Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message))
+            };
+            transaction.Run(context => a(context));
         }
     }
 }

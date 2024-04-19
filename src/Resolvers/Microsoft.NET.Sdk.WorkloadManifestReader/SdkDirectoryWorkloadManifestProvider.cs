@@ -1,12 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Workloads.Workload;
@@ -136,15 +131,15 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json");
                     if (File.Exists(installStateFilePath))
                     {
-                        var installState = InstallStateReader.ReadInstallState(installStateFilePath);
-                        if (!string.IsNullOrEmpty(installState.WorkloadSetVersion))
+                        var installState = InstallStateContents.FromPath(installStateFilePath);
+                        if (!string.IsNullOrEmpty(installState.WorkloadVersion))
                         {
-                            if (!availableWorkloadSets.TryGetValue(installState.WorkloadSetVersion!, out _workloadSet))
+                            if (!availableWorkloadSets.TryGetValue(installState.WorkloadVersion!, out _workloadSet))
                             {
-                                throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadSetVersion, installStateFilePath));
+                                throw new FileNotFoundException(string.Format(Strings.WorkloadVersionFromInstallStateNotFound, installState.WorkloadVersion, installStateFilePath));
                             }
                         }
-                        _manifestsFromInstallState = installState.Manifests;
+                        _manifestsFromInstallState = installState.Manifests is null ? new WorkloadSet() : WorkloadSet.FromDictionaryForJson(installState.Manifests!, _sdkVersionBand);
                         _installStateFilePath = installStateFilePath;
                     }
                 }
@@ -157,11 +152,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public string GetWorkloadVersion()
+        public string? GetWorkloadVersion()
         {
             if (_workloadSet?.Version is not null)
             {
                 return _workloadSet?.Version!;
+            }
+
+            if (InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkVersionBand, _sdkRootPath), "default.json")).UseWorkloadSets == true)
+            {
+                return null;
             }
 
             using (SHA256 sha256Hash = SHA256.Create())
