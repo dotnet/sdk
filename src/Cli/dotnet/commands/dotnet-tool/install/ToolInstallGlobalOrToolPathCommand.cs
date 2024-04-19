@@ -50,7 +50,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private IEnumerable<string> _forwardRestoreArguments;
         private readonly bool _allowRollForward;
         private readonly bool _allowPackageDowngrade;
-        private readonly bool _all;
+        private readonly bool _updateAll;
 
 
         public ToolInstallGlobalOrToolPathCommand(
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
             _createToolPackageStoreDownloaderUninstaller = createToolPackageStoreDownloaderUninstaller ??
                                                   ToolPackageFactory.CreateToolPackageStoresAndDownloaderAndUninstaller;
-            _all = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
+            _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
 
             _reporter = (reporter ?? Reporter.Output);
             _errorReporter = (reporter ?? Reporter.Error);
@@ -116,7 +116,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public override int Execute()
         {
-            if (_all)
+            if (_updateAll)
             {
                 var toolListCommand = new ToolListGlobalOrToolPathCommand(
                     _parseResult

@@ -55,6 +55,28 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             _toolPath = result.GetValue(ToolInstallCommandParser.ToolPathOption);
         }
 
+
+        internal static void EnsureEitherUpdateAllOrUpdateOption(
+            ParseResult parseResult,
+            string message)
+        {
+            List<string> options = new List<string>();
+            if (parseResult.GetResult(ToolAppliedOption.UpdateAllOption) is not null)
+            {
+                options.Add(ToolAppliedOption.UpdateAllOption.Name);
+            }
+
+            if (parseResult.GetResult(ToolUpdateCommandParser.PackageIdArgument) is not null)
+            {
+                options.Add(ToolUpdateCommandParser.PackageIdArgument.Name);
+            }
+
+            if (options.Count != 1)
+            {
+                throw new GracefulException(message);
+            }
+        }
+
         public override int Execute()
         {
             ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
@@ -66,6 +88,10 @@ namespace Microsoft.DotNet.Tools.Tool.Update
             ToolAppliedOption.EnsureNoConflictUpdateAllVersionOption(
                 _parseResult,
                 LocalizableStrings.UpdateToolCommandInvalidAllAndVersion);
+
+            EnsureEitherUpdateAllOrUpdateOption(
+                _parseResult,
+                LocalizableStrings.UpdateToolCommandInvalidAllAndPackageId);
 
             if (_global || !string.IsNullOrWhiteSpace(_toolPath))
             {

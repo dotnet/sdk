@@ -72,6 +72,11 @@
         <target state="translated">A versão solicitada {0} é inferior à versão existente {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndPackageId">
+        <source>One must specify either package ID or use the update all option (--all).</source>
+        <target state="new">One must specify either package ID or use the update all option (--all).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateToolCommandInvalidAllAndVersion">
         <source>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</source>
         <target state="new">The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</target>

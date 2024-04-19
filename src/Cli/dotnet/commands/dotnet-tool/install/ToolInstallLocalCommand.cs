@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly string _explicitManifestFile;
         private readonly bool _createManifestIfNeeded;
         private readonly bool _allowRollForward;
-        private readonly bool _all;
+        private readonly bool _updateAll;
 
         public ToolInstallLocalCommand(
             ParseResult parseResult,
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             )
             : base(parseResult)
         {
-            _all = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
+            _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
             var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
             _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
             _explicitManifestFile = parseResult.GetValue(ToolAppliedOption.ToolManifestOption);
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
         public override int Execute()
         {
-            if (_all)
+            if (_updateAll)
             {
                 var toolListCommand = new ToolListLocalCommand(_parseResult, (IToolManifestInspector)_toolManifestFinder);
                 var toolIds = toolListCommand.GetPackages(null);
