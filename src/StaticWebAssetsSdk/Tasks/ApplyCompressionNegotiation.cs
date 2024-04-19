@@ -98,7 +98,7 @@ public class ApplyCompressionNegotiation : Task
                     {
                         Name = "Content-Encoding",
                         Value = compressedAsset.AssetTraitValue,
-                        Quality = Math.Round(1.0 / (length + 1), 6).ToString("F6")
+                        Quality = Math.Round(1.0 / (length + 1), 12).ToString("F12")
                     };
                     Log.LogMessage(MessageImportance.Low, "  Created Content-Encoding selector for compressed asset '{0}' with size '{1}' is '{2}'", encodingSelector.Value, encodingSelector.Quality, relatedEndpointCandidate.Route);
                     var endpointCopy = new StaticWebAssetEndpoint
@@ -230,7 +230,7 @@ public class ApplyCompressionNegotiation : Task
                 headers.Add(new StaticWebAssetEndpointResponseHeader
                 {
                     Name = "ETag",
-                    Value = $"W/\"{header.Value}\""
+                    Value = $"W/{header.Value}"
                 });
             }
             else if (string.Equals(header.Name, "Content-Type", StringComparison.Ordinal))

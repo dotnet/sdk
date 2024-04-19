@@ -64,7 +64,7 @@ public class DefineStaticWebAssetEndpointsTest
                 new StaticWebAssetEndpointResponseHeader
                 {
                     Name = "ETag",
-                    Value = "integrity"
+                    Value = "\"integrity\""
                 },
                 new StaticWebAssetEndpointResponseHeader
                 {
@@ -73,37 +73,6 @@ public class DefineStaticWebAssetEndpointsTest
                 }
             ]);
     }
-
-    //[Theory]
-    //[InlineData(StaticWebAsset.SourceTypes.Project)]
-    //[InlineData(StaticWebAsset.SourceTypes.Package)]
-    //public void DoesNotDefineEndpointsForProjectOrPackageAssets(string sourceType)
-    //{
-    //    var errorMessages = new List<string>();
-    //    var buildEngine = new Mock<IBuildEngine>();
-    //    buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
-    //        .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
-
-    //    var lastWrite = new DateTime(1990, 11, 15, 0, 0, 0, 0, DateTimeKind.Utc);
-
-    //    var task = new DefineStaticWebAssetEndpoints
-    //    {
-    //        BuildEngine = buildEngine.Object,
-    //        CandidateAssets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", sourceType, "candidate.js", "All", "All")],
-    //        ExistingEndpoints = [],
-    //        ContentTypeMappings = [CreateContentMapping("**/*.js", "text/javascript")],
-    //        TestLengthResolver = asset => asset.EndsWith("candidate.js") ? 10 : throw new InvalidOperationException(),
-    //        TestLastWriteResolver = asset => asset.EndsWith("candidate.js") ? lastWrite : throw new InvalidOperationException(),
-    //    };
-
-    //    // Act
-    //    var result = task.Execute();
-
-    //    // Assert
-    //    result.Should().Be(true);
-    //    var endpoints = StaticWebAssetEndpoint.FromItemGroup(task.Endpoints);
-    //    endpoints.Should().BeEmpty();
-    //}
 
     [Fact]
     public void DoesNotDefineNewEndpointsWhenAnExistingEndpointAlreadyExists()

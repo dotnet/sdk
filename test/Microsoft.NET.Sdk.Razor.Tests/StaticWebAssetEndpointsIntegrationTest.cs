@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
@@ -73,6 +74,16 @@ public class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper log)
         var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
 
         var endpoints = manifest.Endpoints;
+
+        foreach (var endpoint in endpoints)
+        {
+            var contentLength = endpoint.ResponseHeaders.Single(rh => rh.Name == "Content-Length");
+            var length = long.Parse(contentLength.Value, CultureInfo.InvariantCulture);
+            var file = new FileInfo(endpoint.AssetFile);
+            file.Should().Exist();
+            file.Length.Should().Be(length, $"because {endpoint.Route} {file.FullName}");
+        }
+
         endpoints.Should().HaveCount(15);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(3);
@@ -111,7 +122,7 @@ public class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper log)
         );
         gzipCompressedAppJsEndpoint.Single().ResponseHeaders.Any(h => h.Name == "ETag" && h.Value.StartsWith("W/")).Should().BeTrue();
         var gzipWeakEtag = gzipCompressedAppJsEndpoint.Single().ResponseHeaders.Single(h => h.Name == "ETag" && h.Value.StartsWith("W/")).Value;
-        gzipWeakEtag[3..^1].Should().Be(eTagHeader.Value);
+        gzipWeakEtag[2..].Should().Be(eTagHeader.Value);
 
         var brotliCompressedAppJsEndpoint = appJsEndpoints.Where(ep => ep.Selectors.Length == 1 && ep.Selectors[0].Value == "br");
         brotliCompressedAppJsEndpoint.Should().HaveCount(1);
@@ -129,7 +140,7 @@ public class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper log)
         );
         brotliCompressedAppJsEndpoint.Single().ResponseHeaders.Any(h => h.Name == "ETag" && h.Value.StartsWith("W/")).Should().BeTrue();
         var brWeakEtag = brotliCompressedAppJsEndpoint.Single().ResponseHeaders.Single(h => h.Name == "ETag" && h.Value.StartsWith("W/")).Value;
-        brWeakEtag[3..^1].Should().Be(eTagHeader.Value);
+        brWeakEtag[2..].Should().Be(eTagHeader.Value);
 
         var bundleEndpoints = endpoints.Where(ep => ep.Route.EndsWith("bundle.scp.css"));
         bundleEndpoints.Should().HaveCount(3);
