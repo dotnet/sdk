@@ -77,14 +77,14 @@
       <Sha>195e9289b39c4e5cd5d25e9422fcc4a93f95cefa</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.400-beta.24218.1">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.400-beta.24219.4">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>27efc282d3c1e3abdf8322191e09d0fe466c489e</Sha>
+      <Sha>b3692827dbc2f1f57bde1f1855db179d5e17ad18</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.400-beta.24218.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="8.0.400-beta.24219.4">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>27efc282d3c1e3abdf8322191e09d0fe466c489e</Sha>
+      <Sha>b3692827dbc2f1f57bde1f1855db179d5e17ad18</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.11.0-1.24218.8">
