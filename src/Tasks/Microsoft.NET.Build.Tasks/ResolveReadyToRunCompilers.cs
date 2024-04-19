@@ -261,6 +261,9 @@ namespace Microsoft.NET.Build.Tasks
                 case "riscv64":
                     architecture = Architecture.RiscV64;
                     break;
+                case "loongarch64":
+                    architecture = Architecture.LoongArch64;
+                    break;
 #endif
                 case "x64":
                     architecture = Architecture.X64;
@@ -431,6 +434,7 @@ namespace Microsoft.NET.Build.Tasks
                 Architecture.Arm64 => "arm64",
 #if !NETFRAMEWORK
                 Architecture.RiscV64 => "riscv64",
+                Architecture.LoongArch64 => "loongarch64",
 #endif
                 _ => null
             };

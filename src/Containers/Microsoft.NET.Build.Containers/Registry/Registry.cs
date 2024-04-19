@@ -248,6 +248,7 @@ internal sealed class Registry
             "ppc64le" => "ppc64le",
             "s390x" => "s390x",
             "riscv64" => "riscv64",
+            "loongarch64" => "loongarch64",
             _ => null
         };
 

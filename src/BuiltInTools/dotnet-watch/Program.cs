@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Watcher
                 var verbose = EnvironmentVariables.VerboseCliOutput;
                 var environmentOptions = EnvironmentOptions.FromEnvironment();
 
-                var options = CommandLineOptions.Parse(args, new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis), out var errorCode);
+                var options = CommandLineOptions.Parse(args, new ConsoleReporter(console, verbose, quiet: false, environmentOptions.SuppressEmojis), console.Out, out var errorCode);
                 if (options == null)
                 {
                     // an error reported or help printed:
@@ -115,11 +115,13 @@ namespace Microsoft.DotNet.Watcher
 
         private async Task<int> RunAsync(CancellationToken cancellationToken)
         {
-            // TODO multiple projects should be easy enough to add here
+            string workingDirectory = environmentOptions.WorkingDirectory;
+            reporter.Verbose($"Working directory: '{workingDirectory}'");
+
             string projectFile;
             try
             {
-                projectFile = MsBuildProjectFinder.FindMsBuildProject(environmentOptions.WorkingDirectory, options.Project);
+                projectFile = MsBuildProjectFinder.FindMsBuildProject(workingDirectory, options.Project);
             }
             catch (FileNotFoundException ex)
             {
@@ -136,7 +138,7 @@ namespace Microsoft.DotNet.Watcher
                 outputSink: null,
                 trace: true);
 
-            if (EnvironmentVariables.IsPollingEnabled)
+            if (environmentOptions.IsPollingEnabled)
             {
                 reporter.Output("Polling file watcher is enabled");
             }
@@ -168,11 +170,7 @@ namespace Microsoft.DotNet.Watcher
                 enableHotReload = true;
             }
 
-            var args = options.GetLaunchProcessArguments(enableHotReload, reporter, out var noLaunchProfile, out var launchProfileName);
-            var launchProfile = (noLaunchProfile ? null : LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, launchProfileName, reporter)) ?? new();
-
-            // If no args forwarded to the app were specified use the ones in the profile.
-            var escapedArgs = (enableHotReload && args is []) ? launchProfile.CommandLineArgs : null;
+            var launchProfile = (options.NoLaunchProfile == true ? null : LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, options.LaunchProfileName, reporter)) ?? new();
 
             var context = new DotNetWatchContext
             {
@@ -185,9 +183,8 @@ namespace Microsoft.DotNet.Watcher
 
             var processSpec = new ProcessSpec
             {
-                WorkingDirectory = projectDirectory,
-                Arguments = args,
-                EscapedArguments = escapedArgs,
+                WorkingDirectory = workingDirectory,
+                Arguments = options.LaunchProcessArguments,
                 EnvironmentVariables =
                 {
                     [EnvironmentVariables.Names.DotnetWatch] = "1",

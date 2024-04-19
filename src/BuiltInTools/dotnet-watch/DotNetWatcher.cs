@@ -85,10 +85,8 @@ namespace Microsoft.DotNet.Watcher
                 using var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, currentRunCancellationSource.Token);
                 using var fileSetWatcher = new FileSetWatcher(fileSet, context.Reporter);
 
-                context.Reporter.Verbose($"Running {processSpec.ShortDisplayName()} with the following arguments: '{processSpec.GetArgumentsDisplay()}'");
                 var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);
-
-                context.Reporter.Output("Started", emoji: "🚀");
+                context.Reporter.Output("Started");
 
                 Task<FileItem?> fileSetTask;
                 Task finishedTask;

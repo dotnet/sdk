@@ -17,7 +17,8 @@ pr:
 variables:
   - name: _CIBuild
     value: -restore -build -sign -pack -ci
-  - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
+  # Disable post-build signing for internal release-branch builds or internal manual builds.
+  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
     - name: PostBuildSign
       value: false
   - ${{ else }}:
@@ -116,7 +117,7 @@ extends:
         parameters:
           platform:
             name: 'Managed'
-            container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8'
+            container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/build.yml@self
           parameters:
