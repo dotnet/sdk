@@ -152,7 +152,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             for (int i = 0; i < method.Parameters.Length; i++)
             {
-                if (!_settings.SymbolEqualityComparer.Equals(method.Parameters[i].Type, method.Parameters[i].Type))
+                if (!_settings.SymbolEqualityComparer.Equals(method.Parameters[i].Type, candidate.Parameters[i].Type))
                     return false;
             }
 

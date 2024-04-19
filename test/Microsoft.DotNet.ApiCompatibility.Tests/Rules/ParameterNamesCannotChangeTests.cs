@@ -15,70 +15,116 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         {
             // Method
             {
-                 @"
-namespace CompatTests
-{
-  public class First {
-    public void F(int a, string s) {}
-  }
-}
-",
-                 @"
-namespace CompatTests
-{
-  public class First {
-    public void F(int b, string t) {}
-  }
-}
-",
-                 new CompatDifference[] {
-                     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "M:CompatTests.First.F(System.Int32,System.String)$0"),
-                     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "M:CompatTests.First.F(System.Int32,System.String)$1")
-                 }
+                """
+                namespace CompatTests
+                {
+                    public class First {
+                    public void F(int a, string s) {}
+                    }
+                }
+                """,
+                """
+                namespace CompatTests
+                {
+                  public class First {
+                    public void F(int b, string t) {}
+                  }
+                }
+                """,
+                new CompatDifference[] {
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "M:CompatTests.First.F(System.Int32,System.String)$0"),
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "M:CompatTests.First.F(System.Int32,System.String)$1")
+                }
             },
             // Constructor
             {
-                 @"
-namespace CompatTests
-{
-  public class First {
-    public First(int a, string s) {}
-  }
-}
-",
-                 @"
-namespace CompatTests
-{
-  public class First {
-    public First(int b, string t) {}
-  }
-}
-",
-                 new CompatDifference[] {
-                     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "M:CompatTests.First.#ctor(System.Int32,System.String)$0"),
-                     CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "M:CompatTests.First.#ctor(System.Int32,System.String)$1")
-                 }
+                """
+                namespace CompatTests
+                {
+                  public class First {
+                    public First(int a, string s) {}
+                  }
+                }
+                """,
+                """
+                namespace CompatTests
+                {
+                  public class First {
+                    public First(int b, string t) {}
+                  }
+                }
+                """,
+                new CompatDifference[] {
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "M:CompatTests.First.#ctor(System.Int32,System.String)$0"),
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "M:CompatTests.First.#ctor(System.Int32,System.String)$1")
+                }
             },
             // Property
             {
-                 @"
-namespace CompatTests
-{
-  public class First {
-    public int F { get; }
-  }
-}
-",
-                 @"
-namespace CompatTests
-{
-  public class First {
-    public int F { get; }
-  }
-}
-",
-                 new CompatDifference[] {}
-            }
+                """
+                namespace CompatTests
+                {
+                  public class First {
+                    public int F { get; }
+                  }
+                }
+                """,
+                """
+                namespace CompatTests
+                {
+                  public class First {
+                    public int F { get; }
+                  }
+                }
+                """,
+                new CompatDifference[] {}
+            },
+            // Generic class
+            {
+                """
+                namespace CompatTests
+                {
+                  public class First<T1, T2> { }
+                }
+                """,
+                """
+                namespace CompatTests
+                {
+                  public class First<V1, V2> { }
+                }
+                """,
+                new CompatDifference[] {
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "T:CompatTests.First`2``0"),
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "T:CompatTests.First`2``1")
+                }
+            },
+
+            // Generic method
+            {
+                """
+                namespace CompatTests
+                {
+                  public class C
+                  {
+                    public void First<T1, T2>() { }
+                  }
+                }
+                """,
+                """
+                namespace CompatTests
+                {
+                  public class C
+                  {
+                    public void First<V1, V2>() { }
+                  }
+                }
+                """,
+                new CompatDifference[] {
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "M:CompatTests.C.First``2``0"),
+                    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeParameterName, "", DifferenceType.Changed, "M:CompatTests.C.First``2``1")
+                }
+            },
+
         };
 
         [Theory]
