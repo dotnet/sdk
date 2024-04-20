@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
         private readonly IToolManifestFinder _toolManifestFinder;
         private readonly IToolManifestEditor _toolManifestEditor;
         private readonly ILocalToolsResolverCache _localToolsResolverCache;
-        private ToolInstallLocalInstaller _toolLocalPackageInstaller;
+        private readonly ToolInstallLocalInstaller _toolLocalPackageInstaller;
         private readonly IReporter _reporter;
         private readonly PackageId? _packageId;
         private readonly bool _allowPackageDowngrade;
@@ -99,10 +99,6 @@ namespace Microsoft.DotNet.Tools.Tool.Install
             }
 
             var existingPackage = existingPackageWithPackageId.Single();
-            if (!packageId.Equals(_packageId))
-            {
-                _toolLocalPackageInstaller = new ToolInstallLocalInstaller(_parseResult, packageId, _toolPackageDownloader);
-            }
             var toolDownloadedPackage = _toolLocalPackageInstaller.Install(manifestFile, packageId);
 
             InstallToolUpdate(existingPackage, toolDownloadedPackage, manifestFile, packageId);
