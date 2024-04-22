@@ -103,6 +103,8 @@
     <PackageReference Include="System.ServiceProcess.ServiceController" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" Condition="'$(DotNetBuildFromSource)' != 'true'" />
     <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="all" Condition="'$(DotNetBuildFromSource)' != 'true'" />
+    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
+    <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
   </ItemGroup>
   <ItemGroup Condition=" '$(IncludeAspNetCoreRuntime)' != 'false' ">
     <PackageReference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
