@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.TestFramework;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using UnixOnlyTheory = Microsoft.DotNet.Tools.Test.Utilities.UnixOnlyTheoryAttribute;
+using UnixOnlyTheoryAttribute = Microsoft.DotNet.Tools.Test.Utilities.UnixOnlyTheoryAttribute;
+using NewCommandShim = Microsoft.DotNet.Tools.Test.Utilities.NewCommandShim;
+using TestBase = Microsoft.DotNet.Tools.Test.Utilities.TestBase;
+using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
 
 namespace EndToEnd.Tests
 {
@@ -19,8 +21,7 @@ namespace EndToEnd.Tests
             new NewCommandShim()
                 .WithWorkingDirectory(directory.FullName)
                 .Execute(template).Should().Fail()
-                .And
-                .HaveStdErrContaining($": {template}.");
+                    .And.HaveStdErrContaining($": {template}.");
         }
     }
 }

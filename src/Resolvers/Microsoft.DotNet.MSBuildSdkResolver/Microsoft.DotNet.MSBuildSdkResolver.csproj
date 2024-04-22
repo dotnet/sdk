@@ -168,4 +168,6 @@
            Condition="!($([System.String]::Copy('$(ExpectedDependenciesList)').Contains('%(ResolvedDependencies.FusionName)')))" />
   </Target>
 
+  <Target Name="GetTargetPath" />
+
 </Project>

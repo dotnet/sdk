@@ -2,9 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.DotNet.TestFramework;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using WindowsOnlyTheory = Microsoft.DotNet.Tools.Test.Utilities.WindowsOnlyTheoryAttribute;
+using WindowsOnlyTheoryAttribute = Microsoft.DotNet.Tools.Test.Utilities.WindowsOnlyTheoryAttribute;
 using BuildCommand = Microsoft.DotNet.Tools.Test.Utilities.BuildCommand;
+using RunCommand = Microsoft.DotNet.Tools.Test.Utilities.RunCommand;
+using TestBase = Microsoft.DotNet.Tools.Test.Utilities.TestBase;
+using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
 
 namespace EndToEnd
 {

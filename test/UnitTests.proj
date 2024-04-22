@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;**\Microsoft.DotNet.Tools.Tests.Utilities.csproj;**\core-sdk-tasks.Tests.csproj;**\EndToEnd\EndToEnd.Tests.csproj" />
+    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;**\Microsoft.DotNet.Tools.Tests.Utilities.csproj;**\core-sdk-tasks.Tests.csproj;**\EndToEnd.csproj" />
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="containerize.UnitTests\containerize.UnitTests.csproj" />
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) != 'Windows_NT_FullFramework'" Include="Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj" />

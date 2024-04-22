@@ -1,15 +1,7 @@
-﻿<Project>
-
-  <PropertyGroup>
-    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
-  </PropertyGroup>
-
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
-    <OutputType>Exe</OutputType>
-    <CanRunTestAsTool>false</CanRunTestAsTool>
     <DefineConstants Condition="'$(IsLinuxPortable)' == 'true'">$(DefineConstants);LINUX_PORTABLE</DefineConstants>
   </PropertyGroup>
 
@@ -28,7 +20,5 @@
   <ItemGroup>
     <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

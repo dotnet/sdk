@@ -1,10 +1,11 @@
 ﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.DotNet.Tools.Test.Utilities;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
+using TestBase = Microsoft.DotNet.Tools.Test.Utilities.TestBase;
+using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
 
 namespace EndToEnd
 {

@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.TestFramework;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
+using NewCommandShim = Microsoft.DotNet.Tools.Test.Utilities.NewCommandShim;
+using TestBase = Microsoft.DotNet.Tools.Test.Utilities.TestBase;
+using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
 
 namespace EndToEnd
 {

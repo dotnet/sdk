@@ -2,12 +2,16 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using Microsoft.DotNet.TestFramework;
-using Microsoft.DotNet.Tools.Test.Utilities;
-using WindowsOnlyTheory = Microsoft.DotNet.Tools.Test.Utilities.WindowsOnlyTheoryAttribute;
+using WindowsOnlyTheoryAttribute = Microsoft.DotNet.Tools.Test.Utilities.WindowsOnlyTheoryAttribute;
 using BuildCommand = Microsoft.DotNet.Tools.Test.Utilities.BuildCommand;
 using PublishCommand = Microsoft.DotNet.Tools.Test.Utilities.PublishCommand;
 using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
 using CleanCommand = Microsoft.DotNet.Tools.Test.Utilities.CleanCommand;
+using RunCommand = Microsoft.DotNet.Tools.Test.Utilities.RunCommand;
+using NewCommandShim = Microsoft.DotNet.Tools.Test.Utilities.NewCommandShim;
+using TestBase = Microsoft.DotNet.Tools.Test.Utilities.TestBase;
+using RepoDirectoriesProvider = Microsoft.DotNet.Tools.Test.Utilities.RepoDirectoriesProvider;
+using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
 
 namespace EndToEnd.Tests
 {
@@ -277,7 +281,7 @@ namespace EndToEnd.Tests
             //check if the template created files
             Assert.True(directory.Exists);
             Assert.True(directory.EnumerateFileSystemInfos().Any());
-            Assert.True(directory.GetFile($"{expectedItemName}.{languageExtensionMap[language]}") != null);
+            Assert.True(directory.File($"{expectedItemName}.{languageExtensionMap[language]}") != null);
         }
 
         [WindowsOnlyTheory]

@@ -1,9 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Test.Utilities;
 using NuGet.Versioning;
 using RestoreCommand = Microsoft.DotNet.Tools.Test.Utilities.RestoreCommand;
+using TestBase = Microsoft.DotNet.Tools.Test.Utilities.TestBase;
+using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
 
 namespace EndToEnd
 {

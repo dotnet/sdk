@@ -2,11 +2,11 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using EndToEnd;
-using Microsoft.DotNet.Tools.Test.Utilities;
 using PlatformSpecificFact = Microsoft.DotNet.Tools.Test.Utilities.PlatformSpecificFact;
 using TestPlatforms = Microsoft.DotNet.Tools.Test.Utilities.TestPlatforms;
 using BuildCommand = Microsoft.DotNet.Tools.Test.Utilities.BuildCommand;
 using PublishCommand = Microsoft.DotNet.Tools.Test.Utilities.PublishCommand;
+using static Microsoft.DotNet.Tools.Test.Utilities.TestCommandExtensions;
 
 namespace Microsoft.DotNet.Tests.EndToEnd
 {
