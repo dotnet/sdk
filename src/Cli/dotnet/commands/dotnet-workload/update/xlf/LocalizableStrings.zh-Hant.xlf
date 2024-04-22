@@ -42,6 +42,11 @@
         <target state="translated">因為下列原因，所以無法更新工作負載 '{0}':</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">更新至復原檔案與工作負載集不相容。安裝和更新現在將使用鬆散的資訊清單。若要更新至特定工作負載版本，請使用 --version。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">已成功更新工作負載: {0}。</target>

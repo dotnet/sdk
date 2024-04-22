@@ -215,7 +215,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var publish = new PublishCommand(ProjectDirectory);
             publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publishResult = publish.Execute("/bl");
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();
@@ -282,7 +282,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var publish = new PublishCommand(ProjectDirectory, "blazorhosted");
             publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
-            var publishResult = publish.Execute();
+            var publishResult = publish.Execute("/bl");
             publishResult.Should().Pass();
 
             var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();

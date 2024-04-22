@@ -42,6 +42,11 @@
         <target state="translated">Falha ao atualizar a carga de trabalho '{0}' devido ao seguinte motivo:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Atualizar em um arquivo de reversão não é compatível com os conjuntos de carga de trabalho. A instalação e a atualização agora usarão manifestos flexíveis. Para atualizar para uma versão de carga de trabalho específica, use --versão.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">Carga(s) de trabalho atualizada(s) com êxito: {0}.</target>

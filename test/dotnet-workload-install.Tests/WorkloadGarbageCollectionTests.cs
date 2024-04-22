@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                """
                 {
                     "manifests": {
-                        "testmanifest": "2.0.0/6.0.300",
+                        "testmanifest": "2.0.0/6.0.300"
                     }
                 }
                 """);

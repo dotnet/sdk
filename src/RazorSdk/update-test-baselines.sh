@@ -51,12 +51,12 @@ if [ $Validate -eq 1 ]; then
   echo "Running in validate mode"
   for TestProject in "${TestProjects[@]}"; do
     echo "Running dotnet test on $TestProject"
-    dotnet test --no-build -l "console;verbosity=normal" "$TestProject" --filter AspNetCore=BaselineTest
+    dotnet test --no-build -c Release -l "console;verbosity=normal" "$TestProject" --filter AspNetCore=BaselineTest
   done
 else
   echo "Running in non-validate mode"
   for TestProject in "${TestProjects[@]}"; do
     echo "Running dotnet test on $TestProject"
-    dotnet test --no-build -l "console;verbosity=normal" "$TestProject" -e ASPNETCORE_TEST_BASELINES=true --filter AspNetCore=BaselineTest
+    dotnet test --no-build -c Release -l "console;verbosity=normal" "$TestProject" -e ASPNETCORE_TEST_BASELINES=true --filter AspNetCore=BaselineTest
   done
 fi

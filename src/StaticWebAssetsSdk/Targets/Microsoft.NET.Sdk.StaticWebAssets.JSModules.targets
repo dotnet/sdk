@@ -105,9 +105,19 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Assets" ItemName="_JSModuleStaticWebAsset" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_JSModuleStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_JSModuleStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup>
       <StaticWebAsset Remove="@(_JSModuleStaticWebAsset)" />
       <StaticWebAsset Include="@(_JSModuleStaticWebAsset)" />
+      <StaticWebAssetEndpoint Remove="@(_JSModuleStaticWebAssetEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(_JSModuleStaticWebAssetEndpoint)" />
     </ItemGroup>
 
   </Target>
@@ -166,8 +176,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Assets" ItemName="_BuildJsModuleManifestStaticWebAsset" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_BuildJsModuleManifestStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_BuildJsModuleManifestStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup>
       <StaticWebAsset Include="@(_BuildJsModuleManifestStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_BuildJsModuleManifestStaticWebAssetEndpoint)" />
     </ItemGroup>
 
   </Target>
@@ -224,8 +243,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Assets" ItemName="_PublishJsModuleManifestStaticWebAsset" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_PublishJsModuleManifestStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_PublishJsModuleManifestStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup>
       <StaticWebAsset Include="@(_PublishJsModuleManifestStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_PublishJsModuleManifestStaticWebAssetEndpoint)" />
     </ItemGroup>
 
   </Target>
@@ -267,6 +295,20 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Output TaskParameter="Assets" ItemName="_MvcJSModule" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_ComponentJSModule)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+        <Output TaskParameter="Endpoints" ItemName="_ComponentJSModuleEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_MvcJSModule)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+        <Output TaskParameter="Endpoints" ItemName="_MvcJSModuleEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ApplyJsModules RazorComponents="@(RazorComponent)" RazorGenerate="@(RazorGenerate)" JSFileModuleCandidates="@(_ComponentJSModule);@(_MvcJSModule)">
       <Output TaskParameter="JsFileModules" ItemName="_JsFileModuleStaticWebAsset" />
     </ApplyJsModules>
@@ -274,6 +316,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <StaticWebAsset Remove="@(_JsFileModuleStaticWebAsset)" />
       <StaticWebAsset Include="@(_JsFileModuleStaticWebAsset)" />
+
+      <StaticWebAssetEndpoint Include="@(_ComponentJSModuleEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(_MvcJSModuleEndpoint)" />
+
       <!-- Remove the items from their original groups since they've now become a StaticWebAsset -->
       <Content Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />
       <None Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />

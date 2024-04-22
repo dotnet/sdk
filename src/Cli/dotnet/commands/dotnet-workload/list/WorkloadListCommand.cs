@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         private readonly bool _includePreviews;
         private readonly bool _machineReadableOption;
         private readonly IWorkloadManifestUpdater _workloadManifestUpdater;
-        private readonly IWorkloadInfoHelper _workloadListHelper;
+        private readonly WorkloadInfoHelper _workloadListHelper;
 
         public WorkloadListCommand(
             ParseResult parseResult,
@@ -90,6 +90,13 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
                 table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
 
+                var installState = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.DotnetPath), "default.json"));
+                if (installState.UseWorkloadSets == true)
+                {
+                    Reporter.WriteLine();
+                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion() ?? "unknown"));
+                }
+                
                 Reporter.WriteLine();
                 Reporter.WriteLine(LocalizableStrings.WorkloadListFooter);
                 Reporter.WriteLine();
@@ -107,6 +114,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
         internal IEnumerable<UpdateAvailableEntry> GetUpdateAvailable(IEnumerable<WorkloadId> installedList)
         {
+            // This was an internal partner ask, and they do not need to support workload sets.
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews).Wait();
             var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestUpdates();
 

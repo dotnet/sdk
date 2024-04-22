@@ -19,7 +19,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateStaticWebAsssetsPropsFile
+            var task = new GenerateStaticWebAssetsPropsFile
             {
                 BuildEngine = buildEngine.Object,
                 StaticWebAssets = new TaskItem[]
@@ -52,7 +52,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateStaticWebAsssetsPropsFile
+            var task = new GenerateStaticWebAssetsPropsFile
             {
                 BuildEngine = buildEngine.Object,
                 StaticWebAssets = new TaskItem[]
@@ -85,7 +85,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateStaticWebAsssetsPropsFile
+            var task = new GenerateStaticWebAssetsPropsFile
             {
                 BuildEngine = buildEngine.Object,
                 StaticWebAssets = new TaskItem[]
@@ -118,7 +118,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateStaticWebAsssetsPropsFile
+            var task = new GenerateStaticWebAssetsPropsFile
             {
                 BuildEngine = buildEngine.Object,
                 StaticWebAssets = new TaskItem[]
@@ -151,7 +151,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateStaticWebAsssetsPropsFile
+            var task = new GenerateStaticWebAssetsPropsFile
             {
                 BuildEngine = buildEngine.Object,
                 StaticWebAssets = new TaskItem[]
@@ -195,7 +195,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateStaticWebAsssetsPropsFile
+            var task = new GenerateStaticWebAssetsPropsFile
             {
                 BuildEngine = buildEngine.Object,
                 StaticWebAssets = new TaskItem[]
@@ -256,7 +256,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
                 .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
 
-            var task = new GenerateStaticWebAsssetsPropsFile
+            var task = new GenerateStaticWebAssetsPropsFile
             {
                 BuildEngine = buildEngine.Object,
                 StaticWebAssets = new TaskItem[]
@@ -334,7 +334,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 var buildEngine = new Mock<IBuildEngine>();
 
-                var task = new GenerateStaticWebAsssetsPropsFile
+                var task = new GenerateStaticWebAssetsPropsFile
                 {
                     BuildEngine = buildEngine.Object,
                     TargetPropsFilePath = file,
@@ -422,7 +422,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             {
                 var buildEngine = new Mock<IBuildEngine>();
 
-                var task = new GenerateStaticWebAsssetsPropsFile
+                var task = new GenerateStaticWebAssetsPropsFile
                 {
                     BuildEngine = buildEngine.Object,
                     TargetPropsFilePath = file,
