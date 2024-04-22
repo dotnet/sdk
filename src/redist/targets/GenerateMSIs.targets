@@ -62,28 +62,14 @@
       <LayoutDirectory Condition=" '$(OSName)' != 'ubuntu' AND '$(OSName)' != 'debian' ">$(IntermediateOutputPath)layouts</LayoutDirectory>
       <SdkLayoutOutputDirectory>$(LayoutDirectory)$(ArtifactNameSdk)</SdkLayoutOutputDirectory>
       <MSBuildExtensionsOutputDirectory>$(LayoutDirectory)MSBuildExtensions</MSBuildExtensionsOutputDirectory>-->
-    </PropertyGroup>
-
-    <Error Condition=" '$(OfficialBuild)' == 'true' AND '$(_PatchNumber)' == '' "
-           Text="_PatchNumber should not be empty in an official build. Check if there were changes in Arcade." />
-
-    <Exec Command="git rev-list --count HEAD"
-          ConsoleToMSBuild="true"
-          Condition=" '$(GitCommitCount)' == '' AND '$(_PatchNumber)' == '' ">
-      <Output TaskParameter="ConsoleOutput" PropertyName="GitCommitCount" />
-    </Exec>
-
-    <PropertyGroup>
-      <GitCommitCount>$(GitCommitCount.PadLeft(6,'0'))</GitCommitCount>
 
       <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->
       <CombinedBuildNumberAndRevision>$(_PatchNumber)</CombinedBuildNumberAndRevision>
-      <!-- Fallback to commit count when patch number is not set. This happens only during CI. -->
-      <CombinedBuildNumberAndRevision Condition=" '$(CombinedBuildNumberAndRevision)' == '' ">$(GitCommitCount)</CombinedBuildNumberAndRevision>
+      <!-- Fallback to 0 when patch number is not set. This happens only during CI. -->
+      <CombinedBuildNumberAndRevision Condition=" '$(CombinedBuildNumberAndRevision)' == '' ">000000</CombinedBuildNumberAndRevision>
       
       <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->    
       <SDKBundleVersion>$(FileVersion)</SDKBundleVersion>
-      <!-- Fallback to commit count when patch number is not set. This happens only during CI. -->
       <SDKBundleVersion Condition=" '$(SDKBundleVersion)' == '' ">$(VersionPrefix).$(CombinedBuildNumberAndRevision)</SDKBundleVersion>
     </PropertyGroup>
   </Target>
@@ -472,9 +458,13 @@
                       '$(Architecture)'" />
   </Target>
 
+  <!--
+    This project references assets from multiple architectures, so it can't be built until we have a join point job that can pull assets from multiple legs.
+    https://github.com/dotnet/source-build/issues/4336
+  -->
   <Target Name="GenerateVSToolsResolverNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86' "
+          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x86' And '$(DotNetBuild)' != 'true'"
           Inputs="$(SdkResolverLayoutPath)/**/*;
                   $(VSToolsResolverNuspecFile);
                   $(GenerateNupkgPowershellScript)"
@@ -508,9 +498,13 @@
                       '$(SdkMSBuildExtensionsNupkgFile)'" />
   </Target>
 
+  <!--
+    This project references assets from multiple architectures, so it can't be built until we have a join point job that can pull assets from multiple legs.
+    https://github.com/dotnet/source-build/issues/4336
+  -->
   <Target Name="GenerateVSTemplateLocatorNupkg"
           DependsOnTargets="GenerateLayout;MsiTargetsSetupInputOutputs"
-          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' "
+          Condition=" '$(OS)' == 'Windows_NT' And '$(Architecture)' == 'x64' And '$(DotNetBuild)' != 'true'"
           Inputs="$(MSBuildExtensionsLayoutDirectory)/**/*;
                     $(VSTemplateLocatorNuspecFile);
                     $(GenerateNupkgPowershellScript)"

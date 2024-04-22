@@ -68,7 +68,8 @@
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
     <BuildActions>$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
 
-    <BuildArgs>$(FlagParameterPrefix)ci</BuildArgs>
+    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior changes to dev -->
+    <BuildArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">$(FlagParameterPrefix)ci</BuildArgs>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)configuration $(Configuration)</BuildArgs>
     <BuildArgs>$(BuildArgs) -bl</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:DotNetBuildRepo=true</BuildArgs>
@@ -115,27 +116,30 @@
     <!-- TODO: Remove when all repos use a consistent set of eng/common files: https://github.com/dotnet/source-build/issues/3710. -->
     <EnvironmentVariables Include="_OverrideArcadeInitializeBuildToolFramework=$(NetCurrent)" />
 
-    <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
-    <EnvironmentVariables Include="PreReleaseVersionLabel=$(PreReleaseVersionLabel)" />
-    <EnvironmentVariables Include="PackageVersionStamp=$(PreReleaseVersionLabel)" />
-
     <!-- We pass '-ci', but also apply ci mode via env var for edge cases. (E.g. misbehaving inner builds.) -->
-    <EnvironmentVariables Include="ContinuousIntegrationBuild=true" />
+    <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior changes to dev -->
+    <EnvironmentVariables Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'" Include="ContinuousIntegrationBuild=true" />
 
     <!-- Turn off node reuse for source build because repos use conflicting versions
          of compilers which cause assembly load errors.
          See https://github.com/dotnet/source-build/issues/541 -->
     <EnvironmentVariables Include="MSBUILDDISABLENODEREUSE=1" />
 
-    <!--
-      Apply official build versioning to match Microsoft build. These are based on build date, so
-      need to be parsed from Maestro++ auto-update and passed through.
-    -->
+  </ItemGroup>
+
+  <!--
+    Apply official build versioning to match Microsoft build. These are based on build date, so
+    need to be parsed from Maestro++ auto-update and passed through.
+  -->
+  <ItemGroup Condition="'$(UseOfficialBuildVersioning)' != 'false'">
     <EnvironmentVariables Include="OfficialBuildId=$(OfficialBuildId)" />
     <EnvironmentVariables Include="BUILD_BUILDNUMBER=$(OfficialBuildId)" />
 
+    <EnvironmentVariables Include="DotNetUseShippingVersions=true" />
+    <EnvironmentVariables Include="PreReleaseVersionLabel=$(PreReleaseVersionLabel)" />
+    <EnvironmentVariables Include="PackageVersionStamp=$(PreReleaseVersionLabel)" />
+
     <!-- Give build access to commit info without necessarily requiring git queries. -->
-    <EnvironmentVariables Include="GitCommitCount=$(GitCommitCount)" />
     <EnvironmentVariables Include="GitCommitHash=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
     <EnvironmentVariables Include="GitInfoCommitHash=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
     <EnvironmentVariables Include="SourceRevisionId=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
@@ -143,7 +147,9 @@
     <EnvironmentVariables Include="COMMIT_SHA=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
     <EnvironmentVariables Include="GIT_COMMIT=$(GitCommitHash)" Condition="'$(GitCommitHash)' != ''" />
     <EnvironmentVariables Include="RepositoryType=Git" />
+  </ItemGroup>
 
+  <ItemGroup>
     <EnvironmentVariables Include="DeterministicSourcePaths=true" Condition="'$(DeterministicBuildOptOut)' != 'true'" />
     <EnvironmentVariables Include="DeterministicSourcePaths=false" Condition="'$(DeterministicBuildOptOut)' == 'true'" />
 
