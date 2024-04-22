@@ -1,0 +1,36 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Aleksey=20Kliger=20=28=CE=BBgeek=29?= <alklig@microsoft.com>
+Date: Fri, 19 Apr 2024 18:36:22 -0400
+Subject: [PATCH] fix Alpine build break (#101302)
+Backport: https://github.com/dotnet/installer/pull/19534
+
+Apline defines NULL as std::nullptr which is not comparable/assignable
+with intptr_t
+
+Fixes https://github.com/dotnet/source-build/issues/4345
+---
+ src/coreclr/debug/daccess/cdac.cpp | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/coreclr/debug/daccess/cdac.cpp b/src/coreclr/debug/daccess/cdac.cpp
+index 78625bf67f2..23478592371 100644
+--- a/src/coreclr/debug/daccess/cdac.cpp
++++ b/src/coreclr/debug/daccess/cdac.cpp
+@@ -48,7 +48,7 @@ CDAC::CDAC(HMODULE module, uint64_t descriptorAddr, ICorDebugDataTarget* target)
+ {
+     if (m_module == NULL)
+     {
+-        m_cdac_handle = NULL;
++        m_cdac_handle = 0;
+         return;
+     }
+ 
+@@ -62,7 +62,7 @@ CDAC::CDAC(HMODULE module, uint64_t descriptorAddr, ICorDebugDataTarget* target)
+ 
+ CDAC::~CDAC()
+ {
+-    if (m_cdac_handle != NULL)
++    if (m_cdac_handle)
+     {
+         decltype(&cdac_reader_free) free = reinterpret_cast<decltype(&cdac_reader_free)>(::GetProcAddress(m_module, "cdac_reader_free"));
+         _ASSERTE(free != nullptr);
