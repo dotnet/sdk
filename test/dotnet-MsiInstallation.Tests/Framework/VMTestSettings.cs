@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.DotNet.MsiInstallerTests
+namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
     internal class VMTestSettings
     {

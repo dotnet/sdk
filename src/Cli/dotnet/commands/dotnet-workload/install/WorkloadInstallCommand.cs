@@ -12,6 +12,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
+using System.Text;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install
 {
@@ -46,14 +47,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
 
             _workloadSetVersion = parseResult.GetValue(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
-            if (string.IsNullOrWhiteSpace(_workloadSetVersion))
-            {
-                // If the version of the workload set is currently pinned, treat it as if it were freshly pinned.
-                var installStateContents = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json"));
-                _workloadSetVersion = installStateContents.WorkloadVersion;
-            }
-
-            ValidateWorkloadIdsInput();
         }
 
         private void ValidateWorkloadIdsInput()
@@ -85,6 +78,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     restoreActionConfig: RestoreActionConfiguration,
                     verifySignatures: VerifySignatures);
 
+                ValidateWorkloadIdsInput();
+
                 //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
                 //  which require new packs for currently installed workloads, those packs will be downloaded.
                 //  If the packs are already installed, they won't be included in the results
@@ -97,6 +92,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
             {
+                ValidateWorkloadIdsInput();
+
                 try
                 {
                     //  Take the union of the currently installed workloads and the ones that are being requested.  This is so that if there are updates to the manifests
@@ -119,11 +116,34 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
             else
             {
+                var globaljsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+                _workloadSetVersionFromGlobalJson = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globaljsonPath);
+
                 try
                 {
+                    ErrorIfGlobalJsonAndCommandLineMismatch(globaljsonPath);
+
+                    //  Normally we want to validate that the workload IDs specified were valid.  However, if there is a global.json file with a workload
+                    //  set version specified, and we might update the workload version, then we don't do that check here, because we might not have the right
+                    //  workload set installed yet, and trying to list the available workloads would throw an error
+                    if (_skipManifestUpdate || string.IsNullOrEmpty(_workloadSetVersionFromGlobalJson))
+                    {
+                        ValidateWorkloadIdsInput();
+                    }
+
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
+                    {
+                        var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+                        if (File.Exists(installStateFilePath))
+                        {
+                            var installStateContents = InstallStateContents.FromPath(installStateFilePath);
+                            _workloadSetVersion = installStateContents.WorkloadVersion;
+                        }
+                    }
+
                     DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
                     var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
-                    if (string.IsNullOrWhiteSpace(_workloadSetVersion))
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
                     {
                         InstallWorkloads(
                             workloadIds,
@@ -135,9 +155,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         RunInNewTransaction(context =>
                         {
-                            var manifests = HandleWorkloadUpdateFromVersion(context, offlineCache);
-                            InstallWorkloadsAndGarbageCollect(context, workloadIds, manifests, offlineCache, false);
+                            if (!TryHandleWorkloadUpdateFromVersion(context, offlineCache, out var manifests))
+                            {
+                                return;
+                            }
+                            InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, _sdkFeatureBand, manifests, offlineCache, false);
                         });
+
+                        TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
+
+                        Reporter.WriteLine();
+                        Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", workloadIds)));
+                        Reporter.WriteLine();
                     }
                 }
                 catch (Exception e)
@@ -163,7 +192,9 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             if (!skipManifestUpdate)
             {
                 var installStateFilePath = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
-                if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) && File.Exists(installStateFilePath) && InstallStateContents.FromString(File.ReadAllText(installStateFilePath)).Manifests is not null)
+                var installState = InstallStateContents.FromPath(installStateFilePath);
+                if (string.IsNullOrWhiteSpace(_fromRollbackDefinition) && string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson) &&
+                    (installState?.Manifests is not null || installState?.WorkloadVersion is not null))
                 {
                     //  If there is a rollback state file, then we don't want to automatically update workloads when a workload is installed
                     //  To update to a new version, the user would need to run "dotnet workload update"
@@ -195,7 +226,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                     if (useWorkloadSets)
                     {
-                        manifestsToUpdate = InstallWorkloadSet(context);
+                        if (!TryInstallWorkloadSet(context, out manifestsToUpdate))
+                        {
+                            return;
+                        }
                     }
                     else
                     {
@@ -204,13 +238,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
                 }
 
-                InstallWorkloadsAndGarbageCollect(context, workloadIds, manifestsToUpdate, offlineCache, useRollback);
+                InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
             });
-        }
-
-        private void InstallWorkloadsAndGarbageCollect(ITransactionContext context, IEnumerable<WorkloadId> workloadIds, IEnumerable<ManifestVersionUpdate> manifestsToUpdate, DirectoryPath? offlineCache, bool useRollback)
-        {
-            InstallWorkloadsWithInstallRecord(context, _workloadInstaller, workloadIds, _sdkFeatureBand, manifestsToUpdate, offlineCache, useRollback);
 
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
@@ -271,7 +300,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                         installer.SaveInstallStateManifestVersions(sdkFeatureBand, GetInstallStateContents(manifestsToUpdate));
                     }
 
-                    installer.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : _workloadSetVersion);
+                    if (string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
+                    {
+                        installer.AdjustWorkloadSetInInstallState(sdkFeatureBand, string.IsNullOrWhiteSpace(_workloadSetVersion) ? null : _workloadSetVersion);
+                    }
 
                     _workloadResolver.RefreshWorkloadManifests();
 
