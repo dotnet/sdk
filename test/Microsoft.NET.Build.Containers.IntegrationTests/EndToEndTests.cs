@@ -199,7 +199,7 @@ public class EndToEndTests : IDisposable
 
         if (tfm == ToolsetInfo.CurrentTargetFramework)
         {
-            publishCommand.Arguments.AddRange(new[] { "-p", $"RuntimeFrameworkVersion=9.0.0-preview.3.24172.9" });
+            publishCommand.Arguments.AddRange(new[] { "-p", $"RuntimeFrameworkVersion={DockerRegistryManager.RuntimeFrameworkVersion}" });
         }
 
         publishCommand.Execute()
@@ -366,7 +366,7 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
             "/p:UseRazorSourceGenerator=false",
-            $"/p:RuntimeFrameworkVersion=9.0.0-preview.3.24172.9")
+            $"/p:RuntimeFrameworkVersion={DockerRegistryManager.RuntimeFrameworkVersion}")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
@@ -525,7 +525,7 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
             $"/p:ContainerImageTag={imageTag}",
-            $"/p:RuntimeFrameworkVersion=9.0.0-preview.3.24172.9")
+            $"/p:RuntimeFrameworkVersion={DockerRegistryManager.RuntimeFrameworkVersion}")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
