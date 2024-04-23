@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.MsiInstallerTests.Framework
@@ -29,7 +30,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 }
                 else
                 {
-                    return "8.0.203";
+                    return "8.0.300-preview.0.24216.11";
                 }
             }
         }
@@ -125,6 +126,17 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             var result = command.Execute();
             result.Should().Pass();
             return result.StdOut;
+        }
+
+        protected CommandResult InstallWorkload(string workloadName)
+        {
+            var result = VM.CreateRunCommand("dotnet", "workload", "install", workloadName, "--skip-manifest-update")
+                    .WithDescription($"Install {workloadName} workload")
+                    .Execute();
+
+            result.Should().Pass();
+
+            return result;
         }
 
         protected WorkloadSet GetRollback()

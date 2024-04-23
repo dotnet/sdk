@@ -310,19 +310,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             return installedManifestVersions;
         }
 
-
-
-        CommandResult InstallWorkload(string workloadName)
-        {
-            var result = VM.CreateRunCommand("dotnet", "workload", "install", workloadName, "--skip-manifest-update")
-                    .WithDescription($"Install {workloadName} workload")
-                    .Execute();
-
-            result.Should().Pass();
-
-            return result;
-        }
-
         string ListWorkloads()
         {
             var result = VM.CreateRunCommand("dotnet", "workload", "list", "--machine-readable")
