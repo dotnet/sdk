@@ -8,7 +8,6 @@ namespace Microsoft.DotNet.Tools.Test.Utilities
 {
     public sealed class BuildCommand : DotnetCommand
     {
-
         private bool _captureOutput;
 
         private string _configuration;

@@ -358,7 +358,7 @@ namespace EndToEnd.Tests
         [InlineData("wpflib", "VB")]
         [InlineData("wpfcustomcontrollib")]
         [InlineData("wpfcustomcontrollib", "C#")]
-        [InlineData("wpfcustomcontrollib", "VB")]
+        [InlineData("wpfcustomcontrollib", "VB", Skip = "Skipping since the Generic.xaml it creates from the template fails to compile.")]
         [InlineData("wpfusercontrollib")]
         [InlineData("wpfusercontrollib", "C#")]
         [InlineData("wpfusercontrollib", "VB")]

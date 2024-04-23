@@ -503,7 +503,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core-sdk-tasks.Tests", "tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Tools.Tests.Utilities", "test\Microsoft.DotNet.Tools.Tests.Utilities\Microsoft.DotNet.Tools.Tests.Utilities.csproj", "{6E690AC5-8D00-419F-B5BC-C29D099EDE59}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EndToEnd", "test\EndToEnd\EndToEnd.csproj", "{55C5A005-B803-4D40-AC1A-F11E7A24BB0B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EndToEnd-Installer.Tests", "test\EndToEnd-Installer.Tests\EndToEnd-Installer.Tests.csproj", "{149E3D40-8115-4965-9305-5A1ADBF04899}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -959,10 +959,10 @@ Global
 		{6E690AC5-8D00-419F-B5BC-C29D099EDE59}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E690AC5-8D00-419F-B5BC-C29D099EDE59}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E690AC5-8D00-419F-B5BC-C29D099EDE59}.Release|Any CPU.Build.0 = Release|Any CPU
-		{55C5A005-B803-4D40-AC1A-F11E7A24BB0B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{55C5A005-B803-4D40-AC1A-F11E7A24BB0B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{55C5A005-B803-4D40-AC1A-F11E7A24BB0B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{55C5A005-B803-4D40-AC1A-F11E7A24BB0B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{149E3D40-8115-4965-9305-5A1ADBF04899}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{149E3D40-8115-4965-9305-5A1ADBF04899}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{149E3D40-8115-4965-9305-5A1ADBF04899}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{149E3D40-8115-4965-9305-5A1ADBF04899}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1139,7 +1139,7 @@ Global
 		{0CBA5FB8-71A3-457A-89F3-E52B9602164A} = {3FA6F1CB-295B-4414-B18F-93845917A8CD}
 		{21C21975-84C1-4A24-8E21-F7EC790A4584} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{6E690AC5-8D00-419F-B5BC-C29D099EDE59} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
-		{55C5A005-B803-4D40-AC1A-F11E7A24BB0B} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
+		{149E3D40-8115-4965-9305-5A1ADBF04899} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
