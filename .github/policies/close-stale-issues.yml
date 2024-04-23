@@ -1,3 +1,5 @@
+# Resource Management policy docs: https://eng.ms/docs/more/github-inside-microsoft/policies/resource-management
+
 id: close-stale-issues
 name: Label and Close Stale Issues
 description: Label 'stale' issues and close them after another period of inactivity
