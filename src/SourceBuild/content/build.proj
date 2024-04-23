@@ -22,8 +22,8 @@
     <ProjectReference Include="$(RepoProjectsDir)$(RootRepo).proj" />
 
     <!-- Post-build: Source-only validation, packaging and publishing -->
+    <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" />
     <ProjectReference Include="$(RepositoryEngineeringDir)finish-source-only.proj" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
-    <ProjectReference Include="$(RepositoryEngineeringDir)publish.proj" />
   </ItemGroup>
 
   <Target Name="PrintInfo">
