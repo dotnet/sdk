@@ -22,6 +22,11 @@
         <target state="translated">İş yüklerini belirtilen geri alma tanım dosyasına göre güncelleştirin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">Bu özellik bandı için iş yükü yüklenmedi. Önceki SDK sürümleriyle yüklenen iş yüklerini güncelleştirmek için --from-previous-sdk seçeneğini ekleyin.</target>
@@ -42,6 +47,11 @@
         <target state="translated">Aşağıdaki nedenlerle '{0}' iş yükü güncelleştirilemedi:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Geri alma dosyasının güncelleştirilmesi iş yükü kümeleriyle uyumlu değil. Yükle ve Güncelleştir özelliği artık bağımsız bildirimler kullanıyor. Belirli bir iş yükü sürümünde güncelleştirmek için “--version” komutunu kullanın.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">İş yükleri başarıyla güncelleştirildi: {0}.</target>
@@ -50,11 +60,6 @@
       <trans-unit id="WorkloadCacheDownloadFailed">
         <source>Failed to download workload update packages to cache: {0}</source>
         <target state="translated">İş yükü güncelleştirme paketleri önbelleğe yüklenemedi: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">Dotnet iş yükü güncelleştirmesi için --mod bağımsız değişkeninde geçersiz "{0}" bağımsız değişkeni. Yalnızca "workloadset", "loosemanifest" ve "auto" modları desteklenir.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

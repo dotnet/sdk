@@ -74,6 +74,7 @@
 
   <!-- To reduce dll load (cause RPS perf regression). Directly compile files from Microsoft.DotNet.NativeWrapper, Microsoft.DotNet.SdkResolver, and the workload resolver -->
   <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\dotnet-workload\InstallStateContents.cs" LinkBase="Cli"/>
     <Compile Include="..\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
     <Compile Include="..\Microsoft.DotNet.SdkResolver\**\*.cs" LinkBase="Microsoft.DotNet.SdkResolver" />
     <Compile Include="..\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\CachingWorkloadResolver.cs" LinkBase="Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver" />
@@ -92,6 +93,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PackageReference Include="System.Text.Json"  VersionOverride="$(SystemTextJsonVersionOverride)" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" />
@@ -103,8 +105,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- No PackageReference to System.Text.Json necessary when targeting .NET, because it's included in .NET 5.0 and higher -->
-    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonVersionOverride)" Condition="'$(UseSystemTextJson)'=='True' and '$(TargetFramework)'=='net472'"/>
     <PackageReference Include="Newtonsoft.Json" Condition="'$(UseSystemTextJson)'!='True'"/>
 
     <!-- Reference this package to avoid package downgrade errors.  See https://github.com/dotnet/sdk/issues/3044 for details -->

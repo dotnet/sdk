@@ -23,6 +23,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private IWorkloadManifestProvider _manifestProvider;
         private string[] _currentRuntimeIdentifiers;
         private readonly (string path, bool installable)[] _dotnetRootPaths;
+        private bool _initializedManifests = false;
 
         private Func<string, bool>? _fileExistOverride;
         private Func<string, bool>? _directoryExistOverride;
@@ -81,9 +82,16 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             : this(dotnetRootPaths, currentRuntimeIdentifiers, manifestProvider.GetSdkFeatureBand())
         {
             _manifestProvider = manifestProvider;
+        }
 
-            LoadManifestsFromProvider(manifestProvider);
-            ComposeWorkloadManifests();
+        private void InitializeManifests()
+        {
+            if (!_initializedManifests)
+            {
+                LoadManifestsFromProvider(_manifestProvider);
+                ComposeWorkloadManifests();
+                _initializedManifests = true;
+            }
         }
 
         /// <summary>
@@ -105,9 +113,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             _manifestProvider.RefreshWorkloadManifests();
             _manifests.Clear();
-            LoadManifestsFromProvider(_manifestProvider);
-            ComposeWorkloadManifests();
+            _initializedManifests = false;
+            InitializeManifests();
         }
+
+        public string? GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
 
         private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider)
         {
@@ -230,6 +240,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// </remarks>
         public IEnumerable<PackInfo> GetInstalledWorkloadPacksOfKind(WorkloadPackKind kind)
         {
+            InitializeManifests();
             foreach ((var pack, _) in _packs.Values)
             {
                 if (pack.Kind != kind)
@@ -359,6 +370,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// </summary>
         private HashSet<WorkloadPackId> GetInstalledPacks()
         {
+            InitializeManifests();
             var installedPacks = new HashSet<WorkloadPackId>();
             foreach ((WorkloadPackId id, (WorkloadPack pack, WorkloadManifest _)) in _packs)
             {
@@ -377,6 +389,8 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 throw new ArgumentException($"'{nameof(workloadId)}' cannot be null or empty", nameof(workloadId));
             }
+
+            InitializeManifests();
 
             if (!_workloads.TryGetValue(workloadId, out var value))
             {
@@ -413,6 +427,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             IEnumerable<(WorkloadDefinition workload, WorkloadManifest workloadManifest)> EnumerateWorkloadWithExtendsRec(WorkloadId workloadId, IEnumerable<WorkloadId> extends, WorkloadManifest? manifest)
             {
+                InitializeManifests();
                 dedup ??= new HashSet<WorkloadId> { workloadId };
 
                 foreach (var baseWorkloadId in extends)
@@ -477,6 +492,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 throw new ArgumentException($"'{nameof(packId)}' cannot be null or empty", nameof(packId));
             }
 
+            InitializeManifests();
             if (_packs.TryGetValue(packId) is (WorkloadPack pack, _))
             {
                 if (ResolvePackPath(pack, out WorkloadPackId resolvedPackageId, out bool isInstalled) is string aliasedPath)
@@ -496,6 +512,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// </remarks>
         public ISet<WorkloadInfo>? GetWorkloadSuggestionForMissingPacks(IList<WorkloadPackId> packIds, out ISet<WorkloadPackId> unsatisfiablePacks)
         {
+            InitializeManifests();
             var requestedPacks = new HashSet<WorkloadPackId>(packIds);
             var availableWorkloads = GetAvailableWorkloadDefinitions();
 
@@ -535,6 +552,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         private IEnumerable<(WorkloadDefinition workload, WorkloadManifest manifest)> GetAvailableWorkloadDefinitions()
         {
+            InitializeManifests();
             foreach ((WorkloadId _, (WorkloadDefinition workload, WorkloadManifest manifest)) in _workloads)
             {
                 if (!workload.IsAbstract && IsWorkloadPlatformCompatible(workload, manifest) && !IsWorkloadImplicitlyAbstract(workload, manifest))
@@ -552,6 +570,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <returns></returns>
         public IEnumerable<WorkloadId> GetUpdatedWorkloads(WorkloadResolver advertisingManifestResolver, IEnumerable<WorkloadId> installedWorkloads)
         {
+            InitializeManifests();
             foreach (var workloadId in installedWorkloads)
             {
                 if (!_workloads.ContainsKey(workloadId) || !advertisingManifestResolver._workloads.ContainsKey(workloadId))
@@ -603,11 +622,14 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <exception>ArgumentNullException</exception>
         public WorkloadManifest GetManifestFromWorkload(WorkloadId workloadId)
         {
+            InitializeManifests();
             return _workloads[workloadId].manifest;
         }
 
         public WorkloadResolver CreateOverlayResolver(IWorkloadManifestProvider overlayManifestProvider)
         {
+            InitializeManifests();
+
             // we specifically don't assign the overlayManifestProvider to the new resolver
             // because it's not possible to refresh an overlay resolver
             var overlayResolver = new WorkloadResolver(_dotnetRootPaths, _currentRuntimeIdentifiers, GetSdkFeatureBand());
@@ -621,6 +643,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
 
             overlayResolver.ComposeWorkloadManifests();
+
+            //  Because we're injecting additional manifests, InitializeManifests isn't used for the overlay resolver
+            overlayResolver._initializedManifests = true;
 
             return overlayResolver;
         }
@@ -691,6 +716,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public WorkloadInfo GetWorkloadInfo(WorkloadId workloadId)
         {
+            InitializeManifests();
             if (_workloads.TryGetValue(workloadId) is not (WorkloadDefinition workload, _))
             {
                 throw new ArgumentException($"Workload '{workloadId}' not found", nameof(workloadId));
@@ -700,6 +726,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public bool IsPlatformIncompatibleWorkload(WorkloadId workloadId)
         {
+            InitializeManifests();
             if (_workloads.TryGetValue(workloadId) is not (WorkloadDefinition workload, WorkloadManifest manifest))
             {
                 //  Not a recognized workload
@@ -716,6 +743,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public string GetManifestVersion(string manifestId)
         {
+            InitializeManifests();
             if (_manifests.TryGetValue(manifestId, out var value))
             {
                 return value.manifest.Version;
@@ -723,7 +751,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             throw new Exception($"Manifest with id {manifestId} does not exist.");
         }
             
-        public IEnumerable<WorkloadManifestInfo> GetInstalledManifests() => _manifests.Select(t => t.Value.info);
+        public IEnumerable<WorkloadManifestInfo> GetInstalledManifests()
+        {
+            InitializeManifests();
+            return _manifests.Select(t => t.Value.info);
+        }
 
         private class EmptyWorkloadManifestProvider : IWorkloadManifestProvider
         {
@@ -738,6 +770,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
             public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
+            public string? GetWorkloadVersion() => _sdkFeatureBand.ToString() + ".2";
         }
     }
 

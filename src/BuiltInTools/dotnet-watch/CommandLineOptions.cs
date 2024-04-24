@@ -63,7 +63,7 @@ internal sealed class CommandLineOptions
         // dotnet watch specific options:
 
         var quietOption = new CliOption<bool>("--quiet", "-q") { Description = Resources.Help_Quiet };
-        var verboseOption = new CliOption<bool>("--verbose", "-v") { Description = Resources.Help_Verbose };
+        var verboseOption = new CliOption<bool>("--verbose") { Description = Resources.Help_Verbose };
         var listOption = new CliOption<bool>("--list") { Description = Resources.Help_List };
         var noHotReloadOption = new CliOption<bool>("--no-hot-reload") { Description = Resources.Help_NoHotReload };
         var nonInteractiveOption = new CliOption<bool>("--non-interactive") { Description = Resources.Help_NonInteractive };
@@ -190,8 +190,7 @@ internal sealed class CommandLineOptions
 
     private static IReadOnlyList<string> GetLaunchProcessArguments(ParseResult parseResult, IReadOnlyList<CliOption> watchOptions, out string? explicitCommand)
     {
-        explicitCommand = null;
-        var launchProcessArguments = new List<string>();
+        var launchArgumentsBuilder = new List<string>();
 
         foreach (var child in parseResult.CommandResult.Children)
         {
@@ -204,14 +203,14 @@ internal sealed class CommandLineOptions
 
                 if (optionResult.Tokens.Count == 0)
                 {
-                    launchProcessArguments.Add(optionResult.IdentifierToken.Value);
+                    launchArgumentsBuilder.Add(optionResult.IdentifierToken.Value);
                 }
                 else
                 {
                     foreach (var token in optionResult.Tokens)
                     {
-                        launchProcessArguments.Add(optionResult.IdentifierToken.Value);
-                        launchProcessArguments.Add(token.Value);
+                        launchArgumentsBuilder.Add(optionResult.IdentifierToken.Value);
+                        launchArgumentsBuilder.Add(token.Value);
                     }
                 }
             }
@@ -222,6 +221,9 @@ internal sealed class CommandLineOptions
         // Assuming that all tokens after "--" are unmatched:
         var dashDashIndex = IndexOf(parseResult.Tokens, t => t.Value == "--");
         var unmatchedTokensBeforeDashDash = parseResult.UnmatchedTokens.Count - (dashDashIndex >= 0 ? parseResult.Tokens.Count - dashDashIndex - 1 : 0);
+
+        explicitCommand = null;
+        var dashDashInserted = false;
 
         for (int i = 0; i < parseResult.UnmatchedTokens.Count; i++)
         {
@@ -234,12 +236,17 @@ internal sealed class CommandLineOptions
             }
             else
             {
-                launchProcessArguments.Add(token);
+                if (!dashDashInserted && i >= unmatchedTokensBeforeDashDash)
+                {
+                    launchArgumentsBuilder.Add("--");
+                    dashDashInserted = true;
+                }
+
+                launchArgumentsBuilder.Add(token);
             }
         }
 
-        launchProcessArguments.Insert(0, explicitCommand ?? DefaultCommand);
-        return launchProcessArguments;
+        return [explicitCommand ?? DefaultCommand, ..launchArgumentsBuilder];
     }
 
     private static int IndexOf<T>(IReadOnlyList<T> list, Func<T, bool> predicate)

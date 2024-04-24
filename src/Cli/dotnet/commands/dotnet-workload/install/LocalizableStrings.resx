@@ -183,9 +183,6 @@
   <data name="PrintDownloadLinkOnlyDescription" xml:space="preserve">
     <value>Only print the list of links to download without downloading.</value>
   </data>
-  <data name="WorkloadSetMode" xml:space="preserve">
-    <value>Control whether future workload operations should use workload sets or loose manifests.</value>
-  </data>
   <data name="DownloadToCacheOptionDescription" xml:space="preserve">
     <value>Download packages needed to install a workload to a folder that can be used for offline installation.</value>
   </data>
@@ -345,5 +342,20 @@
   </data>
   <data name="ManifestMsiNotFoundInNuGetPackage" xml:space="preserve">
     <value>Manifest MSI not found in NuGet package {0}</value>
+  </data>
+  <data name="WorkloadSetVersionOptionDescription" xml:space="preserve">
+    <value>Update to the specified workload version.</value>
+  </data>
+  <data name="NewWorkloadSet" xml:space="preserve">
+    <value>Installing workload version {0}.</value>
+  </data>
+  <data name="WorkloadSetUpgrade" xml:space="preserve">
+    <value>Updating workload version from {0} to {1}.</value>
+  </data>
+  <data name="CannotSpecifyVersionOnCommandLineAndInGlobalJson" xml:space="preserve">
+    <value>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</value>
+  </data>
+  <data name="UpdatedWorkloadMode" xml:space="preserve">
+    <value>Successfully updated workload install mode to use {0}.</value>
   </data>
 </root>
