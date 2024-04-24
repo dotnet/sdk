@@ -134,8 +134,8 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 // This file isn't created in tests.
                 var version = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
-                PrintWorkloadSetTransition(version);
-                if (!version.Equals(_workloadSetVersion) && !version.Equals(_workloadSetVersionFromGlobalJson))
+                if ((_workloadSetVersion != null && !version.Equals(_workloadSetVersion)) ||
+                    (_workloadSetVersionFromGlobalJson != null && !version.Equals(_workloadSetVersionFromGlobalJson)))
                 {
                     // NuGet found a partial match. Reject in favor of a full match.
                     Reporter.WriteLine(
@@ -143,6 +143,8 @@ namespace Microsoft.DotNet.Workloads.Workload
                     updates = null;
                     return false;
                 }
+
+                PrintWorkloadSetTransition(version);
             }
             else if (_workloadInstaller is FileBasedInstaller || _workloadInstaller is NetSdkMsiInstallerClient)
             {
