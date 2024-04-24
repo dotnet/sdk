@@ -307,21 +307,21 @@
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
       <Sha>f18510c2fbdfc11b8144ced4857b3d878fa70965</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0-preview.4.24217.1">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0-preview.4.24223.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>48dd6a9e0ba11b3f6410eec7c8e4b218627e8dab</Sha>
+      <Sha>f18510c2fbdfc11b8144ced4857b3d878fa70965</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.4.24217.1">
+    <Dependency Name="Microsoft.AspNetCore.Authorization" Version="9.0.0-preview.4.24223.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>48dd6a9e0ba11b3f6410eec7c8e4b218627e8dab</Sha>
+      <Sha>f18510c2fbdfc11b8144ced4857b3d878fa70965</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.4.24217.1">
+    <Dependency Name="Microsoft.AspNetCore.Components.Web" Version="9.0.0-preview.4.24223.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>48dd6a9e0ba11b3f6410eec7c8e4b218627e8dab</Sha>
+      <Sha>f18510c2fbdfc11b8144ced4857b3d878fa70965</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="9.0.0-preview.4.24217.1">
+    <Dependency Name="Microsoft.JSInterop" Version="9.0.0-preview.4.24223.1">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>48dd6a9e0ba11b3f6410eec7c8e4b218627e8dab</Sha>
+      <Sha>f18510c2fbdfc11b8144ced4857b3d878fa70965</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.aspnetcore" Version="9.0.0-preview.4.24223.1">
