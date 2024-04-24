@@ -22,6 +22,11 @@
         <target state="translated">{0} ve {1} seçenekleri birlikte kullanılamıyor. Bir geri alma dosyasından yükleniyorsa {0} seçeneğini kaldırın. Aksi takdirde, {1} seçeneğini kaldırın</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
+        <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
+        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload manifests.</source>
         <target state="translated">Güncelleştirilmiş iş yükü bildirimleri denetleniyor.</target>
@@ -280,6 +285,11 @@
       <trans-unit id="PrintDownloadLinkOnlyDescription">
         <source>Only print the list of links to download without downloading.</source>
         <target state="translated">İndirmeden, yalnızca indirilecek bağlantıların listesini yazdırın.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdatedWorkloadMode">
+        <source>Successfully updated workload install mode to use {0}.</source>
+        <target state="new">Successfully updated workload install mode to use {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
