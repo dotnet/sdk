@@ -12,6 +12,9 @@ on:
       daysBeforeClose:
         required: true
         default: "30"
+      operationsPerRun:
+        required: true
+        default: "500"
 
 permissions:
   issues: write
@@ -32,3 +35,4 @@ jobs:
           days-before-close: ${{ fromJson(inputs.daysBeforeClose || 30  ) }} # Default to 30 days if not specified as input
           days-before-pr-stale: -1 # Do not label PRs as 'stale'
           days-before-pr-close: -1 # Do not close PRs labeled as 'stale'
+          operations-per-run: ${{ fromJson(inputs.operationsPerRun || 500 )}}
