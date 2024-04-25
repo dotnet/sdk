@@ -4527,7 +4527,7 @@ Valleysoft.DockerCredsProvider.x.y.z-1.nupkg: 11628
 Valleysoft.DockerCredsProvider.x.y.z.nupkg: 11489
 vbc.Symbols.x.y.z.nupkg: 49555
 VBCSCompiler.Symbols.x.y.z.nupkg: 72561
-VerticalManifest.xml: 73620
+VerticalManifest.xml: 93949
 xunit.abstractions.x.y.z.nupkg: 7272
 xunit.core.x.y.z.nupkg: 6132
 xunit.extensibility.core.x.y.z.nupkg: 79927
