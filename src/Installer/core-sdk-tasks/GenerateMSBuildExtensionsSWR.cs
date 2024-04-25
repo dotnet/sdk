@@ -17,7 +17,8 @@ namespace Microsoft.DotNet.Cli.Build
 
             AddFolder(sb,
                       @"MSBuildSdkResolver",
-                      @"MSBuild\Current\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver");
+                      @"MSBuild\Current\Bin\SdkResolvers\Microsoft.DotNet.MSBuildSdkResolver",
+                      ngenAssemblies: true);
 
             AddFolder(sb,
                       @"msbuildExtensions",
@@ -32,7 +33,7 @@ namespace Microsoft.DotNet.Cli.Build
             return true;
         }
 
-        private void AddFolder(StringBuilder sb, string relativeSourcePath, string swrInstallDir)
+        private void AddFolder(StringBuilder sb, string relativeSourcePath, string swrInstallDir, bool ngenAssemblies = false)
         {
             string sourceFolder = Path.Combine(MSBuildExtensionsLayoutDirectory, relativeSourcePath);
             var files = Directory.GetFiles(sourceFolder)
@@ -48,7 +49,14 @@ namespace Microsoft.DotNet.Cli.Build
                 {
                     sb.Append(@"  file source=""$(PkgVS_Redist_Common_Net_Core_SDK_MSBuildExtensions)\");
                     sb.Append(Path.Combine(relativeSourcePath, Path.GetFileName(file)));
-                    sb.AppendLine("\"");
+                    sb.Append('"');
+
+                    if (ngenAssemblies && file.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+                    {
+                        sb.Append(@" vs.file.ngenApplications=""[installDir]\Common7\IDE\vsn.exe""");
+                    }
+
+                    sb.AppendLine();
                 }
 
                 sb.AppendLine();
@@ -60,6 +68,7 @@ namespace Microsoft.DotNet.Cli.Build
                 string newRelativeSourcePath = Path.Combine(relativeSourcePath, subfolderName);
                 string newSwrInstallDir = Path.Combine(swrInstallDir, subfolderName);
 
+                // Don't propagate ngenAssemblies to subdirectories.
                 AddFolder(sb, newRelativeSourcePath, newSwrInstallDir);
             }
         }

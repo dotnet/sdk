@@ -7,10 +7,38 @@
     "default": {
       "name": "default",
       "createdDate": "2024-03-25 18:56:33Z",
-      "lastUpdatedDate": "2024-03-25 18:56:33Z"
+      "lastUpdatedDate": "2024-04-17 11:08:48Z"
     }
   },
   "results": {
+    "4e8a62015bf3e926d045677df039625909fb8bdec99ab9045cf0cb6b2b7fbfb5": {
+      "signature": "4e8a62015bf3e926d045677df039625909fb8bdec99ab9045cf0cb6b2b7fbfb5",
+      "alternativeSignatures": [],
+      "target": "src/efcore/azure-pipelines-public.yml",
+      "line": 214,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0060",
+      "createdDate": "2024-04-17 11:08:48Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
+    "3f53ea28891f44b0e2b06051f0e51e36b098d5ab7b551ca149cff48330c2758e": {
+      "signature": "3f53ea28891f44b0e2b06051f0e51e36b098d5ab7b551ca149cff48330c2758e",
+      "alternativeSignatures": [],
+      "target": "src/efcore/azure-pipelines.yml",
+      "line": 241,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0060",
+      "createdDate": "2024-04-17 11:08:48Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
     "5f3b52e23f96eb01bcfd73ead3cbaa2e1430de0006e5103109dd39bf9f292165": {
       "signature": "5f3b52e23f96eb01bcfd73ead3cbaa2e1430de0006e5103109dd39bf9f292165",
       "alternativeSignatures": [],
@@ -21,7 +49,7 @@
       ],
       "tool": "credscan",
       "ruleId": "CSCAN-GENERAL0060",
-      "createdDate": "2024-03-25 18:56:33Z",
+      "createdDate": "2024-04-17 11:08:48Z",
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
@@ -31,41 +59,13 @@
         "60efb04c6e0431e477e792a96d32b30b3a309b4ee19fad084a015e2946985459"
       ],
       "target": "src/roslyn/eng/build.ps1",
-      "line": 340,
+      "line": 339,
       "memberOf": [
         "default"
       ],
       "tool": "psscriptanalyzer",
       "ruleId": "PSAvoidUsingConvertToSecureStringWithPlainText",
-      "createdDate": "2024-03-25 18:56:33Z",
-      "expirationDate": "2024-09-11 20:34:12Z",
-      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
-    },
-    "e0aafe4de4d762a800edeca36ed2144ed173a138d126423863b1710425b90b33": {
-      "signature": "e0aafe4de4d762a800edeca36ed2144ed173a138d126423863b1710425b90b33",
-      "alternativeSignatures": [],
-      "target": "src/aspire/tests/Aspire.Npgsql.EntityFrameworkCore.PostgreSQL.Tests/ConformanceTests.cs",
-      "line": 20,
-      "memberOf": [
-        "default"
-      ],
-      "tool": "credscan",
-      "ruleId": "CSCAN-GENERAL0030",
-      "createdDate": "2024-03-25 18:56:33Z",
-      "expirationDate": "2024-09-11 20:34:12Z",
-      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
-    },
-    "a5142e7bafbf664fdcb2d4d7071ca8427c7da0c8ba66cc7706c9c07b816f1201": {
-      "signature": "a5142e7bafbf664fdcb2d4d7071ca8427c7da0c8ba66cc7706c9c07b816f1201",
-      "alternativeSignatures": [],
-      "target": "src/aspire/tests/Aspire.Npgsql.Tests/ConformanceTests.cs",
-      "line": 17,
-      "memberOf": [
-        "default"
-      ],
-      "tool": "credscan",
-      "ruleId": "CSCAN-GENERAL0030",
-      "createdDate": "2024-03-25 18:56:33Z",
+      "createdDate": "2024-04-17 11:08:48Z",
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
@@ -81,55 +81,7 @@
       ],
       "tool": "psscriptanalyzer",
       "ruleId": "PSAvoidUsingConvertToSecureStringWithPlainText",
-      "createdDate": "2024-03-25 18:56:33Z",
-      "expirationDate": "2024-09-11 20:34:12Z",
-      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
-    },
-    "5c349e8f183364d99cde545c6da7549c9d6227957c820fcde8e8beb2b40de39c": {
-      "signature": "5c349e8f183364d99cde545c6da7549c9d6227957c820fcde8e8beb2b40de39c",
-      "alternativeSignatures": [
-        "8546393d391f4010c04ed43788c36626f870b02028937cf390014c660f657f7b"
-      ],
-      "target": "src/command-line-api/eng/common/SetupNugetSources.ps1",
-      "line": 38,
-      "memberOf": [
-        "default"
-      ],
-      "tool": "psscriptanalyzer",
-      "ruleId": "PSAvoidUsingUsernameAndPasswordParams",
-      "createdDate": "2024-03-25 18:56:33Z",
-      "expirationDate": "2024-09-11 20:34:12Z",
-      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
-    },
-    "a9e7b46f71cc21fd96e3bbb1c30a7beb36470f0a4c857794b4444856e54ffc2b": {
-      "signature": "a9e7b46f71cc21fd96e3bbb1c30a7beb36470f0a4c857794b4444856e54ffc2b",
-      "alternativeSignatures": [
-        "34597b8dc5d2e482d7178a50440f3b8815c44e510906dd92a4d31d434c87053b"
-      ],
-      "target": "src/command-line-api/eng/common/SetupNugetSources.ps1",
-      "line": 56,
-      "memberOf": [
-        "default"
-      ],
-      "tool": "psscriptanalyzer",
-      "ruleId": "PSAvoidUsingUsernameAndPasswordParams",
-      "createdDate": "2024-03-25 18:56:33Z",
-      "expirationDate": "2024-09-11 20:34:12Z",
-      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
-    },
-    "3df69ea15defeb820ba0823dc80513e75a79b049dee023b51dee4419cd1d2276": {
-      "signature": "3df69ea15defeb820ba0823dc80513e75a79b049dee023b51dee4419cd1d2276",
-      "alternativeSignatures": [
-        "deb5cfe250ae8f9c1bbcdf230c425dc071067ee26cc7b3d41b9fc078782febfc"
-      ],
-      "target": "src/command-line-api/eng/common/SetupNugetSources.ps1",
-      "line": 88,
-      "memberOf": [
-        "default"
-      ],
-      "tool": "psscriptanalyzer",
-      "ruleId": "PSAvoidUsingUsernameAndPasswordParams",
-      "createdDate": "2024-03-25 18:56:33Z",
+      "createdDate": "2024-04-17 11:08:48Z",
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
@@ -243,51 +195,101 @@
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
-    "2960b8fc6b1f6665b5988544f1d44a05dfe83b9b39a14efef5e042d7a78e4e19": {
-      "signature": "2960b8fc6b1f6665b5988544f1d44a05dfe83b9b39a14efef5e042d7a78e4e19",
-      "alternativeSignatures": [
-        "b4177488d7a45f4a54472adf8bb97026f0799e61e10f580ea52fbbd74cf08f10"
-      ],
-      "target": "src/symreader/eng/common/SetupNugetSources.ps1",
-      "line": 38,
+    "0a527cd60eacba9f7c0c83e3a97e25270578b40a637372cdf80b702b9b87b261": {
+      "signature": "0a527cd60eacba9f7c0c83e3a97e25270578b40a637372cdf80b702b9b87b261",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Aspire.Dashboard.Tests/Integration/OtlpServiceTests.cs",
+      "line": 128,
       "memberOf": [
         "default"
       ],
-      "tool": "psscriptanalyzer",
-      "ruleId": "PSAvoidUsingUsernameAndPasswordParams",
-      "createdDate": "2024-03-25 18:56:33Z",
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0130",
+      "createdDate": "2024-04-17 11:08:48Z",
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
-    "c1c411bf7b80d684d2c444ed611f333f08f1073fbaaf4c6bd0238c16ffccbe4d": {
-      "signature": "c1c411bf7b80d684d2c444ed611f333f08f1073fbaaf4c6bd0238c16ffccbe4d",
-      "alternativeSignatures": [
-        "8ca9e6612eb3802d5c1fd93ce0f1de61c2559512966fc97dcbeb017d1942c0fe"
-      ],
-      "target": "src/symreader/eng/common/SetupNugetSources.ps1",
-      "line": 56,
+    "6ddef357a244a95890f464728bfe7d498172c7d0a154a1b7505de8cf5d2e6940": {
+      "signature": "6ddef357a244a95890f464728bfe7d498172c7d0a154a1b7505de8cf5d2e6940",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Aspire.Hosting.Tests/RabbitMQ/AddRabbitMQTests.cs",
+      "line": 66,
       "memberOf": [
         "default"
       ],
-      "tool": "psscriptanalyzer",
-      "ruleId": "PSAvoidUsingUsernameAndPasswordParams",
-      "createdDate": "2024-03-25 18:56:33Z",
+      "tool": "credscan",
+      "ruleId": "CSCAN-MSFT0090",
+      "createdDate": "2024-04-17 11:08:48Z",
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
-    "a0437af80b26a79fc6c7e101114a0a455bd0bc7a4e9ccea1fa3b355aaac07390": {
-      "signature": "a0437af80b26a79fc6c7e101114a0a455bd0bc7a4e9ccea1fa3b355aaac07390",
-      "alternativeSignatures": [
-        "495012003aa9faede4c4ad115a12784f6a8f549e1ebe976537b021d6e5296da9"
-      ],
-      "target": "src/symreader/eng/common/SetupNugetSources.ps1",
-      "line": 88,
+    "7b17c8b64bd83dc326d4257677bed760c9cf6ab817acfbc7472f13f64b855e40": {
+      "signature": "7b17c8b64bd83dc326d4257677bed760c9cf6ab817acfbc7472f13f64b855e40",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Aspire.Hosting.Tests/RabbitMQ/AddRabbitMQTests.cs",
+      "line": 81,
       "memberOf": [
         "default"
       ],
-      "tool": "psscriptanalyzer",
-      "ruleId": "PSAvoidUsingUsernameAndPasswordParams",
-      "createdDate": "2024-03-25 18:56:33Z",
+      "tool": "credscan",
+      "ruleId": "CSCAN-MSFT0090",
+      "createdDate": "2024-04-17 11:08:48Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
+    "5c2b6a4651bcb596fc2e5db714b851d389abfea6e55903a8d0582ce51da047ff": {
+      "signature": "5c2b6a4651bcb596fc2e5db714b851d389abfea6e55903a8d0582ce51da047ff",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Aspire.Hosting.Tests/SqlServer/AddSqlServerTests.cs",
+      "line": 76,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-MSFT0090",
+      "createdDate": "2024-04-17 11:08:48Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
+    "80a85deb6369e399563ca12ec488875ae9fadc6a4c8d4a4343fe2294ddf2a7a4": {
+      "signature": "80a85deb6369e399563ca12ec488875ae9fadc6a4c8d4a4343fe2294ddf2a7a4",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Aspire.Hosting.Tests/SqlServer/AddSqlServerTests.cs",
+      "line": 84,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-MSFT0090",
+      "createdDate": "2024-04-17 11:08:48Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
+    "0b30610f2eb9817ff650cd53154bc2ac98d6209750a9d628c5af700608bdb36e": {
+      "signature": "0b30610f2eb9817ff650cd53154bc2ac98d6209750a9d628c5af700608bdb36e",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Aspire.Hosting.Tests/SqlServer/AddSqlServerTests.cs",
+      "line": 100,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-MSFT0090",
+      "createdDate": "2024-04-17 11:08:48Z",
+      "expirationDate": "2024-09-11 20:34:12Z",
+      "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
+    },
+    "52cfa490ade643a3ec287dec67888d444752a73f7e4355a7f1924b0af54df466": {
+      "signature": "52cfa490ade643a3ec287dec67888d444752a73f7e4355a7f1924b0af54df466",
+      "alternativeSignatures": [],
+      "target": "src/aspire/tests/Shared/TestCertificates/eku.client.pfx",
+      "line": 1,
+      "memberOf": [
+        "default"
+      ],
+      "tool": "credscan",
+      "ruleId": "CSCAN-GENERAL0020",
+      "createdDate": "2024-04-17 11:08:48Z",
       "expirationDate": "2024-09-11 20:34:12Z",
       "justification": "This error is baselined with an expiration date of 180 days from 2024-03-25 20:34:12Z"
     },
