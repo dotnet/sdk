@@ -342,7 +342,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     var downloadedPackageVersion = packageReader.NuspecReader.GetVersion();
                     if (packageVersion != null && !downloadedPackageVersion.Equals(packageVersion))
                     {
-                        throw new Exception(string.Format(Update.LocalizableStrings.WorkloadVersionNotFound, packageVersion));
+                        throw new NuGetPackageNotFoundException($"Requested workload version {packageVersion} of {id} but found version {downloadedPackageVersion} instead.");
                     }
 
                     var workloadSetVersion = WorkloadSetPackageVersionToWorkloadSetVersion(band, downloadedPackageVersion.ToString());

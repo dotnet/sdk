@@ -72,11 +72,6 @@
         <target state="translated">Aggiornamento del carico di lavoro non riuscito: {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadVersionNotFound">
-        <source>Could not find workload version {0}. Does it exist in a NuGet feed in your NuGet.config?</source>
-        <target state="new">Could not find workload version {0}. Does it exist in a NuGet feed in your NuGet.config?</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>

@@ -159,7 +159,4 @@
   <data name="NoWorkloadUpdateFound" xml:space="preserve">
     <value>No workload update found.</value>
   </data>
-  <data name="WorkloadVersionNotFound" xml:space="preserve">
-    <value>Could not find workload version {0}. Does it exist in a NuGet feed in your NuGet.config?</value>
-  </data>
 </root>

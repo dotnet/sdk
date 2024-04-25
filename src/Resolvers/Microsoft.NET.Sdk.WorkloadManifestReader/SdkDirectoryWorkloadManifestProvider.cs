@@ -121,12 +121,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _workloadSet = null;
             _manifestsFromInstallState = null;
             _installStateFilePath = null;
-            _useManifestsFromInstallState = false;
+            _useManifestsFromInstallState = true;
             var availableWorkloadSets = GetAvailableWorkloadSets();
 
             if (_workloadSetVersionFromConstructor != null)
             {
-                _useManifestsFromInstallState = true;
+                _useManifestsFromInstallState = false;
                 if (!availableWorkloadSets.TryGetValue(_workloadSetVersionFromConstructor, out _workloadSet))
                 {
                     throw new FileNotFoundException(string.Format(Strings.WorkloadVersionNotFound, _workloadSetVersionFromConstructor));
@@ -138,7 +138,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
                 if (_globalJsonWorkloadSetVersion != null)
                 {
-                    _useManifestsFromInstallState = true;
+                    _useManifestsFromInstallState = false;
                     if (!availableWorkloadSets.TryGetValue(_globalJsonWorkloadSetVersion, out _workloadSet))
                     {
                         _exceptionToThrow = new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, _globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
