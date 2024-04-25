@@ -394,13 +394,13 @@
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-preview.4.24201.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-preview.5.24223.8" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>6710618bf954958130cd0e940cc25223079b12d5</Sha>
+      <Sha>9a9d4a2a8474d89c5b4c5ba7b23a00a687c10b72</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-preview.4.24202.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-preview.5.24224.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>25ba139a0c67220a843c989343d27580877c3f8b</Sha>
+      <Sha>ed866731842f39a5eef71e9678226a9db7e4fc9e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24222.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
@@ -563,13 +563,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>d0dffe1dcfc6dbc9208546ffcb39aa9e6945e783</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24112.3">
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24225.1">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>c041bcdab75f5447be8bd11ddcfbe8e639f13f32</Sha>
+      <Sha>8e43e0e0c43a660221e817c4310764cacbf28977</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24112.3">
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24225.1">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>c041bcdab75f5447be8bd11ddcfbe8e639f13f32</Sha>
+      <Sha>8e43e0e0c43a660221e817c4310764cacbf28977</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.2.24076.4">
       <Uri>https://github.com/dotnet/runtime</Uri>
