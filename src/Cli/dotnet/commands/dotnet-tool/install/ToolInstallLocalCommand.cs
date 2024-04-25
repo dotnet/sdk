@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
                                   new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
             _toolManifestEditor = toolManifestEditor ?? new ToolManifestEditor();
             _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
-            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, _packageId, toolPackageDownloader);
+            _toolLocalPackageInstaller = new ToolInstallLocalInstaller(parseResult, toolPackageDownloader);
             _toolPackageDownloader = toolPackageDownloader;
             _allowRollForward = parseResult.GetValue(ToolInstallCommandParser.RollForwardOption);
             _allowPackageDowngrade = parseResult.GetValue(ToolInstallCommandParser.AllowPackageDowngradeOption);
