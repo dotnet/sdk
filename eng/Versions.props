@@ -130,7 +130,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/winforms -->
-    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>9.0.0-preview.4.24201.2</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
+    <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>9.0.0-preview.5.24223.8</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/test-templates -->
@@ -270,7 +270,7 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
     <MicrosoftNETSdkWindowsDesktopPackageVersion>9.0.0-preview.5.24224.1</MicrosoftNETSdkWindowsDesktopPackageVersion>
-    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>9.0.0-preview.4.24216.8</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
+    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>9.0.0-preview.5.24224.1</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Runtime and Apphost aliases">
     <!-- Runtime and Apphost pack versions are the same for all RIDs. We flow the x64 version above and create aliases without the winx64 here for clarity elsewhere. -->
@@ -358,7 +358,7 @@
   </PropertyGroup>
   <PropertyGroup Label="Workload manifest package versions">
     <AspireFeatureBand>9.0.100-preview.1</AspireFeatureBand>
-    <MicrosoftNETSdkAspireManifest90100preview1PackageVersion>9.0.0-preview.2.24163.9</MicrosoftNETSdkAspireManifest90100preview1PackageVersion>
+    <MicrosoftNETSdkAspireManifest90100preview1PackageVersion>9.0.0-preview.4.24223.11</MicrosoftNETSdkAspireManifest90100preview1PackageVersion>
     <MauiFeatureBand>9.0.100-preview.1</MauiFeatureBand>
     <MauiWorkloadManifestVersion>9.0.0-preview.1.9973</MauiWorkloadManifestVersion>
     <XamarinAndroidWorkloadManifestVersion>34.99.0-preview.1.151</XamarinAndroidWorkloadManifestVersion>
