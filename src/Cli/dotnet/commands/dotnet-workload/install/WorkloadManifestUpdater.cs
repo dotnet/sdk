@@ -340,6 +340,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     // Create version file later used as part of installing the workload set in the file-based installer and in the msi-based installer
                     using PackageArchiveReader packageReader = new(packagePath);
                     var downloadedPackageVersion = packageReader.NuspecReader.GetVersion();
+                    if (packageVersion != null && !downloadedPackageVersion.Equals(packageVersion))
+                    {
+                        throw new Exception(string.Format(Update.LocalizableStrings.WorkloadVersionNotFound, packageVersion));
+                    }
+
                     var workloadSetVersion = WorkloadSetPackageVersionToWorkloadSetVersion(band, downloadedPackageVersion.ToString());
                     File.WriteAllText(Path.Combine(adManifestPath, Constants.workloadSetVersionFileName), workloadSetVersion);
                 }

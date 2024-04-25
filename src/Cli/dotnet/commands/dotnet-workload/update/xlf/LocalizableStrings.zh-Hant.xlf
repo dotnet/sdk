@@ -72,9 +72,9 @@
         <target state="translated">工作負載更新失敗: {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="WrongWorkloadSetVersion">
-        <source>Workload version {0} could not be found. Approximate best match of version {1} was found.</source>
-        <target state="new">Workload version {0} could not be found. Approximate best match of version {1} was found.</target>
+      <trans-unit id="WorkloadVersionNotFound">
+        <source>Could not find workload version {0}. Does it exist in a NuGet feed in your NuGet.config?</source>
+        <target state="new">Could not find workload version {0}. Does it exist in a NuGet feed in your NuGet.config?</target>
         <note />
       </trans-unit>
     </body>

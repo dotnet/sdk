@@ -78,27 +78,37 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             else
             {
                 var globalJsonInformation = _workloadListHelper.ManifestProvider.GetGlobalJsonInformation();
-                Reporter.WriteLine();
-                if (globalJsonInformation is not null)
+
+                var shouldPrintTable = globalJsonInformation?.WorkloadVersionInstalled != false;
+                var shouldShowWorkloadSetVersion = globalJsonInformation is not null ||
+                    InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.DotnetPath), "default.json")).UseWorkloadSets == true;
+
+                if (shouldShowWorkloadSetVersion)
                 {
-                    Reporter.WriteLine(string.Format(
-                        globalJsonInformation.WorkloadVersionInstalled ?
-                            LocalizableStrings.WorkloadSetFromGlobalJsonInstalled :
-                            LocalizableStrings.WorkloadSetFromGlobalJsonNotInstalled,
-                        globalJsonInformation.GlobalJsonVersion,
-                        globalJsonInformation.GlobalJsonPath));
+                    if (globalJsonInformation is not null)
+                    {
+                        Reporter.WriteLine(string.Format(
+                            globalJsonInformation.WorkloadVersionInstalled ?
+                                LocalizableStrings.WorkloadSetFromGlobalJsonInstalled :
+                                LocalizableStrings.WorkloadSetFromGlobalJsonNotInstalled,
+                            globalJsonInformation.GlobalJsonVersion,
+                            globalJsonInformation.GlobalJsonPath));
+                    }
+                    else
+                    {
+                        Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion() ?? "unknown"));
+                    }
+
+                    Reporter.WriteLine();
                 }
 
-                if (globalJsonInformation?.WorkloadVersionInstalled != false)
+                if (shouldPrintTable)
                 {
                     var manifestInfoDict = _workloadListHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
-
                     InstalledWorkloadsCollection installedWorkloads = _workloadListHelper.AddInstalledVsWorkloads(installedList);
-                    var shouldPrintVersionFromInstallState = globalJsonInformation is null &&
-                        InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.DotnetPath), "default.json")).UseWorkloadSets == true;
                     PrintableTable<KeyValuePair<string, string>> table = new();
                     table.AddColumn(InformationStrings.WorkloadIdColumn, workload => workload.Key);
-                    if (globalJsonInformation is null && !shouldPrintVersionFromInstallState)
+                    if (!shouldShowWorkloadSetVersion)
                     {
                         table.AddColumn(InformationStrings.WorkloadManifestVersionColumn, workload =>
                         {
@@ -107,16 +117,10 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                             return m.Version + "/" + manifestInfo.ManifestFeatureBand;
                         });
                     }
-                    
+
                     table.AddColumn(InformationStrings.WorkloadSourceColumn, workload => workload.Value);
 
                     table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
-
-                    if (shouldPrintVersionFromInstallState)
-                    {
-                        Reporter.WriteLine();
-                        Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion() ?? "unknown"));
-                    }
                 }
 
                 Reporter.WriteLine();
