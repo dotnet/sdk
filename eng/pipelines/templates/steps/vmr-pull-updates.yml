@@ -8,7 +8,7 @@ parameters:
   type: string
 
 - name: targetRef
-  displayName: Target revision in dotnet/installer to synchronize
+  displayName: Target revision in dotnet/sdk to synchronize
   type: string
   default: $(Build.SourceVersion)
 
@@ -19,16 +19,16 @@ parameters:
 
 steps:
 - checkout: self
-  displayName: Clone dotnet/installer
-  path: installer
+  displayName: Clone dotnet/sdk
+  path: sdk
 
 # This step is needed so that when we get a detached HEAD / shallow clone,
-# we still pull the commit into the temporary installer clone to use it during the sync.
+# we still pull the commit into the temporary sdk clone to use it during the sync.
 - script: |
-    git branch installer-head
+    git branch sdk-head
     git rev-parse HEAD
   displayName: Label PR commit
-  workingDirectory: $(Agent.BuildDirectory)/installer
+  workingDirectory: $(Agent.BuildDirectory)/sdk
 
 - script: |
     git checkout -B ${{ parameters.vmrBranch }}
@@ -54,17 +54,17 @@ steps:
     --tmp $(Agent.TempDirectory)
     --azdev-pat '$(dn-bot-all-orgs-code-r)'
     --branch ${{ parameters.vmrBranch }}
-    --repository "installer:${{ parameters.targetRef }}"
+    --repository "sdk:${{ parameters.targetRef }}"
     --recursive
-    --remote "installer:$(Agent.BuildDirectory)/installer"
-    --component-template $(Agent.BuildDirectory)/installer/src/VirtualMonoRepo/Component.template.md
-    --tpn-template $(Agent.BuildDirectory)/installer/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
+    --remote "sdk:$(Agent.BuildDirectory)/sdk"
+    --component-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md
+    --tpn-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
     --debug
     ||
     (echo "##vso[task.logissue type=error]Failed to synchronize the VMR" && exit 1)
   displayName: Synchronize dotnet/dotnet (Unix)
   condition: ne(variables['Agent.OS'], 'Windows_NT')
-  workingDirectory: $(Agent.BuildDirectory)/installer
+  workingDirectory: $(Agent.BuildDirectory)/sdk
 
 - script: git config --global diff.astextplain.textconv echo
   displayName: Disable astextplain in git diff (Windows)
@@ -76,12 +76,12 @@ steps:
     -tmp $(Agent.TempDirectory) `
     -azdevPat '$(dn-bot-all-orgs-code-r)' `
     -branch ${{ parameters.vmrBranch }} `
-    -repository "installer:${{ parameters.targetRef }}" `
+    -repository "sdk:${{ parameters.targetRef }}" `
     -recursive `
     # passing remote fails for some reason, but it is the default anyway
-    # -remote "installer:$(Agent.BuildDirectory)/installer"
-    -componentTemplate $(Agent.BuildDirectory)/installer/src/VirtualMonoRepo/Component.template.md `
-    -tpnTemplate $(Agent.BuildDirectory)/installer/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
+    # -remote "sdk:$(Agent.BuildDirectory)/sdk"
+    -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
+    -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
     -debugOutput
 
     if ($LASTEXITCODE -ne 0) {
@@ -90,7 +90,7 @@ steps:
     }
   displayName: Synchronize dotnet/dotnet (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
-  workingDirectory: $(Agent.BuildDirectory)/installer
+  workingDirectory: $(Agent.BuildDirectory)/sdk
 
 - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
   - publish: $(Agent.TempDirectory)

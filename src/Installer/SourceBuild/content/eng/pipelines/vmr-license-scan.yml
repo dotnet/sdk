@@ -6,6 +6,7 @@ schedules:
   branches:
     include:
     - main
+    - main-sdk
     - release/*.0.1xx*
     - internal/release/*.0.1xx*
 
@@ -20,7 +21,7 @@ parameters:
   default: " " # Set it to an empty string to allow it be an optional parameter
 
 variables:
-  installerRoot: '$(Build.SourcesDirectory)/src/installer'
+  sdkRoot: '$(Build.SourcesDirectory)/src/sdk'
 
 jobs:
 - job: Setup
@@ -80,7 +81,7 @@ jobs:
       artifactFeeds: public/dotnet-public-pypi
       onlyAddExtraIndex: false
 
-  - script: $(installerRoot)/eng/install-scancode.sh
+  - script: $(sdkRoot)/eng/install-scancode.sh
     displayName: Install Scancode
 
   - script: >

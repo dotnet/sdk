@@ -3,7 +3,7 @@
 
 parameters:
 - name: targetRef
-  displayName: Target revision of dotnet/installer to synchronize
+  displayName: Target revision of dotnet/sdk to synchronize
   type: string
   default: $(Build.SourceVersion)
 
@@ -73,7 +73,7 @@ jobs:
           --github-pat '$(BotAccount-dotnet-bot-repo-PAT)'
           --verbose
         displayName: Push changes to dotnet/dotnet (public)
-        workingDirectory: $(Agent.BuildDirectory)/installer
+        workingDirectory: $(Agent.BuildDirectory)/sdk
   
     # Push internal/release branches to the internal VMR
     - ${{ if startsWith(parameters.vmrBranch, 'internal/release/') }}:
@@ -86,4 +86,4 @@ jobs:
           --azdev-pat '$(dn-bot-dnceng-build-rw-code-rw)'
           --verbose
         displayName: Push changes to dotnet-dotnet (internal)
-        workingDirectory: $(Agent.BuildDirectory)/installer
+        workingDirectory: $(Agent.BuildDirectory)/sdk
