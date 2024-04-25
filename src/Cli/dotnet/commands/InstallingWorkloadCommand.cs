@@ -37,6 +37,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         protected readonly string _fromHistorySpecified;
         protected readonly bool _historyManifestOnlyOption;
         protected string _workloadSetVersion;
+        protected string _workloadSetVersionFromGlobalJson;
         protected readonly PackageSourceLocation _packageSourceLocation;
         protected readonly IWorkloadResolverFactory _workloadResolverFactory;
         protected IWorkloadResolver _workloadResolver;
@@ -108,13 +109,29 @@ namespace Microsoft.DotNet.Workloads.Workload
             return installStateContents.UseWorkloadSets ?? false;
         }
 
-        protected IEnumerable<ManifestVersionUpdate> HandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache, WorkloadHistoryRecorder recorder = null)
+        protected void ErrorIfGlobalJsonAndCommandLineMismatch(string globaljsonPath)
         {
-            _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersion, offlineCache);
-            return InstallWorkloadSet(context, recorder);
+            if (!string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson) && !string.IsNullOrWhiteSpace(_workloadSetVersion) && !_workloadSetVersion.Equals(_workloadSetVersionFromGlobalJson))
+            {
+                throw new Exception(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, globaljsonPath));
+            }
         }
 
-        public IEnumerable<ManifestVersionUpdate> InstallWorkloadSet(ITransactionContext context, WorkloadHistoryRecorder recorder = null)
+        protected bool TryHandleWorkloadUpdateFromVersion(ITransactionContext context, DirectoryPath? offlineCache, out IEnumerable<ManifestVersionUpdate> updates)
+        {
+            // Ensure workload set mode is set to 'workloadset'
+            // Do not skip checking the mode first, as setting it triggers
+            // an admin authorization popup for MSI-based installs.
+            if (!ShouldUseWorkloadSetMode(_sdkFeatureBand, _dotnetPath))
+            {
+                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+            }
+
+            _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersionFromGlobalJson ?? _workloadSetVersion, offlineCache);
+            return TryInstallWorkloadSet(context, out updates);
+        }
+
+        public bool TryInstallWorkloadSet(ITransactionContext context, out IEnumerable<ManifestVersionUpdate> updates)
         {
             // Ensure workload set mode is set to 'workloadset
             _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
@@ -125,15 +142,24 @@ namespace Microsoft.DotNet.Workloads.Workload
                 // This file isn't created in tests.
                 PrintWorkloadSetTransition(File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)), recorder);
             }
+            else if (_workloadInstaller is FileBasedInstaller || _workloadInstaller is NetSdkMsiInstallerClient)
+            {
+                // No workload sets found
+                Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
+                updates = null;
+                return false;
+            }
+
             var workloadSetPath = _workloadInstaller.InstallWorkloadSet(context, advertisingPackagePath);
             var files = Directory.EnumerateFiles(workloadSetPath, "*.workloadset.json");
-            return _workloadManifestUpdater.ParseRollbackDefinitionFiles(files, recorder);
+            updates = _workloadManifestUpdater.ParseRollbackDefinitionFiles(files);
+            return true;
         }
 
         private void PrintWorkloadSetTransition(string newVersion, WorkloadHistoryRecorder recorder = null)
         {
             var currentVersion = _workloadResolver.GetWorkloadVersion();
-            if (currentVersion == null)
+            if (currentVersion == null || !string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
             {
                 Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));
             }
@@ -257,12 +283,6 @@ namespace Microsoft.DotNet.Workloads.Workload
 
     internal static class InstallingWorkloadCommandParser
     {
-        public static readonly CliOption<string> WorkloadSetMode = new("--mode")
-        {
-            Description = Strings.WorkloadSetMode,
-            Hidden = true
-        };
-
         public static readonly CliOption<string> WorkloadSetVersionOption = new("--version")
         {
             Description = Strings.WorkloadSetVersionOptionDescription

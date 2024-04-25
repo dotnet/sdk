@@ -36,6 +36,7 @@ internal static class KnownStrings
         public static readonly string ContainerRuntimeIdentifier = nameof(ContainerRuntimeIdentifier);
         public static readonly string RuntimeIdentifier = nameof(RuntimeIdentifier);
         public static readonly string PublishAot = nameof(PublishAot);
+        public static readonly string PublishTrimmed = nameof(PublishTrimmed);
         public static readonly string PublishSelfContained = nameof(PublishSelfContained);
         public static readonly string InvariantGlobalization = nameof(InvariantGlobalization);
     }
@@ -52,7 +53,7 @@ internal static class KnownStrings
         public static readonly string CONTAINER1011 = nameof(CONTAINER1011);
         public static readonly string CONTAINER1012 = nameof(CONTAINER1012);
         public static readonly string CONTAINER1013 = nameof(CONTAINER1013);
-        
+
         public static readonly string CONTAINER2005 = nameof(CONTAINER2005);
         public static readonly string CONTAINER2007 = nameof(CONTAINER2007);
         public static readonly string CONTAINER2008 = nameof(CONTAINER2008);

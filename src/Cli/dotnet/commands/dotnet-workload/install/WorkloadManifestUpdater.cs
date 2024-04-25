@@ -89,10 +89,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public async void DownloadWorkloadSet(string version, DirectoryPath? offlineCache = null)
+        public void DownloadWorkloadSet(string version, DirectoryPath? offlineCache = null)
         {
             var correctedVersion = WorkloadSetVersionToWorkloadSetPackageVersion(version);
-            await UpdateManifestWithVersionAsync("Microsoft.NET.Workloads", includePreviews: true, _sdkFeatureBand, new NuGetVersion(correctedVersion), offlineCache);
+            Task.Run(() => UpdateManifestWithVersionAsync("Microsoft.NET.Workloads", includePreviews: true, _sdkFeatureBand, new NuGetVersion(correctedVersion), offlineCache)).Wait();
         }
 
         public async static Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
@@ -515,26 +515,22 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> rollbackFilePaths, WorkloadHistoryRecorder recorder = null)
         {
+            var zeroVersion = new ManifestVersion("0.0.0");
+            var manifestRollbacks = null;
             if (rollbackFilePaths.Count() == 1)
             {
-                return CalculateManifestRollbacks(rollbackFilePaths.Single(), recorder);
+                manifestRollbacks = ParseRollbackDefinitionFile(rollbackFilePaths.Single(), _sdkFeatureBand).Select(manifest =>
+                {
+                    var (id, (version, band)) = manifest;
+                    return new ManifestVersionUpdate(id, zeroVersion, band.ToString(), version, band.ToString());
+                });
             }
 
-            var currentManifestIds = GetInstalledManifestIds();
             // Create a single workload set that includes all the others
             List<(ManifestId, ManifestVersionWithBand)> fullSet = new();
             foreach (var rollbackFile in rollbackFilePaths)
             {
-                var rollbacks = ParseRollbackDefinitionFile(rollbackFile, _sdkFeatureBand);
-
-                var unrecognizedManifestIds = rollbacks.Where(rollbackManifest => !currentManifestIds.Contains(rollbackManifest.Id));
-                if (unrecognizedManifestIds.Any())
-                {
-                    _reporter.WriteLine(string.Format(LocalizableStrings.RollbackDefinitionContainsExtraneousManifestIds, rollbackFile, string.Join(" ", unrecognizedManifestIds)).Yellow());
-                    rollbacks = rollbacks.Where(rollbackManifest => currentManifestIds.Contains(rollbackManifest.Id));
-                }
-
-                fullSet.AddRange(rollbacks);
+                fullSet.AddRange(ParseRollbackDefinitionFile(rollbackFile, _sdkFeatureBand));
             }
 
             var reducedFullSet = fullSet.DistinctBy<(ManifestId, ManifestVersionWithBand), ManifestId>(update => update.Item1).ToList();
@@ -544,7 +540,20 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 throw new ArgumentException("There were duplicates of the following manifests between the workload set files: " + string.Join(", ", duplicates));
             }
 
-            return CalculateManifestRollbacks(fullSet, recorder);
+            manifestRollbacks = fullSet.Select(manifest =>
+            {
+                var (id, (version, band)) = manifest;
+                return new ManifestVersionUpdate(id, zeroVersion, band.ToString(), version, band.ToString());
+            });
+
+            if (recorder is not null) {
+                recorder.HistoryRecord.RollbackFileContents = manifestRollbacks.ToDictionary(
+                    manifest => manifest.ManifestId.ToString(),
+                    manifest => $"{manifest.NewVersion}/{manifest.NewFeatureBand}"
+                );
+            }
+
+            return manifestRollbacks;
         }
 
         private static IEnumerable<(ManifestId Id, ManifestVersionWithBand ManifestWithBand)> ParseRollbackDefinitionFile(string rollbackDefinitionFilePath, SdkFeatureBand featureBand)

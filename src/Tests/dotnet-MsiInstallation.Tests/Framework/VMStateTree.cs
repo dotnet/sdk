@@ -1,11 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.MsiInstallerTests
+namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
     internal class VMStateTree
     {
-        public string SnapshotId {  get; set; }
+        public string SnapshotId { get; set; }
         public string SnapshotName { get; set; }
 
         public Dictionary<SerializedVMAction, (VMActionResult actionResult, VMStateTree resultingState)> Actions { get; set; } = new();
@@ -18,7 +18,8 @@ namespace Microsoft.DotNet.MsiInstallerTests
             {
                 SnapshotId = SnapshotId,
                 SnapshotName = SnapshotName,
-                Actions = Actions.Select(a => new SerializableVMStateTree.Entry() {
+                Actions = Actions.Select(a => new SerializableVMStateTree.Entry()
+                {
                     Action = a.Key,
                     ActionResult = a.Value.actionResult,
                     ResultingState = a.Value.resultingState.ToSerializeable()

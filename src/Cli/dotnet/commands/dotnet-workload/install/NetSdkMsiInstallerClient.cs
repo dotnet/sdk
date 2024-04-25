@@ -467,7 +467,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     },
                     rollback: () =>
                     {
-                        InstallWorkloadManifestImplementation(manifestUpdate.Reverse(), offlineCache: null, isRollback: true);
+                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache: null, isRollback: true, action: InstallAction.Uninstall);
                     });
             }
             catch (Exception e)
@@ -477,7 +477,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, bool isRollback = false)
+        void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, bool isRollback = false, InstallAction action = InstallAction.Install)
         {
             ReportPendingReboot();
 
@@ -496,7 +496,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
             VerifyPackage(msi);
             DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
-            InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
+            InstallAction plannedAction = PlanPackage(msi, state, action, installedVersion);
 
             ExecutePackage(msi, plannedAction, msiPackageId);
 
@@ -1113,6 +1113,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode) => UpdateInstallMode(sdkFeatureBand, newMode);
+        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
+        {
+            UpdateInstallMode(sdkFeatureBand, newMode);
+            Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newMode ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests));
+        }
     }
 }

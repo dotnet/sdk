@@ -3,7 +3,7 @@ trigger:
   branches:
     include:
     - main
-    - release/8.0.3xx
+    - release/8.0.4xx
     - internal/release/*
     - exp/*
 
@@ -67,7 +67,7 @@ stages:
       - publish: $(Build.SourcesDirectory)\eng\BuildConfiguration
         artifact: BuildConfiguration
         displayName: Publish Build Config
-  - template: /eng/build.yml
+  - template: /eng/build-pr.yml
     parameters:
       agentOs: Windows_NT
       pool:
@@ -98,7 +98,7 @@ stages:
         name: 'Managed'
         container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8'
   - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Windows_NT_FullFramework
         pool:
@@ -120,7 +120,7 @@ stages:
               _SignType: test
               _Test: -test
 
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Windows_NT_TestAsTools
         pool:
@@ -136,7 +136,7 @@ stages:
               _PublishArgs: ''
               _SignType: test
 
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Ubuntu_22_04
         pool:
@@ -157,7 +157,7 @@ stages:
               _SignType: test
               _Test: -test
 
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Darwin
         pool:

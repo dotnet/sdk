@@ -79,7 +79,7 @@
       </trans-unit>
       <trans-unit id="WriteCLIRecordForVisualStudioWorkloadMessage">
         <source>Writing install records for Visual Studio workloads: '{0}'</source>
-        <target state="new">Writing install records for Visual Studio workloads: '{0}'</target>
+        <target state="translated">正在寫入 Visual Studio 工作負載的安裝紀錄：'{0}'</target>
         <note />
       </trans-unit>
     </body>
