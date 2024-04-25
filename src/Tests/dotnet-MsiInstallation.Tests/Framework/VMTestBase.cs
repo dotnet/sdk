@@ -6,6 +6,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
+    [Collection("VM Tests")]
     public class VMTestBase : SdkTest, IDisposable
     {
         internal VirtualMachine VM { get; }
