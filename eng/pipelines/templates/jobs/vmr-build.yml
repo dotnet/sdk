@@ -170,12 +170,12 @@ jobs:
           vmrBranch: ${{ parameters.vmrBranch }}
 
     # Synchronize new content in the VMR during PRs (we expect this to come
-    # - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-    #   - template: ../steps/vmr-pull-updates.yml@self
-    #     parameters:
-    #       vmrPath: $(vmrPath)
-    #       vmrBranch: ${{ parameters.vmrBranch }}
-    #       targetRef: $(Build.SourceVersion) # Synchronize the current installer commit
+    - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+      - template: ../steps/vmr-pull-updates.yml@self
+        parameters:
+          vmrPath: $(vmrPath)
+          vmrBranch: ${{ parameters.vmrBranch }}
+          targetRef: $(Build.SourceVersion) # Synchronize the current installer commit
 
   - ${{ if parameters.buildFromArchive }}:
     - script: |
