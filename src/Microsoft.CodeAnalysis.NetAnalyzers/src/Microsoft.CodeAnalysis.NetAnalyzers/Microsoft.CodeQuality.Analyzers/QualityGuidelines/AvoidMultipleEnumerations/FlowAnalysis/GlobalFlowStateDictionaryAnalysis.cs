@@ -96,7 +96,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
 
         protected override GlobalFlowStateDictionaryAnalysisResult ToResult(GlobalFlowStateDictionaryAnalysisContext analysisContext, GlobalFlowStateDictionaryAnalysisResult dataFlowAnalysisResult)
         {
-            // Use the global values map. Drop the per-operation inforamation
+            // Use the global values map. Drop the per-operation information
             var operationVisitor = (GlobalFlowStateDictionaryFlowOperationVisitor)OperationVisitor;
             return dataFlowAnalysisResult.With(operationVisitor.GetGlobalValuesMap());
         }

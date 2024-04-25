@@ -89,7 +89,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
         }
 
         /// <summary>
-        /// Check if the operation is deferred type and also it is a collecton enumerated by a for each loop.
+        /// Check if the operation is deferred type and also it is a collection enumerated by a for each loop.
         /// </summary>
         public static bool IsOperationEnumeratedByForEachLoop(
             IOperation operation,
@@ -399,7 +399,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.AvoidMultipleEnumera
                     foreach (var method in methods)
                     {
                         // Usually there are two overloads for these methods, like ToImmutableArray,
-                        // it has two overloads, one convert from ImmutableArray.Builder and one covert from IEnumerable<T>
+                        // it has two overloads, one convert from ImmutableArray.Builder and one convert from IEnumerable<T>
                         // and we only want the last one
                         if (method is IMethodSymbol { Parameters: { Length: > 0 } parameters, IsExtensionMethod: true } methodSymbol
                             && parameters[0].Type.OriginalDefinition.SpecialType == SpecialType.System_Collections_Generic_IEnumerable_T)

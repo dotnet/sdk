@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.Security
             });
 
         // If HttpOnly is set explicitly, the callbacks of OperationKind.SimpleAssignment can cover that case.
-        // Otherwise, using PropertySetAnalysis to cover the case where HttpCookie object is returned without initializing or assgining HttpOnly property.
+        // Otherwise, using PropertySetAnalysis to cover the case where HttpCookie object is returned without initializing or assigning HttpOnly property.
         private static readonly PropertyMapperCollection PropertyMappers = new(
             new PropertyMapper(
                 "HttpOnly",

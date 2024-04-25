@@ -130,7 +130,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             ImmutableDictionary<string, string?>.Builder builder = ImmutableDictionary.CreateBuilder<string, string?>();
             builder.Add("Signature", missingCtorSignature.ToString());
 
-            //create dignostic and store signature into diagnostic property for fixer
+            //create diagnostic and store signature into diagnostic property for fixer
             Diagnostic diagnostic = namedTypeSymbol.Locations.CreateDiagnostic(MissingConstructorRule, builder.ToImmutableDictionary(), namedTypeSymbol.Name, constructorSignature);
 
             //report diagnostic
