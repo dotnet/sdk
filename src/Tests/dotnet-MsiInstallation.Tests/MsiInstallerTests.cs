@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             InstallWorkload("wasm-tools");
             ApplyRC1Manifests();
             var featureBand = new SdkFeatureBand(SdkInstallerVersion);
-            var installStatePath = $@"c:\ProgramData\dotnet\workloads\{featureBand}\InstallState\default.json";
+            var installStatePath = $@"c:\ProgramData\dotnet\workloads\x64\{featureBand}\InstallState\default.json";
             VM.GetRemoteFile(installStatePath).Should().Exist();
             UninstallSdk();
             VM.GetRemoteFile(installStatePath).Should().NotExist();
