@@ -1,11 +1,11 @@
 # This YAML is used by these PR pipelines:
 #
-# - installer-source-build
-#   https://dev.azure.com/dnceng-public/public/_build?definitionId=233
-# - installer-unified-build
-#   https://dev.azure.com/dnceng-public/public/_build?definitionId=277
-# - installer-unified-build-full
-#   https://dev.azure.com/dnceng-public/public/_build?definitionId=279
+# - sdk-source-build
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=___
+# - sdk-unified-build
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=___
+# - sdk-unified-build-full
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=___
 
 trigger: none
 pr:
