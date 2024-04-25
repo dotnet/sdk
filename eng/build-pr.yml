@@ -70,6 +70,7 @@ jobs:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
                     -configuration $(_BuildConfig)
+                    -nativeToolsOnMachine
                     $(_PublishArgs)
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
@@ -84,6 +85,7 @@ jobs:
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
         - powershell: eng\common\build.ps1
                 -configuration $(_BuildConfig)
+                -nativeToolsOnMachine
                 -prepareMachine
                 -ci
                 -restore
@@ -103,6 +105,7 @@ jobs:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
                     -configuration $(_BuildConfig)
+                    -nativeToolsOnMachine
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
@@ -116,6 +119,7 @@ jobs:
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
         - powershell: eng\common\build.ps1
                 -configuration $(_BuildConfig)
+                -nativeToolsOnMachine
                 -prepareMachine
                 -ci
                 -restore
@@ -135,6 +139,7 @@ jobs:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
                     -configuration $(_BuildConfig)
+                    -nativeToolsOnMachine
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
@@ -241,6 +246,7 @@ jobs:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
                     -configuration $(_BuildConfig)
+                    -nativeToolsOnMachine
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     /p:Test=false
@@ -261,6 +267,7 @@ jobs:
                 -prepareMachine
                 -projects $(Build.SourcesDirectory)/test/UnitTests.proj
                 -configuration $(_BuildConfig)
+                -nativeToolsOnMachine
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
@@ -373,6 +380,7 @@ jobs:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
                     -configuration $(_BuildConfig)
+                    -nativeToolsOnMachine
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     /p:Test=false
@@ -384,6 +392,7 @@ jobs:
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
         - powershell: eng\common\build.ps1
                 -configuration $(_BuildConfig)
+                -nativeToolsOnMachine
                 -prepareMachine
                 -ci
                 -restore
@@ -394,6 +403,7 @@ jobs:
           displayName: Run TemplateEngine Cli Unit Tests
         - powershell: eng\common\build.ps1
                 -configuration $(_BuildConfig)
+                -nativeToolsOnMachine
                 -prepareMachine
                 -ci
                 -restore

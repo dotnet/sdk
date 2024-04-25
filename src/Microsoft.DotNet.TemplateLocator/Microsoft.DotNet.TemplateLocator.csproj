@@ -37,6 +37,8 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="GetTargetPath" />
+
   <ItemGroup>
     <ProjectReference Include="..\Resolvers\Microsoft.DotNet.SdkResolver\Microsoft.DotNet.SdkResolver.csproj" PrivateAssets="All" />
   </ItemGroup>
