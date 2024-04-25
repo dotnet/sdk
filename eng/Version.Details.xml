@@ -383,24 +383,24 @@
       <Uri>https://github.com/dotnet/test-templates</Uri>
       <Sha>1591b24326caa98288e04e18e5c1b75c36c917c1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.24120.2">
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.24222.1">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>1591b24326caa98288e04e18e5c1b75c36c917c1</Sha>
+      <Sha>31ab6a2d0e3b19f17c4126c859564ccc3a0cae94</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rc.24120.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rc.24222.1">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>1591b24326caa98288e04e18e5c1b75c36c917c1</Sha>
+      <Sha>31ab6a2d0e3b19f17c4126c859564ccc3a0cae94</Sha>
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-preview.4.24201.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="9.0.0-preview.5.24223.8" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/winforms</Uri>
-      <Sha>6710618bf954958130cd0e940cc25223079b12d5</Sha>
+      <Sha>9a9d4a2a8474d89c5b4c5ba7b23a00a687c10b72</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-preview.4.24202.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="9.0.0-preview.5.24224.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>25ba139a0c67220a843c989343d27580877c3f8b</Sha>
+      <Sha>ed866731842f39a5eef71e9678226a9db7e4fc9e</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="9.0.0-preview.24222.1">
       <Uri>https://github.com/dotnet/xdt</Uri>
