@@ -13,6 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\PdbUtilities.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
   </ItemGroup>
 

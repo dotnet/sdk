@@ -32,8 +32,12 @@ usage()
   echo "  --with-sdk <DIR>                Use the SDK in the specified directory for bootstrapping"
   echo ""
 
+  echo "Non-source-only settings:"
+  echo "  --build-repo-tests              Build repository tests"
+  echo "  --dev                           Use -dev or -ci versioning instead of .NET official build versions"
+
+
   echo "Advanced settings:"
-  echo "  --build-repo-tests              Build repository tests. May not be supported with --source-only"
   echo "  --ci                            Set when running on CI server"
   echo "  --clean-while-building          Cleans each repo after building (reduces disk space usage, short: -cwb)"
   echo "  --excludeCIBinarylog            Don't output binary log (short: -nobl)"
@@ -82,6 +86,7 @@ packagesPreviouslySourceBuiltDir="${packagesDir}previously-source-built/"
 ci=false
 exclude_ci_binary_log=false
 prepare_machine=false
+use_dev_versioning=false
 
 properties=''
 while [[ $# > 0 ]]; do
@@ -175,6 +180,9 @@ while [[ $# > 0 ]]; do
     -use-mono-runtime)
       properties="$properties /p:SourceBuildUseMonoRuntime=true"
       ;;
+    -dev)
+      use_dev_versioning=true
+      ;;
     *)
       properties="$properties $1"
       ;;
@@ -187,6 +195,10 @@ if [[ "$ci" == true ]]; then
   if [[ "$exclude_ci_binary_log" == false ]]; then
     binary_log=true
   fi
+fi
+
+if [[ "$use_dev_versioning" == true && "$sourceOnly" != true ]]; then
+  properties="$properties /p:UseOfficialBuildVersioning=false"
 fi
 
 # Never use the global nuget cache folder
@@ -233,8 +245,13 @@ function Build {
     fi
 
     if [ "$test" != "true" ]; then
+      initSourceOnlyBinaryLog=""
+      if [[ "$binary_log" == true ]]; then
+        initSourceOnlyBinaryLog="/bl:\"$log_dir/init-source-only.binlog\""
+      fi
+
       "$CLI_ROOT/dotnet" build-server shutdown
-      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/tools/init-build.proj" -bl:"$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.binlog" -flp:LogFile="$scriptroot/artifacts/log/$configuration/BuildMSBuildSdkResolver.log" /t:ExtractToolsetPackages,BuildMSBuildSdkResolver $properties
+      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog $properties
       # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
       "$CLI_ROOT/dotnet" build-server shutdown
     fi

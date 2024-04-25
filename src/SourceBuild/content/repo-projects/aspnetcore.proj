@@ -36,6 +36,10 @@
     <RepositoryReference Include="symreader" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <RepositoryReference Include="efcore" />
+  </ItemGroup>
+
   <ItemGroup>
     <EnvironmentVariables Include="warn_as_error=false" />
   </ItemGroup>
