@@ -6,6 +6,8 @@
 #   https://dev.azure.com/dnceng-public/public/_build?definitionId=___
 # - sdk-unified-build-full
 #   https://dev.azure.com/dnceng-public/public/_build?definitionId=___
+# - dotnet-sdk-source-build-internal
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=1378
 
 trigger: none
 pr:
