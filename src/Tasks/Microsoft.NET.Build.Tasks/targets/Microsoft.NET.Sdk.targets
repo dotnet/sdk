@@ -665,7 +665,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.UseWindowsThreadPool"
                                     Condition="'$(UseWindowsThreadPool)' != ''"
-                                    Value="$(UseWindowsThreadPool)" />
+                                    Value="$(UseWindowsThreadPool)"
+                                    Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Xml.XmlResolver.IsNetworkingEnabledByDefault"
                                     Condition="'$(XmlResolverIsNetworkingEnabledByDefault)' != ''"
