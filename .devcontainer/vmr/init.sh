@@ -10,7 +10,7 @@ workspace_dir=$(realpath "$sdk_dir/../")
 tmp_dir=$(realpath "$workspace_dir/tmp")
 vmr_dir=$(realpath "$workspace_dir/dotnet")
 
-cp "$sdk_dir/.devcontainer/vmr-source-build/synchronize-vmr.sh" "$workspace_dir"
+cp "$sdk_dir/.devcontainer/vmr/synchronize-vmr.sh" "$workspace_dir"
 
 mkdir -p "$tmp_dir"
 
