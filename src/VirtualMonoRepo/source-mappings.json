@@ -90,6 +90,14 @@
             "defaultRemote": "https://github.com/dotnet/fsharp"
         },
         {
+            "name": "installer",
+            "defaultRemote": "https://github.com/dotnet/installer",
+            "exclude": [
+                // Exclude the VMR content as this is copied to the root of VMR via the synchronization process.
+                "src/SourceBuild/content/**/*"
+            ]
+        },
+        {
             "name": "msbuild",
             "defaultRemote": "https://github.com/dotnet/msbuild"
         },
