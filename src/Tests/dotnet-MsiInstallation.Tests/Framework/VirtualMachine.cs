@@ -525,6 +525,8 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             public override bool Exists => GetResult().Exists;
 
             public override List<string> Directories => GetResult().Directories;
+
+            public override List<string> Files => GetResult().Files;
         }
 
         public class VMSnapshot
