@@ -20,6 +20,6 @@
             ]
         }
     },
-    "onCreateCommand": "${containerWorkspaceFolder}/sdk/.devcontainer/vmr-source-build/init.sh",
+    "onCreateCommand": "${containerWorkspaceFolder}/sdk/.devcontainer/vmr/init.sh",
     "workspaceFolder": "/workspaces"
 }
