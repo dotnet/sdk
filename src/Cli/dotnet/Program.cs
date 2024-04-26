@@ -24,14 +24,13 @@ namespace Microsoft.DotNet.Cli
             using AutomaticEncodingRestorer _ = new();
 
             // Setting output encoding is not available on those platforms
-            if (!OperatingSystem.IsIOS() && !OperatingSystem.IsAndroid() && !OperatingSystem.IsTvOS() && !OperatingSystem.IsBrowser())
+            if (!OperatingSystem.IsIOS() &&
+                !OperatingSystem.IsAndroid() &&
+                !OperatingSystem.IsTvOS() &&
+                !OperatingSystem.IsBrowser() &&
+                (!OperatingSystem.IsWindows() || OperatingSystem.IsWindowsVersionAtLeast(10, 0, 18363)))
             {
-                //if output is redirected, force encoding to utf-8;
-                //otherwise the caller may not decode it correctly
-                if (Console.IsOutputRedirected)
-                {
-                    Console.OutputEncoding = Encoding.UTF8;
-                }
+                Console.OutputEncoding = Encoding.UTF8;
             }
 
             DebugHelper.HandleDebugSwitch(ref args);
