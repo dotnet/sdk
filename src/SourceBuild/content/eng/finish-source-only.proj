@@ -196,27 +196,13 @@
     </PropertyGroup>
   </Target>
 
-  <!-- Discover the produced packages from all repo asset manifests for this repository. -->
-  <Target Name="DiscoverProducedPackages" DependsOnTargets="ResolveProjectReferences">
-    <XmlPeek XmlInputPath="$(MergedAssetManifestOutputPath)" Query="/Build/*[self::Package]">
-      <Output TaskParameter="Result" ItemName="ProducedPackageEntry" />
-    </XmlPeek>
+  <!-- Discover the produced packages from the merged asset manifest -->
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownPackagesFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+  <Target Name="GetProducedPackages" Returns="@(ProducedPackage)">
+    <GetKnownPackagesFromAssetManifests AssetManifests="$(MergedAssetManifestOutputPath)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
+    </GetKnownPackagesFromAssetManifests>
   </Target>
-  
-  <Target Name="ProcessPackageEntries" DependsOnTargets="DiscoverProducedPackages" Inputs="@(ProducedPackageEntry)" Outputs="%(Identity).ForBatching">
-    <XmlPeek XmlContent="%(ProducedPackageEntry.Identity)" Query="/Package/@Id">
-      <Output TaskParameter="Result" PropertyName="ProducedPackageId" />
-    </XmlPeek>
-    <XmlPeek XmlContent="%(ProducedPackageEntry.Identity)" Query="/Package/@Version">
-      <Output TaskParameter="Result" PropertyName="ProducedPackageVersion" />
-    </XmlPeek>
-
-    <ItemGroup>
-      <ProducedPackage Include="$(ProducedPackageId)" Version="$(ProducedPackageVersion)" ReferenceOnly="$([MSBuild]::ValueOrDefault('$(ReferenceOnlyRepoArtifacts)', 'false'))" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="GetProducedPackages" DependsOnTargets="DiscoverProducedPackages;ProcessPackageEntries" Returns="@(ProducedPackage)" />
 
   <!-- Create the SourceBuilt.Private.Artifacts archive when building source-only. -->
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
