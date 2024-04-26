@@ -124,10 +124,10 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
 
             _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersionFromGlobalJson ?? _workloadSetVersion, offlineCache);
-            return TryInstallWorkloadSet(context, out updates);
+            return TryInstallWorkloadSet(context, out updates, throwOnFailure: true);
         }
 
-        public bool TryInstallWorkloadSet(ITransactionContext context, out IEnumerable<ManifestVersionUpdate> updates)
+        public bool TryInstallWorkloadSet(ITransactionContext context, out IEnumerable<ManifestVersionUpdate> updates, bool throwOnFailure = false)
         {
             var advertisingPackagePath = Path.Combine(_userProfileDir, "sdk-advertising", _sdkFeatureBand.ToString(), "microsoft.net.workloads");
             if (File.Exists(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)))
@@ -139,7 +139,14 @@ namespace Microsoft.DotNet.Workloads.Workload
             else if (_workloadInstaller is FileBasedInstaller || _workloadInstaller is NetSdkMsiInstallerClient)
             {
                 // No workload sets found
-                Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
+                if (throwOnFailure)
+                {
+                    throw new NuGetPackageNotFoundException(string.Format(Update.LocalizableStrings.WorkloadVersionRequestedNotFound, _workloadSetVersionFromGlobalJson ?? _workloadSetVersion));
+                }
+                else
+                {
+                    Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
+                }
                 updates = null;
                 return false;
             }

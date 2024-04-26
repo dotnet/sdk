@@ -72,6 +72,11 @@
         <target state="translated">ワークロードの更新に失敗しました: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="new">Workload version {0} not found.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>
