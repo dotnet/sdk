@@ -3,7 +3,7 @@
 # This list is processed using FileSystemName.MatchesSimpleExpression
 #
 # Format:
-#   Exclude the file entirely from license scanning: 
+#   Exclude the file entirely from license scanning:
 #     <vmr-file-path>
 #   Exclude a specific detected license expression from the scan results for the file:
 #     <vmr-file-path>|<license-expression>[,<license-expression>...]
@@ -207,6 +207,12 @@ src/runtime/src/mono/sample/wasm/browser-webpack/package-lock.json
 
 # False positive
 src/sdk/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
+src/sdk/src/Installer/core-sdk-tasks/BuildFPMToolPreReqs.cs|json
+src/sdk/src/Installer/redist-installer/packaging/osx/resources/en.lproj/welcome.html|cecill-c
+
+# Configuration, doesn't apply to source directly
+src/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
+src/sdk/src/Installer/redist-installer/packaging/**/*.json
 
 #
 # source-build-externals

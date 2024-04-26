@@ -1,5 +1,5 @@
 ### This job builds https://github.com/dotnet/dotnet with given parameters
-### If run in an installer PR, new changes are applied to a local copy of the VMR, then it is built and tested
+### If run in an sdk PR, new changes are applied to a local copy of the VMR, then it is built and tested
 
 parameters:
 - name: architecture
@@ -86,7 +86,7 @@ parameters:
   type: boolean
   default: false
 
-#### INSTALLER parameters ####
+#### sdk parameters ####
 
 - name: isBuiltFromVmr
   displayName: True when build is running from dotnet/dotnet directly
@@ -175,7 +175,7 @@ jobs:
         parameters:
           vmrPath: $(vmrPath)
           vmrBranch: ${{ parameters.vmrBranch }}
-          targetRef: $(Build.SourceVersion) # Synchronize the current installer commit
+          targetRef: $(Build.SourceVersion) # Synchronize the current sdk commit
 
   - ${{ if parameters.buildFromArchive }}:
     - script: |
