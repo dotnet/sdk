@@ -15,7 +15,7 @@ resources:
   - repository: vmr
     type: git
     name: dotnet-dotnet
-    ref: $(Build.SourceBranch)
+    ref: main-sdk
 
   - repository: 1ESPipelineTemplates
     type: git
