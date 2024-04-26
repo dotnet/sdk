@@ -15,6 +15,7 @@ resources:
   - repository: vmr
     type: git
     name: dotnet-dotnet
+    # TODO: Change back to '$(Build.SourceBranch)' when sdk becomes the VMR's origin
     ref: main-sdk
 
   - repository: 1ESPipelineTemplates

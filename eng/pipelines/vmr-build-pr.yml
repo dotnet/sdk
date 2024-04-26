@@ -24,7 +24,8 @@ parameters:
 - name: vmrBranch
   displayName: dotnet/dotnet branch to push to
   type: string
-  default: ' '
+  # TODO: Change back to ' ' when sdk becomes the VMR's origin
+  default: main-sdk
 
 - name: disableBuild
   displayName: Skip the VMR Build stage
