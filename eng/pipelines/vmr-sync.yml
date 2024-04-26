@@ -17,7 +17,7 @@ resources:
     type: github
     name: dotnet/dotnet
     endpoint: dotnet
-    ref: $(Build.SourceBranch)
+    ref: main-sdk
 
   - repository: 1ESPipelineTemplates
     type: git
