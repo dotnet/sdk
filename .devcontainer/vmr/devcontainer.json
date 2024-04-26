@@ -16,7 +16,7 @@
         },
         "codespaces": {
             "openFiles": [
-                "sdk/.devcontainer/vmr-source-build/README.md"
+                "sdk/.devcontainer/vmr/README.md"
             ]
         }
     },
