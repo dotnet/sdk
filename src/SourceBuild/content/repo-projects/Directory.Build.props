@@ -230,7 +230,7 @@
 
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion" Version="%24(MicrosoftWindowsDesktopAppRefPackageVersion)" />
 
-    <!-- Used by installer to determine sdk version -->
+    <!-- Used by installer partition in sdk repo to determine sdk version -->
     <ExtraPackageVersionPropsPackageInfo Include="MicrosoftDotnetToolsetInternalPackageVersion" Version="%24(MicrosoftNETSdkPackageVersion)" />
 
     <!-- Used by sdk to determine msbuild version for fsharp -->
