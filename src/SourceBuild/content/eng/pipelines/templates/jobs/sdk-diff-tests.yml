@@ -159,9 +159,9 @@ jobs:
     condition: succeededOrFailed()
     continueOnError: true
     inputs:
-      testRunner: vSTest
-      testResultsFiles: '*.trx'
-      searchFolder: $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.SmokeTests/TestResults
+      testRunner: VSTest
+      testResultsFiles: '**/*.trx'
+      searchFolder: $(Build.SourcesDirectory)/artifacts/TestResults
       mergeTestResults: true
       publishRunAttachments: true
       testRunTitle: $(Agent.JobName)
