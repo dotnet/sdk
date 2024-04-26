@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             else
             {
                 var globalJsonInformation = _workloadListHelper.ManifestProvider.GetGlobalJsonInformation();
-
+                Reporter.WriteLine();
                 var shouldPrintTable = globalJsonInformation?.WorkloadVersionInstalled != false;
                 var shouldShowWorkloadSetVersion = globalJsonInformation is not null ||
                     InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.DotnetPath), "default.json")).UseWorkloadSets == true;
