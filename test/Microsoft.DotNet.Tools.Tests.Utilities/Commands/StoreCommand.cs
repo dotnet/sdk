@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
-using System.Collections.Generic;
 
 namespace Microsoft.DotNet.Tools.Test.Utilities
 {

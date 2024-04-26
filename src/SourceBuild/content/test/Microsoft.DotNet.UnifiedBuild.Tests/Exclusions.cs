@@ -8,7 +8,8 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Enumeration;
 using System.Linq;
-using Microsoft.DotNet.SourceBuild.SmokeTests;
+
+namespace Microsoft.DotNet.UnifiedBuild.Tests;
 
 public class Exclusions
 {
@@ -51,18 +52,6 @@ public class Exclusions
         Func<string, bool> condition = f => !IsFileExcluded(f, exclusions, prefix);
         return files.Where(condition);
     }
-
-    //public List<string> UbFileExclusions => _ubFileExclusions ??= GetFileExclusions(UbPrefix);
-    //List<string>? _ubFileExclusions = null;
-
-    //public List<string> UbAssemblyVersionExclusions => _ubAssemblyVersionExclusions ??= UbFileExclusions.Concat(GetAssemblyVersionExclusions(UbPrefix)).Concat(GetNativeDllExclusions(UbPrefix)).ToList();
-    //List<string>? _ubAssemblyVersionExclusions = null;
-
-    //public List<string> MsftFileExclusions => _msftFileExclusions ??= GetFileExclusions(MsftPrefix);
-    //List<string>? _msftFileExclusions = null;
-
-    //public List<string> MsftAssemblyVersionExclusions => _msftAssemblyVersionExclusions ??= MsftFileExclusions.Concat(GetAssemblyVersionExclusions(MsftPrefix)).Concat(GetNativeDllExclusions(MsftPrefix)).ToList();
-    //List<string>? _msftAssemblyVersionExclusions = null;
 
     public List<string> GetFileExclusions(string? prefix = null) => GetRidSpecificExclusionFileNames("SdkFileDiffExclusions.txt").SelectMany(f => Utilities.TryParseExclusionsFile(f, prefix)).ToList();
     public List<string> GetAssemblyVersionExclusions(string? prefix = null) => GetRidSpecificExclusionFileNames("SdkAssemblyVersionDiffExclusions.txt").SelectMany(f => Utilities.TryParseExclusionsFile(f, prefix)).ToList();
