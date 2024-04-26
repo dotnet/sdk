@@ -575,14 +575,14 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>bcc1d3d6f00fbcea3f454b2e35bceeaa51e604b1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.24057.2">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.24222.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>bfde902a10d7b672f4fc7e844198ede405dbb9c6</Sha>
+      <Sha>4ab07002cb46cf169c85a09a546709a20642c65b</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.24057.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.24222.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>bfde902a10d7b672f4fc7e844198ede405dbb9c6</Sha>
+      <Sha>4ab07002cb46cf169c85a09a546709a20642c65b</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
