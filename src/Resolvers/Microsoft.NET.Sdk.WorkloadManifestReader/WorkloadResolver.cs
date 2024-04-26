@@ -131,7 +131,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     if (!_manifests.TryAdd(readableManifest.ManifestId, (manifest, manifestInfo)))
                     {
                         var existingManifest = _manifests[readableManifest.ManifestId].manifest;
-                        throw new WorkloadManifestCompositionException(Strings.DuplicateManifestID, manifestProvider.GetType().FullName, readableManifest.ManifestId, readableManifest.ManifestPath, existingManifest.ManifestPath);
+                        if (!existingManifest.Version.Equals(readableManifest.ManifestVersion))
+                        {
+                            throw new WorkloadManifestCompositionException(Strings.DuplicateManifestID, manifestProvider.GetType().FullName, readableManifest.ManifestId, readableManifest.ManifestPath, existingManifest.ManifestPath);
+                        }
                     }
                 }
             }
