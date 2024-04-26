@@ -256,7 +256,7 @@
           Outputs="$(BaseIntermediateOutputPath)CreateBuildInputProps.complete">
 
     <ItemGroup>
-      <_PrebuiltAssetManifestProject Include="$(MSBuildThisFileFullPath)" AdditionalProperties="RepoAssetManifestsDir=$(PrebuiltSourceBuiltPackagesPath)" />
+      <_PrebuiltAssetManifestProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RepoAssetManifestsDir=$(PrebuiltSourceBuiltPackagesPath)" />
     </ItemGroup>
 
     <!-- Get the previously-built-source-built package information from the manifest from that build. -->
