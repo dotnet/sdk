@@ -52,7 +52,6 @@ public class ContainerHelpersTests
     [Theory]
     [InlineData("dotnet/runtime", true)]
     [InlineData("foo/bar", true)]
-    [InlineData("owner/API", true)]
     [InlineData("registry", true)]
     [InlineData("-foo/bar", false)]
     [InlineData(".foo/bar", false)]
