@@ -78,6 +78,7 @@ public class ContainerHelpersTests
     [InlineData("Api", "api", "NormalizedContainerName", null)]
     [InlineData("API", "api", "NormalizedContainerName", null)]
     [InlineData("$runtime", null, null, "InvalidImageName_NonAlphanumericStartCharacter")]
+    [InlineData("-%", null, null, "InvalidImageName_NonAlphanumericStartCharacter")]
     public void IsValidRepositoryName(string containerRepository, string? expectedNormalized, string? expectedWarning, string? expectedError)
     {
         var actual = ContainerHelpers.NormalizeRepository(containerRepository);
