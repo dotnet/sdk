@@ -31,7 +31,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <!-- TODO: Remove Newtonoft.Json dependency. -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <!-- TODO: Remove Newtonsoft.Json dependency. -->
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Text.Json" />
     <Reference Include="System" />
