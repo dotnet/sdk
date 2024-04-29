@@ -90,6 +90,8 @@ stages:
       platform:
         name: 'Managed'
         container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9'
+        # Publish not needed for PR builds
+        skipPublishValidation: true
   - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/build-pr.yml
       parameters:
