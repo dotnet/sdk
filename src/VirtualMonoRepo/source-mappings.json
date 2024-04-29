@@ -58,7 +58,7 @@
             "defaultRemote": "https://github.com/dotnet/aspnetcore",
             "exclude": [
                 // Non-OSS license - https://github.com/dotnet/source-build/issues/3537
-                "src/Installers/Windows/AspNetCoreModule-Setup/*"
+                "src/Installers/Windows/AspNetCoreModule-Setup/**/*"
             ]
         },
         {
