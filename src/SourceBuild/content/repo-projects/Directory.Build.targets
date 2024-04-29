@@ -473,7 +473,7 @@
   </Target>
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownPackagesFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
-  <Target Name="GetProducedPackages" Returns="@(ProducedPackage)">
+  <Target Name="GetProducedPackages" DependsOnTargets="GetRepoAssetManifests" Returns="@(ProducedPackage)">
     <GetKnownPackagesFromAssetManifests AssetManifests="@(RepoAssetManifest)">
       <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
     </GetKnownPackagesFromAssetManifests>
