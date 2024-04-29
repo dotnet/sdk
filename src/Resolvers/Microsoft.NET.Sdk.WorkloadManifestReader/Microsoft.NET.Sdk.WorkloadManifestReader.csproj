@@ -22,13 +22,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
 </Project>
