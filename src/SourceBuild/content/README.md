@@ -9,7 +9,7 @@ What this means:
 In the VMR, you can find:
 - source files of [each product repository](#list-of-components) which are mirrored inside of their respective directories under [`src/`](https://github.com/dotnet/dotnet/tree/main/src),
 - tooling that enables [building the whole .NET product from source](https://github.com/dotnet/source-build) on Linux platforms,
-- small customizations, in the form of [patches](https://github.com/dotnet/dotnet/tree/main/src/installer/src/SourceBuild/patches), applied on top of the original code to make the build possible,
+- small customizations, in the form of [patches](https://github.com/dotnet/dotnet/tree/main/src/sdk/src/SourceBuild/patches), applied on top of the original code to make the build possible,
 - *[in future]* E2E tests for the whole .NET product.
 
 Just like the development repositories, the VMR will have a release branch for every feature band (e.g. `release/8.0.1xx`).
@@ -173,7 +173,7 @@ Alternatively, you can also provide a manifest file where this information can b
 
 Sometimes you want to make a change in a repository and test that change in the VMR. You could of course make the change in the VMR directly (locally, as the VMR is read-only for now) but in case it's already available in your repository, you can synchronize it into the VMR (again locally).
 
-To do this, you can either start a [dotnet/dotnet](https://github.com/dotnet/dotnet) Codespace - you will see instructions right after it starts. Alternatively, you can clone the repository locally and use the [vmr-sync.sh](src/installer/eng/vmr-sync.sh) or [vmr-sync.ps1](src/installer/eng/vmr-sync.ps1) script to pull your changes in. Please refer to the documentation in the script for more details.
+To do this, you can either start a [dotnet/dotnet](https://github.com/dotnet/dotnet) Codespace - you will see instructions right after it starts. Alternatively, you can clone the repository locally and use the [vmr-sync.sh](src/sdk/eng/vmr-sync.sh) or [vmr-sync.ps1](src/sdk/eng/vmr-sync.ps1) script to pull your changes in. Please refer to the documentation in the script for more details.
 
 ## List of components
 

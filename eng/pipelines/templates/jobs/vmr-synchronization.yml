@@ -3,7 +3,7 @@
 
 parameters:
 - name: targetRef
-  displayName: Target revision of dotnet/installer to synchronize
+  displayName: Target revision of dotnet/sdk to synchronize
   type: string
   default: $(Build.SourceVersion)
 
@@ -63,7 +63,8 @@ jobs:
 
   - ${{ if and(not(parameters.noPush), not(in(variables['Build.Reason'], 'PullRequest')), eq(variables['System.TeamProject'], 'internal')) }}:
     # Push main and release branches to the public VMR
-    - ${{ if or(eq(parameters.vmrBranch, 'main'), startsWith(parameters.vmrBranch, 'release/')) }}:
+    # TODO: Remove main-sdk when sdk becomes the VMR's origin
+    - ${{ if or(eq(parameters.vmrBranch, 'main'), eq(parameters.vmrBranch, 'main-sdk'), startsWith(parameters.vmrBranch, 'release/')) }}:
       - script: >
           ./.dotnet/dotnet darc vmr push
           --vmr '$(vmrPath)'
@@ -73,7 +74,7 @@ jobs:
           --github-pat '$(BotAccount-dotnet-bot-repo-PAT)'
           --verbose
         displayName: Push changes to dotnet/dotnet (public)
-        workingDirectory: $(Agent.BuildDirectory)/installer
+        workingDirectory: $(Agent.BuildDirectory)/sdk
   
     # Push internal/release branches to the internal VMR
     - ${{ if startsWith(parameters.vmrBranch, 'internal/release/') }}:
@@ -86,4 +87,4 @@ jobs:
           --azdev-pat '$(dn-bot-dnceng-build-rw-code-rw)'
           --verbose
         displayName: Push changes to dotnet-dotnet (internal)
-        workingDirectory: $(Agent.BuildDirectory)/installer
+        workingDirectory: $(Agent.BuildDirectory)/sdk

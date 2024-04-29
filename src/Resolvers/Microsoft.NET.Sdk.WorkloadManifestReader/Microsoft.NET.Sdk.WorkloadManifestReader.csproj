@@ -13,11 +13,6 @@
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 
-  <!-- DesignTimeBuild requires all the TargetFramework derived properties to not be present in the first property group. -->
-  <PropertyGroup>
-    <DefineConstants Condition="$([MSBuild]::GetTargetFrameworkIdentifier('$(TargetFramework)')) == '.NETCoreApp'">$(DefineConstants);USE_SYSTEM_TEXT_JSON</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" Namespace="Microsoft.NET.Sdk.Localization" />
     <Compile Include="..\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" />
@@ -31,9 +26,6 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="8.0.0" />
-    <!-- TODO: Remove Newtonsoft.Json dependency. -->
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Text.Json" VersionOverride="8.0.0" />
     <Reference Include="System" />
     <Reference Include="System.Core" />

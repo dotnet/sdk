@@ -185,8 +185,8 @@ function BootstrapArtifacts {
   # Copy bootstrap project to working dir
   cp "$REPO_ROOT/eng/bootstrap/buildBootstrapPreviouslySB.csproj" "$workingDir"
 
-  # Copy NuGet.config from the installer repo to have the right feeds
-  cp "$REPO_ROOT/src/installer/NuGet.config" "$workingDir"
+  # Copy NuGet.config from the sdk repo to have the right feeds
+  cp "$REPO_ROOT/src/sdk/NuGet.config" "$workingDir"
 
   # Get PackageVersions.props from existing prev-sb archive
   echo "  Retrieving PackageVersions.props from existing archive"
