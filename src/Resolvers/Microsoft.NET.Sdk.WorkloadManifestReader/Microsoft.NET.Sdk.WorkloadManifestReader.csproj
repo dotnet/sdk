@@ -31,10 +31,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="8.0.0" />
     <!-- TODO: Remove Newtonsoft.Json dependency. -->
     <PackageReference Include="Newtonsoft.Json" />
-    <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="System.Text.Json" VersionOverride="8.0.0" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
