@@ -26,6 +26,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <!-- Netfx version builds against the lowest version of System.Text.Json that's guaranteed to be shipped with MSBuild in VS -->
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="8.0.0" />
     <PackageReference Include="System.Text.Json" VersionOverride="8.0.0" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="8.0.0" />
     <Reference Include="System" />
