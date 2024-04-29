@@ -31,7 +31,9 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <!-- TODO: Remove Newtonoft.Json dependency. -->
     <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="System.Text.Json" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
