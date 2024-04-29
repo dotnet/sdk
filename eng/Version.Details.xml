@@ -379,9 +379,9 @@
       <Uri>https://github.com/dotnet/test-templates</Uri>
       <Sha>becc4bd157cd6608b51a5ffe414a5d2de6330272</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.8.0" Version="1.1.0-rc.24120.2">
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.8.0" Version="1.1.0-rc.24202.1">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>1591b24326caa98288e04e18e5c1b75c36c917c1</Sha>
+      <Sha>49c9ad01f057b3c6352bbec12b117acc2224493c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rc.24229.2">
       <Uri>https://github.com/dotnet/test-templates</Uri>
