@@ -6,6 +6,8 @@ schedules:
   branches:
     include:
     - main
+    # TODO: Remove 'main-sdk' when sdk becomes the VMR's origin
+    - main-sdk
     - release/*.0.1xx*
     - internal/release/*.0.1xx*
 
@@ -20,7 +22,7 @@ parameters:
   default: " " # Set it to an empty string to allow it be an optional parameter
 
 variables:
-  installerRoot: '$(Build.SourcesDirectory)/src/installer'
+  sdkRoot: '$(Build.SourcesDirectory)/src/sdk'
 
 jobs:
 - job: Setup
@@ -30,7 +32,7 @@ jobs:
   steps:
   - script: |
       vmrSrcDir="$(Build.SourcesDirectory)/src"
-      
+
       # Builds an Azure DevOps matrix definition. Each entry in the matrix is a path,
       # allowing a job to be run for each src repo.
       matrix=""
@@ -76,11 +78,11 @@ jobs:
 
   - task: PipAuthenticate@1
     displayName: 'Pip Authenticate'
-    inputs: 
+    inputs:
       artifactFeeds: public/dotnet-public-pypi
       onlyAddExtraIndex: false
 
-  - script: $(installerRoot)/eng/install-scancode.sh
+  - script: $(sdkRoot)/eng/install-scancode.sh
     displayName: Install Scancode
 
   - script: >
@@ -90,7 +92,7 @@ jobs:
       --logger:'trx;LogFileName=$(Agent.JobName)_LicenseScan.trx'
       --logger:'console;verbosity=detailed'
       -c Release
-      -bl:$(Build.SourcesDirectory)/artifacts/log/Debug/BuildTests_$(date +"%m%d%H%M%S").binlog 
+      -bl:$(Build.SourcesDirectory)/artifacts/log/Debug/BuildTests_$(date +"%m%d%H%M%S").binlog
       -flp:LogFile=$(Build.SourcesDirectory)/artifacts/logs/BuildTests_$(date +"%m%d%H%M%S").log
       -clp:v=m
       /p:SmokeTestsLicenseScanPath=$(repoPath)

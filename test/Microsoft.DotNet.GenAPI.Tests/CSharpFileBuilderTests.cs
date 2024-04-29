@@ -2832,7 +2832,7 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 expected: """
                     namespace A
                     {
-                        public partial class Foo<T> : System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.Generic.ICollection<T>, System.Collections.Generic.IEnumerable<T>
+                        public partial class Foo<T> : System.Collections.ICollection, System.Collections.IEnumerable, System.Collections.Generic.ICollection<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IEnumerable<T>
                         {
                             int System.Collections.Generic.ICollection<T>.Count { get { throw null; } }
                             bool System.Collections.Generic.ICollection<T>.IsReadOnly { get { throw null; } }

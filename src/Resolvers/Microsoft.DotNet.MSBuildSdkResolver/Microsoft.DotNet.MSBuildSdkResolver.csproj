@@ -93,6 +93,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <PackageReference Include="System.Text.Json"  VersionOverride="$(SystemTextJsonVersionOverride)" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <PackageReference Include="Microsoft.VisualStudio.Setup.Configuration.Interop" PrivateAssets="All" ExcludeAssets="Runtime" />
@@ -104,8 +105,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- No PackageReference to System.Text.Json necessary when targeting .NET, because it's included in .NET 5.0 and higher -->
-    <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonVersionOverride)" Condition="'$(UseSystemTextJson)'=='True' and '$(TargetFramework)'=='net472'"/>
     <PackageReference Include="Newtonsoft.Json" Condition="'$(UseSystemTextJson)'!='True'"/>
 
     <!-- Reference this package to avoid package downgrade errors.  See https://github.com/dotnet/sdk/issues/3044 for details -->
@@ -168,5 +167,7 @@
     <Error Text="$(AssemblyName) is not expected to depend on %(ResolvedDependencies.FusionName). $(DependencyMismatchErrorText)"
            Condition="!($([System.String]::Copy('$(ExpectedDependenciesList)').Contains('%(ResolvedDependencies.FusionName)')))" />
   </Target>
+
+  <Target Name="GetTargetPath" />
 
 </Project>

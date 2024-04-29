@@ -1,0 +1,71 @@
+parameters:
+- name: vmrBranch
+  type: string
+
+variables:
+- ${{ if ne(parameters.vmrBranch, '') }}:
+  - name: VmrBranch
+    value: ${{ parameters.vmrBranch }}
+- ${{ else }}:
+  - name: VmrBranch
+    value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
+
+- name: alpine319Container
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+- name: centOSStream9Container
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
+- name: fedora39Container
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
+- name: ubuntu2204Container
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04
+- name: ubuntu2204ArmContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-arm64
+- name: marinerX64CrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-amd64
+- name: marinerArmCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
+- name: marinerArm64CrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm64
+- name: marinerX64AlpineCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-amd64-alpine
+- name: marinerArmAlpineCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm-alpine
+- name: marinerArm64AlpineCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm64-alpine
+- name: androidCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-android-amd64
+- name: browserCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-webassembly-20230917141449-2aaa02c
+- name: wasiCrossContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-webassembly
+
+- ${{ if eq(variables['System.TeamProject'], 'public') }}:
+  - name: defaultPoolName
+    value: NetCore-Public-XL
+  - name: poolImage_Linux
+    value: 1es-ubuntu-2004-open
+  - name: poolImage_LinuxArm64
+    value: Mariner-2-Docker-ARM64
+  - name: poolName_LinuxArm64
+    value: Docker-Linux-Arm-Public
+  - name: poolImage_Mac
+    value: macos-12
+  - name: poolImage_Windows
+    value: windows.vs2022preview.amd64.open
+- ${{ else }}:
+  - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
+    - name: defaultPoolName
+      value: NetCore1ESPool-Internal-XL
+  - ${{ else }}:
+    - name: defaultPoolName
+      value: $(DncEngInternalBuildPool)
+  - name: poolImage_Linux
+    value: 1es-ubuntu-2204
+  - name: poolImage_LinuxArm64
+    value: Mariner-2-Docker-ARM64
+  - name: poolName_LinuxArm64
+    value: Docker-Linux-Arm-Internal
+  - name: poolImage_Mac
+    value: macos-13-arm64
+  - name: poolImage_Windows
+    value: windows.vs2022preview.amd64
