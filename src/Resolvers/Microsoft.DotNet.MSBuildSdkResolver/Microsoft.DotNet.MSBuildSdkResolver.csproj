@@ -13,9 +13,6 @@
 
     <Nullable>Enable</Nullable>
 
-    <UseSystemTextJson Condition="'$(TargetFramework)'!='netstandard2.0'">True</UseSystemTextJson>
-    <DefineConstants Condition="'$(UseSystemTextJson)'=='True'">$(DefineConstants);USE_SYSTEM_TEXT_JSON</DefineConstants>
-
     <!-- Netfx version of the resolver builds against the lowest version of System.Text.Json that's guaranteed to be shipped with MSBuild in VS -->
     <SystemTextJsonVersionOverride>8.0.0</SystemTextJsonVersionOverride>
 
@@ -105,8 +102,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Condition="'$(UseSystemTextJson)'!='True'"/>
-
     <!-- Reference this package to avoid package downgrade errors.  See https://github.com/dotnet/sdk/issues/3044 for details -->
     <PackageReference Include="Microsoft.NETCore.Targets" ExcludeAssets="all" PrivateAssets="all" />
   </ItemGroup>
