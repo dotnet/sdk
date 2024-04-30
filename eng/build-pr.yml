@@ -184,7 +184,6 @@ jobs:
           Contents: |
             log/$(_BuildConfig)/**/*
             TestResults/$(_BuildConfig)/**/*
-            SymStore/$(_BuildConfig)/**/*
             tmp/$(_BuildConfig)/**/*.binlog
           TargetFolder: '$(Build.ArtifactStagingDirectory)'
         continueOnError: true
@@ -318,7 +317,6 @@ jobs:
             Contents: |
               log/$(_BuildConfig)/**/*
               TestResults/$(_BuildConfig)/**/*
-              SymStore/$(_BuildConfig)/**/*
               tmp/$(_BuildConfig)/**/*.binlog
             TargetFolder: '$(Build.ArtifactStagingDirectory)'
           continueOnError: true
@@ -464,7 +462,6 @@ jobs:
           Contents: |
             log/$(_BuildConfig)/**/*
             TestResults/$(_BuildConfig)/**/*
-            SymStore/$(_BuildConfig)/**/*
             tmp/$(_BuildConfig)/**/*.binlog
           TargetFolder: '$(Build.ArtifactStagingDirectory)'
         continueOnError: true

@@ -1,11 +1,6 @@
-trigger:
-  batch: true
-  branches:
-    include:
-    - main
-    - release/9.0.1xx-preview*
-    - internal/release/*
-    - exp/*
+# Pipeline: https://dev.azure.com/dnceng-public/public/_build?definitionId=101
+
+trigger: none
 
 pr:
   branches:
@@ -83,7 +78,7 @@ stages:
         matrix:
           Build_Release:
             _BuildConfig: Release
-            _PublishArgs: '-publish /p:DotNetPublishUsingPipelines=true'
+            _PublishArgs: ''
             ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
               _SignType: test
               _Test: -test
@@ -95,6 +90,8 @@ stages:
       platform:
         name: 'Managed'
         container: 'mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9'
+        # Publish not needed for PR builds
+        skipPublishValidation: true
   - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
     - template: /eng/build-pr.yml
       parameters:
