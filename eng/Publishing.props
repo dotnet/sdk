@@ -194,7 +194,7 @@
 
   <!-- In non-VMR builds, don't push the installer manifest until the dotnet/installer build is turned off. In VMR builds,
        push the manifest to switching to the sdk repo for the full build.  -->
-  <Target Name="PublishSdkAssetsAndChecksums" BeforeTargets="Publish" Condition="$(DotNetPublishUsingPipelines) and '$(DotNetBuild)' == 'true'">
+  <Target Name="PublishSdkAssetsAndChecksums" BeforeTargets="Publish" Condition="$(DotNetPublishUsingPipelines) and '$(DotNetBuildOrchestrator)' == 'true'">
     <ReadLinesFromFile File="$(ArtifactsTmpDir)FullNugetVersion.version">
       <Output TaskParameter="Lines" PropertyName="FullNugetVersion" />
     </ReadLinesFromFile>
