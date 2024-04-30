@@ -60,8 +60,7 @@ stages:
 - ${{ if not(parameters.disableBuild) }}:
   - template: templates/stages/vmr-build.yml
     parameters:
-      # TODO: Change back to ${{ variables.VmrBranch }}
-      vmrBranch: main-sdk
+      vmrBranch: ${{ variables.VmrBranch }}
       isBuiltFromVmr: false
       isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
       ${{ if contains(variables['Build.DefinitionName'], '-full') }}:
@@ -80,6 +79,5 @@ stages:
     jobs:
     - template: templates/jobs/vmr-synchronization.yml
       parameters:
-        # TODO: Change back to ${{ variables.VmrBranch }}
-        vmrBranch: main-sdk
+        vmrBranch: ${{ variables.VmrBranch }}
         noPush: true

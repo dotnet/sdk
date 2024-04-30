@@ -51,10 +51,6 @@ jobs:
       os: linux
 
   steps:
-  - bash: >
-      echo 'TEST: ${{ parameters.vmrBranch }}'
-    displayName: Test bash
-  
   - template: ../steps/vmr-prepare.yml
     parameters:
       vmrBranch: ${{ parameters.vmrBranch }}
@@ -79,7 +75,7 @@ jobs:
           --verbose
         displayName: Push changes to dotnet/dotnet (public)
         workingDirectory: $(Agent.BuildDirectory)/sdk
-  
+
     # Push internal/release branches to the internal VMR
     - ${{ if startsWith(parameters.vmrBranch, 'internal/release/') }}:
       - script: >
