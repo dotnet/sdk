@@ -51,6 +51,9 @@ jobs:
       os: linux
 
   steps:
+  - bash: |
+    echo 'TEST: ${{ parameters.vmrBranch }}'
+  
   - template: ../steps/vmr-prepare.yml
     parameters:
       vmrBranch: ${{ parameters.vmrBranch }}
