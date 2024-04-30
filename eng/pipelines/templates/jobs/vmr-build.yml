@@ -451,10 +451,13 @@ jobs:
         cd "$(sourcesPath)"
         find artifacts/log/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/log/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
-        find artifacts/TestResults/ -type f -name "*.trx" -exec rsync -R {} -t ${targetFolder} \;
+
+        if [ -d "artifacts/TestResults/" ]; then
+          find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
+          find artifacts/TestResults/ -type f -name "*.trx" -exec rsync -R {} -t ${targetFolder} \;
+        fi
 
         if [[ "${{ parameters.buildSourceOnly }}" == "True" ]]; then
           find artifacts/prebuilt-report/ -exec rsync -R {} -t ${targetFolder} \;
