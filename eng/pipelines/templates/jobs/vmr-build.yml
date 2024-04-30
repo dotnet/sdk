@@ -165,7 +165,8 @@ jobs:
     - template: ../steps/vmr-prepare.yml@self
       parameters:
         ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-          vmrBranch: $(System.PullRequest.TargetBranch)
+          # TODO: Set back to vmrBranch: $(System.PullRequest.TargetBranch)
+          vmrBranch: main-sdk
         ${{ else }}:
           vmrBranch: ${{ parameters.vmrBranch }}
 
@@ -394,7 +395,7 @@ jobs:
 
           # Only use Docker when a container is specified
           if [[ -n "${{ parameters.container }}" ]]; then
-            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh /bl:artifacts/log/Release/Test.binlog --test $sourceOnlyArgs $extraBuildProperties $(additionalBuildArgs) 
+            docker run --rm $dockerVolumeArgs -w /vmr ${{ parameters.container }} ./build.sh /bl:artifacts/log/Release/Test.binlog --test $sourceOnlyArgs $extraBuildProperties $(additionalBuildArgs)
           else
             cd $(sourcesPath)
             ./build.sh /bl:artifacts/log/Release/Test.binlog --test $sourceOnlyArgs $extraBuildProperties $(additionalBuildArgs)

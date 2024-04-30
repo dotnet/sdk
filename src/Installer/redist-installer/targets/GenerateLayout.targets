@@ -1,4 +1,4 @@
-<Project>
+<Project TreatAsLocalProperty="PublicBaseURL">
 
   <PropertyGroup>
     <RedistLayoutPath>$(BaseOutputPath)$(Configuration)\dotnet\</RedistLayoutPath>
