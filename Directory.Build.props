@@ -9,7 +9,7 @@
     <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
     <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
     <Architecture Condition="'$(Architecture)' == ''">x64</Architecture>
-
+    <!-- TEST -->
     <!--
       The finalizer.nativeproject needs to have Platform set to build for the correct architecture, but this value being set below isn't used by the project because of the build hierarchy when using the CMake SDK.
       Instead, the Platform being set here is prior to calling the Arcade SDK, which sets PlatformName in RepoDefaults.props and modifies the OutputPath in ProjectLayout.props to include a PlatformName folder in the path.
