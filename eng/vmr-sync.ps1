@@ -6,8 +6,8 @@ code from various repositories into the 'dotnet/dotnet' repository.
 
 .DESCRIPTION
 
-The script is used during CI to ingest new code based on dotnet/installer but it can also help
-for reproducing potential failures during installer's PRs, namely to fix the Source-Build.
+The script is used during CI to ingest new code based on dotnet/sdk but it can also help
+for reproducing potential failures during sdk's PRs, namely to fix the Source-Build.
 Another usecase is to try manually synchronizing a given commit of some repo into the VMR and
 trying to Source-Build the VMR. This can help when fixing the Source-Build but using a commit
 from a not-yet merged branch (or fork) to test the fix will help.
@@ -17,7 +17,7 @@ folder. These clones can be re-used in future synchronizations so it is advised 
 folder to this to speed up your re-runs.
 
 .EXAMPLE
-  Synchronize current installer and all dependencies into a local VMR:
+  Synchronize current sdk and all dependencies into a local VMR:
     ./vmr-sync.ps1 -vmrDir "$HOME/repos/dotnet" -tmpDir "$HOME/repos/tmp"
 
   Synchronize the VMR to a specific commit of dotnet/runtime using custom fork:
@@ -39,8 +39,8 @@ Defaults to src/VirtualMonoRepo/Component.template.md
 
 .PARAMETER recursive
 Optional. Recursively synchronize all the source build dependencies (declared in Version.Details.xml)
-This is used when performing the full synchronization during installer's CI and the final VMR sync.
-Defaults to false unless no repository is supplied in which case a recursive sync of installer is performed.
+This is used when performing the full synchronization during sdk's CI and the final VMR sync.
+Defaults to false unless no repository is supplied in which case a recursive sync of sdk is performed.
 
 .PARAMETER remote
 Optional. Additional remote to use during the synchronization
@@ -50,7 +50,7 @@ Example: 'runtime:https://github.com/yourfork/runtime'
 .PARAMETER repository
 Optional. Repository + git ref separated by colon to synchronize to.
 This can be a specific commit, branch, tag.
-If not supplied, the revision of the parent installer repository of this script will be used (recursively).
+If not supplied, the revision of the parent sdk repository of this script will be used (recursively).
 Example: 'runtime:my-branch-name'
 
 .PARAMETER tpnTemplate
@@ -90,11 +90,11 @@ function Highlight {
   Write-Host "> $($args[0])" -ForegroundColor 'Cyan'
 }
 
-$installerDir = (Split-Path -Parent $scriptRoot)
+$sdkDir = (Split-Path -Parent $scriptRoot)
 
-# If installer is a repo, we're in an installer and not in the dotnet/dotnet repo
-if (Test-Path -Path "$installerDir/.git" -PathType Container) {
-  $additionalRemotes = "installer:$installerDir"
+# If sdk is a repo, we're in an sdk and not in the dotnet/dotnet repo
+if (Test-Path -Path "$sdkDir/.git" -PathType Container) {
+  $additionalRemotes = "sdk:$sdkDir"
 }
 
 if ($remote) {
@@ -107,8 +107,8 @@ if ($debugOutput) {
 }
 # Validation
 
-if (-not (Test-Path -Path $installerDir -PathType Container)) {
-  Fail "Directory '$installerDir' does not exist. Please specify the path to the dotnet/installer repo"
+if (-not (Test-Path -Path $sdkDir -PathType Container)) {
+  Fail "Directory '$sdkDir' does not exist. Please specify the path to the dotnet/sdk repo"
   exit 1
 }
 
@@ -131,7 +131,7 @@ if (-not (Test-Path -Path $tpnTemplate -PathType Leaf)) {
 
 # Default when no repository is provided
 if (-not $repository) {
-  $repository = "installer:$(git -C $installerDir rev-parse HEAD)"
+  $repository = "sdk:$(git -C $sdkDir rev-parse HEAD)"
   $recursive = $true
 }
 
