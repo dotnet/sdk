@@ -452,7 +452,7 @@ jobs:
         find artifacts/log/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/log/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
 
-        if [ -n "$(ls -A 'artifacts/TestResults/')" ]; then
+        if [ -d "artifacts/TestResults/" ]; then
           find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
           find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
           find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
