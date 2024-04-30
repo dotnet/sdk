@@ -192,7 +192,9 @@
     <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)*.tar.gz.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
   </ItemGroup>
 
-  <Target Name="PublishSdkAssetsAndChecksums" BeforeTargets="Publish" Condition="$(DotNetPublishUsingPipelines)">
+  <!-- In non-VMR builds, don't push the installer manifest until the dotnet/installer build is turned off. In VMR builds,
+       push the manifest to switching to the sdk repo for the full build.  -->
+  <Target Name="PublishSdkAssetsAndChecksums" BeforeTargets="Publish" Condition="$(DotNetPublishUsingPipelines) and '$(DotNetBuild)' == 'true'">
     <ReadLinesFromFile File="$(ArtifactsTmpDir)FullNugetVersion.version">
       <Output TaskParameter="Lines" PropertyName="FullNugetVersion" />
     </ReadLinesFromFile>
@@ -224,7 +226,7 @@
       <ItemsToSignPostBuild Include="@(ItemsToSignPostBuildWithPaths->'%(Filename)%(Extension)')" />
     </ItemGroup>
 
-    <!-- <PushToBuildStorage
+    <PushToBuildStorage
       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
       AzureDevOpsBuildId="$(BUILD_BUILDID)"
@@ -246,7 +248,7 @@
       AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
       ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"
       NonShippingPackagesLocalStorageDir="$(SourceBuiltNonShippingPackagesDir)"
-      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)" /> -->
+      AssetManifestsLocalStorageDir="$(SourceBuiltAssetManifestsDir)" />
   </Target>
 
 </Project>
