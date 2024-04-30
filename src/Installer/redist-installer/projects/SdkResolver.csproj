@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <Target Name="GenerateLayout"
-          Condition="'$(OS)' == 'Windows_NT' and '$(ExcludeFromDotNetBuild)' != 'true'"
+          Condition="'$(OS)' == 'Windows_NT' and '$(_SuppressAllTargets)' != 'true'"
           BeforeTargets="AfterBuild">
     <Message Importance="High" Text="$(MSBuildProjectName) -&gt; $(OutputPath)" />
 
