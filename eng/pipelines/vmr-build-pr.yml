@@ -52,7 +52,7 @@ resources:
     type: github
     name: dotnet/dotnet
     endpoint: dotnet
-    # TODO: Change back to main when sdk becomes the VMR's origin
+    # TODO: Change back to ${{ variables.VmrBranch }}
     ref: main-sdk
 
 stages:
@@ -60,7 +60,8 @@ stages:
 - ${{ if not(parameters.disableBuild) }}:
   - template: templates/stages/vmr-build.yml
     parameters:
-      vmrBranch: ${{ variables.VmrBranch }}
+      # TODO: Change back to ${{ variables.VmrBranch }}
+      vmrBranch: main-sdk
       isBuiltFromVmr: false
       isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
       ${{ if contains(variables['Build.DefinitionName'], '-full') }}:
@@ -79,5 +80,6 @@ stages:
     jobs:
     - template: templates/jobs/vmr-synchronization.yml
       parameters:
-        vmrBranch: ${{ variables.VmrBranch }}
+        # TODO: Change back to ${{ variables.VmrBranch }}
+        vmrBranch: main-sdk
         noPush: true
