@@ -121,10 +121,6 @@
     <MicroBuildCorePackageVersion>0.2.0</MicroBuildCorePackageVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <!-- Dependency from https://github.com/dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>9.0.0-beta.24114.1</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-  </PropertyGroup>
-  <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/arcade-services -->
     <MicrosoftDotNetDarcLibVersion>1.1.0-beta.24229.1</MicrosoftDotNetDarcLibVersion>
   </PropertyGroup>
@@ -319,8 +315,10 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/arcade -->
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>9.0.0-beta.24229.1</MicrosoftDotNetBuildTasksInstallersPackageVersion>
     <MicrosoftDotNetSignToolVersion>9.0.0-beta.24229.1</MicrosoftDotNetSignToolVersion>
     <MicrosoftDotNetXliffTasksVersion>9.0.0-beta.24229.1</MicrosoftDotNetXliffTasksVersion>
+    <MicrosoftDotNetXUnitExtensionsVersion>9.0.0-beta.24229.1</MicrosoftDotNetXUnitExtensionsVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/sourcelink -->
@@ -339,7 +337,6 @@
   <PropertyGroup>
     <FluentAssertionsVersion>6.12.0</FluentAssertionsVersion>
     <FluentAssertionsJsonVersion>6.1.0</FluentAssertionsJsonVersion>
-    <MicrosoftDotNetXUnitExtensionsVersion>9.0.0-beta.24229.1</MicrosoftDotNetXUnitExtensionsVersion>
     <MoqPackageVersion>4.18.4</MoqPackageVersion>
     <XunitCombinatorialVersion>1.3.2</XunitCombinatorialVersion>
     <MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>8.0.0-beta.23607.1</MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>
