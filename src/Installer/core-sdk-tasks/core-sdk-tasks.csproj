@@ -5,20 +5,17 @@
     <TargetFrameworks Condition="'$(OS)' != 'Windows_NT'">$(SdkTargetFramework)</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RootNamespace>Microsoft.DotNet.Cli.Build</RootNamespace>
-    <DefineConstants Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(DefineConstants);SOURCE_BUILD</DefineConstants>
     <DisableImplicitNamespaceImports>true</DisableImplicitNamespaceImports>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="NuGet.Versioning" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataLoadContextVersion)" />
-    <PackageReference Include="WindowsAzure.Storage" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-    <PackageReference Include="System.Net.Http" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
