@@ -7,12 +7,12 @@ parameters:
 
 steps:
   - checkout: vmr
-    displayName: Clone dotnet/dotnet
+    displayName: Clone dotnet/dotnet (TEST)
     path: vmr
     clean: true
 
   - script: |
       git checkout --track origin/${{ parameters.vmrBranch }}
       echo "##vso[task.setvariable variable=vmrBranch]${{ parameters.vmrBranch }}"
-    displayName: Check out ${{ parameters.vmrBranch }}
+    displayName: Check out ${{ parameters.vmrBranch }} TEST
     workingDirectory: $(Agent.BuildDirectory)/vmr
