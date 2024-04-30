@@ -213,6 +213,33 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
 
+        [Fact]
+        public void UpdateWorkloadSetViaGlobalJson()
+        {
+            InstallSdk();
+
+            var versionToUpdateTo = "8.0.201";
+
+            string originalVersion = GetWorkloadVersion();
+
+            File.WriteAllText("global.json",
+@"{
+    ""sdk"": {
+        ""workloadVersion"": ""versionToUpdateTo""
+    }
+}".Replace("versionToUpdateTo", versionToUpdateTo));
+
+            var result = VM.CreateRunCommand("dotnet", "workload", "--version").WithIsReadOnly(true).Execute();
+            result.Should().Fail();
+            result.StdErr.Should().Contain(versionToUpdateTo);
+
+            VM.CreateRunCommand("dotnet", "workload", "update").Execute().Should().Pass();
+
+            var finalVersion = GetWorkloadVersion();
+            finalVersion.Should().NotBe(originalVersion);
+            finalVersion.Should().Be(versionToUpdateTo);
+        }
+
         string GetWorkloadVersion()
         {
             var result = VM.CreateRunCommand("dotnet", "workload", "--version")
