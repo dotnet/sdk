@@ -3,8 +3,8 @@
 ### This script is used for synchronizing the dotnet/dotnet VMR locally. This means pulling new
 ### code from various repositories into the 'dotnet/dotnet' repository.
 ###
-### The script is used during CI to ingest new code based on dotnet/installer but it can also help
-### for reproducing potential failures during installer's PRs, namely to fix the Source-Build.
+### The script is used during CI to ingest new code based on dotnet/sdk but it can also help
+### for reproducing potential failures during sdk's PRs, namely to fix the Source-Build.
 ### Another usecase is to try manually synchronizing a given commit of some repo into the VMR and
 ### trying to Source-Build the VMR. This can help when fixing the Source-Build but using a commit
 ### from a not-yet merged branch (or fork) to test the fix will help.
@@ -14,7 +14,7 @@
 ### folder to this to speed up your re-runs.
 ###
 ### USAGE:
-###   Synchronize current installer and all dependencies into a local VMR:
+###   Synchronize current sdk and all dependencies into a local VMR:
 ###     ./vmr-sync.sh --vmr "$HOME/repos/dotnet" --tmp "$HOME/repos/tmp"
 ###
 ###   Synchronize the VMR to a specific commit of dotnet/runtime using custom fork:
@@ -40,8 +40,8 @@
 ###
 ###   --recursive
 ###       Optional. Recursively synchronize all the source build dependencies (declared in Version.Details.xml)
-###       This is used when performing the full synchronization during installer's CI and the final VMR sync.
-###       Defaults to false unless no repository is supplied in which case a recursive sync of installer is performed.
+###       This is used when performing the full synchronization during sdk's CI and the final VMR sync.
+###       Defaults to false unless no repository is supplied in which case a recursive sync of sdk is performed.
 ###
 ###   --remote name:URI
 ###       Optional. Additional remote to use during the synchronization
@@ -51,7 +51,7 @@
 ###   -r, --repository name:GIT_REF
 ###       Optional. Repository + git ref separated by colon to synchronize to.
 ###       This can be a specific commit, branch, tag.
-###       If not supplied, the revision of the parent installer repository of this script will be used (recursively).
+###       If not supplied, the revision of the parent sdk repository of this script will be used (recursively).
 ###       Example: 'runtime:my-branch-name'
 ###
 ###   --tpn-template
@@ -95,7 +95,7 @@ function highlight () {
 }
 
 # realpath is not available in macOS 12, try horrible-but-portable workaround
-installer_dir=$(cd "$scriptroot/../"; pwd -P)
+sdk_dir=$(cd "$scriptroot/../"; pwd -P)
 
 tmp_dir=''
 vmr_dir=''
@@ -104,13 +104,13 @@ repository=''
 additional_remotes=''
 recursive=false
 verbosity=verbose
-component_template="$installer_dir/src/VirtualMonoRepo/Component.template.md"
-tpn_template="$installer_dir/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt"
+component_template="$sdk_dir/src/VirtualMonoRepo/Component.template.md"
+tpn_template="$sdk_dir/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt"
 azdev_pat=''
 
-# If installer is a repo, we're in an installer and not in the dotnet/dotnet repo
-if [[ -d "$installer_dir/.git" ]]; then
-  additional_remotes="installer:$installer_dir"
+# If sdk is a repo, we're in an sdk and not in the dotnet/dotnet repo
+if [[ -d "$sdk_dir/.git" ]]; then
+  additional_remotes="sdk:$sdk_dir"
 fi
 
 while [[ $# -gt 0 ]]; do
@@ -170,8 +170,8 @@ done
 
 # Validation
 
-if [[ ! -d "$installer_dir" ]]; then
-  fail "Directory '$installer_dir' does not exist. Please specify the path to the dotnet/installer repo"
+if [[ ! -d "$sdk_dir" ]]; then
+  fail "Directory '$sdk_dir' does not exist. Please specify the path to the dotnet/sdk repo"
   exit 1
 fi
 
@@ -194,7 +194,7 @@ fi
 
 # Default when no repository is provided
 if [[ -z "$repository" ]]; then
-  repository="installer:$(git -C "$installer_dir" rev-parse HEAD)"
+  repository="sdk:$(git -C "$sdk_dir" rev-parse HEAD)"
   recursive=true
 fi
 
