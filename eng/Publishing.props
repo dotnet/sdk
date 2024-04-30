@@ -15,6 +15,9 @@
 
     <TempWorkingDirectory>$(ArtifactsDir)\AssetsTmpDir\$([System.Guid]::NewGuid())</TempWorkingDirectory>
     <PublishBinariesAndBadge Condition=" '$(PublishBinariesAndBadge)' == '' ">true</PublishBinariesAndBadge>
+
+    <IsStableBuild>false</IsStableBuild>
+    <IsStableBuild Condition="'$(DotNetFinalVersionKind)' == 'release'">true</IsStableBuild>
   </PropertyGroup>
 
   <!-- Pulled from arcade's publish.proj see https://github.com/dotnet/arcade/issues/5790 for
@@ -83,7 +86,7 @@
   <PropertyGroup>
     <PublishDependsOnTargets>$(PublishDependsOnTargets);_ResolvePublishRoslynNuGetPackages</PublishDependsOnTargets>
   </PropertyGroup>
-    
+
   <Target Name="_ResolvePublishRoslynNuGetPackages">
     <ItemGroup>
       <RoslynPackagesToPush Include="$(NuGetPackageRoot)\Microsoft.Net.Compilers.Toolset.Framework\$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)\*.nupkg" />
@@ -103,11 +106,6 @@
       <ItemsToSignPostBuild Remove="@(ItemsToSignPostBuild)" />
       <ItemsToSignPostBuild Include="@(ToolsetAssetsToPublish->'%(Filename)%(Extension)')" />
     </ItemGroup>
-    
-    <PropertyGroup>
-      <IsStableBuild>false</IsStableBuild>
-      <IsStableBuild Condition="'$(DotNetFinalVersionKind)' == 'release'">true</IsStableBuild>
-    </PropertyGroup>
 
     <MakeDir Directories="$(TempWorkingDirectory)" />
 
@@ -194,7 +192,7 @@
     <CheckSumsToPublish Remove="$(ArtifactsShippingPackagesDir)*.tar.gz.sha512" Condition=" '$(PublishBinariesAndBadge)' == 'false' " />
   </ItemGroup>
 
-  <Target Name="PublishSdkAssetsAndChecksums" BeforeTargets="Publish" Condition="$(DotNetPublishUsingPipelines)">
+  <Target Name="PublishSdkAssetsAndChecksums" BeforeTargets="Publish">
     <ReadLinesFromFile File="$(ArtifactsTmpDir)FullNugetVersion.version">
       <Output TaskParameter="Lines" PropertyName="FullNugetVersion" />
     </ReadLinesFromFile>
@@ -226,11 +224,6 @@
       <ItemsToSignPostBuild Include="@(ItemsToSignPostBuildWithPaths->'%(Filename)%(Extension)')" />
     </ItemGroup>
 
-    <PropertyGroup>
-      <IsStableBuild>false</IsStableBuild>
-      <IsStableBuild Condition="'$(DotNetFinalVersionKind)' == 'release'">true</IsStableBuild>
-    </PropertyGroup>
-
     <PushToBuildStorage
       AzureDevOpsCollectionUri="$(SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)"
       AzureDevOpsProject="$(SYSTEM_TEAMPROJECT)"
@@ -249,7 +242,6 @@
       AssetManifestPath="$(InstallersAssetManifestFilePath)"
       PublishFlatContainer="true"
       IsStableBuild="$(IsStableBuild)"
-      PublishingVersion="3"
       PushToLocalStorage="$(PushToLocalStorage)"
       AssetsLocalStorageDir="$(SourceBuiltAssetsDir)"
       ShippingPackagesLocalStorageDir="$(SourceBuiltShippingPackagesDir)"
