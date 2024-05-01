@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
         private readonly bool _includePreviews;
         private readonly bool _machineReadableOption;
         private readonly IWorkloadManifestUpdater _workloadManifestUpdater;
-        private readonly IWorkloadInfoHelper _workloadListHelper;
+        private readonly WorkloadInfoHelper _workloadListHelper;
 
         public WorkloadListCommand(
             ParseResult parseResult,
@@ -74,21 +74,45 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             }
             else
             {
-                var manifestInfoDict = _workloadListHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
-
-                InstalledWorkloadsCollection installedWorkloads = _workloadListHelper.AddInstalledVsWorkloads(installedList);
+                var globalJsonInformation = _workloadListHelper.ManifestProvider.GetGlobalJsonInformation();
                 Reporter.WriteLine();
-                PrintableTable<KeyValuePair<string, string>> table = new();
-                table.AddColumn(InformationStrings.WorkloadIdColumn, workload => workload.Key);
-                table.AddColumn(InformationStrings.WorkloadManfiestVersionColumn, workload =>
+                if (globalJsonInformation is not null)
                 {
-                    var m = _workloadListHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
-                    var manifestInfo = manifestInfoDict[m.Id];
-                    return m.Version + "/" + manifestInfo.ManifestFeatureBand;
-                });
-                table.AddColumn(InformationStrings.WorkloadSourceColumn, workload => workload.Value);
+                    Reporter.WriteLine(string.Format(
+                        globalJsonInformation.WorkloadVersionInstalled ?
+                            LocalizableStrings.WorkloadSetFromGlobalJsonInstalled :
+                            LocalizableStrings.WorkloadSetFromGlobalJsonNotInstalled,
+                        globalJsonInformation.GlobalJsonVersion,
+                        globalJsonInformation.GlobalJsonPath));
+                }
 
-                table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
+                if (globalJsonInformation?.WorkloadVersionInstalled != false)
+                {
+                    var manifestInfoDict = _workloadListHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
+
+                    InstalledWorkloadsCollection installedWorkloads = _workloadListHelper.AddInstalledVsWorkloads(installedList);
+                    PrintableTable<KeyValuePair<string, string>> table = new();
+                    table.AddColumn(InformationStrings.WorkloadIdColumn, workload => workload.Key);
+                    table.AddColumn(InformationStrings.WorkloadManfiestVersionColumn, workload =>
+                    {
+                        var m = _workloadListHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
+                        var manifestInfo = manifestInfoDict[m.Id];
+                        return m.Version + "/" + manifestInfo.ManifestFeatureBand;
+                    });
+                    table.AddColumn(InformationStrings.WorkloadSourceColumn, workload => workload.Value);
+
+                    table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
+
+                    if (globalJsonInformation is null)
+                    {
+                        var installState = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.DotnetPath), "default.json"));
+                        if (installState.UseWorkloadSets == true)
+                        {
+                            Reporter.WriteLine();
+                            Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion() ?? "unknown"));
+                        }
+                    }
+                }
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(LocalizableStrings.WorkloadListFooter);
@@ -107,6 +131,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
         internal IEnumerable<UpdateAvailableEntry> GetUpdateAvailable(IEnumerable<WorkloadId> installedList)
         {
+            // This was an internal partner ask, and they do not need to support workload sets.
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews).Wait();
             var manifestsToUpdate = _workloadManifestUpdater.CalculateManifestUpdates();
 

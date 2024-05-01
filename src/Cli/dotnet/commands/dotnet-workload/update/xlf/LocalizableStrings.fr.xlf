@@ -22,6 +22,11 @@
         <target state="translated">Mettez à jour les charges de travail en fonction du fichier de définition de restauration spécifié.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="translated">Aucune mise à jour de charge de travail trouvée.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">Aucune charge de travail installée pour cette bande de fonctionnalités. Pour mettre à jour les charges de travail installées avec des versions antérieures du SDK, incluez l'option --from-previous-sdk.</target>
@@ -42,6 +47,11 @@
         <target state="translated">Échec de la mise à jour de la charge de travail '{0}' pour la ou les raisons suivantes :</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">La mise à jour vers un fichier de restauration n’est pas compatible avec les jeux de charge de travail. L’installation et la mise à jour utiliseront désormais des manifestes libres. Pour effectuer une mise à jour vers une version de charge de travail spécifique, utilisez --version.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">Mise à jour réussie du charge de travail : {0}.</target>
@@ -50,11 +60,6 @@
       <trans-unit id="WorkloadCacheDownloadFailed">
         <source>Failed to download workload update packages to cache: {0}</source>
         <target state="translated">Échec du téléchargement des packages de mise à jour de charge de travail dans le cache : {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">Argument «{0}» non valide à l’argument --mode pour la mise à jour de charge de travail dotnet. Seuls les modes pris en charge sont « workloadset », « loosemanifest » et « auto ».</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

@@ -22,6 +22,11 @@
         <target state="translated">Zaktualizuj obciążenia na podstawie określonego pliku definicji wycofywania.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">Nie zainstalowano żadnych obciążeń dla tego pasma funkcji. Aby zaktualizować obciążenia zainstalowane przy użyciu wcześniejszych wersji zestawu SDK, dołącz opcję --from-previous-sdk.</target>
@@ -42,6 +47,11 @@
         <target state="translated">Aktualizacja obciążenia „{0}” nie powiodła się z następującego powodu:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Aktualizacja do pliku wycofywania nie jest zgodna z zestawami obciążeń. Zainstaluj i zaktualizuj będzie teraz używać luźnych manifestów. Aby zaktualizować do określonej wersji obciążenia, użyj opcji --version.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">Pomyślnie zaktualizowano pakiety robocze: {0}.</target>
@@ -50,11 +60,6 @@
       <trans-unit id="WorkloadCacheDownloadFailed">
         <source>Failed to download workload update packages to cache: {0}</source>
         <target state="translated">Nie można pobrać pakietów aktualizacji pakietów roboczych do pamięci podręcznej: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">Nieprawidłowy argument „{0}” argumentu --mode dla aktualizacji obciążenia dotnet. Obsługiwane tryby to „workloadset”, „loosemanifest” i „auto”.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

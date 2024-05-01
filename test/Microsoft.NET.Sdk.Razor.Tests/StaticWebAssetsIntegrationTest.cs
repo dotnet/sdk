@@ -398,7 +398,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 LoadBuildManifest("Rebuild"),
                 "Rebuild");
 
-            secondObjManifestContents.Should().Be(objManifestContents);
+            // This is no longer true because the manifests include the timestamp for the last modified
+            // time of the file, etc.
+            //secondObjManifestContents.Should().Be(objManifestContents);
 
             // GenerateStaticWebAssetsManifest should copy the file to the output folder.
             var secondFinalPath = Path.Combine(outputPath, "ComponentApp.staticwebassets.runtime.json");

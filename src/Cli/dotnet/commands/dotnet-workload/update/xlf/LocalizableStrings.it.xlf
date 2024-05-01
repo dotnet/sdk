@@ -22,6 +22,11 @@
         <target state="translated">Aggiornare i carichi di lavoro in base al file di definizione di ripristino dello stato precedente specificato.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="new">No workload update found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
         <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
         <target state="translated">Nessun carico di lavoro installato per questa banda di caratteristiche. Per eseguire l'aggiornamento da un SDK precedente, includere l'opzione --from-previous-sdk.</target>
@@ -42,6 +47,11 @@
         <target state="translated">L'aggiornamento del carico di lavoro '{0}' non è riuscito. Motivi:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">L'aggiornamento a un file di rollback non è compatibile con i set di carico di lavoro. L'installazione e l'aggiornamento useranno ora manifesti separati. Per eseguire l'aggiornamento a una versione specifica del carico di lavoro, usare --version.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">I carichi di lavoro sono stati aggiornati: {0}.</target>
@@ -50,11 +60,6 @@
       <trans-unit id="WorkloadCacheDownloadFailed">
         <source>Failed to download workload update packages to cache: {0}</source>
         <target state="translated">Non è stato possibile scaricare i pacchetti di aggiornamento del carico di lavoro nella cache: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">Argomento non valido "{0}" per l'argomento --mode per l'aggiornamento del carico di lavoro dotnet. Le uniche modalità supportate sono "workloadset", "loosemanifest" e "auto".</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

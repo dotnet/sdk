@@ -21,7 +21,7 @@ jobs:
       CreatePr: true
       LclSource: lclFilesfromPackage
       LclPackageId: 'LCL-JUNO-PROD-DOTNETSDK'
-      MirrorBranch: release/8.0.3xx
+      MirrorBranch: release/8.0.4xx
       MirrorRepo: sdk
 
 - ${{ if not(contains(parameters.agentOs, 'TemplateEngine')) }}:
@@ -67,7 +67,7 @@ jobs:
             value: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
           - name: _PerfIterations
             value: 25
-  
+
       steps:
       - ${{ if ne(variables['System.TeamProject'], 'public') }}:
         - task: PowerShell@2
@@ -81,6 +81,7 @@ jobs:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
                     -configuration $(_BuildConfig)
+                    -nativeToolsOnMachine
                     $(_PublishArgs)
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
@@ -95,6 +96,7 @@ jobs:
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
         - powershell: eng\common\build.ps1
                 -configuration $(_BuildConfig)
+                -nativeToolsOnMachine
                 -prepareMachine
                 -ci
                 -restore
@@ -104,16 +106,17 @@ jobs:
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run Tests in Helix
-          condition: succeededOrFailed()
+          condition: succeeded()
           env:
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: $(_HelixApiToken)
               RunAoTTests: 'false'
-  
+
       - ${{ if eq(parameters.agentOs, 'Windows_NT_FullFramework') }}:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
                     -configuration $(_BuildConfig)
+                    -nativeToolsOnMachine
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
@@ -127,6 +130,7 @@ jobs:
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
         - powershell: eng\common\build.ps1
                 -configuration $(_BuildConfig)
+                -nativeToolsOnMachine
                 -prepareMachine
                 -ci
                 -restore
@@ -141,11 +145,12 @@ jobs:
               TestFullMSBuild: 'true'
               SYSTEM_ACCESSTOKEN: $(System.AccessToken)
               HelixAccessToken: $(_HelixApiToken)
-  
+
       - ${{ if eq(parameters.agentOs, 'Windows_NT_TestAsTools') }}:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
                     -configuration $(_BuildConfig)
+                    -nativeToolsOnMachine
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
@@ -153,7 +158,7 @@ jobs:
           displayName: Build
           env:
             BuildConfig: $(_BuildConfig)
-  
+
       - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools') }}:
         - script: eng/common/build.sh
                     $(_CIBuild)
@@ -183,36 +188,26 @@ jobs:
               HelixAccessToken: $(_HelixApiToken)
               RunAoTTests: 'false'
 
-      - task: PublishTestResults@2
-        displayName: Publish Test Results	
-        inputs:	
-          testResultsFormat: xUnit	
-          testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'	
-          testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'	
-          buildPlatform: '$(BuildPlatform)'	
-          buildConfiguration: '$(_BuildConfig)'	
+      - task: CopyFiles@2
+        displayName: Gather Logs
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+          Contents: |
+            log/$(_BuildConfig)/**/*
+            TestResults/$(_BuildConfig)/**/*
+            SymStore/$(_BuildConfig)/**/*
+            tmp/$(_BuildConfig)/**/*.binlog
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        continueOnError: true
         condition: always()
 
-      - task: CopyFiles@2	
-        displayName: Gather Logs	
-        inputs:	
-          SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-          Contents: |	
-           log/$(_BuildConfig)/**/*	
-           TestResults/$(_BuildConfig)/**/*	
-           SymStore/$(_BuildConfig)/**/*
-           tmp/$(_BuildConfig)/**/*.binlog
-          TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-        continueOnError: true	
-        condition: always()
-  
-      - task: 1ES.PublishBuildArtifacts@1	
-        displayName: Publish Logs to VSTS	
-        inputs:	
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-          publishLocation: Container	
-        continueOnError: true	
+      - task: 1ES.PublishBuildArtifacts@1
+        displayName: Publish Logs to VSTS
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'
+          publishLocation: Container
+        continueOnError: true
         condition: always()
 
 # AoT Jobs
@@ -275,6 +270,7 @@ jobs:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
                     -configuration $(_BuildConfig)
+                    -nativeToolsOnMachine
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     /p:Test=false
@@ -295,6 +291,7 @@ jobs:
                 -prepareMachine
                 -projects $(Build.SourcesDirectory)/test/UnitTests.proj
                 -configuration $(_BuildConfig)
+                -nativeToolsOnMachine
                 /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
                 /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
                 $(_InternalRuntimeDownloadArgs)
@@ -338,26 +335,26 @@ jobs:
               RunAoTTests: 'true'
 
       - ${{ if in(parameters.agentOs, 'Windows_NT', 'Darwin') }}:
-        - task: CopyFiles@2	
-          displayName: Gather Logs	
-          inputs:	
-            SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-            Contents: |	
-              log/$(_BuildConfig)/**/*	
-              TestResults/$(_BuildConfig)/**/*	
+        - task: CopyFiles@2
+          displayName: Gather Logs
+          inputs:
+            SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+            Contents: |
+              log/$(_BuildConfig)/**/*
+              TestResults/$(_BuildConfig)/**/*
               SymStore/$(_BuildConfig)/**/*
               tmp/$(_BuildConfig)/**/*.binlog
-            TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-          continueOnError: true	
+            TargetFolder: '$(Build.ArtifactStagingDirectory)'
+          continueOnError: true
           condition: always()
 
-        - task: 1ES.PublishBuildArtifacts@1	
-          displayName: Publish Logs to VSTS	
-          inputs:	
-            PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-            ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-            publishLocation: Container	
-          continueOnError: true	
+        - task: 1ES.PublishBuildArtifacts@1
+          displayName: Publish Logs to VSTS
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'
+            publishLocation: Container
+          continueOnError: true
           condition: always()
 
 # TemplateEngine Jobs
@@ -420,6 +417,7 @@ jobs:
         - powershell: eng\common\build.ps1
                     $(_CIBuild)
                     -configuration $(_BuildConfig)
+                    -nativeToolsOnMachine
                     $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     /p:Test=false
@@ -431,6 +429,7 @@ jobs:
             HelixAccessToken: ${{ parameters.HelixAccessToken }}
         - powershell: eng\common\build.ps1
                 -configuration $(_BuildConfig)
+                -nativeToolsOnMachine
                 -prepareMachine
                 -ci
                 -restore
@@ -441,6 +440,7 @@ jobs:
           displayName: Run TemplateEngine Cli Unit Tests
         - powershell: eng\common\build.ps1
                 -configuration $(_BuildConfig)
+                -nativeToolsOnMachine
                 -prepareMachine
                 -ci
                 -restore
@@ -483,35 +483,35 @@ jobs:
                 /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/dotnet-new.IntegrationTests.binlog
                 $(_InternalRuntimeDownloadArgs)
           displayName: Run dotnet new Integration Tests
-  
+
       - task: PublishTestResults@2
-        displayName: Publish Test Results	
-        inputs:	
-          testResultsFormat: xUnit	
-          testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'	
-          testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'	
-          buildPlatform: '$(BuildPlatform)'	
-          buildConfiguration: '$(_BuildConfig)'	
+        displayName: Publish Test Results
+        inputs:
+          testResultsFormat: xUnit
+          testResultsFiles: 'artifacts/TestResults/$(_BuildConfig)/*.xml'
+          testRunTitle: '$(_AgentOSName)_$(Agent.JobName)'
+          buildPlatform: '$(BuildPlatform)'
+          buildConfiguration: '$(_BuildConfig)'
         condition: always()
-  
-      - task: CopyFiles@2	
-        displayName: Gather Logs	
-        inputs:	
-          SourceFolder: '$(Build.SourcesDirectory)/artifacts'	
-          Contents: |	
-           log/$(_BuildConfig)/**/*	
-           TestResults/$(_BuildConfig)/**/*	
-           SymStore/$(_BuildConfig)/**/*
-           tmp/$(_BuildConfig)/**/*.binlog
-          TargetFolder: '$(Build.ArtifactStagingDirectory)'	
-        continueOnError: true	
+
+      - task: CopyFiles@2
+        displayName: Gather Logs
+        inputs:
+          SourceFolder: '$(Build.SourcesDirectory)/artifacts'
+          Contents: |
+            log/$(_BuildConfig)/**/*
+            TestResults/$(_BuildConfig)/**/*
+            SymStore/$(_BuildConfig)/**/*
+            tmp/$(_BuildConfig)/**/*.binlog
+          TargetFolder: '$(Build.ArtifactStagingDirectory)'
+        continueOnError: true
         condition: always()
-  
-      - task: 1ES.PublishBuildArtifacts@1	
-        displayName: Publish Logs to VSTS	
-        inputs:	
-          PathtoPublish: '$(Build.ArtifactStagingDirectory)'	
-          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'	
-          publishLocation: Container	
-        continueOnError: true	
+
+      - task: 1ES.PublishBuildArtifacts@1
+        displayName: Publish Logs to VSTS
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+          ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'
+          publishLocation: Container
+        continueOnError: true
         condition: always()
