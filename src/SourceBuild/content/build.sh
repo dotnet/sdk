@@ -365,7 +365,7 @@ if [[ "$sourceOnly" == "true" ]]; then
     packageVersionsPath="$CUSTOM_PACKAGES_DIR/PackageVersions.props"
   elif [ -d "$packagesArchiveDir" ]; then
     sourceBuiltArchive=$(find "$packagesArchiveDir" -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz')
-    if [ -f "${packagesPreviouslySourceBuiltDir}}PackageVersions.props" ]; then
+    if [ -f "${packagesPreviouslySourceBuiltDir}PackageVersions.props" ]; then
       packageVersionsPath=${packagesPreviouslySourceBuiltDir}PackageVersions.props
     elif [ -f "$sourceBuiltArchive" ]; then
       tar -xzf "$sourceBuiltArchive" -C /tmp PackageVersions.props
@@ -375,8 +375,9 @@ if [[ "$sourceOnly" == "true" ]]; then
 
   if [ ! -f "$packageVersionsPath" ]; then
     echo "Cannot find PackagesVersions.props.  Debugging info:"
-    echo "  Attempted archive path: $packagesArchiveDir"
     echo "  Attempted custom PVP path: $CUSTOM_PACKAGES_DIR/PackageVersions.props"
+    echo "  Attempted previously-source-built path: ${packagesPreviouslySourceBuiltDir}PackageVersions.props"
+    echo "  Attempted archive path: $packagesArchiveDir"
     exit 1
   fi
 
