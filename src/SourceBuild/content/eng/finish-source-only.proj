@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\Microsoft.DotNet.UnifiedBuild.Tasks.csproj" />
     <ProjectReference Include="$(TasksDir)Microsoft.DotNet.SourceBuild.Tasks.LeakDetection\Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.csproj" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" />
     <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" />
   </ItemGroup>
 
@@ -59,13 +60,9 @@
           Outputs="$(SdkSymbolsTarball)">
     <PropertyGroup>
       <IntermediateSdkSymbolsLayout>$(BaseIntermediateOutputPath)SdkSymbols</IntermediateSdkSymbolsLayout>
-      <IntermediateSdkLayout>$(BaseIntermediateOutputPath)Sdk</IntermediateSdkLayout>
     </PropertyGroup>
 
-    <MakeDir Directories="$(IntermediateSdkLayout)" />
-    <Exec Command="tar -xzf $(SdkTarballPath) -C $(IntermediateSdkLayout)" />
-
-    <CreateSdkSymbolsLayout SdkLayoutPath="$(IntermediateSdkLayout)"
+    <CreateSdkSymbolsLayout SdkLayoutPath="$(DotNetSdkExtractDir)"
                             AllSymbolsPath="$(IntermediateSymbolsRootDir)"
                             SdkSymbolsLayoutPath="$(IntermediateSdkSymbolsLayout)"
                             FailOnMissingPDBs="false" />
@@ -76,7 +73,6 @@
     <Message Importance="High" Text="Packaged sdk symbols in '$(SdkSymbolsTarball)'" />
 
     <RemoveDir Directories="$(IntermediateSdkSymbolsLayout)" />
-    <RemoveDir Directories="$(IntermediateSdkLayout)" />
   </Target>
 
   <!--

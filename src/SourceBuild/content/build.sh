@@ -162,7 +162,7 @@ while [[ $# > 0 ]]; do
       ;;
 
     # Advanced settings
-    -build-tests)
+    -build-repo-tests)
       properties="$properties /p:DotNetBuildTests=true"
       ;;
     -ci)
