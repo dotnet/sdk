@@ -115,11 +115,14 @@
     <PackageVersion Include="xunit.console" Version="$(XUnitVersion)"/>
   </ItemGroup>
 
-  <!-- Use different versions of Microsoft.Build.* depending on whether we are building in source-only
-       modes or normal modes. In normal modes we use MicrosoftBuildMinimumVersion, otherwise
-       we use MicrosoftBuildVersion. Note: This is not abstracted in Versions.props because source-only
+  <!-- Use different versions of Microsoft.Build.* depending on whether the output will be used in
+       .NET Framework (VS) or only in the .NET SDK.
+
+       Note: This is not abstracted in Versions.props because source-only
        modes will import a version override file after Versions.props. -->
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(TargetFramework)' != 'net472'">
+    <!-- MSBuild-y stuff that runs in the CLI can always reference the latest MSBuild since
+         that is what will be packaged with the .NET SDK. -->
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
     <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
@@ -130,7 +133,9 @@
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildVersion)" />
   </ItemGroup>
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(TargetFramework)' == 'net472'">
+    <!-- MSBuild-y stuff that runs in VS/MSBuild.exe should reference the lagging minimum version so
+         it works in that slightly-older Visual Studio. -->
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildMinimumVersion)" />
     <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
