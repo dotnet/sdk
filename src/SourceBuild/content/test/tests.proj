@@ -11,7 +11,7 @@
     <!-- Skip scenario tests if the portable OS (determined from the host machine) is different from the target OS
         since the tests require the ability to execute the built SDK. An example of where this would be disabled is
         cross-build of using Mariner to build for Alpine (linux vs linux-musl). -->
-    <_RunScenarioTests Condition="'$(BuildOS)' != 'windows' and '$(__PortableTargetOS.ToLowerInvariant())' != '$(TargetOS.ToLowerInvariant())'">false</_RunScenarioTests>
+    <_RunScenarioTests Condition="'$(BuildOS)' != 'windows' and '$(DotNetBuildSourceOnly)' == 'false' and '$(__PortableTargetOS.ToLowerInvariant())' != '$(TargetOS.ToLowerInvariant())'">false</_RunScenarioTests>
 
     <!-- The scenario tests are not supported when unofficial build versioning is used. -->
     <_RunScenarioTests Condition="'$(UseOfficialBuildVersioning)' == 'false'">false</_RunScenarioTests>
