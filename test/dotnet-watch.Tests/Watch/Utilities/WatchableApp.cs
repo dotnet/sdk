@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watcher.Tests
     {
         private const string StartedMessage = "Started";
         private const string ExitingMessage = "Exiting";
-        private const string WatchStartedMessage = "dotnet watch 🚀 Started";
+        private const string WatchStartedMessage = "dotnet watch ⌚ Started";
         private const string WatchExitedMessage = "dotnet watch ⌚ Exited";
         private const string WatchErrorOutputEmoji = "❌";
         private const string WaitingForFileChangeMessage = "dotnet watch ⏳ Waiting for a file to change";

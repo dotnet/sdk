@@ -43,6 +43,7 @@ namespace Microsoft.NET.Build.Tasks
                                       RuntimeIdentifier.EndsWith("-arm") || RuntimeIdentifier.Contains("-arm-") ? Architecture.Arm :
 #if !NETFRAMEWORK
                                       RuntimeIdentifier.EndsWith("-riscv64") || RuntimeIdentifier.Contains("-riscv64-") ? Architecture.RiscV64 :
+                                      RuntimeIdentifier.EndsWith("-loongarch64") || RuntimeIdentifier.Contains("-loongarch64-") ? Architecture.LoongArch64 :
 #endif
                                       throw new ArgumentException(nameof(RuntimeIdentifier));
 

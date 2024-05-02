@@ -224,7 +224,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkWarning ResourceName="CannotDirectlyReferenceMicrosoftNetCompilersToolsetFramework"
         Condition="'@(PackageReference->AnyHaveMetadataValue('Identity', 'Microsoft.Net.Compilers.Toolset.Framework'))' == 'true'" />
 
-    <ItemGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
+    <PropertyGroup>
+      <!-- Automatically opt users into using the toolset package if they are running an MSBuild other than what this SDK was built against.
+           This is to reduce 'tearing'/depdendency mismatch, but as always users can override this behavior by disabling the hosted compiler flag. -->
+      <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == '' and '$(_IsDisjointMSBuildVersion)' == 'true'">true</BuildWithNetFrameworkHostedCompiler>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT' ">
       <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" PrivateAssets="all" Version="$(_NetFrameworkHostedCompilersVersion)" IsImplicitlyDefined="true" />
     </ItemGroup>
 
@@ -499,6 +505,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(EnableUnsafeBinaryFormatterInDesigntimeLicenseContextSerialization)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.ComponentModel.TypeDescriptor.IsComObjectDescriptorSupported"
+                                    Condition="'$(_ComObjectDescriptorSupport)' != ''"
+                                    Value="$(_ComObjectDescriptorSupport)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Diagnostics.Debugger.IsSupported"
                                     Condition="'$(DebuggerSupport)' != ''"
                                     Value="$(DebuggerSupport)"
@@ -660,7 +671,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <RuntimeHostConfigurationOption Include="System.Threading.ThreadPool.UseWindowsThreadPool"
                                     Condition="'$(UseWindowsThreadPool)' != ''"
-                                    Value="$(UseWindowsThreadPool)" />
+                                    Value="$(UseWindowsThreadPool)"
+                                    Trim="true" />
 
     <RuntimeHostConfigurationOption Include="System.Xml.XmlResolver.IsNetworkingEnabledByDefault"
                                     Condition="'$(XmlResolverIsNetworkingEnabledByDefault)' != ''"

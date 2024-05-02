@@ -68,10 +68,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Wire-up static web assets -->
   <PropertyGroup>
-    <ResolveStaticWebAssetsInputsDependsOn>
-      $(ResolveStaticWebAssetsInputsDependsOn);
+    <ResolveBuildRelatedStaticWebAssetsDependsOn>
+      $(ResolveBuildRelatedStaticWebAssetsDependsOn);
       _ResolveBlazorWasmOutputs;
-    </ResolveStaticWebAssetsInputsDependsOn>
+    </ResolveBuildRelatedStaticWebAssetsDependsOn>
 
     <GenerateBuildWasmBootJsonDependsOn>
       $(GenerateBuildWasmBootJsonDependsOn);
@@ -83,8 +83,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       GeneratePublishBlazorBootExtensionJson;
     </GeneratePublishWasmBootJsonDependsOn>
   </PropertyGroup>
-
-  <Import Project="Microsoft.NET.Sdk.BlazorWebAssembly.ServiceWorkerAssetsManifest.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
   <Target Name="_BlazorWasmNativeForBuild" DependsOnTargets="_GatherBlazorFilesToBuild;WasmBuildApp" Condition="'$(UsingBrowserRuntimeWorkload)' == 'true'" />
 
@@ -126,8 +124,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Assets" ItemName="_BlazorJSStaticWebAsset" />
     </DefineStaticWebAssets>
 
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_BlazorJSStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_BlazorStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
     <ItemGroup>
       <StaticWebAsset Include="@(_BlazorJSStaticWebAsset)" />
+      <StaticWebAssetEndpoint Include="@(_BlazorStaticWebAssetEndpoint)" />
     </ItemGroup>
   </Target>
 

@@ -53,6 +53,8 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.AdditionalProperties["DisableTransitiveFrameworkReferenceDownloads"] = "True";
             testProject.AdditionalProperties["RestorePackagesPath"] = nugetPackagesFolder;
+            // disable implicit use of the Roslyn Toolset compiler package
+            testProject.AdditionalProperties["BuildWithNetFrameworkHostedCompiler"] = false.ToString();
 
             //  Set packs folder to nonexistent folder so the project won't use installed targeting or runtime packs
             testProject.AdditionalProperties["NetCoreTargetingPackRoot"] = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

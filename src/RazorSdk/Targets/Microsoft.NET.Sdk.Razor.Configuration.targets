@@ -93,8 +93,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <ItemGroup>
     <RazorExtension Include="MVC-3.0">
-      <AssemblyName>Microsoft.CodeAnalysis.Razor.Compiler.Mvc</AssemblyName>
-      <AssemblyFilePath>$(RazorSdkDirectoryRoot)tools\Microsoft.CodeAnalysis.Razor.Compiler.Mvc.dll</AssemblyFilePath>
+      <AssemblyName>Microsoft.CodeAnalysis.Razor.Compiler</AssemblyName>
+      <AssemblyFilePath>$(RazorSdkDirectoryRoot)tools\Microsoft.CodeAnalysis.Razor.Compiler.dll</AssemblyFilePath>
     </RazorExtension>
   </ItemGroup>
 

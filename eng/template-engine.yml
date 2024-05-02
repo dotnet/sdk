@@ -1,6 +1,6 @@
 jobs:
   - ${{ if or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest')) }}:
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Windows_NT_TemplateEngine
         pool:
@@ -22,7 +22,7 @@ jobs:
               _SignType: test
               _Test: -test
 
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Ubuntu_22_04_TemplateEngine
         pool:
@@ -44,7 +44,7 @@ jobs:
               _SignType: test
               _Test: -test
 
-    - template: /eng/build.yml
+    - template: /eng/build-pr.yml
       parameters:
         agentOs: Darwin_TemplateEngine
         pool:

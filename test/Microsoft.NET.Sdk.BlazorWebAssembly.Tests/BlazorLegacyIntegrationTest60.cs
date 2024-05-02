@@ -11,7 +11,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "The Runtime pack resolves to 8.0 instead of 9.0")]
         public void Build60Hosted_Works()
         {
             // Arrange
@@ -20,7 +20,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(testInstance, "Server");
-            build.Execute()
+            build.WithWorkingDirectory(testInstance.TestRoot);
+            build.Execute("/bl")
                 .Should()
                 .Pass();
 
@@ -39,7 +40,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(serverBuildOutputDirectory, $"{testAsset}.Shared.dll")).Should().Exist();
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "The Runtime pack resolves to 8.0 instead of 9.0")]
         public void Publish60Hosted_Works()
         {
             // Arrange
@@ -48,7 +49,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var publish = new PublishCommand(ProjectDirectory, "Server");
-            publish.Execute()
+            publish.WithWorkingDirectory(ProjectDirectory.TestRoot);
+            publish.Execute("/bl")
                 .Should()
                 .Pass()
                 .And.NotHaveStdOutContaining("warning IL");

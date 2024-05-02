@@ -18,22 +18,30 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(projectDirectory, "blazorwasm");
-            build.Execute()
+            build.WithWorkingDirectory(projectDirectory.TestRoot);
+            build.Execute("/bl")
                 .Should()
                 .Pass();
 
             var buildOutputDirectory = build.GetOutputDirectory(DefaultTfm).ToString();
 
+            var filesToIgnore = new[]
+            {
+                Path.Combine(buildOutputDirectory, "RazorClassLibrary.staticwebassets.endpoints.json"),
+                Path.Combine(buildOutputDirectory, "blazorwasm.staticwebassets.endpoints.json")
+            };
+
             // Act
-            var thumbPrint = FileThumbPrint.CreateFolderThumbprint(projectDirectory, buildOutputDirectory);
+            var thumbPrint = FileThumbPrint.CreateFolderThumbprint(projectDirectory, buildOutputDirectory, filesToIgnore);
 
             // Assert
             for (var i = 0; i < 3; i++)
             {
                 build = new BuildCommand(projectDirectory, "blazorwasm");
-                build.Execute().Should().Pass();
+                build.WithWorkingDirectory(projectDirectory.TestRoot);
+                build.Execute($"/bl:msbuild{i}.binlog").Should().Pass();
 
-                var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(projectDirectory, buildOutputDirectory);
+                var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(projectDirectory, buildOutputDirectory, filesToIgnore);
                 newThumbPrint.Count.Should().Be(thumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
@@ -63,7 +71,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var build = new BuildCommand(projectDirectory, "blazorwasm");
             build.WithWorkingDirectory(projectDirectory.TestRoot);
-            build.Execute()
+            build.Execute("/bl")
                 .Should()
                 .Pass();
 
@@ -86,7 +94,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
-                    thumbPrint[j].Equals(newThumbPrint[j]).Should().BeTrue();
+                    thumbPrint[j].Equals(newThumbPrint[j]).Should().BeTrue($"because {thumbPrint[j].Hash} should be the same as {newThumbPrint[j].Hash} for file {thumbPrint[j].Path}");
                 }
             }
         }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.DotNet.Helix.Sdk">
+﻿<Project Sdk="Microsoft.DotNet.Helix.Sdk">
 
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj" />
+    <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;**\Microsoft.DotNet.Tools.Tests.Utilities.csproj;**\core-sdk-tasks.Tests.csproj;**\EndToEnd-Installer.Tests.csproj" />
     <!--containers tests end with UnitTests and IntegrationTests, therefore included manually -->
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true'" Include="containerize.UnitTests\containerize.UnitTests.csproj" />
     <SDKCustomXUnitProject Condition="'$(RunAoTTests)' != 'true' And $(_AGENTOSNAME) != 'Windows_NT_FullFramework'" Include="Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj" />
@@ -45,6 +45,9 @@
       <TargetFramework>net472</TargetFramework>
       <RuntimeTargetFramework>net472</RuntimeTargetFramework>
     </SDKCustomXUnitProject>
+
+    <!-- Don't run MSI installation tests in Helix / CI -->
+    <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(_CustomHelixTargetQueue)' != '' ">
@@ -76,7 +79,7 @@
 
       <LockFiles Include="..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\LockFiles\**\*.*" />
 
-      <AssetFiles Include="..\src\Assets\**\*.*" />
+      <AssetFiles Include="..\src\Assets\**\**\**\*.*" />
 
       <!-- Files in testExecutionDirectory to prevent environment interference -->
       <TestExecutionDirectoryFiles Include="$(ArtifactsTmpDir)NuGet.config" />
@@ -84,6 +87,9 @@
       <TestExecutionDirectoryFiles Include="$(ArtifactsTmpDir)Directory.Build.targets" />
       <TestExecutionDirectoryFiles Include="$(RepoRoot)testAsset.props" />
       <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\Versions.props">
+        <DestinationFolder>eng/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)eng\ManualVersions.props">
         <DestinationFolder>eng/</DestinationFolder>
       </TestExecutionDirectoryFiles>
 

@@ -46,7 +46,6 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     [Required]
     public string TargetRuntimeIdentifier { get; set; }
 
-
     /// <summary>
     /// If a project is self-contained then it includes a runtime, and so the runtime-deps image should be used.
     /// </summary>
@@ -56,6 +55,8 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     /// If a project is AOT-published then not only is it self-contained, but it can also remove some other deps - we can use the dotnet/nightly/runtime-deps variant here aot
     /// </summary>
     public bool IsAotPublished { get; set; }
+
+    public bool IsTrimmed { get; set; }
 
     /// <summary>
     /// If the project is AOT'd the aot image variant doesn't contain ICU and TZData, so we use this flag to see if we need to use the `-extra` variant that does contain those packages.
@@ -80,7 +81,9 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
 
     private bool IsMuslRid => TargetRuntimeIdentifier.StartsWith("linux-musl", StringComparison.Ordinal);
     private bool IsBundledRuntime => IsSelfContained;
-    private bool NeedsNightlyImages => IsAotPublished;
+
+    // as of March 2024, the -extra images are on stable MCR, but the -aot images are still on nightly. This means AOT, invariant apps need the /nightly/ base.
+    private bool NeedsNightlyImages => IsAotPublished && UsesInvariantGlobalization;
     private bool AllowsExperimentalTagInference => String.IsNullOrEmpty(ContainerFamily);
 
     public ComputeDotnetBaseImageAndTag()
@@ -104,7 +107,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
 
     private bool ComputeRepositoryAndTag([NotNullWhen(true)] out string? repository, [NotNullWhen(true)] out string? tag)
     {
-        if (ComputeVersionPart() is (string baseVersionPart, bool versionAllowsUsingAOTAndExtrasImages))
+        if (ComputeVersionPart() is (string baseVersionPart, SemanticVersion parsedVersion, bool versionAllowsUsingAOTAndExtrasImages))
         {
             Log.LogMessage("Computed base version tag of {0} from TFM {1} and SDK {2}", baseVersionPart, TargetFrameworkVersion, SdkVersion);
             if (baseVersionPart is null)
@@ -130,6 +133,22 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                 // for the inferred image tags, 'family' aka 'flavor' comes after the 'version' portion (including any preview/rc segments).
                 // so it's safe to just append here
                 tag += $"-{ContainerFamily}";
+                Log.LogMessage("Using user-provided ContainerFamily");
+
+                // we can do one final check here: if the containerfamily is the 'default' for the RID
+                // in question, and the app is globalized, we can help and add -extra so the app will actually run
+
+                if (
+                    (!IsMuslRid && ContainerFamily == "jammy-chiseled") // default for linux RID
+                    && !UsesInvariantGlobalization
+                    && versionAllowsUsingAOTAndExtrasImages
+                    // the extras only became available on the stable tags of the FirstVersionWithNewTaggingScheme
+                    && (!parsedVersion.IsPrerelease && parsedVersion.Major == FirstVersionWithNewTaggingScheme))
+                {
+                    Log.LogMessage("Using extra variant because the application needs globalization");
+                    tag += "-extra";
+                }
+
                 return true;
             }
             else
@@ -139,7 +158,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                     tag += IsMuslRid switch
                     {
                         true => "-alpine",
-                        false => "" // TODO: should we default here to chiseled iamges for < 8 apps?
+                        false => "" // TODO: should we default here to chiseled images for < 8 apps?
                     };
                     Log.LogMessage("Selected base image tag {0}", tag);
                     return true;
@@ -151,16 +170,17 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                     {
                         true => "-alpine",
                         // default to chiseled for AOT, non-musl Apps
-                        false when IsAotPublished => "-jammy-chiseled", // TODO: should we default here to jammy-chiseled for non-musl RIDs?
+                        false when IsAotPublished || IsTrimmed => "-jammy-chiseled", // TODO: should we default here to jammy-chiseled for non-musl RIDs?
                         // default to jammy for non-AOT, non-musl Apps
                         false => ""
                     };
 
                     // now choose the variant, if any - if globalization then -extra, else -aot
-                    tag += (IsAotPublished, UsesInvariantGlobalization) switch
+                    tag += (IsAotPublished, IsTrimmed, UsesInvariantGlobalization) switch
                     {
-                        (true, false) => "-extra",
-                        (true, true) => "-aot",
+                        (true, _, false) => "-extra",
+                        (_, true, false) => "-extra",
+                        (true, _, true) => "-aot",
                         _ => ""
                     };
                     Log.LogMessage("Selected base image tag {0}", tag);
@@ -176,18 +196,18 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
         }
     }
 
-    private (string, bool)? ComputeVersionPart()
+    private (string, SemanticVersion, bool)? ComputeVersionPart()
     {
         if (SemanticVersion.TryParse(TargetFrameworkVersion, out var tfm) && tfm.Major < FirstVersionWithNewTaggingScheme)
         {
             // < 8 TFMs don't support the -aot and -extras images
-            return ($"{tfm.Major}.{tfm.Minor}", false);
+            return ($"{tfm.Major}.{tfm.Minor}", tfm, false);
         }
         else if (SemanticVersion.TryParse(SdkVersion, out var version))
         {
             if (ComputeVersionInternal(version, tfm) is string majMinor)
             {
-                return (majMinor, true);
+                return (majMinor, version, true);
             }
             else
             {

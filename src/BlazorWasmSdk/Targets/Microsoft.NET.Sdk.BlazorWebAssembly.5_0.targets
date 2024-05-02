@@ -34,6 +34,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorWebAssemblyBootJson50" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.UpgradeLegacyWasmStaticWebAssets" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BlazorWriteSatelliteAssemblyFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BlazorReadSatelliteAssemblyFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.BrotliCompress" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
@@ -282,15 +283,19 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_UpdateBlazorWasmStaticWebAssetsForV2" DependsOnTargets="GetCurrentProjectStaticWebAssets">
     <ItemGroup>
       <_CurrentWasmProjectStaticWebAssets Include="@(_ThisProjectStaticWebAssets)" Condition="'%(SourceId)' == '$(PackageId)'" />
-      <_CurrentWasmProjectStaticWebAssets>
-        <!-- We set the asset kind explicitly to build because blazor before 6.0 did its own publishing and was
-             not fully integrated with static web assets, so we let it be even when called from 6.0 targets
-        -->
-        <AssetKind>Build</AssetKind>
-      </_CurrentWasmProjectStaticWebAssets>
-      <_ThisProjectStaticWebAssets Remove="@(_CurrentWasmProjectStaticWebAssets)" />
-      <_ThisProjectStaticWebAssets Include="@(_CurrentWasmProjectStaticWebAssets)" />
     </ItemGroup>
+
+    <UpgradeLegacyWasmStaticWebAssets
+      LegacyAssets="@(_CurrentWasmProjectStaticWebAssets)"
+    >
+      <Output TaskParameter="UpgradedAssets" ItemName="_UpgradedWasmProjectStaticWebAssets" />
+    </UpgradeLegacyWasmStaticWebAssets>
+
+    <ItemGroup>
+      <_ThisProjectStaticWebAssets Remove="@(_CurrentWasmProjectStaticWebAssets)" />
+      <_ThisProjectStaticWebAssets Include="@(_UpgradedWasmProjectStaticWebAssets)" />
+    </ItemGroup>
+
   </Target>
 
   <Target Name="_BlazorWasmPrepareForRun" DependsOnTargets="_ProcessBlazorWasmOutputs" BeforeTargets="_RazorPrepareForRun" AfterTargets="GetCurrentProjectStaticWebAssets">

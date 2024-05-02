@@ -1,0 +1,92 @@
+<Project>
+
+  <UsingTask TaskName="Microsoft.NET.Sdk.WebAssembly.PatchWasmPublishStaticWebAsset" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" Condition="'$(StaticWebAssetsSdkBuildTasksAssembly)' != ''" />
+
+  <PropertyGroup>
+    <AddWasmStaticWebAssetsDependsOn>
+      $(AddWasmStaticWebAssetsDependsOn);
+      _GenerateBuildWasmBootJson;
+    </AddWasmStaticWebAssetsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="ForceBootConfigGeneration" BeforeTargets="_AddPublishWasmBootJsonToStaticWebAssets" DependsOnTargets="GeneratePublishWasmBootJson" />
+
+  <!-- Generate blazor.boot.json with the correct assets and update fingerprint and integrity -->
+  <Target Name="_DefineWasmBuildEndpoints" AfterTargets="_GenerateBuildWasmBootJson" DependsOnTargets="ResolveCoreStaticWebAssets">
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_BuildWasmBootJsonStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_BuildWasmBootJsonStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(WasmStaticWebAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="WasmStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAssetEndpoint Include="@(_BuildWasmBootJsonStaticWebAssetEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(WasmStaticWebAssetEndpoint)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CorrectPublishFilesIntegrity" AfterTargets="ProcessPublishFilesForWasm">
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_NewWebCilPublishStaticWebAssets)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_NewWebCilPublishStaticWebAssetsEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAssetEndpoint Include="@(_NewWebCilPublishStaticWebAssetsEndpoint)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_DefineEndpointsForWasmExtensions" AfterTargets="ComputeWasmExtensions">
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_BlazorExtensionsCandidatesForPublish)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_WasmExtensionStaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAssetEndpoint Include="@(_WasmExtensionStaticWebAssetEndpoint)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_DefinePublishBootJsonEndpoint" AfterTargets="_AddPublishWasmBootJsonToStaticWebAssets">
+    <PropertyGroup>
+      <_PublishWasmBootJsonPath>@(_PublishWasmBootJson->'%(FullPath)')</_PublishWasmBootJsonPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_PublishWasmBootJsonAsset
+        Include="@(StaticWebAsset)"
+        Condition="'%(StaticWebAsset.Identity)' == '$(_PublishWasmBootJsonPath)'" />
+    </ItemGroup>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_PublishWasmBootJsonAsset)"
+      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_PublishWasmBootJsonAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
+      <StaticWebAssetEndpoint Include="@(_PublishWasmBootJsonAssetEndpoint)" />
+    </ItemGroup>
+
+  </Target>
+
+</Project>

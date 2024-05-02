@@ -18,16 +18,16 @@
 /src/Assets/TestProjects/BlazorHostedRID/ @dotnet/aspnet-blazor-eng
 /src/Assets/TestProjects/BlazorWasmMinimal/ @dotnet/aspnet-blazor-eng
 /src/Assets/TestProjects/BlazorWasmWithLibrary/ @dotnet/aspnet-blazor-eng
-/src/RazorSdk/ @dotnet/aspnet-blazor-eng
+/src/RazorSdk/ @dotnet/razor-compiler
 /test/Microsoft.NET.Sdk.BlazorWebAssembly.AoT.Tests/ @dotnet/aspnet-blazor-eng
-/test/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/aspnet-blazor-eng
-/test/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/aspnet-blazor-eng
+/test/Microsoft.NET.Sdk.Razor.Tests/ @dotnet/razor-compiler
+/test/Microsoft.NET.Sdk.Razor.Tool.Tests/ @dotnet/razor-compiler
 /src/Assets/TestPackages/PackageLibraryDirectDependency/ @dotnet/aspnet-blazor-eng
 /src/Assets/TestPackages/PackageLibraryTransitiveDependency/ @dotnet/aspnet-blazor-eng
-/src/src/Assets/TestProjects/Razor*/ @dotnet/aspnet-blazor-eng
+/src/src/Assets/TestProjects/Razor*/ @dotnet/razor-compiler
 
 # Area-Wasm
-/src/WasmSdk @lewing @radical @pavelsavara @maraf
+/src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
 /src/Cli/dotnet/commands/dotnet-format @sharwell @arkalyanms
@@ -38,6 +38,8 @@
 /test/dotnet-add-package.Tests @dotnet/nuget-team
 /src/Cli/dotnet/commands/dotnet-nuget @dotnet/nuget-team
 /test/dotnet-nuget.UnitTests @dotnet/nuget-team
+/src/Cli/dotnet/commands/dotnet-list/dotnet-list-package @dotnet/nuget-team
+/test/dotnet-list-package.Tests @dotnet/nuget-team
 
 # Area-FSharp
 /src/Cli/dotnet/commands/dotnet-fsi @dotnet/fsharp
@@ -92,3 +94,7 @@
 /test/containerize.UnitTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.IntegrationTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.UnitTests @dotnet/sdk-container-builds-maintainers
+
+# dotnet-format
+/src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
+/test/dotnet-format.Tests @dotnet/roslyn-ide

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
@@ -10,22 +10,14 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+
+    <ProjectReference Include="..\ArgumentsReflector\ArgumentsReflector.csproj" />
   </ItemGroup>
 
-  <Target Name="PrecompileScriptBuild" BeforeTargets="Build" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
-    <MSBuild
-      BuildInParallel="False"
-      Projects="../ArgumentsReflector/ArgumentsReflector.csproj"
-      Properties="PublishDir=$(OutputPath)"
-      Targets="Publish" />
-  </Target>
-
-  <Target Name="PrecompileScriptPublish" BeforeTargets="Publish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
-    <MSBuild
-      BuildInParallel="False"
-      Projects="../ArgumentsReflector/ArgumentsReflector.csproj"
-      Properties="PublishDir=$(PublishDir)"
-      Targets="Publish" />
-  </Target>
+  <ItemGroup>
+    <Content Include="reflector_cmd.cmd"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
 
 </Project>

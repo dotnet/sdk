@@ -9,7 +9,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         {
         }
 
-        [CoreMSBuildOnlyFact]
+        [CoreMSBuildOnlyFact(Skip = "The Runtime pack resolves to 8.0 instead of 9.0")]
         public void Build_Works()
         {
             var testAsset = "VanillaWasm";
@@ -17,7 +17,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var testInstance = CreateAspNetSdkTestAsset(testAsset);
 
             var build = new BuildCommand(testInstance);
-            build.Execute()
+            build.WithWorkingDirectory(testInstance.Path);
+            build.Execute("/bl")
                 .Should()
                 .Pass();
 

@@ -9,11 +9,11 @@ namespace Microsoft.DotNet.Watcher.Tools
 {
     internal abstract class DeltaApplier : IDisposable
     {
-        public abstract void Initialize(DotNetWatchContext context, CancellationToken cancellationToken);
+        public abstract void Initialize(ProjectInfo project, string namedPipeName, CancellationToken cancellationToken);
 
-        public abstract Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(DotNetWatchContext context, CancellationToken cancellationToken);
+        public abstract Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken);
 
-        public abstract Task<ApplyStatus> Apply(DotNetWatchContext context, ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken);
+        public abstract Task<ApplyStatus> Apply(ImmutableArray<WatchHotReloadService.Update> updates, CancellationToken cancellationToken);
 
         public abstract void Dispose();
     }

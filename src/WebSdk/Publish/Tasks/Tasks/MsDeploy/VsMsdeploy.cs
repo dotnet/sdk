@@ -285,7 +285,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         protected abstract void BeforeSync();
 
         /// <summary>
-        /// Encapsulate the approach to invoke the MSDeploy (same thread or in a seperate thread; ui or without ui)
+        /// Encapsulate the approach to invoke the MSDeploy (same thread or in a separate thread; ui or without ui)
         /// </summary>
         protected abstract void StartSync();
 

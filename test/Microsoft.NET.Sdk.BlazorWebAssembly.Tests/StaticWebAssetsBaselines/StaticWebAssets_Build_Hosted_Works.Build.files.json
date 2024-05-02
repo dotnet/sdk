@@ -393,10 +393,14 @@
   "${OutputPath}\\wwwroot\\_framework\\dotnet.js.gz",
   "${OutputPath}\\wwwroot\\_framework\\dotnet.js.map",
   "${OutputPath}\\wwwroot\\_framework\\dotnet.js.map.gz",
+  "${OutputPath}\\wwwroot\\_framework\\dotnet.native.js",
+  "${OutputPath}\\wwwroot\\_framework\\dotnet.native.js.gz",
+  "${OutputPath}\\wwwroot\\_framework\\dotnet.native.wasm",
+  "${OutputPath}\\wwwroot\\_framework\\dotnet.native.wasm.gz",
+  "${OutputPath}\\wwwroot\\_framework\\dotnet.runtime.js",
+  "${OutputPath}\\wwwroot\\_framework\\dotnet.runtime.js.gz",
   "${OutputPath}\\wwwroot\\_framework\\dotnet.runtime.js.map",
   "${OutputPath}\\wwwroot\\_framework\\dotnet.runtime.js.map.gz",
-  "${OutputPath}\\wwwroot\\_framework\\dotnet.wasm",
-  "${OutputPath}\\wwwroot\\_framework\\dotnet.wasm.gz",
   "${OutputPath}\\wwwroot\\_framework\\icudt_CJK.dat",
   "${OutputPath}\\wwwroot\\_framework\\icudt_CJK.dat.gz",
   "${OutputPath}\\wwwroot\\_framework\\icudt_EFIGS.dat",
@@ -408,5 +412,7 @@
   "${OutputPath}\\wwwroot\\_framework\\netstandard.wasm",
   "${OutputPath}\\wwwroot\\_framework\\netstandard.wasm.gz",
   "${OutputPath}\\wwwroot\\custom-service-worker-assets.js",
-  "${OutputPath}\\wwwroot\\serviceworkers\\my-service-worker.js"
+  "${OutputPath}\\wwwroot\\custom-service-worker-assets.js.gz",
+  "${OutputPath}\\wwwroot\\serviceworkers\\my-service-worker.js",
+  "${OutputPath}\\wwwroot\\serviceworkers\\my-service-worker.js.gz"
 ]

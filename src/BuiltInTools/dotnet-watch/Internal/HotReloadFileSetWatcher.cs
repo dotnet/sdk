@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
         }
 
-        public Task<FileItem[]?> GetChangedFileAsync(CancellationToken cancellationToken, bool forceWaitForNewUpdate = false)
+        public Task<FileItem[]?> GetChangedFilesAsync(CancellationToken cancellationToken, bool forceWaitForNewUpdate = false)
         {
             EnsureInitialized();
 
