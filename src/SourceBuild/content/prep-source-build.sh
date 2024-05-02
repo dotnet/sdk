@@ -236,9 +236,9 @@ if [ "$removeBinaries" == true ]; then
         echo "  Creating $packagesDir/PackageVersions.props..."
         tar -xzf "$sourceBuiltArchive" -C "$packagesDir" PackageVersions.props
       fi
-      if [ ! -f "$packagesDir/*.xml" ]; then
+      if [ ! -f "$packagesDir/VerticalManifest.xml" ]; then
         echo "  Unpacking Asset manifests into $packagesDir..."
-        tar --wildcards --exclude='*/*' -xzf "$sourceBuiltArchive" -C "$packagesDir" '*.xml'
+        tar -xzf "$sourceBuiltArchive" -C "$packagesDir" VerticalManifest.xml
       fi
     else
       echo "  ERROR: Private.SourceBuilt.Artifacts.*.tar.gz does not exist..."\
