@@ -9,7 +9,7 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        [Fact]
+        [FullMSBuildOnlyFact]
         public void It_restores_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
         {
             const string testProjectName = "NetCoreApp";
@@ -34,17 +34,10 @@ namespace Microsoft.NET.Restore.Tests
                 testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             restoreCommand.Execute().Should().Pass();
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                Assert.Contains("Microsoft.Net.Compilers.Toolset.Framework", File.ReadAllText(projectAssetsJsonPath));
-            }
-            else
-            {
-                Assert.DoesNotContain("Microsoft.Net.Compilers.Toolset.Framework", File.ReadAllText(projectAssetsJsonPath));
-            }
+            Assert.Contains("Microsoft.Net.Compilers.Toolset.Framework", File.ReadAllText(projectAssetsJsonPath));
         }
 
-        [Fact]
+        [FullMSBuildOnlyFact]
         public void It_restores_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
         {
             const string testProjectName = "NetCoreApp";
@@ -80,7 +73,7 @@ namespace Microsoft.NET.Restore.Tests
             }
         }
 
-        [Fact]
+        [FullMSBuildOnlyFact]
         public void It_throws_a_warning_when_adding_the_PackageReference_directly()
         {
             const string testProjectName = "NetCoreApp";
