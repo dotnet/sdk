@@ -9,7 +9,7 @@
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <NoWarn>CA2022</NoWarn>
+    <NoWarn>$(NoWarn);CA2022</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
