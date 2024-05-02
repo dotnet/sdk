@@ -442,6 +442,7 @@ public class EndToEndTests : IDisposable
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
             $"/p:ContainerRepository={imageName}",
+            $"/p:RuntimeFrameworkVersion=8.0.0-preview.3.23174.8",
             $"/p:ContainerImageTag={imageTag}",
             "/p:EnableSdkContainerSupport=true")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
