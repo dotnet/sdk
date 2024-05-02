@@ -61,6 +61,15 @@ parameters:
     vmImage: $(poolImage_Mac)
     os: macOS
 
+
+- name: pool_Linux_Shortstack
+  type: object
+  default:
+    name: $(shortStackPoolName)
+    image: $(poolImage_Linux)
+    demands: ImageOverride -equals $(poolImage_Linux)
+    os: linux
+
 #### SOURCE-ONLY BUILD ####
 stages:
 - ${{ if parameters.isSourceOnlyBuild }}:
@@ -340,7 +349,7 @@ stages:
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: arm64
-        pool: ${{ parameters.pool_Linux }}
+        pool: ${{ parameters.pool_Linux_Shortstack }}
         container: ${{ variables.androidCrossContainer }}
         targetOS: android
         targetArchitecture: arm64
@@ -352,7 +361,7 @@ stages:
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: wasm
-        pool: ${{ parameters.pool_Linux }}
+        pool: ${{ parameters.pool_Linux_Shortstack }}
         container: ${{ variables.browserCrossContainer }}
         crossRootFs: '/crossrootfs/x64'
         targetOS: browser
@@ -379,7 +388,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             targetOS: android
             targetArchitecture: arm
@@ -391,7 +400,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             targetOS: android
             targetArchitecture: x64
@@ -403,7 +412,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x86
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             targetOS: android
             targetArchitecture: x86
@@ -415,7 +424,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: wasm
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.browserCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: browser
@@ -429,7 +438,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
@@ -442,7 +451,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
@@ -456,7 +465,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
@@ -469,7 +478,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.androidCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
@@ -656,7 +665,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: wasm
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.wasiCrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             targetOS: wasi
@@ -729,7 +738,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.marinerX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             useMonoRuntime: true
@@ -744,7 +753,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.marinerX64CrossContainer }}
             crossRootFs: '/crossrootfs/x64'
             useMonoRuntime: true
@@ -876,7 +885,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.marinerArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
             useMonoRuntime: true
@@ -891,7 +900,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
-            pool: ${{ parameters.pool_Linux }}
+            pool: ${{ parameters.pool_Linux_Shortstack }}
             container: ${{ variables.marinerArm64CrossContainer }}
             crossRootFs: '/crossrootfs/arm64'
             useMonoRuntime: true

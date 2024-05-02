@@ -42,6 +42,8 @@ variables:
 - ${{ if eq(variables['System.TeamProject'], 'public') }}:
   - name: defaultPoolName
     value: NetCore-Public-XL
+  - name: shortStackPoolName
+    value: NetCore-Public
   - name: poolImage_Linux
     value: 1es-ubuntu-2004-open
   - name: poolImage_LinuxArm64
@@ -56,8 +58,12 @@ variables:
   - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
     - name: defaultPoolName
       value: NetCore1ESPool-Internal-XL
+    - name: shortStackPoolName
+      value: NetCore1ESPool-Internal
   - ${{ else }}:
     - name: defaultPoolName
+      value: $(DncEngInternalBuildPool)
+    - name: shortStackPoolName
       value: $(DncEngInternalBuildPool)
   - name: poolImage_Linux
     value: 1es-ubuntu-2204
