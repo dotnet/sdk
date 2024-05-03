@@ -1,0 +1,21 @@
+variables:
+  buildConfiguration: Release
+  testFullMSBuild: false
+  runAoTTests: false
+
+  testInBuildProperties: /p:Test=false
+  testName: HelixTests
+  testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
+
+  runtimeSourceProperties: ''
+
+  Codeql.ExcludePathPatterns: '.packages, artifacts'
+  HelixApiAccessToken: ''
+
+  # "Post-build signing" means that this build will not sign itself.
+  # This value is used by Arcade.
+  PostBuildSign: true
+
+
+  publishArgument: ''
+  officialBuildProperties: ''

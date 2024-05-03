@@ -1,22 +1,19 @@
 parameters:
   # Agent OS identifier and used as job name
   agentOs: ''
-
   # Agent pool
   pool: {}
-
   # Additional variables
   variables: {}
-
   # Build strategy - matrix
   strategy: ''
-
   # Job timeout
   timeoutInMinutes: 180
 
 jobs:
-- ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0.3xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
-  - template: /eng/common/templates-official/job/onelocbuild.yml@self
+- ${{ if and(notin(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/release/8.0.3xx'), not(contains(parameters.agentOs, 'TemplateEngine'))) }}:
+  # Refdoc: https://github.com/dotnet/arcade/blob/main/Documentation/OneLocBuild.md#onelocbuild-template-parameters
+  - template: /eng/common/templates-official/job/onelocbuild.yml
     parameters:
       CreatePr: true
       LclSource: lclFilesfromPackage
@@ -25,7 +22,7 @@ jobs:
       MirrorRepo: sdk
 
 - ${{ if not(contains(parameters.agentOs, 'TemplateEngine')) }}:
-  - template: /eng/common/templates-official/job/job.yml@self
+  - template: /eng/common/templates-official/job/job.yml
     parameters:
       name: ${{ parameters.agentOs }}
       enableMicrobuild: true
@@ -212,7 +209,7 @@ jobs:
 
 # AoT Jobs
 - ${{ if and(in(parameters.agentOs, 'Windows_NT', 'Darwin'), or(eq(variables['System.TeamProject'], 'public'), in(variables['Build.Reason'], 'PullRequest'))) }}:
-  - template: /eng/common/templates-official/job/job.yml@self
+  - template: /eng/common/templates-official/job/job.yml
     parameters:
       name: ${{ parameters.agentOs }}_AoT_Tests
       enableMicrobuild: true
@@ -359,7 +356,7 @@ jobs:
 
 # TemplateEngine Jobs
 - ${{ if contains(parameters.agentOs, 'TemplateEngine') }}:
-  - template: /eng/common/templates-official/job/job.yml@self
+  - template: /eng/common/templates-official/job/job.yml
     parameters:
       name: ${{ parameters.agentOs }}
       enableMicrobuild: true
