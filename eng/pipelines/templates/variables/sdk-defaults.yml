@@ -1,5 +1,6 @@
 variables:
   buildConfiguration: Release
+  runTests: true
   testFullMSBuild: false
   runAoTTests: false
 

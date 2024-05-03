@@ -18,7 +18,7 @@ pr:
 
 parameters:
 - name: runTests
-  displayName: Run tests
+  displayName: Run Tests
   type: boolean
   default: false
 
@@ -99,9 +99,10 @@ extends:
             image: 1es-windows-2022
             os: windows
           helixTargetQueue: Windows.Amd64.VS2022.Pre
-          runTests: ${{ parameters.runTests }}
           jobTemplatePath: /eng/common/templates-official/job/job.yml
-          publishTaskName: 1ES.PublishBuildArtifacts@1
+          publishTaskName: '1ES.PublishBuildArtifacts@1'
+          variables:
+            runTests: ${{ parameters.runTests }}
           # containers:
           #   alpine319WithNode:
           #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
@@ -121,7 +122,7 @@ extends:
           #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
           strategy:
             matrix:
-              ${{ if and(not(parameters.runTests), ne(variables['Build.Reason'], 'PullRequest')) }}:
+              ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
                 Official:
                   publishArgument: -publish
                   officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber) /p:DotNetSignType=real /p:TeamName=DotNetCore
@@ -131,6 +132,8 @@ extends:
                   testFullMSBuild: true
                 TestAsTools:
                   testInBuildProperties: /p:RunTestsAsTool=true
+                  # This uses the build step for testing, so the explicit test step is not necessary.
+                  runTests: false
                 TemplateEngine:
                   testName: TemplateEngineTests
                   testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
