@@ -99,9 +99,9 @@ extends:
             image: 1es-windows-2022
             os: windows
           helixTargetQueue: Windows.Amd64.VS2022.Pre
-          jobTemplatePath: /eng/common/templates-official/job/job.yml
-          publishTaskName: '1ES.PublishBuildArtifacts@1'
-          phaseName: $(System.PhaseName)
+          oneEsPt:
+            jobTemplatePath: /eng/common/templates-official/job/job.yml
+            publishTaskName: 1ES.PublishBuildArtifacts@1
           variables:
             runTests: ${{ parameters.runTests }}
           # containers:
@@ -133,7 +133,7 @@ extends:
                   testFullMSBuild: true
                 TestAsTools:
                   testInBuildProperties: /p:RunTestsAsTool=true
-                  # This uses the build step for testing, so the explicit test step is not necessary.
+                  # This uses the build step for testing, so the extra test step is not necessary.
                   runTests: false
                 TemplateEngine:
                   testName: TemplateEngineTests

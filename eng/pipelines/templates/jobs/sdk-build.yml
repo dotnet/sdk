@@ -1,6 +1,7 @@
 parameters:
-  jobTemplatePath: /eng/common/templates/job/job.yml
-  publishTaskName: 'PublishBuildArtifacts@1'
+  oneEsPt:
+    jobTemplatePath: /eng/common/templates/job/job.yml
+    publishTaskName: PublishBuildArtifacts@1
   # buildCategory: Build
   buildArchitecture: x64
   # # Agent OS identifier and used as job name
@@ -13,10 +14,10 @@ parameters:
   # strategy: ''
 
 jobs:
-- template: ${{ parameters.jobTemplatePath }}
+- template: ${{ parameters.oneEsPt.jobTemplatePath }}
   parameters:
-    name: ${{ parameters.phaseName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
-    displayName: ${{ parameters.phaseName }} ${{ parameters.pool.os }} ${{ parameters.buildArchitecture }}
+    name: ${{ variables['System.JobName'] }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
+    displayName: ${{ variables['System.JobName'] }} ${{ parameters.pool.os }} ${{ parameters.buildArchitecture }}
     pool: ${{ parameters.pool }}
     strategy: ${{ parameters.strategy }}
     helixRepo: dotnet/sdk
@@ -118,11 +119,11 @@ jobs:
       continueOnError: true
       condition: always()
 
-    - task: ${{ parameters.publishTaskName }}
+    - task: ${{ parameters.oneEsPt.publishTaskName }}
       displayName: Publish Logs
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: '${{ parameters.pool.os }}_$(Agent.JobName)_$(Build.BuildNumber)'
+        PathtoPublish: $(Build.ArtifactStagingDirectory)
+        ArtifactName: ${{ parameters.pool.os }}_$(Agent.JobName)_$(Build.BuildNumber)
         publishLocation: Container
       continueOnError: true
       condition: always()
