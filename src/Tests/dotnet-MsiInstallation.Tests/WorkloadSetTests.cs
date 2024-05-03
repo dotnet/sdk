@@ -213,17 +213,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
 
-        string GetWorkloadVersion()
-        {
-            var result = VM.CreateRunCommand("dotnet", "workload", "--version")
-                .WithIsReadOnly(true)
-                .Execute();
-
-            result.Should().Pass();
-
-            return result.StdOut;
-        }
-
         string GetUpdateMode()
         {
             var result = VM.CreateRunCommand("dotnet", "workload", "config", "--update-mode")

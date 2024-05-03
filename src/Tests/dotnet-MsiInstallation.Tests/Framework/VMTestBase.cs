@@ -179,5 +179,16 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
             return WorkloadSet.FromJson(filteredOutput, defaultFeatureBand: new SdkFeatureBand(SdkInstallerVersion));
         }
+
+        protected string GetWorkloadVersion()
+        {
+            var result = VM.CreateRunCommand("dotnet", "workload", "--version")
+                .WithIsReadOnly(true)
+                .Execute();
+
+            result.Should().Pass();
+
+            return result.StdOut;
+        }
     }
 }
