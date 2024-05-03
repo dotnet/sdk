@@ -100,9 +100,8 @@ extends:
             os: windows
           helixTargetQueue: Windows.Amd64.VS2022.Pre
           runTests: ${{ parameters.runTests }}
-          1espt:
-            jobTemplatePath: /eng/common/templates-official/job/job.yml
-            publishTaskName: 1ES.PublishBuildArtifacts@1
+          jobTemplatePath: /eng/common/templates-official/job/job.yml
+          publishTaskName: 1ES.PublishBuildArtifacts@1
           # containers:
           #   alpine319WithNode:
           #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode

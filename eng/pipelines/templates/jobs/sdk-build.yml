@@ -1,8 +1,7 @@
 parameters:
   runTests: false
-  1espt:
-    jobTemplatePath: /eng/common/templates/job/job.yml
-    publishTaskName: PublishBuildArtifacts@1
+  jobTemplatePath: /eng/common/templates/job/job.yml
+  publishTaskName: PublishBuildArtifacts@1
   # buildCategory: Build
   buildArchitecture: x64
   # # Agent OS identifier and used as job name
@@ -15,7 +14,7 @@ parameters:
   # strategy: ''
 
 jobs:
-- template: ${{ parameters.1espt.jobTemplatePath }}
+- template: ${{ parameters.jobTemplatePath }}
   parameters:
     name: $(System.PhaseName)_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
     displayName: '$(System.PhaseName): ${{ parameters.pool.os }} [${{ parameters.buildArchitecture }}]'
@@ -121,7 +120,7 @@ jobs:
       continueOnError: true
       condition: always()
 
-    - task: ${{ parameters.1espt.publishTaskName }}
+    - task: ${{ parameters.publishTaskName }}
       displayName: Publish Logs to VSTS
       inputs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)
