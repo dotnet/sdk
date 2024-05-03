@@ -3030,8 +3030,7 @@ sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/Targets/Sdk.Server.targets: 1563
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Web/tools/netx.y/Microsoft.NET.Sdk.Web.Tasks.dll: 7168
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.props: 1900
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/Sdk/Sdk.targets: 1745
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/targets/Microsoft.NET.Sdk.WebAssembly.6_0.temp.targets: 8752
-sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/targets/Microsoft.NET.Sdk.WebAssembly.9_0.temp.targets: 8780
+sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/targets/Microsoft.NET.Sdk.WebAssembly.9_0.temp.targets: 3715
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.WebAssembly/tools/netx.y/Microsoft.NET.Sdk.WebAssembly.Tasks.dll: 5632
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/Sdk/Sdk.props: 1258
 sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Worker/Sdk/Sdk.targets: 869
