@@ -82,12 +82,12 @@
     <SystemCollectionsImmutablePackageVersion>8.0.0</SystemCollectionsImmutablePackageVersion>
     <SystemDiagnosticsFileVersionInfoVersion>4.0.0</SystemDiagnosticsFileVersionInfoVersion>
     <SystemReflectionMetadataVersion>8.0.0</SystemReflectionMetadataVersion>
-    <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.0-preview.5.24252.13</SystemSecurityCryptographyProtectedDataPackageVersion>
+    <SystemSecurityCryptographyProtectedDataPackageVersion>9.0.0-preview.5.24252.17</SystemSecurityCryptographyProtectedDataPackageVersion>
     <SystemCollectionsSpecializedPackageVersion>4.3.0</SystemCollectionsSpecializedPackageVersion>
     <SystemXmlXmlDocumentPackageVersion>4.3.0</SystemXmlXmlDocumentPackageVersion>
     <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
     <SystemTextJsonVersion>7.0.3</SystemTextJsonVersion>
-    <SystemReflectionMetadataLoadContextVersion>9.0.0-preview.5.24252.13</SystemReflectionMetadataLoadContextVersion>
+    <SystemReflectionMetadataLoadContextVersion>9.0.0-preview.5.24252.17</SystemReflectionMetadataLoadContextVersion>
     <SystemManagementPackageVersion>4.6.0</SystemManagementPackageVersion>
     <SystemCommandLineVersion>2.0.0-beta4.24209.3</SystemCommandLineVersion>
     <SystemCommandLineRenderingVersion>0.4.0-alpha.24209.3</SystemCommandLineRenderingVersion>
@@ -138,21 +138,21 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.5.24252.13</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.0-preview.5.24252.13</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>9.0.0-preview.5.24252.13</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftExtensionsDependencyModelPackageVersion>9.0.0-preview.5.24252.13</MicrosoftExtensionsDependencyModelPackageVersion>
-    <MicrosoftNETHostModelVersion>9.0.0-preview.5.24252.13</MicrosoftNETHostModelVersion>
-    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>9.0.0-preview.5.24252.13</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-preview.5.24252.13</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-preview.5.24252.13</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingVersion>9.0.0-preview.5.24252.13</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftNETILLinkTasksPackageVersion>9.0.0-preview.5.24252.13</MicrosoftNETILLinkTasksPackageVersion>
-    <SystemServiceProcessServiceControllerVersion>9.0.0-preview.5.24252.13</SystemServiceProcessServiceControllerVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>9.0.0-preview.5.24252.17</MicrosoftNETCoreAppRefPackageVersion>
+    <VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>9.0.0-preview.5.24252.17</VSRedistCommonNetCoreSharedFrameworkx6490PackageVersion>
+    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>9.0.0-preview.5.24252.17</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>9.0.0-preview.5.24252.17</MicrosoftExtensionsDependencyModelPackageVersion>
+    <MicrosoftNETHostModelVersion>9.0.0-preview.5.24252.17</MicrosoftNETHostModelVersion>
+    <MicrosoftExtensionsFileSystemGlobbingPackageVersion>9.0.0-preview.5.24252.17</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>9.0.0-preview.5.24252.17</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>9.0.0-preview.5.24252.17</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingVersion>9.0.0-preview.5.24252.17</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftNETILLinkTasksPackageVersion>9.0.0-preview.5.24252.17</MicrosoftNETILLinkTasksPackageVersion>
+    <SystemServiceProcessServiceControllerVersion>9.0.0-preview.5.24252.17</SystemServiceProcessServiceControllerVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.0-rc.1.23414.4</MicrosoftNETCoreDotNetHostResolverPackageVersion>
-    <MicrosoftNETCorePlatformsPackageVersion>9.0.0-preview.5.24252.13</MicrosoftNETCorePlatformsPackageVersion>
-    <VSRedistCommonNetCoreTargetingPackx6490PackageVersion>9.0.0-preview.5.24252.13</VSRedistCommonNetCoreTargetingPackx6490PackageVersion>
-    <MicrosoftNETCoreAppHostwinx64PackageVersion>9.0.0-preview.5.24252.13</MicrosoftNETCoreAppHostwinx64PackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>9.0.0-preview.5.24252.17</MicrosoftNETCorePlatformsPackageVersion>
+    <VSRedistCommonNetCoreTargetingPackx6490PackageVersion>9.0.0-preview.5.24252.17</VSRedistCommonNetCoreTargetingPackx6490PackageVersion>
+    <MicrosoftNETCoreAppHostwinx64PackageVersion>9.0.0-preview.5.24252.17</MicrosoftNETCoreAppHostwinx64PackageVersion>
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
@@ -185,9 +185,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
-    <SystemCodeDomPackageVersion>9.0.0-preview.5.24252.13</SystemCodeDomPackageVersion>
-    <SystemTextEncodingCodePagesPackageVersion>9.0.0-preview.5.24252.13</SystemTextEncodingCodePagesPackageVersion>
-    <SystemResourcesExtensionsPackageVersion>9.0.0-preview.5.24252.13</SystemResourcesExtensionsPackageVersion>
+    <SystemCodeDomPackageVersion>9.0.0-preview.5.24252.17</SystemCodeDomPackageVersion>
+    <SystemTextEncodingCodePagesPackageVersion>9.0.0-preview.5.24252.17</SystemTextEncodingCodePagesPackageVersion>
+    <SystemResourcesExtensionsPackageVersion>9.0.0-preview.5.24252.17</SystemResourcesExtensionsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/roslyn-analyzers -->
