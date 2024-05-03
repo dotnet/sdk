@@ -201,7 +201,7 @@
          These should be used in places where we always want to target the latest. This includes source-only modes (always use the latest)
          as well as some additional cases like the msbuild that is redistributed in the SDK.
 
-         In non-source-only modes, some tasks and the resolver will need to run in an MSBuild that is older
+         Some .NET Framework tasks and the resolver will need to run in a VS/MSBuild that is older
          than the very latest, based on what we want the SDK to support. So use a version that matches the version
          in minimumMSBuildVersion. In these cases, we don't want to use MicrosoftBuildVersion and other
          associated properties that are updated by the VMR infrastructure. So, we read this version
@@ -209,8 +209,8 @@
          then use that in Directory.Packages.props.
 
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes. -->
-    <MicrosoftBuildVersion>17.11.0-preview-24223-07</MicrosoftBuildVersion>
-    <MicrosoftBuildLocalizationVersion>17.11.0-preview-24223-07</MicrosoftBuildLocalizationVersion>
+    <MicrosoftBuildVersion>17.11.0-preview-24251-01</MicrosoftBuildVersion>
+    <MicrosoftBuildLocalizationVersion>17.11.0-preview-24251-01</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildMinimumVersion Condition="Exists('$(RepoRoot)src\Layout\redist\minimumMSBuildVersion') and '$(DotNetBuildSourceOnly)' != 'true'">$([System.IO.File]::ReadAllText('$(RepoRoot)src\Layout\redist\minimumMSBuildVersion').Trim())</MicrosoftBuildMinimumVersion>
   </PropertyGroup>
   <PropertyGroup>
