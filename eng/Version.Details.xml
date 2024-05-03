@@ -235,26 +235,26 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>274daa158a78f05279bf523e806ea2311972910b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.4.24252.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.0-preview.4.24253.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>7c27c66956db718f94850ae45399b4dc48ea8998</Sha>
+      <Sha>5805390ad27860220b86b2193026891a514fb5df</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.4.24252.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.0-preview.4.24253.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>7c27c66956db718f94850ae45399b4dc48ea8998</Sha>
+      <Sha>5805390ad27860220b86b2193026891a514fb5df</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.4.24252.2">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.0-preview.4.24253.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>7c27c66956db718f94850ae45399b4dc48ea8998</Sha>
+      <Sha>5805390ad27860220b86b2193026891a514fb5df</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.4.24252.2">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.0-preview.4.24253.1">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>7c27c66956db718f94850ae45399b4dc48ea8998</Sha>
+      <Sha>5805390ad27860220b86b2193026891a514fb5df</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.4.24252.2" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.0-preview.4.24253.1" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>5e7f606e948ed748ec8181962ae67c13abef80a1</Sha>
+      <Sha>dca320b2b1d99b93c77199940c7c135e2ed1a7fc</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="9.0.0-preview.4.24251.2">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
