@@ -15,8 +15,8 @@ parameters:
 jobs:
 - template: ${{ parameters.jobTemplatePath }}
   parameters:
-    name: $(variables['System.PhaseName'])_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
-    displayName: $(variables['System.PhaseName']) ${{ parameters.pool.os }} ${{ parameters.buildArchitecture }}
+    name: ${{ parameters.phaseName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
+    displayName: ${{ parameters.phaseName }} ${{ parameters.pool.os }} ${{ parameters.buildArchitecture }}
     pool: ${{ parameters.pool }}
     strategy: ${{ parameters.strategy }}
     helixRepo: dotnet/sdk

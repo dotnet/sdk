@@ -101,6 +101,7 @@ extends:
           helixTargetQueue: Windows.Amd64.VS2022.Pre
           jobTemplatePath: /eng/common/templates-official/job/job.yml
           publishTaskName: '1ES.PublishBuildArtifacts@1'
+          phaseName: $(System.PhaseName)
           variables:
             runTests: ${{ parameters.runTests }}
           # containers:
