@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
         <source>No workload update found.</source>
-        <target state="new">No workload update found.</target>
+        <target state="translated">Изменений рабочей нагрузки не найдено.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">

@@ -1,10 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
+    [Collection("VM Tests")]
     public class VMTestBase : SdkTest, IDisposable
     {
         internal VirtualMachine VM { get; }
@@ -12,16 +15,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
         public VMTestBase(ITestOutputHelper log) : base(log)
         {
             VM = new VirtualMachine(Log);
-        }
-
-        public virtual void Dispose()
-        {
-            VM.Dispose();
-        }
-
-        protected string SdkInstallerVersion
-        {
-            get
+            _sdkInstallerVersion = new Lazy<string>(() =>
             {
                 if (!string.IsNullOrEmpty(VM.VMTestSettings.SdkInstallerVersion))
                 {
@@ -29,10 +23,38 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 }
                 else
                 {
-                    return "8.0.203";
+                    var sdkTestingDir = VM.GetRemoteDirectory(@"c:\SdkTesting");
+
+                    string installerPrefix = "dotnet-sdk-";
+                    string installerSuffix = "-win-x64.exe";
+
+                    List<string> sdkInstallerVersions = new List<string>();
+                    foreach (var file in sdkTestingDir.Files.Select(f => Path.GetFileName(f)))
+                    {
+                        if (file.StartsWith(installerPrefix) && file.EndsWith(installerSuffix))
+                        {
+                            sdkInstallerVersions.Add(file.Substring(installerPrefix.Length, file.Length - installerPrefix.Length - installerSuffix.Length));
+                        }
+                    }
+
+                    if (sdkInstallerVersions.Count == 0)
+                    {
+                        throw new Exception("No SDK installer found on VM");
+                    }
+
+                    return sdkInstallerVersions.MaxBy(v => new NuGetVersion(v));
                 }
-            }
+            });
         }
+
+        public virtual void Dispose()
+        {
+            VM.Dispose();
+        }
+
+        Lazy<string> _sdkInstallerVersion;
+
+        protected string SdkInstallerVersion => _sdkInstallerVersion.Value;
 
         protected string SdkInstallerFileName => $"dotnet-sdk-{SdkInstallerVersion}-win-x64.exe";
 
@@ -125,6 +147,17 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             var result = command.Execute();
             result.Should().Pass();
             return result.StdOut;
+        }
+
+        protected CommandResult InstallWorkload(string workloadName)
+        {
+            var result = VM.CreateRunCommand("dotnet", "workload", "install", workloadName, "--skip-manifest-update")
+                    .WithDescription($"Install {workloadName} workload")
+                    .Execute();
+
+            result.Should().Pass();
+
+            return result;
         }
 
         protected WorkloadSet GetRollback()

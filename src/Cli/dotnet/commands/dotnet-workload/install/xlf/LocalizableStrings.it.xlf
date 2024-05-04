@@ -24,7 +24,7 @@
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
-        <target state="new">Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</target>
+        <target state="translated">Impossibile specificare una determinata versione del carico di lavoro nella riga di comando tramite --version o --from-history quando è già specificata una versione nel file global.json {0}. Per aggiornare la versione del carico di lavoro installata a livello globale, eseguire il comando all'esterno del percorso contenente tale file global.json o aggiornare la versione specificata nel file di global.json ed eseguire "dotnet workload update".</target>
         <note />
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
@@ -289,7 +289,7 @@
       </trans-unit>
       <trans-unit id="UpdatedWorkloadMode">
         <source>Successfully updated workload install mode to use {0}.</source>
-        <target state="new">Successfully updated workload install mode to use {0}.</target>
+        <target state="translated">La modalità di installazione del carico di lavoro è stata aggiornata per l'uso di {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UsingCacheForPackInstall">
