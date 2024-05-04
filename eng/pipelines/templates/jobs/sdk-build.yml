@@ -34,7 +34,7 @@ jobs:
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
       - ${{ else }}:
-        - script: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $Token
+        - bash: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $Token
           displayName: Setup Private Feeds Credentials
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
