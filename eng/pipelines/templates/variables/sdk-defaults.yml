@@ -5,20 +5,22 @@ variables:
   testFullMSBuild: false
   runAoTTests: false
 
+  # TODO: Instead, just have this always on the build and set the value, same with RunTestsAsTool.
   testInBuildProperties: /p:Test=false
   testName: HelixTests
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
 
   runtimeSourceProperties: ''
 
-  Codeql.ExcludePathPatterns: '.packages, artifacts'
+  Codeql.ExcludePathPatterns: artifacts, .packages
   HelixApiAccessToken: ''
 
   publishArgument: ''
   officialBuildProperties: ''
 
   ############### ARCADE ###############
-  # "Post-build signing" means that this build will not sign itself.
+  # "Post-build signing" means that this build will NOT sign itself.
   PostBuildSign: true
   # Both this (used in Arcade for the MicroBuildSigningPlugin) and DotNetSignType (used in Arcade in Sign.proj) are necessary to set the sign type.
   _SignType: test
+  _TeamName: DotNetCore

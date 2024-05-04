@@ -100,31 +100,14 @@ extends:
             name: $(DncEngInternalBuildPool)
             image: 1es-windows-2022
             os: windows
-          helixTargetQueue: Windows.Amd64.VS2022.Pre
+          helixTargetQueue: windows.amd64.vs2022.pre
           oneEsPtCompat:
             jobTemplatePath: /eng/common/templates-official/job/job.yml
             publishTaskName: 1ES.PublishBuildArtifacts@1
           variables:
             runTests: ${{ parameters.runTests }}
             # Setting this here once so it can be reused in the matrix only.
-            _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber) /p:DotNetSignType=$(_SignType) /p:TeamName=DotNetCore
-          # containers:
-          #   alpine319WithNode:
-          #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
-          #   cblMariner20Fpm:
-          #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
-          #   centosStream9:
-          #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-          #   debian11Amd64:
-          #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-amd64
-          #   fedora39:
-          #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
-          #   ubuntu2204:
-          #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04
-          #   mariner20CrossArm:
-          #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
-          #   ubuntu2204DebPkg:
-          #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
+            _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
           strategy:
             matrix:
               ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
@@ -259,6 +242,70 @@ extends:
       #         value: test
       #       - name: _Test
       #         value: -test
+
+
+      # - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
+      #   parameters:
+      #     pool:
+      #       name: $(DncEngInternalBuildPool)
+      #       image: 1es-ubuntu-2204
+      #       os: linux
+      #     helixTargetQueue: ubuntu.2204.amd64
+      #     oneEsPtCompat:
+      #       jobTemplatePath: /eng/common/templates-official/job/job.yml
+      #       publishTaskName: 1ES.PublishBuildArtifacts@1
+      #     variables:
+      #       runTests: ${{ parameters.runTests }}
+      #       # Setting this here once so it can be reused in the matrix only.
+      #       _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber) /p:DotNetSignType=$(_SignType) /p:TeamName=DotNetCore
+      #     containers:
+      #       alpine319WithNode:
+      #         image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+      #       cblMariner20Fpm:
+      #         image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
+      #       centosStream9:
+      #         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
+      #       debian11Amd64:
+      #         image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-amd64
+      #       fedora39:
+      #         image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
+      #       ubuntu2204:
+      #         image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04
+      #       mariner20CrossArm:
+      #         image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
+      #       ubuntu2204DebPkg:
+      #         image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
+      #     strategy:
+      #       matrix:
+      #         ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+      #           Official:
+      #             publishArgument: -publish
+      #             _SignType: real
+      #             officialBuildProperties: $(_officialBuildProperties)
+      #           Official_x86:
+      #             buildArchitecture: x86
+      #             publishArgument: -publish
+      #             _SignType: real
+      #             officialBuildProperties: $(_officialBuildProperties)
+      #           Official_arm64:
+      #             buildArchitecture: arm64
+      #             publishArgument: -publish
+      #             _SignType: real
+      #             officialBuildProperties: $(_officialBuildProperties)
+      #         ${{ else }}:
+      #           Test: {}
+      #           FullFramework:
+      #             testFullMSBuild: true
+      #           TestAsTools:
+      #             testInBuildProperties: /p:RunTestsAsTool=true
+      #             # This uses the build step for testing, so the extra test step is not necessary.
+      #             runTests: false
+      #           TemplateEngine:
+      #             testName: TemplateEngineTests
+      #             testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
+      #               $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+      #           AoT:
+      #             runAoTTests: true
 
 
 
