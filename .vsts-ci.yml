@@ -33,9 +33,9 @@ variables:
 # Helix testing requires a token when internally run.
 # Variables used: HelixApiAccessToken
 - group: DotNet-HelixApi-Access
-# Runs a signed build by disabling post-build signing for release-branch builds or manual builds.
+# Runs a signed build by disabling post-build signing for release-branch builds or manual builds that are not running tests.
 # This is used by Arcade.
-- ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
+- ${{ if and(eq(parameters.runTests, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
   - name: PostBuildSign
     value: false
 # TODO: What is this for?
