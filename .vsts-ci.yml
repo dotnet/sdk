@@ -34,9 +34,11 @@ variables:
 # Variables used: HelixApiAccessToken
 - group: DotNet-HelixApi-Access
 # Runs a signed build by disabling post-build signing for release-branch builds or manual builds.
+# This is used by Arcade.
 - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
   - name: PostBuildSign
     value: false
+# TODO: What is this for?
 - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
   - group: DotNet-CLI-SDLValidation-Params
 # Set the MicroBuild plugin installation directory to the agent temp directory to avoid SDL tool scanning.
@@ -99,11 +101,13 @@ extends:
             image: 1es-windows-2022
             os: windows
           helixTargetQueue: Windows.Amd64.VS2022.Pre
-          oneEsPt:
+          oneEsPtCompat:
             jobTemplatePath: /eng/common/templates-official/job/job.yml
             publishTaskName: 1ES.PublishBuildArtifacts@1
           variables:
             runTests: ${{ parameters.runTests }}
+            # Setting this here once so it can be reused in the matrix only.
+            _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber) /p:DotNetSignType=$(_SignType) /p:TeamName=DotNetCore
           # containers:
           #   alpine319WithNode:
           #     image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
@@ -126,7 +130,18 @@ extends:
               ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
                 Official:
                   publishArgument: -publish
-                  officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber) /p:DotNetSignType=real /p:TeamName=DotNetCore
+                  _SignType: real
+                  officialBuildProperties: $(_officialBuildProperties)
+                Official_x86:
+                  buildArchitecture: x86
+                  publishArgument: -publish
+                  _SignType: real
+                  officialBuildProperties: $(_officialBuildProperties)
+                Official_arm64:
+                  buildArchitecture: arm64
+                  publishArgument: -publish
+                  _SignType: real
+                  officialBuildProperties: $(_officialBuildProperties)
               ${{ else }}:
                 Test: {}
                 FullFramework:

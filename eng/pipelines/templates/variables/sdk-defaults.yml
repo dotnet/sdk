@@ -1,5 +1,6 @@
 variables:
   buildConfiguration: Release
+  buildArchitecture: x64
   runTests: true
   testFullMSBuild: false
   runAoTTests: false
@@ -13,10 +14,11 @@ variables:
   Codeql.ExcludePathPatterns: '.packages, artifacts'
   HelixApiAccessToken: ''
 
-  # "Post-build signing" means that this build will not sign itself.
-  # This value is used by Arcade.
-  PostBuildSign: true
-
-
   publishArgument: ''
   officialBuildProperties: ''
+
+  ############### ARCADE ###############
+  # "Post-build signing" means that this build will not sign itself.
+  PostBuildSign: true
+  # Both this (used in Arcade for the MicroBuildSigningPlugin) and DotNetSignType (used in Arcade in Sign.proj) are necessary to set the sign type.
+  _SignType: test
