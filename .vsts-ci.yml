@@ -272,6 +272,7 @@ extends:
           oneEsPtCompat:
             jobTemplatePath: /eng/common/templates-official/job/job.yml
             publishTaskName: 1ES.PublishBuildArtifacts@1
+          # buildScriptPath: eng/common/build.sh
           variables:
             runTests: ${{ parameters.runTests }}
             # Setting this here once so it can be reused in the matrix only.

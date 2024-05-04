@@ -2,7 +2,7 @@ parameters:
   oneEsPtCompat:
     jobTemplatePath: /eng/common/templates/job/job.yml
     publishTaskName: PublishBuildArtifacts@1
-  buildScriptPath: eng/common/build.ps1
+  # buildScriptPath: eng/common/build.ps1
   container: ''
 
 jobs:
@@ -28,47 +28,90 @@ jobs:
     # - ${{ if eq(parameters.pool.os, 'windows') }}:
     ############### BUILDING ###############
     - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-      - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
-        displayName: Setup Private Feeds Credentials
-        env:
-          Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      - ${{ if eq(parameters.pool.os, 'windows') }}:
+        - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+          displayName: Setup Private Feeds Credentials
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      - ${{ else }}:
+        - script: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $Token
+          displayName: Setup Private Feeds Credentials
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
 
-    - powershell: ${{ parameters.buildScriptPath }}
-        -restore -build -sign -pack -ci -nativeToolsOnMachine
-        -configuration $(buildConfiguration)
-        $(publishArgument)
-        /p:Architecture=$(buildArchitecture)
-        $(runtimeSourceProperties)
-        $(testInBuildProperties)
-        $(officialBuildProperties)
-        /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-      displayName: Build
-      env:
-        # Required by Arcade for passing to Helix
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-        # Only set when ran internally
-        HelixAccessToken: $(HelixApiAccessToken)
-        BuildConfig: $(buildConfiguration)
-        TestFullMSBuild: $(testFullMSBuild)
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: eng/common/build.ps1
+          -restore -build -sign -pack -ci -nativeToolsOnMachine
+          -configuration $(buildConfiguration)
+          $(publishArgument)
+          /p:Architecture=$(buildArchitecture)
+          $(runtimeSourceProperties)
+          $(testInBuildProperties)
+          $(officialBuildProperties)
+          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+        displayName: Build
+        env:
+          # Required by Arcade for passing to Helix
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          # Only set when ran internally
+          HelixAccessToken: $(HelixApiAccessToken)
+          BuildConfig: $(buildConfiguration)
+          TestFullMSBuild: $(testFullMSBuild)
+      - ${{ else }}:
+        - script: eng/common/build.sh
+            -restore -build -sign -pack -ci -nativeToolsOnMachine
+            -configuration $(buildConfiguration)
+            $(publishArgument)
+            /p:Architecture=$(buildArchitecture)
+            $(runtimeSourceProperties)
+            $(testInBuildProperties)
+            $(officialBuildProperties)
+            /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+          displayName: Build
+          env:
+            # Required by Arcade for passing to Helix
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            # Only set when ran internally
+            HelixAccessToken: $(HelixApiAccessToken)
+            BuildConfig: $(buildConfiguration)
+            TestFullMSBuild: $(testFullMSBuild)
 
     ############### TESTING ###############
-    # TODO: Change _CustomHelixTargetQueue name
-    - powershell: ${{ parameters.buildScriptPath }}
-        -restore -test -ci -nativeToolsOnMachine -prepareMachine
-        -configuration $(buildConfiguration)
-        -projects $(testProjects)
-        /p:Architecture=$(buildArchitecture)
-        $(runtimeSourceProperties)
-        /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-        /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/$(testName).binlog
-      displayName: Run $(testName)
-      condition: and(succeeded(), eq(variables.runTests, true))
-      env:
-        # Required by Arcade for passing to Helix
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-        # Only set when ran internally
-        HelixAccessToken: $(HelixApiAccessToken)
-        RunAoTTests: $(runAoTTests)
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      # TODO: Change _CustomHelixTargetQueue name
+      - powershell: eng/common/build.ps1
+          -restore -test -ci -nativeToolsOnMachine -prepareMachine
+          -configuration $(buildConfiguration)
+          -projects $(testProjects)
+          /p:Architecture=$(buildArchitecture)
+          $(runtimeSourceProperties)
+          /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+          /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/$(testName).binlog
+        displayName: Run $(testName)
+        condition: and(succeeded(), eq(variables.runTests, true))
+        env:
+          # Required by Arcade for passing to Helix
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          # Only set when ran internally
+          HelixAccessToken: $(HelixApiAccessToken)
+          RunAoTTests: $(runAoTTests)
+    - ${{ else }}:
+      - script: eng/common/build.sh
+          -restore -test -ci -nativeToolsOnMachine -prepareMachine
+          -configuration $(buildConfiguration)
+          -projects $(testProjects)
+          /p:Architecture=$(buildArchitecture)
+          $(runtimeSourceProperties)
+          /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+          /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/$(testName).binlog
+        displayName: Run $(testName)
+        condition: and(succeeded(), eq(variables.runTests, true))
+        env:
+          # Required by Arcade for passing to Helix
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          # Only set when ran internally
+          HelixAccessToken: $(HelixApiAccessToken)
+          RunAoTTests: $(runAoTTests)
 
     # ############### NON-WINDOWS ###############
     # - ${{ else }}:
