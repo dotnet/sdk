@@ -16,8 +16,8 @@ parameters:
 jobs:
 - template: ${{ parameters.oneEsPt.jobTemplatePath }}
   parameters:
-    name: ${{ variables['System.JobName'] }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
-    displayName: ${{ variables['System.JobName'] }} ${{ parameters.pool.os }} ${{ parameters.buildArchitecture }}
+    name: ${{ variables['Agent.JobName'] }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
+    displayName: ${{ variables['Agent.JobName'] }} ${{ parameters.pool.os }} ${{ parameters.buildArchitecture }}
     pool: ${{ parameters.pool }}
     strategy: ${{ parameters.strategy }}
     helixRepo: dotnet/sdk
