@@ -223,14 +223,5 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             return result.StdOut;
         }
-
-        void AddNuGetSource(string source)
-        {
-            VM.CreateRunCommand("dotnet", "nuget", "add", "source", source)
-                .WithDescription($"Add {source} to NuGet.config")
-                .Execute()
-                .Should()
-                .Pass();
-        }
     }
 }
