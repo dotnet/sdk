@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Publish.Tests
@@ -139,6 +140,12 @@ namespace Microsoft.NET.Publish.Tests
             File.Exists(wpfPresentationFxDll).Should().BeFalse();
             File.Exists(winFormsDll).Should().BeTrue();
             File.Exists(accessibilitysDll).Should().BeTrue();
+
+            // Run the app
+            var publishedExe = Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}");
+            File.Exists(publishedExe).Should().BeTrue();
+            var command = new RunExeCommand(Log, publishedExe)
+                .Execute().Should().Pass();
         }
 
         [WindowsOnlyRequiresMSBuildVersionFact("17.0.0.32901")]
@@ -315,6 +322,7 @@ namespace Microsoft.NET.Publish.Tests
                 SelfContained = "true"
             };
 
+            // This app will close immediately after running - overrides OnShown()
             testProject.SourceFiles[$"{projectName}.cs"] = @"
 using System;
 using System.Windows.Forms;
@@ -358,6 +366,11 @@ public class Form1 : Form
         this.Text = ""Form1"";
     }
     #endregion
+
+    protected override void OnShown(EventArgs e)
+    {
+        Close();
+    }
 }
 ";
 
