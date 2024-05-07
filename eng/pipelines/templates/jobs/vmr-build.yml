@@ -252,7 +252,7 @@ jobs:
       - script: |
           call $(sourcesPath)\build.cmd -ci -prepareMachine -test /bl:artifacts/log/Release/Test.binlog /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }} ${{ parameters.extraProperties }}
         displayName: Run Tests
-        timeoutInMinutes: runTestsTimeout
+        timeoutInMinutes: $(runTestsTimeout)
 
   - ${{ else }}:
     - ${{ if eq(parameters.buildSourceOnly, 'true') }}:
@@ -408,7 +408,7 @@ jobs:
           fi
 
         displayName: Run Tests
-        timeoutInMinutes: runTestsTimeout
+        timeoutInMinutes: $(runTestsTimeout)
 
   - ${{ if eq(parameters.targetOS, 'windows') }}:
 
