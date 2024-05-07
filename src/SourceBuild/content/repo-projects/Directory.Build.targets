@@ -105,7 +105,7 @@
       <ExtraSourcesNuGetSourceName>ExtraSources</ExtraSourcesNuGetSourceName>
       <SbrpRepoSrcPath>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'src', 'source-build-reference-packages', 'src'))</SbrpRepoSrcPath>
     </PropertyGroup>
-  
+
     <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
       <PrebuiltNuGetSourceName>prebuilt</PrebuiltNuGetSourceName>
       <PreviouslySourceBuiltNuGetSourceName>previously-source-built</PreviouslySourceBuiltNuGetSourceName>
@@ -116,7 +116,7 @@
       <_CommonBuildSources Include="@(DependentRepoSourceName)" />
       <_CommonBuildSources Include="$(ExtraSourcesNuGetSourceName)" Condition="'$(ExtraRestoreSourcePath)' != ''" />
     </ItemGroup>
-    
+
     <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
       <!-- When not building source-only, repositories lagging behind on the .NET SDK (e.g. tooling repos)
           that need to utilize a VS-aligned version for development purposes may not have the latest product
@@ -261,7 +261,7 @@
       <_PrebuiltSourceBuiltAssetManifests Include="$(PrebuiltSourceBuiltPackagesPath)VerticalManifest.xml" />
     </ItemGroup>
 
-    <GetKnownPackagesFromAssetManifests AssetManifests="@(_PrebuiltSourceBuiltAssetManifests)">
+    <GetKnownPackagesFromAssetManifests AssetManifests="@(_PrebuiltSourceBuiltAssetManifests)" Condition="Exists(@(_PrebuiltSourceBuiltAssetManifests))">
       <Output TaskParameter="KnownPackages" ItemName="_PreviouslyBuiltSourceBuiltPackages" />
     </GetKnownPackagesFromAssetManifests>
 
