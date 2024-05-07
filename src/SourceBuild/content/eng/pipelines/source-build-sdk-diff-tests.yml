@@ -4,8 +4,6 @@ schedules:
   branches:
     include:
     - main
-    # TODO: Remove 'main-sdk' when sdk becomes the VMR's origin
-    - main-sdk
 
 # Relies on dotnet-source-build being in the same repo as this pipeline
 # https://learn.microsoft.com/en-us/azure/devops/pipelines/process/pipeline-triggers?view=azure-devops#branch-considerations

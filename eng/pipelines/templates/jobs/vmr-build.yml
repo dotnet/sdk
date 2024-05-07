@@ -165,8 +165,7 @@ jobs:
     - template: ../steps/vmr-prepare.yml@self
       parameters:
         ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-          # TODO: Set back to vmrBranch: $(System.PullRequest.TargetBranch)
-          vmrBranch: main-sdk
+          vmrBranch: $(System.PullRequest.TargetBranch)
         ${{ else }}:
           vmrBranch: ${{ parameters.vmrBranch }}
 

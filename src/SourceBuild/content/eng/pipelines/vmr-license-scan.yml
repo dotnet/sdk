@@ -6,8 +6,6 @@ schedules:
   branches:
     include:
     - main
-    # TODO: Remove 'main-sdk' when sdk becomes the VMR's origin
-    - main-sdk
     - release/*.0.1xx*
     - internal/release/*.0.1xx*
 

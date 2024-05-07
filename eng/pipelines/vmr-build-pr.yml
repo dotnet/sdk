@@ -24,8 +24,7 @@ parameters:
 - name: vmrBranch
   displayName: dotnet/dotnet branch to push to
   type: string
-  # TODO: Change back to ' ' when sdk becomes the VMR's origin
-  default: main-sdk
+  default: ' '
 
 - name: disableBuild
   displayName: Skip the VMR Build stage
@@ -52,8 +51,7 @@ resources:
     type: github
     name: dotnet/dotnet
     endpoint: dotnet
-    # TODO: Change back to ${{ variables.VmrBranch }}
-    ref: main-sdk
+    ref: ${{ variables.VmrBranch }}
 
 stages:
 # You can temporarily disable the VMR Build stage by setting the disableBuild variable
