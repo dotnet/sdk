@@ -64,14 +64,14 @@ jobs:
     parameters:
       buildName: ${{ parameters.buildName }}
       architecture: ${{ parameters.architecture }}
-      patterns: '**/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*)-${{ parameters.targetRid }}.tar.gz' 
+      patterns: '**/assets/Release/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*)-${{ parameters.targetRid }}.tar.gz' 
       displayName: Download Source Build SDK
 
   - template: ../steps/download-vmr-artifact.yml
     parameters:
       buildName: ${{ parameters.buildName }}
       architecture: ${{ parameters.architecture }}
-      patterns: '**/Private.SourceBuilt.Artifacts.+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*).${{ parameters.targetRid }}.tar.gz' 
+      patterns: '**/assets/Release/Private.SourceBuilt.Artifacts.+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*).${{ parameters.targetRid }}.tar.gz' 
       displayName: Download Source Built Artifacts
 
   - script: |
