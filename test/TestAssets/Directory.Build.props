@@ -1,0 +1,6 @@
+<Project>
+  <!-- A copied Directory.Build.props file to prevent test asset projects from picking up the repo's Directory.Build.props' -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+</Project>

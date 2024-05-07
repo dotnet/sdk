@@ -142,6 +142,11 @@
         <target state="translated">CONTAINER1008: 检索“{0}”的凭据失败: {1}</target>
         <note>{StrBegin="CONTAINER1008: "}</note>
       </trans-unit>
+      <trans-unit id="GenerateDigestLabelWithoutGenerateLabels">
+        <source>CONTAINER2030: GenerateLabels was disabled but GenerateDigestLabel was enabled - no digest label will be created.</source>
+        <target state="translated">CONTAINER2030: 已禁用 GenerateLabels，但已启用 GenerateDigestLabel - 不会创建任何摘要标签。</target>
+        <note>{StrBegin="CONTAINER2030: "}</note>
+      </trans-unit>
       <trans-unit id="HostObjectNotDetected">
         <source>No host object detected.</source>
         <target state="translated">未检测到主机对象。</target>

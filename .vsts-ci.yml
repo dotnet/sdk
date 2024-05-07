@@ -1,3 +1,5 @@
+# Pipeline: https://dev.azure.com/dnceng/internal/_build?definitionId=286
+
 trigger:
   batch: true
   branches:
@@ -17,7 +19,8 @@ pr:
 variables:
   - name: _CIBuild
     value: -restore -build -sign -pack -ci
-  - ${{ if or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
+  # Disable post-build signing for internal release-branch builds or internal manual builds.
+  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
     - name: PostBuildSign
       value: false
   - ${{ else }}:

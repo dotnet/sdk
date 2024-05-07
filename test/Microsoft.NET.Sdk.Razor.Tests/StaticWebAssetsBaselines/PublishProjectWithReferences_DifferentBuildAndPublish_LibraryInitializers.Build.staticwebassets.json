@@ -47,7 +47,7 @@
   ],
   "Assets": [
     {
-      "Identity": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\AnotherClassLib.lib.module.js.gz",
+      "Identity": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\AnotherClassLib.lib.module.js.gz",
       "SourceId": "AnotherClassLib",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -65,10 +65,10 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\AnotherClassLib.lib.module.js.gz"
+      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\_content\\AnotherClassLib\\AnotherClassLib.lib.module.js.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\css\\site.css.gz",
+      "Identity": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\css\\site.css.gz",
       "SourceId": "AnotherClassLib",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -86,10 +86,10 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\css\\site.css.gz"
+      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\_content\\AnotherClassLib\\css\\site.css.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\js\\project-direct-dep.js.gz",
+      "Identity": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\js\\project-direct-dep.js.gz",
       "SourceId": "AnotherClassLib",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -107,7 +107,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\js\\project-direct-dep.js.gz"
+      "OriginalItemSpec": "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\_content\\AnotherClassLib\\js\\project-direct-dep.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\AnotherClassLib\\wwwroot\\AnotherClassLib.lib.module.build.js",
@@ -173,7 +173,7 @@
       "OriginalItemSpec": "wwwroot\\js\\project-direct-dep.js"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithPackageAndP2PReference.modules.json.gz",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.modules.json.gz",
       "SourceId": "AppWithPackageAndP2PReference",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -191,10 +191,10 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\jsmodules\\AppWithPackageAndP2PReference.modules.json.gz"
+      "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\jsmodules\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.modules.json.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithPackageAndP2PReference.styles.css.gz",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.styles.css.gz",
       "SourceId": "AppWithPackageAndP2PReference",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -212,10 +212,10 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css.gz"
+      "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.styles.css.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\PackageLibraryDirectDependency.bundle.scp.css.gz",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.gz",
       "SourceId": "PackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -233,10 +233,10 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\PackageLibraryDirectDependency.bundle.scp.css.gz"
+      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\css\\site.css.gz",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\css\\site.css.gz",
       "SourceId": "PackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -254,10 +254,10 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\css\\site.css.gz"
+      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\_content\\PackageLibraryDirectDependency\\css\\site.css.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\js\\pkg-direct-dep.js.gz",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
       "SourceId": "PackageLibraryDirectDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -275,10 +275,10 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\js\\pkg-direct-dep.js.gz"
+      "OriginalItemSpec": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz"
     },
     {
-      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\js\\pkg-transitive-dep.js.gz",
+      "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
       "SourceId": "PackageLibraryTransitiveDependency",
       "SourceType": "Package",
       "ContentRoot": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -296,7 +296,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\js\\pkg-transitive-dep.js.gz"
+      "OriginalItemSpec": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
@@ -341,7 +341,7 @@
       "OriginalItemSpec": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css"
     },
     {
-      "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\ClassLibrary.bundle.scp.css.gz",
+      "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary.bundle.scp.css.gz",
       "SourceId": "ClassLibrary",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -359,10 +359,10 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css.gz"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\_content\\ClassLibrary\\ClassLibrary.bundle.scp.css.gz"
     },
     {
-      "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\js\\project-transitive-dep.js.gz",
+      "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz",
       "SourceId": "ClassLibrary",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -380,10 +380,10 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\js\\project-transitive-dep.js.gz"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz"
     },
     {
-      "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\js\\project-transitive-dep.v4.js.gz",
+      "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz",
       "SourceId": "ClassLibrary",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\",
@@ -401,7 +401,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\js\\project-transitive-dep.v4.js.gz"
+      "OriginalItemSpec": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz"
     },
     {
       "Identity": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
@@ -549,6 +549,1328 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\pkg-transitive-dep.js"
+    }
+  ],
+  "Endpoints": [
+    {
+      "Route": "_content/AnotherClassLib/AnotherClassLib.lib.module.js",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\AnotherClassLib.lib.module.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/AnotherClassLib.lib.module.js",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\wwwroot\\AnotherClassLib.lib.module.build.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/AnotherClassLib.lib.module.js.gz",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\AnotherClassLib.lib.module.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/css/site.css",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\css\\site.css.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/css/site.css",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\wwwroot\\css\\site.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/css/site.css.gz",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\css\\site.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/js/project-direct-dep.js",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\js\\project-direct-dep.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/js/project-direct-dep.js",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\wwwroot\\js\\project-direct-dep.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/AnotherClassLib/js/project-direct-dep.js.gz",
+      "AssetFile": "${ProjectPath}\\AnotherClassLib\\obj\\Debug\\${Tfm}\\compressed\\_content\\AnotherClassLib\\js\\project-direct-dep.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary.bundle.scp.css.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ClassLibrary.bundle.scp.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/ClassLibrary.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\ClassLibrary.bundle.scp.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.js",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.js",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.js.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\wwwroot\\js\\project-transitive-dep.v4.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/ClassLibrary/js/project-transitive-dep.v4.js.gz",
+      "AssetFile": "${ProjectPath}\\ClassLibrary\\obj\\Debug\\${Tfm}\\compressed\\_content\\ClassLibrary\\js\\project-transitive-dep.v4.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/css/site.css",
+      "AssetFile": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\site.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/css/site.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\css\\site.css.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/css/site.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\css\\site.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/js/pkg-direct-dep.js",
+      "AssetFile": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\pkg-direct-dep.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/js/pkg-direct-dep.js",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/js/pkg-direct-dep.js.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\js\\pkg-direct-dep.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css",
+      "AssetFile": "${RestorePath}\\packagelibrarydirectdependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryDirectDependency/PackageLibraryDirectDependency.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryDirectDependency\\PackageLibraryDirectDependency.bundle.scp.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
+      "AssetFile": "${RestorePath}\\packagelibrarytransitivedependency\\${PackageVersion}\\staticwebassets\\${PackageTfm}\\pkg-transitive-dep.js",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryTransitiveDependency/js/pkg-transitive-dep.js",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "_content/PackageLibraryTransitiveDependency/js/pkg-transitive-dep.js.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\PackageLibraryTransitiveDependency\\js\\pkg-transitive-dep.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "AppWithPackageAndP2PReference.modules.json",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.modules.json.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "AppWithPackageAndP2PReference.modules.json",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "AppWithPackageAndP2PReference.modules.json.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.modules.json.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "application/json"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "AppWithPackageAndP2PReference.styles.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.styles.css.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "AppWithPackageAndP2PReference.styles.css",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        }
+      ],
+      "EndpointProperties": []
+    },
+    {
+      "Route": "AppWithPackageAndP2PReference.styles.css.gz",
+      "AssetFile": "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.styles.css.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/css"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": []
     }
   ]
 }

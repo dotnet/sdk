@@ -109,6 +109,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                             Dispatcher.ReplySuccess($"Updated install mode to use {newMode}.");
                             break;
 
+                        case InstallRequestType.AdjustWorkloadSetVersion:
+                            AdjustWorkloadSetInInstallState(new SdkFeatureBand(request.SdkFeatureBand), request.WorkloadSetVersion);
+                            Dispatcher.ReplySuccess($"Updated workload set version in install state to {request.WorkloadSetVersion}.");
+                            break;
+
                         default:
                             throw new InvalidOperationException($"Unknown message request: {(int)request.RequestType}");
                     }

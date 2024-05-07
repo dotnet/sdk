@@ -138,9 +138,6 @@
   <data name="WorkloadUpdateFailed" xml:space="preserve">
     <value>Workload update failed: {0}</value>
   </data>
-  <data name="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto" xml:space="preserve">
-    <value>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</value>
-  </data>
   <data name="FromPreviousSdkOptionDescription" xml:space="preserve">
     <value>Include workloads installed with earlier SDK versions in update.</value>
   </data>
@@ -155,5 +152,11 @@
   </data>
   <data name="FromRollbackDefinitionOptionDescription" xml:space="preserve">
     <value>Update workloads based on specified rollback definition file.</value>
+  </data>
+  <data name="UpdateFromRollbackSwitchesModeToLooseManifests" xml:space="preserve">
+    <value>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</value>
+  </data>
+  <data name="NoWorkloadUpdateFound" xml:space="preserve">
+    <value>No workload update found.</value>
   </data>
 </root>
