@@ -58,25 +58,25 @@ jobs:
           HelixAccessToken: $(HelixApiAccessToken)
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: $(testFullMSBuild)
-      - ${{ else }}:
-        - script: eng/common/build.sh
-            -restore -build -sign -pack -ci -nativeToolsOnMachine
-            -configuration $(buildConfiguration)
-            $(publishArgument)
-            /p:Architecture=$(buildArchitecture)
-            $(runtimeSourceProperties)
-            $(runtimeIdentifierProperties)
-            $(testInBuildProperties)
-            $(officialBuildProperties)
-            /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-          displayName: Build
-          env:
-            # Required by Arcade for passing to Helix
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            # Only set when ran internally
-            HelixAccessToken: $(HelixApiAccessToken)
-            BuildConfig: $(buildConfiguration)
-            TestFullMSBuild: $(testFullMSBuild)
+    - ${{ else }}:
+      - script: eng/common/build.sh
+          -restore -build -sign -pack -ci -nativeToolsOnMachine
+          -configuration $(buildConfiguration)
+          $(publishArgument)
+          /p:Architecture=$(buildArchitecture)
+          $(runtimeSourceProperties)
+          $(runtimeIdentifierProperties)
+          $(testInBuildProperties)
+          $(officialBuildProperties)
+          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+        displayName: Build
+        env:
+          # Required by Arcade for passing to Helix
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          # Only set when ran internally
+          HelixAccessToken: $(HelixApiAccessToken)
+          BuildConfig: $(buildConfiguration)
+          TestFullMSBuild: $(testFullMSBuild)
 
     ############### TESTING ###############
     - ${{ if eq(parameters.pool.os, 'windows') }}:
