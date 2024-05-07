@@ -7,10 +7,13 @@ parameters:
 jobs:
 - template: ${{ parameters.oneEsPtCompat.jobTemplatePath }}
   parameters:
-    name: ${{ parameters.pool.os }}
-    displayName: ${{ parameters.pool.os }}
+    ${{ if eq(parameters.container, '') }}:
+      name: ${{ parameters.pool.os }}
+      displayName: ${{ parameters.pool.os }}
+    ${{ else }}:
+      name: ${{ parameters.pool.os }}_${{ parameters.container }}
+      displayName: ${{ parameters.pool.os }} [${{ parameters.container }}]
     pool: ${{ parameters.pool }}
-    # ${{ if ne(parameters.container, '') }}:
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
     helixRepo: dotnet/sdk
@@ -60,7 +63,7 @@ jobs:
           TestFullMSBuild: $(testFullMSBuild)
     - ${{ else }}:
       - script: eng/common/build.sh
-          -restore -build -sign -pack -ci -nativeToolsOnMachine
+          -restore -build -sign -pack -ci
           -configuration $(buildConfiguration)
           $(publishArgument)
           /p:Architecture=$(buildArchitecture)
@@ -82,7 +85,7 @@ jobs:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       # TODO: Change _CustomHelixTargetQueue name
       - powershell: eng/common/build.ps1
-          -restore -test -ci -nativeToolsOnMachine -prepareMachine
+          -restore -test -ci -prepareMachine
           -configuration $(buildConfiguration)
           -projects $(testProjects)
           /p:Architecture=$(buildArchitecture)
