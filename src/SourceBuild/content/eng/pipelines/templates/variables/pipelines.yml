@@ -7,3 +7,7 @@ variables:
   value: 140
 - name: DOTNET_DOTNET_CI_PIPELINE_ID
   value: 1219
+
+# TODO: Remove this once sdk starts producing the MSFT SDK
+- name: INSTALLER_OFFICIAL_CI_PIPELINE_ID
+  value: 286

@@ -47,16 +47,31 @@ jobs:
 
       echo "Sdk build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$sdk_build&view=results"
 
-      echo "##vso[build.addbuildtag]sdk-$sdk_sha"
+      # TODO: Remove this once sdk starts producing the MSFT SDK - also remove installer tag from the builds
+      installer_sha=$(az pipelines build tag list --organization '$(AZDO_ORG)' --project '$(AZDO_PROJECT)' --build-id $dotnet_dotnet_build --query "[?contains(@, 'installer')]" --output tsv | sed "s,installer ,,g")
+      installer_build=$(az pipelines runs list --organization '$(AZDO_ORG)' --project '$(AZDO_PROJECT)' --pipeline-ids '$(INSTALLER_OFFICIAL_CI_PIPELINE_ID)' --query "[?sourceVersion == '$installer_sha'].id" --output tsv)
+      if [[ -z "$installer_build" ]]; then
+        echo "Could not find a build of sdk for commit '$installer_sha'"
+        exit 1
+      fi
+
+      echo "##vso[build.addbuildtag]sdk $sdk_sha"
       echo "##vso[task.setvariable variable=SdkBuildId]$sdk_build"
       echo "##vso[task.setvariable variable=DotnetDotnetBuildId]$dotnet_dotnet_build"
+
+      # TODO: Remove this once sdk starts producing the MSFT SDK
+      echo "##vso[build.addbuildtag]installer $installer_sha"
+      echo "##vso[task.setvariable variable=InstallerBuildId]$installer_build"
     displayName: Find associated builds
     name: Get_Build_Ids
     env:
       AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
 
+  # TODO: Remove pipeline and buildId parameters once sdk starts producing the MSFT SDK. Defaults are set to the sdk build.
   - template: ../steps/download-pipeline-artifact.yml
     parameters:
+      pipeline: $(INSTALLER_OFFICIAL_CI_PIPELINE_ID)
+      buildId: $(InstallerBuildId)
       patterns: '**/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*)-linux*-${{ parameters.architecture }}.tar.gz'
       displayName: Download MSFT SDK
 
@@ -85,8 +100,9 @@ jobs:
       fi
       msft_sdk_tarball_name=$(find "$(Pipeline.Workspace)/Artifacts" -name "dotnet-sdk-*-$platform-${{ parameters.architecture }}.tar.gz" -exec basename {} \;)
 
+      # TODO: Replace InstallerBuildId with SdkBuildId once sdk starts producing the MSFT SDK
       if [[ -z "$msft_sdk_tarball_name" ]]; then
-        echo "Microsoft SDK tarball does not exist in '$(Pipeline.Workspace)/Artifacts'. The associated build https://dev.azure.com/dnceng/internal/_build/results?buildId=$(SdkBuildId) might have failed."
+        echo "Microsoft SDK tarball does not exist in '$(Pipeline.Workspace)/Artifacts'. The associated build https://dev.azure.com/dnceng/internal/_build/results?buildId=$(InstallerBuildId) might have failed."
         exit 1
       fi
 
