@@ -63,8 +63,7 @@ jobs:
 
   - ${{ if and(not(parameters.noPush), not(in(variables['Build.Reason'], 'PullRequest')), eq(variables['System.TeamProject'], 'internal')) }}:
     # Push main and release branches to the public VMR
-    # TODO: Remove main-sdk when sdk becomes the VMR's origin
-    - ${{ if or(eq(parameters.vmrBranch, 'main'), eq(parameters.vmrBranch, 'main-sdk'), startsWith(parameters.vmrBranch, 'release/')) }}:
+    - ${{ if or(eq(parameters.vmrBranch, 'main'), startsWith(parameters.vmrBranch, 'release/')) }}:
       - script: >
           ./.dotnet/dotnet darc vmr push
           --vmr '$(vmrPath)'
