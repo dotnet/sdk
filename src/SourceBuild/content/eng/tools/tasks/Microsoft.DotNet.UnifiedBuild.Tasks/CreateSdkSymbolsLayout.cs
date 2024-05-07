@@ -89,8 +89,9 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                     {
                         // Copy matching pdb to symbols path, preserving sdk binary's hierarchy
                         string sourcePath = (string)allPdbGuids[debugId]!;
+                        string fileRelativePath = file.Substring(SdkLayoutPath.Length);
                         string destinationPath =
-                            file.Replace(SdkLayoutPath, SdkSymbolsLayoutPath)
+                            Path.Combine(SdkSymbolsLayoutPath, fileRelativePath)
                                 .Replace(Path.GetFileName(file), Path.GetFileName(sourcePath));
 
                         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);

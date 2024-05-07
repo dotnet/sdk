@@ -32,7 +32,6 @@ jobs:
   steps:
   - script: |
       vmrSrcDir="$(Build.SourcesDirectory)/src"
-
       # Builds an Azure DevOps matrix definition. Each entry in the matrix is a path,
       # allowing a job to be run for each src repo.
       matrix=""
