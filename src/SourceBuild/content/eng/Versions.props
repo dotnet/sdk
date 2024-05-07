@@ -37,5 +37,6 @@
     <!-- external dependencies -->
     <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
     <NuGetProtocolVersion>6.9.1</NuGetProtocolVersion>
+    <OctokitVersion>10.0.0</OctokitVersion>
   </PropertyGroup>
 </Project>
