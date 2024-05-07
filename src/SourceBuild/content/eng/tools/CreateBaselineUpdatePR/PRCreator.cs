@@ -56,21 +56,7 @@ public class PRCreator
             .ToList();
 
         // Update the test results tree based on the pipeline
-        if (pipeline == Pipelines.Sdk)
-        {
-            testResultsTreeItems = await UpdateSdkDiffFilesAsync(updatedTestsFiles, testResultsTreeItems);
-        }
-        else if (pipeline == Pipelines.License)
-        {
-            testResultsTreeItems = await UpdateLicenseScanFilesAsync(updatedTestsFiles, testResultsTreeItems);
-        }
-        else
-        {
-            string errorMessage = "Invalid pipeline.";
-            Log.LogError(errorMessage);
-            throw new InvalidOperationException(errorMessage);
-        }
-
+        testResultsTreeItems = await UpdateAllFilesAsync(updatedTestsFiles, testResultsTreeItems, pipeline);
         var testResultsTreeResponse = await CreateTreeFromItemsAsync(testResultsTreeItems);
         var parentTreeResponse = await CreateParentTreeAsync(testResultsTreeResponse, originalTreeResponse, originalTestResultsPath);
 
@@ -90,92 +76,94 @@ public class PRCreator
                 group => new HashSet<string>(group)
             );
 
-    private async Task<List<NewTreeItem>> UpdateLicenseScanFilesAsync(Dictionary<string, HashSet<string>> updatedFiles, List<NewTreeItem> tree)
+    private async Task<List<NewTreeItem>> UpdateAllFilesAsync(Dictionary<string, HashSet<string>> updatedFiles, List<NewTreeItem> tree, Pipelines pipeline)
     {
+        bool isSdkPipeline = pipeline == Pipelines.Sdk;
+        string defaultContent = pipeline == Pipelines.License ? DefaultLicenseBaselineContent : null;
         foreach (var updatedFile in updatedFiles)
         {
             if (updatedFile.Key.Contains("Exclusions"))
             {
-                // Combine the exclusions files
-                IEnumerable<string> parsedFile = Enumerable.Empty<string>();
-                foreach (var filePath in updatedFile.Value)
-                {
-                    var updatedFileLines = File.ReadAllLines(filePath);
-                    parsedFile = parsedFile.Any() ? parsedFile.Where(parsedLine => updatedFileLines.Contains(parsedLine)) : updatedFileLines;
-                }
-                string? content = parsedFile.Any() ? string.Join("\n", parsedFile) + "\n" : null;
-                string updatedFilePath = updatedFile.Key + ".txt";
-                tree = await UpdateFileAsync(tree, content, updatedFile.Key, updatedFilePath);
+                tree = await UpdateExclusionFileAsync(updatedFile.Key, updatedFile.Value, tree, union: isSdkPipeline);
             }
             else
             {
-                // Update the other files
-                foreach (var filePath in updatedFile.Value)
-                {
-                    var content = File.ReadAllText(filePath);
-                    if (content == DefaultLicenseBaselineContent)
-                    {
-                        content = null;
-                    }
-                    string originalFileName = Path.GetFileName(ParseUpdatedFileName(filePath));
-                    string updatedFilePath = Path.Combine("baselines/licenses", originalFileName);
-                    tree = await UpdateFileAsync(tree, content, originalFileName, updatedFilePath);
-                }
+                tree = await UpdateRegularFilesAsync(updatedFile, tree, defaultContent);
             }
         }
         return tree;
     }
 
-    private async Task<List<NewTreeItem>> UpdateSdkDiffFilesAsync(Dictionary<string, HashSet<string>> updatedFiles, List<NewTreeItem> tree)
+    private async Task<List<NewTreeItem>> UpdateExclusionFileAsync(string fileNameKey, HashSet<string> updatedFiles, List<NewTreeItem> tree, bool union = false)
     {
-        foreach (var updatedFile in updatedFiles)
+        string? content = null;
+        IEnumerable<string> parsedFile = Enumerable.Empty<string>();
+
+        // Combine the lines of the updated files
+        foreach (var filePath in updatedFiles)
         {
-            if (updatedFile.Key.Contains("Exclusions"))
+            var updatedFileLines = File.ReadAllLines(filePath);
+            if (!parsedFile.Any())
             {
-                // Combine the exclusions files
-                IEnumerable<string> parsedFile = Enumerable.Empty<string>();
-                foreach (var filePath in updatedFile.Value)
-                {
-                    var updatedFileLines = File.ReadAllLines(filePath);
-                    parsedFile = parsedFile.Any() ? parsedFile.Union(updatedFileLines) : updatedFileLines;
-                }
-                // Find the key in the tree, download the blob, and convert it to utf8
-                var originalTreeItem = tree
-                    .Where(item => item.Path.Contains(updatedFile.Key))
-                    .FirstOrDefault();
-
-                string? content = null;
-                if (originalTreeItem != null)
-                {
-                    var originalBlob = await _client.Git.Blob.Get(_repoOwner, _repoName, originalTreeItem.Sha);
-                    content = Encoding.UTF8.GetString(Convert.FromBase64String(originalBlob.Content));
-                    var originalContent = content.Split("\n");
-
-                    foreach (var line in originalContent)
-                    {
-                        if (!parsedFile.Contains(line))
-                        {
-                            content = content.Replace(line + "\n", "");
-                        }
-                    }
-                }
-                else
-                {
-                    content = parsedFile.Any() ? string.Join("\n", parsedFile) + "\n" : null;
-                }
-                string updatedFilePath = updatedFile.Key + ".txt";
-                tree = await UpdateFileAsync(tree, content, updatedFile.Key, updatedFilePath);
+                parsedFile = updatedFileLines;
+            }
+            else if (union == true)
+            {
+                parsedFile = parsedFile.Union(updatedFileLines);
             }
             else
             {
-                // Update the other files
-                foreach (var filePath in updatedFile.Value)
+                parsedFile = parsedFile.Where(parsedLine => updatedFileLines.Contains(parsedLine))
+            }
+        }
+
+        if (union == true)
+        {
+            // Need to compare to the original file and remove any lines that are not in the parsed updated file
+
+            // Find the key in the tree, download the blob, and convert it to utf8
+            var originalTreeItem = tree
+                .Where(item => item.Path.Contains(fileNameKey))
+                .FirstOrDefault();
+
+            if (originalTreeItem != null)
+            {
+                var originalBlob = await _client.Git.Blob.Get(_repoOwner, _repoName, originalTreeItem.Sha);
+                content = Encoding.UTF8.GetString(Convert.FromBase64String(originalBlob.Content));
+                var originalContent = content.Split("\n");
+
+                foreach (var line in originalContent)
                 {
-                    var content = File.ReadAllText(filePath);
-                    string originalFileName = Path.GetFileName(ParseUpdatedFileName(filePath));
-                    string updatedFilePath = Path.Combine("baselines", originalFileName);
-                    tree = await UpdateFileAsync(tree, content, originalFileName, updatedFilePath);
+                    if (!parsedFile.Contains(line))
+                    {
+                        content = content.Replace(line + "\n", "");
+                    }
                 }
+            }
+        }
+
+        if (parsedFile.Any())
+        {
+            content = string.Join("\n", parsedFile) + "\n";
+        }
+
+        string updatedFilePath = fileNameKey + ".txt";
+        return await UpdateFileAsync(tree, content, fileNameKey, updatedFilePath);
+    }
+
+    private async Task<List<NewTreeItem>> UpdateRegularFilesAsync(Dictionary<string, HashSet<string>> updatedFiles, List<NewTreeItem> tree, string? compareContent = null)
+    {
+        foreach (var updatedFile in updatedFiles)
+        {
+            foreach (var filePath in updatedFile.Value)
+            {
+                var content = File.ReadAllText(filePath);
+                if (compareContent != null && content == compareContent)
+                {
+                    content = null;
+                }
+                string originalFileName = Path.GetFileName(ParseUpdatedFileName(filePath));
+                tree = await UpdateFileAsync(tree, content, originalFileName, originalFileName);
             }
         }
         return tree;
