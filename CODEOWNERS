@@ -98,3 +98,12 @@
 # dotnet-format
 /src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
 /test/dotnet-format.Tests @dotnet/roslyn-ide
+
+# Area: VMR & SourceBuild
+/.devcontainer/ @dotnet/source-build-internal
+/eng/SourceBuild* @dotnet/source-build-internal
+/src/SourceBuild/ @dotnet/source-build-internal @dotnet/product-construction
+/src/VirtualMonoRepo/ @dotnet/product-construction
+
+# Area: Snaps
+/src/Installer/snaps/ @rbhanda
