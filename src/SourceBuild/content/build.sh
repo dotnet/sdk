@@ -88,7 +88,7 @@ exclude_ci_binary_log=false
 prepare_machine=false
 use_dev_versioning=false
 
-properties=''
+properties=()
 while [[ $# > 0 ]]; do
   opt="$(echo "${1/#--/-}" | tr "[:upper:]" "[:lower:]")"
   case "$opt" in
@@ -120,13 +120,13 @@ while [[ $# > 0 ]]; do
     # Source-only settings
     -source-only|-source-build|-so|-sb)
       sourceOnly=true
-      properties="$properties /p:DotNetBuildSourceOnly=true"
+      properties+=( "/p:DotNetBuildSourceOnly=true" )
       ;;
     -online)
-      properties="$properties /p:DotNetBuildWithOnlineFeeds=true"
+      properties+=( "/p:DotNetBuildWithOnlineFeeds=true" )
       ;;
     -poison)
-      properties="$properties /p:EnablePoison=true"
+      properties+=( "/p:EnablePoison=true" )
       ;;
     -release-manifest)
       releaseManifest="$2"
@@ -163,13 +163,13 @@ while [[ $# > 0 ]]; do
 
     # Advanced settings
     -build-repo-tests)
-      properties="$properties /p:DotNetBuildTests=true"
+      properties+=( "/p:DotNetBuildTests=true" )
       ;;
     -ci)
       ci=true
       ;;
     -clean-while-building|-cwb)
-      properties="$properties /p:CleanWhileBuilding=true"
+      properties+=( "/p:CleanWhileBuilding=true" )
       ;;
     -excludecibinarylog|-nobl)
       exclude_ci_binary_log=true
@@ -178,13 +178,13 @@ while [[ $# > 0 ]]; do
       prepare_machine=true
       ;;
     -use-mono-runtime)
-      properties="$properties /p:SourceBuildUseMonoRuntime=true"
+      properties+=( "/p:SourceBuildUseMonoRuntime=true" )
       ;;
     -dev)
       use_dev_versioning=true
       ;;
     *)
-      properties="$properties $1"
+      properties+=( "$1" )
       ;;
   esac
 
@@ -198,7 +198,7 @@ if [[ "$ci" == true ]]; then
 fi
 
 if [[ "$use_dev_versioning" == true && "$sourceOnly" != true ]]; then
-  properties="$properties /p:UseOfficialBuildVersioning=false"
+  properties+=( "/p:UseOfficialBuildVersioning=false" )
 fi
 
 # Never use the global nuget cache folder
@@ -234,14 +234,14 @@ function Build {
       $targets \
       $bl \
       /p:Configuration=$configuration \
-      $properties
+      "${properties[@]}"
 
     ExitWithExitCode 0
 
   else
 
     if [ "$ci" == "true" ]; then
-      properties="$properties /p:ContinuousIntegrationBuild=true"
+      properties+=( "/p:ContinuousIntegrationBuild=true" )
     fi
 
     if [ "$test" != "true" ]; then
@@ -251,7 +251,7 @@ function Build {
       fi
 
       "$CLI_ROOT/dotnet" build-server shutdown
-      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog $properties
+      "$CLI_ROOT/dotnet" msbuild "$scriptroot/eng/init-source-only.proj" $initSourceOnlyBinaryLog "${properties[@]}"
       # kill off the MSBuild server so that on future invocations we pick up our custom SDK Resolver
       "$CLI_ROOT/dotnet" build-server shutdown
     fi
@@ -264,7 +264,7 @@ function Build {
       bl="/bl:\"$log_dir/Build.binlog\""
     fi
 
-    "$CLI_ROOT/dotnet" msbuild --restore "$project" $bl $targets $properties
+    "$CLI_ROOT/dotnet" msbuild --restore "$project" $bl $targets "${properties[@]}"
   fi
 }
 
@@ -331,9 +331,9 @@ if [[ "$sourceOnly" == "true" ]]; then
   # Support custom source built package locations
   if [ "$CUSTOM_PACKAGES_DIR" != "" ]; then
     if [ "$test" == "true" ]; then
-      properties="$properties /p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR"
+      properties+=( "/p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
     else
-      properties="$properties /p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR"
+      properties+=( "/p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
     fi
   fi
 
