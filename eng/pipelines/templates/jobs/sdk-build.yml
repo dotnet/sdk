@@ -2,7 +2,6 @@ parameters:
   oneEsPtCompat:
     jobTemplatePath: /eng/common/templates/job/job.yml
     publishTaskName: PublishBuildArtifacts@1
-  # buildScriptPath: eng/common/build.ps1
   container: ''
 
 jobs:
@@ -27,17 +26,17 @@ jobs:
     ############### WINDOWS ###############
     # - ${{ if eq(parameters.pool.os, 'windows') }}:
     ############### PREP ###############
-    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-      - ${{ if eq(parameters.pool.os, 'windows') }}:
-        - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
-          displayName: Setup Private Feeds Credentials
-          env:
-            Token: $(dn-bot-dnceng-artifact-feeds-rw)
-      - ${{ else }}:
-        - script: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $Token
-          displayName: Setup Private Feeds Credentials
-          env:
-            Token: $(dn-bot-dnceng-artifact-feeds-rw)
+    # - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+    #   - ${{ if eq(parameters.pool.os, 'windows') }}:
+    #     - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+    #       displayName: Setup Private Feeds Credentials
+    #       env:
+    #         Token: $(dn-bot-dnceng-artifact-feeds-rw)
+    #   - ${{ else }}:
+    #     - script: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $Token
+    #       displayName: Setup Private Feeds Credentials
+    #       env:
+    #         Token: $(dn-bot-dnceng-artifact-feeds-rw)
 
     ############### BUILDING ###############
     - ${{ if eq(parameters.pool.os, 'windows') }}:
@@ -47,6 +46,7 @@ jobs:
           $(publishArgument)
           /p:Architecture=$(buildArchitecture)
           $(runtimeSourceProperties)
+          $(runtimeIdentifierProperties)
           $(testInBuildProperties)
           $(officialBuildProperties)
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
@@ -65,6 +65,7 @@ jobs:
             $(publishArgument)
             /p:Architecture=$(buildArchitecture)
             $(runtimeSourceProperties)
+            $(runtimeIdentifierProperties)
             $(testInBuildProperties)
             $(officialBuildProperties)
             /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
@@ -86,6 +87,7 @@ jobs:
           -projects $(testProjects)
           /p:Architecture=$(buildArchitecture)
           $(runtimeSourceProperties)
+          $(runtimeIdentifierProperties)
           /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
           /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/$(testName).binlog
         displayName: Run $(testName)
@@ -103,6 +105,7 @@ jobs:
           -projects $(testProjects)
           /p:Architecture=$(buildArchitecture)
           $(runtimeSourceProperties)
+          $(runtimeIdentifierProperties)
           /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
           /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/$(testName).binlog
         displayName: Run $(testName)

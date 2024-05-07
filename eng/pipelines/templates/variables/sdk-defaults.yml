@@ -1,4 +1,5 @@
 variables:
+  ############### BUILD ###############
   buildConfiguration: Release
   buildArchitecture: x64
   runTests: true
@@ -11,9 +12,7 @@ variables:
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
 
   runtimeSourceProperties: ''
-
-  Codeql.ExcludePathPatterns: artifacts, .packages
-  HelixApiAccessToken: ''
+  runtimeIdentifierProperties: ''
 
   publishArgument: ''
   officialBuildProperties: ''
@@ -24,3 +23,7 @@ variables:
   # Both this (used in Arcade for the MicroBuildSigningPlugin) and DotNetSignType (used in Arcade in Sign.proj) are necessary to set the sign type.
   _SignType: test
   _TeamName: DotNetCore
+  HelixApiAccessToken: ''
+
+  ############### OTHER ###############
+  Codeql.ExcludePathPatterns: artifacts, .packages
