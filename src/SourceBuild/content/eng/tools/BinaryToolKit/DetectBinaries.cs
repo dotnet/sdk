@@ -54,14 +54,12 @@ public static class DetectBinaries
             "**/.packages/**/*",
             "**/artifacts/**/*",
             "**/prereqs/packages/**/*",
-            "src/nuget-client/NuGet.config",
             "**/*.binlog",
             "**/bin/**/*",
             "**/obj/**/*",
             "**/.vs/**/*",
             "**/.vscode/**/*",
             "**/.tools/**/*",
-            "**/.packages/**/*"
         };
     }
 
