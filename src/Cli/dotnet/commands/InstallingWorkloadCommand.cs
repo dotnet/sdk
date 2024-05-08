@@ -141,7 +141,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             {
                 // This file isn't created in tests.
                 var version = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
-                PrintWorkloadSetTransition(version, recorder);
+                Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, version));
             }
             else if (_workloadInstaller is FileBasedInstaller || _workloadInstaller is NetSdkMsiInstallerClient)
             {
@@ -162,11 +162,6 @@ namespace Microsoft.DotNet.Workloads.Workload
             var files = Directory.EnumerateFiles(workloadSetPath, "*.workloadset.json");
             updates = _workloadManifestUpdater.ParseRollbackDefinitionFiles(files);
             return true;
-        }
-
-        private void PrintWorkloadSetTransition(string newVersion, WorkloadHistoryRecorder recorder = null)
-        {
-            Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)

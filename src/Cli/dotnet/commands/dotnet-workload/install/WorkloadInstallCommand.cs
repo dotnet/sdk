@@ -157,11 +157,12 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                                     workloadIds,
                                     _skipManifestUpdate,
                                     _includePreviews,
-                                    offlineCache);
+                                    offlineCache,
+                                    recorder);
                             }
                             else
                             {
-                                RunInNewTransaction(context =>
+                                RunInNewTransaction(recorder, context =>
                                 {
                                     if (!TryHandleWorkloadUpdateFromVersion(context, offlineCache, out var manifests))
                                     {

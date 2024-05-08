@@ -25,7 +25,6 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
         private readonly bool _printRollbackDefinitionOnly;
         private readonly bool _fromPreviousSdk;
         private WorkloadHistoryRecord _workloadHistoryState;
-        private readonly string _workloadSetMode;
 
         public WorkloadUpdateCommand(
             ParseResult parseResult,
@@ -155,11 +154,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Update
                             DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
                             if (string.IsNullOrWhiteSpace(_workloadSetVersion) && string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
                             {
-                                CalculateManifestUpdatesAndUpdateWorkloads(_includePreviews, offlineCache);
+                                CalculateManifestUpdatesAndUpdateWorkloads(recorder, _includePreviews, offlineCache);
                             }
                             else
                             {
-                                RunInNewTransaction(context =>
+                                RunInNewTransaction(recorder, context =>
                                 {
                                     if (!TryHandleWorkloadUpdateFromVersion(context, offlineCache, out var manifestUpdates))
                                     {

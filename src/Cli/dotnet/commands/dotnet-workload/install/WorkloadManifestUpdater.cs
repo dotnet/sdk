@@ -521,7 +521,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public IEnumerable<ManifestVersionUpdate> ParseRollbackDefinitionFiles(IEnumerable<string> rollbackFilePaths, WorkloadHistoryRecorder recorder = null)
         {
             var zeroVersion = new ManifestVersion("0.0.0");
-            var manifestRollbacks = null;
+            IEnumerable<ManifestVersionUpdate> manifestRollbacks = null;
             if (rollbackFilePaths.Count() == 1)
             {
                 manifestRollbacks = ParseRollbackDefinitionFile(rollbackFilePaths.Single(), _sdkFeatureBand).Select(manifest =>
@@ -529,6 +529,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     var (id, (version, band)) = manifest;
                     return new ManifestVersionUpdate(id, zeroVersion, band.ToString(), version, band.ToString());
                 });
+
+                if (recorder is not null)
+                {
+                    recorder.HistoryRecord.RollbackFileContents = manifestRollbacks.ToDictionary(
+                        manifest => manifest.ManifestId.ToString(),
+                        manifest => $"{manifest.NewVersion}/{manifest.NewFeatureBand}"
+                    );
+                }
+
+                return manifestRollbacks;
             }
 
             // Create a single workload set that includes all the others
