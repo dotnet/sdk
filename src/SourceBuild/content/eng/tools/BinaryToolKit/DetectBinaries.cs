@@ -45,7 +45,7 @@ public static class DetectBinaries
         return unmatchedBinaryFiles;
     }
 
-    private static async List<string> GetIgnoredPatterns(string targetDirectory)
+    private static List<string> GetIgnoredPatterns(string targetDirectory)
     {
         return new List<string>
         {
