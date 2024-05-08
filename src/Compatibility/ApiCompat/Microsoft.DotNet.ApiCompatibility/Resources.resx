@@ -210,6 +210,12 @@
   <data name="CannotRemoveAttribute" xml:space="preserve">
     <value>Cannot remove attribute '{0}' from '{1}'.</value>
   </data>
+  <data name="CannotAddGenericConstraint" xml:space="preserve">
+    <value>Cannot add constraint '{0}' on type parameter '{1}' of '{2}'.</value>
+  </data>
+  <data name="CannotRemoveGenericConstraint" xml:space="preserve">
+    <value>Cannot remove constraint '{0}' on type parameter '{1}' of '{2}'.</value>
+  </data>
   <data name="CannotChangeParameterName" xml:space="preserve">
     <value>Parameter name on member '{0}' changed from '{1}' to '{2}'.</value>
   </data>

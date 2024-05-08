@@ -1,3 +1,5 @@
+# Pipeline: https://dev.azure.com/dnceng/internal/_build?definitionId=286
+
 trigger:
   batch: true
   branches:

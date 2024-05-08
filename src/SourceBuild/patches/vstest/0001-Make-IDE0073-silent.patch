@@ -1,0 +1,25 @@
+From 7e4258f7c5ae7260d904962f60ce8e35c4fa4402 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Fri, 3 May 2024 17:24:56 +0200
+Subject: [PATCH] Make IDE0073 silent
+
+Backport / PR that fixes this: https://github.com/microsoft/vstest/pull/5020
+
+---
+ .editorconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/.editorconfig b/.editorconfig
+index b78e7a35..e2e9c09f 100644
+--- a/.editorconfig
++++ b/.editorconfig
+@@ -393,7 +393,7 @@ dotnet_diagnostic.IDE0052.severity = silent
+ 
+ # IDE1006: Naming Styles
+ dotnet_diagnostic.IDE1006.severity = warning
+-dotnet_diagnostic.IDE0073.severity = warning
++dotnet_diagnostic.IDE0073.suggestion = warning
+ 
+ # Naming rules
+ 
+--

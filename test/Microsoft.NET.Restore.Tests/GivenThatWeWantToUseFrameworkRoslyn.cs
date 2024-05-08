@@ -9,7 +9,7 @@ namespace Microsoft.NET.Restore.Tests
         {
         }
 
-        [Fact]
+        [FullMSBuildOnlyFact]
         public void It_restores_Microsoft_Net_Compilers_Toolset_Framework_when_requested()
         {
             const string testProjectName = "NetCoreApp";
@@ -19,9 +19,36 @@ namespace Microsoft.NET.Restore.Tests
                 TargetFrameworks = "net6.0",
             };
 
-            // Add an explicit version for the test. This will normally come from the installer.
-            project.AdditionalProperties.Add("_NetFrameworkHostedCompilersVersion", "4.7.0-2.23260.7");
             project.AdditionalProperties.Add("BuildWithNetFrameworkHostedCompiler", "true");
+
+            var testAsset = _testAssetsManager
+                .CreateTestProject(project);
+
+            string projectAssetsJsonPath = Path.Combine(
+                testAsset.Path,
+                project.Name,
+                "obj",
+                "project.assets.json");
+
+            var restoreCommand =
+                testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
+            restoreCommand.Execute().Should().Pass();
+
+            Assert.Contains("Microsoft.Net.Compilers.Toolset.Framework", File.ReadAllText(projectAssetsJsonPath));
+        }
+
+        [FullMSBuildOnlyFact]
+        public void It_restores_Microsoft_Net_Compilers_Toolset_Framework_when_MSBuild_is_torn()
+        {
+            const string testProjectName = "NetCoreApp";
+            var project = new TestProject
+            {
+                Name = testProjectName,
+                TargetFrameworks = "net6.0",
+            };
+
+            // simulate mismatched MSBuild versions
+            project.AdditionalProperties.Add("_IsDisjointMSBuildVersion", "true");
 
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
@@ -46,7 +73,7 @@ namespace Microsoft.NET.Restore.Tests
             }
         }
 
-        [Fact]
+        [FullMSBuildOnlyFact]
         public void It_throws_a_warning_when_adding_the_PackageReference_directly()
         {
             const string testProjectName = "NetCoreApp";

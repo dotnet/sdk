@@ -6,12 +6,7 @@ using Microsoft.NET.Sdk.Localization;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
 using System.Runtime.Serialization;
 
-#if USE_SYSTEM_TEXT_JSON
 using System.Text.Json;
-#else
-using Newtonsoft.Json;
-using JsonTokenType = Newtonsoft.Json.JsonToken;
-#endif
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
