@@ -47,71 +47,22 @@ public static class DetectBinaries
 
     private static async Task<List<string>> GetIgnoredPatternsAsync(string targetDirectory)
     {
-        string gitDirectory = Path.Combine(targetDirectory, ".git");
-        bool isGitRepo = Directory.Exists(gitDirectory);
-
-        try 
+        return new List<string>
         {
-            // Look for a .gitignore file, if it's not present, hardcode classic paths to ignore
-            string gitIgnorePath = Path.Combine(targetDirectory, ".gitignore");
-            if (!File.Exists(gitIgnorePath))
-            {
-                return new List<string>
-                {
-                    "**/.git/**/*",
-                    "**/.dotnet/**/*",
-                    "**/.packages/**/*",
-                    "**/artifacts/**/*",
-                    "**/prereqs/packages/**/*",
-                    "src/nuget-client/NuGet.config",
-                    "**/*.binlog",
-                    "**/bin/**/*",
-                    "**/obj/**/*",
-                    "**/.vs/**/*",
-                    "**/.vscode/**/*",
-                    "**/.tools/**/*",
-                    "**/.packages/**/*",
-                };
-            }
-
-            if (!isGitRepo)
-            {
-                // Configure a fake git repo to use so that we can run git clean -ndx
-                await ExecuteProcessAsync("git", $"-C {targetDirectory} init -q");
-            }
-
-            await ExecuteProcessAsync("git", $"-C {targetDirectory} config --global safe.directory {targetDirectory}");
-
-            if (!isGitRepo)
-            {
-                // Need to stage all files in the fake git repo so that git clean -ndx works
-                await ExecuteProcessAsync("git", $"-C {targetDirectory} config core.safecrlf false");
-                await ExecuteProcessAsync("git", $"-C {targetDirectory} add .");
-            }
-
-            string output = await ExecuteProcessAsync("git", $"-C {targetDirectory} clean -ndx");
-
-            List<string> ignoredPaths = output.Split(Environment.NewLine)
-                .Select(line => GitCleanRegex.Match(line))
-                .Where(match => match.Success)
-                .Select(match => match.Groups[3].Value)
-                .ToList();
-
-            if (isGitRepo)
-            {
-                ignoredPaths.Add(".git");
-            }
-
-            return ignoredPaths;
-        }
-        finally
-        {
-            // Ensure .git directory is deleted if it wasn't originally a git repo
-            if (!isGitRepo && Directory.Exists(gitDirectory))
-            {
-                Directory.Delete(gitDirectory, true);
-            }
-        }
+            "**/.git/**/*",
+            "**/.dotnet/**/*",
+            "**/.packages/**/*",
+            "**/artifacts/**/*",
+            "**/prereqs/packages/**/*",
+            "src/nuget-client/NuGet.config",
+            "**/*.binlog",
+            "**/bin/**/*",
+            "**/obj/**/*",
+            "**/.vs/**/*",
+            "**/.vscode/**/*",
+            "**/.tools/**/*",
+            "**/.packages/**/*"
+        };
     }
 
     private static async Task<bool> IsBinaryAsync(string filePath)
