@@ -29,11 +29,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             var originalRollback = GetRollback();
 
-            VM.CreateRunCommand("dotnet", "nuget", "add", "source", @"c:\SdkTesting\WorkloadSets")
-                .WithDescription("Add WorkloadSets to NuGet.config")
-                .Execute()
-                .Should()
-                .Pass();
+            AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
 
             VM.CreateRunCommand("dotnet", "workload", "update")
                 .Execute()
@@ -48,8 +44,9 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         void UpdateAndSwitchToWorkloadSetMode(out string updatedWorkloadVersion, out WorkloadSet rollbackAfterUpdate)
         {
+            var featureBand = new SdkFeatureBand(SdkInstallerVersion).ToStringWithoutPrerelease();
             var originalWorkloadVersion = GetWorkloadVersion();
-            originalWorkloadVersion.Should().StartWith("8.0.200-manifests.");
+            originalWorkloadVersion.Should().StartWith($"{featureBand}-manifests.");
 
             VM.CreateRunCommand("dotnet", "workload", "update")
                 .Execute()
@@ -58,7 +55,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             rollbackAfterUpdate = GetRollback();
             updatedWorkloadVersion = GetWorkloadVersion();
-            updatedWorkloadVersion.Should().StartWith("8.0.200-manifests.");
+            updatedWorkloadVersion.Should().StartWith($"{featureBand}-manifests.");
             updatedWorkloadVersion.Should().NotBe(originalWorkloadVersion);
 
             GetUpdateMode().Should().Be("manifests");
@@ -81,11 +78,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             UpdateAndSwitchToWorkloadSetMode(out string _, out WorkloadSet rollbackAfterUpdate);
 
-            VM.CreateRunCommand("dotnet", "nuget", "add", "source", @"c:\SdkTesting\WorkloadSets")
-                .WithDescription("Add WorkloadSets to NuGet.config")
-                .Execute()
-                .Should()
-                .Pass();
+            AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
 
             VM.CreateRunCommand("dotnet", "workload", "update")
                 .Execute()
@@ -96,7 +89,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
             newRollback.ManifestVersions.Should().NotBeEquivalentTo(rollbackAfterUpdate.ManifestVersions);
 
-            GetWorkloadVersion().Should().Be("8.0.201");
+            GetWorkloadVersion().Should().Be("8.0.300-preview.0.24217.2");
         }
 
         [Fact]
@@ -116,6 +109,108 @@ namespace Microsoft.DotNet.MsiInstallerTests
             newRollback.ManifestVersions.Should().BeEquivalentTo(rollbackAfterUpdate.ManifestVersions);
 
             GetWorkloadVersion().Should().Be(updatedWorkloadVersion);
+        }
+
+        [Theory]
+        [InlineData("8.0.300-preview.0.24178.1")]
+        [InlineData("8.0.204")]
+        public void UpdateToSpecificWorkloadSetVersion(string versionToInstall)
+        {
+            InstallSdk();
+
+            var workloadVersionBeforeUpdate = GetWorkloadVersion();
+            workloadVersionBeforeUpdate.Should().NotBe(versionToInstall);
+
+            AddNuGetSource(@"c:\SdkTesting\WorkloadSets");
+
+            VM.CreateRunCommand("dotnet", "workload", "update", "--version", versionToInstall)
+                .Execute()
+                .Should()
+                .Pass();
+
+            VM.CreateRunCommand("dotnet", "workload", "search")
+                .WithIsReadOnly(true)
+                .Execute()
+                .Should()
+                .Pass();
+
+            GetWorkloadVersion().Should().Be(versionToInstall);
+
+            //  Installing a workload shouldn't update workload version
+            InstallWorkload("aspire");
+
+            GetWorkloadVersion().Should().Be(versionToInstall);
+        }
+
+        [Fact]
+        public void UpdateToUnavailableWorkloadSetVersion()
+        {
+            string unavailableWorkloadSetVersion = "8.0.300-preview.test.42";
+
+            InstallSdk();
+
+            var workloadVersionBeforeUpdate = GetWorkloadVersion();
+
+            VM.CreateRunCommand("dotnet", "workload", "update", "--version", unavailableWorkloadSetVersion)
+                .Execute()
+                .Should()
+                .Fail()
+                .And
+                .HaveStdErrContaining(unavailableWorkloadSetVersion);
+
+            VM.CreateRunCommand("dotnet", "workload", "search")
+                .WithIsReadOnly(true)
+                .Execute()
+                .Should()
+                .Pass();
+
+            GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
+        }
+
+
+        [Fact]
+        public void UpdateWorkloadSetWithoutAvailableManifests()
+        {
+            InstallSdk();
+
+            UpdateAndSwitchToWorkloadSetMode(out string updatedWorkloadVersion, out WorkloadSet rollbackAfterUpdate);
+
+            var workloadVersionBeforeUpdate = GetWorkloadVersion();
+
+            VM.CreateRunCommand("dotnet", "workload", "update", "--source", @"c:\SdkTesting\workloadsets")
+                .Execute()
+                .Should()
+                .Fail();
+
+
+            VM.CreateRunCommand("dotnet", "workload", "search")
+                .WithIsReadOnly(true)
+                .Execute()
+                .Should()
+                .Pass();
+
+            GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
+        }
+
+        [Fact]
+        public void UpdateToWorkloadSetVersionWithManifestsNotAvailable()
+        {
+            InstallSdk();
+
+            var workloadVersionBeforeUpdate = GetWorkloadVersion();
+
+            VM.CreateRunCommand("dotnet", "workload", "update", "--version", @"8.0.300-preview.0.24217.2", "--source", @"c:\SdkTesting\workloadsets")
+                .Execute()
+                .Should()
+                .Fail();
+
+            VM.CreateRunCommand("dotnet", "workload", "search")
+                .WithIsReadOnly(true)
+                .Execute()
+                .Should()
+                .Pass();
+
+            GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
 
         string GetWorkloadVersion()
@@ -138,6 +233,15 @@ namespace Microsoft.DotNet.MsiInstallerTests
             result.Should().Pass();
 
             return result.StdOut;
+        }
+
+        void AddNuGetSource(string source)
+        {
+            VM.CreateRunCommand("dotnet", "nuget", "add", "source", source)
+                .WithDescription($"Add {source} to NuGet.config")
+                .Execute()
+                .Should()
+                .Pass();
         }
     }
 }

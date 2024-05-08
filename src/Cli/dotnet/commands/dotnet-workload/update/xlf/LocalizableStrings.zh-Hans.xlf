@@ -92,6 +92,11 @@
         <target state="translated">工作负载更新失败: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="new">Workload version {0} not found.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

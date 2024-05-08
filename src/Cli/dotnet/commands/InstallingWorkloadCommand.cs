@@ -128,10 +128,10 @@ namespace Microsoft.DotNet.Workloads.Workload
             }
 
             _workloadManifestUpdater.DownloadWorkloadSet(_workloadSetVersionFromGlobalJson ?? _workloadSetVersion, offlineCache);
-            return TryInstallWorkloadSet(context, out updates);
+            return TryInstallWorkloadSet(context, out updates, throwOnFailure: true);
         }
 
-        public bool TryInstallWorkloadSet(ITransactionContext context, out IEnumerable<ManifestVersionUpdate> updates)
+        public bool TryInstallWorkloadSet(ITransactionContext context, out IEnumerable<ManifestVersionUpdate> updates, bool throwOnFailure = false)
         {
             // Ensure workload set mode is set to 'workloadset
             _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
@@ -140,12 +140,20 @@ namespace Microsoft.DotNet.Workloads.Workload
             if (File.Exists(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)))
             {
                 // This file isn't created in tests.
-                PrintWorkloadSetTransition(File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName)), recorder);
+                var version = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
+                PrintWorkloadSetTransition(version, recorder);
             }
             else if (_workloadInstaller is FileBasedInstaller || _workloadInstaller is NetSdkMsiInstallerClient)
             {
                 // No workload sets found
-                Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
+                if (throwOnFailure)
+                {
+                    throw new NuGetPackageNotFoundException(string.Format(Update.LocalizableStrings.WorkloadVersionRequestedNotFound, _workloadSetVersionFromGlobalJson ?? _workloadSetVersion));
+                }
+                else
+                {
+                    Reporter.WriteLine(Update.LocalizableStrings.NoWorkloadUpdateFound);
+                }
                 updates = null;
                 return false;
             }
@@ -158,24 +166,7 @@ namespace Microsoft.DotNet.Workloads.Workload
 
         private void PrintWorkloadSetTransition(string newVersion, WorkloadHistoryRecorder recorder = null)
         {
-            var currentVersion = _workloadResolver.GetWorkloadVersion();
-            if (currentVersion == null || !string.IsNullOrWhiteSpace(_workloadSetVersionFromGlobalJson))
-            {
-                Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));
-            }
-            else
-            {
-                Reporter.WriteLine(string.Format(Strings.WorkloadSetUpgrade, currentVersion, newVersion));
-                if (recorder != null)
-                {
-                    recorder.HistoryRecord.StateBeforeCommand.WorkloadSetVersion = currentVersion;
-                }
-            }
-
-            if (recorder != null)
-            {
-                recorder.HistoryRecord.StateAfterCommand.WorkloadSetVersion = newVersion;
-            }
+            Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, newVersion));
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null)

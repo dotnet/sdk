@@ -171,4 +171,7 @@
   <data name="NoWorkloadUpdateFound" xml:space="preserve">
     <value>No workload update found.</value>
   </data>
+  <data name="WorkloadVersionRequestedNotFound" xml:space="preserve">
+    <value>Workload version {0} not found.</value>
+  </data>
 </root>

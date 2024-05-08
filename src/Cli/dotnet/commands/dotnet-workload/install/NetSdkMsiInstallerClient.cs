@@ -299,19 +299,23 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
             InstallAction plannedAction = PlanPackage(msi, state, requestedAction, installedVersion);
 
-            if (plannedAction != InstallAction.None)
+            if (plannedAction == InstallAction.Uninstall)
+            {
+                Elevate();
+
+                // Update the reference count against the MSI.
+                UpdateDependent(InstallRequestType.RemoveDependent, msi.Manifest.ProviderKeyName, _dependent);
+
+                ExecutePackage(msi, plannedAction, msiPackageId);
+            }
+            else if (plannedAction != InstallAction.None)
             {
                 Elevate();
 
                 ExecutePackage(msi, plannedAction, msiPackageId);
 
                 // Update the reference count against the MSI.
-                UpdateDependent(
-                    plannedAction == InstallAction.Uninstall ?
-                        InstallRequestType.RemoveDependent :
-                        InstallRequestType.AddDependent,
-                    msi.Manifest.ProviderKeyName,
-                    _dependent);
+                UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
             }
 
             return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
