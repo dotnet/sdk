@@ -52,6 +52,28 @@ public static class DetectBinaries
 
         try 
         {
+            // Look for a .gitignore file, if it's not present, hardcode classic paths to ignore
+            string gitIgnorePath = Path.Combine(targetDirectory, ".gitignore");
+            if (!File.Exists(gitIgnorePath))
+            {
+                return new List<string>
+                {
+                    "**/.git/**/*",
+                    "**/.dotnet/**/*",
+                    "**/.packages/**/*",
+                    "**/artifacts/**/*",
+                    "**/prereqs/packages/**/*",
+                    "src/nuget-client/NuGet.config",
+                    "**/*.binlog",
+                    "**/bin/**/*",
+                    "**/obj/**/*",
+                    "**/.vs/**/*",
+                    "**/.vscode/**/*",
+                    "**/.tools/**/*",
+                    "**/.packages/**/*",
+                };
+            }
+
             if (!isGitRepo)
             {
                 // Configure a fake git repo to use so that we can run git clean -ndx
