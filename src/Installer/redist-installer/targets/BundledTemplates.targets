@@ -123,7 +123,7 @@
   <Target Name="LayoutTemplates"
         DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesForMSI" />
 
-  <Target Name="GetRepoTemplates">
+  <Target Name="GetRepoTemplates" DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
       <RepoTemplates Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.symbols.nupkg" />
       <RepoTemplates Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.symbols.nupkg" />
