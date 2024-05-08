@@ -48,12 +48,17 @@ jobs:
       echo "Sdk build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$sdk_build&view=results"
 
       # TODO: Remove this once sdk starts producing the MSFT SDK - also remove installer tag from the builds
-      installer_sha=$(az pipelines build tag list --organization '$(AZDO_ORG)' --project '$(AZDO_PROJECT)' --build-id $dotnet_dotnet_build --query "[?contains(@, 'installer')]" --output tsv | sed "s,installer ,,g")
-      installer_build=$(az pipelines runs list --organization '$(AZDO_ORG)' --project '$(AZDO_PROJECT)' --pipeline-ids '$(INSTALLER_OFFICIAL_CI_PIPELINE_ID)' --query "[?sourceVersion == '$installer_sha'].id" --output tsv)
+      installer_build=$(az pipelines runs list \
+        --organization '$(AZDO_ORG)' \
+        --project '$(AZDO_PROJECT)' \
+        --pipeline-ids '$(INSTALLER_OFFICIAL_CI_PIPELINE_ID)' \
+        --query "[?sourceBranch == '$(Build.SourceBranch)' && status == 'completed' && (result == 'succeeded' || result == 'partiallySucceeded')].id" \
+        --output tsv | head -n 1)
       if [[ -z "$installer_build" ]]; then
-        echo "Could not find a build of sdk for commit '$installer_sha'"
+        echo "Could not find a build of installer for branch '$(Build.SourceBranch)'"
         exit 1
       fi
+      installer_sha=$(az pipelines build show --organization '$(AZDO_ORG)' --project '$(AZDO_PROJECT)' --id $installer_build --query "sourceVersion" --output tsv)
 
       echo "##vso[build.addbuildtag]sdk $sdk_sha"
       echo "##vso[task.setvariable variable=SdkBuildId]$sdk_build"
