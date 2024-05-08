@@ -50,7 +50,7 @@ internal class Layer
         return new(ContentStore.PathForDescriptor(descriptor), descriptor);
     }
 
-    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string manifestMediaType)
+    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string? manifestMediaType)
     {
         long fileSize;
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
@@ -191,7 +191,7 @@ internal class Layer
         string layerMediaType = manifestMediaType switch
         {
             // TODO: configurable? gzip always?
-            SchemaTypes.DockerManifestV2 => SchemaTypes.DockerLayerGzip,
+            SchemaTypes.DockerManifestV2 or null => SchemaTypes.DockerLayerGzip,
             SchemaTypes.OciManifestV1 => SchemaTypes.OciLayerGzipV1,
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), manifestMediaType))
         };
