@@ -231,10 +231,16 @@ if [ "$removeBinaries" == true ]; then
       echo "  Unpacking Private.SourceBuilt.Artifacts.*.tar.gz into $packagesDir"
       mkdir -p "$packagesDir"
       tar -xzf "$sourceBuiltArchive" -C "$packagesDir"
-    elif [ ! -f "$packagesDir/PackageVersions.props" ] && [ -f "$sourceBuiltArchive" ]; then
-      echo "  Creating $packagesDir/PackageVersions.props..."
-      tar -xzf "$sourceBuiltArchive" -C "$packagesDir" PackageVersions.props
-    elif [ ! -f "$sourceBuiltArchive" ]; then
+    elif [ -f "$sourceBuiltArchive" ]; then
+      if [ ! -f "$packagesDir/PackageVersions.props" ]; then
+        echo "  Creating $packagesDir/PackageVersions.props..."
+        tar -xzf "$sourceBuiltArchive" -C "$packagesDir" PackageVersions.props
+      fi
+      if [ ! -f "$packagesDir/VerticalManifest.xml" ]; then
+        echo "  Unpacking Asset manifests into $packagesDir..."
+        tar -xzf "$sourceBuiltArchive" -C "$packagesDir" VerticalManifest.xml
+      fi
+    else
       echo "  ERROR: Private.SourceBuilt.Artifacts.*.tar.gz does not exist..."\
             "Cannot remove non-SB allowed binaries. Either pass --with-packages or download the artifacts."
       exit 1
