@@ -19,11 +19,6 @@
     </ItemGroup>
   </Target>
 
-  <ItemGroup Label="Repo Templates">
-    <RepoTemplates Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.symbols.nupkg" />
-    <RepoTemplates Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.symbols.nupkg" />
-  </ItemGroup>
-
   <ItemGroup Label=".NET 9.0 templates">
     <Bundled90Templates Include="Microsoft.DotNet.Web.ItemTemplates.9.0" PackageVersion="$(AspNetCorePackageVersionFor90Templates)" />
     <Bundled90Templates Include="Microsoft.DotNet.Web.ProjectTemplates.9.0" PackageVersion="$(AspNetCorePackageVersionFor90Templates)" UseVersionForTemplateInstallPath="true" />
@@ -128,7 +123,14 @@
   <Target Name="LayoutTemplates"
         DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesForMSI" />
 
-  <Target Name="LayoutTemplatesForSDK" DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions;DownloadBundledTemplateNupkgs">
+  <Target Name="GetRepoTemplates" DependsOnTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <RepoTemplates Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.symbols.nupkg" />
+      <RepoTemplates Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.symbols.nupkg" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="LayoutTemplatesForSDK" DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions;DownloadBundledTemplateNupkgs;GetRepoTemplates">
     <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
       <BundledTemplatesWithInstallPaths Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
       <BundledTemplatesWithInstallPaths Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
@@ -142,11 +144,12 @@
     <PropertyGroup>
       <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '9.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
     </PropertyGroup>
+
     <Copy SourceFiles="%(RepoTemplates.Identity)"
           DestinationFolder="$(RedistLayoutPath)templates\$(CurrentTemplateInstallPath)" />
   </Target>
 
-  <Target Name="LayoutTemplatesForMSI" DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions" Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
+  <Target Name="LayoutTemplatesForMSI" DependsOnTargets="SetupBundledComponents;CalculateTemplatesVersions;GetRepoTemplates" Condition="$(ProductMonikerRid.StartsWith('win')) And '$(Architecture)' != 'arm'">
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
           DestinationFolder="$(BaseOutputPath)$(Configuration)\templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)\templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
 
