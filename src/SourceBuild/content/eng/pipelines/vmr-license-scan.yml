@@ -22,8 +22,8 @@ parameters:
 variables:
   # GH access token for SB bot - BotAccount-dotnet-sb-bot-pat
 - group: DotNet-Source-Build-Bot-Secrets-MVP
-- name: installerRoot
-  value: '$(Build.SourcesDirectory)/src/installer'
+- name: sdkRoot
+  value: '$(Build.SourcesDirectory)/src/sdk'
 
 jobs:
 - job: Setup
@@ -175,7 +175,7 @@ jobs:
   - template: templates/steps/create-baseline-update-pr.yml
     parameters:
       pipeline: license
-      repo: dotnet/installer
+      repo: dotnet/sdk
       originalTestResultsPath: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/LicenseScanTests
       updatedTestResultsPath: $(Pipeline.Workspace)/Artifacts
       pullRequestTitle: Update License Scan Baselines and Exclusions

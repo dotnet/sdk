@@ -79,7 +79,7 @@ public class PRCreator
     private async Task<List<NewTreeItem>> UpdateAllFilesAsync(Dictionary<string, HashSet<string>> updatedFiles, List<NewTreeItem> tree, Pipelines pipeline)
     {
         bool isSdkPipeline = pipeline == Pipelines.Sdk;
-        string defaultContent = pipeline == Pipelines.License ? DefaultLicenseBaselineContent : null;
+        string? defaultContent = pipeline == Pipelines.License ? DefaultLicenseBaselineContent : null;
         foreach (var updatedFile in updatedFiles)
         {
             if (updatedFile.Key.Contains("Exclusions"))
@@ -88,7 +88,7 @@ public class PRCreator
             }
             else
             {
-                tree = await UpdateRegularFilesAsync(updatedFile, tree, defaultContent);
+                tree = await UpdateRegularFilesAsync(updatedFile.Value, tree, defaultContent);
             }
         }
         return tree;
@@ -113,7 +113,7 @@ public class PRCreator
             }
             else
             {
-                parsedFile = parsedFile.Where(parsedLine => updatedFileLines.Contains(parsedLine))
+                parsedFile = parsedFile.Where(parsedLine => updatedFileLines.Contains(parsedLine));
             }
         }
 
@@ -151,20 +151,17 @@ public class PRCreator
         return await UpdateFileAsync(tree, content, fileNameKey, updatedFilePath);
     }
 
-    private async Task<List<NewTreeItem>> UpdateRegularFilesAsync(Dictionary<string, HashSet<string>> updatedFiles, List<NewTreeItem> tree, string? compareContent = null)
+    private async Task<List<NewTreeItem>> UpdateRegularFilesAsync(HashSet<string> updatedFiles, List<NewTreeItem> tree, string? compareContent = null)
     {
-        foreach (var updatedFile in updatedFiles)
+        foreach (var filePath in updatedFiles)
         {
-            foreach (var filePath in updatedFile.Value)
+            var content = File.ReadAllText(filePath);
+            if (compareContent != null && content == compareContent)
             {
-                var content = File.ReadAllText(filePath);
-                if (compareContent != null && content == compareContent)
-                {
-                    content = null;
-                }
-                string originalFileName = Path.GetFileName(ParseUpdatedFileName(filePath));
-                tree = await UpdateFileAsync(tree, content, originalFileName, originalFileName);
+                content = null;
             }
+            string originalFileName = Path.GetFileName(ParseUpdatedFileName(filePath));
+            tree = await UpdateFileAsync(tree, content, originalFileName, originalFileName);
         }
         return tree;
     }
@@ -265,21 +262,7 @@ public class PRCreator
     private async Task<TreeResponse> CreateParentTreeAsync(TreeResponse testResultsTreeResponse, TreeResponse originalTreeResponse, string originalTestResultsPath)
     {
         // Create a new tree for the parent directory
-        // excluding anything in the updated test results tree
-        NewTree parentTree = new NewTree();
-        foreach (var file in originalTreeResponse.Tree)
-        {
-            if (!file.Path.Contains(originalTestResultsPath))
-            {
-                parentTree.Tree.Add(new NewTreeItem
-                {
-                    Path = file.Path,
-                    Mode = file.Mode,
-                    Type = file.Type.Value,
-                    Sha = file.Sha
-                });
-            }
-        }
+        NewTree parentTree = new NewTree { BaseTree = originalTreeResponse.Sha };
 
         //  Connect the updated test results tree
         parentTree.Tree.Add(new NewTreeItem

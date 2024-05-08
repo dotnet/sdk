@@ -174,7 +174,7 @@ jobs:
       - template: ../steps/create-baseline-update-pr.yml
         parameters:
           pipeline: sdk
-          repo: dotnet/installer
+          repo: dotnet/sdk
           originalTestResultsPath: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets
           updatedTestResultsPath: $(Build.StagingDirectory)/BuildLogs
           pullRequestTitle: Update SDK Diff Tests Baselines and Exclusions
