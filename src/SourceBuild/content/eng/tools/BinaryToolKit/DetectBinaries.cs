@@ -22,7 +22,7 @@ public static class DetectBinaries
 
         var matcher = new Matcher(StringComparison.Ordinal);
         matcher.AddInclude("**/*");
-        matcher.AddExcludePatterns(await GetIgnoredPatternsAsync(targetDirectory));
+        matcher.AddExcludePatterns(GetIgnoredPatterns(targetDirectory));
 
         IEnumerable<string> matchingFiles = matcher.GetResultsInFullPath(targetDirectory);
 
@@ -45,7 +45,7 @@ public static class DetectBinaries
         return unmatchedBinaryFiles;
     }
 
-    private static async Task<List<string>> GetIgnoredPatternsAsync(string targetDirectory)
+    private static async List<string> GetIgnoredPatterns(string targetDirectory)
     {
         return new List<string>
         {
