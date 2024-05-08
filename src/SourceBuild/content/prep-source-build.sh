@@ -223,34 +223,35 @@ fi
 
 if [ "$removeBinaries" == true ]; then
 
+  originalPackagesDir=$packagesDir
+  # Create working directory for extracking packages
+  workingDir=$(mktemp -d)
+
   # If --with-packages is not passed, unpack PSB artifacts
   if [[ $packagesDir == $defaultPackagesDir ]]; then
+    echo "  Extracting previously source-built to $workingDir"
     sourceBuiltArchive=$(find "$packagesArchiveDir" -maxdepth 1 -name 'Private.SourceBuilt.Artifacts*.tar.gz')
 
-    if [ ! -d "$packagesDir" ] && [ -f "$sourceBuiltArchive" ]; then
-      echo "  Unpacking Private.SourceBuilt.Artifacts.*.tar.gz into $packagesDir"
-      mkdir -p "$packagesDir"
-      tar -xzf "$sourceBuiltArchive" -C "$packagesDir"
-    elif [ -f "$sourceBuiltArchive" ]; then
-      if [ ! -f "$packagesDir/PackageVersions.props" ]; then
-        echo "  Creating $packagesDir/PackageVersions.props..."
-        tar -xzf "$sourceBuiltArchive" -C "$packagesDir" PackageVersions.props
-      fi
-      if [ ! -f "$packagesDir/VerticalManifest.xml" ]; then
-        echo "  Unpacking Asset manifests into $packagesDir..."
-        tar -xzf "$sourceBuiltArchive" -C "$packagesDir" VerticalManifest.xml
-      fi
-    else
+    if [ ! -f "$sourceBuiltArchive" ]; then
       echo "  ERROR: Private.SourceBuilt.Artifacts.*.tar.gz does not exist..."\
             "Cannot remove non-SB allowed binaries. Either pass --with-packages or download the artifacts."
       exit 1
     fi
+
+    echo "  Unpacking Private.SourceBuilt.Artifacts.*.tar.gz into $workingDir"
+    tar -xzf "$sourceBuiltArchive" -C "$workingDir"
+
+    packagesDir=$workingDir
   fi
 
- "$REPO_ROOT/eng/detect-binaries.sh" \
+  "$REPO_ROOT/eng/detect-binaries.sh" \
   --clean \
   --allowed-binaries-file "$REPO_ROOT/eng/allowed-sb-binaries.txt" \
   --with-packages $packagesDir \
   --with-sdk $dotnetSdk \
 
+  rm -rf "$workingDir"
+
+  packagesDir=$originalPackagesDir
+  unset originalPackagesDir
 fi
