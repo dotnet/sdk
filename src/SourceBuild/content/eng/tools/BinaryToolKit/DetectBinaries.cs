@@ -60,6 +60,13 @@ public static class DetectBinaries
 
             await ExecuteProcessAsync("git", $"-C {targetDirectory} config --global safe.directory {targetDirectory}");
 
+            if (!isGitRepo)
+            {
+                // Need to stage all files in the fake git repo so that git clean -ndx works
+                await ExecuteProcessAsync("git", $"-C {targetDirectory} config core.safecrlf false");
+                await ExecuteProcessAsync("git", $"-C {targetDirectory} add .");
+            }
+
             string output = await ExecuteProcessAsync("git", $"-C {targetDirectory} clean -ndx");
 
             List<string> ignoredPaths = output.Split(Environment.NewLine)
