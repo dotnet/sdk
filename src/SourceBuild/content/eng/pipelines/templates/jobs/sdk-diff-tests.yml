@@ -53,7 +53,7 @@ jobs:
         --organization '$(AZDO_ORG)' \
         --project '$(AZDO_PROJECT)' \
         --pipeline-ids '$(INSTALLER_OFFICIAL_CI_PIPELINE_ID)' \
-        --query "[?sourceBranch == $dotnet_dotnet_branch && status == 'completed' && (result == 'succeeded' || result == 'partiallySucceeded')].id" \
+        --query "[?sourceBranch == '$dotnet_dotnet_branch' && status == 'completed' && (result == 'succeeded' || result == 'partiallySucceeded')].id" \
         --output tsv | head -n 1)
       if [[ -z "$installer_build" ]]; then
         echo "Could not find a build of installer for branch '$dotnet_dotnet_branch'"
