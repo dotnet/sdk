@@ -57,7 +57,7 @@
         <target state="translated">При проверке рабочих нагрузок возникла проблема. Для получения дополнительных сведений выполните команду "dotnet workload update".</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">Версия манифеста</target>
         <note />

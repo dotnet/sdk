@@ -220,7 +220,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var resolverFactory = new MockWorkloadResolverFactory(Path.Combine(Path.GetTempPath(), "dotnetTestPath"), versionNumber, workloadResolver, "userProfileDir");
             var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater);
 
-            var installStatePath = Path.Combine(Path.GetTempPath(), "dotnetTestPath", "metadata", "workloads", versionNumber, "InstallState", "default.json");
+            var installStatePath = Path.Combine(Path.GetTempPath(), "dotnetTestPath", "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), versionNumber, "InstallState", "default.json");
             var contents = new InstallStateContents();
             contents.UseWorkloadSets = true;
             var versionFile = Path.Combine("userProfileDir", "sdk-advertising", "8.0.0", "microsoft.net.workloads", Constants.workloadSetVersionFileName);
@@ -400,7 +400,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             packInstaller.InstalledManifests[0].manifestUpdate.ExistingFeatureBand.Should().Be(manifestsToUpdate[0].ManifestUpdate.ExistingFeatureBand);
             packInstaller.InstalledManifests[0].offlineCache.Should().Be(null);
 
-            var defaultJsonPath = Path.Combine(dotnetPath, "metadata", "workloads", "6.0.300", "InstallState", "default.json");
+            var defaultJsonPath = Path.Combine(dotnetPath, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), "6.0.300", "InstallState", "default.json");
             File.Exists(defaultJsonPath).Should().BeTrue();
             var json = JsonDocument.Parse(new FileStream(defaultJsonPath, FileMode.Open, FileAccess.Read), new JsonDocumentOptions() { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
             json.RootElement.Should().NotBeNull();
