@@ -15,6 +15,10 @@ parameters:
   type: boolean
   default: false
 
+- name: publishTestResultsPr
+  type: boolean
+  default: false
+
 jobs:
 - job: ${{ parameters.buildName }}_${{ parameters.architecture }}
   timeoutInMinutes: 150
@@ -165,3 +169,12 @@ jobs:
       mergeTestResults: true
       publishRunAttachments: true
       testRunTitle: $(Agent.JobName)
+
+  - ${{ if and(eq(parameters.publishTestResultsPr, 'true'), (or(eq(variables['Build.SourceBranchName'], 'main'), contains(variables['Build.SourceBranch'], 'refs/heads/release/')))) }}:
+      - template: ../steps/create-baseline-update-pr.yml
+        parameters:
+          pipeline: sdk
+          repo: dotnet/installer
+          originalTestResultsPath: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets
+          updatedTestResultsPath: $(Build.StagingDirectory)/BuildLogs
+          pullRequestTitle: Update SDK Diff Tests Baselines and Exclusions
