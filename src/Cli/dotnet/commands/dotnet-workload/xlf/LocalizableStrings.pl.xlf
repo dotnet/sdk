@@ -57,9 +57,9 @@
         <target state="translated">Napotkano problem podczas weryfikowania obciążeń. Aby uzyskać więcej informacji, uruchom polecenie „dotnet workload update”.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
-        <target state="translated">Wersja manifestu</target>
+        <target state="new">Manifest Version</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">

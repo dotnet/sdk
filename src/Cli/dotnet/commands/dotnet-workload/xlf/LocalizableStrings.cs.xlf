@@ -57,9 +57,9 @@
         <target state="translated">Při ověřování úloh došlo k problému. Další informace získáte spuštěním příkazu „dotnet workload update“.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
-        <target state="translated">Verze manifestu</target>
+        <target state="new">Manifest Version</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">

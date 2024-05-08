@@ -57,9 +57,9 @@
         <target state="translated">워크로드를 확인하는 동안 문제가 발생했습니다. 자세한 내용을 확인하려면 "dotnet workload update"를 실행하세요.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
-        <target state="translated">매니페스트 버전</target>
+        <target state="new">Manifest Version</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">

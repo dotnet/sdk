@@ -57,9 +57,9 @@
         <target state="translated">Un problème s’est produit lors de la vérification des charges de travail. Pour plus d’informations, exécutez « dotnet workload update ».</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
-        <target state="translated">Version de manifeste</target>
+        <target state="new">Manifest Version</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
