@@ -61,6 +61,10 @@ extends:
         image: 1es-windows-2022
         os: windows
 
+      # Spotbugs is failing the Windows builds: https://github.com/dotnet/dnceng/issues/2740
+      spotBugs:
+        enabled: false
+
       codeql:
         compiled:
           enabled: true
