@@ -1,4 +1,4 @@
-parameters:
+# parameters:
   # jobTemplatePath: /eng/common/templates/job/job.yml
   # publishTaskName: PublishBuildArtifacts@1
   # buildCategory: Build
