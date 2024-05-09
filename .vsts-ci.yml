@@ -87,10 +87,10 @@ extends:
       #   # See: https://dev.azure.com/dnceng/internal/_componentGovernance/dotnet-sdk/alert/9439021?typeId=6422467
       #   # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
       #   alertWarningLevel: Critical
-    oneEsPtCompat:
-      jobTemplatePath: /eng/common/templates-official/job/job.yml
-      publishTaskName: 1ES.PublishBuildArtifacts@1
-    runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+    # oneEsPtCompat:
+    #   jobTemplatePath: /eng/common/templates-official/job/job.yml
+    #   publishTaskName: 1ES.PublishBuildArtifacts@1
+    # runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
     ### LOCAL ONLY ###
     # _publishArgument: -publish
     # _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
@@ -196,8 +196,10 @@ extends:
 
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
         parameters:
-          oneEsPtCompat: ${{ parameters.oneEsPtCompat }}
-          runTests: ${{ parameters.runTests }}
+          oneEsPtCompat:
+            jobTemplatePath: /eng/common/templates-official/job/job.yml
+            publishTaskName: 1ES.PublishBuildArtifacts@1
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
 
       # - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
