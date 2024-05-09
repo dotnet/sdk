@@ -203,7 +203,6 @@ extends:
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           jobParameterSets:
-          ### OFFICIAL ###
           - ${{ if eq(parameters.runTests, false) }}:
             - categoryName: Official
               publishArgument: $(_publishArgument)
@@ -225,7 +224,6 @@ extends:
               runTests: false
               variables:
                 _SignType: real
-          ### TESTS ###
           - ${{ else }}:
             - categoryName: TestBuild
             - categoryName: FullFramework
