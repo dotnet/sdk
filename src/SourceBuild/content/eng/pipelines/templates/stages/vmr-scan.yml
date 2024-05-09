@@ -22,13 +22,8 @@ stages:
 
     - script: |
         set -e
-
-        # TODO: Remove installer tag from the builds once sdk starts producing the MSFT SDK
-        sdk_sha=`./.dotnet/dotnet darc vmr get-version --vmr "$(Build.SourcesDirectory)" sdk`
-        installer_sha=`./.dotnet/dotnet darc vmr get-version --vmr "$(Build.SourcesDirectory)" installer`
-
-        echo "##vso[build.addbuildtag]$sdk_sha"
-        echo "##vso[build.addbuildtag]$installer_sha"
+        sha=`./.dotnet/dotnet darc vmr get-version --vmr "$(Build.SourcesDirectory)" sdk`
+        echo "##vso[build.addbuildtag]$sha"
       displayName: Tag the build
       workingDirectory: $(Build.SourcesDirectory)/src/sdk
 
