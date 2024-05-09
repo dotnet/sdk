@@ -38,7 +38,7 @@ jobs:
     enablePublishUsingPipelines: true
     ${{ if ne(parameters.variables, '') }}:
       variables:
-        ${{ insert }}: ${{ parameters.variables }}
+      - ${{ insert }}: ${{ parameters.variables }}
 
     steps:
     ############## PREP ###############
