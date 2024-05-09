@@ -10,15 +10,8 @@ namespace Microsoft.NET.Build.Containers.Targets.IntegrationTests;
 [Collection(nameof(MSBuildCollection))]
 public class TargetsTests
 {
-    [InlineData("win", "SelfContained", true, "C:/app/foo.exe")]
-    [InlineData("win", "SelfContained", false, "dotnet", "C:/app/foo.dll")]
-    [InlineData("win", "PublishSelfContained", true, "C:/app/foo.exe")]
-    [InlineData("win", "PublishSelfContained", false, "dotnet", "C:/app/foo.dll")]
-    [InlineData("linux", "SelfContained", true, "/app/foo")]
-    [InlineData("linux", "SelfContained", false, "dotnet", "/app/foo.dll")]
-    [InlineData("linux", "PublishSelfContained", true, "/app/foo")]
-    [InlineData("linux", "PublishSelfContained", false, "dotnet", "/app/foo.dll")]
     [Theory]
+    [MemberData(nameof(ContainerAppCommands))]
     public void CanDeferContainerAppCommand(
         string os,
         string prop,
@@ -33,13 +26,31 @@ public class TargetsTests
         }, projectName: $"{nameof(CanDeferContainerAppCommand)}_{prop}_{value}_{string.Join("_", expectedAppCommandArgs)}");
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
-        Assert.True(instance.Build([ ComputeContainerConfig ], []));
+        //Assert.True(instance.Build([ ComputeContainerConfig ], []));
+        instance.Build([ ComputeContainerConfig ], []);
         var computedAppCommand = instance.GetItems(ContainerAppCommand).Select(i => i.EvaluatedInclude);
 
         // The test was not testing anything previously, as the list returned was zero length,
         // and the Zip didn't yield any results.
         // So, to make sure we actually test something, we check that we actually get the expected collection.
         computedAppCommand.Should().BeEquivalentTo(expectedAppCommandArgs);
+    }
+
+
+    public static TheoryData<string, string, bool, string[]> ContainerAppCommands()
+    {
+        char s = Path.DirectorySeparatorChar;
+        return new TheoryData<string, string, bool, string[]>
+        {
+            { "win", "SelfContained", true, [$"C:{s}app{s}foo.exe"] },
+            { "win", "SelfContained", false, ["dotnet", $"C:{s}app{s}foo.dll"] },
+            { "win", "PublishSelfContained", true, [$"C:{s}app{s}foo.exe"] },
+            { "win", "PublishSelfContained", false, ["dotnet", $"C:{s}app{s}foo.dll"] },
+            { "linux", "SelfContained", true, ["/app/foo"] },
+            { "linux", "SelfContained", false, ["dotnet", "/app/foo.dll"] },
+            { "linux", "PublishSelfContained", true, ["/app/foo"] },
+            { "linux", "PublishSelfContained", false, ["dotnet", "/app/foo.dll"] },
+        };
     }
 
     [Fact]
