@@ -196,7 +196,6 @@ extends:
 
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
         parameters:
-          ${{ insert }}: ${{ jobParameters }}
           oneEsPtCompat: ${{ parameters.oneEsPtCompat }}
           runTests: ${{ parameters.runTests }}
 
