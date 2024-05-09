@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta1",
                     MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
                 },
                 new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
@@ -30,6 +31,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta2",
                     MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
                 }
             };
             context.Request.Body = GetJson(deltas);
@@ -56,6 +58,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta1",
                     MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
                 },
                 new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
@@ -63,6 +66,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta2",
                     MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
                 }
             };
             var context = new DefaultHttpContext();
@@ -97,6 +101,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta1",
                     MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
                 },
                 new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
@@ -104,6 +109,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta2",
                     MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
                 }
             };
             var context = new DefaultHttpContext();
@@ -124,6 +130,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta3",
                     MetadataDelta = "MetadataDelta3",
+                    UpdatedTypes = [42],
                 },
                 new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
@@ -131,6 +138,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta4",
                     MetadataDelta = "MetadataDelta4",
+                    UpdatedTypes = [42],
                 },
                     new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
@@ -138,6 +146,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta5",
                     MetadataDelta = "MetadataDelta5",
+                    UpdatedTypes = [42],
                 },
             };
 
@@ -184,6 +193,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta1",
                     MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
                 },
                 new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
@@ -191,6 +201,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta2",
                     MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
                 }
             };
             middleware.Deltas.AddRange(deltas);
@@ -221,6 +232,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta1",
                     MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
                 },
                 new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
@@ -228,6 +240,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta2",
                     MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
                 }
             };
             middleware.Deltas.AddRange(deltas);
@@ -262,6 +275,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta1",
                     MetadataDelta = "MetadataDelta1",
+                    UpdatedTypes = [42],
                 },
                 new BlazorWasmHotReloadMiddleware.UpdateDelta
                 {
@@ -269,6 +283,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                     ModuleId = Guid.NewGuid().ToString(),
                     ILDelta = "ILDelta2",
                     MetadataDelta = "MetadataDelta2",
+                    UpdatedTypes = [42],
                 }
             };
             middleware.Deltas.AddRange(deltas);
@@ -284,6 +299,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 ModuleId = Guid.NewGuid().ToString(),
                 ILDelta = "ILDelta3",
                 MetadataDelta = "MetadataDelta3",
+                UpdatedTypes = [42],
             };
             deltas.Add(update);
             middleware.Deltas.Add(update);
@@ -313,6 +329,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 Assert.Equal(expected[i].MetadataDelta, actual[i].MetadataDelta);
                 Assert.Equal(expected[i].ModuleId, actual[i].ModuleId);
                 Assert.Equal(expected[i].SequenceId, actual[i].SequenceId);
+                Assert.Equal(expected[i].UpdatedTypes, actual[i].UpdatedTypes);
             }
         }
 
