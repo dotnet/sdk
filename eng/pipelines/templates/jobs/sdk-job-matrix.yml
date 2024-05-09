@@ -59,14 +59,25 @@
   #   - categoryName: AoT
   #     runAoTTests: true
 
+parameters:
+  jobParameterSets: []
+
 jobs:
-############### WINDOWS ###############
-- ${{ each jobParameters in parameters._windowsJobParameters }}:
+- ${{ each jobParameters in parameters.jobParameterSets }}:
   - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
     parameters:
+      ${{ insert }}: ${{ parameters }}
       ${{ insert }}: ${{ jobParameters }}
-      oneEsPtCompat: ${{ parameters.oneEsPtCompat }}
-      runTests: ${{ parameters.runTests }}
+
+
+
+############### WINDOWS ###############
+# - ${{ each jobParameters in parameters._windowsJobParameters }}:
+#   - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
+#     parameters:
+#       ${{ insert }}: ${{ jobParameters }}
+#       oneEsPtCompat: ${{ parameters.oneEsPtCompat }}
+#       runTests: ${{ parameters.runTests }}
 
 
 

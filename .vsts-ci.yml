@@ -46,6 +46,11 @@ variables:
 # TODO: What is this for?
 - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
   - group: DotNet-CLI-SDLValidation-Params
+### LOCAL ONLY ###
+- name: _publishArgument
+  value: -publish
+- name: _officialBuildProperties
+  value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 
 resources:
   repositories:
@@ -196,29 +201,37 @@ extends:
 
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
         parameters:
+          pool:
+            name: $(DncEngInternalBuildPool)
+            image: 1es-windows-2022
+            os: windows
+          helixTargetQueue: windows.amd64.vs2022.pre
           oneEsPtCompat:
             jobTemplatePath: /eng/common/templates-official/job/job.yml
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           # _publishArgument: -publish
           # _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
-          _windowsJobParameters:
+          jobParameterSets:
           - ${{ if eq(parameters.runTests, false) }}:
             - categoryName: Official
-              publishArgument: -publish
-              officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
               variables:
                 _SignType: real
             - categoryName: Official
               buildArchitecture: x86
-              publishArgument: -publish
-              officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
               variables:
                 _SignType: real
             - categoryName: Official
               buildArchitecture: arm64
-              publishArgument: -publish
-              officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
               variables:
                 _SignType: real
           - ${{ else }}:
