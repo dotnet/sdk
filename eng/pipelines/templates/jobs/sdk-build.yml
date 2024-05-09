@@ -1,5 +1,5 @@
 parameters:
-  variables: {}
+  variables: ''
   oneEsPtCompat:
     jobTemplatePath: /eng/common/templates/job/job.yml
     publishTaskName: PublishBuildArtifacts@1
@@ -36,7 +36,9 @@ jobs:
     enablePublishBuildAssets: true
     enableTelemetry: true
     enablePublishUsingPipelines: true
-    variables: ${{ parameters.variables }}
+    ${{ if ne(parameters.variables, '') }}:
+      variables:
+        ${{ insert }}: ${{ parameters.variables }}
 
     steps:
     ############## PREP ###############
