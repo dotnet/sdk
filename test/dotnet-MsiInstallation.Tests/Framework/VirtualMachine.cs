@@ -8,6 +8,9 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
     class VirtualMachine : IDisposable
     {
+        private static VirtualMachine s_Instance;
+        private static object s_Lock = new object();
+
         ITestOutputHelper Log { get; }
         public VMControl VMControl { get; }
 
@@ -24,6 +27,15 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         public VirtualMachine(ITestOutputHelper log)
         {
+            lock (s_Lock)
+            {
+                if (s_Instance != null)
+                {
+                    throw new Exception(nameof(VirtualMachine) + " already created.  This can be caused by running multiple tests which use the VM in parallel, which is not supported.");
+                }
+                s_Instance = this;
+            }
+
             Log = log;
 
             var testSettingsFile = Path.Combine(Environment.CurrentDirectory, "VMTestSettings.json");
@@ -104,6 +116,11 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             File.WriteAllText(_stateFile, json);
 
             VMControl.Dispose();
+
+            lock (s_Lock)
+            {
+                s_Instance = null;
+            }
         }
 
         JsonSerializerOptions GetSerializerOptions()
@@ -508,6 +525,8 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             public override bool Exists => GetResult().Exists;
 
             public override List<string> Directories => GetResult().Directories;
+
+            public override List<string> Files => GetResult().Files;
         }
 
         public class VMSnapshot
