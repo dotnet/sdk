@@ -26,6 +26,9 @@ parameters:
   #   default: true
   # ${{ else }}:
   #   default: false
+- name: _publishArgument
+  type: string
+  default: -publish
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
@@ -89,25 +92,25 @@ extends:
       publishTaskName: 1ES.PublishBuildArtifacts@1
     runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
     ### LOCAL ONLY ###
-    local_publishArgument: -publish
-    local_officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
-    local_windowsJobParameters:
+    # _publishArgument: -publish
+    _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+    _windowsJobParameters:
     - ${{ if eq(parameters.runTests, false) }}:
       - categoryName: Official
-        publishArgument: ${{ parameters.local_publishArgument }}
-        officialBuildProperties: ${{ parameters.local_officialBuildProperties }}
+        publishArgument: ${{ parameters._publishArgument }}
+        officialBuildProperties: ${{ parameters._officialBuildProperties }}
         variables:
           _SignType: real
       - categoryName: Official
         buildArchitecture: x86
-        publishArgument: ${{ parameters.local_publishArgument }}
-        officialBuildProperties: ${{ parameters.local_officialBuildProperties }}
+        publishArgument: ${{ parameters._publishArgument }}
+        officialBuildProperties: ${{ parameters._officialBuildProperties }}
         variables:
           _SignType: real
       - categoryName: Official
         buildArchitecture: arm64
-        publishArgument: ${{ parameters.local_publishArgument }}
-        officialBuildProperties: ${{ parameters.local_officialBuildProperties }}
+        publishArgument: ${{ parameters._publishArgument }}
+        officialBuildProperties: ${{ parameters._officialBuildProperties }}
         variables:
           _SignType: real
     - ${{ else }}:
@@ -183,7 +186,7 @@ extends:
 
 
       ############### WINDOWS ###############
-      - ${{ each jobParameters in parameters.local_windowsJobParameters }}:
+      - ${{ each jobParameters in parameters._windowsJobParameters }}:
         - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
           parameters:
             ${{ insert }}: ${{ jobParameters }}
