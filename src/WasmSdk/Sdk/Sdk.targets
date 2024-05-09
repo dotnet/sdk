@@ -23,7 +23,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <_TempWasmWorkaroundsDisabled>true</_TempWasmWorkaroundsDisabled>
-  </PropertyGroup
+  </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.WebAssembly.9_0.temp.targets" Condition="'$(_TempWasmWorkaroundsDisabled)' == ''" />
 </Project>
