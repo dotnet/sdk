@@ -21,5 +21,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       This will go away once the wasm build is updated to do this directly.
   -->
 
+  <PropertyGroup>
+    <_TempWasmWorkaroundsDisabled>true</_TempWasmWorkaroundsDisabled>
+  </PropertyGroup
+
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.WebAssembly.9_0.temp.targets" Condition="'$(_TempWasmWorkaroundsDisabled)' == ''" />
 </Project>
