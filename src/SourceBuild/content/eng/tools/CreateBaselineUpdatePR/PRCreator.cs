@@ -142,9 +142,13 @@ public class PRCreator
             }
         }
 
-        if (parsedFile.Any())
+        else
         {
-            content = string.Join("\n", parsedFile) + "\n";
+            if (parsedFile.Any())
+            {
+                // No need to compare to the original file, just log the parsed lines
+                content = string.Join("\n", parsedFile) + "\n";
+            }
         }
 
         string updatedFilePath = fileNameKey + ".txt";

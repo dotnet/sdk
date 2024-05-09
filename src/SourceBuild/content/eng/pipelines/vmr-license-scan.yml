@@ -146,7 +146,7 @@ jobs:
 
 - job: Publish_Test_Results_PR
   dependsOn: LicenseScan
-  condition: or(eq(variables['Build.SourceBranchName'], 'main'), contains(variables['Build.SourceBranch'], 'refs/heads/release/'))
+  condition: or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))
   pool:
     name: NetCore1ESPool-Svc-Internal
     demands: ImageOverride -equals 1es-ubuntu-2004

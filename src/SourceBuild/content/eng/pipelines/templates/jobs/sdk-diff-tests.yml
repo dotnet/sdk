@@ -170,7 +170,7 @@ jobs:
       publishRunAttachments: true
       testRunTitle: $(Agent.JobName)
 
-  - ${{ if and(eq(parameters.publishTestResultsPr, 'true'), (or(eq(variables['Build.SourceBranchName'], 'main'), contains(variables['Build.SourceBranch'], 'refs/heads/release/')))) }}:
+  - ${{ if and(eq(parameters.publishTestResultsPr, 'true'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release'))) }}:
       - template: ../steps/create-baseline-update-pr.yml
         parameters:
           pipeline: sdk
