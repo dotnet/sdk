@@ -3,6 +3,11 @@
 # This file is used by the Binary Tool to remove binaries from the VMR
 # If importing a file, include the relative path to the file
 
+.git/
+.dotnet/
+.packages/
+prereqs/packages/
+
 **/*.bmp
 **/*.doc
 **/*.docx

@@ -22,7 +22,6 @@ public static class DetectBinaries
 
         var matcher = new Matcher(StringComparison.Ordinal);
         matcher.AddInclude("**/*");
-        matcher.AddExcludePatterns(GetIgnoredPatterns(targetDirectory));
 
         IEnumerable<string> matchingFiles = matcher.GetResultsInFullPath(targetDirectory);
 
@@ -43,24 +42,6 @@ public static class DetectBinaries
         Log.LogInformation($"Finished binary detection.");
 
         return unmatchedBinaryFiles;
-    }
-
-    private static List<string> GetIgnoredPatterns(string targetDirectory)
-    {
-        return new List<string>
-        {
-            "**/.git/**/*",
-            "**/.dotnet/**/*",
-            "**/.packages/**/*",
-            "**/artifacts/**/*",
-            "**/prereqs/packages/**/*",
-            "**/*.binlog",
-            "**/bin/**/*",
-            "**/obj/**/*",
-            "**/.vs/**/*",
-            "**/.vscode/**/*",
-            "**/.tools/**/*",
-        };
     }
 
     private static async Task<bool> IsBinaryAsync(string filePath)
