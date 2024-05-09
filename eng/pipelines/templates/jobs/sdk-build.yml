@@ -1,5 +1,5 @@
 parameters:
-  variables: []
+  variables: {}
   oneEsPtCompat:
     jobTemplatePath: /eng/common/templates/job/job.yml
     publishTaskName: PublishBuildArtifacts@1
