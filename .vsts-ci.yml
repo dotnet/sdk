@@ -26,9 +26,9 @@ parameters:
   #   default: true
   # ${{ else }}:
   #   default: false
-- name: _publishArgument
-  type: string
-  default: -publish
+# - name: _publishArgument
+#   type: string
+#   default: -publish
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
@@ -93,39 +93,39 @@ extends:
     runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
     ### LOCAL ONLY ###
     # _publishArgument: -publish
-    _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
-    _windowsJobParameters:
-    - ${{ if eq(parameters.runTests, false) }}:
-      - categoryName: Official
-        publishArgument: ${{ parameters._publishArgument }}
-        officialBuildProperties: ${{ parameters._officialBuildProperties }}
-        variables:
-          _SignType: real
-      - categoryName: Official
-        buildArchitecture: x86
-        publishArgument: ${{ parameters._publishArgument }}
-        officialBuildProperties: ${{ parameters._officialBuildProperties }}
-        variables:
-          _SignType: real
-      - categoryName: Official
-        buildArchitecture: arm64
-        publishArgument: ${{ parameters._publishArgument }}
-        officialBuildProperties: ${{ parameters._officialBuildProperties }}
-        variables:
-          _SignType: real
-    - ${{ else }}:
-      - categoryName: TestBuild
-      - categoryName: FullFramework
-        testFullMSBuild: true
-      - categoryName: TestAsTools
-        runTestsAsTool: true
-        # This uses the build step for testing, so the extra test step is not necessary.
-        runTests: false
-      - categoryName: TemplateEngine
-        testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
-          $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
-      - categoryName: AoT
-        runAoTTests: true
+    # _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+    # _windowsJobParameters:
+    # - ${{ if eq(parameters.runTests, false) }}:
+    #   - categoryName: Official
+    #     publishArgument: ${{ parameters._publishArgument }}
+    #     officialBuildProperties: ${{ parameters._officialBuildProperties }}
+    #     variables:
+    #       _SignType: real
+    #   - categoryName: Official
+    #     buildArchitecture: x86
+    #     publishArgument: ${{ parameters._publishArgument }}
+    #     officialBuildProperties: ${{ parameters._officialBuildProperties }}
+    #     variables:
+    #       _SignType: real
+    #   - categoryName: Official
+    #     buildArchitecture: arm64
+    #     publishArgument: ${{ parameters._publishArgument }}
+    #     officialBuildProperties: ${{ parameters._officialBuildProperties }}
+    #     variables:
+    #       _SignType: real
+    # - ${{ else }}:
+    #   - categoryName: TestBuild
+    #   - categoryName: FullFramework
+    #     testFullMSBuild: true
+    #   - categoryName: TestAsTools
+    #     runTestsAsTool: true
+    #     # This uses the build step for testing, so the extra test step is not necessary.
+    #     runTests: false
+    #   - categoryName: TemplateEngine
+    #     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
+    #       $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+    #   - categoryName: AoT
+    #     runAoTTests: true
 
 
     stages:
@@ -185,13 +185,20 @@ extends:
 
 
 
-      ############### WINDOWS ###############
-      - ${{ each jobParameters in parameters._windowsJobParameters }}:
-        - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
-          parameters:
-            ${{ insert }}: ${{ jobParameters }}
-            oneEsPtCompat: ${{ parameters.oneEsPtCompat }}
-            runTests: ${{ parameters.runTests }}
+      # ############### WINDOWS ###############
+      # - ${{ each jobParameters in parameters._windowsJobParameters }}:
+      #   - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
+      #     parameters:
+      #       ${{ insert }}: ${{ jobParameters }}
+      #       oneEsPtCompat: ${{ parameters.oneEsPtCompat }}
+      #       runTests: ${{ parameters.runTests }}
+
+
+      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+        parameters:
+          ${{ insert }}: ${{ jobParameters }}
+          oneEsPtCompat: ${{ parameters.oneEsPtCompat }}
+          runTests: ${{ parameters.runTests }}
 
 
       # - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
