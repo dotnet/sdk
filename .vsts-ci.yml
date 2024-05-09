@@ -328,56 +328,56 @@ extends:
       #           Test_arm64:
       #             testFullMSBuild: true
 
-        ############### LINUX ###############
-        - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
-        parameters:
-          pool:
-            name: $(DncEngInternalBuildPool)
-            image: 1es-ubuntu-2204
-            os: linux
-          helixTargetQueue: ubuntu.2204.amd64
-          container: ubuntu2204
-          oneEsPtCompat:
-            jobTemplatePath: /eng/common/templates-official/job/job.yml
-            publishTaskName: 1ES.PublishBuildArtifacts@1
-          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          jobParameterSets:
-          ### OFFICIAL ###
-          - ${{ if eq(parameters.runTests, false) }}:
-            - categoryName: Official
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-            - categoryName: Official
-              buildArchitecture: x86
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-            - categoryName: Official
-              buildArchitecture: arm64
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-          ### TESTS ###
-          # - ${{ else }}:
-          #   - categoryName: TestBuild
-          #   - categoryName: FullFramework
-          #     testFullMSBuild: true
-          #   - categoryName: TestAsTools
-          #     runTestsAsTool: true
-          #     # This uses the build step for testing, so the extra test step is not necessary.
-          #     runTests: false
-          #   - categoryName: TemplateEngine
-          #     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
-          #       $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
-          #   - categoryName: AoT
-          #     runAoTTests: true
+      ############### LINUX ###############
+      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+      parameters:
+        pool:
+          name: $(DncEngInternalBuildPool)
+          image: 1es-ubuntu-2204
+          os: linux
+        helixTargetQueue: ubuntu.2204.amd64
+        container: ubuntu2204
+        oneEsPtCompat:
+          jobTemplatePath: /eng/common/templates-official/job/job.yml
+          publishTaskName: 1ES.PublishBuildArtifacts@1
+        runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+        jobParameterSets:
+        ### OFFICIAL ###
+        - ${{ if eq(parameters.runTests, false) }}:
+          - categoryName: Official
+            publishArgument: $(_publishArgument)
+            officialBuildProperties: $(_officialBuildProperties)
+            runTests: false
+            variables:
+              _SignType: real
+          - categoryName: Official
+            buildArchitecture: x86
+            publishArgument: $(_publishArgument)
+            officialBuildProperties: $(_officialBuildProperties)
+            runTests: false
+            variables:
+              _SignType: real
+          - categoryName: Official
+            buildArchitecture: arm64
+            publishArgument: $(_publishArgument)
+            officialBuildProperties: $(_officialBuildProperties)
+            runTests: false
+            variables:
+              _SignType: real
+        ### TESTS ###
+        # - ${{ else }}:
+        #   - categoryName: TestBuild
+        #   - categoryName: FullFramework
+        #     testFullMSBuild: true
+        #   - categoryName: TestAsTools
+        #     runTestsAsTool: true
+        #     # This uses the build step for testing, so the extra test step is not necessary.
+        #     runTests: false
+        #   - categoryName: TemplateEngine
+        #     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
+        #       $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+        #   - categoryName: AoT
+        #     runAoTTests: true
 
       # ############### MACOS ###############
       # - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
