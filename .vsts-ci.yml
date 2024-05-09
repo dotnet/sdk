@@ -200,6 +200,40 @@ extends:
             jobTemplatePath: /eng/common/templates-official/job/job.yml
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          # _publishArgument: -publish
+          # _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+          _windowsJobParameters:
+          - ${{ if eq(parameters.runTests, false) }}:
+            - categoryName: Official
+              publishArgument: -publish
+              officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+              variables:
+                _SignType: real
+            - categoryName: Official
+              buildArchitecture: x86
+              publishArgument: -publish
+              officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+              variables:
+                _SignType: real
+            - categoryName: Official
+              buildArchitecture: arm64
+              publishArgument: -publish
+              officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+              variables:
+                _SignType: real
+          - ${{ else }}:
+            - categoryName: TestBuild
+            - categoryName: FullFramework
+              testFullMSBuild: true
+            - categoryName: TestAsTools
+              runTestsAsTool: true
+              # This uses the build step for testing, so the extra test step is not necessary.
+              runTests: false
+            - categoryName: TemplateEngine
+              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
+                $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+            - categoryName: AoT
+              runAoTTests: true
 
 
       # - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
