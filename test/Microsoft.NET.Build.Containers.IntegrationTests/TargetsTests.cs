@@ -20,7 +20,7 @@ public class TargetsTests
     [InlineData("linux", "PublishSelfContained", false, "dotnet", "/app/foo.dll")]
     [Theory]
     public void CanDeferContainerAppCommand(
-        string rid,
+        string os,
         string prop,
         bool value,
         params string[] expectedAppCommandArgs)
@@ -28,7 +28,7 @@ public class TargetsTests
         var (project, _, d) = ProjectInitializer.InitProject(new()
         {
             [prop] = value.ToString(),
-            [ContainerRuntimeIdentifier] = rid,
+            [ContainerRuntimeIdentifier] = $"{os}-x64",
 
         }, projectName: $"{nameof(CanDeferContainerAppCommand)}_{prop}_{value}_{string.Join("_", expectedAppCommandArgs)}");
         using var _ = d;
