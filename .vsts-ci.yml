@@ -20,10 +20,12 @@ parameters:
 - name: runTests
   displayName: Run Tests
   type: boolean
-  ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-    default: true
-  ${{ else }}:
-    default: false
+  default: false
+  # 💢 "A template expression is not allowed in this context"
+  # ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+  #   default: true
+  # ${{ else }}:
+  #   default: false
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
