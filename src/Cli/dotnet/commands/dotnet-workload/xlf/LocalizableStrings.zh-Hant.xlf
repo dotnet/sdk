@@ -59,7 +59,7 @@
       </trans-unit>
       <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
-        <target state="new">Manifest Version</target>
+        <target state="translated">資訊清單版本</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadManifestPathColumn">
