@@ -36,8 +36,7 @@ jobs:
     enablePublishBuildAssets: true
     enableTelemetry: true
     enablePublishUsingPipelines: true
-    variables:
-    - ${{ insert }}: ${{ parameters.variables }}
+    variables: ${{ parameters.variables }}
 
     steps:
     ############## PREP ###############
