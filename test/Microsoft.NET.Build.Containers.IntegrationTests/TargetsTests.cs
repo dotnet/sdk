@@ -10,24 +10,36 @@ namespace Microsoft.NET.Build.Containers.Targets.IntegrationTests;
 [Collection(nameof(MSBuildCollection))]
 public class TargetsTests
 {
-    [InlineData("SelfContained", true, "/app/foo.exe")]
-    [InlineData("SelfContained", false, "dotnet", "/app/foo.dll")]
-    [InlineData("PublishSelfContained", true, "/app/foo.exe")]
-    [InlineData("PublishSelfContained", false, "dotnet", "/app/foo.dll")]
+    [InlineData("win", "SelfContained", true, "C:/app/foo.exe")]
+    [InlineData("win", "SelfContained", false, "dotnet", "C:/app/foo.dll")]
+    [InlineData("win", "PublishSelfContained", true, "C:/app/foo.exe")]
+    [InlineData("win", "PublishSelfContained", false, "dotnet", "C:/app/foo.dll")]
+    [InlineData("linux", "SelfContained", true, "/app/foo")]
+    [InlineData("linux", "SelfContained", false, "dotnet", "/app/foo.dll")]
+    [InlineData("linux", "PublishSelfContained", true, "/app/foo")]
+    [InlineData("linux", "PublishSelfContained", false, "dotnet", "/app/foo.dll")]
     [Theory]
-    public void CanDeferEntrypoint(string selfContainedPropertyName, bool selfContainedPropertyValue, params string[] entrypointArgs)
+    public void CanDeferContainerAppCommand(
+        string rid,
+        string prop,
+        bool value,
+        params string[] expectedAppCommandArgs)
     {
         var (project, _, d) = ProjectInitializer.InitProject(new()
         {
-            [selfContainedPropertyName] = selfContainedPropertyValue.ToString()
-        }, projectName: $"{nameof(CanDeferEntrypoint)}_{selfContainedPropertyName}_{selfContainedPropertyValue}_{string.Join("_", entrypointArgs)}");
+            [prop] = value.ToString(),
+            [ContainerRuntimeIdentifier] = rid,
+
+        }, projectName: $"{nameof(CanDeferContainerAppCommand)}_{prop}_{value}_{string.Join("_", expectedAppCommandArgs)}");
         using var _ = d;
-        Assert.True(project.Build(ComputeContainerConfig));
-        var computedEntrypointArgs = project.GetItems(ContainerEntrypoint).Select(i => i.EvaluatedInclude).ToArray();
-        foreach (var (First, Second) in entrypointArgs.Zip(computedEntrypointArgs))
-        {
-            Assert.Equal(First, Second);
-        }
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+        Assert.True(instance.Build([ ComputeContainerConfig ], []));
+        var computedAppCommand = instance.GetItems(ContainerAppCommand).Select(i => i.EvaluatedInclude);
+
+        // The test was not testing anything previously, as the list returned was zero length,
+        // and the Zip didn't yield any results.
+        // So, to make sure we actually test something, we check that we actually get the expected collection.
+        computedAppCommand.Should().BeEquivalentTo(expectedAppCommandArgs);
     }
 
     [Fact]
