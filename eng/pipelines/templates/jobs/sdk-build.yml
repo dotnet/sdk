@@ -3,16 +3,29 @@ parameters:
     jobTemplatePath: /eng/common/templates/job/job.yml
     publishTaskName: PublishBuildArtifacts@1
   container: ''
+  categoryName: Build
+  buildArchitecture: x64
+  runTests: true
+  testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
+  ### ENV VARS ###
+  testFullMSBuild: false
+  runAoTTests: false
+  ### MSBUILD ###
+  publishArgument: ''
+  runTestsAsTool: false
+  runtimeSourceProperties: ''
+  runtimeIdentifierProperties: ''
+  officialBuildProperties: ''
 
 jobs:
 - template: ${{ parameters.oneEsPtCompat.jobTemplatePath }}
   parameters:
     ${{ if eq(parameters.container, '') }}:
-      name: ${{ parameters.pool.os }}
-      displayName: ${{ parameters.pool.os }}
+      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
+      displayName: "${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }})"
     ${{ else }}:
-      name: ${{ parameters.pool.os }}_${{ parameters.container }}
-      displayName: ${{ parameters.pool.os }} [${{ parameters.container }}]
+      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}_${{ parameters.container }}
+      displayName: "${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }}) [${{ parameters.container }}]"
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
@@ -26,32 +39,30 @@ jobs:
     - ${{ insert }}: ${{ parameters.variables }}
 
     steps:
-    ############### WINDOWS ###############
-    # - ${{ if eq(parameters.pool.os, 'windows') }}:
-    ############### PREP ###############
-    # - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-    #   - ${{ if eq(parameters.pool.os, 'windows') }}:
-    #     - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
-    #       displayName: Setup Private Feeds Credentials
-    #       env:
-    #         Token: $(dn-bot-dnceng-artifact-feeds-rw)
-    #   - ${{ else }}:
-    #     - script: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $Token
-    #       displayName: Setup Private Feeds Credentials
-    #       env:
-    #         Token: $(dn-bot-dnceng-artifact-feeds-rw)
+    ############## PREP ###############
+    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
+      - ${{ if eq(parameters.pool.os, 'windows') }}:
+        - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+          displayName: Setup Private Feeds Credentials
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      - ${{ else }}:
+        - script: ./$(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $Token
+          displayName: Setup Private Feeds Credentials
+          env:
+            Token: $(dn-bot-dnceng-artifact-feeds-rw)
 
     ############### BUILDING ###############
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: eng/common/build.ps1
           -restore -build -sign -pack -ci -nativeToolsOnMachine
           -configuration $(buildConfiguration)
-          $(publishArgument)
-          /p:Architecture=$(buildArchitecture)
-          $(runtimeSourceProperties)
-          $(runtimeIdentifierProperties)
-          $(testInBuildProperties)
-          $(officialBuildProperties)
+          ${{ parameters.publishArgument }}
+          /p:Architecture=${{ parameters.buildArchitecture }}
+          /p:RunTestsAsTool=${{ parameters.runTestsAsTool }}
+          ${{ parameters.runtimeSourceProperties }}
+          ${{ parameters.runtimeIdentifierProperties }}
+          ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
         displayName: Build
         env:
@@ -60,17 +71,17 @@ jobs:
           # Only set when ran internally
           HelixAccessToken: $(HelixApiAccessToken)
           BuildConfig: $(buildConfiguration)
-          TestFullMSBuild: $(testFullMSBuild)
+          TestFullMSBuild: ${{ parameters.testFullMSBuild }}
     - ${{ else }}:
       - script: eng/common/build.sh
           -restore -build -sign -pack -ci
           -configuration $(buildConfiguration)
-          $(publishArgument)
-          /p:Architecture=$(buildArchitecture)
-          $(runtimeSourceProperties)
-          $(runtimeIdentifierProperties)
-          $(testInBuildProperties)
-          $(officialBuildProperties)
+          ${{ parameters.publishArgument }}
+          /p:Architecture=${{ parameters.buildArchitecture }}
+          /p:RunTestsAsTool=${{ parameters.runTestsAsTool }}
+          ${{ parameters.runtimeSourceProperties }}
+          ${{ parameters.runtimeIdentifierProperties }}
+          ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
         displayName: Build
         env:
@@ -79,46 +90,47 @@ jobs:
           # Only set when ran internally
           HelixAccessToken: $(HelixApiAccessToken)
           BuildConfig: $(buildConfiguration)
-          TestFullMSBuild: $(testFullMSBuild)
+          TestFullMSBuild: ${{ parameters.testFullMSBuild }}
 
     ############### TESTING ###############
-    - ${{ if eq(parameters.pool.os, 'windows') }}:
-      # TODO: Change _CustomHelixTargetQueue name
-      - powershell: eng/common/build.ps1
-          -restore -test -ci -prepareMachine
-          -configuration $(buildConfiguration)
-          -projects $(testProjects)
-          /p:Architecture=$(buildArchitecture)
-          $(runtimeSourceProperties)
-          $(runtimeIdentifierProperties)
-          /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-          /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/$(testName).binlog
-        displayName: Run $(testName)
-        condition: and(succeeded(), eq(variables.runTests, true))
-        env:
-          # Required by Arcade for passing to Helix
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          # Only set when ran internally
-          HelixAccessToken: $(HelixApiAccessToken)
-          RunAoTTests: $(runAoTTests)
-    - ${{ else }}:
-      - script: eng/common/build.sh
-          -restore -test -ci -nativeToolsOnMachine -prepareMachine
-          -configuration $(buildConfiguration)
-          -projects $(testProjects)
-          /p:Architecture=$(buildArchitecture)
-          $(runtimeSourceProperties)
-          $(runtimeIdentifierProperties)
-          /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-          /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/$(testName).binlog
-        displayName: Run $(testName)
-        condition: and(succeeded(), eq(variables.runTests, true))
-        env:
-          # Required by Arcade for passing to Helix
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          # Only set when ran internally
-          HelixAccessToken: $(HelixApiAccessToken)
-          RunAoTTests: $(runAoTTests)
+    - ${{ if eq(parameters.runTests, true) }}:
+      - ${{ if eq(parameters.pool.os, 'windows') }}:
+        # TODO: Change _CustomHelixTargetQueue name
+        - powershell: eng/common/build.ps1
+            -restore -test -ci -prepareMachine -nativeToolsOnMachine
+            -configuration $(buildConfiguration)
+            -projects ${{ parameters.testProjects }}
+            /p:Architecture=${{ parameters.buildArchitecture }}
+            ${{ parameters.runtimeSourceProperties }}
+            ${{ parameters.runtimeIdentifierProperties }}
+            /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
+          displayName: Run ${{ parameters.categoryName }} Tests
+          condition: succeeded()
+          env:
+            # Required by Arcade for passing to Helix
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            # Only set when ran internally
+            HelixAccessToken: $(HelixApiAccessToken)
+            RunAoTTests: ${{ parameters.runAoTTests }}
+      - ${{ else }}:
+        - script: eng/common/build.sh
+            -restore -test -ci -prepareMachine
+            -configuration $(buildConfiguration)
+            -projects ${{ parameters.testProjects }}
+            /p:Architecture=${{ parameters.buildArchitecture }}
+            ${{ parameters.runtimeSourceProperties }}
+            ${{ parameters.runtimeIdentifierProperties }}
+            /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
+          displayName: Run ${{ parameters.categoryName }} Tests
+          condition: succeeded()
+          env:
+            # Required by Arcade for passing to Helix
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            # Only set when ran internally
+            HelixAccessToken: $(HelixApiAccessToken)
+            RunAoTTests: ${{ parameters.runAoTTests }}
 
     # ############### NON-WINDOWS ###############
     # - ${{ else }}:
@@ -177,12 +189,17 @@ jobs:
       displayName: Copy Logs
       inputs:
         SourceFolder: $(Build.SourcesDirectory)/artifacts
-        # TODO: SymStore should not be copied in PR builds
-        Contents: |
-          log/$(buildConfiguration)/**/*
-          TestResults/$(buildConfiguration)/**/*
-          SymStore/$(buildConfiguration)/**/*
-          tmp/$(buildConfiguration)/**/*.binlog
+        ${{ if eq(parameters.runTests, false) }}:
+          Contents: |
+            log/$(buildConfiguration)/**/*
+            TestResults/$(buildConfiguration)/**/*
+            SymStore/$(buildConfiguration)/**/*
+            tmp/$(buildConfiguration)/**/*.binlog
+        ${{ else }}:
+          Contents: |
+            log/$(buildConfiguration)/**/*
+            TestResults/$(buildConfiguration)/**/*
+            tmp/$(buildConfiguration)/**/*.binlog
         TargetFolder: $(Build.ArtifactStagingDirectory)
       continueOnError: true
       condition: always()
@@ -191,7 +208,8 @@ jobs:
       displayName: Publish Logs
       inputs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)
-        ArtifactName: ${{ parameters.pool.os }}_$(System.PhaseName)
+        # TODO: Figure out appropriate artifact name
+        ArtifactName: ${{ parameters.name }}
         publishLocation: Container
       continueOnError: true
       condition: always()

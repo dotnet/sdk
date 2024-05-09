@@ -1,21 +1,21 @@
 variables:
   ############### BUILD ###############
   buildConfiguration: Release
-  buildArchitecture: x64
-  runTests: true
-  testFullMSBuild: false
-  runAoTTests: false
+  # buildArchitecture: x64
+  # runTests: true
+  # testFullMSBuild: false
+  # runAoTTests: false
 
   # TODO: Instead, just have this always on the build and set the value, same with RunTestsAsTool.
-  testInBuildProperties: /p:Test=false
-  testName: HelixTests
-  testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
+  # testInBuildProperties: /p:Test=false
+  # testName: HelixTests
+  # testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
 
-  runtimeSourceProperties: ''
-  runtimeIdentifierProperties: ''
+  # runtimeSourceProperties: ''
+  # runtimeIdentifierProperties: ''
 
-  publishArgument: ''
-  officialBuildProperties: ''
+  # publishArgument: ''
+  # officialBuildProperties: ''
 
   ############### ARCADE ###############
   # "Post-build signing" means that this build will NOT sign itself.

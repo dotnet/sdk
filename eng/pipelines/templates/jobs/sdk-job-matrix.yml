@@ -1,210 +1,140 @@
 parameters:
-  jobTemplatePath: /eng/common/templates/job/job.yml
-  publishTaskName: PublishBuildArtifacts@1
-  buildCategory: Build
-  buildArchitecture: x64
-  # Agent OS identifier and used as job name
-  agentOs: ''
-  # Agent pool
-  pool: {}
-  # Additional variables
-  variables: {}
-  # Build strategy - matrix
-  strategy: ''
+  # jobTemplatePath: /eng/common/templates/job/job.yml
+  # publishTaskName: PublishBuildArtifacts@1
+  # buildCategory: Build
+  # buildArchitecture: x64
+  # # Agent OS identifier and used as job name
+  # agentOs: ''
+  # # Agent pool
+  # pool: {}
+  # # Additional variables
+  # variables: {}
+  # # Build strategy - matrix
+  # strategy: ''
 
-  testFullMSBuild: false
-  publishArgs: ''
-  signType: test
-  buildConfiguration: Debug
-  testArgs: -test
-  additionalArgs: ''
+  # testFullMSBuild: false
+  # publishArgs: ''
+  # signType: test
+  # buildConfiguration: Debug
+  # testArgs: -test
+  # additionalArgs: ''
+
+
+  # linuxContainerInfo:
+  #   ${{ if eq(parameters.runTests, false) }}:
 
 jobs:
-- template: ${{ parameters.jobTemplatePath }}
+############### WINDOWS ###############
+- template: /eng/pipelines/templates/jobs/sdk-build.yml@self
   parameters:
-    name: ${{ parameters.buildCategory }}_${{ parameters.agentOs }}_${{ parameters.buildArchitecture }}
-    displayName: '${{ parameters.buildCategory }}: ${{ parameters.agentOs }} [${{ parameters.buildArchitecture }}]'
-    enableMicrobuild: true
-    enablePublishBuildAssets: true
-    enableTelemetry: true
-    enablePublishUsingPipelines: true
-    helixRepo: dotnet/sdk
-    pool: ${{ parameters.pool }}
-    timeoutInMinutes: 180
-    ${{ if ne(parameters.strategy, '') }}:
-      strategy: ${{ parameters.strategy }}
-    # workspace:
-    #   clean: all
+    pool:
+      name: $(DncEngInternalBuildPool)
+      image: 1es-windows-2022
+      os: windows
+    helixTargetQueue: windows.amd64.vs2022.pre
+    oneEsPtCompat:
+      jobTemplatePath: /eng/common/templates-official/job/job.yml
+      publishTaskName: 1ES.PublishBuildArtifacts@1
     variables:
-      - ${{ insert }}: ${{ parameters.variables }}
-      # - _AgentOSName: ${{ parameters.agentOs }}
-      - _TeamName: DotNetCore
-      - _OfficialBuildIdArgs: ''
-      - _SignArgs: ''
-      - _HelixApiToken: ''
-      - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-        # Helix Testing requires a token when internally run
-        - group: DotNet-HelixApi-Access
-        - _HelixApiToken: $(HelixApiAccessToken)
-      - ${{ if and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-        - group: dotnet-benchview
-        - _OfficialBuildIdArgs: /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
-        - _SignArgs: /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        - _PerfIterations: 25
+      runTests: ${{ parameters.runTests }}
+      # Setting this here once so it can be reused in the matrix only.
+      _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+    strategy:
+      matrix:
+        ${{ if eq(parameters.runTests, false) }}:
+          Official:
+            publishArgument: -publish
+            _SignType: real
+            officialBuildProperties: $(_officialBuildProperties)
+          Official_x86:
+            buildArchitecture: x86
+            publishArgument: -publish
+            _SignType: real
+            officialBuildProperties: $(_officialBuildProperties)
+          Official_arm64:
+            buildArchitecture: arm64
+            publishArgument: -publish
+            _SignType: real
+            officialBuildProperties: $(_officialBuildProperties)
+        ${{ else }}:
+          Test: {}
+          FullFramework:
+            testFullMSBuild: true
+          TestAsTools:
+            testInBuildProperties: /p:RunTestsAsTool=true
+            # This uses the build step for testing, so the extra test step is not necessary.
+            runTests: false
+          TemplateEngine:
+            testName: TemplateEngineTests
+            testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
+              $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+          AoT:
+            runAoTTests: true
 
-    steps:
-    ############## BUILDING ##############
-    - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-      - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
-        displayName: Setup Private Feeds Credentials
-        env:
-          Token: $(dn-bot-dnceng-artifact-feeds-rw)
+############### LINUX ###############
+# TODO: Need to foreach this entire section for each container. But only do that once this logic is in the job-matrix file.
+- template: /eng/pipelines/templates/jobs/sdk-build.yml@self
+  parameters:
+    pool:
+      name: $(DncEngInternalBuildPool)
+      image: 1es-ubuntu-2204
+      os: linux
+    helixTargetQueue: ubuntu.2204.amd64
+    container: ubuntu2204
+    oneEsPtCompat:
+      jobTemplatePath: /eng/common/templates-official/job/job.yml
+      publishTaskName: 1ES.PublishBuildArtifacts@1
+    variables:
+      runTests: ${{ parameters.runTests }}
+      # Setting this here once so it can be reused in the matrix only.
+      _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+    strategy:
+      matrix:
+        ${{ if eq(parameters.runTests, false) }}:
+          Official:
+            publishArgument: -publish
+            _SignType: real
+            officialBuildProperties: $(_officialBuildProperties)
+          Official_x86:
+            buildArchitecture: x86
+            publishArgument: -publish
+            _SignType: real
+            officialBuildProperties: $(_officialBuildProperties)
+          Official_arm64:
+            buildArchitecture: arm64
+            publishArgument: -publish
+            _SignType: real
+            officialBuildProperties: $(_officialBuildProperties)
+        ${{ else }}:
+          Test: {}
+          Test_arm64:
+            testFullMSBuild: true
 
-    - powershell: eng\common\build.ps1
-                $(_CIBuild)
-                -configuration $(_BuildConfig)
-                -nativeToolsOnMachine
-                $(_PublishArgs)
-                $(_SignArgs)
-                $(_OfficialBuildIdArgs)
-                /p:Test=false
-                $(_InternalRuntimeDownloadArgs)
-                $(_OfficialBuildArgs)
-      displayName: Build
-      env:
-        BuildConfig: $(_BuildConfig)
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-        HelixAccessToken: ${{ parameters.HelixAccessToken }}
-
-    ############## TESTING ##############
-    - powershell: eng\common\build.ps1
-            -configuration $(_BuildConfig)
-            -nativeToolsOnMachine
-            -prepareMachine
-            -ci
-            -restore
-            $(_Test)
-            -projects $(Build.SourcesDirectory)\test\UnitTests.proj
-            /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
-            /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-            $(_InternalRuntimeDownloadArgs)
-      displayName: Run Tests in Helix
-      condition: succeeded()
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-        HelixAccessToken: $(_HelixApiToken)
-        RunAoTTests: 'false'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    - ${{ if eq(parameters.agentOs, 'Windows_NT_FullFramework') }}:
-      - powershell: eng\common\build.ps1
-                  $(_CIBuild)
-                  -configuration $(_BuildConfig)
-                  -nativeToolsOnMachine
-                  $(_SignArgs)
-                  $(_OfficialBuildIdArgs)
-                  $(_InternalRuntimeDownloadArgs)
-                  /p:Test=false
-        continueOnError: false
-        displayName: Build
-        env:
-          BuildConfig: $(_BuildConfig)
-          TestFullMSBuild: 'true'
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          HelixAccessToken: ${{ parameters.HelixAccessToken }}
-      - powershell: eng\common\build.ps1
-              -configuration $(_BuildConfig)
-              -nativeToolsOnMachine
-              -prepareMachine
-              -ci
-              -restore
-              -test
-              -projects $(Build.SourcesDirectory)\test\UnitTests.proj
-              /bl:$(Build.SourcesDirectory)\artifacts\log\$(_BuildConfig)\TestInHelix.binlog
-              /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-              $(_InternalRuntimeDownloadArgs)
-        displayName: Run Tests in Helix
-        condition: succeededOrFailed()
-        env:
-            TestFullMSBuild: 'true'
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            HelixAccessToken: $(_HelixApiToken)
-
-    - ${{ if eq(parameters.agentOs, 'Windows_NT_TestAsTools') }}:
-      - powershell: eng\common\build.ps1
-                  $(_CIBuild)
-                  -configuration $(_BuildConfig)
-                  -nativeToolsOnMachine
-                  $(_SignArgs)
-                  $(_OfficialBuildIdArgs)
-                  $(_InternalRuntimeDownloadArgs)
-                  /p:RunTestsAsTool=true
-        displayName: Build
-        env:
-          BuildConfig: $(_BuildConfig)
-
-    - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools') }}:
-      - script: eng/common/build.sh
-                  $(_CIBuild)
-                  --configuration $(_BuildConfig)
-                  $(_SignArgs)
-                  $(_OfficialBuildIdArgs)
-                  $(_InternalRuntimeDownloadArgs)
-                  -p:Test=false
-        continueOnError: false
-        displayName: Build
-        env:
-          BuildConfig: $(_BuildConfig)
-      - powershell: eng/common/build.sh
-              -configuration $(_BuildConfig)
-              -prepareMachine
-              -ci
-              -restore
-              -test
-              -projects $(Build.SourcesDirectory)/test/UnitTests.proj
-              /bl:$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)/TestInHelix.binlog
-              /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-              $(_InternalRuntimeDownloadArgs)
-        displayName: Run Tests in Helix
-        condition: succeededOrFailed()
-        env:
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            HelixAccessToken: $(_HelixApiToken)
-            RunAoTTests: 'false'
-
-    - task: CopyFiles@2
-      displayName: Gather Logs
-      inputs:
-        SourceFolder: '$(Build.SourcesDirectory)/artifacts'
-        Contents: |
-          log/$(_BuildConfig)/**/*
-          TestResults/$(_BuildConfig)/**/*
-          SymStore/$(_BuildConfig)/**/*
-          tmp/$(_BuildConfig)/**/*.binlog
-        TargetFolder: '$(Build.ArtifactStagingDirectory)'
-      continueOnError: true
-      condition: always()
-
-    - task: ${{ parameters.publishTaskName }}
-      displayName: Publish Logs to VSTS
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: '$(_AgentOSName)_$(Agent.JobName)_$(Build.BuildNumber)'
-        publishLocation: Container
-      continueOnError: true
-      condition: always()
+############### MACOS ###############
+- template: /eng/pipelines/templates/jobs/sdk-build.yml@self
+  parameters:
+    pool:
+      name: Azure Pipelines
+      image: macOS-latest
+      os: macOS
+    helixTargetQueue: OSX.13.Amd64
+    oneEsPtCompat:
+      jobTemplatePath: /eng/common/templates-official/job/job.yml
+      publishTaskName: 1ES.PublishBuildArtifacts@1
+    variables:
+      runTests: ${{ parameters.runTests }}
+      # Setting this here once so it can be reused in the matrix only.
+      _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+    strategy:
+      matrix:
+        ${{ if eq(parameters.runTests, false) }}:
+          Official:
+            publishArgument: -publish
+            _SignType: real
+            officialBuildProperties: $(_officialBuildProperties)
+          Official_arm64:
+            runtimeIdentifierProperties: /p:Rid=osx-arm64
+            buildArchitecture: arm64
+            publishArgument: -publish
+            _SignType: real
+            officialBuildProperties: $(_officialBuildProperties)
