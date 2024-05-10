@@ -53,6 +53,8 @@ variables:
   value: -sign /p:SignCoreSdk=true
 - name: _officialBuildProperties
   value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+- name: _linuxOsProperties
+  value: /p:OSName=linux /p:IsLinuxPortable=true
 
 resources:
   repositories:
@@ -205,10 +207,10 @@ extends:
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           jobParameterSets:
-          ### OFFICIAL ###
           - ${{ if eq(parameters.runTests, false) }}:
+            ### OFFICIAL ###
             - categoryName: Official
-              publishArgument: $(_publishArgument)
+              publishArgument: $(_publishArgument) /p:PublishInternalAsset=true
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
@@ -230,8 +232,35 @@ extends:
               runTests: false
               variables:
                 _SignType: real
-          ### TESTS ###
+            ### PGO ###
+            - categoryName: PGO
+              pgoInstrument: true
+              publishArgument: $(_publishArgument) /p:PublishInternalAsset=true
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+              variables:
+                _SignType: real
+            - categoryName: PGO
+              pgoInstrument: true
+              buildArchitecture: x86
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+              variables:
+                _SignType: real
+            - categoryName: PGO
+              pgoInstrument: true
+              buildArchitecture: arm64
+              publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+              variables:
+                _SignType: real
           - ${{ else }}:
+            ### TESTS ###
             - categoryName: TestBuild
             - categoryName: FullFramework
               testFullMSBuild: true
@@ -253,36 +282,98 @@ extends:
             image: 1es-ubuntu-2204
             os: linux
           helixTargetQueue: ubuntu.2204.amd64
-          container: ubuntu2204
           oneEsPtCompat:
             jobTemplatePath: /eng/common/templates-official/job/job.yml
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           jobParameterSets:
-          ### OFFICIAL ###
           - ${{ if eq(parameters.runTests, false) }}:
+            ### OFFICIAL ###
+            # Note: These builds are also portable like the Portable category, but that category uses containers, and don't publish zips and tarballs.
             - categoryName: Official
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(_linuxOsProperties)
               runTests: false
-              variables:
-                _SignType: real
             - categoryName: Official
-              buildArchitecture: x86
+              buildArchitecture: arm
+              runtimeIdentifier: linux-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(_linuxOsProperties)
               runTests: false
-              variables:
-                _SignType: real
             - categoryName: Official
               buildArchitecture: arm64
+              runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(_linuxOsProperties)
               runTests: false
-              variables:
-                _SignType: real
-          ### TESTS ###
+            ### PORTABLE ###
+            - categoryName: Portable
+              container: ubuntu2204DebPkg
+              # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(_linuxOsProperties) /p:BuildSdkDeb=true
+              runTests: false
+            - categoryName: Portable
+              container: cblMariner20Fpm
+              # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(_linuxOsProperties) /p:IsRPMBasedDistro=true
+              runTests: false
+            - categoryName: Portable
+              container: cblMariner20Fpm
+              buildArchitecture: arm64
+              runtimeIdentifier: linux-arm64
+              # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(_linuxOsProperties) /p:IsRPMBasedDistro=true
+              runTests: false
+            ### MUSL ###
+            - categoryName: Musl
+              container: alpine319WithNode
+              runtimeIdentifier: linux-musl-x64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              # Pass in HostOSName when running on alpine.
+              osProperties: /p:HostOSName=linux-musl
+              runTests: false
+            - categoryName: Musl
+              container: mariner20CrossArm
+              buildArchitecture: arm
+              runtimeIdentifier: linux-musl-arm
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: /p:OSName=linux-musl
+              runTests: false
+            - categoryName: Musl
+              buildArchitecture: arm64
+              runtimeIdentifier: linux-musl-arm64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: /p:OSName=linux-musl
+              runTests: false
+            ### PGO ###
+            - categoryName: PGO
+              pgoInstrument: true
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(_linuxOsProperties)
+              runTests: false
+            - categoryName: PGO
+              pgoInstrument: true
+              buildArchitecture: arm64
+              runtimeIdentifier: linux-arm64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(_linuxOsProperties)
+              runTests: false
           - ${{ else }}:
+            ### TESTS ###
             - categoryName: TestBuild
             # - categoryName: FullFramework
             #   testFullMSBuild: true

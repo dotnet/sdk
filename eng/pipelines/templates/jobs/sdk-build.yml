@@ -5,18 +5,20 @@ parameters:
     publishTaskName: PublishBuildArtifacts@1
   container: ''
   categoryName: Build
-  buildArchitecture: x64
   runTests: true
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
   ### ENV VARS ###
   testFullMSBuild: false
   runAoTTests: false
   ### MSBUILD ###
+  buildArchitecture: x64
   publishArgument: ''
   signArgument: ''
   runTestsAsTool: false
+  pgoInstrument: false
+  runtimeIdentifier: linux-x64
+  osProperties: ''
   runtimeSourceProperties: ''
-  runtimeIdentifierProperties: ''
   officialBuildProperties: ''
 
 jobs:
@@ -63,8 +65,8 @@ jobs:
           ${{ parameters.signArgument }}
           /p:Architecture=${{ parameters.buildArchitecture }}
           /p:RunTestsAsTool=${{ parameters.runTestsAsTool }}
+          /p:PgoInstrument=${{ parameters.pgoInstrument }}
           ${{ parameters.runtimeSourceProperties }}
-          ${{ parameters.runtimeIdentifierProperties }}
           ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
         displayName: Build
@@ -87,8 +89,10 @@ jobs:
           ${{ parameters.signArgument }} \
           /p:Architecture=${{ parameters.buildArchitecture }} \
           /p:RunTestsAsTool=${{ parameters.runTestsAsTool }} \
+          /p:PgoInstrument=${{ parameters.pgoInstrument }} \
+          /p:Rid=${{ parameters.runtimeIdentifier }} \
+          ${{ parameters.osProperties }} \
           ${{ parameters.runtimeSourceProperties }} \
-          ${{ parameters.runtimeIdentifierProperties }} \
           ${{ parameters.officialBuildProperties }} \
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
         displayName: Build
@@ -109,7 +113,6 @@ jobs:
             -projects ${{ parameters.testProjects }}
             /p:Architecture=${{ parameters.buildArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
-            ${{ parameters.runtimeIdentifierProperties }}
             /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: Run ${{ parameters.categoryName }} Tests
@@ -125,8 +128,9 @@ jobs:
             -configuration $(buildConfiguration)
             -projects ${{ parameters.testProjects }}
             /p:Architecture=${{ parameters.buildArchitecture }}
+            /p:Rid=${{ parameters.runtimeIdentifier }}
+            ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
-            ${{ parameters.runtimeIdentifierProperties }}
             /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: Run ${{ parameters.categoryName }} Tests
