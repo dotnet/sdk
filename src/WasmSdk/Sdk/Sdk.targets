@@ -13,17 +13,4 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
   <Import Project="$(_WebAssemblyTargetsFile)" Condition="'$(_WebAssemblyTargetsFile)' != ''" />
-
-  <!-- Temporary, we need to generate blazor.boot.json before we define it,
-      so we hook a target that does the same thing as _ResolveWasmOutputs but
-      in addition generates blazor.boot.json so that the build passes.
-
-      This will go away once the wasm build is updated to do this directly.
-  -->
-
-  <PropertyGroup>
-    <_TempWasmWorkaroundsDisabled>true</_TempWasmWorkaroundsDisabled>
-  </PropertyGroup>
-
-  <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.WebAssembly.9_0.temp.targets" Condition="'$(_TempWasmWorkaroundsDisabled)' == ''" />
 </Project>
