@@ -18,15 +18,15 @@ using Xunit.Abstractions;
 namespace Microsoft.DotNet.SourceBuild.SmokeTests;
 
 [Trait("Category", "SdkContent")]
-public class ArtifactsSizeTest : SdkTests
+public class ArtifactsSizeTests : SdkTests
 {
     private const int SizeThresholdPercentage = 25;
-    private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"ArtifactsSizes/{Config.TargetRid}.txt");
+    private static readonly string BaselineFilePath = BaselineHelper.GetBaselineFilePath($"{Config.TargetRid}.txt", nameof(ArtifactsSizeTests));
     private readonly Dictionary<string, long> Baseline = new();
     private Dictionary<string, int> FilePathCountMap = new();
     private StringBuilder Differences = new();
 
-    public ArtifactsSizeTest(ITestOutputHelper outputHelper) : base(outputHelper)
+    public ArtifactsSizeTests(ITestOutputHelper outputHelper) : base(outputHelper)
     {
         if (File.Exists(BaselineFilePath))
         {

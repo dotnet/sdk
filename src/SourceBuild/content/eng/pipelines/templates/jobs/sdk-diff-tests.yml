@@ -47,7 +47,7 @@ jobs:
 
       echo "Sdk build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$sdk_build&view=results"
 
-      echo "##vso[build.addbuildtag]sdk-$sdk_sha"
+      echo "##vso[build.addbuildtag]sdk $sdk_sha"
       echo "##vso[task.setvariable variable=SdkBuildId]$sdk_build"
       echo "##vso[task.setvariable variable=DotnetDotnetBuildId]$dotnet_dotnet_build"
     displayName: Find associated builds
@@ -64,14 +64,14 @@ jobs:
     parameters:
       buildName: ${{ parameters.buildName }}
       architecture: ${{ parameters.architecture }}
-      patterns: '**/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*)-${{ parameters.targetRid }}.tar.gz' 
+      patterns: '**/assets/Release/dotnet-sdk-+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*)-${{ parameters.targetRid }}.tar.gz' 
       displayName: Download Source Build SDK
 
   - template: ../steps/download-vmr-artifact.yml
     parameters:
       buildName: ${{ parameters.buildName }}
       architecture: ${{ parameters.architecture }}
-      patterns: '**/Private.SourceBuilt.Artifacts.+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*).${{ parameters.targetRid }}.tar.gz' 
+      patterns: '**/assets/Release/Private.SourceBuilt.Artifacts.+([0-9]).+([0-9]).+([0-9])?(-@(alpha|preview|rc|rtm)*).${{ parameters.targetRid }}.tar.gz' 
       displayName: Download Source Built Artifacts
 
   - script: |
