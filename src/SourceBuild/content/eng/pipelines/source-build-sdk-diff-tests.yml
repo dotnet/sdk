@@ -9,8 +9,6 @@ resources:
         include:
           - release/*.0.1xx*
           - internal/release/*.0.1xx*
-        exclude:
-          - release/9.0.1xx-preview5
 
 pr: none
 trigger: none
