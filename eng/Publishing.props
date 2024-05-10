@@ -146,9 +146,9 @@
       -->
       <AssetManifestOS Condition="'$(AGENT_OS)' != ''">$(AGENT_OS)</AssetManifestOS>
       <AssetManifestOS Condition="'$(AGENT_OS)' == ''">$(OS)</AssetManifestOS>
-      <AssetManifestOS Condition="'$(AGENT_JOBNAME)' != ''">$(AssetManifestOS)-$(AGENT_JOBNAME)</AssetManifestOS>
+      <AssetManifestOS Condition="'$(SYSTEM_PHASENAME)' != ''">$(AssetManifestOS)-$(SYSTEM_PHASENAME)</AssetManifestOS>
       <BaseAssetManifestFileName>$(AssetManifestOS)</BaseAssetManifestFileName>
-      <BaseAssetManifestFileName Condition="'$(AGENT_JOBNAME)' == '' and '$(Architecture)' != ''">$(AssetManifestOS)-$(Architecture)</BaseAssetManifestFileName>
+      <BaseAssetManifestFileName Condition="'$(SYSTEM_PHASENAME)' == '' and '$(Architecture)' != ''">$(AssetManifestOS)-$(Architecture)</BaseAssetManifestFileName>
       <InstallersAssetManifestFileName>$(BaseAssetManifestFileName)-installers</InstallersAssetManifestFileName>
       <!-- Property AssetManifestFilePath would be reassigned by the Arcade SDK, so use a different name (InstallersAssetManifestFilePath) -->
       <InstallersAssetManifestFilePath>$(ArtifactsLogDir)AssetManifest\$(InstallersAssetManifestFileName).xml</InstallersAssetManifestFilePath>

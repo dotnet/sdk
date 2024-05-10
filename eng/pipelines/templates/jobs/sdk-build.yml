@@ -41,6 +41,8 @@ jobs:
 
     steps:
     ############## PREP ###############
+    - powershell: 'Get-ChildItem env:'
+      displayName: List Environment Variables
     - ${{ if ne(variables['System.TeamProject'], 'public') }}:
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
