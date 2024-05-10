@@ -5,6 +5,8 @@ parameters:
 - name: pipeline
   type: string
 
+# The GitHub repository to create the PR in.
+# Should be in the form '<owner>/<repo-name>'
 - name: repo
   type: string
 
