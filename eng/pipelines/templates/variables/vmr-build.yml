@@ -35,7 +35,7 @@ variables:
 - name: androidCrossContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-android-amd64
 - name: browserCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-webassembly
 - name: wasiCrossContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-webassembly
 
