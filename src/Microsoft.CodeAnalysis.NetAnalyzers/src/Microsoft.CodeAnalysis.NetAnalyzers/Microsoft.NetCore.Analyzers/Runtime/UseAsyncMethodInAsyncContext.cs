@@ -167,7 +167,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsSemaphoreSlimWaitWithZeroArgumentInvocation(IInvocationOperation invocation, IFieldSymbol? timeSpanZero, ISet<IMethodSymbol> semaphoreSlimWaitMethods)
         {
-            if(!semaphoreSlimWaitMethods.Contains(invocation.TargetMethod, SymbolEqualityComparer.Default) || invocation.Arguments.IsEmpty)
+            if (!semaphoreSlimWaitMethods.Contains(invocation.TargetMethod, SymbolEqualityComparer.Default) || invocation.Arguments.IsEmpty)
             {
                 return false;
             }
