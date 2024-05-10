@@ -14,8 +14,8 @@ public class PRCreator
     private readonly string _repoName;
     private readonly GitHubClient _client;
     private const string BuildLink = "https://dev.azure.com/dnceng/internal/_build/results?buildId=";
+    private const string DefaultLicenseBaselineContent = "{\n  \"files\": []\n}";
     private const string TreeMode = "040000";
-
     public PRCreator(string repo, string gitHubToken)
     {
         // Create a new GitHub client
@@ -25,8 +25,6 @@ public class PRCreator
         _repoOwner = repo.Split('/')[0];
         _repoName = repo.Split('/')[1];
     }
-
-    private static readonly string DefaultLicenseBaselineContent = "{\n  \"files\": []\n}";
 
     public async Task<int> ExecuteAsync(
         string originalFilesDirectory,
