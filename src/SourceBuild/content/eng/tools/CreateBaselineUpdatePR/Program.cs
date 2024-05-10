@@ -15,15 +15,15 @@ public class Program
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliArgument<string> OriginalTestResultsPath = new("original-test-results-path")
+    public static readonly CliArgument<string> OriginalFilesDirectory = new("original-files-directory")
     {
-        Description = "The directory where the original test files are located.",
+        Description = "The directory where the original test files are located. Should be relative to the repo",
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliArgument<string> UpdatedTestsResultsPath = new("updated-test-results-path")
+    public static readonly CliArgument<string> UpdatedFilesDirectory = new("updated-files-directory")
     {
-        Description = "The directory containing the updated test files published by the associated test.",
+        Description = "The directory containing the updated test files published by the associated test. Should be absolute or relative to the working directory of the tool.",
         Arity = ArgumentArity.ExactlyOne
     };
 
@@ -89,8 +89,8 @@ public class Program
         return new CliCommand(name, description)
         {
             Repo,
-            OriginalTestResultsPath,
-            UpdatedTestsResultsPath,
+            OriginalFilesDirectory,
+            UpdatedFilesDirectory,
             BuildId,
             Title,
             Branch,
@@ -107,8 +107,8 @@ public class Program
             var creator = new PRCreator(result.GetValue(Repo)!, result.GetValue(GitHubToken)!);
 
             ExitCode = await creator.ExecuteAsync(
-                result.GetValue(OriginalTestResultsPath)!,
-                result.GetValue(UpdatedTestsResultsPath)!,
+                result.GetValue(OriginalFilesDirectory)!,
+                result.GetValue(UpdatedFilesDirectory)!,
                 result.GetValue(BuildId)!,
                 result.GetValue(Title)!,
                 result.GetValue(Branch)!,

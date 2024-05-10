@@ -10,10 +10,14 @@ parameters:
 - name: repo
   type: string
 
-- name: originalTestResultsPath
+# Path to the directory containing the original test files
+# Should be relative to the "repo" parameter
+- name: originalFilesDirectory
   type: string
 
-- name: updatedTestResultsPath
+# Path to the directory containing the updated test files
+# Should be absolute or relative to the working directory of the tool
+- name: updatedFilesDirectory
   type: string
 
 - name: pullRequestTitle
@@ -30,8 +34,8 @@ steps:
         --property:RestoreSources="$restoreSources" \
         "${{ parameters.pipeline }}" \
         "${{ parameters.repo }}" \
-        "${{ parameters.originalTestResultsPath }}" \
-        "${{ parameters.updatedTestResultsPath }}" \
+        "${{ parameters.originalFilesDirectory }}" \
+        "${{ parameters.updatedFilesDirectory }}" \
         "$(Build.BuildId)" \
         --title "${{ parameters.pullRequestTitle }}" \
         --branch "$(Build.SourceBranchName)"

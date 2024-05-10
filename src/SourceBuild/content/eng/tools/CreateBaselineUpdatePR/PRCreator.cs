@@ -29,8 +29,8 @@ public class PRCreator
     private static readonly string DefaultLicenseBaselineContent = "{\n  \"files\": []\n}";
 
     public async Task<int> ExecuteAsync(
-        string originalTestResultsPath,
-        string updatedTestsResultsPath,
+        string originalFilesDirectory,
+        string updatedFilesDirectory,
         int buildId,
         string title,
         string targetBranch,
@@ -40,15 +40,15 @@ public class PRCreator
 
         Log.LogInformation($"Starting PR creation at {startTime} UTC for pipeline {pipeline}.");
 
-        var updatedTestsFiles = GetUpdatedFiles(updatedTestsResultsPath);
+        var updatedTestsFiles = GetUpdatedFiles(updatedFilesDirectory);
 
-        // Create a new tree for the originalTestResultsPath based on the target branch
+        // Create a new tree for the originalFilesDirectory based on the target branch
         var originalTreeResponse = await _client.Git.Tree.GetRecursive(_repoOwner, _repoName, targetBranch);
         var testResultsTreeItems = originalTreeResponse.Tree
-            .Where(file => file.Path.Contains(originalTestResultsPath) && file.Path != originalTestResultsPath)
+            .Where(file => file.Path.Contains(originalFilesDirectory) && file.Path != originalFilesDirectory)
             .Select(file => new NewTreeItem
             {
-                Path = Path.GetRelativePath(originalTestResultsPath, file.Path),
+                Path = Path.GetRelativePath(originalFilesDirectory, file.Path),
                 Mode = file.Mode,
                 Type = file.Type.Value,
                 Sha = file.Sha
@@ -58,7 +58,7 @@ public class PRCreator
         // Update the test results tree based on the pipeline
         testResultsTreeItems = await UpdateAllFilesAsync(updatedTestsFiles, testResultsTreeItems, pipeline);
         var testResultsTreeResponse = await CreateTreeFromItemsAsync(testResultsTreeItems);
-        var parentTreeResponse = await CreateParentTreeAsync(testResultsTreeResponse, originalTreeResponse, originalTestResultsPath);
+        var parentTreeResponse = await CreateParentTreeAsync(testResultsTreeResponse, originalTreeResponse, originalFilesDirectory);
 
         await CreateOrUpdatePullRequestAsync(parentTreeResponse, buildId, title, targetBranch);
 
@@ -67,9 +67,9 @@ public class PRCreator
 
     // Return a dictionary using the filename without the 
     // "Updated" prefix and anything after the first '.' as the key
-    private Dictionary<string, HashSet<string>> GetUpdatedFiles(string updatedTestsResultsPath) =>
+    private Dictionary<string, HashSet<string>> GetUpdatedFiles(string updatedFilesDirectory) =>
         Directory
-            .GetFiles(updatedTestsResultsPath, "Updated*", SearchOption.AllDirectories)
+            .GetFiles(updatedFilesDirectory, "Updated*", SearchOption.AllDirectories)
             .GroupBy(updatedTestsFile => ParseUpdatedFileName(updatedTestsFile).Split('.')[0])
             .ToDictionary(
                 group => group.Key,
@@ -263,7 +263,7 @@ public class PRCreator
         return await _client.Git.Tree.Create(_repoOwner, _repoName, newTree);
     }
 
-    private async Task<TreeResponse> CreateParentTreeAsync(TreeResponse testResultsTreeResponse, TreeResponse originalTreeResponse, string originalTestResultsPath)
+    private async Task<TreeResponse> CreateParentTreeAsync(TreeResponse testResultsTreeResponse, TreeResponse originalTreeResponse, string originalFilesDirectory)
     {
         // Create a new tree for the parent directory
         NewTree parentTree = new NewTree { BaseTree = originalTreeResponse.Sha };
@@ -271,7 +271,7 @@ public class PRCreator
         //  Connect the updated test results tree
         parentTree.Tree.Add(new NewTreeItem
         {
-            Path = originalTestResultsPath,
+            Path = originalFilesDirectory,
             Mode = TreeMode,
             Type = TreeType.Tree,
             Sha = testResultsTreeResponse.Sha

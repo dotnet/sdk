@@ -176,6 +176,6 @@ jobs:
     parameters:
       pipeline: license
       repo: dotnet/sdk
-      originalTestResultsPath: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/LicenseScanTests
-      updatedTestResultsPath: $(Pipeline.Workspace)/Artifacts
+      originalFilesDirectory: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/LicenseScanTests
+      updatedFilesDirectory: $(Pipeline.Workspace)/Artifacts
       pullRequestTitle: Update Source-Build License Scan Baselines and Exclusions

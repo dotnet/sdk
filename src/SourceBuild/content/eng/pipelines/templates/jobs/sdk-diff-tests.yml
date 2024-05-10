@@ -175,6 +175,6 @@ jobs:
         parameters:
           pipeline: sdk
           repo: dotnet/sdk
-          originalTestResultsPath: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets
-          updatedTestResultsPath: $(Build.StagingDirectory)/BuildLogs
+          originalFilesDirectory: src/SourceBuild/content/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets
+          updatedFilesDirectory: $(Build.StagingDirectory)/BuildLogs
           pullRequestTitle: Update Source-Build SDK Diff Tests Baselines and Exclusions
