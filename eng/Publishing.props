@@ -142,7 +142,7 @@
   <PropertyGroup>
       <!--
         Because we may be building in a container, we should use an asset manifest file path that exists in the container. Disambiguate the manifests via available properties.
-        AGENT_OS and AGENT_JOBNAME are present on Azure DevOps agents. AssetManifestOS will also be used by arcade to generate the name of the manifest file name for the built in publishing.
+        AGENT_OS and SYSTEM_PHASENAME are present on Azure DevOps agents. AssetManifestOS will also be used by arcade to generate the name of the manifest file name for the built in publishing.
       -->
       <AssetManifestOS Condition="'$(AGENT_OS)' != ''">$(AGENT_OS)</AssetManifestOS>
       <AssetManifestOS Condition="'$(AGENT_OS)' == ''">$(OS)</AssetManifestOS>

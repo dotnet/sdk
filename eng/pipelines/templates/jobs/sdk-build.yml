@@ -13,6 +13,7 @@ parameters:
   runAoTTests: false
   ### MSBUILD ###
   publishArgument: ''
+  signArgument: ''
   runTestsAsTool: false
   runtimeSourceProperties: ''
   runtimeIdentifierProperties: ''
@@ -41,8 +42,6 @@ jobs:
 
     steps:
     ############## PREP ###############
-    - powershell: 'Get-ChildItem env:'
-      displayName: List Environment Variables
     - ${{ if ne(variables['System.TeamProject'], 'public') }}:
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
@@ -58,9 +57,10 @@ jobs:
     ############### BUILDING ###############
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: eng/common/build.ps1
-          -restore -build -sign -pack -ci -nativeToolsOnMachine
+          -restore -build -pack -ci -nativeToolsOnMachine
           -configuration $(buildConfiguration)
           ${{ parameters.publishArgument }}
+          ${{ parameters.signArgument }}
           /p:Architecture=${{ parameters.buildArchitecture }}
           /p:RunTestsAsTool=${{ parameters.runTestsAsTool }}
           ${{ parameters.runtimeSourceProperties }}
@@ -70,9 +70,8 @@ jobs:
         displayName: Build
         env:
           # Required by Arcade for passing to Helix
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          # Only set when ran internally
-          HelixAccessToken: $(HelixApiAccessToken)
+          # SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          # HelixAccessToken: $(HelixApiAccessToken)
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
     - ${{ else }}:
@@ -82,9 +81,10 @@ jobs:
           initDistroRidGlobal "$os" "$arch" ""
 
           . "$(Build.SourcesDirectory)/eng/common/build.sh" \
-          -restore -build -sign -pack -ci \
+          -restore -build -pack -ci \
           -configuration $(buildConfiguration) \
           ${{ parameters.publishArgument }} \
+          ${{ parameters.signArgument }} \
           /p:Architecture=${{ parameters.buildArchitecture }} \
           /p:RunTestsAsTool=${{ parameters.runTestsAsTool }} \
           ${{ parameters.runtimeSourceProperties }} \
@@ -94,9 +94,8 @@ jobs:
         displayName: Build
         env:
           # Required by Arcade for passing to Helix
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-          # Only set when ran internally
-          HelixAccessToken: $(HelixApiAccessToken)
+          # SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+          # HelixAccessToken: $(HelixApiAccessToken)
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
 
@@ -116,9 +115,8 @@ jobs:
           displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
           env:
-            # Required by Arcade for passing to Helix
+            # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            # Only set when ran internally
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
       - ${{ else }}:
@@ -134,9 +132,8 @@ jobs:
           displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
           env:
-            # Required by Arcade for passing to Helix
+            # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-            # Only set when ran internally
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
 

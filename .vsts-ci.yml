@@ -49,6 +49,8 @@ variables:
 ### LOCAL ONLY ###
 - name: _publishArgument
   value: -publish
+- name: _signArgument
+  value: -sign /p:SignCoreSdk=true
 - name: _officialBuildProperties
   value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 
@@ -207,6 +209,7 @@ extends:
           - ${{ if eq(parameters.runTests, false) }}:
             - categoryName: Official
               publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
               variables:
@@ -214,6 +217,7 @@ extends:
             - categoryName: Official
               buildArchitecture: x86
               publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
               variables:
@@ -221,6 +225,7 @@ extends:
             - categoryName: Official
               buildArchitecture: arm64
               publishArgument: $(_publishArgument)
+              signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
               variables:
