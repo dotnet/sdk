@@ -20,7 +20,7 @@ parameters:
 - name: runTests
   displayName: Run Tests
   type: boolean
-  default: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
+  default: false
   # 💢 "A template expression is not allowed in this context"
   # ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
   #   default: true
