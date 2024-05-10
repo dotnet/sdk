@@ -20,9 +20,9 @@ parameters:
 - name: runTests
   displayName: Run Tests
   type: boolean
-  default: false
+  default: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
   # 💢 "A template expression is not allowed in this context"
-  # ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+  # ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
   #   default: true
   # ${{ else }}:
   #   default: false
@@ -96,46 +96,6 @@ extends:
       #   # See: https://dev.azure.com/dnceng/internal/_componentGovernance/dotnet-sdk/alert/9439021?typeId=6422467
       #   # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
       #   alertWarningLevel: Critical
-    # oneEsPtCompat:
-    #   jobTemplatePath: /eng/common/templates-official/job/job.yml
-    #   publishTaskName: 1ES.PublishBuildArtifacts@1
-    # runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-    ### LOCAL ONLY ###
-    # _publishArgument: -publish
-    # _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
-    # _windowsJobParameters:
-    # - ${{ if eq(parameters.runTests, false) }}:
-    #   - categoryName: Official
-    #     publishArgument: ${{ parameters._publishArgument }}
-    #     officialBuildProperties: ${{ parameters._officialBuildProperties }}
-    #     variables:
-    #       _SignType: real
-    #   - categoryName: Official
-    #     buildArchitecture: x86
-    #     publishArgument: ${{ parameters._publishArgument }}
-    #     officialBuildProperties: ${{ parameters._officialBuildProperties }}
-    #     variables:
-    #       _SignType: real
-    #   - categoryName: Official
-    #     buildArchitecture: arm64
-    #     publishArgument: ${{ parameters._publishArgument }}
-    #     officialBuildProperties: ${{ parameters._officialBuildProperties }}
-    #     variables:
-    #       _SignType: real
-    # - ${{ else }}:
-    #   - categoryName: TestBuild
-    #   - categoryName: FullFramework
-    #     testFullMSBuild: true
-    #   - categoryName: TestAsTools
-    #     runTestsAsTool: true
-    #     # This uses the build step for testing, so the extra test step is not necessary.
-    #     runTests: false
-    #   - categoryName: TemplateEngine
-    #     testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
-    #       $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
-    #   - categoryName: AoT
-    #     runAoTTests: true
-
 
     stages:
     - stage: build
@@ -152,47 +112,6 @@ extends:
       #       inputs:
       #         targetPath: $(Build.SourcesDirectory)\eng\buildConfiguration
       #         artifactName: buildConfiguration
-
-
-      # - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
-      #   parameters:
-      #     oneEsPtCompat: ${{ parameters.oneEsPtCompat }}
-      #     pool:
-      #       name: $(DncEngInternalBuildPool)
-      #       image: 1es-windows-2022
-      #       os: windows
-      #     helixTargetQueue: windows.amd64.vs2022.pre
-      #     ${{ if eq(parameters.runTests, false) }}:
-      #       Official:
-      #         publishArgument: -publish
-      #         _SignType: real
-      #         officialBuildProperties: $(_officialBuildProperties)
-      #       Official_x86:
-      #         buildArchitecture: x86
-      #         publishArgument: -publish
-      #         _SignType: real
-      #         officialBuildProperties: $(_officialBuildProperties)
-      #       Official_arm64:
-      #         buildArchitecture: arm64
-      #         publishArgument: -publish
-      #         _SignType: real
-      #         officialBuildProperties: $(_officialBuildProperties)
-      #     ${{ else }}:
-      #       Test: {}
-      #       FullFramework:
-      #         testFullMSBuild: true
-      #       TestAsTools:
-      #         testInBuildProperties: /p:RunTestsAsTool=true
-      #         # This uses the build step for testing, so the extra test step is not necessary.
-      #         runTests: false
-      #       TemplateEngine:
-      #         testName: TemplateEngineTests
-      #         testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
-      #           $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
-      #       AoT:
-      #         runAoTTests: true
-
-
 
       # ############### WINDOWS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -289,7 +208,7 @@ extends:
           jobParameterSets:
           - ${{ if eq(parameters.runTests, false) }}:
             ### OFFICIAL ###
-            # Note: These builds are also portable like the Portable category, but that category uses containers, and don't publish zips and tarballs.
+            # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
             - categoryName: Official
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -339,7 +258,7 @@ extends:
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              # Pass in HostOSName when running on alpine.
+              # Use HostOSName when running on alpine.
               osProperties: /p:HostOSName=linux-musl
               runTests: false
             - categoryName: Musl
@@ -375,108 +294,69 @@ extends:
           - ${{ else }}:
             ### TESTS ###
             - categoryName: TestBuild
-            # - categoryName: FullFramework
-            #   testFullMSBuild: true
-            # - categoryName: TestAsTools
-            #   runTestsAsTool: true
-            #   # This uses the build step for testing, so the extra test step is not necessary.
-            #   runTests: false
-            # - categoryName: TemplateEngine
-            #   testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
-            #     $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
-            # - categoryName: AoT
-            #   runAoTTests: true
+              osProperties: $(_linuxOsProperties)
+            - categoryName: TestBuild
+              buildArchitecture: arm64
+              runtimeIdentifier: linux-arm64
+              osProperties: $(_linuxOsProperties)
+              # Don't run the tests on arm64. Only perform the build itself.
+              runTests: false
+            - categoryName: TestBuild
+              container: ubuntu2204
+              osProperties: $(_linuxOsProperties)
+            - categoryName: TestBuild
+              container: fedora39
+              osProperties: $(_linuxOsProperties)
+            - categoryName: TestBuild
+              container: centosStream9
+              osProperties: /p:OSName=linux
+            - categoryName: TestBuild
+              container: debian11Amd64
+              osProperties: /p:OSName=linux /p:BuildSdkDeb=true
+            - categoryName: TestBuild
+              container: alpine319WithNode
+              runtimeIdentifier: linux-musl-x64
+              # Use HostOSName when running on alpine.
+              osProperties: /p:HostOSName=linux-musl
+            - categoryName: TemplateEngine
+              osProperties: $(_linuxOsProperties)
+              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
+                $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
 
-
-
-
-
-
-      # # TODO: Need to foreach this entire section for each container. But only do that once this logic is in the job-matrix file.
-      # - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
-      #   parameters:
-      #     pool:
-      #       name: $(DncEngInternalBuildPool)
-      #       image: 1es-ubuntu-2204
-      #       os: linux
-      #     helixTargetQueue: ubuntu.2204.amd64
-      #     container: ubuntu2204
-      #     oneEsPtCompat:
-      #       jobTemplatePath: /eng/common/templates-official/job/job.yml
-      #       publishTaskName: 1ES.PublishBuildArtifacts@1
-      #     variables:
-      #       runTests: ${{ parameters.runTests }}
-      #       # Setting this here once so it can be reused in the matrix only.
-      #       _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
-      #     strategy:
-      #       matrix:
-      #         ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
-      #           Official:
-      #             publishArgument: -publish
-      #             _SignType: real
-      #             officialBuildProperties: $(_officialBuildProperties)
-      #           Official_x86:
-      #             buildArchitecture: x86
-      #             publishArgument: -publish
-      #             _SignType: real
-      #             officialBuildProperties: $(_officialBuildProperties)
-      #           Official_arm64:
-      #             buildArchitecture: arm64
-      #             publishArgument: -publish
-      #             _SignType: real
-      #             officialBuildProperties: $(_officialBuildProperties)
-      #         ${{ else }}:
-      #           Test: {}
-      #           Test_arm64:
-      #             testFullMSBuild: true
-
-      
-
-      # ############### MACOS ###############
-      # - template: /eng/pipelines/templates/jobs/sdk-build.yml@self
-      #   parameters:
-      #     pool:
-      #       name: Azure Pipelines
-      #       image: macOS-latest
-      #       os: macOS
-      #     helixTargetQueue: OSX.13.Amd64
-      #     oneEsPtCompat:
-      #       jobTemplatePath: /eng/common/templates-official/job/job.yml
-      #       publishTaskName: 1ES.PublishBuildArtifacts@1
-      #     variables:
-      #       runTests: ${{ parameters.runTests }}
-      #       # Setting this here once so it can be reused in the matrix only.
-      #       _officialBuildProperties: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
-      #     strategy:
-      #       matrix:
-      #         ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
-      #           Official:
-      #             publishArgument: -publish
-      #             _SignType: real
-      #             officialBuildProperties: $(_officialBuildProperties)
-      #           Official_arm64:
-      #             runtimeIdentifierProperties: /p:Rid=osx-arm64
-      #             buildArchitecture: arm64
-      #             publishArgument: -publish
-      #             _SignType: real
-      #             officialBuildProperties: $(_officialBuildProperties)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      ############### MACOS ###############
+      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+        parameters:
+          pool:
+            name: Azure Pipelines
+            image: macOS-latest
+            os: macOS
+          helixTargetQueue: OSX.13.Amd64
+          oneEsPtCompat:
+            jobTemplatePath: /eng/common/templates-official/job/job.yml
+            publishTaskName: 1ES.PublishBuildArtifacts@1
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          jobParameterSets:
+          - ${{ if eq(parameters.runTests, false) }}:
+            ### OFFICIAL ###
+            - categoryName: Official
+              runtimeIdentifier: osx-x64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+            - categoryName: Official
+              buildArchitecture: arm64
+              runtimeIdentifier: osx-arm64
+              publishArgument: $(_publishArgument)
+              officialBuildProperties: $(_officialBuildProperties)
+              runTests: false
+          - ${{ else }}:
+            ### TESTS ###
+            - categoryName: TestBuild
+            - categoryName: TemplateEngine
+              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
+                $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+            - categoryName: AoT
+              runAoTTests: true
 
 
       #################### SOURCE BUILD ####################

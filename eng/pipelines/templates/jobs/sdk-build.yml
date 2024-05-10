@@ -50,8 +50,9 @@ jobs:
           displayName: Setup Private Feeds Credentials
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
+      # The PowerShell script above would work fine on Linux/Mac, but the Linux containers don't have PowerShell installed.
       - ${{ else }}:
-        - script: . "$(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh" $(Build.SourcesDirectory)/NuGet.config $Token
+        - script: . $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $Token
           displayName: Setup Private Feeds Credentials
           env:
             Token: $(dn-bot-dnceng-artifact-feeds-rw)
@@ -82,7 +83,7 @@ jobs:
           source $(Build.SourcesDirectory)/eng/common/native/init-distro-rid.sh
           initDistroRidGlobal "$os" "$arch" ""
 
-          . "$(Build.SourcesDirectory)/eng/common/build.sh" \
+          . $(Build.SourcesDirectory)/eng/common/build.sh \
           -restore -build -pack -ci \
           -configuration $(buildConfiguration) \
           ${{ parameters.publishArgument }} \
@@ -105,6 +106,9 @@ jobs:
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
+      - ${{ if eq(parameters.runAoTTests, true) }}:
+        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
+          displayName: Install wasm-tools Workload
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         # TODO: Change _CustomHelixTargetQueue name
         - powershell: eng/common/build.ps1
