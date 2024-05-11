@@ -57,7 +57,7 @@
         <target state="translated">İş yükleri doğrulanırken bir sorunla karşılaşıldı. Daha fazla bilgi için "dotnet workload update" komutunu çalıştırın.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">Bildirim Sürümü</target>
         <note />

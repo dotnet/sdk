@@ -377,11 +377,6 @@
         <target state="translated">PFAD</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">Die Workloadversion wird von {0} auf {1} aktualisiert.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>Update to the specified workload version.</source>
         <target state="translated">Aktualisieren Sie auf die angegebene Workloadversion.</target>
