@@ -262,18 +262,15 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return Convert.ToBase64String(hash);
         }
 
-        public string ComputeTargetPath(string pathPrefix, char separator)
-        {
-            return CombineNormalizedPaths(
+        public string ComputeTargetPath(string pathPrefix, char separator) => CombineNormalizedPaths(
                 pathPrefix,
                 IsDiscovered() || IsComputed() ? "" : BasePath,
                 RelativePath, separator);
-        }
 
         public static string CombineNormalizedPaths(string prefix, string basePath, string route, char separator)
         {
             var normalizedPrefix = prefix != null ? Normalize(prefix) : "";
-            var computedBasePath = basePath == null || basePath == "/" ? "" : basePath;
+            var computedBasePath = basePath is null or "/" ? "" : basePath;
             return Path.Combine(normalizedPrefix, computedBasePath, route)
                 .Replace('/', separator)
                 .Replace('\\', separator)
@@ -632,9 +629,60 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         internal static bool HasSourceId(string candidate, string source) =>
             string.Equals(candidate, source, StringComparison.Ordinal);
 
-        private string GetDebuggerDisplay()
+        private string GetDebuggerDisplay() => ToString();
+
+        public string ComputeLogicalPath() => CreatePathString("", '/');
+
+        private string CreatePathString(string pathPrefix, char separator)
         {
-            return ToString();
+            var prefix = pathPrefix != null ? Normalize(pathPrefix) : "";
+            // These have been normalized already, so only contain forward slashes
+            var computedBasePath = IsDiscovered() || IsComputed() ? "" : BasePath;
+            if (computedBasePath == "/")
+            {
+                // We need to special case the base path "/" to make sure it gets correctly combined with the prefix
+                computedBasePath = "";
+            }
+
+            var pathWithTokens = Path.Combine(prefix, computedBasePath, RelativePath)
+                .Replace('/', separator)
+                .Replace('\\', separator)
+                .TrimStart(separator);
+            return pathWithTokens;
+        }
+
+        public string ComputeTargetPath(string pathPrefix, char separator, StaticWebAssetTokenResolver providedTokens)
+        {
+            var pathWithTokens = CreatePathString(pathPrefix, separator);
+            return ReplaceTokens(pathWithTokens, providedTokens);
+        }
+
+        // Tokens in static web assets represent a similar concept to tokens within routing. They can be used to identify logical
+        // values that need to be replaced by well-known strings. The format for defining a token in static web assets is as follows
+        // #[.{tokenName}].
+        // # is used to make sure we never interpret any valid file path as a token (since # is not allowed to appear in file systems)
+        // [] delimit the token expression.
+        // Inside the [] there is a token expression that is represented as an interpolated string where {} delimit the variables and
+        // the content inside the name of the value they need to be replaced with.
+        // The expression inside the `[]` can contain any character that can appear in the file system, for example, to indicate that
+        // a fixed prefix needs to be added.
+        // For the time being the implementation unconditionally resolves and implements any token expression, but in the future,
+        // we will support features like `?` to indicate that an entire token expression is optional (this indicates that something
+        // can be referenced with or without the expression. For example file[.{integrity}]?.js will mean, the file can be addressed as
+        // file.js (no integrity  suffix) or file.asdfasdf.js where '.asdfasdf' is the integrity suffix.
+        // The reason we want to plan for this is that we don't have the ability to post process all content from the app (CSS files, JS, etc.)
+        // to replace the original paths with the replaced paths. This means some files should be served in their original formats so that they
+        // work with the content that we couldn't post process, and with the post processed format, so that they can benefit from fingerprinting
+        // and other features. This is why we want to bake into the format itself the information that specifies under which paths the file will
+        // be available at runtime so that tasks/tools can operate independently and produce correct results.
+        // The current token we support is the 'fingerprint' token, which computes a web friendly version of the hash of the file suitable
+        // to be embedded in other contexts.
+        // We might include other tokens in the future, like `[{basepath}]` to give a file the ability to have its path be relative to the consuming
+        // project base path, etc.
+        public string ReplaceTokens(string pathWithTokens, StaticWebAssetTokenResolver tokens)
+        {
+            var pattern = StaticWebAssetPathPattern.Parse(pathWithTokens, Identity);
+            return pattern.ReplaceTokens(this, tokens);
         }
 
         public override string ToString() =>
@@ -705,6 +753,16 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(OriginalItemSpec);
             return hashCode;
 #endif
+        }
+
+        internal IEnumerable<string> ComputeRoutes()
+        {
+            var tokenResolver = new StaticWebAssetTokenResolver();
+            var pattern = StaticWebAssetPathPattern.Parse(RelativePath, Identity);
+            foreach (var expandedPattern in pattern.ExpandRoutes())
+            {
+                yield return expandedPattern.ReplaceTokens(this, tokenResolver);
+            }
         }
     }
 }

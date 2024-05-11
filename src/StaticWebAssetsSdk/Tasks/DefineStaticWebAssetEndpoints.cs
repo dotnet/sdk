@@ -55,26 +55,28 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             foreach (var kvp in staticWebAssets)
             {
                 var asset = kvp.Value;
-                StaticWebAssetEndpoint endpoint = null;
 
                 // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
                 // package or a referenced project and ignored if it comes from the current project.
                 // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
                 // If the endpoint is then passed to a referencing project or packaged into a nuget package, the path will be
                 // adjusted at that time.
-                endpoint = CreateEndpoint(asset, contentTypeMappings);
+                var assetEndpoints = CreateEndpoints(asset, contentTypeMappings);
 
-                // Check if the endpoint we are about to define already exists. This can happen during publish as assets defined
-                // during the build will have already defined endpoints and we only want to add new ones.
-                if (existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set) &&
-                    set.TryGetValue(endpoint, out var existingEndpoint))
+                foreach (var endpoint in assetEndpoints)
                 {
-                    Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {existingEndpoint.Route}.");
-                    continue;
-                }
+                    // Check if the endpoint we are about to define already exists. This can happen during publish as assets defined
+                    // during the build will have already defined endpoints and we only want to add new ones.
+                    if (existingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set) &&
+                        set.TryGetValue(endpoint, out var existingEndpoint))
+                    {
+                        Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {existingEndpoint.Route}.");
+                        continue;
+                    }
 
-                Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
-                endpoints.Add(endpoint);
+                    Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
+                    endpoints.Add(endpoint);
+                }
             }
 
             Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
@@ -82,14 +84,18 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return !Log.HasLoggedErrors;
         }
 
-        private StaticWebAssetEndpoint CreateEndpoint(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings) =>
-            new()
+        private IEnumerable<StaticWebAssetEndpoint> CreateEndpoints(StaticWebAsset asset, ContentTypeMapping[] contentTypeMappings)
+        {
+            var routes = asset.ComputeRoutes();
+            foreach (var route in routes)
             {
-                Route = asset.ComputeTargetPath("", '/'),
-                AssetFile = asset.Identity,
-                ResponseHeaders =
-                [
-                    new()
+                yield return new()
+                {
+                    Route = route,
+                    AssetFile = asset.Identity,
+                    ResponseHeaders =
+                    [
+                        new()
                     {
                         Name = "Accept-Ranges",
                         Value = "bytes"
@@ -115,7 +121,9 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         Value = GetFileLastModified(asset)
                     },
                 ]
-            };
+                };
+            }
+        }
 
         // Last-Modified: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
         // Directives
