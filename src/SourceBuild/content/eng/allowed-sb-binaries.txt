@@ -5,7 +5,7 @@
 
 # Well known non-checked in infrastructure
 artifacts/*/BinaryToolKit/
-**/.dotnet/
+.dotnet/
 .git/
 .packages/
 prereqs/packages/
