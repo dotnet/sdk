@@ -359,7 +359,7 @@ extends:
       #       oneESCompat:
       #         publishTaskName: 1ES.PublishBuildArtifacts@1
 
-    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+    # - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       # - stage: publish
       #   displayName: Publish
       #   dependsOn: build
