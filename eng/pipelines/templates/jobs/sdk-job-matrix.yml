@@ -1,5 +1,8 @@
 parameters:
   jobParameterSets: []
+  oneESCompat:
+    templateFolderName: templates
+    publishTaskPrefix: ''
   publishRetryConfig: false
   locBranch: ''
 
@@ -11,7 +14,7 @@ jobs:
     displayName: Publish Pipeline Retry Config
     pool: ${{ parameters.pool }}
     steps:
-      - task: ${{ parameters.oneESCompat.publishTaskName }}
+      - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
         displayName: Publish build-configuration.json
         inputs:
           PathtoPublish: $(Build.SourcesDirectory)/eng/BuildConfiguration

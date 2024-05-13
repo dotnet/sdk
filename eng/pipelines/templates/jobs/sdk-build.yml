@@ -1,9 +1,8 @@
 parameters:
   variables: {}
   oneESCompat:
-    # jobTemplatePath: /eng/common/templates/job/job.yml
     templateFolderName: templates
-    publishTaskName: PublishBuildArtifacts@1
+    publishTaskPrefix: ''
   container: ''
   categoryName: Build
   runTests: true
@@ -89,6 +88,7 @@ jobs:
           -configuration $(buildConfiguration) \
           ${{ parameters.publishArgument }} \
           ${{ parameters.signArgument }} \
+          /p:EnableDefaultArtifacts=false \
           /p:Architecture=${{ parameters.buildArchitecture }} \
           /p:RunTestsAsTool=${{ parameters.runTestsAsTool }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
@@ -167,16 +167,17 @@ jobs:
       continueOnError: true
       condition: always()
 
-    - task: ${{ parameters.oneESCompat.publishTaskName }}
+    - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)
         # TODO: Figure out appropriate artifact name
+        ArtifactName: $(System.PhaseName)
         # ArtifactName: ${{ parameters.name }}
-        ${{ if eq(parameters.container, '') }}:
-          ArtifactName: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
-        ${{ else }}:
-          ArtifactName: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}_${{ parameters.container }}
+        # ${{ if eq(parameters.container, '') }}:
+        #   ArtifactName: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
+        # ${{ else }}:
+        #   ArtifactName: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}_${{ parameters.container }}
         publishLocation: Container
       continueOnError: true
       condition: always()

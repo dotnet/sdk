@@ -21,11 +21,6 @@ parameters:
   displayName: Run Tests
   type: boolean
   default: false
-  # 💢 "A template expression is not allowed in this context"
-  # ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-  #   default: true
-  # ${{ else }}:
-  #   default: false
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
@@ -95,6 +90,7 @@ extends:
         alertWarningLevel: Critical
 
     stages:
+    ############### BUILD STAGE ###############
     - stage: build
       displayName: Build
       jobs:
@@ -107,9 +103,8 @@ extends:
             os: windows
           helixTargetQueue: windows.amd64.vs2022.pre
           oneESCompat:
-            # jobTemplatePath: /eng/common/templates-official/job/job.yml
             templateFolderName: templates-official
-            publishTaskName: 1ES.PublishBuildArtifacts@1
+            publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           publishRetryConfig: true
           locBranch: release/8.0.4xx
@@ -190,9 +185,8 @@ extends:
             os: linux
           helixTargetQueue: ubuntu.2204.amd64
           oneESCompat:
-            # jobTemplatePath: /eng/common/templates-official/job/job.yml
             templateFolderName: templates-official
-            publishTaskName: 1ES.PublishBuildArtifacts@1
+            publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           jobParameterSets:
           - ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
@@ -321,9 +315,8 @@ extends:
             os: macOS
           helixTargetQueue: OSX.13.Amd64
           oneESCompat:
-            # jobTemplatePath: /eng/common/templates-official/job/job.yml
             templateFolderName: templates-official
-            publishTaskName: 1ES.PublishBuildArtifacts@1
+            publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           jobParameterSets:
           - ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
@@ -360,8 +353,9 @@ extends:
         - template: /eng/dotnet-format/dotnet-format-integration.yml@self
           parameters:
             oneESCompat:
-              publishTaskName: 1ES.PublishBuildArtifacts@1
+              publishTaskPrefix: 1ES.
 
+    ############### PUBLISH STAGE ###############
     - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       - stage: publish
         displayName: Publish
@@ -376,6 +370,7 @@ extends:
               image: 1es-windows-2022
               os: windows
 
+      ############### POST-BUILD STAGE ###############
       - template: /eng/common/templates-official/post-build/post-build.yml@self
         parameters:
           publishingInfraVersion: 3

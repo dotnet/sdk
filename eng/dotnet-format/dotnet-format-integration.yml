@@ -2,7 +2,7 @@ parameters:
 - name: oneESCompat
   type: object
   default:
-    publishTaskName: PublishBuildArtifacts@1
+    publishTaskPrefix: ''
 
 - name: TestArguments
   type: object
@@ -76,7 +76,7 @@ jobs:
       .\artifacts\sdk-build-env.bat
         dotnet run --project .\src\BuiltInTools\dotnet-format\dotnet-format.csproj -c Release -- @eng\dotnet-format\validate.rsp
     displayName: Run dotnet-format
-  - task: ${{ parameters.oneESCompat.publishTaskName }}
+  - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
     displayName: Publish Logs
     inputs:
       PathtoPublish: $(Build.ArtifactStagingDirectory)
