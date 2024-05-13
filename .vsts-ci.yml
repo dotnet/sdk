@@ -88,6 +88,7 @@ extends:
         # See: https://dev.azure.com/dnceng/internal/_componentGovernance/dotnet-sdk/alert/9439021?typeId=6422467
         # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
         alertWarningLevel: Critical
+        ignoreDirectories: artifacts, .packages
 
     stages:
     ############### BUILD STAGE ###############
@@ -112,7 +113,7 @@ extends:
           - ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             ### OFFICIAL ###
             - categoryName: Official
-              publishArgument: $(_publishArgument) /p:PublishInternalAsset=true
+              publishArgument: $(_publishArgument) /p:EnableToolsetPublish=true
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
@@ -137,7 +138,7 @@ extends:
             ### PGO ###
             - categoryName: PGO
               pgoInstrument: true
-              publishArgument: $(_publishArgument) /p:PublishInternalAsset=true
+              publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false

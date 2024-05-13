@@ -12,4 +12,4 @@ variables:
   HelixApiAccessToken: ''
 
   ############### OTHER ###############
-  Codeql.ExcludePathPatterns: artifacts, .packages
+  # Codeql.ExcludePathPatterns: artifacts, .packages
