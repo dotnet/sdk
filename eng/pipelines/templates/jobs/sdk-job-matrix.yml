@@ -16,9 +16,8 @@ jobs:
         inputs:
           PathtoPublish: $(Build.SourcesDirectory)/eng/BuildConfiguration
           ArtifactName: BuildConfiguration
-# TODO: This needs oneESCompat value.
 - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/${{ parameters.locBranch }}')) }}:
-  - template: /eng/common/${{ parameters.templateFolderName }}/job/onelocbuild.yml
+  - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/onelocbuild.yml
     parameters:
       CreatePr: true
       LclSource: lclFilesfromPackage

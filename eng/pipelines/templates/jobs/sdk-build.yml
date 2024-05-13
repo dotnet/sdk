@@ -23,7 +23,7 @@ parameters:
   officialBuildProperties: ''
 
 jobs:
-- template: /eng/common/${{ parameters.templateFolderName }}/job/job.yml
+- template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
     ${{ if eq(parameters.container, '') }}:
       name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
