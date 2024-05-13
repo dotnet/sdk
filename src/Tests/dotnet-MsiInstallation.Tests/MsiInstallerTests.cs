@@ -259,6 +259,26 @@ namespace Microsoft.DotNet.MsiInstallerTests
             throw new NotImplementedException();
         }
 
+        [Fact]
+        public void TestAspire()
+        {
+            InstallSdk();
+
+            //AddNuGetSource("https://pkgs.dev.azure.com/dnceng/internal/_packaging/8.0.300-rtm.24224.15-shipping/nuget/v3/index.json");
+            //AddNuGetSource("https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-aspire-d215c528/nuget/v3/index.json");
+
+            //VM.CreateRunCommand("powershell", "-Command", "& { $(irm https://aka.ms/install-artifacts-credprovider.ps1) }")
+            //    .Execute().Should().Pass();
+
+            InstallWorkload("aspire");
+
+            VM.CreateRunCommand("dotnet", "new", "aspire-starter", "-o", "Aspire-StarterApp01")
+                .WithWorkingDirectory(@"c:\SdkTesting")
+                .Execute()
+                .Should()
+                .Pass();
+        }
+
 
         void TestWasmWorkload()
         {
