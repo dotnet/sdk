@@ -66,7 +66,7 @@ namespace Microsoft.NET.Publish.Tests
     {(publishSingleFile == true ? $"<RuntimeIdentifier>{rid}</RuntimeIdentifier>" : "")}
   </PropertyGroup>
   <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.8.1">
+    <BootstrapperPackage Include="".NETFramework,Version=v4.8.1"">
       <Install>true</Install>
       <ProductName>Microsoft .NET Framework 4.8.1 (x86 and x64)</ProductName>
     </BootstrapperPackage>
