@@ -107,7 +107,8 @@ extends:
             os: windows
           helixTargetQueue: windows.amd64.vs2022.pre
           oneESCompat:
-            jobTemplatePath: /eng/common/templates-official/job/job.yml
+            # jobTemplatePath: /eng/common/templates-official/job/job.yml
+            templateFolderName: templates-official
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           publishRetryConfig: true
@@ -189,7 +190,8 @@ extends:
             os: linux
           helixTargetQueue: ubuntu.2204.amd64
           oneESCompat:
-            jobTemplatePath: /eng/common/templates-official/job/job.yml
+            # jobTemplatePath: /eng/common/templates-official/job/job.yml
+            templateFolderName: templates-official
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           jobParameterSets:
@@ -319,7 +321,8 @@ extends:
             os: macOS
           helixTargetQueue: OSX.13.Amd64
           oneESCompat:
-            jobTemplatePath: /eng/common/templates-official/job/job.yml
+            # jobTemplatePath: /eng/common/templates-official/job/job.yml
+            templateFolderName: templates-official
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           jobParameterSets:
@@ -346,51 +349,51 @@ extends:
               runAoTTests: true
 
       ############### SOURCE BUILD ###############
-      # - template: /eng/common/templates-official/job/source-build.yml@self
-      #   parameters:
-      #     platform:
-      #       name: Managed
-      #       container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
+      - template: /eng/common/templates-official/job/source-build.yml@self
+        parameters:
+          platform:
+            name: Managed
+            container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 
       ############### DOTNET-FORMAT ###############
-      # - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-      #   - template: /eng/dotnet-format/dotnet-format-integration.yml@self
-      #     parameters:
-      #       oneESCompat:
-      #         publishTaskName: 1ES.PublishBuildArtifacts@1
+      - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        - template: /eng/dotnet-format/dotnet-format-integration.yml@self
+          parameters:
+            oneESCompat:
+              publishTaskName: 1ES.PublishBuildArtifacts@1
 
-    # - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-      # - stage: publish
-      #   displayName: Publish
-      #   dependsOn: build
-      #   jobs:
-      #   - template: /eng/common/templates-official/job/publish-build-assets.yml@self
-      #     parameters:
-      #       publishUsingPipelines: true
-      #       publishAssetsImmediately: true
-      #       pool:
-      #         name: $(DncEngInternalBuildPool)
-      #         image: 1es-windows-2022
-      #         os: windows
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      - stage: publish
+        displayName: Publish
+        dependsOn: build
+        jobs:
+        - template: /eng/common/templates-official/job/publish-build-assets.yml@self
+          parameters:
+            publishUsingPipelines: true
+            publishAssetsImmediately: true
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-windows-2022
+              os: windows
 
-      # - template: /eng/common/templates-official/post-build/post-build.yml@self
-      #   parameters:
-      #     publishingInfraVersion: 3
-      #     enableSymbolValidation: false
-      #     enableSigningValidation: false
-      #     enableNugetValidation: false
-      #     enableSourceLinkValidation: false
-      #     publishInstallersAndChecksums: true
-      #     publishAssetsImmediately: true
-      #     SDLValidationParameters:
-      #       enable: false
-      #       params: ' -SourceToolsList @("policheck","credscan")
-      #       -TsaInstanceURL $(_TsaInstanceURL)
-      #       -TsaProjectName $(_TsaProjectName)
-      #       -TsaNotificationEmail $(_TsaNotificationEmail)
-      #       -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-      #       -TsaBugAreaPath $(_TsaBugAreaPath)
-      #       -TsaIterationPath $(_TsaIterationPath)
-      #       -TsaRepositoryName "dotnet-sdk"
-      #       -TsaCodebaseName "dotnet-sdk"
-      #       -TsaPublish $True'
+      - template: /eng/common/templates-official/post-build/post-build.yml@self
+        parameters:
+          publishingInfraVersion: 3
+          enableSymbolValidation: false
+          enableSigningValidation: false
+          enableNugetValidation: false
+          enableSourceLinkValidation: false
+          publishInstallersAndChecksums: true
+          publishAssetsImmediately: true
+          SDLValidationParameters:
+            enable: false
+            params: ' -SourceToolsList @("policheck","credscan")
+            -TsaInstanceURL $(_TsaInstanceURL)
+            -TsaProjectName $(_TsaProjectName)
+            -TsaNotificationEmail $(_TsaNotificationEmail)
+            -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+            -TsaBugAreaPath $(_TsaBugAreaPath)
+            -TsaIterationPath $(_TsaIterationPath)
+            -TsaRepositoryName "dotnet-sdk"
+            -TsaCodebaseName "dotnet-sdk"
+            -TsaPublish $True'

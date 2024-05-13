@@ -1,7 +1,8 @@
 parameters:
   variables: {}
   oneESCompat:
-    jobTemplatePath: /eng/common/templates/job/job.yml
+    # jobTemplatePath: /eng/common/templates/job/job.yml
+    templateFolderName: templates
     publishTaskName: PublishBuildArtifacts@1
   container: ''
   categoryName: Build
@@ -22,14 +23,14 @@ parameters:
   officialBuildProperties: ''
 
 jobs:
-- template: ${{ parameters.oneESCompat.jobTemplatePath }}
+- template: /eng/common/${{ parameters.templateFolderName }}/job/job.yml
   parameters:
     ${{ if eq(parameters.container, '') }}:
       name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
-      displayName: "${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }})"
+      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }})'
     ${{ else }}:
       name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}_${{ parameters.container }}
-      displayName: "${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }}) [${{ parameters.container }}]"
+      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }}) [${{ parameters.container }}]'
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
@@ -171,7 +172,11 @@ jobs:
       inputs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)
         # TODO: Figure out appropriate artifact name
-        ArtifactName: ${{ parameters.name }}
+        # ArtifactName: ${{ parameters.name }}
+        ${{ if eq(parameters.container, '') }}:
+          ArtifactName: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
+        ${{ else }}:
+          ArtifactName: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}_${{ parameters.container }}
         publishLocation: Container
       continueOnError: true
       condition: always()
