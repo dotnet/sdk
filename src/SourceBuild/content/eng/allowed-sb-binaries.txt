@@ -4,8 +4,9 @@
 # If importing a file, include the relative path to the file
 
 # Well known non-checked in infrastructure
+artifacts/*/BinaryToolKit/
+**/.dotnet/
 .git/
-.dotnet/
 .packages/
 prereqs/packages/
 
