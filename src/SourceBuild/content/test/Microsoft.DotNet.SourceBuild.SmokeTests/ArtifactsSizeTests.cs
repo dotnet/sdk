@@ -201,7 +201,7 @@ public class ArtifactsSizeTests : SdkTests
     {
         try
         {
-            string actualFilePath = Path.Combine(Config.LogsDirectory, $"UpdatedArtifactsSizes_{Config.TargetRid}.txt");
+            string actualFilePath = Path.Combine(Config.LogsDirectory, $"Updated{Config.TargetRid}.txt");
             File.WriteAllLines(
                 actualFilePath,
                 Baseline
