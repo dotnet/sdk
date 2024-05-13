@@ -1,6 +1,6 @@
 parameters:
   variables: {}
-  oneEsPtCompat:
+  oneESCompat:
     jobTemplatePath: /eng/common/templates/job/job.yml
     publishTaskName: PublishBuildArtifacts@1
   container: ''
@@ -22,7 +22,7 @@ parameters:
   officialBuildProperties: ''
 
 jobs:
-- template: ${{ parameters.oneEsPtCompat.jobTemplatePath }}
+- template: ${{ parameters.oneESCompat.jobTemplatePath }}
   parameters:
     ${{ if eq(parameters.container, '') }}:
       name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
@@ -107,6 +107,7 @@ jobs:
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
       - ${{ if eq(parameters.runAoTTests, true) }}:
+        # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
         - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(_BuildConfig)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
           displayName: Install wasm-tools Workload
       - ${{ if eq(parameters.pool.os, 'windows') }}:
@@ -145,58 +146,6 @@ jobs:
             HelixAccessToken: $(HelixApiAccessToken)
             RunAoTTests: ${{ parameters.runAoTTests }}
 
-    # ############### NON-WINDOWS ###############
-    # - ${{ else }}:
-    #   ############### BUILDING ###############
-    #   - ${{ if ne(variables['System.TeamProject'], 'public') }}:
-    #     - script: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $Token
-    #       displayName: Setup Private Feeds Credentials
-    #       env:
-    #         Token: $(dn-bot-dnceng-artifact-feeds-rw)
-
-    #   - powershell: eng/common/build.ps1
-    #       -restore -build -sign -pack -ci -nativeToolsOnMachine
-    #       -configuration $(buildConfiguration)
-    #       $(publishArgument)
-    #       /p:Architecture=$(buildArchitecture)
-    #       $(runtimeSourceProperties)
-    #       $(testInBuildProperties)
-    #       $(officialBuildProperties)
-    #     displayName: Build
-    #     env:
-    #       # Required by Arcade for passing to Helix
-    #       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    #       # Only set when ran internally
-    #       HelixAccessToken: $(HelixApiAccessToken)
-    #       BuildConfig: $(buildConfiguration)
-    #       TestFullMSBuild: $(testFullMSBuild)
-
-    #   ############### TESTING ###############
-    #   # TODO: Change _CustomHelixTargetQueue name
-    #   - powershell: eng/common/build.ps1
-    #       -restore -test -ci -nativeToolsOnMachine -prepareMachine
-    #       -configuration $(buildConfiguration)
-    #       -projects $(testProjects)
-    #       /p:Architecture=$(buildArchitecture)
-    #       $(runtimeSourceProperties)
-    #       /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
-    #       /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/$(testName).binlog
-    #     displayName: Run $(testName)
-    #     condition: and(succeeded(), eq(variables.runTests, true))
-    #     env:
-    #       # Required by Arcade for passing to Helix
-    #       SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    #       # Only set when ran internally
-    #       HelixAccessToken: $(HelixApiAccessToken)
-    #       RunAoTTests: $(runAoTTests)
-
-
-
-
-
-
-
-
     ############### POST ###############
     - task: CopyFiles@2
       displayName: Copy Logs
@@ -217,7 +166,7 @@ jobs:
       continueOnError: true
       condition: always()
 
-    - task: ${{ parameters.oneEsPtCompat.publishTaskName }}
+    - task: ${{ parameters.oneESCompat.publishTaskName }}
       displayName: Publish Logs
       inputs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)

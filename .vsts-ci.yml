@@ -26,9 +26,6 @@ parameters:
   #   default: true
   # ${{ else }}:
   #   default: false
-# - name: _publishArgument
-#   type: string
-#   default: -publish
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
@@ -43,7 +40,7 @@ variables:
 - ${{ if and(eq(parameters.runTests, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
   - name: PostBuildSign
     value: false
-# TODO: What is this for?
+# Provides TSA variables for automatic bug reporting.
 - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
   - group: DotNet-CLI-SDLValidation-Params
 ### LOCAL ONLY ###
@@ -91,29 +88,17 @@ extends:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
-      # componentgovernance:
-      #   # Setting to Critical as aspnet templates currently cause a High alert (default alert level is High).
-      #   # See: https://dev.azure.com/dnceng/internal/_componentGovernance/dotnet-sdk/alert/9439021?typeId=6422467
-      #   # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
-      #   alertWarningLevel: Critical
+      componentgovernance:
+        # Setting to Critical as aspnet templates currently cause a High alert (default alert level is High).
+        # See: https://dev.azure.com/dnceng/internal/_componentGovernance/dotnet-sdk/alert/9439021?typeId=6422467
+        # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
+        alertWarningLevel: Critical
 
     stages:
     - stage: build
       displayName: Build
       jobs:
-      # - job: Publish_Build_Configuration
-      #   pool:
-      #     name: $(DncEngInternalBuildPool)
-      #     image: 1es-windows-2022
-      #     os: windows
-      #   steps:
-      #     - task: 1ES.PublishPipelineArtifact@1
-      #       displayName: Publish Build Config
-      #       inputs:
-      #         targetPath: $(Build.SourcesDirectory)\eng\buildConfiguration
-      #         artifactName: buildConfiguration
-
-      # ############### WINDOWS ###############
+      ############### WINDOWS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
         parameters:
           pool:
@@ -121,12 +106,14 @@ extends:
             image: 1es-windows-2022
             os: windows
           helixTargetQueue: windows.amd64.vs2022.pre
-          oneEsPtCompat:
+          oneESCompat:
             jobTemplatePath: /eng/common/templates-official/job/job.yml
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          publishRetryConfig: true
+          locBranch: release/8.0.4xx
           jobParameterSets:
-          - ${{ if eq(parameters.runTests, false) }}:
+          - ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             ### OFFICIAL ###
             - categoryName: Official
               publishArgument: $(_publishArgument) /p:PublishInternalAsset=true
@@ -201,12 +188,12 @@ extends:
             image: 1es-ubuntu-2204
             os: linux
           helixTargetQueue: ubuntu.2204.amd64
-          oneEsPtCompat:
+          oneESCompat:
             jobTemplatePath: /eng/common/templates-official/job/job.yml
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           jobParameterSets:
-          - ${{ if eq(parameters.runTests, false) }}:
+          - ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             ### OFFICIAL ###
             # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
             - categoryName: Official
@@ -331,12 +318,12 @@ extends:
             image: macOS-latest
             os: macOS
           helixTargetQueue: OSX.13.Amd64
-          oneEsPtCompat:
+          oneESCompat:
             jobTemplatePath: /eng/common/templates-official/job/job.yml
             publishTaskName: 1ES.PublishBuildArtifacts@1
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           jobParameterSets:
-          - ${{ if eq(parameters.runTests, false) }}:
+          - ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             ### OFFICIAL ###
             - categoryName: Official
               runtimeIdentifier: osx-x64
@@ -359,24 +346,19 @@ extends:
               runAoTTests: true
 
 
-      #################### SOURCE BUILD ####################
+      ############### SOURCE BUILD ###############
+      - template: /eng/common/templates-official/job/source-build.yml@self
+        parameters:
+          platform:
+            name: Managed
+            container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 
-      # - template: /eng/common/templates-official/job/source-build.yml@self
-      #   parameters:
-      #     platform:
-      #       name: Managed
-      #       container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-
-      # - ${{ if in(variables['Build.Reason'], 'PullRequest') }}:
-      #   # dotnet-format builds
-      #   - template: /eng/dotnet-format/dotnet-format-integration.yml@self
-      #     parameters:
-      #       PublishTaskName: 1ES.PublishBuildArtifacts@1
-
-
-
-
-
+      ############### DOTNET-FORMAT ###############
+      - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        - template: /eng/dotnet-format/dotnet-format-integration.yml@self
+          parameters:
+            oneESCompat:
+              publishTaskName: 1ES.PublishBuildArtifacts@1
 
 
     #   - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
@@ -392,25 +374,40 @@ extends:
     #           image: 1es-windows-2022
     #           os: windows
 
-    # - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-    #   - template: /eng/common/templates-official/post-build/post-build.yml@self
-    #     parameters:
-    #       publishingInfraVersion: 3
-    #       enableSymbolValidation: false
-    #       enableSigningValidation: false
-    #       enableNugetValidation: false
-    #       enableSourceLinkValidation: false
-    #       publishInstallersAndChecksums: true
-    #       publishAssetsImmediately: true
-    #       SDLValidationParameters:
-    #         enable: false
-    #         params: ' -SourceToolsList @("policheck","credscan")
-    #         -TsaInstanceURL $(_TsaInstanceURL)
-    #         -TsaProjectName $(_TsaProjectName)
-    #         -TsaNotificationEmail $(_TsaNotificationEmail)
-    #         -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-    #         -TsaBugAreaPath $(_TsaBugAreaPath)
-    #         -TsaIterationPath $(_TsaIterationPath)
-    #         -TsaRepositoryName "dotnet-sdk"
-    #         -TsaCodebaseName "dotnet-sdk"
-    #         -TsaPublish $True'
+
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      - stage: publish
+        displayName: Publish
+        dependsOn: build
+        jobs:
+        - template: /eng/common/templates-official/job/publish-build-assets.yml@self
+          parameters:
+            publishUsingPipelines: true
+            publishAssetsImmediately: true
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-windows-2022
+              os: windows
+
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+      - template: /eng/common/templates-official/post-build/post-build.yml@self
+        parameters:
+          publishingInfraVersion: 3
+          enableSymbolValidation: false
+          enableSigningValidation: false
+          enableNugetValidation: false
+          enableSourceLinkValidation: false
+          publishInstallersAndChecksums: true
+          publishAssetsImmediately: true
+          SDLValidationParameters:
+            enable: false
+            params: ' -SourceToolsList @("policheck","credscan")
+            -TsaInstanceURL $(_TsaInstanceURL)
+            -TsaProjectName $(_TsaProjectName)
+            -TsaNotificationEmail $(_TsaNotificationEmail)
+            -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
+            -TsaBugAreaPath $(_TsaBugAreaPath)
+            -TsaIterationPath $(_TsaIterationPath)
+            -TsaRepositoryName "dotnet-sdk"
+            -TsaCodebaseName "dotnet-sdk"
+            -TsaPublish $True'
