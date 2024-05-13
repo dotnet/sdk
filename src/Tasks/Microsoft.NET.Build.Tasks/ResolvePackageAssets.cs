@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
@@ -345,7 +346,7 @@ namespace Microsoft.NET.Build.Tasks
             }
             catch (AcceptableNullReferenceException nre)
             {
-                Log.LogError(nre.Message);
+                Log.LogError(Strings.ItemMissingValue, nre.Message);
             }
         }
 
@@ -1125,13 +1126,13 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     writeItems();
                 }
-                catch (NullReferenceException nre)
+                catch (NullReferenceException)
                 {
                     // If one of the items has null metadata, it may throw a null reference exception in trying
                     // to write it here. This may be unexpected but is more likely to be "accept default"
                     // behavior. Regardless, we may have corrupted this stream, so we can't reuse it. Throw a
                     // user-visible but graceful exception.
-                    throw new AcceptableNullReferenceException(nre.Message);
+                    throw new AcceptableNullReferenceException(writeItems.GetMethodInfo().Name);
                 }
 
                 FlushMetadata();
