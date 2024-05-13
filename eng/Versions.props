@@ -234,19 +234,19 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/aspnet/AspNetCore -->
-    <MicrosoftAspNetCoreAppRefPackageVersion>9.0.0-preview.5.24260.1</MicrosoftAspNetCoreAppRefPackageVersion>
-    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>9.0.0-preview.5.24260.1</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
-    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>9.0.0-preview.5.24260.1</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>9.0.0-preview.5.24260.1</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>9.0.0-preview.5.24260.1</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreAnalyzersPackageVersion>9.0.0-preview.5.24260.1</MicrosoftAspNetCoreAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreTestHostPackageVersion>9.0.0-preview.5.24260.1</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>9.0.0-preview.5.24260.1</MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>
-    <MicrosoftAspNetCoreAppRefInternalPackageVersion>9.0.0-preview.5.24260.1</MicrosoftAspNetCoreAppRefInternalPackageVersion>
-    <VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>9.0.0-preview.5.24260.1</VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>
-    <dotnetdevcertsPackageVersion>9.0.0-preview.5.24260.1</dotnetdevcertsPackageVersion>
-    <dotnetuserjwtsPackageVersion>9.0.0-preview.5.24260.1</dotnetuserjwtsPackageVersion>
-    <dotnetusersecretsPackageVersion>9.0.0-preview.5.24260.1</dotnetusersecretsPackageVersion>
+    <MicrosoftAspNetCoreAppRefPackageVersion>9.0.0-preview.5.24263.3</MicrosoftAspNetCoreAppRefPackageVersion>
+    <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>9.0.0-preview.5.24263.3</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
+    <MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>9.0.0-preview.5.24263.3</MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>9.0.0-preview.5.24263.3</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>9.0.0-preview.5.24263.3</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreAnalyzersPackageVersion>9.0.0-preview.5.24263.3</MicrosoftAspNetCoreAnalyzersPackageVersion>
+    <MicrosoftAspNetCoreTestHostPackageVersion>9.0.0-preview.5.24263.3</MicrosoftAspNetCoreTestHostPackageVersion>
+    <MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>9.0.0-preview.5.24263.3</MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>
+    <MicrosoftAspNetCoreAppRefInternalPackageVersion>9.0.0-preview.5.24263.3</MicrosoftAspNetCoreAppRefInternalPackageVersion>
+    <VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>9.0.0-preview.5.24263.3</VSRedistCommonAspNetCoreSharedFrameworkx6490PackageVersion>
+    <dotnetdevcertsPackageVersion>9.0.0-preview.5.24263.3</dotnetdevcertsPackageVersion>
+    <dotnetuserjwtsPackageVersion>9.0.0-preview.5.24263.3</dotnetuserjwtsPackageVersion>
+    <dotnetusersecretsPackageVersion>9.0.0-preview.5.24263.3</dotnetusersecretsPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/razor -->
