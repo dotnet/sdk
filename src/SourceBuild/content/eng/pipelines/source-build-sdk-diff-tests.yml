@@ -1,10 +1,3 @@
-schedules:
-- cron: "0 11 * * 1-5"
-  displayName: Run on weekdays at 11am UTC
-  branches:
-    include:
-    - main
-
 # Relies on dotnet-source-build being in the same repo as this pipeline
 # https://learn.microsoft.com/en-us/azure/devops/pipelines/process/pipeline-triggers?view=azure-devops#branch-considerations
 resources:
@@ -30,6 +23,10 @@ parameters:
   type: string
   default: ' '
 
+variables:
+# GH access token for SB bot - BotAccount-dotnet-sb-bot-pat
+- group: DotNet-Source-Build-Bot-Secrets-MVP
+
 jobs:
 - template: templates/jobs/sdk-diff-tests.yml
   parameters:
@@ -38,6 +35,7 @@ jobs:
     architecture: x64
     dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
     includeArtifactsSize: true
+    publishTestResultsPr: true
 
 - template: templates/jobs/sdk-diff-tests.yml
   parameters:
