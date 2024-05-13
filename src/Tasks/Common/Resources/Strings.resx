@@ -856,6 +856,10 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1189: Prefer32Bit is not supported and has no effect for netcoreapp target.</value>
     <comment>{StrBegin="NETSDK1189: "}</comment>
   </data>
+  <data name="PreferNativeArm64IgnoredForNetCoreApp" xml:space="preserve">
+    <value>NETSDK1214: PreferNativeArm64 is not supported and has no effect for netcoreapp target.</value>
+    <comment>{StrBegin="NETSDK1214: "}</comment>
+  </data>
   <data name="ImplicitRuntimeIdentifierResolutionForPublishPropertyFailed" xml:space="preserve">
     <value>NETSDK1191: A runtime identifier for the property '{0}' couldn't be inferred. Specify a rid explicitly.</value>
     <comment>{StrBegin="NETSDK1191: "}</comment>

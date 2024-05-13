@@ -284,6 +284,19 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <Target Name="_CheckAndUnsetUnsupportedPreferNativeArm64"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' >= '7.0'">
+
+    <NETSdkWarning Condition="'$(PreferNativeArm64)' == 'true'"
+                    ResourceName="PreferNativeArm64IgnoredForNetCoreApp" />
+
+    <PropertyGroup>
+      <PreferNativeArm64>false</PreferNativeArm64>
+    </PropertyGroup>
+
+  </Target>
+
   <Target Name="_CheckForMismatchingPlatform"
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
           Condition="'$(RuntimeIdentifier)' != '' and '$(PlatformTarget)' != ''">
