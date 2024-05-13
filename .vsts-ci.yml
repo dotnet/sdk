@@ -345,35 +345,19 @@ extends:
             - categoryName: AoT
               runAoTTests: true
 
-
       ############### SOURCE BUILD ###############
-      - template: /eng/common/templates-official/job/source-build.yml@self
-        parameters:
-          platform:
-            name: Managed
-            container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
+      # - template: /eng/common/templates-official/job/source-build.yml@self
+      #   parameters:
+      #     platform:
+      #       name: Managed
+      #       container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
 
       ############### DOTNET-FORMAT ###############
-      - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
-        - template: /eng/dotnet-format/dotnet-format-integration.yml@self
-          parameters:
-            oneESCompat:
-              publishTaskName: 1ES.PublishBuildArtifacts@1
-
-
-    #   - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-    #     - template: /eng/common/templates-official/job/publish-build-assets.yml@self
-    #       parameters:
-    #         publishUsingPipelines: true
-    #         publishAssetsImmediately: true
-    #         dependsOn:
-    #         - Windows_NT
-    #         - Source_Build_Managed
-    #         pool:
-    #           name: $(DncEngInternalBuildPool)
-    #           image: 1es-windows-2022
-    #           os: windows
-
+      # - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+      #   - template: /eng/dotnet-format/dotnet-format-integration.yml@self
+      #     parameters:
+      #       oneESCompat:
+      #         publishTaskName: 1ES.PublishBuildArtifacts@1
 
     - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       - stage: publish
