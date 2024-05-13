@@ -16,14 +16,15 @@ jobs:
         inputs:
           targetPath: $(Build.SourcesDirectory)/eng/BuildConfiguration
           artifactName: BuildConfiguration
-- ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/${{ parameters.locBranch }}')) }}:
-  - template: /eng/common/templates-official/job/onelocbuild.yml
-    parameters:
-      CreatePr: true
-      LclSource: lclFilesfromPackage
-      LclPackageId: LCL-JUNO-PROD-DOTNETSDK
-      MirrorBranch: ${{ parameters.locBranch }}
-      MirrorRepo: sdk
+# TODO: This needs oneESCompat value.
+# - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/${{ parameters.locBranch }}')) }}:
+#   - template: /eng/common/templates-official/job/onelocbuild.yml
+#     parameters:
+#       CreatePr: true
+#       LclSource: lclFilesfromPackage
+#       LclPackageId: LCL-JUNO-PROD-DOTNETSDK
+#       MirrorBranch: ${{ parameters.locBranch }}
+#       MirrorRepo: sdk
 - ${{ each jobParameters in parameters.jobParameterSets }}:
   - template: /eng/pipelines/templates/jobs/sdk-build.yml
     parameters:
