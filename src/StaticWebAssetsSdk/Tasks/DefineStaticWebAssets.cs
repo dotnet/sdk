@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     {
                         var candidateMatchPath = GetDiscoveryCandidateMatchPath(candidate);
                         relativePathCandidate = candidateMatchPath;
-                        if (string.IsNullOrEmpty(candidate.GetMetadata("RelativePath")))
+                        if (matcher != null && string.IsNullOrEmpty(candidate.GetMetadata("RelativePath")))
                         {
                             var match = matcher.Match(candidateMatchPath);
                             if (!match.HasMatches)

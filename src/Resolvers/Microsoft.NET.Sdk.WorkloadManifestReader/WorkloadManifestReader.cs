@@ -4,11 +4,7 @@
 using Microsoft.NET.Sdk.Localization;
 using FXVersion = Microsoft.DotNet.MSBuildSdkResolver.FXVersion;
 
-#if USE_SYSTEM_TEXT_JSON
 using System.Text.Json;
-#else
-using JsonTokenType = Newtonsoft.Json.JsonToken;
-#endif
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {

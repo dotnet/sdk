@@ -38,5 +38,19 @@ namespace Microsoft.DotNet.Watcher
             variables.Add(EnvironmentVariables.Names.DotnetStartupHooks, string.Join(s_startupHooksSeparator, DotNetStartupHooks));
             variables.Add(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, string.Join(AssembliesSeparator, AspNetCoreHostingStartupAssemblies));
         }
+
+        public IEnumerable<string> ToCommandLineDirectives()
+        {
+            foreach (var (name, value) in this)
+            {
+                yield return MakeDirective(name, value);
+            }
+
+            yield return MakeDirective(EnvironmentVariables.Names.DotnetStartupHooks, string.Join(s_startupHooksSeparator, DotNetStartupHooks));
+            yield return MakeDirective(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, string.Join(AssembliesSeparator, AspNetCoreHostingStartupAssemblies));
+
+            static string MakeDirective(string name, string value)
+                => $"[env:{name}={value}]";
+        }
     }
 }

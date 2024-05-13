@@ -294,7 +294,7 @@ public static class ContainerHelpers
 
             // normalize the name. a little more complex, but this does all of our checks in a single pass and doesn't require coming back
             // after the normalization to check if our invariants hold
-            var normalizedAllChars = true;
+            var invalidChars = 0;
             var normalizationOccurred = false;
             var builder = new StringBuilder(containerRepository);
             for (int i = 0; i < containerRepository.Length; i++)
@@ -303,7 +303,6 @@ public static class ContainerHelpers
                 if (IsLowerAlpha(current) || IsNumeric(current) || IsAllowedPunctuation(current))
                 {
                     // no need to set the builder's char here, since we preloaded
-                    normalizedAllChars = false;
                 }
                 else if (IsUpperAlpha(current))
                 {
@@ -314,12 +313,13 @@ public static class ContainerHelpers
                 {
                     builder[i] = '-';
                     normalizationOccurred = true;
+                    invalidChars++;
                 }
             }
             var normalizedImageName = builder.ToString();
 
             // check for normalization to useless name
-            if (normalizedAllChars)
+            if (invalidChars == builder.Length)
             {
                 // The name was normalized to all dashes, so there was nothing recoverable. We should throw.
                 var error = (nameof(Strings.InvalidImageName_EntireNameIsInvalidCharacters), new string[] { containerRepository });

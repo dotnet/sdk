@@ -42,7 +42,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true"/>
     <PackageReference Include="Microsoft.FSharp.Compiler" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" GeneratePathProperty="true" />
-    <PackageDownload Include="Microsoft.Net.Compilers.Toolset" Version="[$(MicrosoftNetCompilersToolsetPackageVersion)]" />
+    <PackageDownload Include="Microsoft.Net.Compilers.Toolset" Version="[$(MicrosoftNetCompilersToolsetVersion)]" />
     <PackageReference Include="Microsoft.Net.Compilers.Toolset.Framework" ExcludeAssets="All" GeneratePathProperty="true" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
 
     <!-- Lift up dependencies of dependencies to prevent build tasks from getting pinned to older versions -->

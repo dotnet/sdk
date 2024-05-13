@@ -1,0 +1,26 @@
+# Contains the list of files whose assembly versions are to be excluded from comparison between the MSFT & SB SDK.
+# These exclusions only take effect if the assembly version of the file in the SB SDK is equal to or greater than
+# the version in the MSFT SDK. If the version is less, the file will show up in the results as this is not a scenario
+# that is valid for shipping.
+#
+# This list is processed using FileSystemName.MatchesSimpleExpression
+#
+# '*' in exclusions match zero or more characters.
+# '*' will match files and directory names but it will not match separator characters.
+# '/' will be evaluated as '/**' if it is the last character.
+#
+# Examples
+# 'folder/*' matches all files and directories in 'folder/'. It will not match 'folder/abc/def'
+# 'folder/' is equivalent to 'folder/**. It matches 'folder/', 'folder/abc', and 'folder/abc/def/'
+
+# Referenced 6.0/7.0 assemblies (https://github.com/dotnet/sdk/issues/34245)
+./sdk/x.y.z/Microsoft.Extensions.FileProviders.Abstractions.dll
+./sdk/x.y.z/Microsoft.Extensions.FileSystemGlobbing.dll
+./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/System.Collections.Immutable.dll
+./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/**/Microsoft.Extensions.ObjectPool.dll
+./sdk/**/System.Configuration.ConfigurationManager.dll
+./sdk/**/System.Diagnostics.EventLog*.dll
+./sdk/**/System.Reflection.MetadataLoadContext.dll
+./sdk/**/System.Security.Cryptography.Pkcs.dll
+./sdk/**/System.Security.Cryptography.ProtectedData.dll
+./sdk/x.y.z/System.Security.Cryptography.Xml.dll

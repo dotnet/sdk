@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.Utils
         /// </summary>
         /// <returns>The custom language that was set by the user.
         /// DOTNET_CLI_UI_LANGUAGE > VSLANG. Returns null if none are set.</returns>
-        private static CultureInfo GetOverriddenUILanguage()
+        public static CultureInfo GetOverriddenUILanguage()
         {
             // DOTNET_CLI_UI_LANGUAGE=<culture name> is the main way for users to customize the CLI's UI language.
             string dotnetCliLanguage = Environment.GetEnvironmentVariable(DOTNET_CLI_UI_LANGUAGE);

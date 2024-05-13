@@ -1,6 +1,6 @@
 [
-  "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\AppWithPackageAndP2PReference.styles.css.gz",
-  "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\publish\\AppWithPackageAndP2PReference.styles.css.br",
+  "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.styles.css.gz",
+  "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\${Rid}\\compressed\\publish\\_content\\AppWithPackageAndP2PReference\\AppWithPackageAndP2PReference.styles.css.br",
   "${ProjectPath}\\AppWithPackageAndP2PReference\\obj\\Debug\\${Tfm}\\${Rid}\\scopedcss\\bundle\\AppWithPackageAndP2PReference.styles.css",
   "${OutputPath}\\wwwroot\\AppWithPackageAndP2PReference.styles.css",
   "${OutputPath}\\wwwroot\\AppWithPackageAndP2PReference.styles.css.br",
