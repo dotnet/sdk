@@ -509,14 +509,16 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             File.WriteAllText(path, installStateContents.ToString());
         }
 
-        public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
+        public void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, _dotnetDir), "default.json");
             Directory.CreateDirectory(Path.GetDirectoryName(path));
             var installStateContents = InstallStateContents.FromPath(path);
             installStateContents.UseWorkloadSets = newMode;
             File.WriteAllText(path, installStateContents.ToString());
-            _reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newMode ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests));
+
+            var newModeString = newMode == null ? "<null>" : (newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests);
+            _reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
         }
 
         /// <summary>

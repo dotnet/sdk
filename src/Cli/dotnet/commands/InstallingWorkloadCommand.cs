@@ -125,6 +125,13 @@ namespace Microsoft.DotNet.Workloads.Workload
                     manifestVersionUpdates.Select(update => new WorkloadManifestInfo(update.ManifestId.ToString(), update.NewVersion.ToString(), /* We don't actually use the directory here */ string.Empty, update.NewFeatureBand))
                     ).ToDictionaryForJson();
 
+        InstallStateContents GetCurrentInstallState()
+        {
+            string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(_sdkFeatureBand, _dotnetPath), "default.json");
+            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            return installStateContents;
+        }
+
         public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
@@ -183,6 +190,8 @@ namespace Microsoft.DotNet.Workloads.Workload
                                                   _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
             }
 
+            InstallStateContents oldInstallState = GetCurrentInstallState();
+
             context.Run(
                 action: () =>
                 {
@@ -214,7 +223,27 @@ namespace Microsoft.DotNet.Workloads.Workload
                 },
                 rollback: () =>
                 {
-                    //  Nothing to roll back at this level, InstallWorkloadManifest and InstallWorkloadPacks handle the transaction rollback
+                    //  Reset install state
+                    var currentInstallState = GetCurrentInstallState();
+                    if (currentInstallState.UseWorkloadSets != oldInstallState.UseWorkloadSets)
+                    {
+                        _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, oldInstallState.UseWorkloadSets);
+                    }
+
+                    if ((currentInstallState.Manifests == null && oldInstallState.Manifests != null) ||
+                        (currentInstallState.Manifests != null && oldInstallState.Manifests == null) ||
+                        (currentInstallState.Manifests != null && oldInstallState.Manifests != null &&
+                         (currentInstallState.Manifests.Count != oldInstallState.Manifests.Count ||
+                         !currentInstallState.Manifests.All(m => oldInstallState.Manifests.TryGetValue(m.Key, out var val) && val.Equals(m.Value)))))
+                    {
+                        _workloadInstaller.SaveInstallStateManifestVersions(_sdkFeatureBand, oldInstallState.Manifests);
+                    }
+
+                    if (currentInstallState.WorkloadVersion != oldInstallState.WorkloadVersion)
+                    {
+                        _workloadInstaller.AdjustWorkloadSetInInstallState(_sdkFeatureBand, oldInstallState.WorkloadVersion);
+                    }
+
                     //  We will refresh the workload manifests to make sure that the resolver has the updated state after the rollback
                     _workloadResolver.RefreshWorkloadManifests();
                 });

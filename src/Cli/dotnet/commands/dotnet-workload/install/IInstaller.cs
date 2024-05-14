@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         /// <param name="manifestContents">The JSON contents describing the install state.</param>
         void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents);
 
-        void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode);
+        void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode);
     }
 
     // Interface to pass to workload manifest updater

@@ -1083,10 +1083,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
+        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
         {
             UpdateInstallMode(sdkFeatureBand, newMode);
-            Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newMode ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests));
+            string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
+            Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
         }
     }
 }
