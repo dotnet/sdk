@@ -57,7 +57,7 @@
         <target state="translated">Foi encontrado um problema ao verificar as cargas de trabalho. Para obter mais informações, execute "dotnet workload update".</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
-      <trans-unit id="WorkloadManfiestVersionColumn">
+      <trans-unit id="WorkloadManifestVersionColumn">
         <source>Manifest Version</source>
         <target state="translated">Versão do Manifesto</target>
         <note />
