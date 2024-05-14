@@ -66,8 +66,9 @@ extends:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
       cblMariner20Fpm:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
-      centosStream9:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
+      # WORKAROUND: The centosStream9 assets are not published. So, we need to revert to 8 for the time being.
+      centosStream8:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8
       debian11Amd64:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-amd64
       fedora39:
@@ -172,8 +173,7 @@ extends:
               # This uses the build step for testing, so the extra test step is not necessary.
               runTests: false
             - categoryName: TemplateEngine
-              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
-                $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
             - categoryName: AoT
               runAoTTests: true
 
@@ -292,7 +292,7 @@ extends:
               container: fedora39
               osProperties: $(_linuxOsProperties)
             - categoryName: TestBuild
-              container: centosStream9
+              container: centosStream8
               osProperties: /p:OSName=linux
             - categoryName: TestBuild
               container: debian11Amd64
@@ -304,8 +304,7 @@ extends:
               osProperties: /p:HostOSName=linux-musl
             - categoryName: TemplateEngine
               osProperties: $(_linuxOsProperties)
-              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
-                $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
 
       ############### MACOS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -337,8 +336,7 @@ extends:
             ### TESTS ###
             - categoryName: TestBuild
             - categoryName: TemplateEngine
-              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;
-                $(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
             - categoryName: AoT
               runAoTTests: true
 
