@@ -152,43 +152,8 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        public static string WorkloadSetVersionToWorkloadSetPackageVersion(string setVersion, out SdkFeatureBand sdkFeatureBand)
-        {
-            string[] sections = setVersion.Split(new char[] { '-', '+' }, 2);
-            string versionCore = sections[0];
-            string preReleaseOrBuild = sections.Length > 1 ? sections[1] : null;
-
-            string[] coreComponents = versionCore.Split('.');
-            string major = coreComponents[0];
-            string minor = coreComponents[1];
-            string patch = coreComponents[2];
-
-            string packageVersion = $"{major}.{patch}.";
-            if (coreComponents.Length == 3)
-            {
-                //  No workload set patch version
-                packageVersion += "0";
-
-                //  Use preview specifier (if any) from workload set version as part of SDK feature band
-                sdkFeatureBand = new SdkFeatureBand(setVersion);
-            }
-            else
-            {
-                //  Workload set version has workload patch version (ie 4 components)
-                packageVersion += coreComponents[3];
-
-                //  Don't include any preview specifiers in SDK feature band
-                sdkFeatureBand = new SdkFeatureBand($"{major}.{minor}.{patch}");
-            }
-
-            if (preReleaseOrBuild != null)
-            {
-                packageVersion += '-' + preReleaseOrBuild;
-            }
-
-            return packageVersion;
-        }
-
+        //  Corresponding method for opposite direction is in WorkloadSet class.  This version is kept here as implementation
+        //  depends on NuGetVersion
         public static string WorkloadSetPackageVersionToWorkloadSetVersion(SdkFeatureBand sdkFeatureBand, string packageVersion)
         {
             var nugetVersion = new NuGetVersion(packageVersion);
