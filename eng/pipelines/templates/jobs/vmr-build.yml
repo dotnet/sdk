@@ -508,7 +508,7 @@ jobs:
 
     - task: PublishTestResults@2
       displayName: Publish Scenario Test Results
-      condition: succeededOrFailed()
+      condition: and(ne(parameters.useDevVersions, 'True'), succeededOrFailed())
       continueOnError: true
       inputs:
         testRunner: xUnit
