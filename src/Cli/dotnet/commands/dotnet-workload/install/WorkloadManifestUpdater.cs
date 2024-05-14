@@ -181,6 +181,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 sdkFeatureBand = new SdkFeatureBand($"{major}.{minor}.{patch}");
             }
 
+            if (preReleaseOrBuild != null)
+            {
+                packageVersion += '-' + preReleaseOrBuild;
+            }
+
             return packageVersion;
         }
 
