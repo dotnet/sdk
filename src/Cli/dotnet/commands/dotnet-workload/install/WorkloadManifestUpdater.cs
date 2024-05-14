@@ -264,7 +264,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 var (id, (version, band)) = manifest;
                 var (installedVersion, installedBand) = GetInstalledManifestVersion(id);
                 return new ManifestVersionUpdate(id, installedVersion, installedBand.ToString(), version, band.ToString());
-            });
+            }).ToList();    //  Call ToList() so that GetInstalledManifestVersion call isn't delayed until the result is iterated over
         }
 
         public async Task<IEnumerable<WorkloadDownload>> GetManifestPackageDownloadsAsync(bool includePreviews, SdkFeatureBand providedSdkFeatureBand, SdkFeatureBand installedSdkFeatureBand)
