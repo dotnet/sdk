@@ -171,13 +171,9 @@ jobs:
       displayName: Publish Logs
       inputs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)
-        # TODO: Figure out appropriate artifact name
+        # This is the job name, but because of "legacy reasons", both Agent.JobName and System.JobName are not the actual job name.
+        # See: https://developercommunity.visualstudio.com/t/systemjobname-seems-to-be-incorrectly-assigned-and/1209736#TPIN-N1211828
         ArtifactName: $(System.PhaseName)
-        # ArtifactName: ${{ parameters.name }}
-        # ${{ if eq(parameters.container, '') }}:
-        #   ArtifactName: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
-        # ${{ else }}:
-        #   ArtifactName: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}_${{ parameters.container }}
         publishLocation: Container
       continueOnError: true
       condition: always()
