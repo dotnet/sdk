@@ -10,6 +10,3 @@ variables:
   _TeamName: DotNetCore
   # This ends up being set by the DotNet-HelixApi-Access variable group when running internally.
   HelixApiAccessToken: ''
-
-  ############### OTHER ###############
-  # Codeql.ExcludePathPatterns: artifacts, .packages

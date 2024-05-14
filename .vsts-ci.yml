@@ -85,10 +85,7 @@ extends:
         image: 1es-windows-2022
         os: windows
       componentgovernance:
-        # Setting to Critical as aspnet templates currently cause a High alert (default alert level is High).
-        # See: https://dev.azure.com/dnceng/internal/_componentGovernance/dotnet-sdk/alert/9439021?typeId=6422467
         # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
-        # alertWarningLevel: Critical
         ignoreDirectories: artifacts, .packages
 
     stages:
