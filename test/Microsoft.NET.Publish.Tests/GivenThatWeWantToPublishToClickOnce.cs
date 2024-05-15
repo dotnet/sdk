@@ -65,13 +65,20 @@ namespace Microsoft.NET.Publish.Tests
     {(publishSingleFile.HasValue ? $"<PublishSingleFile>{publishSingleFile}</PublishSingleFile>" : "")}
     {(publishSingleFile == true ? $"<RuntimeIdentifier>{rid}</RuntimeIdentifier>" : "")}
   </PropertyGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="".NETFramework,Version=v4.8.1"">
+      <Install>true</Install>
+      <ProductName>Microsoft .NET Framework 4.8.1 (x86 and x64)</ProductName>
+    </BootstrapperPackage>
+  </ItemGroup>
 </Project>
 ");
 
             command
                 .Execute("/p:PublishProfile=test")
                 .Should()
-                .Pass();
+                .Pass()
+                .And.NotHaveStdErrContaining("warning");
 
             outputDirectory.Should().HaveFiles(new[] {
                 $"setup.exe",

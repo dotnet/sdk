@@ -148,12 +148,14 @@ jobs:
       condition: succeededOrFailed()
       targetPath: $(Build.StagingDirectory)/BuildLogs
       artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
+      sbomEnabled: false
 
     - output: pipelineArtifact
       path: $(Build.ArtifactStagingDirectory)/publishing
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
       condition: always()
+      sbomEnabled: true
 
     - ${{ if not(parameters.isBuiltFromVmr) }}:
       - output: pipelineArtifact
@@ -161,6 +163,7 @@ jobs:
         condition: failed()
         targetPath: $(Agent.TempDirectory)
         artifactName: $(System.JobDisplayName)_FailedPatches
+        sbomEnabled: false
 
   steps:
   - ${{ if not(parameters.isBuiltFromVmr) }}:
@@ -508,7 +511,7 @@ jobs:
 
     - task: PublishTestResults@2
       displayName: Publish Scenario Test Results
-      condition: succeededOrFailed()
+      condition: and(${{ ne(parameters.useDevVersions, 'True') }}, succeededOrFailed())
       continueOnError: true
       inputs:
         testRunner: xUnit

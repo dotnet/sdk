@@ -26,6 +26,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private WorkloadSet? _workloadSet;
         private WorkloadSet? _manifestsFromInstallState;
         private string? _installStateFilePath;
+        private bool _useManifestsFromInstallState = true;
 
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
@@ -120,10 +121,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _workloadSet = null;
             _manifestsFromInstallState = null;
             _installStateFilePath = null;
+            _useManifestsFromInstallState = true;
             var availableWorkloadSets = GetAvailableWorkloadSets();
 
             if (_workloadSetVersionFromConstructor != null)
             {
+                _useManifestsFromInstallState = false;
                 if (!availableWorkloadSets.TryGetValue(_workloadSetVersionFromConstructor, out _workloadSet))
                 {
                     throw new FileNotFoundException(string.Format(Strings.WorkloadVersionNotFound, _workloadSetVersionFromConstructor));
@@ -135,6 +138,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 _globalJsonWorkloadSetVersion = GlobalJsonReader.GetWorkloadVersionFromGlobalJson(_globalJsonPathFromConstructor);
                 if (_globalJsonWorkloadSetVersion != null)
                 {
+                    _useManifestsFromInstallState = false;
                     if (!availableWorkloadSets.TryGetValue(_globalJsonWorkloadSetVersion, out _workloadSet))
                     {
                         _exceptionToThrow = new FileNotFoundException(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, _globalJsonWorkloadSetVersion, _globalJsonPathFromConstructor));
@@ -292,24 +296,27 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            //  Load manifests from install state
-            if (_manifestsFromInstallState != null)
+            if (_useManifestsFromInstallState)
             {
-                foreach (var kvp in _manifestsFromInstallState.ManifestVersions)
+                //  Load manifests from install state
+                if (_manifestsFromInstallState != null)
                 {
-                    var manifestSpecifier = new ManifestSpecifier(kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand);
-                    var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
-                    if (manifestDirectory == null)
+                    foreach (var kvp in _manifestsFromInstallState.ManifestVersions)
                     {
-                        throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
+                        var manifestSpecifier = new ManifestSpecifier(kvp.Key, kvp.Value.Version, kvp.Value.FeatureBand);
+                        var manifestDirectory = GetManifestDirectoryFromSpecifier(manifestSpecifier);
+                        if (manifestDirectory == null)
+                        {
+                            throw new FileNotFoundException(string.Format(Strings.ManifestFromInstallStateNotFound, manifestSpecifier.ToString(), _installStateFilePath));
+                        }
+                        AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
                     }
-                    AddManifest(manifestSpecifier.Id.ToString(), manifestDirectory, manifestSpecifier.FeatureBand.ToString(), kvp.Value.Version.ToString());
                 }
             }
 
-            if (_knownManifestIdsAndOrder != null && _knownManifestIdsAndOrder.Keys.Any(id => !manifestIdsToManifests.ContainsKey(id)))
+            var missingManifestIds = _knownManifestIdsAndOrder?.Keys.Where(id => !manifestIdsToManifests.ContainsKey(id));
+            if (missingManifestIds != null && missingManifestIds.Any())
             {
-                var missingManifestIds = _knownManifestIdsAndOrder.Keys.Where(id => !manifestIdsToManifests.ContainsKey(id));
                 foreach (var missingManifestId in missingManifestIds)
                 {
                     var (manifestDir, featureBand) = FallbackForMissingManifest(missingManifestId);
@@ -320,7 +327,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 }
             }
 
-            //  Return manifests in a stable order.  Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
+            //  Return manifests in a stable order. Manifests in the KnownWorkloadManifests.txt file will be first, and in the same order they appear in that file.
             //  Then the rest of the manifests (if any) will be returned in (ordinal case-insensitive) alphabetical order.
             return manifestIdsToManifests
                 .OrderBy(kvp =>
