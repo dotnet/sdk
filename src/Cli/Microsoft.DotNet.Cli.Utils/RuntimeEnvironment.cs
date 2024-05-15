@@ -64,9 +64,12 @@ namespace Microsoft.DotNet.Cli.Utils
                     return GetDistroVersionId() ?? string.Empty;
                 case Platform.Darwin:
                     return Environment.OSVersion.Version.ToString(2);
+                case Platform.Solaris:
+                    // RuntimeInformation.OSDescription example on Solaris 11.3:      SunOS 5.11 11.3
+                    // we only need the major version; 11
+                    return RuntimeInformation.OSDescription.Split(' ')[2].Split('.')[0];
                 case Platform.FreeBSD:
                 case Platform.Haiku:
-                case Platform.Solaris:
                     // only the major version
                     return Environment.OSVersion.Version.ToString(1);
                 default:
