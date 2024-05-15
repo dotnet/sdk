@@ -377,11 +377,6 @@
         <target state="translated">CAMINHO</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetUpgrade">
-        <source>Updating workload version from {0} to {1}.</source>
-        <target state="translated">Atualizando a versão da carga de trabalho {0} para {1}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>Update to the specified workload version.</source>
         <target state="translated">Atualize para a versão de carga de trabalho especificada.</target>
