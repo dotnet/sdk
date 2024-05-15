@@ -36,4 +36,5 @@ _NETSDK1147: To build this project, the following workloads must be installed:_
 1. `dotnet workload --info`
 2. `dotnet build -getItem:MissingWorkloadPack`
 3. `dotnet --info`
-4. https://aka.ms/vscollect <-- for admin install failures only
+4. `dotnet nuget list source`
+5. https://aka.ms/vscollect <-- for admin install failures only
