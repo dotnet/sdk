@@ -949,7 +949,8 @@ You may need to build the project on another operating system or architecture, o
     <comment>{StrBegin="NETSDK1213: "}</comment>
   </data>
   <data name="ItemMissingValue" xml:space="preserve">
-    <value>Method {0} failed with a null reference exception. This typically indicates that the corresponding input to the ResolvePackageAssets task is missing a value.</value>
+    <value>NETSDK1214: Method {0} failed with a null reference exception. This typically indicates that the corresponding input to the ResolvePackageAssets task is missing a value.</value>
+    <comment>{StrBegin="NETSDK1214: "}</comment>
   </data>
   <!-- The latest message added is ItemMissingValue. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
