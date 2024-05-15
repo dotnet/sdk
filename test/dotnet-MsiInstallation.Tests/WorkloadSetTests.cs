@@ -213,17 +213,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(workloadVersionBeforeUpdate);
         }
 
-        string GetWorkloadVersion()
-        {
-            var result = VM.CreateRunCommand("dotnet", "workload", "--version")
-                .WithIsReadOnly(true)
-                .Execute();
-
-            result.Should().Pass();
-
-            return result.StdOut;
-        }
-
         string GetUpdateMode()
         {
             var result = VM.CreateRunCommand("dotnet", "workload", "config", "--update-mode")
@@ -233,15 +222,6 @@ namespace Microsoft.DotNet.MsiInstallerTests
             result.Should().Pass();
 
             return result.StdOut;
-        }
-
-        void AddNuGetSource(string source)
-        {
-            VM.CreateRunCommand("dotnet", "nuget", "add", "source", source)
-                .WithDescription($"Add {source} to NuGet.config")
-                .Execute()
-                .Should()
-                .Pass();
         }
     }
 }
