@@ -148,12 +148,14 @@ jobs:
       condition: succeededOrFailed()
       targetPath: $(Build.StagingDirectory)/BuildLogs
       artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
+      sbomEnabled: false
 
     - output: pipelineArtifact
       path: $(Build.ArtifactStagingDirectory)/publishing
       artifact: $(Agent.JobName)_Artifacts
       displayName: Publish Artifacts
       condition: always()
+      sbomEnabled: true
 
     - ${{ if not(parameters.isBuiltFromVmr) }}:
       - output: pipelineArtifact
@@ -161,6 +163,7 @@ jobs:
         condition: failed()
         targetPath: $(Agent.TempDirectory)
         artifactName: $(System.JobDisplayName)_FailedPatches
+        sbomEnabled: false
 
   steps:
   - ${{ if not(parameters.isBuiltFromVmr) }}:
@@ -434,6 +437,7 @@ jobs:
 
         if (Test-Path "artifacts/scenario-tests/") {
             CopyWithRelativeFolders "artifacts/scenario-tests/" $targetFolder "*.binlog"
+            echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
         }
 
         if (Test-Path "artifacts/TestResults/*") {
@@ -463,7 +467,10 @@ jobs:
         cd "$(sourcesPath)"
         find artifacts/log/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/log/ -type f -name "*.log" -exec rsync -R {} -t ${targetFolder} \;
-        [ -d "artifacts/scenario-tests/" ] && find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
+        if [ -d "artifacts/scenario-tests/" ]; then 
+          find artifacts/scenario-tests/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
+          echo "##vso[task.setvariable variable=hasScenarioTestResults]true"
+        fi
         find artifacts/TestResults/ -type f -name "*.binlog" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/TestResults/ -type f -name "*.diff" -exec rsync -R {} -t ${targetFolder} \;
         find artifacts/TestResults/ -type f -name "Updated*.txt" -exec rsync -R {} -t ${targetFolder} \;
@@ -508,7 +515,7 @@ jobs:
 
     - task: PublishTestResults@2
       displayName: Publish Scenario Test Results
-      condition: succeededOrFailed()
+      condition: and(eq(variables['hasScenarioTestResults'], 'true'), succeededOrFailed())
       continueOnError: true
       inputs:
         testRunner: xUnit

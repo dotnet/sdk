@@ -23,6 +23,10 @@ parameters:
   type: string
   default: ' '
 
+variables:
+# GH access token for SB bot - BotAccount-dotnet-sb-bot-pat
+- group: DotNet-Source-Build-Bot-Secrets-MVP
+
 jobs:
 - template: templates/jobs/sdk-diff-tests.yml
   parameters:
@@ -31,6 +35,7 @@ jobs:
     architecture: x64
     dotnetDotnetRunId: ${{ parameters.dotnetDotnetRunId }}
     includeArtifactsSize: true
+    publishTestResultsPr: true
 
 - template: templates/jobs/sdk-diff-tests.yml
   parameters:
