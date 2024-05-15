@@ -298,7 +298,8 @@ extends:
               container: alpine319WithNode
               runtimeIdentifier: linux-musl-x64
               # Use HostOSName when running on alpine.
-              osProperties: /p:HostOSName=linux-musl
+              # osProperties: /p:HostOSName=linux-musl
+              osProperties: /p:OSName=linux-musl
             - categoryName: TemplateEngine
               osProperties: $(_linuxOsProperties)
               testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
