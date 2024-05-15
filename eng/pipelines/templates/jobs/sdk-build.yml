@@ -111,11 +111,12 @@ jobs:
         # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
         - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(buildConfiguration)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
           displayName: Install wasm-tools Workload
+      # For the weird /p:Projects syntax, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         - powershell: eng/common/build.ps1
             -restore -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)
-            -projects ${{ parameters.testProjects }}
+            '/p:Projects="${{ parameters.testProjects }}"'
             /p:Architecture=${{ parameters.buildArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
@@ -131,7 +132,7 @@ jobs:
         - script: eng/common/build.sh
             -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
-            -projects ${{ parameters.testProjects }}
+            '/p:Projects="${{ parameters.testProjects }}"'
             /p:Architecture=${{ parameters.buildArchitecture }}
             /p:Rid=${{ parameters.runtimeIdentifier }}
             ${{ parameters.osProperties }}
