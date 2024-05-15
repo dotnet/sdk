@@ -170,8 +170,9 @@ extends:
               # This uses the build step for testing, so the extra test step is not necessary.
               runTests: false
             - categoryName: TemplateEngine
-              # Use backtick (`) to escape the semicolon for the PowerShell task.
-              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj`;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+              # Use %3B for semicolon so MSBuild can interpret it correctly.
+              # See: https://stackoverflow.com/a/44259937/294804
+              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj%3B$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
             - categoryName: AoT
               runAoTTests: true
 
@@ -302,8 +303,9 @@ extends:
               osProperties: /p:HostOSName=linux-musl
             - categoryName: TemplateEngine
               osProperties: $(_linuxOsProperties)
-              # Use backslash (\) to escape the semicolon for the script task.
-              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj\;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+              # Use %3B for semicolon so MSBuild can interpret it correctly.
+              # See: https://stackoverflow.com/a/44259937/294804
+              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj%3B$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
 
       ############### MACOS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -335,8 +337,9 @@ extends:
             ### TESTS ###
             - categoryName: TestBuild
             - categoryName: TemplateEngine
-              # Use backslash (\) to escape the semicolon for the script task.
-              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj\;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
+              # Use %3B for semicolon so MSBuild can interpret it correctly.
+              # See: https://stackoverflow.com/a/44259937/294804
+              testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj%3B$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
             - categoryName: AoT
               runAoTTests: true
 

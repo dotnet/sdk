@@ -109,17 +109,16 @@ jobs:
     - ${{ if eq(parameters.runTests, true) }}:
       - ${{ if eq(parameters.runAoTTests, true) }}:
         # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
-        - script: $(Build.SourcesDirectory)/artifacts/bin/redist-installer/$(buildConfiguration)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
+        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(buildConfiguration)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
           displayName: Install wasm-tools Workload
       - ${{ if eq(parameters.pool.os, 'windows') }}:
-        # TODO: Change _CustomHelixTargetQueue name
         - powershell: eng/common/build.ps1
             -restore -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)
             -projects ${{ parameters.testProjects }}
             /p:Architecture=${{ parameters.buildArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
-            /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
@@ -137,7 +136,7 @@ jobs:
             /p:Rid=${{ parameters.runtimeIdentifier }}
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
-            /p:_CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
