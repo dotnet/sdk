@@ -7,6 +7,7 @@ parameters:
   locBranch: ''
 
 jobs:
+# TODO: Move this down a layer
 - ${{ if eq(parameters.publishRetryConfig, true) }}:
   # Publishes the build-configuration.json to the artifacts which Arcade uses to allow the jobs in the pipeline run to retry automatically.
   # https://github.com/dotnet/arcade/blob/main/Documentation/Projects/Build%20Analysis/BuildRetryOnboard.md

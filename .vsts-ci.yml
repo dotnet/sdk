@@ -66,9 +66,10 @@ extends:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
       cblMariner20Fpm:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-fpm
-      # WORKAROUND: The centosStream9 assets are not published. So, we need to revert to 8 for the time being.
       centosStream8:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream8
+      centosStream9:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian11Amd64:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-11-amd64
       fedora39:
@@ -289,6 +290,7 @@ extends:
               container: fedora39
               osProperties: $(_linuxOsProperties)
             - categoryName: TestBuild
+              # WORKAROUND: The centosStream9 assets are not published. So, we need to use 8 for the time being.
               container: centosStream8
               osProperties: /p:OSName=linux
             - categoryName: TestBuild
@@ -310,7 +312,7 @@ extends:
             name: Azure Pipelines
             image: macOS-latest
             os: macOS
-          helixTargetQueue: OSX.13.Amd64
+          helixTargetQueue: osx.13.amd64
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
@@ -342,7 +344,7 @@ extends:
         parameters:
           platform:
             name: Managed
-            container: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
+            container: centosStream9
 
       ############### DOTNET-FORMAT ###############
       - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
