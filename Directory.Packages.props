@@ -111,26 +111,26 @@
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(TargetFramework)' != 'net472'">
     <!-- MSBuild-y stuff that runs in the CLI can always reference the latest MSBuild since
          that is what will be packaged with the .NET SDK. -->
-    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildVersion)" />
+    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
     <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
     <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationVersion)" />
     <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildVersion)" />
-    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildVersion)" />
-    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
-    <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildVersion)" />
+    <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildPackageVersion)" />
   </ItemGroup>
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(TargetFramework)' == 'net472'">
     <!-- MSBuild-y stuff that runs in VS/MSBuild.exe should reference the lagging minimum version so
          it works in that slightly-older Visual Studio. -->
-    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildFrameworkPackageVersion)" />
     <!-- Localization is the same between source-only and regular modes. Always taken from latest. Duplicated between the itemgroups for clarity. -->
     <PackageVersion Include="Microsoft.Build.Localization" Version="$(MicrosoftBuildLocalizationPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Locator" Version="$(MicrosoftBuildLocatorPackageVersion)" />
     <PackageVersion Include="Microsoft.Build.Runtime" Version="$(MicrosoftBuildRuntimePackageVersion)" />
-    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageVersion Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftNETStringToolsPackageVersion)" />
   </ItemGroup>
