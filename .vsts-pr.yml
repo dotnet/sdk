@@ -16,6 +16,8 @@ variables:
 ### LOCAL ONLY ###
 - name: _linuxOsProperties
   value: /p:OSName=linux /p:IsLinuxPortable=true
+- name: _helixTargetContainerPrefix
+  value: '@mcr.microsoft.com/dotnet-buildtools/prereqs:'
 
 resources:
   containers:
@@ -45,10 +47,10 @@ stages:
         demands: ImageOverride -equals 1es-windows-2022-open
         os: windows
       helixTargetQueue: windows.amd64.vs2022.pre.open
-      publishRetryConfig: true
       jobParameterSets:
       ### TESTS ###
       - categoryName: TestBuild
+        publishRetryConfig: true
       - categoryName: FullFramework
         testFullMSBuild: true
       - categoryName: TestAsTools
@@ -61,7 +63,7 @@ stages:
         runAoTTests: true
 
   ############### LINUX ###############
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
@@ -80,19 +82,25 @@ stages:
         runTests: false
       - categoryName: TestBuild
         container: ubuntu2204
+        helixTargetContainer: $(_helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
         osProperties: $(_linuxOsProperties)
       - categoryName: TestBuild
         container: fedora39
+        # No fedora Helix container is available, so use the ubuntu one instead.
+        helixTargetContainer: $(_helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
         osProperties: $(_linuxOsProperties)
       - categoryName: TestBuild
         # WORKAROUND: The centosStream9 assets are not published. So, we need to use 8 for the time being.
         container: centosStream8
+        helixTargetContainer: $(_helixTargetContainerPrefix)centos-stream8-helix
         osProperties: /p:OSName=linux
       - categoryName: TestBuild
         container: debian11Amd64
+        helixTargetContainer: $(_helixTargetContainerPrefix)debian-11-helix-amd64
         osProperties: /p:OSName=linux /p:BuildSdkDeb=true
       - categoryName: TestBuild
         container: alpine319WithNode
+        helixTargetContainer: $(_helixTargetContainerPrefix)alpine-3.18-helix-amd64
         runtimeIdentifier: linux-musl-x64
         # Use HostOSName when running on alpine.
         osProperties: /p:HostOSName=linux-musl
@@ -101,11 +109,11 @@ stages:
         testProjects: $(Build.SourcesDirectory)/test/Microsoft.TemplateEngine.Cli.UnitTests/Microsoft.TemplateEngine.Cli.UnitTests.csproj;$(Build.SourcesDirectory)/test/dotnet-new.Tests/dotnet-new.IntegrationTests.csproj
 
   ############### MACOS ###############
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
       pool:
         name: Azure Pipelines
-        demands: ImageOverride -equals macOS-latest
+        vmImage: macOS-latest
         os: macOS
       helixTargetQueue: osx.13.amd64.open
       jobParameterSets:
@@ -117,14 +125,14 @@ stages:
         runAoTTests: true
 
   ############### SOURCE BUILD ###############
-  - template: /eng/common/templates/job/source-build.yml@self
+  - template: /eng/common/templates/job/source-build.yml
     parameters:
       platform:
         name: Managed
         container: centosStream9
 
   ############### DOTNET-FORMAT ###############
-  - template: /eng/dotnet-format/dotnet-format-integration.yml@self
+  - template: /eng/dotnet-format/dotnet-format-integration.yml
 
 
 

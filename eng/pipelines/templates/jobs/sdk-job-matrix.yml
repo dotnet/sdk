@@ -2,24 +2,9 @@ parameters:
   jobParameterSets: []
   oneESCompat:
     templateFolderName: templates
-    publishTaskPrefix: ''
-  publishRetryConfig: false
   locBranch: ''
 
 jobs:
-# TODO: Move this down a layer
-- ${{ if eq(parameters.publishRetryConfig, true) }}:
-  # Publishes the build-configuration.json to the artifacts which Arcade uses to allow the jobs in the pipeline run to retry automatically.
-  # https://github.com/dotnet/arcade/blob/main/Documentation/Projects/Build%20Analysis/BuildRetryOnboard.md
-  - job: PublishRetryConfig
-    displayName: Publish Pipeline Retry Config
-    pool: ${{ parameters.pool }}
-    steps:
-      - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
-        displayName: Publish build-configuration.json
-        inputs:
-          PathtoPublish: $(Build.SourcesDirectory)/eng/BuildConfiguration
-          ArtifactName: BuildConfiguration
 - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/${{ parameters.locBranch }}')) }}:
   - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/onelocbuild.yml
     parameters:

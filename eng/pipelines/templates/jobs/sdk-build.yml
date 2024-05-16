@@ -1,12 +1,15 @@
 parameters:
+  ### GENERAL ###
   variables: {}
   oneESCompat:
     templateFolderName: templates
     publishTaskPrefix: ''
   container: ''
+  helixTargetContainer: ''
   categoryName: Build
   runTests: true
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
+  publishRetryConfig: false
   ### ENV VARS ###
   testFullMSBuild: false
   runAoTTests: false
@@ -44,6 +47,14 @@ jobs:
 
     steps:
     ############## PREP ###############
+    - ${{ if eq(parameters.publishRetryConfig, true) }}:
+      # Publishes the build-configuration.json to the artifacts which Arcade uses to allow all the jobs in the pipeline to retry automatically.
+      # See: https://github.com/dotnet/arcade/blob/main/Documentation/Projects/Build%20Analysis/BuildRetryOnboard.md
+      - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
+        displayName: Publish build-configuration.json
+        inputs:
+          PathtoPublish: $(Build.SourcesDirectory)/eng/BuildConfiguration
+          ArtifactName: BuildConfiguration
     - ${{ if ne(variables['System.TeamProject'], 'public') }}:
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         - powershell: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1 -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
@@ -130,6 +141,9 @@ jobs:
             RunAoTTests: ${{ parameters.runAoTTests }}
       - ${{ else }}:
         # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
+        # The /p:CustomHelixTargetQueue syntax is: (<friendly-name>)<queue-name>@<container-name>
+        # The <friendly-name> is optional and only used for logging purposes.
+        # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
         - script: eng/common/build.sh
             -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
@@ -138,7 +152,7 @@ jobs:
             /p:Rid=${{ parameters.runtimeIdentifier }}
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}@${{ parameters.container }}
+            /p:CustomHelixTargetQueue=($(System.PhaseName))${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
