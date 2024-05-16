@@ -14,12 +14,12 @@ variables:
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
 - name: centOSStream9Container
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-- name: fedora39Container
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
-- name: ubuntu2204Container
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04
-- name: ubuntu2204ArmContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-arm64
+- name: fedora40Container
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-40
+- name: ubuntu2404Container
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04
+- name: ubuntu2404ArmContainer
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04-arm64
 - name: marinerX64CrossContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-amd64
 - name: marinerArmCrossContainer

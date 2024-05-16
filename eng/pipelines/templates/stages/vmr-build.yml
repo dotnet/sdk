@@ -233,12 +233,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: Fedora39_Offline_MsftSdk
+            buildName: Fedora40_Offline_MsftSdk
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.fedora39Container }}
+            container: ${{ variables.fedora40Container }}
             buildFromArchive: true             # ✅
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -250,12 +250,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: Ubuntu2204_Offline_MsftSdk
+            buildName: Ubuntu2404_Offline_MsftSdk
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.ubuntu2204Container }}
+            container: ${{ variables.ubuntu2404Container }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -267,12 +267,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: Ubuntu2204Arm64_Offline_MsftSdk
+            buildName: Ubuntu2404Arm64_Offline_MsftSdk
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: arm64
             pool: ${{ parameters.pool_LinuxArm64 }}
-            container: ${{ variables.ubuntu2204ArmContainer }}
+            container: ${{ variables.ubuntu2404ArmContainer }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -284,12 +284,12 @@ stages:
         - template: ../jobs/vmr-build.yml
           parameters:
             # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
-            buildName: Fedora39_Offline_CurrentSourceBuiltSdk
+            buildName: Fedora40_Offline_CurrentSourceBuiltSdk
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             architecture: x64
             pool: ${{ parameters.pool_Linux }}
-            container: ${{ variables.fedora39Container }}
+            container: ${{ variables.fedora40Container }}
             buildFromArchive: false            # 🚫
             buildSourceOnly: true              # ✅
             enablePoison: false                # 🚫
@@ -297,7 +297,7 @@ stages:
             runOnline: false                   # 🚫
             useMonoRuntime: false              # 🚫
             withPreviousSDK: false             # 🚫
-            reuseBuildArtifactsFrom: Fedora39_Offline_MsftSdk
+            reuseBuildArtifactsFrom: Fedora40_Offline_MsftSdk
 
 #### VERTICAL BUILD ####
 - ${{ if not(parameters.isSourceOnlyBuild) }}:
@@ -312,24 +312,24 @@ stages:
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: Ubuntu2204_DevVersions
+        buildName: Ubuntu2404_DevVersions
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
         pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.ubuntu2204Container }}
+        container: ${{ variables.ubuntu2404Container }}
         targetOS: linux
         targetArchitecture: x64
         useDevVersions: true # Use dev versions for CI validation of the experience. If we decide to ship assets from this leg, then we should remove this option.
 
     - template: ../jobs/vmr-build.yml
       parameters:
-        buildName: Ubuntu2204
+        buildName: Ubuntu2404
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         architecture: x64
         pool: ${{ parameters.pool_Linux }}
-        container: ${{ variables.ubuntu2204Container }}
+        container: ${{ variables.ubuntu2404Container }}
         targetOS: linux
         targetArchitecture: x64
 
