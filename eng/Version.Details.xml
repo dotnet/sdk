@@ -103,6 +103,10 @@
       <Sha>6f815fb2aad6e56928d04322ad0e2d1b3c724b77</Sha>
       <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
+    <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="4.11.0-2.24264.12">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>6f815fb2aad6e56928d04322ad0e2d1b3c724b77</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis" Version="4.11.0-2.24264.12">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>6f815fb2aad6e56928d04322ad0e2d1b3c724b77</Sha>
