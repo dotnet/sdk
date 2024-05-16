@@ -152,7 +152,7 @@ jobs:
             /p:Rid=${{ parameters.runtimeIdentifier }}
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
-            /p:CustomHelixTargetQueue=($(System.PhaseName))${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+            '/p:CustomHelixTargetQueue="($(System.PhaseName))${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}"'
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
           displayName: Run ${{ parameters.categoryName }} Tests
           condition: succeeded()
