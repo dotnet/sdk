@@ -55,7 +55,7 @@ variables:
 - name: fedoraX64Rid
   value: fedora.39-x64
 - name: ubuntux64Rid
-  value: ubuntu.22.04-x64
+  value: ubuntu.24.04-x64
 - name: ubuntuArm64Rid
   value: ubuntu.24.04-arm64
 
