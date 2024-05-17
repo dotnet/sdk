@@ -114,6 +114,7 @@ extends:
               publishArgument: $(_publishArgument) /p:EnableToolsetPublish=true
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
+              enableDefaultArtifacts: true
               runTests: false
               publishRetryConfig: true
               variables:

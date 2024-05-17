@@ -20,6 +20,7 @@ parameters:
   signArgument: ''
   runTestsAsTool: false
   pgoInstrument: false
+  enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
   osProperties: ''
   runtimeSourceProperties: ''
@@ -77,6 +78,7 @@ jobs:
           -configuration $(buildConfiguration)
           ${{ parameters.publishArgument }}
           ${{ parameters.signArgument }}
+          /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:Architecture=${{ parameters.buildArchitecture }}
           /p:RunTestsAsTool=${{ parameters.runTestsAsTool }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
@@ -98,7 +100,7 @@ jobs:
           -configuration $(buildConfiguration) \
           ${{ parameters.publishArgument }} \
           ${{ parameters.signArgument }} \
-          /p:EnableDefaultArtifacts=false \
+          /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
           /p:Architecture=${{ parameters.buildArchitecture }} \
           /p:RunTestsAsTool=${{ parameters.runTestsAsTool }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
