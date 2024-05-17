@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions.Json" />
+    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
     <PackageReference Include="NuGet.ProjectModel" />
     <PackageReference Include="System.Security.Cryptography.X509Certificates" />
