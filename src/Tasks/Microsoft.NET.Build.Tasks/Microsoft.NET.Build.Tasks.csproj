@@ -71,7 +71,7 @@
     -->
     <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutablePackageVersion)" />
     <PackageReference Include="System.Reflection.Metadata" VersionOverride="$(SystemReflectionMetadataVersion)" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" VersionOverride="$(SystemReflectionMetadataLoadContextVersion)" />
     <PackageReference Include="System.Text.Json" VersionOverride="8.0.0" />
   </ItemGroup>
 
