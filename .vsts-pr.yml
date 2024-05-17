@@ -117,6 +117,8 @@ stages:
         runtimeIdentifier: linux-musl-x64
         # Use HostOSName when running on alpine.
         osProperties: /p:HostOSName=linux-musl
+        # Sbom generation is not supported for alpine.
+        enableSbom: false
         # Skipping all container-based testing for now.
         # See: https://github.com/dotnet/sdk/issues/40935
         runTests: false

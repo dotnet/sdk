@@ -10,6 +10,7 @@ parameters:
   runTests: true
   testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
   publishRetryConfig: false
+  enableSbom: true
   ### ENV VARS ###
   testFullMSBuild: false
   runAoTTests: false
@@ -42,6 +43,7 @@ jobs:
     enablePublishBuildAssets: true
     enableTelemetry: true
     enablePublishUsingPipelines: true
+    enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
 

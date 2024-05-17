@@ -5,6 +5,7 @@ parameters:
   locBranch: ''
 
 jobs:
+### ONELOCBUILD ###
 - ${{ if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/${{ parameters.locBranch }}')) }}:
   - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/onelocbuild.yml
     parameters:
@@ -13,6 +14,9 @@ jobs:
       LclPackageId: LCL-JUNO-PROD-DOTNETSDK
       MirrorBranch: ${{ parameters.locBranch }}
       MirrorRepo: sdk
+### BUILD JOBS ###
+# Each job parameter set creates a new job and the parameter set is unwrapped into the parameters for that job.
+# The parameters sent to this template are also passed to the job, which does include the jobParameterSets array, but that array itself isn't used in the job.
 - ${{ each jobParameters in parameters.jobParameterSets }}:
   - template: /eng/pipelines/templates/jobs/sdk-build.yml
     parameters:
