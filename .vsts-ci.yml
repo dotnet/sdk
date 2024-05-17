@@ -17,8 +17,9 @@ pr:
     - internal/release/*
 
 parameters:
-- name: runTests
-  displayName: Run Tests
+# When true, runs the pipeline in the same way as the PR pipeline.
+- name: runTestBuild
+  displayName: Run A Test Build
   type: boolean
   default: false
 
@@ -32,7 +33,7 @@ variables:
 # Variables used: HelixApiAccessToken
 - group: DotNet-HelixApi-Access
 # Allows Arcade to run a signed build by disabling post-build signing for release-branch builds or manual builds that are not running tests.
-- ${{ if and(eq(parameters.runTests, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
+- ${{ if and(eq(parameters.runTestBuild, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
   - name: PostBuildSign
     value: false
 # Provides TSA variables for automatic bug reporting.
@@ -83,7 +84,7 @@ extends:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
-      ${{ if or(eq(parameters.runTests, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+      ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
         componentgovernance:
           # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
           ignoreDirectories: artifacts, .packages
@@ -106,7 +107,7 @@ extends:
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           locBranch: release/8.0.4xx
-          ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             windowsJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
@@ -173,7 +174,7 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             linuxJobParameterSets:
             ### OFFICIAL ###
             # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
@@ -274,7 +275,7 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+          ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             macOSJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
@@ -297,14 +298,14 @@ extends:
             container: centosStream9
 
       ############### DOTNET-FORMAT ###############
-      - ${{ if or(eq(parameters.runTests, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
+      - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
         - template: /eng/dotnet-format/dotnet-format-integration.yml@self
           parameters:
             oneESCompat:
               publishTaskPrefix: 1ES.
 
     ############### PUBLISH STAGE ###############
-    - ${{ if and(eq(parameters.runTests, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
       - stage: publish
         displayName: Publish
         dependsOn: build
