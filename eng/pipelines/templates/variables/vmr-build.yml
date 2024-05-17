@@ -10,15 +10,15 @@ variables:
   - name: VmrBranch
     value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
 
-- name: alpine319Container
+- name: alpineContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
-- name: centOSStream9Container
+- name: centOSStreamContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-- name: fedora40Container
+- name: fedoraContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-40
-- name: ubuntu2404Container
+- name: ubuntuContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04
-- name: ubuntu2404ArmContainer
+- name: ubuntuArmContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04-arm64
 - name: marinerX64CrossContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-amd64
@@ -38,6 +38,26 @@ variables:
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-webassembly
 - name: wasiCrossContainer
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-webassembly
+
+- name: alpineName
+  value: Alpine3.19
+- name: centOSStreamName
+  value: CentOSStream9
+- name: fedoraName
+  value: Fedora40
+- name: ubuntuName
+  value: Ubuntu24.04
+
+- name: alpineX64Rid
+  value: alpine.3.19-x64
+- name: centOSStreamX64Rid
+  value: centos.9-x64
+- name: fedoraX64Rid
+  value: fedora.39-x64
+- name: ubuntux64Rid
+  value: ubuntu.22.04-x64
+- name: ubuntuArm64Rid
+  value: ubuntu.24.04-arm64
 
 - ${{ if eq(variables['System.TeamProject'], 'public') }}:
   - name: defaultPoolName
